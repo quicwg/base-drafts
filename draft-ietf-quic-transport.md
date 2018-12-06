@@ -92,10 +92,9 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  This document
-describes connection establishment, packet format, multiplexing, and
-reliability.  Accompanying documents describe the cryptographic handshake and
-loss detection.
+This document defines the core of the QUIC transport protocol.  Accompanying
+documents describe QUIC's loss detection and congestion control
+{{QUIC-RECOVERY}} and the use of TLS for key negotiation {{QUIC-TLS}}.
 
 
 --- note_Note_to_Readers
@@ -112,55 +111,52 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC is a multiplexed and secure transport protocol that runs on top of UDP.
-QUIC aims to provide a flexible set of features that allow it to be a
-general-purpose secure transport for multiple applications.
-
-* Version negotiation
-
-* Low-latency connection establishment
-
-* Authenticated and encrypted header and payload
+QUIC is a multiplexed and secure general-purpose transport protocol that
+provides:
 
 * Stream multiplexing
 
 * Stream and connection-level flow control
 
+* Low-latency connection establishment
+
 * Connection migration and resilience to NAT rebinding
+
+* Authenticated and encrypted header and payload
 
 QUIC uses UDP as a substrate to avoid requiring changes in legacy client
 operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges, including its signaling.  This allows
-the protocol to evolve without incurring a dependency on upgrades to
-middleboxes.
+encrypts most of the data it exchanges, including its signaling, to avoid
+incurring a dependency on middleboxes.
+
 
 ## Document Structure
 
-This document describes the core QUIC protocol, and is structured as follows:
+This document describes the core QUIC protocol and is structured as follows.
 
-* Streams are the basic service abstraction that QUIC provides:
+* Streams are the basic service abstraction that QUIC provides.
   - {{streams}} describes core concepts related to streams,
   - {{stream-states}} provides a reference model for stream states, and
   - {{flow-control}} outlines the operation of flow control.
 
-* Connections are the context in which QUIC endpoints communicate:
+* Connections are the context in which QUIC endpoints communicate.
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
   - {{address-validation}} specifies critical denial of service mitigation
     mechanisms,
-  - {{migration}} describes how endpoints migrate a connection to use a new
-    network paths,
+  - {{migration}} describes how endpoints migrate a connection to a new
+    network path,
   - {{termination}} lists the options for terminating an open connection, and
   - {{error-handling}} provides general guidance for error handling.
 
-* Packets and frames are the basic unit used by QUIC to communicate:
+* Packets and frames are the basic unit used by QUIC to communicate.
   - {{packets-frames}} describes concepts related to packets and frames,
   - {{packetization}} defines models for the transmission, retransmission, and
-    acknowledgement of information, and
-  - {{packet-size}} contains a rules for managing the size of packets.
+    acknowledgement of data, and
+  - {{packet-size}} specifies rules for managing the size of packets.
 
-* Details of encoding of QUIC protocol elements is described in:
+* Finally, encoding details of QUIC protocol elements are described in:
   - {{versions}} (Versions),
   - {{integer-encoding}} (Integer Encoding),
   - {{packet-formats}} (Packet Headers),
@@ -169,19 +165,36 @@ This document describes the core QUIC protocol, and is structured as follows:
   - {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS 1.3 for key negotiation {{QUIC-TLS}}.
+{{QUIC-RECOVERY}}, and the use of TLS for key negotiation {{QUIC-TLS}}.
 
-QUIC version 1 conforms to the protocol invariants in {{QUIC-INVARIANTS}}.
+This document defines QUIC version 1, which conforms to the protocol invariants
+in {{QUIC-INVARIANTS}}.
 
 
-## Conventions and Definitions
+## Terms and Definitions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
-Definitions of terms that are used in this document:
+Commonly used terms in the document are described below.
+
+QUIC:
+
+: The transport protocol described by this document. QUIC is a name, not an
+  acronym.
+
+QUIC packet:
+
+: The smallest unit of QUIC that can be encapsulated in a UDP datagram. Multiple
+  QUIC packets can be encapsulated in a single UDP datagram.
+
+Endpoint:
+
+: An entity that can participate in a QUIC connection by generating,
+  receiving, and processing QUIC packets. There are only two types of endpoint
+  in QUIC: client and server.
 
 Client:
 
@@ -191,66 +204,48 @@ Server:
 
 : The endpoint accepting incoming QUIC connections.
 
-Endpoint:
-
-: The client or server end of a connection.
-
-Stream:
-
-: A logical unidirectional or bidirectional channel of ordered bytes within a
-  QUIC connection.
-
-Connection:
-
-: A conversation between two QUIC endpoints with a single encryption context
-  that multiplexes streams within it.
-
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
-  endpoint.  Each endpoint sets a value that its peer includes in packets.
+  endpoint.  Each endpoint sets a value for its peer to include in packets sent
+  towards the endpoint.
 
-QUIC packet:
+Stream:
 
-: The smallest unit of data that can be exchanged by QUIC endpoints.
+: A unidirectional or bidirectional channel of ordered bytes within a QUIC
+  connection. A QUIC connection can carry multiple simultaneous streams.
 
-QUIC is a name, not an acronym.
+Application:
+
+ : An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
 
-Packet and frame diagrams use the format described in Section 3.1 of
-{{?RFC2360}}, with the following additional conventions:
+Packet and frame diagrams in this document use the format described in Section
+3.1 of {{?RFC2360}}, with the following additional conventions:
 
-\[x\]
+\[x\]:
 : Indicates that x is optional
 
-x (A)
+x (A):
 : Indicates that x is A bits long
 
-x (A/B/C) ...
+x (A/B/C) ...:
 : Indicates that x is one of A, B, or C bits long
 
-x (i) ...
+x (i) ...:
 : Indicates that x uses the variable-length encoding in {{integer-encoding}}
 
-x (*) ...
+x (*) ...:
 : Indicates that x is variable-length
 
 
 # Streams {#streams}
 
-Streams in QUIC provide a lightweight, ordered byte-stream abstraction.
-
-There are two basic types of stream in QUIC.  Unidirectional streams carry data
-in one direction: from the initiator of the stream to its peer;
-bidirectional streams allow for data to be sent in both directions.  Different
-stream identifiers are used to distinguish between unidirectional and
-bidirectional streams, as well as to create a separation between streams that
-are initiated by the client and server (see {{stream-id}}).
-
-Either type of stream can be created by either endpoint, can concurrently send
-data interleaved with other streams, and can be cancelled.
+Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
+application. An alternative view of QUIC streams is as an elastic "message"
+abstraction.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -258,165 +253,103 @@ impose minimal overheads. For instance, a single STREAM frame ({{frame-stream}})
 can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
-Stream offsets allow for the bytes on a stream to be placed in order.  An
-endpoint MUST be capable of delivering data received on a stream in order.
-Implementations MAY choose to offer the ability to deliver data out of order.
-There is no means of ensuring ordering between bytes on different streams.
+Streams can be created by either endpoint, can concurrently send data
+interleaved with other streams, and can be cancelled.  Any stream can be
+initiated by either endpoint.  QUIC does not provide any means of ensuring
+ordering between bytes on different streams.
 
-Streams are individually flow controlled, allowing an endpoint to limit memory
-commitment and to apply back pressure.  The creation of streams is also flow
-controlled, with each peer declaring the maximum stream ID it is willing to
-accept at a given time.
-
-An alternative view of QUIC streams is as an elastic "message" abstraction,
-similar to the way ephemeral streams are used in SST
-{{?SST=DOI.10.1145/1282427.1282421}}, which may be a more appealing description
-for some applications.
+QUIC allows for an arbitrary number of streams to operate concurrently and for
+an arbitrary amount of data to be sent on any stream, subject to flow control
+constraints (see {{flow-control}}) and stream limits.
 
 
-## Stream Identifiers {#stream-id}
+## Stream Types and Identifiers {#stream-id}
 
-Streams are identified by an unsigned 62-bit integer, referred to as the Stream
-ID.  Stream IDs are encoded as a variable-length integer (see
-{{integer-encoding}}).  The least significant two bits of the Stream ID are used
-to identify the type of stream (unidirectional or bidirectional) and the
-initiator of the stream.
+Streams can be unidirectional or bidirectional.  Unidirectional streams carry
+data in one direction: from the initiator of the stream to its peer.
+Bidirectional streams allow for data to be sent in both directions.
 
-The least significant bit (0x1) of the Stream ID identifies the initiator of the
-stream.  Clients initiate even-numbered streams (those with the least
-significant bit set to 0); servers initiate odd-numbered streams (with the bit
-set to 1).  Separation of the stream identifiers ensures that client and server
-are able to open streams without the latency imposed by negotiating for an
-identifier.
+Streams are identified within a connection by a numeric value, referred to as
+the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
+reuse a stream ID within a connection.  Stream IDs are encoded as
+variable-length integers (see {{integer-encoding}}).
 
-If an endpoint receives a frame for a stream that it expects to initiate (i.e.,
-odd-numbered for the client or even-numbered for the server), but which it has
-not yet opened, it MUST close the connection with error code STREAM_STATE_ERROR.
+The least significant bit (0x1) of the stream ID identifies the initiator of the
+stream.  Client-initiated streams have even-numbered stream IDs (with the bit
+set to 0), and server-initiated streams have odd-numbered stream IDs (with the
+bit set to 1).
 
-The second least significant bit (0x2) of the Stream ID differentiates between
-unidirectional streams and bidirectional streams. Unidirectional streams always
-have this bit set to 1 and bidirectional streams have this bit set to 0.
+The second least significant bit (0x2) of the stream ID distinguishes between
+bidirectional streams (with the bit set to 0) and unidirectional streams (with
+the bit set to 1).
 
-The two type bits from a Stream ID therefore identify streams as summarized in
-{{stream-id-types}}.
+The least significant two bits from a stream ID therefore identify a stream as
+one of four types, as summarized in {{stream-id-types}}.
 
-| Low Bits | Stream Type                      |
-|:---------|:---------------------------------|
-| 0x0      | Client-Initiated, Bidirectional  |
-| 0x1      | Server-Initiated, Bidirectional  |
-| 0x2      | Client-Initiated, Unidirectional |
-| 0x3      | Server-Initiated, Unidirectional |
+| Bits | Stream Type                      |
+|:-----|:---------------------------------|
+| 0x0  | Client-Initiated, Bidirectional  |
+| 0x1  | Server-Initiated, Bidirectional  |
+| 0x2  | Client-Initiated, Unidirectional |
+| 0x3  | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-The first bidirectional stream opened by the client is stream 0.
+Within each type, streams are created with numerically increasing stream IDs.  A
+stream ID that is used out of order results in all streams of that type with
+lower-numbered stream IDs also being opened.
 
-A QUIC endpoint MUST NOT reuse a Stream ID.  Streams of each type are created in
-numeric order.  Streams that are used out of order result in opening all
-lower-numbered streams of the same type in the same direction.
-
-
-## Stream Concurrency {#stream-concurrency}
-
-QUIC allows for an arbitrary number of streams to operate concurrently.  An
-endpoint limits the number of concurrently active incoming streams by limiting
-the maximum stream ID (see {{stream-limit-increment}}).
-
-The maximum stream ID is specific to each endpoint and applies only to the peer
-that receives the setting. That is, clients specify the maximum stream ID the
-server can initiate, and servers specify the maximum stream ID the client can
-initiate.  Each endpoint may respond on streams initiated by the other peer,
-regardless of whether it is permitted to initiate new streams.
-
-Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
-receives a STREAM frame with an ID greater than the limit it has sent MUST treat
-this as a stream error of type STREAM_ID_ERROR ({{error-handling}}), unless this
-is a result of a change in the initial limits (see {{zerortt-parameters}}).
-
-A receiver cannot renege on an advertisement; that is, once a receiver
-advertises a stream ID via a MAX_STREAM_ID frame, advertising a smaller maximum
-ID has no effect.  A receiver MUST ignore any MAX_STREAM_ID frame that does not
-increase the maximum stream ID.
-
+The first bidirectional stream opened by the client has a stream ID of 0.
 
 ## Sending and Receiving Data
 
-Endpoints uses streams to send and receive data. Endpoints send STREAM frames,
-which encapsulate data for a stream. STREAM frames carry a flag that can be used
-to signal the end of a stream.
+STREAM frames ({{frame-stream}}) encapsulate data sent by an application. An
+endpoint uses the Stream ID and Offset fields in STREAM frames to place data in
+order.
+
+Endpoints MUST be able to deliver stream data to an application as an ordered
+byte-stream.  Delivering an ordered byte-stream requires that an endpoint buffer
+any data that is received out of order, up to the advertised flow control limit.
+
+QUIC makes no specific allowances for delivery of stream data out of
+order. However, implementations MAY choose to offer the ability to deliver data
+out of order to a receiving application.
+
+An endpoint could receive data for a stream at the same stream offset multiple
+times.  Data that has already been received can be discarded.  The data at a
+given offset MUST NOT change if it is sent multiple times; an endpoint MAY treat
+receipt of different data at the same offset within a stream as a connection
+error of type PROTOCOL_VIOLATION.
 
 Streams are an ordered byte-stream abstraction with no other structure that is
-visible to QUIC. STREAM frame boundaries are not expected to preserved when data
-is transmitted, when data is retransmitted after packet loss, or when data is
-delivered to the application at the receiver.
-
-When new data is to be sent on a stream, a sender MUST set the encapsulating
-STREAM frame's offset field to the stream offset of the first byte of this new
-data.  The first byte of data on a stream has an offset of 0.  An endpoint is
-expected to send every stream byte.  The largest offset delivered on a stream
-MUST be less than 2^62.
-
-QUIC makes no specific allowances for partial reliability or delivery of stream
-data out of order.  Endpoints MUST be able to deliver stream data to an
-application as an ordered byte-stream.  Delivering an ordered byte-stream
-requires that an endpoint buffer any data that is received out of order, up to
-the advertised flow control limit.
-
-An endpoint could receive the same bytes multiple times; bytes that have already
-been received can be discarded.  The value for a given byte MUST NOT change if
-it is sent multiple times; an endpoint MAY treat receipt of a changed byte as a
-connection error of type PROTOCOL_VIOLATION.
+visible to QUIC. STREAM frame boundaries are not expected to be preserved when
+data is transmitted, when data is retransmitted after packet loss, or when data
+is delivered to the application at a receiver.
 
 An endpoint MUST NOT send data on any stream without ensuring that it is within
-the data limits set by its peer.  Flow control is described in detail in
+the flow control limits set by its peer.  Flow control is described in detail in
 {{flow-control}}.
 
 
-## Stream Prioritization
+## Stream Prioritization {#stream-prioritization}
 
-Stream multiplexing has a significant effect on application performance if
-resources allocated to streams are correctly prioritized.  Experience with other
-multiplexed protocols, such as HTTP/2 {{?HTTP2}}, shows that effective
-prioritization strategies have a significant positive impact on performance.
+Stream multiplexing can have a significant effect on application performance if
+resources allocated to streams are correctly prioritized.
 
 QUIC does not provide frames for exchanging prioritization information.  Instead
 it relies on receiving priority information from the application that uses QUIC.
-Protocols that use QUIC are able to define any prioritization scheme that suits
-their application semantics.  A protocol might define explicit messages for
-signaling priority, such as those defined in HTTP/2; it could define rules that
-allow an endpoint to determine priority based on context; or it could leave the
-determination to the application.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
 the relative priority of streams.  When deciding which streams to dedicate
-resources to, QUIC SHOULD use the information provided by the application.
-Failure to account for priority of streams can result in suboptimal performance.
-
-Stream priority is most relevant when deciding which stream data will be
-transmitted.  Often, there will be limits on what can be transmitted as a result
-of connection flow control or the current congestion controller state.
-
-Giving preference to the transmission of its own management frames ensures that
-the protocol functions efficiently.  That is, prioritizing frames other than
-STREAM frames ensures that loss recovery, congestion control, and flow control
-operate effectively.
-
-CRYPTO frames SHOULD be prioritized over other streams prior to the completion
-of the cryptographic handshake.  This includes the retransmission of the second
-flight of client handshake messages, that is, the TLS Finished and any client
-authentication messages.
-
-STREAM data in frames determined to be lost SHOULD be retransmitted before
-sending new data, unless application priorities indicate otherwise.
-Retransmitting lost stream data can fill in gaps, which allows the peer to
-consume already received data and free up the flow control window.
+resources to, the implementation SHOULD use the information provided by the
+application.
 
 
-# Stream States: Life of a Stream {#stream-states}
+# Stream States {#stream-states}
 
-This section describes the two types of QUIC stream in terms of the states of
-their send or receive components.  Two state machines are described: one for
-streams on which an endpoint transmits data ({{stream-send-states}}); another
-for streams from which an endpoint receives data ({{stream-recv-states}}).
+This section describes streams in terms of their send or receive components.
+Two state machines are described: one for the streams on which an endpoint
+transmits data ({{stream-send-states}}), and another for streams on which an
+endpoint receives data ({{stream-recv-states}}).
 
 Unidirectional streams use the applicable state machine directly.  Bidirectional
 streams use both state machines.  For the most part, the use of these state
@@ -425,8 +358,7 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either send or receive sides causes the stream
 to open in both directions.
 
-An endpoint can open streams up to its maximum stream limit in any order,
-however endpoints SHOULD open the send side of streams for each type in order.
+An endpoint MUST open streams of the same type in increasing order of stream ID.
 
 Note:
 
@@ -450,25 +382,25 @@ data to a peer.
        | Create Bidirectional Stream (Receiving)
        v
    +-------+
-   | Ready | Send RST_STREAM
+   | Ready | Send RESET_STREAM
    |       |-----------------------.
    +-------+                       |
        |                           |
        | Send STREAM /             |
-       |      STREAM_BLOCKED       |
+       |      STREAM_DATA_BLOCKED  |
        |                           |
        | Create Bidirectional      |
        |      Stream (Receiving)   |
        v                           |
    +-------+                       |
-   | Send  | Send RST_STREAM       |
+   | Send  | Send RESET_STREAM     |
    |       |---------------------->|
    +-------+                       |
        |                           |
        | Send STREAM + FIN         |
        v                           v
    +-------+                   +-------+
-   | Data  | Send RST_STREAM   | Reset |
+   | Data  | Send RESET_STREAM | Reset |
    | Sent  |------------------>| Sent  |
    +-------+                   +-------+
        |                           |
@@ -482,47 +414,51 @@ data to a peer.
 {: #fig-stream-send-states title="States for Send Streams"}
 
 The sending part of stream that the endpoint initiates (types 0 and 2 for
-clients, 1 and 3 for servers) is opened by the application or application
-protocol.  The "Ready" state represents a newly created stream that is able to
-accept data from the application.  Stream data might be buffered in this state
-in preparation for sending.
+clients, 1 and 3 for servers) is opened by the application.  The "Ready" state
+represents a newly created stream that is able to accept data from the
+application.  Stream data might be buffered in this state in preparation for
+sending.
 
-Sending the first STREAM or STREAM_BLOCKED frame causes a send stream to enter
-the "Send" state.  An implementation might choose to defer allocating a Stream
-ID to a send stream until it sends the first frame and enters this state, which
-can allow for better stream prioritization.
+Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
+enter the "Send" state.  An implementation might choose to defer allocating a
+stream ID to a send stream until it sends the first frame and enters this state,
+which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
-transitions to the "Send" state if the receiving part enters the "Recv" state.
+transitions to the "Send" state if the receiving part enters the "Recv" state
+({{stream-recv-states}}).
 
-In the "Send" state, an endpoint transmits - and retransmits as necessary - data
-in STREAM frames.  The endpoint respects the flow control limits of its peer,
-accepting MAX_STREAM_DATA frames.  An endpoint in the "Send" state generates
-STREAM_BLOCKED frames if it encounters flow control limits.
+In the "Send" state, an endpoint transmits - and retransmits as necessary -
+stream data in STREAM frames.  The endpoint respects the flow control limits set
+by its peer, and continues to accept and process MAX_STREAM_DATA frames.  An
+endpoint in the "Send" state generates STREAM_DATA_BLOCKED frames if it is
+blocked from sending by stream or connection flow control limits
+{{data-flow-control}}.
 
-After the application indicates that stream data is complete and a STREAM frame
-containing the FIN bit is sent, the send stream enters the "Data Sent" state.
-From this state, the endpoint only retransmits stream data as necessary.  The
-endpoint no longer needs to track flow control limits or send STREAM_BLOCKED
-frames for a send stream in this state.  The endpoint can ignore any
-MAX_STREAM_DATA frames it receives from its peer in this state; MAX_STREAM_DATA
-frames might be received until the peer receives the final stream offset.
+After the application indicates that all stream data has been sent and a STREAM
+frame containing the FIN bit is sent, the send stream enters the "Data Sent"
+state.  From this state, the endpoint only retransmits stream data as necessary.
+The endpoint does not need to check flow control limits or send
+STREAM_DATA_BLOCKED frames for a send stream in this state.  MAX_STREAM_DATA
+frames might be received until the peer receives the final stream offset. The
+endpoint can safely ignore any MAX_STREAM_DATA frames it receives from its peer
+for a stream in this state.
 
 Once all stream data has been successfully acknowledged, the send stream enters
 the "Data Recvd" state, which is a terminal state.
 
 From any of the "Ready", "Send", or "Data Sent" states, an application can
-signal that it wishes to abandon transmission of stream data.  Similarly, the
+signal that it wishes to abandon transmission of stream data. Alternatively, an
 endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
-endpoint sends a RST_STREAM frame, which causes the stream to enter the "Reset
+endpoint sends a RESET_STREAM frame, which causes the stream to enter the "Reset
 Sent" state.
 
-An endpoint MAY send a RST_STREAM as the first frame on a send stream; this
+An endpoint MAY send a RESET_STREAM as the first frame on a send stream; this
 causes the send stream to open and then immediately transition to the "Reset
 Sent" state.
 
-Once a packet containing a RST_STREAM has been acknowledged, the send stream
+Once a packet containing a RESET_STREAM has been acknowledged, the send stream
 enters the "Reset Recvd" state, which is a terminal state.
 
 
@@ -530,33 +466,33 @@ enters the "Reset Recvd" state, which is a terminal state.
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
 receives data from a peer.  The states for a receive stream mirror only some of
-the states of the send stream at the peer.  A receive stream doesn't track
-states on the send stream that cannot be observed, such as the "Ready" state;
-instead, receive streams track the delivery of data to the application or
-application protocol some of which cannot be observed by the sender.
+the states of the send stream at the peer.  A receive stream does not track
+states on the send stream that cannot be observed, such as the "Ready" state.
+Instead, receive streams track the delivery of data to the application, some of
+which cannot be observed by the sender.
 
 ~~~
        o
-       | Recv STREAM / STREAM_BLOCKED / RST_STREAM
+       | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
        | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA
+       | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
        | Create Higher-Numbered Stream
        v
    +-------+
-   | Recv  | Recv RST_STREAM
+   | Recv  | Recv RESET_STREAM
    |       |-----------------------.
    +-------+                       |
        |                           |
        | Recv STREAM + FIN         |
        v                           |
    +-------+                       |
-   | Size  | Recv RST_STREAM       |
+   | Size  | Recv RESET_STREAM     |
    | Known |---------------------->|
    +-------+                       |
        |                           |
        | Recv All Data             |
        v                           v
-   +-------+  Recv RST_STREAM  +-------+
+   +-------+ Recv RESET_STREAM +-------+
    | Data  |--- (optional) --->| Reset |
    | Recvd |  Recv All Data    | Recvd |
    +-------+<-- (optional) ----+-------+
@@ -571,63 +507,65 @@ application protocol some of which cannot be observed by the sender.
 {: #fig-stream-recv-states title="States for Receive Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
-or 0 and 2 for a server) are created when the first STREAM, STREAM_BLOCKED,
-RST_STREAM, or MAX_STREAM_DATA (bidirectional only, see below) is received for
-that stream.  The initial state for a receive stream is "Recv".  Receiving a
-RST_STREAM frame causes the receive stream to immediately transition to the
-"Reset Recvd".
+or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
+or RESET_STREAM is received for that stream.  For bidirectional streams
+initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
+sending part of the stream also creates the receiving part.  The initial state
+for a receive stream is "Recv".
 
 The receive stream enters the "Recv" state when the sending part of a
 bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
 a server) enters the "Ready" state.
 
-A bidirectional stream also opens when a MAX_STREAM_DATA frame is received.
-Receiving a MAX_STREAM_DATA frame implies that the remote peer has opened the
-stream and is providing flow control credit.  A MAX_STREAM_DATA frame might
-arrive before a STREAM or STREAM_BLOCKED frame if packets are lost or reordered.
+An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
+frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
+frame for an unopened stream indicates that the remote peer has opened the
+stream and is providing flow control credit.  Receiving a STOP_SENDING frame for
+an unopened stream indicates that the remote peer no longer wishes to receive
+data on this stream.  Either frame might arrive before a STREAM or
+STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
-Before creating a stream, all lower-numbered streams of the same type MUST be
-created.  That means that receipt of a frame that would open a stream causes all
-lower-numbered streams of the same type to be opened in numeric order.  This
-ensures that the creation order for streams is consistent on both endpoints.
+Before creating a stream, all streams of the same type with lower-numbered
+stream IDs MUST be created.  This ensures that the creation order for streams is
+consistent on both endpoints.
 
-In the "Recv" state, the endpoint receives STREAM and STREAM_BLOCKED frames.
-Incoming data is buffered and can be reassembled into the correct order for
-delivery to the application.  As data is consumed by the application and buffer
-space becomes available, the endpoint sends MAX_STREAM_DATA frames to allow the
-peer to send more data.
+In the "Recv" state, the endpoint receives STREAM and STREAM_DATA_BLOCKED
+frames.  Incoming data is buffered and can be reassembled into the correct order
+for delivery to the application.  As data is consumed by the application and
+buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
+allow the peer to send more data.
 
-When a STREAM frame with a FIN bit is received, the final offset (see
-{{final-offset}}) is known.  The receive stream enters the "Size Known" state.
-In this state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it
-only receives any retransmissions of stream data.
+When a STREAM frame with a FIN bit is received, the final offset is known (see
+{{final-offset}}).  The receive stream enters the "Size Known" state.  In this
+state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it only
+receives any retransmissions of stream data.
 
 Once all data for the stream has been received, the receive stream enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  In this state, the endpoint
-has all stream data.  Any STREAM or STREAM_BLOCKED frames it receives for the
-stream can be discarded.
+has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
+the stream can be discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
-application or application protocol.  Once stream data has been delivered, the
-stream enters the "Data Read" state, which is a terminal state.
+application.  Once stream data has been delivered, the stream enters the "Data
+Read" state, which is a terminal state.
 
-Receiving a RST_STREAM frame in the "Recv" or "Size Known" states causes the
+Receiving a RESET_STREAM frame in the "Recv" or "Size Known" states causes the
 stream to enter the "Reset Recvd" state.  This might cause the delivery of
 stream data to the application to be interrupted.
 
-It is possible that all stream data is received when a RST_STREAM is received
+It is possible that all stream data is received when a RESET_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
-stream data to arrive after receiving a RST_STREAM frame (the "Reset Recvd"
-state).  An implementation is able to manage this situation as they choose.
-Sending RST_STREAM means that an endpoint cannot guarantee delivery of stream
+stream data to arrive after receiving a RESET_STREAM frame (the "Reset Recvd"
+state).  An implementation is free to manage this situation as it chooses.
+Sending RESET_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
-RST_STREAM is received.  An implementation MAY interrupt delivery of stream
-data, discard any data that was not consumed, and signal the existence of the
-RST_STREAM immediately.  Alternatively, the RST_STREAM signal might be
-suppressed or withheld if stream data is completely received.  In the latter
-case, the receive stream effectively transitions to "Data Recvd" from "Reset
-Recvd".
+RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
+data, discard any data that was not consumed, and signal the receipt of the
+RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
+suppressed or withheld if stream data is completely received and is buffered to
+be read by the application.  In the latter case, the receive stream transitions
+from "Reset Recvd" to "Data Recvd".
 
 Once the application has been delivered the signal indicating that the receive
 stream was reset, the receive stream transitions to the "Reset Read" state,
@@ -637,24 +575,25 @@ which is a terminal state.
 ## Permitted Frame Types
 
 The sender of a stream sends just three frame types that affect the state of a
-stream at either sender or receiver: STREAM ({{frame-stream}}), STREAM_BLOCKED
-({{frame-stream-blocked}}), and RST_STREAM ({{frame-rst-stream}}).
+stream at either sender or receiver: STREAM ({{frame-stream}}),
+STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RESET_STREAM
+({{frame-reset-stream}}).
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
-or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_BLOCKED after
-sending a RST_STREAM; that is, in the "Reset Sent" state in addition to the
-terminal states.  A receiver could receive any of these frames in any state, but
-only due to the possibility of delayed delivery of packets carrying them.
+or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
+sending a RESET_STREAM; that is, in the terminal states and in the "Reset Sent"
+state.  A receiver could receive any of these three frames in any state, due to
+the possibility of delayed delivery of packets carrying them.
 
 The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
 STOP_SENDING frames ({{frame-stop-sending}}).
 
 The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
-send STOP_SENDING in any state where it has not received a RST_STREAM frame;
+send STOP_SENDING in any state where it has not received a RESET_STREAM frame;
 that is states other than "Reset Recvd" or "Reset Read".  However there is
-little value in sending a STOP_SENDING frame after all stream data has been
-received in the "Data Recvd" state.  A sender could receive these frames in any
-state as a result of delayed delivery of packets.
+little value in sending a STOP_SENDING frame in the "Data Recvd" state, since
+all stream data has been received.  A sender could receive either of these two
+frames in any state as a result of delayed delivery of packets.
 
 
 ## Bidirectional Stream States {#stream-bidi-states}
@@ -699,19 +638,22 @@ If an endpoint is no longer interested in the data it is receiving on a stream,
 it MAY send a STOP_SENDING frame identifying that stream to prompt closure of
 the stream in the opposite direction.  This typically indicates that the
 receiving application is no longer reading data it receives from the stream, but
-is not a guarantee that incoming data will be ignored.
+it is not a guarantee that incoming data will be ignored.
 
-STREAM frames received after sending STOP_SENDING are still counted toward the
-connection and stream flow-control windows, even though these frames will be
-discarded upon receipt.  This avoids potential ambiguity about which STREAM
-frames count toward flow control.
+STREAM frames received after sending STOP_SENDING are still counted toward
+connection and stream flow control, even though these frames will be discarded
+upon receipt.
 
-A STOP_SENDING frame requests that the receiving endpoint send a RST_STREAM
-frame.  An endpoint that receives a STOP_SENDING frame MUST send a RST_STREAM
-frame for that stream, and can use an error code of STOPPING.  If the
-STOP_SENDING frame is received on a send stream that is already in the "Data
-Sent" state, a RST_STREAM frame MAY still be sent in order to cancel
-retransmission of previously-sent STREAM frames.
+A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
+frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
+frame for that stream.  An endpoint SHOULD copy the error code from the
+STOP_SENDING frame, but MAY use any other application error code.  The endpoint
+that sends a STOP_SENDING frame can ignore the error code carried in any
+RESET_STREAM frame it receives.
+
+If the STOP_SENDING frame is received on a send stream that is already in the
+"Data Sent" state, a RESET_STREAM frame MAY still be sent in order to cancel
+retransmissions of previously-sent STREAM frames.
 
 STOP_SENDING SHOULD only be sent for a receive stream that has not been
 reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
@@ -719,107 +661,98 @@ states.
 
 An endpoint is expected to send another STOP_SENDING frame if a packet
 containing a previous STOP_SENDING is lost.  However, once either all stream
-data or a RST_STREAM frame has been received for the stream - that is, the
+data or a RESET_STREAM frame has been received for the stream - that is, the
 stream is in any state other than "Recv" or "Size Known" - sending a
 STOP_SENDING frame is unnecessary.
+
+An endpoint that wishes to terminate both directions of a bidirectional stream
+can terminate one direction by sending a RESET_STREAM, and it can encourage
+prompt termination in the opposite direction by sending a STOP_SENDING frame.
 
 
 # Flow Control {#flow-control}
 
-It is necessary to limit the amount of data that a sender may have outstanding
-at any time, so as to prevent a fast sender from overwhelming a slow receiver,
-or to prevent a malicious sender from consuming significant resources at a
-receiver.  To this end, QUIC employs a credit-based flow-control scheme similar
-to that in HTTP/2 {{?HTTP2}}.  A receiver advertises the number of bytes it is
-prepared to receive on a given stream and for the entire connection.  This leads
-to two levels of flow control in QUIC:
+It is necessary to limit the amount of data that a receiver could buffer, to
+prevent a fast sender from overwhelming a slow receiver, or to prevent a
+malicious sender from consuming a large amount of memory at a receiver.  To
+enable a receiver to limit memory commitment to a connection and to apply back
+pressure on the sender, streams are flow controlled both individually and as an
+aggregate.  A QUIC receiver controls the maximum amount of data the sender can
+send on a stream at any time, as described in {{data-flow-control}} and
+{{fc-credit}}
+
+Similarly, to limit concurrency within a connection, a QUIC endpoint controls
+the maximum cumulative number of streams that its peer can initiate, as
+described in {{controlling-concurrency}}.
+
+Data sent in CRYPTO frames is not flow controlled in the same way as stream
+data.  QUIC relies on the cryptographic protocol implementation to avoid
+excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
+provide an interface to QUIC to tell it about its buffering limits so that there
+is not excessive buffering at multiple layers.
+
+
+## Data Flow Control {#data-flow-control}
+
+QUIC employs a credit-based flow-control scheme similar to that in HTTP/2
+{{?HTTP2}}, where a receiver advertises the number of bytes it is prepared to
+receive on a given stream and for the entire connection.  This leads to two
+levels of data flow control in QUIC:
 
 * Stream flow control, which prevents a single stream from consuming the entire
-  receive buffer for a connection.
+  receive buffer for a connection by limiting the amount of data that can be
+  sent on any stream.
 
 * Connection flow control, which prevents senders from exceeding a receiver's
-  buffer capacity for the connection, and
+  buffer capacity for the connection, by limiting the total bytes of stream data
+  sent in STREAM frames on all streams.
 
-A data receiver sets initial credits for all streams by sending transport
-parameters during the handshake ({{transport-parameters}}).
-
-A data receiver sends MAX_STREAM_DATA or MAX_DATA frames to the sender to
-advertise additional credit. MAX_STREAM_DATA frames send the maximum absolute
-byte offset of a stream, while MAX_DATA frames send the maximum of the sum of
-the absolute byte offsets of all streams.
+A receiver sets initial credits for all streams by sending transport parameters
+during the handshake ({{transport-parameters}}).  A receiver sends
+MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
+frames to the sender to advertise additional credit.
 
 A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
-with the Stream ID set appropriately. A receiver could use the current offset of
-data consumed to determine the flow control offset to be advertised.  A receiver
-MAY send MAX_STREAM_DATA frames in multiple packets in order to make sure that
-the sender receives an update before running out of flow control credit, even if
-one of the packets is lost.
+with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame indicates
+the maximum absolute byte offset of a stream.  A receiver could use the current
+offset of data consumed to determine the flow control offset to be advertised.
+A receiver MAY send MAX_STREAM_DATA frames in multiple packets in order to make
+sure that the sender receives an update before running out of flow control
+credit, even if one of the packets is lost.
 
-Connection flow control is a limit to the total bytes of stream data sent in
-STREAM frames on all streams.  A receiver advertises credit for a connection by
-sending a MAX_DATA frame.  A receiver maintains a cumulative sum of bytes
-received on all contributing streams, which are used to check for flow control
-violations. A receiver might use a sum of bytes consumed on all streams to
-determine the maximum data limit to be advertised.
+A receiver advertises credit for a connection by sending a MAX_DATA frame, which
+indicates the maximum of the sum of the absolute byte offsets of all streams.  A
+receiver maintains a cumulative sum of bytes received on all streams, which is
+used to check for flow control violations. A receiver might use a sum of bytes
+consumed on all streams to determine the maximum data limit to be advertised.
 
-A receiver MAY advertise a larger offset at any point by sending MAX_STREAM_DATA
-or MAX_DATA frames.  A receiver cannot renege on an advertisement; that is, once
-a receiver advertises an offset, advertising a smaller offset has no effect.  A
-sender MUST therefore ignore any MAX_STREAM_DATA or MAX_DATA frames that do not
-increase flow control limits.
+A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
+frames at any time during the connection.  A receiver cannot renege on an
+advertisement however.  That is, once a receiver advertises an offset,
+advertising a smaller offset has no effect.  A sender MUST therefore ignore any
+MAX_STREAM_DATA or MAX_DATA frames that do not increase flow control limits.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
-({{error-handling}}) if the peer violates the advertised connection or stream
+({{error-handling}}) if the sender violates the advertised connection or stream
 data limits.
 
-A sender SHOULD send STREAM_BLOCKED or BLOCKED frames to indicate it has data to
-write but is blocked by flow control limits.  These frames are expected to be
-sent infrequently in common cases, but they are considered useful for debugging
-and monitoring purposes.
+If a sender runs out of flow control credit, it will be unable to send new data
+and is considered blocked.  A sender SHOULD send STREAM_DATA_BLOCKED or
+DATA_BLOCKED frames to indicate it has data to write but is blocked by flow
+control limits.  These frames are expected to be sent infrequently in common
+cases, but they are considered useful for debugging and monitoring purposes.
 
-A similar method is used to control the number of open streams (see
-{{stream-limit-increment}} for details).
+A sender sends a single STREAM_DATA_BLOCKED or DATA_BLOCKED frame only once when
+it reaches a data limit.  A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED
+or DATA_BLOCKED frames for the same data limit, unless the original frame is
+determined to be lost.  Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be
+sent after the data limit is increased.
 
-## Handling of Stream Cancellation
 
-There are some edge cases which must be considered when dealing with stream and
-connection level flow control.  Given enough time, both endpoints must agree on
-flow control state.  If one end believes it can send more than the other end is
-willing to receive, the connection will be torn down when too much data arrives.
-Conversely if a sender believes it is blocked, while endpoint B expects more
-data can be received, then the connection can be in a deadlock, with the sender
-waiting for a MAX_STREAM_DATA or MAX_DATA frame which will never come.
+## Flow Credit Increments {#fc-credit}
 
-On receipt of a RST_STREAM frame, an endpoint will tear down state for the
-matching stream and ignore further data arriving on that stream.  This could
-result in the endpoints getting out of sync, since the RST_STREAM frame may have
-arrived out of order and there could be more data in flight.  The data sender
-would have counted the data against its connection level flow control budget,
-but a receiver that has not received these bytes would not know to include them
-as well.  The receiver must learn the number of bytes that were sent on the
-stream to make the same adjustment in its connection flow controller.
-
-To ensure that endpoints maintain a consistent connection-level flow control
-state, the RST_STREAM frame ({{frame-rst-stream}}) includes the largest offset
-of data sent on the stream.  On receiving a RST_STREAM frame, a receiver
-definitively knows how many bytes were sent on that stream before the RST_STREAM
-frame, and the receiver MUST use the final offset to account for all bytes sent
-on the stream in its connection level flow controller.
-
-RST_STREAM terminates one direction of a stream abruptly.  Whether any action or
-response can or should be taken on the data already received is application
-specific.
-
-For a bidirectional stream, RST_STREAM has no effect on data flow in the
-opposite direction. The RST_STREAM sender can send a STOP_SENDING frame to
-encourage prompt termination. Both endpoints MUST maintain state for the stream
-in the unterminated direction until that direction enters a terminal state, or
-either side sends CONNECTION_CLOSE or APPLICATION_CLOSE.
-
-## Data Limit Increments {#fc-credit}
-
-This document leaves when and how many bytes to advertise in a MAX_DATA or
-MAX_STREAM_DATA to implementations, but offers a few considerations.  These
+This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
+or MAX_DATA frame to implementations, but offers a few considerations.  These
 frames contribute to connection overhead.  Therefore frequently sending frames
 with small changes is undesirable.  At the same time, larger increments to
 limits are necessary to avoid blocking if updates are less frequent, requiring
@@ -827,88 +760,111 @@ larger resource commitments at the receiver.  Thus there is a trade-off between
 resource commitment and overhead when determining how large a limit is
 advertised.
 
-A receiver MAY use an autotuning mechanism to tune the frequency and amount that
-it increases data limits based on a round-trip time estimate and the rate at
+A receiver MAY use an autotuning mechanism to tune the frequency and amount of
+advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.
 
-If a sender runs out of flow control credit, it will be unable to send new
-data. That is, the sender is blocked. A blocked sender SHOULD send a
-STREAM_BLOCKED or BLOCKED frame.  A receiver uses these frames for debugging
-purposes.  A receiver MUST NOT wait for a STREAM_BLOCKED or BLOCKED frame before
+If a sender runs out of flow control credit, it will be unable to send new data
+and is considered blocked.  It is generally considered best to not let the
+sender become blocked.  To avoid blocking a sender, and to reasonably account
+for the possibility of loss, a receiver should send a MAX_DATA or
+MAX_STREAM_DATA frame at least two round trips before it expects the sender to
+get blocked.
+
+A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
 sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
-be blocked for an entire round trip and the peer may never send a STREAM_BLOCKED
-or BLOCKED frame.
+be blocked for at least an entire round trip, and potentially for longer if the
+peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
 
-It is generally considered best to not let the sender go into quiescence if
-avoidable.  To avoid blocking a sender, and to reasonably account for the
-possibility of loss, a receiver should send a MAX_DATA or MAX_STREAM_DATA frame
-at least two round trips before it expects the sender to get blocked.
 
-A sender sends a single BLOCKED or STREAM_BLOCKED frame only once when it
-reaches a data limit.  A sender SHOULD NOT send multiple BLOCKED or
-STREAM_BLOCKED frames for the same data limit, unless the original frame is
-determined to be lost.  Another BLOCKED or STREAM_BLOCKED frame can be sent
-after the data limit is increased.
+## Handling Stream Cancellation {#stream-cancellation}
+
+Endpoints need to eventually agree on the amount of flow control credit that has
+been consumed, to avoid either exceeding flow control limits or deadlocking.
+
+On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
+matching stream and ignore further data arriving on that stream.  If a
+RESET_STREAM frame is reordered with stream data for the same stream, the
+receiver's estimate of the number of bytes received on that stream can be lower
+than the sender's estimate of the number sent.  As a result, the two endpoints
+could disagree on the number of bytes that count towards connection flow
+control.
+
+To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
+final offset of data sent on the stream.  On receiving a RESET_STREAM frame, a
+receiver definitively knows how many bytes were sent on that stream before the
+RESET_STREAM frame, and the receiver MUST use the final offset to account for
+all bytes sent on the stream in its connection level flow controller.
+
+RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
+stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
+endpoints MUST maintain flow control state for the stream in the unterminated
+direction until that direction enters a terminal state, or until one of the
+endpoints sends CONNECTION_CLOSE.
 
 
 ## Stream Final Offset {#final-offset}
 
 The final offset is the count of the number of bytes that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in a
-RST_STREAM frame.  Otherwise, the final offset is the offset of the end of the
+RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
 An endpoint will know the final offset for a stream when the receive stream
-enters the "Size Known" or "Reset Recvd" state.
+enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
-Once a final offset for a stream is known, it cannot change.  If a RST_STREAM or
-STREAM frame causes the final offset to change for a stream, an endpoint SHOULD
-respond with a FINAL_OFFSET_ERROR error (see {{error-handling}}).  A receiver
-SHOULD treat receipt of data at or beyond the final offset as a
-FINAL_OFFSET_ERROR error, even after a stream is closed.  Generating these
-errors is not mandatory, but only because requiring that an endpoint generate
-these errors also means that the endpoint needs to maintain the final offset
-state for closed streams, which could mean a significant state commitment.
+Once a final offset for a stream is known, it cannot change.  If a RESET_STREAM
+or STREAM frame is received indicating a change in the final offset for the
+stream, an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
+{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+final offset as a FINAL_OFFSET_ERROR error, even after a stream is closed.
+Generating these errors is not mandatory, but only because requiring that an
+endpoint generate these errors also means that the endpoint needs to maintain
+the final offset state for closed streams, which could mean a significant state
+commitment.
 
+## Controlling Concurrency {#controlling-concurrency}
 
-## Flow Control for Cryptographic Handshake {#flow-control-crypto}
+An endpoint limits the cumulative number of incoming streams a peer can open.
+Only steams with a stream id less than
+(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
+are set in the transport parameters (see {{transport-parameter-definitions}})
+and subsequently limits are advertised using MAX_STREAMS frames
+({{frame-max-streams}}). Separate limits apply to unidirectional and
+bidirectional streams.
 
-Data sent in CRYPTO frames is not flow controlled in the same way as STREAM
-frames.  QUIC relies on the cryptographic protocol implementation to avoid
-excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
-provide an interface to QUIC to tell it about its buffering limits so that there
-is not excessive buffering at multiple layers.
+Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
+receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
+treat this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
 
-
-## Stream Limit Increment {#stream-limit-increment}
-
-An endpoint limits the number of concurrently active incoming streams by
-limiting the maximum stream ID.  An initial value is set in the transport
-parameters (see {{transport-parameter-definitions}}) and is subsequently
-increased by MAX_STREAM_ID frames (see {{frame-max-stream-id}}).
+A receiver cannot renege on an advertisement. That is, once a receiver
+advertises a stream limit using the MAX_STREAMS frame, advertising a smaller
+limit has no effect.  A receiver MUST ignore any MAX_STREAMS frame that does not
+increase the stream limit.
 
 As with stream and connection flow control, this document leaves when and how
-many streams to make available to a peer via MAX_STREAM_ID to implementations,
-but offers a few considerations.  MAX_STREAM_ID frames constitute minimal
-overhead, while withholding MAX_STREAM_ID frames can prevent the peer from using
-the available parallelism.
+many streams to advertise to a peer via MAX_STREAMS to implementations.
+Implementations might choose to increase limits as streams close to keep the
+number of streams available to peers roughly consistent.
 
-The STREAM_ID_BLOCKED frame ({{frame-stream-id-blocked}}) can be
-used to signal a shortage of available streams. Implementations will likely
-want to increase the maximum stream ID as peer-initiated streams close.
+An endpoint that is unable to open a new stream due to the peer's limits SHOULD
+send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
+considered useful for debugging. An endpoint MUST NOT wait to receive this
+signal before advertising additional credit, since doing so will mean that the
+peer will be blocked for at least an entire round trip, and potentially for
+longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
 
 # Connections {#connections}
 
-A QUIC connection is a single conversation between two QUIC endpoints.  QUIC's
-connection establishment combines version negotiation with the cryptographic
-and transport handshakes to reduce connection establishment latency, as
-described in {{handshake}}.  Once established, a connection may migrate to a
-different IP or port at either endpoint as
+QUIC's connection establishment combines version negotiation with the
+cryptographic and transport handshakes to reduce connection establishment
+latency, as described in {{handshake}}.  Once established, a connection
+may migrate to a different IP or port at either endpoint as
 described in {{migration}}.  Finally, a connection may be terminated by either
 endpoint, as described in {{termination}}.
 
@@ -916,7 +872,7 @@ endpoint, as described in {{termination}}.
 ## Connection ID {#connection-id}
 
 Each connection possesses a set of connection identifiers, or connection IDs,
-each of which can be identify the connection.  Connection IDs are independently
+each of which can identify the connection.  Connection IDs are independently
 selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
@@ -970,17 +926,22 @@ handshake.  The sequence number of the initial connection ID is 0.  If the
 preferred_address transport parameter is sent, the sequence number of the
 supplied connection ID is 1.
 
-Additional connection IDs are communicated to the
-peer using NEW_CONNECTION_ID frames ({{frame-new-connection-id}}).  The
-sequence number on each newly-issued connection ID MUST increase by 1. The
-connection ID randomly selected by the client in the Initial packet and any
-connection ID provided by a Reset packet are not assigned sequence numbers
-unless a server opts to retain them as its initial connection ID.
+Additional connection IDs are communicated to the peer using NEW_CONNECTION_ID
+frames ({{frame-new-connection-id}}).  The sequence number on each newly-issued
+connection ID MUST increase by 1. The connection ID randomly selected by the
+client in the Initial packet and any connection ID provided by a Retry packet
+are not assigned sequence numbers unless a server opts to retain them as its
+initial connection ID.
 
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
+
+Endpoints store received connection IDs for future use.  An endpoint that
+receives excessive connection IDs MAY discard those it cannot store without
+sending a RETIRE_CONNECTION_ID frame.  An endpoint that issues connection IDs
+cannot expect its peer to store and use all issued connection IDs.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  While each endpoint independently chooses how many
@@ -1004,10 +965,6 @@ which it can use when sending packets.  When the endpoint wishes to remove a
 connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
 indicating that the peer might bring a new connection ID into circulation using
 the NEW_CONNECTION_ID frame.
-
-An endpoint that retires a connection ID can retain knowledge of that connection
-ID for a period of time after sending the RETIRE_CONNECTION_ID frame, or until
-that frame is acknowledged.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
@@ -1151,7 +1108,9 @@ is a mutually supported version.
 
 If the version selected by the client is not acceptable to the server, the
 server responds with a Version Negotiation packet (see {{packet-version}}).
-This includes a list of versions that the server will accept.
+This includes a list of versions that the server will accept.  An endpoint MUST
+NOT send a Version Negotiation packet in response to receiving a Version
+Negotiation packet.
 
 This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the Version Negotiation
@@ -1223,9 +1182,9 @@ solicit a list of supported versions from a server.
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC uses the CRYPTO frame {{frame-crypto}}
-to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS
-1.3 as described in {{QUIC-TLS}}; a different QUIC version number could indicate
-that a different cryptographic handshake protocol is in use.
+to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS as
+described in {{QUIC-TLS}}; a different QUIC version number could indicate that a
+different cryptographic handshake protocol is in use.
 
 QUIC provides reliable, ordered delivery of the cryptographic handshake
 data. QUIC packet protection ensures confidentiality and integrity protection
@@ -1358,6 +1317,11 @@ packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
 
+The final version used for a connection might be different from the version of
+the first Initial from the client.  To enable consistent routing through the
+handshake, a client SHOULD select an initial Destination Connection ID length
+long enough to fulfill the minimum size for every QUIC version it supports.
+
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
 
@@ -1433,16 +1397,16 @@ by the server, the server MUST NOT reduce any limits or alter any values that
 might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for initial_max_data,
 initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote,
-initial_max_stream_data_uni, initial_max_bidi_streams, or
-initial_max_uni_streams ({{transport-parameter-definitions}}) that are smaller
+initial_max_stream_data_uni, initial_max_streams_bidi, or
+initial_max_streams_uni ({{transport-parameter-definitions}}) that are smaller
 than the remembered value of those parameters.
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
 parameters that permit sending of application data SHOULD be set to non-zero
 values for 0-RTT.  This includes initial_max_data and either
-initial_max_bidi_streams and initial_max_stream_data_bidi_remote, or
-initial_max_uni_streams and initial_max_stream_data_uni.
+initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
+initial_max_streams_uni and initial_max_stream_data_uni.
 
 The value of the server's previous preferred_address MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
@@ -1563,7 +1527,7 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST pad UDP datagrams that contain only Initial packets to 1200 octets.
+Clients MUST pad UDP datagrams that contain only Initial packets to 1200 bytes.
 Once a client has received an acknowledgment for a Handshake packet it MAY send
 smaller datagrams.  Sending padded datagrams ensures that the server is not
 overly constrained by the amplification restriction.
@@ -1576,25 +1540,23 @@ Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
 packet.
 
 A server might wish to validate the client address before starting the
-cryptographic handshake.  Client addresses can be verified using an address
-validation token.  This token is delivered during connection establishment with
-a Retry packet (see {{validate-retry}}) or in a previous connection using the
-NEW_TOKEN frame (see {{validate-future}}).
-
+cryptographic handshake. QUIC uses a token in the Initial packet to provide
+address validation prior to completing the handshake. This token is delivered
+to the client during connection establishment with a Retry packet
+(see {{validate-retry}}) or in a previous connection using the NEW_TOKEN
+frame (see {{validate-future}}).
 
 ### Address Validation using Retry Packets {#validate-retry}
 
-QUIC uses token-based address validation during connection establishment.  Any
-time the server wishes to validate a client address, it provides the client with
-a token.  As long as it is not possible for an attacker to generate a valid
-token for its own address (see {{token-integrity}}) and the client is able to
-return that token, it proves to the server that it received the token.
-
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
-token is repeated by the client in an Initial packet after it receives the Retry
-packet.  In response to receiving a token in an Initial packet, a server can
-either abort the connection or permit it to proceed.
+token MUST be repeated by the client in all Initial packets it sends after it
+receives the Retry packet.  In response to processing an Initial containing a
+token, a server can either abort the connection or permit it to proceed.
+
+As long as it is not possible for an attacker to generate a valid token for
+its own address (see {{token-integrity}}) and the client is able to return
+that token, it proves to the server that it received the token.
 
 A server can also use a Retry packet to defer the state and processing costs
 of connection establishment.  By giving the client a different connection ID to
@@ -1628,9 +1590,12 @@ amount of data to a client in response to 0-RTT data.
 
 The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
 with an address validation token that can be used to validate future
-connections.  The client may then use this token to validate future connections
-by including it in the Initial packet's header.  The client MUST NOT use the
-token provided in a Retry for future connections.
+connections.  The client includes this token in Initial packets to provide
+address validation in a future connection.  The client MUST include the
+token in all Initial packets it sends, unless a Retry replaces the token
+with a newer token. The client MUST NOT use the token provided in a Retry
+for future connections. Servers MAY discard any Initial packet that does not
+carry the expected token.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
@@ -1652,17 +1617,19 @@ token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
 NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
 
-A client SHOULD NOT reuse a token.  Reusing a token allows connections to be
-linked by entities on the network path (see {{migration-linkability}}).  A
-client MUST NOT reuse a token if it believes that its point of network
-attachment has changed since the token was last used; that is, if there is a
-change in its local IP address or network interface.  A client needs to start
-the connection process over if it migrates prior to completing the handshake.
+A client SHOULD NOT reuse a token in different connections. Reusing a token
+allows connections to be linked by entities on the network path
+(see {{migration-linkability}}).  A client MUST NOT reuse a token if it
+believes that its point of network attachment has changed since the token was
+last used; that is, if there is a change in its local IP address or network
+interface.  A client needs to start the connection process over if it migrates
+prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it.  If the token is invalid then the server SHOULD
-proceed as if the client did not have a validated address, including potentially
-sending a Retry. If the validation succeeds, the server SHOULD then allow the
+SHOULD attempt to validate it, unless it has already completed address
+validation.  If the token is invalid then the server SHOULD proceed as if
+the client did not have a validated address, including potentially sending
+a Retry. If the validation succeeds, the server SHOULD then allow the
 handshake to proceed.
 
 Note:
@@ -1781,12 +1748,15 @@ the one to which the PATH_CHALLENGE was sent, path validation is considered to
 have failed, even if the data matches that sent in the PATH_CHALLENGE.
 
 Additionally, the PATH_RESPONSE frame MUST be received on the same local address
-from which the corresponding PATH_CHALLENGE was sent.  If a PATH_RESPONSE frame
-is received on a different local address than the one from which the
-PATH_CHALLENGE was sent, path validation is considered to have failed, even if
-the data matches that sent in the PATH_CHALLENGE.  Thus, the endpoint considers
-the path to be valid when a PATH_RESPONSE frame is received on the same path
-with the same payload as the PATH_CHALLENGE frame.
+from which the corresponding PATH_CHALLENGE was sent.  An endpoint considers the
+path to be valid when a PATH_RESPONSE frame is received on the same path with
+the same payload as the PATH_CHALLENGE frame.
+
+If a PATH_RESPONSE frame is received on a different local address than the one
+from which the PATH_CHALLENGE was sent, path validation is not considered to be
+successful, even if the data matches the PATH_CHALLENGE.  This doesn't result in
+path validation failure, as it might be a result of a forwarded packet (see
+{{off-path-forward}}) or misrouting.
 
 
 ## Failed Path Validation
@@ -1796,7 +1766,8 @@ abandons its attempt to validate the path.
 
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
-round-trip time than the original.
+round-trip time than the original.  A value of three times the current
+Retransmittion Timeout (RTO) as defined in {{QUIC-RECOVERY}} is RECOMMENDED.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
@@ -1841,7 +1812,7 @@ This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
 migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
 client address until they see a non-probing packet from that address.  If a
-client receives packets from an unknown server address, the client MAY discard
+client receives packets from an unknown server address, the client MUST discard
 these packets.
 
 
@@ -1921,7 +1892,7 @@ After verifying a new client address, the server SHOULD send new address
 validation tokens ({{address-validation}}) to the client.
 
 
-### Handling Address Spoofing by a Peer {#address-spoofing}
+### Peer Address Spoofing {#address-spoofing}
 
 It is possible that a peer is spoofing its source address to cause an endpoint
 to send excessive amounts of data to an unwilling host.  If the endpoint sends
@@ -1944,7 +1915,7 @@ If an endpoint skips validation of a peer address as described in
 {{migration-response}}, it does not need to limit its sending rate.
 
 
-### Handling Address Spoofing by an On-path Attacker {#on-path-spoofing}
+### On-Path Address Spoofing {#on-path-spoofing}
 
 An on-path attacker could cause a spurious connection migration by copying and
 forwarding a packet with a spoofed address such that it arrives before the
@@ -1967,6 +1938,55 @@ MAY send a stateless reset in response to any further incoming packets.
 Note that receipt of packets with higher packet numbers from the legitimate peer
 address will trigger another connection migration.  This will cause the
 validation of the address of the spurious migration to be abandoned.
+
+
+### Off-Path Packet Forwarding {#off-path-forward}
+
+An off-path attacker that can observe packets might forward copies of genuine
+packets to endpoints.  If the copied packet arrives before the genuine packet,
+this will appear as a NAT rebinding.  Any genuine packet will be discarded as a
+duplicate.  If the attacker is able to continue forwarding packets, it might be
+able to cause migration to a path via the attacker.  This places the attacker on
+path, giving it the ability to observe or drop all subsequent packets.
+
+Unlike the attack described in {{on-path-spoofing}}, the attacker can ensure
+that the new path is successfully validated.
+
+This style of attack relies on the attacker using a path that is approximately
+as fast as the direct path between endpoints.  The attack is more reliable if
+relatively few packets are sent or if packet loss coincides with the attempted
+attack.
+
+A non-probing packet received on the original path that increases the maximum
+received packet number will cause the endpoint to move back to that path.
+Eliciting packets on this path increases the likelihood that the attack is
+unsuccessful.  Therefore, mitigation of this attack relies on triggering the
+exchange of packets.
+
+In response to an apparent migration, endpoints MUST validate the previously
+active path using a PATH_CHALLENGE frame.  This induces the sending of new
+packets on that path.  If the path is no longer viable, the validation attempt
+will time out and fail; if the path is viable, but no longer desired, the
+validation will succeed, but only results in probing packets being sent on the
+path.
+
+An endpoint that receives a PATH_CHALLENGE on an active path SHOULD send a
+non-probing packet in response.  If the non-probing packet arrives before any
+copy made by an attacker, this results in the connection being migrated back to
+the original path.  Any subsequent migration to another path restarts this
+entire process.
+
+This defense is imperfect, but this is not considered a serious problem. If the
+path via the attack is reliably faster than the original path despite multiple
+attempts to use that original path, it is not possible to distinguish between
+attack and an improvement in routing.
+
+An endpoint could also use heuristics to improve detection of this style of
+attack.  For instance, NAT rebinding is improbable if packets were recently
+received on the old path, similarly rebinding is rare on IPv6 paths.  Endpoints
+can also look for duplicated packets.  Conversely, a change in connection ID is
+more likely to indicate an intentional migration rather than an attack.
+
 
 ## Loss Detection and Congestion Control {#migration-cc}
 
@@ -1993,13 +2013,16 @@ multiple paths will still send ACK frames covering all received packets.
 
 While multiple paths might be used during connection migration, a single
 congestion control context and a single loss recovery context (as described in
-{{QUIC-RECOVERY}}) may be adequate.  A sender can make exceptions for probe
-packets so that their loss detection is independent and does not unduly cause
-the congestion controller to reduce its sending rate.  An endpoint might set a
-separate timer when a PATH_CHALLENGE is sent, which is cancelled when the
-corresponding PATH_RESPONSE is received.  If the timer fires before the
-PATH_RESPONSE is received, the endpoint might send a new PATH_CHALLENGE, and
-restart the timer for a longer period of time.
+{{QUIC-RECOVERY}}) may be adequate.  For instance, an endpoint might delay
+switching to a new congestion control context until it is confirmed that an old
+path is no longer needed (such as the case in {{off-path-forward}}).
+
+A sender can make exceptions for probe packets so that their loss detection is
+independent and does not unduly cause the congestion controller to reduce its
+sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
+sent, which is cancelled when the corresponding PATH_RESPONSE is received.  If
+the timer fires before the PATH_RESPONSE is received, the endpoint might send a
+new PATH_CHALLENGE, and restart the timer for a longer period of time.
 
 
 ## Privacy Implications of Connection Migration {#migration-linkability}
@@ -2141,13 +2164,13 @@ These states SHOULD persist for three times the current Retransmission Timeout
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
-they contain a CONNECTION_CLOSE or APPLICATION_CLOSE frame (see
-{{immediate-close}} for details).  An endpoint retains only enough information
-to generate a packet containing a closing frame and to identify packets as
-belonging to the connection.  The connection ID and QUIC version is sufficient
-information to identify packets for a closing connection; an endpoint can
-discard all other connection state.  An endpoint MAY retain packet protection
-keys for incoming packets to allow it to read and process a closing frame.
+they contain a CONNECTION_CLOSE frame (see {{immediate-close}} for details).  An
+endpoint retains only enough information to generate a packet containing a
+CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
+The connection ID and QUIC version is sufficient information to identify packets
+for a closing connection; an endpoint can discard all other connection state.
+An endpoint MAY retain packet protection keys for incoming packets to allow it
+to read and process a CONNECTION_CLOSE frame.
 
 The draining state is entered once an endpoint receives a signal that its peer
 is closing or draining.  While otherwise identical to the closing state, an
@@ -2155,11 +2178,11 @@ endpoint in the draining state MUST NOT send any packets.  Retaining packet
 protection keys is unnecessary once a connection is in the draining state.
 
 An endpoint MAY transition from the closing period to the draining period if it
-can confirm that its peer is also closing or draining.  Receiving a closing
-frame is sufficient confirmation, as is receiving a stateless reset.  The
-draining period SHOULD end when the closing period would have ended.  In other
-words, the endpoint can use the same end time, but cease retransmission of the
-closing packet.
+can confirm that its peer is also closing or draining.  Receiving a
+CONNECTION_CLOSE frame is sufficient confirmation, as is receiving a stateless
+reset.  The draining period SHOULD end when the closing period would have ended.
+In other words, the endpoint can use the same end time, but cease retransmission
+of the closing packet.
 
 Disposing of connection state prior to the end of the closing or draining period
 could cause delayed or reordered packets to be handled poorly.  Endpoints that
@@ -2209,24 +2232,26 @@ endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an RTO
-(see Section 4.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
+(see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
 before sending any data that cannot be retried safely.
 
 
 ## Immediate Close
 
-An endpoint sends a closing frame (CONNECTION_CLOSE or APPLICATION_CLOSE) to
-terminate the connection immediately.  Any closing frame causes all streams to
-immediately become closed; open streams can be assumed to be implicitly reset.
+An endpoint sends a CONNECTION_CLOSE frame ({{frame-connection-close}}) to
+terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
+streams to immediately become closed; open streams can be assumed to be
+implicitly reset.
 
-After sending a closing frame, endpoints immediately enter the closing state.
-During the closing period, an endpoint that sends a closing frame SHOULD respond
-to any packet that it receives with another packet containing a closing frame.
-To minimize the state that an endpoint maintains for a closing connection,
-endpoints MAY send the exact same packet.  However, endpoints SHOULD limit the
-number of packets they generate containing a closing frame.  For instance, an
-endpoint could progressively increase the number of packets that it receives
-before sending additional packets or increase the time between packets.
+After sending a CONNECTION_CLOSE frame, endpoints immediately enter the closing
+state.  During the closing period, an endpoint that sends a CONNECTION_CLOSE
+frame SHOULD respond to any packet that it receives with another packet
+containing a CONNECTION_CLOSE frame.  To minimize the state that an endpoint
+maintains for a closing connection, endpoints MAY send the exact same packet.
+However, endpoints SHOULD limit the number of packets they generate containing a
+CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
+the number of packets that it receives before sending additional packets or
+increase the time between packets.
 
 Note:
 
@@ -2238,32 +2263,32 @@ Note:
 
 New packets from unverified addresses could be used to create an amplification
 attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
-transmission of closing frames to validated addresses or drop packets without
-response if the response would be more than three times larger than the received
-packet.
+transmission of CONNECTION_CLOSE frames to validated addresses or drop packets
+without response if the response would be more than three times larger than the
+received packet.
 
-After receiving a closing frame, endpoints enter the draining state.  An
-endpoint that receives a closing frame MAY send a single packet containing a
-closing frame before entering the draining state, using a CONNECTION_CLOSE frame
-and a NO_ERROR code if appropriate.  An endpoint MUST NOT send further packets,
-which could result in a constant exchange of closing frames until the closing
-period on either peer ended.
+After receiving a CONNECTION_CLOSE frame, endpoints enter the draining state.
+An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
+containing a CONNECTION_CLOSE frame before entering the draining state, using a
+CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
+send further packets, which could result in a constant exchange of
+CONNECTION_CLOSE frames until the closing period on either peer ended.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
 graceful shutdown.  The application protocol exchanges whatever messages that
 are needed to cause both endpoints to agree to close the connection, after which
 the application requests that the connection be closed.  The application
-protocol can use an APPLICATION_CLOSE message with an appropriate error code to
+protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
 If the connection has been successfully established, endpoints MUST send any
-closing frames in a 1-RTT packet.  Prior to connection establishment a peer
-might not have 1-RTT keys, so endpoints SHOULD send closing frames in a
-Handshake packet.  If the endpoint does not have Handshake keys, or it is not
-certain that the peer has Handshake keys, it MAY send closing frames in an
-Initial packet.  If multiple packets are sent, they can be coalesced (see
-{{packet-coalesce}}) to facilitate retransmission.
+CONNECTION_CLOSE frames in a 1-RTT packet.  Prior to connection establishment a
+peer might not have 1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames
+in a Handshake packet.  If the endpoint does not have Handshake keys, or it is
+not certain that the peer has Handshake keys, it MAY send CONNECTION_CLOSE
+frames in an Initial packet.  If multiple packets are sent, they can be
+coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -2271,18 +2296,18 @@ Initial packet.  If multiple packets are sent, they can be coalesced (see
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  An endpoint that wishes to communicate a
-fatal connection error MUST use a closing frame if it has sufficient state to do
-so.
+properly continue the connection.  A stateless reset is not appropriate for
+signaling error conditions.  An endpoint that wishes to communicate a fatal
+connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
+to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
 stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
-Tokens sent via NEW_CONNECTION_ID frames are invalidated when their associated
-connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+Tokens are invalidated when their associated connection ID is retired via a
+RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2290,10 +2315,8 @@ following layout:
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|K|1|1|0|0|0|0|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Random Octets (160..)                  ...
+|0|1|                   Random Bits (182..)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2309,22 +2332,24 @@ following layout:
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-The message consists of a header byte, followed by an arbitrary number of random
-bytes, followed by a Stateless Reset Token.
+A stateless reset uses an entire UDP datagram, starting with the first two bits
+of the packet header.  The remainder of the first byte and an arbitrary
+number of random bytes following it are set to unpredictable values.  The last
+16 bytes of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Octets field needs to
-include at least 20 bytes of random or unpredictable values.  This is intended
-to allow for a destination connection ID of the maximum length permitted, a
-packet number, and minimal payload.  The Stateless Reset Token corresponds to
-the minimum expansion of the packet protection AEAD.  More random bytes might be
-necessary if the endpoint could have negotiated a packet protection scheme with
-a larger minimum AEAD expansion.
+header.  For the packet to appear as valid, the Random Bits field needs to
+include at least 182 bits of random or unpredictable values (or 24 bytes, less
+the two fixed bits).  This is intended to allow for a destination connection ID
+of the maximum length permitted, with a minimal packet number, and payload.  The
+Stateless Reset Token corresponds to the minimum expansion of the packet
+protection AEAD.  More random bytes might be necessary if the endpoint could
+have negotiated a packet protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets less than 19 bytes long are never valid.
+packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
 header.  This would not be effective if the stateless reset token was not yet
@@ -2346,7 +2371,7 @@ Using a randomized connection ID results in two problems:
   critical for routing toward the peer, then this packet could be incorrectly
   routed.  This might also trigger another Stateless Reset in response, see
   {{reset-looping}}.  A Stateless Reset that is not correctly routed is
-  ineffective in causing errors to be quickly detected and recovered.  In this
+  an ineffective error detection and recovery mechanism.  In this
   case, endpoints will need to rely on other methods - such as timers - to
   detect that the connection has failed.
 
@@ -2357,10 +2382,6 @@ Using a randomized connection ID results in two problems:
 
 Finally, the last 16 bytes of the packet are set to the value of the Stateless
 Reset Token.
-
-A stateless reset is not appropriate for signaling error conditions.  An
-endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE or APPLICATION_CLOSE frame if it has sufficient state to do so.
 
 This stateless reset design is specific to QUIC version 1.  An endpoint that
 supports multiple versions of QUIC needs to generate a stateless reset that will
@@ -2463,55 +2484,52 @@ frame that signals the error.  Where this specification identifies error
 conditions, it also identifies the error code that is used.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
-be signaled with a CONNECTION_CLOSE, APPLICATION_CLOSE, or RST_STREAM frame.  A
-stateless reset MUST NOT be used by an endpoint that has the state necessary to
-send a frame on the connection.
+be signaled with a CONNECTION_CLOSE or RESET_STREAM frame.  A stateless reset
+MUST NOT be used by an endpoint that has the state necessary to send a frame on
+the connection.
 
 
 ## Connection Errors
 
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
-connection, MUST be signaled using a CONNECTION_CLOSE or APPLICATION_CLOSE frame
-({{frame-connection-close}}, {{frame-application-close}}). An endpoint MAY close
-the connection in this manner even if the error only affects a single stream.
+connection, MUST be signaled using a CONNECTION_CLOSE frame
+({{frame-connection-close}}). An endpoint MAY close the connection in this
+manner even if the error only affects a single stream.
 
 Application protocols can signal application-specific protocol errors using the
-APPLICATION_CLOSE frame.  Errors that are specific to the transport, including
-all those described in this document, are carried in a CONNECTION_CLOSE frame.
-Other than the type of error code they carry, these frames are identical in
-format and semantics.
+application-specific variant of the CONNECTION_CLOSE frame.  Errors that are
+specific to the transport, including all those described in this document, are
+carried the QUIC-specific variant of the CONNECTION_CLOSE frame.
 
-A CONNECTION_CLOSE or APPLICATION_CLOSE frame could be sent in a packet that is
-lost.  An endpoint SHOULD be prepared to retransmit a packet containing either
-frame type if it receives more packets on a terminated connection.  Limiting the
-number of retransmissions and the time over which this final packet is sent
-limits the effort expended on terminated connections.
+A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
+SHOULD be prepared to retransmit a packet containing containing a
+CONNECTION_CLOSE frame if it receives more packets on a terminated connection.
+Limiting the number of retransmissions and the time over which this final packet
+is sent limits the effort expended on terminated connections.
 
-An endpoint that chooses not to retransmit packets containing CONNECTION_CLOSE
-or APPLICATION_CLOSE risks a peer missing the first such packet.  The only
-mechanism available to an endpoint that continues to receive data for a
-terminated connection is to use the stateless reset process
-({{stateless-reset}}).
+An endpoint that chooses not to retransmit packets containing a CONNECTION_CLOSE
+frame risks a peer missing the first such packet.  The only mechanism available
+to an endpoint that continues to receive data for a terminated connection is to
+use the stateless reset process ({{stateless-reset}}).
 
-An endpoint that receives an invalid CONNECTION_CLOSE or APPLICATION_CLOSE frame
-MUST NOT signal the existence of the error to its peer.
+An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
+existence of the error to its peer.
 
 
 ## Stream Errors
 
 If an application-level error affects a single stream, but otherwise leaves the
-connection in a recoverable state, the endpoint can send a RST_STREAM frame
-({{frame-rst-stream}}) with an appropriate error code to terminate just the
+connection in a recoverable state, the endpoint can send a RESET_STREAM frame
+({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-Other than STOPPING ({{solicited-state-transitions}}), RST_STREAM MUST be
-instigated by the application and MUST carry an application error code.
-Resetting a stream without knowledge of the application protocol could cause the
-protocol to enter an unrecoverable state.  Application protocols might require
-certain streams to be reliably delivered in order to guarantee consistent state
-between endpoints.
-
+RESET_STREAM MUST be instigated by the protocol using QUIC, either directly or
+through the receipt of a STOP_SENDING frame from a peer.  RESET_STREAM carries
+an application error code.  Resetting a stream without knowledge of the
+application protocol could cause the protocol to enter an unrecoverable state.
+Application protocols might require certain streams to be reliably delivered in
+order to guarantee consistent state between endpoints.
 
 
 # Packets and Frames {#packets-frames}
@@ -2639,7 +2657,7 @@ has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
 protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
 efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC2406}}.
+{{?RFC4303}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
@@ -2695,25 +2713,24 @@ frames are explained in more detail in {{frame-formats}}.
 | Type Value  | Frame Type Name      | Definition                     |
 |:------------|:---------------------|:-------------------------------|
 | 0x00        | PADDING              | {{frame-padding}}              |
-| 0x01        | RST_STREAM           | {{frame-rst-stream}}           |
-| 0x02        | CONNECTION_CLOSE     | {{frame-connection-close}}     |
-| 0x03        | APPLICATION_CLOSE    | {{frame-application-close}}    |
-| 0x04        | MAX_DATA             | {{frame-max-data}}             |
-| 0x05        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
-| 0x06        | MAX_STREAM_ID        | {{frame-max-stream-id}}        |
-| 0x07        | PING                 | {{frame-ping}}                 |
-| 0x08        | BLOCKED              | {{frame-blocked}}              |
-| 0x09        | STREAM_BLOCKED       | {{frame-stream-blocked}}       |
-| 0x0a        | STREAM_ID_BLOCKED    | {{frame-stream-id-blocked}}    |
-| 0x0b        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
-| 0x0c        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x0d        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
-| 0x0e        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
-| 0x0f        | PATH_RESPONSE        | {{frame-path-response}}        |
-| 0x10 - 0x17 | STREAM               | {{frame-stream}}               |
-| 0x18        | CRYPTO               | {{frame-crypto}}               |
-| 0x19        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x1a - 0x1b | ACK                  | {{frame-ack}}                  |
+| 0x01        | PING                 | {{frame-ping}}                 |
+| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  |
+| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         |
+| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         |
+| 0x06        | CRYPTO               | {{frame-crypto}}               |
+| 0x07        | NEW_TOKEN            | {{frame-new-token}}            |
+| 0x08 - 0x0f | STREAM               | {{frame-stream}}               |
+| 0x10        | MAX_DATA             | {{frame-max-data}}             |
+| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
+| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          |
+| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         |
+| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
+| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
+| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent.  That is, a valid frame does not cause
@@ -2838,7 +2855,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 4.3.1 of {{QUIC-RECOVERY}}.
+a reduced delay; see Section 5.3.1 of {{QUIC-RECOVERY}}.
 
 
 ## Retransmission of Information
@@ -2857,26 +2874,26 @@ containing that information is acknowledged.
   {{QUIC-RECOVERY}}, until all data has been acknowledged.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
-  unless the endpoint has sent a RST_STREAM for that stream.  Once an endpoint
-  sends a RST_STREAM frame, no further STREAM frames are needed.
+  unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
+  sends a RESET_STREAM frame, no further STREAM frames are needed.
 
 * The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
   {{sending-ack-frames}}.
 
-* Cancellation of stream transmission, as carried in a RST_STREAM frame, is
+* Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
   (that is, either the "Reset Recvd" or "Data Recvd" state is reached on the
-  send stream). The content of a RST_STREAM frame MUST NOT change when it is
+  send stream). The content of a RESET_STREAM frame MUST NOT change when it is
   sent again.
 
 * Similarly, a request to cancel stream transmission, as encoded in a
   STOP_SENDING frame, is sent until the receive stream enters either a "Data
   Recvd" or "Reset Recvd" state, see {{solicited-state-transitions}}.
 
-* Connection close signals, including those that use CONNECTION_CLOSE and
-  APPLICATION_CLOSE frames, are not sent again when packet loss is detected, but
-  as described in {{termination}}.
+* Connection close signals, including packets that contain CONNECTION_CLOSE
+  frames, are not sent again when packet loss is detected, but as described in
+  {{termination}}.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
@@ -2892,19 +2909,18 @@ containing that information is acknowledged.
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
   enters a "Size Known" state.
 
-* The maximum stream ID for a stream of a given type is sent in MAX_STREAM_ID
-  frames.  Like MAX_DATA, an updated value is sent when a packet containing the
-  most recent MAX_STREAM_ID for a stream type frame is declared lost or when
-  the limit is updated, with care taken to prevent the frame from being sent
-  too often.
+* The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
+  MAX_DATA, an updated value is sent when a packet containing the most recent
+  MAX_STREAMS for a stream type frame is declared lost or when the limit is
+  updated, with care taken to prevent the frame from being sent too often.
 
-* Blocked signals are carried in BLOCKED, STREAM_BLOCKED, and STREAM_ID_BLOCKED
-  frames. BLOCKED streams have connection scope, STREAM_BLOCKED frames have
-  stream scope, and STREAM_ID_BLOCKED frames are scoped to a specific stream
-  type. New frames are sent if packets containing the most recent frame for a
-  scope is lost, but only while the endpoint is blocked on the corresponding
-  limit. These frames always include the limit that is causing blocking at the
-  time that they are transmitted.
+* Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
+  STREAMS_BLOCKED frames. DATA_BLOCKED streams have connection scope,
+  STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
+  scoped to a specific stream type. New frames are sent if packets containing
+  the most recent frame for a scope is lost, but only while the endpoint is
+  blocked on the corresponding limit. These frames always include the limit that
+  is causing blocking at the time that they are transmitted.
 
 * A liveness or path validation check using PATH_CHALLENGE frames is sent
   periodically until a matching PATH_RESPONSE frame is received or until there
@@ -2921,8 +2937,12 @@ containing that information is acknowledged.
   RETIRE_CONNECTION_ID frames and retransmitted if the packet containing them is
   lost.
 
-* PADDING frames contain no information, so lost PADDING frames do not require
-  repair.
+* PING and PADDING frames contain no information, so lost PING or PADDING frames
+  do not require repair.
+
+Endpoints SHOULD prioritize retransmission of data over sending new data, unless
+priorities specified by the application indicate otherwise (see
+{{stream-prioritization}}).
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
@@ -3030,17 +3050,14 @@ traverse network elements that drop or corrupt ECN codepoints in the IP header.
 The QUIC packet size includes the QUIC header and integrity check, but not the
 UDP or IP header.
 
-Clients MUST ensure that the first Initial packet they send is sent in a UDP
-datagram that is at least 1200 bytes. Padding the Initial packet or including a
-0-RTT packet in the same datagram are ways to meet this requirement.  Sending a
-UDP datagram of this size ensures that the network path supports a reasonable
-Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address, see
-{{address-validation}}.
-
-The payload of a UDP datagram carrying the Initial packet MUST be expanded to at
-least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
-combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
+Clients MUST ensure they send the first Initial packet in a UDP datagram that is
+at least 1200 bytes.  The payload of a UDP datagram carrying the Initial packet
+MUST be expanded to at least 1200 bytes, by adding PADDING frames to the Initial
+packet and/or by combining the Initial packet with a 0-RTT packet (see
+{{packet-coalesce}}).  Sending a UDP datagram of this size ensures that the
+network path supports a reasonable Maximum Transmission Unit (MTU), and helps
+reduce the amplitude of amplification attacks caused by server responses toward
+an unverified client address, see {{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3056,84 +3073,111 @@ The server MUST also limit the number of bytes it sends before validating the
 address of the client, see {{address-validation}}.
 
 
-## Path Maximum Transmission Unit
+## Path Maximum Transmission Unit (PMTU)
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-header, UDP header, and UDP payload. The UDP payload includes the QUIC packet
-header, protected payload, and any authentication fields.
+The PMTU is the maximum size of the entire IP packet including the IP header,
+UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
+protected payload, and any authentication fields. The PMTU can depend upon the
+current path characteristics.  Therefore, the current largest UDP payload an
+implementation will send is referred to as the QUIC maximum packet size.
 
-All QUIC packets SHOULD be sized to fit within the estimated PMTU to avoid IP
-fragmentation or packet drops. To optimize bandwidth efficiency, endpoints
-SHOULD use Packetization Layer PMTU Discovery ({{!PLPMTUD=RFC4821}}).  Endpoints
-MAY use PMTU Discovery ({{!PMTUDv4=RFC1191}}, {{!PMTUDv6=RFC8201}}) for
-detecting the PMTU, setting the PMTU appropriately, and storing the result of
-previous PMTU determinations.
+QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
+{{?RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
+packets (except for PMTU probe packets) SHOULD be sized to fit within the
+maximum packet size to avoid the packet being fragmented or dropped
+{{?RFC8085}}.
+
+An endpoint SHOULD use Datagram Packetization Layer PMTU Discovery
+({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) or implement Path MTU Discovery
+(PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the path to a destination
+will support a desired message size without fragmentation.
 
 In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than 1280 bytes. Assuming the minimum IP header size, this results in a
-QUIC packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Some QUIC
-implementations MAY be more conservative in computing allowed QUIC packet size
-given unknown tunneling overheads or IP header options.
+QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. A QUIC
+implementation MAY be more conservative in computing the QUIC maximum packet
+size to allow for unknown tunnel overheads or IP header options/extensions.
 
-QUIC endpoints that implement any kind of PMTU discovery SHOULD maintain an
-estimate for each combination of local and remote IP addresses.  Each pairing of
-local and remote addresses could have a different maximum MTU in the path.
-
-QUIC depends on the network path supporting an MTU of at least 1280 bytes. This
-is the IPv6 minimum MTU and therefore also supported by most modern IPv4
-networks.  An endpoint MUST NOT reduce its MTU below this number, even if it
-receives signals that indicate a smaller limit might exist.
+Each pair of local and remote addresses could have a different PMTU.  QUIC
+implementations that implement any kind of PMTU discovery therefore SHOULD
+maintain a maximum packet size for each combination of local and remote IP
+addresses.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below 1280 bytes, it MUST immediately cease sending QUIC
-packets on the affected path.  This could result in termination of the
-connection if an alternative path cannot be found.
-
-### IPv4 PMTU Discovery {#v4-pmtud}
-
-Traditional ICMP-based path MTU discovery in IPv4 {{!PMTUDv4}} is potentially
-vulnerable to off-path attacks that successfully guess the IP/port 4-tuple and
-reduce the MTU to a bandwidth-inefficient value. TCP connections mitigate this
-risk by using the (at minimum) 8 bytes of transport header echoed in the ICMP
-message to validate the TCP sequence number as valid for the current
-connection. However, as QUIC operates over UDP, in IPv4 the echoed information
-could consist only of the IP and UDP headers, which usually has insufficient
-entropy to mitigate off-path attacks.
-
-As a result, endpoints that implement PMTUD in IPv4 SHOULD take steps to
-mitigate this risk. For instance, an application could:
-
-* Set the IPv4 Don't Fragment (DF) bit on a small proportion of packets, so that
-  most invalid ICMP messages arrive when there are no DF packets outstanding,
-  and can therefore be identified as spurious.
-
-* Store additional information from the IP or UDP headers from DF packets (for
-  example, the IP ID or UDP checksum) to further authenticate incoming Datagram
-  Too Big messages.
-
-* Any reduction in PMTU due to a report contained in an ICMP packet is
-  provisional until QUIC's loss detection algorithm determines that the packet
-  is actually lost.
+IP addresses has fallen below the size needed to support the smallest allowed
+maximum packet size, it MUST immediately cease sending QUIC packets on the
+affected path.  An endpoint MAY terminate the connection if an alternative path
+cannot be found.
 
 
-## Special Considerations for Packetization Layer PMTU Discovery
+## ICMP Packet Too Big Messages {#icmp-pmtud}
+
+PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
+(e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
+because it is larger than the local router MTU. DPLPMTUD can also optionally use
+these messages.  This use of ICMP messages is potentially vulnerable to off-path
+attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
+bandwidth-inefficient value.
+
+An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
+1280 bytes.
+
+QUIC endpoints SHOULD provide validation to protect from off-path injection of
+ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
+uses the quoted packet supplied in the payload of an ICMP message, which, when
+present, can be used to associate the message with a corresponding transport
+connection {{!DPLPMTUD}}.
+
+The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
+quoted packet should contain as much of the original packet as possible without
+exceeding the minimum MTU for the IP version.  The size of the quoted packet can
+actually be smaller, or the information unintelligible, as described in Section
+1.1 of {{!DPLPMTUD}}.
+
+When a randomized source port is used for a QUIC connection, this can provide
+some protection from off path attacks that forge ICMP messages. The source port
+in a quoted packet can be checked for UDP transports {{!RFC8085}} such as QUIC.
+When used, a stack will only pass ICMP messages to a QUIC endpoint where the
+port information in quoted packet within the ICMP payload matches a port used by
+QUIC.
+
+As a part of ICMP validation, QUIC endpoints SHOULD validate that connection ID
+information corresponds to an active session.
+
+Further validation can also be provided:
+
+* An IPv4 endpoint could set the Don't Fragment (DF) bit on a small proportion
+  of packets, so that most invalid ICMP messages arrive when there are no DF
+  packets outstanding, and can therefore be identified as spurious.
+
+* An endpoint could store additional information from the IP or UDP headers to
+  use for validation (for example, the IP ID or UDP checksum).
+
+The endpoint SHOULD ignore all ICMP messages that are not validated or do not
+carry sufficient quoted packet payload to perform validation.  Any reduction in
+the QUIC maximum packet size MAY be provisional until QUIC's loss detection
+algorithm determines that the quoted packet has actually been lost.
 
 
-The PADDING frame provides a useful option for PMTU probe packets. PADDING
-frames generate acknowledgements, but they need not be delivered reliably. As a
-result, the loss of PADDING frames in probe packets does not require
-delay-inducing retransmission. However, PADDING frames do consume congestion
-window, which may delay the transmission of subsequent application data.
+## Datagram Packetization Layer PMTU Discovery
 
-When implementing the algorithm in Section 7.2 of {{!PLPMTUD}}, the initial
-value of search_low SHOULD be consistent with the IPv6 minimum packet size.
-Paths that do not support this size cannot deliver Initial packets, and
-therefore are not QUIC-compliant.
+Section 6.4 of {{!DPLPMTUD}} provides considerations for implementing Datagram
+Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-Section 7.3 of {{!PLPMTUD}} discusses trade-offs between small and large
-increases in the size of probe packets. As QUIC probe packets need not contain
-application data, aggressive increases in probe size carry fewer consequences.
+When implementing the algorithm in Section 5.3 of {{!DPLPMTUD}}, the initial
+value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size (1232
+bytes for IPv6 and 1252 bytes for IPv4).
 
+PING and PADDING frames can be used to generate PMTU probe packets. These frames
+might not be retransmitted if a probe packet containing them is lost.  However,
+these frames do consume congestion window, which could delay the transmission of
+subsequent application data.
+
+A PING frame can be included in a PMTU probe to ensure that a valid probe is
+acknowledged.
+
+The considerations for processing ICMP messages in the previous section also
+apply if these messages are used by DPLPMTUD.
 
 
 # Versions {#versions}
@@ -3221,24 +3265,11 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded as follows.  The
-number of bits required to represent the packet number is first reduced by
-including only a variable number of the least significant bits of the packet
-number.  One or two of the most significant bits of the first byte are then used
-to represent how many bits of the packet number are provided, as shown in
-{{pn-encodings}}.
+Packet numbers in long and short packet headers are encoded in 1 to 4 bytes.
+The number of bits required to represent the packet number is reduced by
+including the least significant bits of the packet number.
 
-| First byte pattern | Encoded Length | Bits Present |
-|:-------------------|:---------------|:-------------|
-| 0b0xxxxxxx         | 1 byte         | 7            |
-| 0b10xxxxxx         | 2              | 14           |
-| 0b11xxxxxx         | 4              | 30           |
-{: #pn-encodings title="Packet Number Encodings for Packet Headers"}
-
-Note that these encodings are similar to those in {{integer-encoding}}, but
-use different values.
-
-Finally, the encoded packet number is protected as described in Section 5.3 of
+The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
 
 The sender MUST use a packet number size able to represent more than twice as
@@ -3249,14 +3280,14 @@ arrives after many higher-numbered packets have been received.  An endpoint
 SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
-As a result, the size of the packet number encoding is at least one more than
-the base 2 logarithm of the number of contiguous unacknowledged packet numbers,
-including the new packet.
+As a result, the size of the packet number encoding is at least one bit more
+than the base-2 logarithm of the number of contiguous unacknowledged packet
+numbers, including the new packet.
 
-For example, if an endpoint has received an acknowledgment for packet 0x6afa2f,
-sending a packet with a number of 0x6b2d79 requires a packet number encoding
-with 14 bits or more; whereas the 30-bit packet number encoding is needed to
-send a packet with a number of 0x6bc107.
+For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
+sending a packet with a number of 0xac5c02 requires a packet number encoding
+with 16 bits or more; whereas the 24-bit packet number encoding is needed to
+send a packet with a number of 0xace8fe.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -3264,12 +3295,12 @@ the number of significant bits present, the value of those bits, and the largest
 packet number received on a successfully authenticated packet. Recovering the
 full packet number is necessary to successfully remove packet protection.
 
-Once packet number protection is removed, the packet number is decoded by
-finding the packet number value that is closest to the next expected packet.
-The next expected packet is the highest received packet number plus one.  For
-example, if the highest successfully authenticated packet had a packet number of
-0xaa82f30e, then a packet containing a 14-bit value of 0x9b3 will be decoded as
-0xaa8309b3.  Example pseudo-code for packet number decoding can be found in
+Once header protection is removed, the packet number is decoded by finding the
+packet number value that is closest to the next expected packet.  The next
+expected packet is the highest received packet number plus one.  For example, if
+the highest successfully authenticated packet had a packet number of 0xa82f30ea,
+then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
+Example pseudo-code for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -3279,7 +3310,7 @@ example, if the highest successfully authenticated packet had a packet number of
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|   Type (7)  |
+|1|1|T T|R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3291,7 +3322,7 @@ example, if the highest successfully authenticated packet had a packet number of
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3310,15 +3341,35 @@ Header Form:
 : The most significant bit (0x80) of byte 0 (the first byte) is set to 1 for
   long headers.
 
-Long Packet Type:
+Fixed Bit:
 
-: The remaining seven bits of byte 0 contain the packet type.  This field can
-  indicate one of 128 packet types.  The types specified for this version are
-  listed in {{long-packet-types}}.
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version and MUST be discarded.
+
+Long Packet Type (T):
+
+: The next two bits (those with a mask of 0x30) of byte 0 contain a packet type.
+  Packet types are listed in {{long-packet-types}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+  The value included prior to protection MUST be set to 0.  An endpoint MUST
+  treat receipt of a packet that has a non-zero value for these bits after
+  removing protection as a connection error of type PROTOCOL_VIOLATION.
+
+Packet Number Length (P):
+
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Version:
 
-: The QUIC Version is a 32-bit field that follows the Type.  This field
+: The QUIC Version is a 32-bit field that follows the first byte.  This field
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
@@ -3355,9 +3406,9 @@ Length:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in the plaintext packet number. See {{packet-encoding}} for details.
 
 Payload:
@@ -3366,23 +3417,18 @@ Payload:
 
 The following packet types are defined:
 
-<!-- TODO: Fix the description of the long header. We have 3 formats and only 2
-of the 4 types use the generic format we show here. It's a little confusing to
-have such a high amount of variance from what we put forth as the baseline
-format. The same applies when implementing this. -->
-
 | Type | Name                          | Section                     |
-|:-----|:------------------------------|:----------------------------|
-| 0x7F | Initial                       | {{packet-initial}}          |
-| 0x7E | Retry                         | {{packet-retry}}            |
-| 0x7D | Handshake                     | {{packet-handshake}}        |
-| 0x7C | 0-RTT Protected               | {{packet-protected}}        |
+|-----:|:------------------------------|:----------------------------|
+|  0x0 | Initial                       | {{packet-initial}}          |
+|  0x1 | 0-RTT Protected               | {{packet-protected}}        |
+|  0x2 | Handshake                     | {{packet-handshake}}        |
+|  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
-The header form, type, connection ID lengths byte, destination and source
-connection IDs, and version fields of a long header packet are
-version-independent. The packet number and values for packet types defined in
-{{long-packet-types}} are version-specific.  See {{QUIC-INVARIANTS}} for details
+The header form bit, connection ID lengths byte, Destination and Source
+Connection ID fields, and Version fields of a long header packet are
+version-independent. The other fields in the first byte, plus the Length and
+Packet Number fields are version-specific.  See {{QUIC-INVARIANTS}} for details
 on how packets from different versions of QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
@@ -3391,9 +3437,9 @@ following sections.
 
 The end of the packet is determined by the Length field.  The Length field
 covers both the Packet Number and Payload fields, both of which are
-confidentiality protected and initially of unknown length.  The size of the
-Payload field is learned once the packet number protection is removed.  The
-Length field enables packet coalescing ({{packet-coalesce}}).
+confidentiality protected and initially of unknown length.  The length of the
+Payload field is learned once header protection is removed.  The Length field
+enables packet coalescing ({{packet-coalesce}}).
 
 
 ## Short Header Packet {#short-header}
@@ -3402,11 +3448,11 @@ Length field enables packet coalescing ({{packet-coalesce}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|R R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3420,46 +3466,39 @@ Header Form:
 
 : The most significant bit (0x80) of byte 0 is set to 0 for the short header.
 
-Key Phase Bit:
+Fixed Bit:
 
-: The second bit (0x40) of byte 0 indicates the key phase, which allows a
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version and MUST be discarded.
+
+Spin Bit (S):
+
+: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
+  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
+  bits are protected using header protection (see Section 5.4 of
+  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Key Phase (K):
+
+: The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.
+  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
+  using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
+Packet Number Length (P):
 
-Third Bit:
-
-: The third bit (0x20) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Fourth Bit:
-
-: The fourth bit (0x10) of byte 0 is set to 1.
-
-\[\[Editor's Note: this section should be removed and the bit definitions
-changed before this draft goes to the IESG.]]
-
-Google QUIC Demultiplexing Bit:
-
-: The fifth bit (0x8) of byte 0 is set to 0. This allows implementations of
-  Google QUIC to distinguish Google QUIC packets from short header packets sent
-  by a client because Google QUIC servers expect the connection ID to always be
-  present.  The special interpretation of this bit SHOULD be removed from this
-  specification when Google QUIC has finished transitioning to the new header
-  format.
-
-Reserved:
-
-: The sixth, seventh, and eighth bits (0x7) of byte 0 are reserved for
-  experimentation.  Endpoints MUST ignore these bits on packets they receive
-  unless they are participating in an experiment that uses these bits.  An
-  endpoint not actively using these bits SHOULD set the value randomly on
-  packets they send to protect against unwanted inference about particular
-  values.
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Destination Connection ID:
 
@@ -3468,16 +3507,16 @@ Destination Connection ID:
 
 Packet Number:
 
-: The packet number field is 1, 2, or 4 bytes long. The packet number has
+: The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
-  Section 5.3 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in Packet Number Length field. See {{packet-encoding}} for details.
 
 Protected Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
-The header form and connection ID field of a short header packet are
+The header form bit and the connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
@@ -3549,7 +3588,7 @@ process.
 
 ## Initial Packet {#packet-initial}
 
-An Initial packet uses long headers with a type value of 0x7F.  It carries the
+An Initial packet uses long headers with a type value of 0x0.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
 carries ACKs in either direction.
 
@@ -3564,7 +3603,7 @@ that are added to the Long Header before the Length field.
 
 ~~~
 +-+-+-+-+-+-+-+-+
-|1|    0x7f     |
+|1|1| 0 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3580,7 +3619,7 @@ that are added to the Long Header before the Length field.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/32)                   |
+|                    Packet Number (8/16/24/32)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3679,7 +3718,7 @@ the connection.
 
 ## Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x7D.  It is
+A Handshake packet uses long headers with a type value of 0x3.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -3697,14 +3736,13 @@ Handshake packets are their own packet number space.  Packet numbers are
 incremented normally for other Handshake packets.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE or APPLICATION_CLOSE
-frames.  Endpoints MUST treat receipt of Handshake packets with other frames as
-a connection error.
+ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
+MUST treat receipt of Handshake packets with other frames as a connection error.
 
 
 ## Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x7E. It carries
+A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
 wishes to perform a stateless retry (see {{validate-handshake}}).
 
@@ -3712,7 +3750,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|    0x7e     |
+|1|1| 3 |ODCIL(4|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3722,7 +3760,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    ODCIL(8)   |      Original Destination Connection ID (*)   |
+|          Original Destination Connection ID (0/32..144)     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Retry Token (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3738,11 +3776,11 @@ Packet Number, and Payload fields.  These are replaced with:
 
 ODCIL:
 
-: The length of the Original Destination Connection ID field.  The length is
-  encoded in the least significant 4 bits of the byte, using the same encoding
-  as the DCIL and SCIL fields.  The most significant 4 bits of this byte are
-  reserved.  Unless a use for these bits has been negotiated, endpoints SHOULD
-  send randomized values and MUST ignore any value that it receives.
+: The four least-significant bits of the first byte of a Retry packet are not
+  protected as they are for other packets with the long header, because Retry
+  packets don't contain a protected payload.  These bits instead encode the
+  length of the Original Destination Connection ID field.  The length uses the
+  same encoding as the DCIL and SCIL fields.
 
 Original Destination Connection ID:
 
@@ -3827,20 +3865,20 @@ language from Section 3 of {{!TLS13=RFC8446}}.
    uint32 QuicVersion;
 
    enum {
-      initial_max_stream_data_bidi_local(0),
-      initial_max_data(1),
-      initial_max_bidi_streams(2),
-      idle_timeout(3),
-      preferred_address(4),
-      max_packet_size(5),
-      stateless_reset_token(6),
-      ack_delay_exponent(7),
-      initial_max_uni_streams(8),
-      disable_migration(9),
-      initial_max_stream_data_bidi_remote(10),
-      initial_max_stream_data_uni(11),
-      max_ack_delay(12),
-      original_connection_id(13),
+      original_connection_id(0),
+      idle_timeout(1),
+      stateless_reset_token(2),
+      max_packet_size(3),
+      initial_max_data(4),
+      initial_max_stream_data_bidi_local(5),
+      initial_max_stream_data_bidi_remote(6),
+      initial_max_stream_data_uni(7),
+      initial_max_streams_bidi(8),
+      initial_max_streams_uni(9),
+      ack_delay_exponent(10),
+      max_ack_delay(11),
+      disable_migration(12),
+      preferred_address(13),
       (65535)
    } TransportParameterId;
 
@@ -3860,14 +3898,6 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       };
       TransportParameter parameters<0..2^16-1>;
    } TransportParameters;
-
-   struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
-     uint16 port;
-     opaque connectionId<0..18>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
@@ -3881,75 +3911,137 @@ included in the cryptographic handshake.
 
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
-<!-- TODO: reorganize this section -->
+This section details the transport parameters defined in this document.
 
-An endpoint MAY use the following transport parameters:
+Many transport parameters listed here have integer values.  Those transport
+parameters that are identified as integers use a variable-length integer
+encoding (see {{integer-encoding}}) and have a default value of 0 if the
+transport parameter is absent, unless otherwise stated.
 
-idle_timeout (0x0003):
+The following transport parameters are defined:
 
-: The idle timeout is a value in seconds that is encoded as an unsigned 16-bit
-  integer.  If this parameter is absent or zero then the idle timeout is
-  disabled.
+original_connection_id (0x0000):
 
-max_packet_size (0x0005):
+: The value of the Destination Connection ID field from the first Initial packet
+  sent by the client.  This transport parameter is only sent by a server.  A
+  server MUST include the original_connection_id transport parameter if it sent
+  a Retry packet.
 
-: The maximum packet size parameter places a limit on the size of packets that
-  the endpoint is willing to receive, encoded as an unsigned 16-bit integer.
-  This indicates that packets larger than this limit will be dropped.  The
-  default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1200 are invalid.  This limit only applies to protected packets
-  ({{packet-protected}}).
+idle_timeout (0x0001):
 
-ack_delay_exponent (0x0007):
+: The idle timeout is a value in seconds that is encoded as an integer.  If this
+  parameter is absent or zero then the idle timeout is disabled.
 
-: An 8-bit unsigned integer value indicating an exponent used to decode the ACK
-  Delay field in the ACK frame, see {{frame-ack}}.  If this value is absent, a
-  default value of 3 is assumed (indicating a multiplier of 8).  The default
-  value is also used for ACK frames that are sent in Initial and Handshake
-  packets.  Values above 20 are invalid.
+stateless_reset_token (0x0002):
 
-disable_migration (0x0009):
+: A stateless reset token is used in verifying a stateless reset, see
+  {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
+  transport parameter is only sent by a server.
 
-: The endpoint does not support connection migration ({{migration}}). Peers MUST
-  NOT send any packets, including probing packets ({{probing}}), from a local
-  address other than that used to perform the handshake.  This parameter is a
-  zero-length value.
+max_packet_size (0x0003):
 
-max_ack_delay (0x000c):
+: The maximum packet size parameter is an integer value that limits the size of
+  packets that the endpoint is willing to receive.  This indicates that packets
+  larger than this limit will be dropped.  The default for this parameter is the
+  maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
+  limit only applies to protected packets ({{packet-protected}}).
 
-: An 8 bit unsigned integer value indicating the maximum amount of time in
-  milliseconds by which the endpoint will delay sending acknowledgments.
-  If this value is absent, a default of 25 milliseconds is assumed.
+initial_max_data (0x0004):
 
-Either peer MAY advertise an initial value for flow control of each type of
-stream on which they might receive data.  Each of the following transport
-parameters is encoded as an unsigned 32-bit integer in units of bytes:
+: The initial maximum data parameter is an integer value that contains the
+  initial value for the maximum amount of data that can be sent on the
+  connection.  This is equivalent to sending a MAX_DATA ({{frame-max-data}}) for
+  the connection immediately after completing the handshake.
 
-initial_max_stream_data_bidi_local (0x0000):
+initial_max_stream_data_bidi_local (0x0005):
 
-: The initial stream maximum data for bidirectional, locally-initiated streams
-  parameter contains the initial flow control limit for newly created
-  bidirectional streams opened by the endpoint that sets the transport
+: This parameter is an integer value specifying the initial flow control limit
+  for locally-initiated bidirectional streams.  This limit applies to newly
+  created bidirectional streams opened by the endpoint that sends the transport
   parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x0; in server transport parameters, this applies to
-  streams ending in 0x1.
+  identifier with the least significant two bits set to 0x0; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x1.
 
-initial_max_stream_data_bidi_remote (0x000a):
+initial_max_stream_data_bidi_remote (0x0006):
 
-: The initial stream maximum data for bidirectional, peer-initiated streams
-  parameter contains the initial flow control limit for newly created
+: This parameter is an integer value specifying the initial flow control limit
+  for peer-initiated bidirectional streams.  This limit applies to newly created
   bidirectional streams opened by the endpoint that receives the transport
   parameter.  In client transport parameters, this applies to streams with an
-  identifier ending in 0x1; in server transport parameters, this applies to
-  streams ending in 0x0.
+  identifier with the least significant two bits set to 0x1; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x0.
 
-initial_max_stream_data_uni (0x000b):
+initial_max_stream_data_uni (0x0007):
 
-: The initial stream maximum data for unidirectional streams parameter contains
-  the initial flow control limit for newly created unidirectional streams opened
-  by the endpoint that receives the transport parameter.  In client transport
-  parameters, this applies to streams with an identifier ending in 0x3; in
-  server transport parameters, this applies to streams ending in 0x2.
+: This parameter is an integer value specifying the initial flow control limit
+  for unidirectional streams.  This limit applies to newly created bidirectional
+  streams opened by the endpoint that receives the transport parameter.  In
+  client transport parameters, this applies to streams with an identifier with
+  the least significant two bits set to 0x3; in server transport parameters,
+  this applies to streams with the least significant two bits set to 0x2.
+
+initial_max_streams_bidi (0x0008):
+
+: The initial maximum bidirectional streams parameter is an integer value that
+  contains the initial maximum number of bidirectional streams the peer may
+  initiate.  If this parameter is absent or zero, the peer cannot open
+  bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
+  the corresponding type with the same value.
+
+initial_max_streams_uni (0x0009):
+
+: The initial maximum unidirectional streams parameter is an integer value that
+  contains the initial maximum number of unidirectional streams the peer may
+  initiate.  If this parameter is absent or zero, the peer cannot open
+  unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
+  the corresponding type with the same value.
+
+ack_delay_exponent (0x000a):
+
+: The ACK delay exponent is an integer value indicating an
+  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
+  If this value is absent, a default value of 3 is assumed
+  (indicating a multiplier of 8).  The default value is also used for ACK frames
+  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
+
+max_ack_delay (0x000b):
+
+: The maximum ACK delay is an integer value indicating the
+  maximum amount of time in milliseconds by which the endpoint will delay
+  sending acknowledgments.  This value SHOULD include the receiver's expected
+  delays in alarms firing.  For example, if a receiver sets a timer for 5ms
+  and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
+  of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
+
+disable_migration (0x000c):
+
+: The disable migration transport parameter is included if the endpoint does not
+  support connection migration ({{migration}}). Peers of an endpoint that sets
+  this transport parameter MUST NOT send any packets, including probing packets
+  ({{probing}}), from a local address other than that used to perform the
+  handshake.  This parameter is a zero-length value.
+
+preferred_address (0x000d):
+
+: The server's preferred address is used to effect a change in server address at
+  the end of the handshake, as described in {{preferred-address}}.  The format
+  of this transport parameter is the PreferredAddress struct shown in
+  {{fig-preffered-address}}.  This transport parameter is only sent by a server.
+
+~~~
+   struct {
+     enum { IPv4(4), IPv6(6), (15) } ipVersion;
+     opaque ipAddress<4..2^8-1>;
+     uint16 port;
+     opaque connectionId<0..18>;
+     opaque statelessResetToken[16];
+   } PreferredAddress;
+~~~
+{: #fig-preffered-address title="Preferred Address format"}
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
@@ -3958,63 +4050,9 @@ initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
 immediately after opening.  If the transport parameter is absent, streams of
 that type start with a flow control limit of 0.
 
-initial_max_data (0x0001):
-
-: The initial maximum data parameter contains the initial value for the maximum
-  amount of data that can be sent on the connection.  This parameter is encoded
-  as an unsigned 32-bit integer in units of bytes.  This is equivalent to
-  sending a MAX_DATA ({{frame-max-data}}) for the connection immediately after
-  completing the handshake. If the transport parameter is absent, the connection
-  starts with a flow control limit of 0.
-
-initial_max_bidi_streams (0x0002):
-
-: The initial maximum bidirectional streams parameter contains the initial
-  maximum number of bidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, bidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 16 when received by a client or 17 when received by a
-  server.
-
-initial_max_uni_streams (0x0008):
-
-: The initial maximum unidirectional streams parameter contains the initial
-  maximum number of unidirectional streams the peer may initiate, encoded as an
-  unsigned 16-bit integer.  If this parameter is absent or zero, unidirectional
-  streams cannot be created until a MAX_STREAM_ID frame is sent.  Setting this
-  parameter is equivalent to sending a MAX_STREAM_ID ({{frame-max-stream-id}})
-  immediately after completing the handshake containing the corresponding Stream
-  ID. For example, a value of 0x05 would be equivalent to receiving a
-  MAX_STREAM_ID containing 18 when received by a client or 19 when received by a
-  server.
-
-A server MUST include the following transport parameter if it sent a Retry
-packet:
-
-original_connection_id (0x000d):
-
-: The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by the server.
-
-A server MAY include the following transport parameters:
-
-stateless_reset_token (0x0006):
-
-: The Stateless Reset Token is used in verifying a stateless reset, see
-  {{stateless-reset}}.  This parameter is a sequence of 16 bytes.
-
-preferred_address (0x0004):
-
-: The server's Preferred Address is used to effect a change in server address at
-  the end of the handshake, as described in {{preferred-address}}.
-
 A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
-
 
 
 # Frame Types and Formats {#frame-formats}
@@ -4034,264 +4072,9 @@ A PADDING frame has no content.  That is, a PADDING frame consists of the single
 byte that identifies the frame as a PADDING frame.
 
 
-## RST_STREAM Frame {#frame-rst-stream}
-
-An endpoint may use a RST_STREAM frame (type=0x01) to abruptly terminate a
-stream.
-
-After sending a RST_STREAM, an endpoint ceases transmission and retransmission
-of STREAM frames on the identified stream.  A receiver of RST_STREAM can discard
-any data that it already received on that stream.
-
-An endpoint that receives a RST_STREAM frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
-
-The RST_STREAM frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Final Offset (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Stream ID:
-
-: A variable-length integer encoding of the Stream ID of the stream being
-  terminated.
-
-Application Protocol Error Code:
-
-: A 16-bit application protocol error code (see {{app-error-codes}}) which
-  indicates why the stream is being closed.
-
-Final Offset:
-
-: A variable-length integer indicating the absolute byte offset of the end of
-  data written on this stream by the RST_STREAM sender.
-
-
-## CONNECTION_CLOSE frame {#frame-connection-close}
-
-An endpoint sends a CONNECTION_CLOSE frame (type=0x02) to notify its peer that
-the connection is being closed.  CONNECTION_CLOSE is used to signal errors at
-the QUIC layer, or the absence of errors (with the NO_ERROR code).
-
-If there are open streams that haven't been explicitly closed, they are
-implicitly closed when the connection is closed.
-
-The CONNECTION_CLOSE frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Frame Type (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Reason Phrase Length (i)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Reason Phrase (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of a CONNECTION_CLOSE frame are as follows:
-
-Error Code:
-
-: A 16-bit error code which indicates the reason for closing this connection.
-  CONNECTION_CLOSE uses codes from the space defined in {{error-codes}}.
-
-Frame Type:
-
-: A variable-length integer encoding the type of frame that triggered the error.
-  A value of 0 (equivalent to the mention of the PADDING frame) is used when the
-  frame type is unknown.
-
-Reason Phrase Length:
-
-: A variable-length integer specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
-  practice any limits on packet size will also limit the space available for a
-  reason phrase.
-
-Reason Phrase:
-
-: A human-readable explanation for why the connection was closed.  This can be
-  zero length if the sender chooses to not give details beyond the Error Code.
-  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
-
-
-## APPLICATION_CLOSE frame {#frame-application-close}
-
-An APPLICATION_CLOSE frame (type=0x03) is used to signal an error with the
-protocol that uses QUIC.
-
-The APPLICATION_CLOSE frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Reason Phrase Length (i)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Reason Phrase (*)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields of an APPLICATION_CLOSE frame are as follows:
-
-Error Code:
-
-: A 16-bit error code which indicates the reason for closing this connection.
-  APPLICATION_CLOSE uses codes from the application protocol error code space,
-  see {{app-error-codes}}.
-
-Reason Phrase Length:
-
-: This field is identical in format and semantics to the Reason Phrase Length
-  field from CONNECTION_CLOSE.
-
-Reason Phrase:
-
-: This field is identical in format and semantics to the Reason Phrase field
-  from CONNECTION_CLOSE.
-
-APPLICATION_CLOSE has similar format and semantics to the CONNECTION_CLOSE frame
-({{frame-connection-close}}).  Aside from the semantics of the Error Code field
-and the omission of the Frame Type field, both frames are used to close the
-connection.
-
-
-## MAX_DATA Frame {#frame-max-data}
-
-The MAX_DATA frame (type=0x04) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Maximum Data (i)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_DATA frame are as follows:
-
-Maximum Data:
-
-: A variable-length integer indicating the maximum amount of data that can be
-  sent on the entire connection, in units of bytes.
-
-All data sent in STREAM frames counts toward this limit.  The sum of the largest
-received offsets on all streams - including streams in terminal states - MUST
-NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
-connection with a FLOW_CONTROL_ERROR error if it receives more data than the
-maximum data value that it has sent, unless this is a result of a change in
-the initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAM_DATA Frame {#frame-max-stream-data}
-
-The MAX_STREAM_DATA frame (type=0x05) is used in flow control to inform a peer
-of the maximum amount of data that can be sent on a stream.
-
-An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
-
-An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
-
-Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
-bidirectional stream it has not opened.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream Data (i)                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAM_DATA frame are as follows:
-
-Stream ID:
-
-: The stream ID of the stream that is affected encoded as a variable-length
-  integer.
-
-Maximum Stream Data:
-
-: A variable-length integer indicating the maximum amount of data that can be
-  sent on the identified stream, in units of bytes.
-
-When counting data toward this limit, an endpoint accounts for the largest
-received offset of data that is sent or received on the stream.  Loss or
-reordering can mean that the largest received offset on a stream can be greater
-than the total size of data received on that stream.  Receiving STREAM frames
-might not increase the largest received offset.
-
-The data sent on a stream MUST NOT exceed the largest maximum stream data value
-advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
-stream data that it has sent for the affected stream, unless this is a result of
-a change in the initial limits (see {{zerortt-parameters}}).
-
-
-## MAX_STREAM_ID Frame {#frame-max-stream-id}
-
-The MAX_STREAM_ID frame (type=0x06) informs the peer of the maximum stream ID
-that they are permitted to open.
-
-The frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Maximum Stream ID (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields in the MAX_STREAM_ID frame are as follows:
-
-Maximum Stream ID:
-: ID of the maximum unidirectional or bidirectional peer-initiated stream ID for
-  the connection encoded as a variable-length integer. The limit applies to
-  unidirectional steams if the second least signification bit of the stream ID
-  is 1, and applies to bidirectional streams if it is 0.
-
-Loss or reordering can mean that a MAX_STREAM_ID frame can be received which
-states a lower stream limit than the client has previously received.
-MAX_STREAM_ID frames which do not increase the maximum stream ID MUST be
-ignored.
-
-A peer MUST NOT initiate a stream with a higher stream ID than the greatest
-maximum stream ID it has received.  An endpoint MUST terminate a connection with
-a STREAM_ID_ERROR error if a peer initiates a stream with a higher stream ID
-than it has sent, unless this is a result of a change in the initial limits (see
-{{zerortt-parameters}}).
-
-
 ## PING Frame {#frame-ping}
 
-Endpoints can use PING frames (type=0x07) to verify that their peers are still
+Endpoints can use PING frames (type=0x01) to verify that their peers are still
 alive or to check reachability to the peer. The PING frame contains no
 additional fields.
 
@@ -4314,236 +4097,11 @@ experience shows that sending packets every 15 to 30 seconds is necessary to
 prevent the majority of middleboxes from losing state for UDP flows.
 
 
-## BLOCKED Frame {#frame-blocked}
+## ACK Frames {#frame-ack}
 
-A sender SHOULD send a BLOCKED frame (type=0x08) when it wishes to send data,
-but is unable to due to connection-level flow control (see {{flow-control}}).
-BLOCKED frames can be used as input to tuning of flow control algorithms (see
-{{fc-credit}}).
-
-The BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Offset (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The BLOCKED frame contains a single field.
-
-Offset:
-
-: A variable-length integer indicating the connection-level offset at which
-  the blocking occurred.
-
-
-## STREAM_BLOCKED Frame {#frame-stream-blocked}
-
-A sender SHOULD send a STREAM_BLOCKED frame (type=0x09) when it wishes to send
-data, but is unable to due to stream-level flow control.  This frame is
-analogous to BLOCKED ({{frame-blocked}}).
-
-An endpoint that receives a STREAM_BLOCKED frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
-
-The STREAM_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Offset (i)                          ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The STREAM_BLOCKED frame contains two fields:
-
-Stream ID:
-
-: A variable-length integer indicating the stream which is flow control blocked.
-
-Offset:
-
-: A variable-length integer indicating the offset of the stream at which the
-  blocking occurred.
-
-
-## STREAM_ID_BLOCKED Frame {#frame-stream-id-blocked}
-
-A sender SHOULD send a STREAM_ID_BLOCKED frame (type=0x0a) when it wishes to
-open a stream, but is unable to due to the maximum stream ID limit set by its
-peer (see {{frame-max-stream-id}}).  This does not open the stream, but informs
-the peer that a new stream was needed, but the stream limit prevented the
-creation of the stream.
-
-The STREAM_ID_BLOCKED frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The STREAM_ID_BLOCKED frame contains a single field.
-
-Stream ID:
-
-: A variable-length integer indicating the highest stream ID that the sender
-  was permitted to open.
-
-## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
-
-An endpoint sends a NEW_CONNECTION_ID frame (type=0x0b) to provide its peer with
-alternative connection IDs that can be used to break linkability when migrating
-connections (see {{migration-linkability}}).
-
-The NEW_CONNECTION_ID frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Length (8)  |            Sequence Number (i)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Connection ID (32..144)                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                                                               +
-|                                                               |
-+                   Stateless Reset Token (128)                 +
-|                                                               |
-+                                                               +
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Length:
-
-: An 8-bit unsigned integer containing the length of the connection ID.  Values
-  less than 4 and greater than 18 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
-
-Sequence Number:
-
-: The sequence number assigned to the connection ID by the sender.  See
-  {{issue-cid}}.
-
-Connection ID:
-
-: A connection ID of the specified length.
-
-Stateless Reset Token:
-
-: A 128-bit value that will be used for a stateless reset when the associated
-  connection ID is used (see {{stateless-reset}}).
-
-An endpoint MUST NOT send this frame if it currently requires that its peer send
-packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it difficult to identify when the
-value of the connection ID changed.  An endpoint that is sending packets with a
-zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
-frame as a connection error of type PROTOCOL_VIOLATION.
-
-Transmission errors, timeouts and retransmissions might cause the same
-NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
-frame multiple times MUST NOT be treated as a connection error.  A receiver can
-use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
-connection IDs from old ones.
-
-If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
-issued connection ID with a different Stateless Reset Token or a different
-sequence number, the endpoint MAY treat that receipt as a connection error of
-type PROTOCOL_VIOLATION.
-
-## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
-
-An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x0d) to indicate that it
-will no longer use a connection ID that was issued by its peer. This may include
-the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
-frame also serves as a request to the peer to send additional connection IDs for
-future use (see {{connection-id}}).  New connection IDs can be delivered to a
-peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
-
-Retiring a connection ID invalidates the stateless reset token associated with
-that connection ID.
-
-The RETIRE_CONNECTION_ID frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Sequence Number (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Sequence Number:
-
-: The sequence number of the connection ID being retired.  See
-  {{retiring-cids}}.
-
-Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
-than any previously sent to the peer MAY be treated as a connection error of
-type PROTOCOL_VIOLATION.
-
-An endpoint cannot send this frame if it was provided with a zero-length
-connection ID by its peer.  An endpoint that provides a zero-length connection
-ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
-type PROTOCOL_VIOLATION.
-
-
-## STOP_SENDING Frame {#frame-stop-sending}
-
-An endpoint may use a STOP_SENDING frame (type=0x0c) to communicate that
-incoming data is being discarded on receipt at application request.  This
-signals a peer to abruptly terminate transmission on a stream.
-
-Receipt of a STOP_SENDING frame is only valid for a send stream that exists and
-is not in the "Ready" state (see {{stream-send-states}}).  Receiving a
-STOP_SENDING frame for a send stream that is "Ready" or non-existent MUST be
-treated as a connection error of type PROTOCOL_VIOLATION.  An endpoint that
-receives a STOP_SENDING frame for a receive-only stream MUST terminate the
-connection with error PROTOCOL_VIOLATION.
-
-The STOP_SENDING frame is as follows:
-
-~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-
-The fields are:
-
-Stream ID:
-
-: A variable-length integer carrying the Stream ID of the stream being ignored.
-
-Application Error Code:
-
-: A 16-bit, application-specified reason the sender is ignoring the stream (see
-  {{app-error-codes}}).
-
-
-## ACK Frame {#frame-ack}
-
-Receivers send ACK frames (types 0x1a and 0x1b) to inform senders of packets
+Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
 they have received and processed. The ACK frame contains one or more ACK Blocks.
-ACK Blocks are ranges of acknowledged packets. If the frame type is 0x1b, ACK
+ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
 on the connection up until this point.
 
@@ -4560,7 +4118,7 @@ Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
 implicitly acknowledged by the next Initial packet sent by the client.
 
-An ACK frame is shown below.
+An ACK frame is as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4579,7 +4137,7 @@ An ACK frame is shown below.
 ~~~
 {: #ack-format title="ACK Frame Format"}
 
-The fields in the ACK frame are as follows:
+ACK frames contain the following fields:
 
 Largest Acknowledged:
 
@@ -4624,7 +4182,7 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of bytes.
 
-The ACK frame uses the least significant bit (that is, type 0x1b) to indicate
+The ACK frame uses the least significant bit (that is, type 0x03) to indicate
 ECN feedback and report receipt of QUIC packets with associated ECN codepoints
 of ECT(0), ECT(1), or CE in the packet's IP header.
 
@@ -4707,7 +4265,7 @@ Additional ACK Block (repeated):
 
 ### ECN section
 
-The ECN section should only be parsed when the ACK frame type is 0x1b.  The ECN
+The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
 section consists of 3 ECN counters as shown below.
 
 ~~~
@@ -4737,49 +4295,141 @@ CE Count:
 ECN counters are maintained separately for each packet number space.
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## RESET_STREAM Frame {#frame-reset-stream}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x0e) to check reachability to the
-peer and for path validation during connection migration.
+An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate a
+stream.
 
-PATH_CHALLENGE frames contain an 8-byte payload.
+After sending a RESET_STREAM, an endpoint ceases transmission and retransmission
+of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
+discard any data that it already received on that stream.
+
+An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
+terminate the connection with error PROTOCOL_VIOLATION.
+
+The RESET_STREAM frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                            Data (8)                           +
-|                                                               |
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Final Offset (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-Data:
+RESET_STREAM frames contain the following fields:
 
-: This 8-byte field contains arbitrary data.
+Stream ID:
 
-A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
-to ensure that it is easier to receive the packet than it is to guess the value
-correctly.
+: A variable-length integer encoding of the Stream ID of the stream being
+  terminated.
 
-The recipient of this frame MUST generate a PATH_RESPONSE frame
-({{frame-path-response}}) containing the same Data.
+Application Protocol Error Code:
 
+: A 16-bit application protocol error code (see {{app-error-codes}}) which
+  indicates why the stream is being closed.
 
-## PATH_RESPONSE Frame {#frame-path-response}
+Final Offset:
 
-The PATH_RESPONSE frame (type=0x0f) is sent in response to a PATH_CHALLENGE
-frame.  Its format is identical to the PATH_CHALLENGE frame
-({{frame-path-challenge}}).
-
-If the content of a PATH_RESPONSE frame does not match the content of a
-PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
-a connection error of type PROTOCOL_VIOLATION.
+: A variable-length integer indicating the absolute byte offset of the end of
+  data written on this stream by the RESET_STREAM sender.
 
 
-## NEW_TOKEN frame {#frame-new-token}
+## STOP_SENDING Frame {#frame-stop-sending}
 
-A server sends a NEW_TOKEN frame (type=0x19) to provide the client a token to
+An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
+data is being discarded on receipt at application request.  This signals a peer
+to abruptly terminate transmission on a stream.
+
+Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
+has not yet been created or is in the "Ready" state (see
+{{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
+send stream that is "Ready" or not yet created MUST be treated as a connection
+error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
+frame for a receive-only stream MUST terminate the connection with error
+PROTOCOL_VIOLATION.
+
+The STOP_SENDING frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Application Error Code (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STOP_SENDING frames contain the following fields:
+
+Stream ID:
+
+: A variable-length integer carrying the Stream ID of the stream being ignored.
+
+Application Error Code:
+
+: A 16-bit, application-specified reason the sender is ignoring the stream (see
+  {{app-error-codes}}).
+
+
+## CRYPTO Frame {#frame-crypto}
+
+The CRYPTO frame (type=0x06) is used to transmit cryptographic handshake
+messages. It can be sent in all packet types. The CRYPTO frame offers the
+cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
+functionally identical to STREAM frames, except that they do not bear a stream
+identifier; they are not flow controlled; and they do not carry markers for
+optional offset, optional length, and the end of the stream.
+
+The CRYPTO frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Offset (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Length (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Crypto Data (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #crypto-format title="CRYPTO Frame Format"}
+
+CRYPTO frames contain the following fields:
+
+Offset:
+
+: A variable-length integer specifying the byte offset in the stream for the
+  data in this CRYPTO frame.
+
+Length:
+
+: A variable-length integer specifying the length of the Crypto Data field in
+  this CRYPTO frame.
+
+Crypto Data:
+
+: The cryptographic message data.
+
+There is a separate flow of cryptographic handshake data in each encryption
+level, each of which starts at an offset of 0. This implies that each encryption
+level is treated as a separate CRYPTO stream of data.
+
+Unlike STREAM frames, which include a Stream ID indicating to which stream the
+data belongs, the CRYPTO frame carries data for a single stream per encryption
+level. The stream does not have an explicit end, so CRYPTO frames do not have a
+FIN bit.
+
+
+## NEW_TOKEN Frame {#frame-new-token}
+
+A server sends a NEW_TOKEN frame (type=0x07) to provide the client a token to
 send in the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
@@ -4794,7 +4444,7 @@ The NEW_TOKEN frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields of a NEW_TOKEN frame are as follows:
+NEW_TOKEN frames contain the following fields:
 
 Token Length:
 
@@ -4808,13 +4458,13 @@ Token:
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame takes the form 0b00010XXX (or the set of values from 0x10 to 0x17).  The
+frame takes the form 0b00001XXX (or the set of values from 0x08 to 0x0f).  The
 value of the three low-order bits of the frame type determine the fields that
 are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
-  Offset field present.  When set to 1, the Offset field is present; when set to
-  0, the Offset field is absent and the Stream Data starts at an offset of 0
+  Offset field present.  When set to 1, the Offset field is present.  When set
+  to 0, the Offset field is absent and the Stream Data starts at an offset of 0
   (that is, the frame contains the first bytes of the stream, or the end of a
   stream that includes no data).
 
@@ -4830,7 +4480,7 @@ are present in the frame.
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
 the connection with error PROTOCOL_VIOLATION.
 
-A STREAM frame is shown below.
+The STREAM frames are as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4847,7 +4497,7 @@ A STREAM frame is shown below.
 ~~~
 {: #stream-format title="STREAM Frame Format"}
 
-The STREAM frame contains the following fields:
+STREAM frames contain the following fields:
 
 Stream ID:
 
@@ -4879,54 +4529,417 @@ on a stream - the sum of the re-constructed offset and data length - MUST be
 less than 2^62.
 
 
-## CRYPTO Frame {#frame-crypto}
+## MAX_DATA Frame {#frame-max-data}
 
-The CRYPTO frame (type=0x18) is used to transmit cryptographic handshake
-messages. It can be sent in all packet types. The CRYPTO frame offers the
-cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
-functionally identical to STREAM frames, except that they do not bear a stream
-identifier; they are not flow controlled; and they do not carry markers for
-optional offset, optional length, and the end of the stream.
+The MAX_DATA frame (type=0x10) is used in flow control to inform the peer of
+the maximum amount of data that can be sent on the connection as a whole.
 
-A CRYPTO frame is shown below.
+The MAX_DATA frame is as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Offset (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Length (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Crypto Data (*)                      ...
+|                        Maximum Data (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #crypto-format title="CRYPTO Frame Format"}
 
-The CRYPTO frame contains the following fields:
+MAX_DATA frames contain the following fields:
 
-Offset:
+Maximum Data:
 
-: A variable-length integer specifying the byte offset in the stream for the
-  data in this CRYPTO frame.
+: A variable-length integer indicating the maximum amount of data that can be
+  sent on the entire connection, in units of bytes.
+
+All data sent in STREAM frames counts toward this limit.  The sum of the largest
+received offsets on all streams - including streams in terminal states - MUST
+NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
+connection with a FLOW_CONTROL_ERROR error if it receives more data than the
+maximum data value that it has sent, unless this is a result of a change in
+the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+
+The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
+of the maximum amount of data that can be sent on a stream.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
+it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
+bidirectional stream it has not opened.
+
+The MAX_STREAM_DATA frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Maximum Stream Data (i)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+MAX_STREAM_DATA frames contain the following fields:
+
+Stream ID:
+
+: The stream ID of the stream that is affected encoded as a variable-length
+  integer.
+
+Maximum Stream Data:
+
+: A variable-length integer indicating the maximum amount of data that can be
+  sent on the identified stream, in units of bytes.
+
+When counting data toward this limit, an endpoint accounts for the largest
+received offset of data that is sent or received on the stream.  Loss or
+reordering can mean that the largest received offset on a stream can be greater
+than the total size of data received on that stream.  Receiving STREAM frames
+might not increase the largest received offset.
+
+The data sent on a stream MUST NOT exceed the largest maximum stream data value
+advertised by the receiver.  An endpoint MUST terminate a connection with a
+FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
+stream data that it has sent for the affected stream, unless this is a result of
+a change in the initial limits (see {{zerortt-parameters}}).
+
+
+## MAX_STREAMS Frames {#frame-max-streams}
+
+The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
+with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
+with a type of 0x13 applies to unidirectional streams.
+
+The MAX_STREAMS frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Maximum Streams (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+MAX_STREAMS frames contain the following fields:
+
+Maximum Streams:
+
+: A count of the cumulative number of streams of the corresponding type that
+  can be opened over the lifetime of the connection.
+
+Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
+which do not increase the stream limit MUST be ignored.
+
+An endpoint MUST NOT open more streams than permitted by the current stream
+limit set by its peer.  For instance, a server that receives a unidirectional
+stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
+peer opens more streams than was permitted.
+
+Note that these frames (and the corresponding transport parameters) do not
+describe the number of streams that can be opened concurrently.  The limit
+includes streams that have been closed as well as those that are open.
+
+
+## DATA_BLOCKED Frame {#frame-data-blocked}
+
+A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
+data, but is unable to due to connection-level flow control (see
+{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
+control algorithms (see {{fc-credit}}).
+
+The DATA_BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Data Limit (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+DATA_BLOCKED frames contain the following fields:
+
+Data Limit:
+
+: A variable-length integer indicating the connection-level limit at which
+  blocking occurred.
+
+
+## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
+
+A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x15) when it wishes to
+send data, but is unable to due to stream-level flow control.  This frame is
+analogous to DATA_BLOCKED ({{frame-data-blocked}}).
+
+An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
+MUST terminate the connection with error PROTOCOL_VIOLATION.
+
+The STREAM_DATA_BLOCKED frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Stream Data Limit (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STREAM_DATA_BLOCKED frames contain the following fields:
+
+Stream ID:
+
+: A variable-length integer indicating the stream which is flow control blocked.
+
+Stream Data Limit:
+
+: A variable-length integer indicating the offset of the stream at which the
+  blocking occurred.
+
+
+## STREAMS_BLOCKED Frames {#frame-streams-blocked}
+
+A sender SHOULD send a STREAMS_BLOCKED frame (type=0x16 or 0x17) when it wishes
+to open a stream, but is unable to due to the maximum stream limit set by its
+peer (see {{frame-max-streams}}).  A STREAMS_BLOCKED frame of type 0x16 is used
+to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame
+of type 0x17 indicates reaching the unidirectional stream limit.
+
+A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
+new stream was needed and the stream limit prevented the creation of the stream.
+
+The STREAMS_BLOCKED frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Limit (i)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+STREAMS_BLOCKED frames contain the following fields:
+
+Stream Limit:
+
+: A variable-length integer indicating the stream limit at the time the frame
+  was sent.
+
+
+## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+
+An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
+alternative connection IDs that can be used to break linkability when migrating
+connections (see {{migration-linkability}}).
+
+The NEW_CONNECTION_ID frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Sequence Number (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Length (8)  |                                               |
++-+-+-+-+-+-+-+-+       Connection ID (32..144)                 +
+|                                                             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+NEW_CONNECTION_ID frames contain the following fields:
+
+Sequence Number:
+
+: The sequence number assigned to the connection ID by the sender.  See
+  {{issue-cid}}.
 
 Length:
 
-: A variable-length integer specifying the length of the Crypto Data field in
-  this CRYPTO frame.
+: An 8-bit unsigned integer containing the length of the connection ID.  Values
+  less than 4 and greater than 18 are invalid and MUST be treated as a
+  connection error of type PROTOCOL_VIOLATION.
 
-Crypto Data:
+Connection ID:
 
-: The cryptographic message data.
+: A connection ID of the specified length.
 
-There is a separate flow of cryptographic handshake data in each encryption
-level, each of which starts at an offset of 0. This implies that each encryption
-level is treated as a separate CRYPTO stream of data.
+Stateless Reset Token:
 
-Unlike STREAM frames, which include a Stream ID indicating to which stream the
-data belongs, the CRYPTO frame carries data for a single stream per encryption
-level. The stream does not have an explicit end, so CRYPTO frames do not have a
-FIN bit.
+: A 128-bit value that will be used for a stateless reset when the associated
+  connection ID is used (see {{stateless-reset}}).
+
+An endpoint MUST NOT send this frame if it currently requires that its peer send
+packets with a zero-length Destination Connection ID.  Changing the length of a
+connection ID to or from zero-length makes it difficult to identify when the
+value of the connection ID changed.  An endpoint that is sending packets with a
+zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
+frame as a connection error of type PROTOCOL_VIOLATION.
+
+Transmission errors, timeouts and retransmissions might cause the same
+NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
+frame multiple times MUST NOT be treated as a connection error.  A receiver can
+use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
+connection IDs from old ones.
+
+If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
+issued connection ID with a different Stateless Reset Token or a different
+sequence number, or if a sequence number is used for different connection
+IDs, the endpoint MAY treat that receipt as a connection error of type
+PROTOCOL_VIOLATION.
+
+
+## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
+
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
+will no longer use a connection ID that was issued by its peer. This may include
+the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
+frame also serves as a request to the peer to send additional connection IDs for
+future use (see {{connection-id}}).  New connection IDs can be delivered to a
+peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+
+Retiring a connection ID invalidates the stateless reset token associated with
+that connection ID.
+
+The RETIRE_CONNECTION_ID frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Sequence Number (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+RETIRE_CONNECTION_ID frames contain the following fields:
+
+Sequence Number:
+
+: The sequence number of the connection ID being retired.  See
+  {{retiring-cids}}.
+
+Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
+than any previously sent to the peer MAY be treated as a connection error of
+type PROTOCOL_VIOLATION.
+
+An endpoint cannot send this frame if it was provided with a zero-length
+connection ID by its peer.  An endpoint that provides a zero-length connection
+ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
+type PROTOCOL_VIOLATION.
+
+
+## PATH_CHALLENGE Frame {#frame-path-challenge}
+
+Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
+peer and for path validation during connection migration.
+
+The PATH_CHALLENGE frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                            Data (8)                           +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+PATH_CHALLENGE frames contain the following fields:
+
+Data:
+
+: This 8-byte field contains arbitrary data.
+
+A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
+to ensure that it is easier to receive the packet than it is to guess the value
+correctly.
+
+The recipient of this frame MUST generate a PATH_RESPONSE frame
+({{frame-path-response}}) containing the same Data.
+
+
+## PATH_RESPONSE Frame {#frame-path-response}
+
+The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
+frame.  Its format is identical to the PATH_CHALLENGE frame
+({{frame-path-challenge}}).
+
+If the content of a PATH_RESPONSE frame does not match the content of a
+PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
+a connection error of type PROTOCOL_VIOLATION.
+
+
+## CONNECTION_CLOSE Frames {#frame-connection-close}
+
+An endpoint sends a CONNECTION_CLOSE frame (type=0x1c or 0x1d) to notify its
+peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
+type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
+errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
+is used to signal an error with the application that uses QUIC.
+
+If there are open streams that haven't been explicitly closed, they are
+implicitly closed when the connection is closed.
+
+The CONNECTION_CLOSE frames are as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Error Code (16)     |      [ Frame Type (i) ]     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Reason Phrase Length (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Reason Phrase (*)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+CONNECTION_CLOSE frames contain the following fields:
+
+Error Code:
+
+: A 16-bit error code which indicates the reason for closing this connection.  A
+  CONNECTION_CLOSE frame of type 0x1c uses codes from the space defined in
+  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d uses codes from the
+  application protocol error code space, see {{app-error-codes}}
+
+Frame Type:
+
+: A variable-length integer encoding the type of frame that triggered the error.
+  A value of 0 (equivalent to the mention of the PADDING frame) is used when the
+  frame type is unknown.  The application-specific variant of CONNECTION_CLOSE
+  (type 0x1d) does not include this field.
+
+Reason Phrase Length:
+
+: A variable-length integer specifying the length of the reason phrase in bytes.
+  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
+  practice any limits on packet size will also limit the space available for a
+  reason phrase.
+
+Reason Phrase:
+
+: A human-readable explanation for why the connection was closed.  This can be
+  zero length if the sender chooses to not give details beyond the Error Code.
+  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 
 ## Extension Frames
@@ -4948,7 +4961,6 @@ in the extension.
 
 An IANA registry is used to manage the assignment of frame types, see
 {{iana-frames}}.
-
 
 
 # Transport Error Codes {#error-codes}
@@ -4977,10 +4989,10 @@ FLOW_CONTROL_ERROR (0x3):
 : An endpoint received more data than it permitted in its advertised data limits
   (see {{flow-control}}).
 
-STREAM_ID_ERROR (0x4):
+STREAM_LIMIT_ERROR (0x4):
 
 : An endpoint received a frame for a stream identifier that exceeded its
-  advertised maximum stream ID.
+  advertised stream limit for the corresponding stream type.
 
 STREAM_STATE_ERROR (0x5):
 
@@ -4990,9 +5002,9 @@ STREAM_STATE_ERROR (0x5):
 FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a RST_STREAM
+  previously established final offset.  Or an endpoint received a RESET_STREAM
   frame containing a final offset that was lower than the maximum offset of data
-  that was already received.  Or an endpoint received a RST_STREAM frame
+  that was already received.  Or an endpoint received a RESET_STREAM frame
   containing a different final offset to the one already established.
 
 FRAME_ENCODING_ERROR (0x7):
@@ -5037,14 +5049,9 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
-Application protocol error codes are used for the RST_STREAM
-({{frame-rst-stream}}) and APPLICATION_CLOSE ({{frame-application-close}})
-frames.
-
-There is no restriction on the use of the 16-bit error code space for
-application protocols.  However, QUIC reserves the error code with a value of 0
-to mean STOPPING.  The application error code of STOPPING (0) is used by the
-transport to cancel a stream in response to receipt of a STOP_SENDING frame.
+Application protocol error codes are used for the RESET_STREAM frame
+({{frame-reset-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
+({{frame-connection-close}}).
 
 
 # Security Considerations
@@ -5057,10 +5064,10 @@ endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
-unauthenticated ICMP packets (see {{v4-pmtud}}), but the use of these packets is
-extremely limited.  The only other type of packet that an endpoint might accept
-is a stateless reset ({{stateless-reset}}) which relies on the token being kept
-secret until it is used.
+unauthenticated ICMP packets (see {{icmp-pmtud}}), but the use of these packets
+is extremely limited.  The only other type of packet that an endpoint might
+accept is a stateless reset ({{stateless-reset}}) which relies on the token
+being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
@@ -5188,10 +5195,10 @@ higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the concurrent stream limit transport
-parameter, as explained in {{stream-concurrency}}.  If chosen judiciously, this
-limit mitigates the effect of the stream commitment attack.  However, setting
-the limit too low could affect performance when applications expect to open
-large number of streams.
+parameter, as explained in {{controlling-concurrency}}.  If chosen judiciously,
+this limit mitigates the effect of the stream commitment attack.  However,
+setting the limit too low could affect performance when applications expect to
+open large number of streams.
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
@@ -5258,7 +5265,6 @@ Specification:
 
 : A reference to a publicly available specification for the value.
 
-
 The nominated expert(s) verify that a specification exists and is readily
 accessible.  Expert(s) are encouraged to be biased towards approving
 registrations unless they are abusive, frivolous, or actively harmful (not
@@ -5268,20 +5274,20 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 
 | Value  | Parameter Name              | Specification                       |
 |:-------|:----------------------------|:------------------------------------|
-| 0x0000 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
-| 0x0001 | initial_max_data            | {{transport-parameter-definitions}} |
-| 0x0002 | initial_max_bidi_streams    | {{transport-parameter-definitions}} |
-| 0x0003 | idle_timeout                | {{transport-parameter-definitions}} |
-| 0x0004 | preferred_address           | {{transport-parameter-definitions}} |
-| 0x0005 | max_packet_size             | {{transport-parameter-definitions}} |
-| 0x0006 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0007 | ack_delay_exponent          | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_uni_streams     | {{transport-parameter-definitions}} |
-| 0x0009 | disable_migration           | {{transport-parameter-definitions}} |
-| 0x000a | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
-| 0x000b | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
-| 0x000c | max_ack_delay               | {{transport-parameter-definitions}} |
-| 0x000d | original_connection_id      | {{transport-parameter-definitions}} |
+| 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
+| 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
+| 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
+| 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
+| 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+| 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+| 0x0007 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x0008 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
+| 0x0009 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
+| 0x000a | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
+| 0x000c | disable_migration           | {{transport-parameter-definitions}} |
+| 0x000d | preferred_address           | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 ## QUIC Frame Type Registry {#iana-frames}
@@ -5366,7 +5372,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
 | 0x2   | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
-| 0x4   | STREAM_ID_ERROR           | Invalid stream ID             | {{error-codes}} |
+| 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
 | 0x6   | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
@@ -5382,7 +5388,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
 The following pseudo-code shows how an implementation can decode packet
-numbers after packet number protection has been removed.
+numbers after header protection has been removed.
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
@@ -5590,7 +5596,7 @@ Substantial editorial reorganization; no technical changes.
 
 ## Since draft-ietf-quic-transport-04
 
-- Introduce STOP_SENDING frame, RST_STREAM only resets in one direction (#165)
+- Introduce STOP_SENDING frame, RESET_STREAM only resets in one direction (#165)
 - Removed GOAWAY; application protocols are responsible for graceful shutdown
   (#696)
 - Reduced the number of error codes (#96, #177, #184, #211)
@@ -5609,7 +5615,7 @@ Substantial editorial reorganization; no technical changes.
 
 ## Since draft-ietf-quic-transport-03
 
-- Change STREAM and RST_STREAM layout
+- Change STREAM and RESET_STREAM layout
 - Add MAX_STREAM_ID settings
 
 ## Since draft-ietf-quic-transport-02
@@ -5678,13 +5684,13 @@ Substantial editorial reorganization; no technical changes.
 - Define packet protection rules (#336)
 
 - Require that stream be entirely delivered or reset, including acknowledgment
-  of all STREAM frames or the RST_STREAM, before it closes (#381)
+  of all STREAM frames or the RESET_STREAM, before it closes (#381)
 - Remove stream reservation from state machine (#174, #280)
 - Only stream 1 does not contribute to connection-level flow control (#204)
 - Stream 1 counts towards the maximum concurrent stream limit (#201, #282)
 - Remove connection-level flow control exclusion for some streams (except 1)
   (#246)
-- RST_STREAM affects connection-level flow control (#162, #163)
+- RESET_STREAM affects connection-level flow control (#162, #163)
 - Flow control accounting uses the maximum data offset on each stream, rather
   than bytes received (#378)
 
@@ -5692,8 +5698,8 @@ Substantial editorial reorganization; no technical changes.
 - Added the ability to pad between frames (#158, #276)
 - Remove error code and reason phrase from GOAWAY (#352, #355)
 - GOAWAY includes a final stream number for both directions (#347)
-- Error codes for RST_STREAM and CONNECTION_CLOSE are now at a consistent offset
-  (#249)
+- Error codes for RESET_STREAM and CONNECTION_CLOSE are now at a consistent
+  offset (#249)
 
 - Defined priority as the responsibility of the application protocol (#104,
   #303)
