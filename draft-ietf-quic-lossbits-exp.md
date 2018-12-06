@@ -106,8 +106,8 @@ The proposed mechanisms enable loss measurement from observation points on the n
 
 As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
 specifies using the seventh most significant bit (0x02) of the first byte in
-the short header for the sQuare bit and the eight amost significant bit (0x01) of the first byte in
-the short header for the Retransmit bit. The sQuare and Retransmit bits constitute the Loss bits.
+the short header for the sQuare bit and the eighth most significant bit (0x01) of the first byte in
+the short header for the Retransmit bit. The sQuare and Retransmit bits are the Loss bits.
 
 ~~~~~
 
@@ -134,47 +134,46 @@ counter, as explained in {{retransmitbit}}.
 ## Setting the Square Bit on Outgoing Packets {#squarebit}
 
 Each endpoint independently maintains  a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
-This mechanism delineates thus slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting the number of packets during an half period of the square signal, as described in {{usage}}.
+This mechanism thus delineates slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting the number of packets during a half period of the square signal, as described in {{usage}}.
 
 
 ## Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
 Each endpoint, client and server, independently maintains a not-yet-disclosed-lost-packets counter and sets the Retransmit bit of short header packets to 0 or 1 accordingly.
-The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery which content is pending for retranmission. When a packet is declared lost by the QUIC transmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set at 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
+The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery, the content of which is pending for retransmission. When a packet is declared lost by the QUIC retransmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set to 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
 
-Observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by observing the number of packets which retransmit bit is set to 1 in this direction.
+Observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by observing the number of packets in this direction with a retransmit bit set to 1.
 
 
 ## Resetting sQuare Value 
-
-Each client and server resets its sQuare value to zero and initiates a new slot of N packets when sending the first
+Each endpoint resets its sQuare value to zero and initiates a new slot of N packets when sending the first
 packet of a given connection with a new connection ID. This reduces the risk that transient sQuare bit state can be used to link flows across connection migration or ID change.
 
 
 ## Resetting Retransmit Value 
-The not-yet-disclosed-lost-packets counter is reset at each endpoint, client and server, when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient Retransmit bit state can be used to link flows across connection migration or ID change.
+The not-yet-disclosed-lost-packets counter is reset at each endpoint when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient Retransmit bit state can be used to link flows across connection migration or ID change.
 
 # Using the loss bits for Passive Loss Measurement {#usage}
 
 ## End-to-end loss 
-The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the one way delay inteh reverse direction. It is larger otherwise. The retransmit mechanism alone suffices to estimate the end-to-end losses; similar to TCP passive loss measurement, its accuracy depends on the loss affecting the retransmitt-bit-marked packets, which are in themselves proof of previous loss.
+The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the one way delay in the reverse direction. It is larger otherwise (eg RTO). The retransmit mechanism alone suffices to estimate the end-to-end losses; similar to TCP passive loss measurement, its accuracy depends on the loss affecting the retransmit-bit-marked packets, which are in themselves proof of previous loss.
 ## Upstream loss 
 During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets in a direction, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observers can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
 Packets with a long header are not marked, but yet taken into account by the sender when counting the N outgoing packets before its next toggle. Observers should assign long header packets to the pending slot if possible (i.e. up to N packets counted in this slot), to the next one otherwise. Thus, slots with less than N packets, whatever their header length, generally denote upstream loss. 
-As with TCP passive detection based on missing sequence numbers, this estimation may become incaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter out this noise in the observation points. 
+As with TCP passive detection based on missing sequence numbers, this estimation may become inaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter out this noise in the observation points. 
 
-The slot size N should be carefully chosen : too short, it becomes very sensitive to packet reordering and loss. Too large, short connections may end before completion of the first square slot, ruining any loss estimation. Slots of 64 packets are suggested.
+The slot size N should be carefully chosen : too short, it becomes very sensitive to packet reordering and loss. Too large, short connections may end before completion of the first square slot, ruining any loss estimation. Slots of 64 packets are suggested as a reasonable trade-off.
 
 ## Downstream loss 
 
- The Retransmit bit mechanism may be coupled with the sQuare bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses. 
+ The Retransmit bit mechanism can be coupled with the sQuare bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses. 
  The sQuare bit mechanism allows for observers to compute loss measurement at the end of every half sQuare signal period (level 0 or level 1).
  The Retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack.
  
  On path observers can estimate upstream and downstream loss at various scales, from the square slot level to the connection lifetime level.
  
  
- Note that observers should perform a loose synchronisation between the sQuare and the Retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought so as to compare the same portion of the packet stream.
+ Note that observers should perform a loose synchronisation between the sQuare and the Retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought, so as to compare the same portion of the packet stream.
  
  
  
