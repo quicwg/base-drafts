@@ -51,9 +51,7 @@ abbrev: QUIC Loss Detection
 docname: draft-ietf-quic-recovery-latest 
 date: {DATE} 
 category: std ipr: trust200902 area: Transport workgroup: QUIC
-
 stand_alone: yes pi: [toc, sortrefs, symrefs, docmapping]
-
 author:
 ins: J. Iyengar
 name: Jana Iyengar
@@ -70,6 +68,7 @@ ins: I. Swett name: Ian Swett org: Google email: ianswett@google.com role: edito
 
 This document specifies the addition of loss bits to the QUIC
 transport protocol and describes how to use them to measure and locate packet loss.
+
 --- note_Note_to_Readers
 
 This document specifies an experimental delta to the QUIC transport protocol. 
