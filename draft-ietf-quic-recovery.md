@@ -870,22 +870,25 @@ DetectLostPackets(largest_acked):
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
   // Packets sent before this time are deemed lost.
-  lost_send_time -= loss_delay
-
+  lost_send_time = now() - loss_delay
+                   
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked.packet_number - reordering_threshold
+  lost_pn = largest_acked.packet_number - kPacketThreshold
 
   foreach unacked in sent_packets:
     if unacked.packet_number > largest_acked.packet_number:
       continue
 
+    // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
         unacked.packet_number <= lost_pn):
       sent_packets.remove(unacked.packet_number)
       if (unacked.retransmittable):
         lost_packets.insert(unacked)
+    else if (loss_time == 0):
+      loss_time = unacked.time_sent + loss_delay
     else:
-      loss_time = min(loss_time, unacked.time_sent + loss_delay)
+      loss_time = min(loss_time, unacked.time_sent + loss_delay)  
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
@@ -894,8 +897,8 @@ DetectLostPackets(largest_acked):
 ~~~
 
 This algorithm results in loss_time being set based on the earliest packet that
-is still in flight. Timers set based on a loss_time that has already passed need
-to fire immediately.
+is still in flight.  Timers set based on a loss_time that has already passed
+need to fire immediately.
 
 ## Discussion
 
