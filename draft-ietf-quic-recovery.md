@@ -871,7 +871,7 @@ DetectLostPackets(largest_acked):
 
   // Packets sent before this time are deemed lost.
   lost_send_time = now() - loss_delay
-                   
+
   // Packets with packet numbers before this are deemed lost.
   lost_pn = largest_acked.packet_number - kPacketThreshold
 
@@ -888,7 +888,7 @@ DetectLostPackets(largest_acked):
     else if (loss_time == 0):
       loss_time = unacked.time_sent + loss_delay
     else:
-      loss_time = min(loss_time, unacked.time_sent + loss_delay)  
+      loss_time = min(loss_time, unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
