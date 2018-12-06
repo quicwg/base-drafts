@@ -1254,7 +1254,9 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 ## Since draft-ietf-quic-qpack-03
 
-Substantial editorial reorganization; no technical changes.
+- Avoid having multiple ways to encode Delta Base Index of zero (#2005)
+- Change HTTP settings defaults (#2038)
+- Substantial editorial reorganization
 
 ## Since draft-ietf-quic-qpack-02
 
