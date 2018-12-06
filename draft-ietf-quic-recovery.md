@@ -687,8 +687,8 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].time = now
    sent_packets[packet_number].retransmittable = retransmittable
    sent_packets[packet_number].in_flight = in_flight
-   if retransmittable:
-     if is_crypto_packet:
+   if (retransmittable):
+     if (is_crypto_packet):
        time_of_last_sent_crypto_packet = now
      time_of_last_sent_retransmittable_packet = now
      OnPacketSentCC(sent_bytes)
@@ -716,7 +716,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
-    if !newly_acked_packets.empty():
+    if (!newly_acked_packets.empty()):
       // Find the smallest newly acknowledged packet
       smallest_newly_acked =
         FindSmallestNewlyAcked(newly_acked_packets)
@@ -876,7 +876,7 @@ DetectLostPackets(largest_acked):
   lost_pn = largest_acked.packet_number - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if unacked.packet_number > largest_acked.packet_number:
+    if (unacked.packet_number > largest_acked.packet_number):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
