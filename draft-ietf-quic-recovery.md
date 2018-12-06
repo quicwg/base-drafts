@@ -281,12 +281,12 @@ frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
 ## Computing the RTT estimate
 
 RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest newly acked packet was sent.  If no
-packets are newly acknowledged, RTT cannot be calculated. When RTT is
-calculated, the ack delay field from the ACK frame SHOULD be subtracted from the
-RTT as long as the result is larger than the Min RTT.  If the result is smaller
-than the min_rtt, the RTT should be used, but the ack delay field should be
-ignored.
+the current time and the time the largest acked packet was sent.  An RTT sample
+MUST NOT be taken for a packet that is not newly acknowledged or not
+retransmittable. When RTT is calculated, the ack delay field from the ACK frame
+SHOULD be subtracted from the RTT as long as the result is larger than the
+Min RTT. If the result is smaller than the min_rtt, the RTT should be used, but
+the ack delay field should be ignored.
 
 Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
 specified in {{?RFC6298}}.
@@ -704,9 +704,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
-    // If the largest acknowledged is newly acked,
-    // update the RTT.
-    if (sent_packets[ack.largest_acked]):
+    // If the largest acknowledged is newly acked and
+    // retransmittable, update the RTT.
+    if (sent_packets[ack.largest_acked] &&
+        sent_packets[ack.largest_acked].retransmittable):
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
 
