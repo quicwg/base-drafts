@@ -27,7 +27,6 @@ author:
     email: isabelle.hamchaoui@orange.com
 
 normative:
-
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
