@@ -779,6 +779,9 @@ duration of the timer is based on the timer's mode, which is set in the packet
 and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
+This algorithm may result in the timer being set in the past, particularly if
+timers wake up late. Timers set in the past SHOULD fire immediately.
+
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
@@ -895,10 +898,6 @@ DetectLostPackets(largest_acked):
   if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
 ~~~
-
-This algorithm results in loss_time being set based on the earliest packet that
-is still in flight.  Timers set based on a loss_time that has already passed
-need to fire immediately.
 
 ## Discussion
 
