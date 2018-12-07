@@ -268,8 +268,9 @@ continue making forward progress.
 # Computing the RTT estimate
 
 RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest acked packet was sent.  If the
-largest acked packet is not newly acknowledged, RTT cannot be calculated.
+the current time and the time the largest acked packet was sent.  An RTT sample
+MUST NOT be taken for a packet that is not newly acknowledged or not
+ack-eliciting.
 
 When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
 to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
@@ -295,23 +296,6 @@ round-trip time (RTT) is critical to these algorithms and is described first.
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
 frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
-
-## Computing the RTT estimate
-
-RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest acked packet was sent.  An RTT sample
-MUST NOT be taken for a packet that is not newly acknowledged or not
-ack-eliciting. When RTT is calculated, the ack delay field from the ACK frame
-SHOULD be subtracted from the RTT as long as the result is larger than the
-Min RTT. If the result is smaller than the min_rtt, the RTT should be used, but
-the ack delay field should be ignored.
-
-Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}.
-
-Min RTT is the minimum RTT measured over the connection, prior to adjusting by
-ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
-underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 ## Ack-based Detection
 
