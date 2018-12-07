@@ -277,14 +277,14 @@ When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
 to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
 ensures a peer specifying an extremely small max_ack_delay doesn't cause more
 spurious timeouts than a peer that correctly specifies max_ack_delay. It SHOULD
-be subtracted from the RTT as long as the result is larger than the Min RTT.
+be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
 Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
 specified in {{?RFC6298}}.
 
-Min RTT is the minimum RTT measured over the connection, prior to adjusting by
+min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
