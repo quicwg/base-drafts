@@ -126,7 +126,7 @@ the short header for the Retransmit bit. The sQuare and Retransmit bits are the 
 ~~~~~
 {: #fig-short-header title="Short Header Format including proposed Q and R Bit"}
 
-Q: The sQuare bit is toggled every 64 outgoing packets as explained in {{squarebit}}.
+Q: The sQuare bit is toggled every N outgoing packets as explained in {{squarebit}}.
 
 R: The Retransmit bit is set to 0 or 1 according to the not-yet-disclosed-lost-packets
 counter, as explained in {{retransmitbit}}.
