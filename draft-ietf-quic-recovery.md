@@ -304,7 +304,7 @@ Ack-based loss detection implements the spirit of TCP's Fast Retransmit
 {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
 overview of how these algorithms are implemented in QUIC.
 
-A packet is declared lost if it meets both of the following conditions:
+A packet is declared lost if it meets all the following conditions:
 
 * The packet is unacknowledged, in-flight, and was sent prior to an
   acknowledged packet.
