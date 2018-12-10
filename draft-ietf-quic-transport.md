@@ -3105,9 +3105,9 @@ addresses.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below the size needed to support the smallest allowed
-maximum packet size, it MUST immediately cease sending QUIC packets on the
-affected path.  An endpoint MAY terminate the connection if an alternative path
-cannot be found.
+maximum packet size, it MUST immediately cease sending QUIC packets, except for
+PMTU probe packets, on the affected path.  An endpoint MAY terminate the
+connection if an alternative path cannot be found.
 
 
 ## ICMP Packet Too Big Messages {#icmp-pmtud}
@@ -3116,8 +3116,8 @@ PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
 (e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
 because it is larger than the local router MTU. DPLPMTUD can also optionally use
 these messages.  This use of ICMP messages is potentially vulnerable to off-path
-attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
-bandwidth-inefficient value.
+attacks that successfully guess the connection's 4-tuple and reduce the PMTU to
+a bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 1280 bytes.
@@ -3152,6 +3152,9 @@ Further validation can also be provided:
 
 * An endpoint could store additional information from the IP or UDP headers to
   use for validation (for example, the IP ID or UDP checksum).
+
+The endpoint MUST ignore all ICMP messages that contain a quoted packet that was
+never sent or has already been acknowledged.
 
 The endpoint SHOULD ignore all ICMP messages that are not validated or do not
 carry sufficient quoted packet payload to perform validation.  Any reduction in
