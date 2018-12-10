@@ -3047,8 +3047,8 @@ traverse network elements that drop or corrupt ECN codepoints in the IP header.
 
 # Packet Size {#packet-size}
 
-The QUIC packet size includes the QUIC header and integrity check, but not the
-UDP or IP header.
+The QUIC packet size includes the QUIC header and payload, but not the UDP or IP
+header.
 
 Clients MUST ensure they send the first Initial packet in a UDP datagram that is
 at least 1200 bytes.  The payload of a UDP datagram carrying the Initial packet
