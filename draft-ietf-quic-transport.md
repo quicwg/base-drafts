@@ -3047,7 +3047,7 @@ traverse network elements that drop or corrupt ECN codepoints in the IP header.
 
 # Packet Size {#packet-size}
 
-The QUIC packet size includes the QUIC header and payload, but not the UDP or IP
+The QUIC packet size includes the QUIC header and protected payload, but not the UDP or IP
 header.
 
 Clients MUST ensure they send the first Initial packet in a UDP datagram that is
