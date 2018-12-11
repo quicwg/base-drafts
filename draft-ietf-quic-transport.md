@@ -3116,8 +3116,8 @@ PMTU discovery {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
 (e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
 because it is larger than the local router MTU. DPLPMTUD can also optionally use
 these messages.  This use of ICMP messages is potentially vulnerable to off-path
-attacks that successfully guess the addresses used on the path and reduce the PMTU to
-a bandwidth-inefficient value.
+attacks that successfully guess the addresses used on the path and reduce the
+PMTU to a bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 1280 bytes.
