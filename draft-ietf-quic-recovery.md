@@ -338,8 +338,8 @@ The RECOMMENDED initial value for the packet reordering threshold
 {{?RFC5681}} {{?RFC6675}}.
 
 Some networks may exhibit higher degrees of reordering, causing a sender to
-detect spurious losses.  Implementers MAY increase the packet threshold under
-such conditions.
+detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
+as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
@@ -352,7 +352,7 @@ lost, then a timer SHOULD be set for the remaining time.
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
 multiplier, is 9/8.
 
-Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
+Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
   packet whose ack triggered the Early Retransmit process encountered a shorter
@@ -371,7 +371,7 @@ increases loss detection delay.
 
 Timeout loss detection recovers from losses that cannot be handled by
 ack-based loss detection.  It uses a single timer which switches between
-a crypto retransmission timer and a Probe timer.
+a crypto retransmission timer and a probe timer.
 
 ### Crypto Retransmission Timeout
 
@@ -428,48 +428,47 @@ a subsequent connection attempt to the server.
 ### Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
-flight but an acknowledgement does not seem forthcoming.  A PTO enables a
-connection to recover from loss of tail packets or acks, where acks of
-subsequent packets are not available to trigger ack-based loss detection.  The
-PTO algorithm used in QUIC implements the reliability functions of Tail Loss
-Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
-algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
+flight but an acknowledgement is not received within the expected period of
+time.  A PTO enables a connection to recover from loss of tail packets or acks,
+where acks of subsequent packets are not available to trigger ack-based loss
+detection.  The PTO algorithm used in QUIC implements the reliability functions
+of Tail Loss Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}}
+and F-RTO algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
 retransmission timeout period {{?RFC6298}}.
 
 #### Computing PTO
 
-When the final ack-eliciting packet before quiescence is transmitted, the sender
-schedules a timer for the PTO period as follows:
+When an ack-eliciting packet is transmitted, the sender schedules a timer for
+the PTO period as follows:
 
 PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, kGranularity)
 
 kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
-{{ld-vars-of-interest}}.
+{{ld-consts-of-interest}} and {{ld-vars-of-interest}}.
 
 The PTO period is the amount of time that a sender ought to wait for an
-acknowledgement for a sent packet to be received.  This time period includes the
-estimated network roundtrip-time (smoothed_rtt), the variance in the estimate
-(4*rttvar), and max_ack_delay, to account for the maximum time by which a
-receiver might delay sending an acknowledgement.
+acknowledgement of a sent packet.  This time period includes the estimated
+network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
+and max_ack_delay, to account for the maximum time by which a receiver might
+delay sending an acknowledgement.
 
-There is no requirement on the clock granularity. If the PTO computation results
-in a value of zero, a sender MUST set the PTO value to kGranularity, to avoid
-the timer expiring immediately.
-
-A PTO timer is set on an ack-eliciting tail packet.  A sender may not know that
-a packet being sent is a tail packet and may have to adjust the timer every time
-an ack-eliciting packet is sent.
+There is no requirement on the clock granularity. The PTO value MUST be set to
+at least kGranularity, to avoid the timer expiring immediately.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current value.
 This exponential reduction in the sender's rate is important because the PTOs
 might be caused by loss of packets or acknowledgements due to severe congestion.
 
+A sender computes its PTO timer every time an ack-eliciting packet is sent. A
+sender might choose to optimize this by setting the timer fewer times if it
+knows that more ack-eliciting packets will be sent within a short period of
+time.
 
 #### Sending Probe Packets
 
 When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
 probe. A sender MAY send up to two ack-eliciting packets, to avoid an expensive
-consecutive PTO expiration due to packet loss.
+consecutive PTO expiration due to a single packet loss.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
@@ -478,13 +477,11 @@ packet drop in both directions, thus reducing the probability of consecutive PTO
 events.
 
 Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
-new data when possible.  Implementers MAY use alternate strategies for
-determining the content of probe packets.  An implementation could use new data
-in probe packets to maximize throughput.  An implementation could retransmit
-unacknowledged data when new data is unavailable, when flow control does not
-permit new data to be sent, or to opportunistically reduce loss recovery delay.
-Alternatively, an implementation could send new or retransmitted data based on
-the application's priorities.
+new data when possible.  A probe packet MAY carry retransmitted unacknowledged
+data when new data is unavailable, when flow control does not permit new data to
+be sent, or to opportunistically reduce loss recovery delay.  Implementers MAY
+use alternate strategies for determining the content of probe packets, including
+sending new or retransmitted data based on the application's priorities.
 
 
 #### Loss Detection {#pto-loss}
@@ -554,7 +551,7 @@ time:
 
 ## Pseudocode
 
-### Constants of interest
+### Constants of interest {#ld-consts-of-interest}
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.  Some may need to be changed or negotiated in order to better
@@ -652,7 +649,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = infinite
-   largest_sent_before_rto = 0
+   largest_sent_before_pto = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
@@ -706,10 +703,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       // Find the smallest newly acknowledged packet
       smallest_newly_acked =
         FindSmallestNewlyAcked(newly_acked_packets)
-      // If any packets sent prior to RTO were acked, then the
-      // RTO was spurious. Otherwise, inform congestion control.
-      if (rto_count > 0 &&
-            smallest_newly_acked > largest_sent_before_rto):
+      // If any packets sent prior to PTO were acked, then the
+      // PTO was spurious. Otherwise, inform congestion control.
+      if (pto_count > 0 &&
+            smallest_newly_acked > largest_sent_before_pto):
         OnProbeTimeoutVerified(smallest_newly_acked)
       crypto_count = 0
       pto_count = 0
@@ -795,7 +792,7 @@ Pseudocode for SetLossDetectionTimer follows:
       loss_detection_timer.set(loss_time)
       return
 
-    // PTO timer. Calculate PTO duration
+    // Calculate PTO duration
     timeout =
       smoothed_rtt + 4 * rttvar + max_ack_delay
     timeout = max(timeout, granularity)
@@ -920,7 +917,7 @@ experiment with other response functions.
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
 congestion window is less than ssthresh, which typically only occurs after an
-RTO. While in slow start, QUIC increases the congestion window by the number of
+PTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each acknowledgment is processed.
 
 
@@ -951,9 +948,9 @@ losses or increases in the ECN-CE counter.
 Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
 however count these packets as being additionally in flight, since these packets
 adds network load without establishing packet loss.  Note that sending probe
-packets might cause the sender's estimated bytes in flight to exceed the
-sender's congestion window until an acknowledgement is received that establishes
-loss or delivery of packets.
+packets might cause the sender's bytes in flight to exceed the congestion window
+until an acknowledgement is received that establishes loss or delivery of
+packets.
 
 A PTO expiration is classified as spurious or valid when an ACK frame is
 received that newly acknowledges packets in flight, see {{pto-loss}}.  On a
