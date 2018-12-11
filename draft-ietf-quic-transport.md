@@ -3018,7 +3018,8 @@ elements on the network path, an endpoint verifies the following when an ACK
 frame is received:
 
 * The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
-  packets newly acknowledged that were sent with the corresponding codepoint.
+  packets newly acknowledged that were sent with the corresponding codepoint
+  minus the increase in the CE counter.
 
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
   frame MUST be at least the total number of QUIC packets newly acknowledged in
