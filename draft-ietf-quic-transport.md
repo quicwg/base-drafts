@@ -3019,11 +3019,13 @@ frame is received:
 
 * The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
   packets newly acknowledged that were sent with the corresponding codepoint
-  minus the increase in the CE counter.
+  minus the increase in the CE counter. Detects network remarking
+  between ECT(0) and ECT(1).
 
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
   frame MUST be at least the total number of QUIC packets newly acknowledged in
-  this ACK frame.
+  this ACK frame. Detects if the network remark ECT(0), ECT(1) or CE to
+  Not-ECT.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
