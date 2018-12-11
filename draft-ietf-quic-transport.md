@@ -3027,6 +3027,11 @@ frame is received:
   this ACK frame. Detects if the network remark ECT(0), ECT(1) or CE to
   Not-ECT.
 
+If a sender receives an ACK that contains no new acknowledgments, for example
+due to reordering of the ACKs, then ECN counter comparison SHOULD NOT be
+performed. Also if sender do not have state to determine if a particular PSN
+is newly acknowledge or not, then the comparison SHOULD NOT be performed.
+
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
 counters to be greater than the number of packets acknowledged in an ACK frame.
