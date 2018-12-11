@@ -946,12 +946,12 @@ cannot expect its peer to store and use all issued connection IDs.
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  While each endpoint independently chooses how many
 connection IDs to issue, endpoints SHOULD provide and maintain at least eight
-connection IDs.  The endpoint can do this by always supplying a new connection
-ID when a connection ID is retired by its peer or when the endpoint receives a
-packet with a previously unused connection ID.  Endpoints that initiate
-migration and require non-zero-length connection IDs SHOULD provide their peers
-with new connection IDs before migration, or risk the peer closing the
-connection.
+connection IDs.  The endpoint SHOULD do this by always supplying a new
+connection ID when a connection ID is retired by its peer or when the endpoint
+receives a packet with a previously unused connection ID.  Endpoints that
+initiate migration and require non-zero-length connection IDs SHOULD provide
+their peers with new connection IDs before migration, or risk the peer closing
+the connection.
 
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
@@ -963,7 +963,7 @@ response to a migrating peer, see {{migration-linkability}} for more.
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
 connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
-indicating that the peer might bring a new connection ID into circulation using
+indicating that the peer SHOULD bring a new connection ID into circulation using
 the NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
