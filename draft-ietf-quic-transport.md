@@ -3043,7 +3043,8 @@ retransmission timeout due to the absence of acknowledgments from the peer (see
 {{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
 the network path might be corrupting ECN codepoints, the endpoint MAY cease
 setting ECT codepoints in subsequent packets. Doing so allows the connection to
-traverse network elements that drop or corrupt ECN codepoints in the IP header.
+traverse network elements that drop IP packets with ECT or CE markings or
+corrupt ECN codepoints in the IP header.
 
 
 # Packet Size {#packet-size}
