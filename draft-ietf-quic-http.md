@@ -446,10 +446,6 @@ connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 ~~~~~~~~~~
 {: #fig-data title="DATA frame payload"}
 
-DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
-with a payload length of zero, the recipient MUST respond with a stream error
-({{errors}}) of type HTTP_MALFORMED_FRAME.
-
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
