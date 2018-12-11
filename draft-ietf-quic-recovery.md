@@ -409,7 +409,7 @@ On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
 retransmission timeout and set a timer for this period.
 
-When crypto packets are in flight, the TLP and RTO timers are not active.
+When crypto packets are in flight, the PTO timer is not active.
 
 #### Retry and Version Negotiation
 
@@ -427,59 +427,86 @@ a subsequent connection attempt to the server.
 
 ### Probe Timeout {#pto}
 
-A Probe Timeout (PTO) timer is the final backstop for loss detection, enabling a
-connection to recover from severe loss of packets or acks.  The PTO mechanism
-additionally enables recovery of tail packets, where acks of subsequent packets
-are not available to trigger ack-based loss detection.  The PTO algorithm used
-in QUIC implements the reliability functions of Tail Loss Probe
-{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
-algorithms for TCP {{?RFC5682}}.
+A Probe Timeout (PTO) timer triggers a probe packet when ack-eliciting data is
+in flight but an acknowledgement does not seem forthcoming.  A PTO enables a
+connection to recover from loss of tail packets or acks, where acks of
+subsequent packets are not available to trigger ack-based loss detection.  The
+PTO algorithm used in QUIC implements the reliability functions of Tail Loss
+Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
+algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
+retransmission timeout period {{?RFC6298}}.
+
+#### Computing PTO
 
 When the final retransmittable packet before quiescence is transmitted, the
 sender schedules a timer for the PTO period as follows:
 
 PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, G)
 
-G is the timer granularity, and the other variables are defined in
-{{ld-vars-of-interest}}.
+G is the sender's clock granularity. smoothed_rtt, rttvar, and max_ack_delay are
+defined in {{ld-vars-of-interest}}.
 
-The sender explicitly includes max_ack_delay in the PTO period, to account for
-the maximum time by which the receiver might delay sending an acknowledgement.
+The PTO period is the amount of time that a sender ought to wait for an
+acknowledgement for a sent packet to be received.  This time period includes the
+estimated network roundtrip-time (smoothed_rtt), the variance in the estimate
+(4*rttvar), and max_ack_delay, to account for the maximum time by which a
+receiver might delay sending an acknowledgement.
+
+There is no requirement on the clock granularity G. If the PTO computation
+results in a value of zero, a sender MUST set the PTO value to G, to avoid the
+timer expiring immediately.
+
+A PTO timer is set on an ack-eliciting tail packet.  A sender may not know that
+a packet being sent is a tail packet and may have to adjust the timer every time
+an ack-eliciting packet is sent.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current value.
 This exponential reduction in the sender's rate is important because the PTOs
 might be caused by loss of packets or acknowledgements due to severe congestion.
 
-A PTO is set on a tail packet.  A sender may not know that a packet being sent
-is a tail packet, and may have to arm or adjust the timer every time a
-retransmittable packet is sent.
 
-Upon timeout, the sender sends up to two retransmittable packets are sent to
-evoke acknowledgements from the receiver.  The sender might have incurred a high
-latency penalty by the time a PTO timer expires, and this penalty increases
-exponentially in subsequent consecutive PTO events. Sending a single packet on
-an RTO event therefore makes the connection very sensitive to single packet
-loss. Sending two packets significantly increases resilience to packet drop in
-both directions, thus reducing the probability of consecutive PTO events.
+#### Sending Probe Packets 
 
-A packet sent on a PTO timer expiration SHOULD carry new data when possible. If
-new data is unavailable or new data cannot be sent due to flow control, the
-sender MAY retransmit unacknowledged data.  A sender MAY also retransmit
-unacknowledged data to potentially reduce loss recovery time.
+When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
+probe. A sender MAY send up to two ack-eliciting packets, to avoid an expensive
+consecutive PTO expiration due to packet loss.
 
-Since packets sent on a PTO timer expiration are sent as a probes into the
-network, the timer expiration event MUST NOT cause prior unacknowledged packets
-to be marked as lost.
+Consecutive PTO periods increase exponentially, and as a result, connection
+recovery latency increases exponentially as packets continue to be dropped in
+the network.  Sending two packets on PTO expiration increases resilience to
+packet drop in both directions, thus reducing the probability of consecutive PTO
+events.
 
-A packet sent on an PTO timer expiration MUST NOT be blocked by the sender's
-congestion controller. A sender MUST however count these packets as being in
-flight, since this packet adds network load without establishing packet loss.
+Probe packets sent on PTO timer expiration MUST be ack-eliciting.  A probe
+packet SHOULD carry new data when possible.  Implementers MAY use alternate
+strategies for determining the content of probe packets.  An implementation
+could use new data in probe packets to maximize throughput.  An implementation
+could retransmit unacknowledged data when new data is unavailable, when flow
+control does not permit new data to be sent, or to opportunistically reduce loss
+recovery delay.  Alternatively, an implementation could send new or
+retransmitted data based on the application's priorities.
 
-The sender might have several consecutive PTO timer expirations before receiving
-an ACK frame from the peer that newly acknowledges one or more packets.
+Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
+however count these packets as being additionally in flight, since these packets
+adds network load without establishing packet loss.  Note that sending probe
+packets might cause the sender's estimated bytes in flight to exceed the
+sender's congestion window until an acknowledgement is received that establishes
+loss or delivery of packets.
 
-If an ACK frame is received that newly acknowledges packets sent prior to the
-first of one or more consecutive PTO expirations, the PTOs are considered
+
+#### Loss Detection
+
+Delivery or loss of packets in flight is established when an acknowledgement is
+received that newly acknowledges one or more packets.  An endpoint might receive
+an acknowledgement after multiple consecutive PTO periods.
+
+A PTO timer expiration event does not indicate packet loss and MUST NOT cause
+prior unacknowledged packets to be marked as lost.  After a PTO timer has
+expired, an endpoint uses the following rules to mark packets as lost when an
+acknowledgement is received that newly acknowledges packets.
+
+If an acknowledgement is received that newly acknowledges packets sent prior to
+the first of one or more consecutive PTO expirations, the PTOs are considered
 spurious.  Loss detection proceeds as dictated by Fast Retransmit
 {{fast-retransmit}} and Early Retransmit {{early-retransmit}} mechanisms.
 
@@ -540,10 +567,6 @@ Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.  Some may need to be changed or negotiated in order to better
 suit a variety of environments.
 
-kMaxTLPs:
-: Maximum number of tail loss probes before an RTO expires.
-  The RECOMMENDED value is 2.
-
 kPacketThreshold:
 : Maximum reordering in packets before packet threshold loss detection
   considers a packet lost. The RECOMMENDED value is 3.
@@ -554,13 +577,9 @@ kTimeThreshold:
   considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
   value is 9/8.
 
-kMinTLPTimeout:
-: Minimum time in the future a tail loss probe timer may be set for.
+kMinCryptoTimeout:
+: Minimum time in the future a crypto timer may be set for.
   The RECOMMENDED value is 10ms.
-
-kMinRTOTimeout:
-:  Minimum time in the future an RTO timer may be set for. The RECOMMENDED
-   value is 200ms.
 
 kDelayedAckTimeout:
 : The length of the peer's delayed ack timer. The RECOMMENDED value is 25ms.
