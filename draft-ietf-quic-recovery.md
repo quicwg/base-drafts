@@ -402,18 +402,18 @@ retransmission timeout and set a timer for this period.
 
 When crypto packets are outstanding, the TLP and RTO timers are not active.
 
-#### Retry and Version Negotiation
+#### Retry 
 
-A Retry or Version Negotiation packet causes a client to send another Initial
+A Retry packet causes a client to send another Initial
 packet, effectively restarting the connection process and resetting congestion
 control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
+The client MAY however compute an RTT estimate to the server as the
+time period from when the first Initial was sent to when a Retry
+packet is received.  The client MAY use this value to seed the RTT
+estimator for a subsequent connection attempt to the server.
 
 ### Tail Loss Probe {#tlp}
 
