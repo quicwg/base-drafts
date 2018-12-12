@@ -476,7 +476,7 @@ HTTP_UNEXPECTED_FRAME.
 
 If, by the time a new request stream is opened, its priority information
 has already been received via the control stream, the PRIORITY frame
-sent on this request stream MUST be ignored.
+sent on the request stream MUST be ignored.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
