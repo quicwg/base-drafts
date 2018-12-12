@@ -126,7 +126,7 @@ provides:
 
 QUIC uses UDP as a substrate to avoid requiring changes to legacy client
 operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges -- including its signaling -- to avoid
+encrypts most of the data it exchanges, including its signaling, to avoid
 incurring a dependency on middleboxes.
 
 
@@ -379,7 +379,7 @@ data to a peer.
 ~~~
        o
        | Create Stream (Sending)
-       | Remote Creates Bidirectional Stream
+       | Peer Creates Bidirectional Stream
        v
    +-------+
    | Ready | Send RESET_STREAM
@@ -389,8 +389,8 @@ data to a peer.
        | Send STREAM /             |
        |      STREAM_DATA_BLOCKED  |
        |                           |
-       | Create Bidirectional      |
-       |      Stream (Receiving)   |
+       | Peer Creates              |
+       |      Bidirectional Stream |
        v                           |
    +-------+                       |
    | Send  | Send RESET_STREAM     |
@@ -652,7 +652,7 @@ that sends a STOP_SENDING frame can ignore the error code carried in any
 RESET_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a send stream that is already in the
-"Data Sent" state, an endpoint which wishes to cease retransmission of
+"Data Sent" state, an endpoint that wishes to cease retransmission of
 previously-sent STREAM frames on that stream MUST first send a RESET_STREAM
 frame.
 
@@ -831,12 +831,12 @@ commitment.
 ## Controlling Concurrency {#controlling-concurrency}
 
 An endpoint limits the cumulative number of incoming streams a peer can open.
-Only streams with a stream id less than
-(max_stream * 4 + initial_stream_id_for_type) can be opened.  Initial limits
-are set in the transport parameters (see {{transport-parameter-definitions}})
-and subsequently limits are advertised using MAX_STREAMS frames
-({{frame-max-streams}}). Separate limits apply to unidirectional and
-bidirectional streams.
+Only streams with a stream ID less than (max_stream * 4 +
+initial_stream_id_for_type) can be opened (see {{long-packet-types}}).  Initial
+limits are set in the transport parameters (see
+{{transport-parameter-definitions}}) and subsequently limits are advertised
+using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
+unidirectional and bidirectional streams.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
@@ -884,10 +884,10 @@ connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
-Connection IDs MUST NOT contain any information that can be used by to correlate
-them with other connection IDs for the same connection.  As a trivial example,
-this means the same connection ID MUST NOT be issued more than once on the same
-connection.
+Connection IDs MUST NOT contain any information that can be used by an external
+observer to correlate them with other connection IDs for the same connection.
+As a trivial example, this means the same connection ID MUST NOT be issued more
+than once on the same connection.
 
 Packets with long headers include Source Connection ID and Destination
 Connection ID fields.  These fields are used to set the connection IDs for new
@@ -1338,9 +1338,9 @@ On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
 for subsequent packets.  That means that a client might change the Destination
 Connection ID twice during connection establishment, once in response to a
-Retry and once in response to the server's Initial. Once a client has received
-an Initial packet from the server, it MUST discard any packet it receives with a
-different Source Connection ID.
+Retry and once in response to the first Initial packet from the server. Once a
+client has received an Initial packet from the server, it MUST discard any
+packet it receives with a different Source Connection ID.
 
 A client MUST only change the value it sends in the Destination Connection ID in
 response to the first packet of each type it receives from the server (Retry or
@@ -1378,8 +1378,8 @@ of duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
-({{transport-parameter-definitions}}) if it sent a Retry packet, in
-order to enable validation of the Retry, as described in {{packet-retry}}.
+({{transport-parameter-definitions}}) if it sent a Retry packet to enable
+validation of the Retry, as described in {{packet-retry}}.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
