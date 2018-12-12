@@ -519,9 +519,9 @@ The PRIORITY frame payload has the following fields:
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
-  : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
-    1 and 256.
+  : An unsigned 8-bit integer representing a priority weight for the prioritized
+    element (see {{!RFC7540}}, Section 5.3). Add one to the value to obtain a
+    weight between 1 and 256.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
 it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
@@ -1094,6 +1094,8 @@ treated as a connection error of type `HTTP_WRONG_SETTING_DIRECTION`.
 
 Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
+
+Like streams, placeholders have priority information associated with them.
 
 ### Priority Tree Maintenance
 
