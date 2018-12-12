@@ -474,9 +474,9 @@ PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame received
 after other frames on a request stream MUST be treated as a stream error of type
 HTTP_UNEXPECTED_FRAME.
 
-Subsequent PRIORITY frames sent on the control stream might arrive before
-PRIORITY frames sent on a request stream due to reordering.  PRIORITY frames on
-the control stream always take precedence.
+If, by the time a new request stream is opened, its priority information
+has already been received via the control stream, the PRIORITY frame
+sent on this request stream MUST be ignored.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
