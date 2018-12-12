@@ -962,9 +962,10 @@ response to a migrating peer, see {{migration-linkability}} for more.
 
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
-connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer,
-indicating that the peer SHOULD bring a new connection ID into circulation using
-the NEW_CONNECTION_ID frame.
+connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer.
+Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID won't be
+used again and requests that the peer replace it with a new connection ID using
+a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
