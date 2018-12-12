@@ -3028,9 +3028,13 @@ frame is received:
   Not-ECT.
 
 If the sender does not have state to determine if a particular packet number is
-newly acknowledged or not, then the comparison SHOULD NOT be performed. By the
-end of the verification process the local reference counter must have be updated
-to include the newly acknowledged packets.
+newly acknowledged or not, then the verifications using this acknowledgement
+cannot be performed. If an acknowledgement arrive with a packet number that
+isn't the highest to arrived so far, i.e. some reordering has occured, then the
+verification may fail erronously. To prevent this the sender MUST NOT perform
+ECN verification using older acknwoeldgements. By the end of the verification
+process the local reference counter must have be updated to include the newly
+acknowledged packets.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
