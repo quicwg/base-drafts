@@ -3597,8 +3597,8 @@ subsequent to the first do not need to fit within a single UDP datagram.
 
 ### Abandoning Initial Packets {#discard-initial}
 
-A client stops both sending and accepting Initial packets when it sends its
-first Handshake packet.  A server stops sending and accepting Initial packets
+A client stops both sending and processing Initial packets when it sends its
+first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see

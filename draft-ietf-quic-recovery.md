@@ -44,24 +44,6 @@ normative:
         org: Mozilla
         role: editor
 
-  QUIC-TLS:
-    title: "Using Transport Layer Security (TLS) to Secure QUIC"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-tls-latest
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
-        role: editor
-      -
-        ins: S. Turner
-        name: Sean Turner
-        org: sn3rd
-        role: editor
-
-
 informative:
 
 
@@ -458,11 +440,12 @@ be used to improve the RTT estimate.
 
 #### Discarding Initial State {#discard-initial}
 
-As described in Section 4.10 of {{QUIC-TLS}}, endpoints stop sending and
+As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
 receiving Initial packets once they start exchanging Handshake packets.  At this
 point, all loss recovery state for the Initial packet number space is also
-discarded.  After discarding state, new Initial packets will not be sent and no
-additional packets will be declared lost.
+discarded. Packets that are in flight for the packet number space are not
+declared as either acknowledged or lost.  After discarding state, new Initial
+packets will not be sent.
 
 ### Tail Loss Probe {#tlp}
 
@@ -1084,14 +1067,14 @@ A sender that does not use pacing SHOULD reset its congestion window to the
 minimum of the current congestion window and the initial congestion window.
 This recommendation is based on Section 4.1 of {{?RFC5681}}.
 
-## In-Flight Packet Accounting
+## Discarding Packet Number Space State
 
-When keys for an packet number space are discarded (see {{QUIC-TLS}}), any
-packets sent with those keys are removed from the count of bytes in flight.  No
-loss events will occur for these packets, as a result of discarding loss
-recovery state (see {{discard-initial}}).  Note that it is expected that keys
-are discarded after those packets would be declared lost, but Initial secrets
-are destroyed earlier.
+When keys for an packet number space are discarded, any packets sent with those
+keys are removed from the count of bytes in flight.  No loss events will occur
+any in-flight packets from that space, as a result of discarding loss recovery
+state (see {{discard-initial}}).  Note that it is expected that keys are
+discarded after those packets would be declared lost, but Initial secrets are
+destroyed earlier.
 
 ## Pseudocode
 
