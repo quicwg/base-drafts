@@ -1079,9 +1079,9 @@ priority.
 ### Placeholders
 
 In HTTP/2, certain implementations used closed or unused streams as placeholders
-in describing the relative priority of requests.  However, this created
-confusion as servers could not reliably identify which elements of the priority
-tree could safely be discarded. Clients could potentially reference closed
+in describing the relative priority of requests.  This created
+confusion as servers could not identify reliably which elements of the priority
+tree could be safely discarded. Clients could potentially reference closed
 streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
