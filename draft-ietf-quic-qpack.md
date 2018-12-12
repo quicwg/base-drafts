@@ -364,6 +364,32 @@ The dynamic table consists of a list of header fields maintained in first-in,
 first-out order.  The dynamic table is initially empty.  Entries are added by
 instructions on the encoder stream (see {{encoder-stream}}).
 
+The dynamic table can contain duplicate entries (i.e., entries with the same
+name and same value).  Therefore, duplicate entries MUST NOT be treated as an
+error by the decoder.
+
+
+### Calculating Table Size
+
+The size of the dynamic table is the sum of the size of its entries.
+
+The size of an entry is the sum of its name's length in bytes (as defined in
+{{string-literals}}), its value's length in bytes, and 32.
+
+The size of an entry is calculated using the length of its name and value
+without any Huffman encoding applied.
+
+
+### Maximum Table Size
+
+The encoder decides how to update the dynamic table and as such can control how
+much memory is used by the dynamic table.  To limit the memory requirements of
+the decoder, the dynamic table size is strictly bounded.
+
+The decoder determines the maximum size that the encoder is permitted to use for
+the dynamic table.  In HTTP/3, this value is determined by the
+SETTINGS_HEADER_TABLE_SIZE setting (see {{configuration}}).
+
 The maximum size of the dynamic table can be modified by the encoder, subject to
 a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
 initial maximum size is determined by the corresponding setting when HTTP
@@ -373,6 +399,9 @@ the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
 servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
 initial maximum table size is the value of the setting in the peer's SETTINGS
 frame.
+
+
+### Eviction
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -390,21 +419,6 @@ when adding this new entry into the dynamic table.  Implementations are
 cautioned to avoid deleting the referenced name if the referenced entry is
 evicted from the dynamic table prior to inserting the new entry.
 
-The dynamic table can contain duplicate entries (i.e., entries with the same
-name and same value).  Therefore, duplicate entries MUST NOT be treated as an
-error by the decoder.
-
-
-### Maximum Table Size
-
-The encoder decides how to update the dynamic table and as such can control how
-much memory is used by the dynamic table.  To limit the memory requirements of
-the decoder, the dynamic table size is strictly bounded.
-
-The decoder determines the maximum size that the encoder is permitted to use for
-the dynamic table.  In HTTP/3, this value is determined by the
-SETTINGS_HEADER_TABLE_SIZE setting (see {{configuration}}).
-
 An encoder can choose to use less capacity than this maximum size (see
 {{size-update}}), but the chosen size MUST stay lower than or equal to the
 maximum set by the decoder.  Whenever the maximum size for the dynamic table is
@@ -413,28 +427,6 @@ the dynamic table is less than or equal to the maximum size.
 
 This mechanism can be used to completely clear entries from the dynamic table by
 setting a maximum size of 0, which can subsequently be restored.
-
-
-### Calculating Table Size
-
-The size of the dynamic table is the sum of the size of its entries.
-
-The size of an entry is the sum of its name's length in bytes (as defined in
-{{string-literals}}), its value's length in bytes, and 32.
-
-The size of an entry is calculated using the length of its name and value
-without any Huffman encoding applied.
-
-`MaxEntries` is the maximum number of entries that the dynamic table can have.
-The smallest entry has empty name and value strings and has the size of 32.
-The MaxEntries is calculated as
-
-~~~
-   MaxEntries = floor( MaxTableSize / 32 )
-~~~
-
-MaxTableSize is the maximum size of the dynamic table as specified by the
-decoder (see {{maximum-table-size}}).
 
 
 ### Absolute Indexing {#indexing}
@@ -820,6 +812,18 @@ zero, the encoder transforms it as follows before encoding:
 ~~~
    LargestReference = (LargestReference mod (2 * MaxEntries)) + 1
 ~~~
+
+`MaxEntries` is the maximum number of entries that the dynamic table can have.
+The smallest entry has empty name and value strings and has the size of 32.
+The MaxEntries is calculated as
+
+~~~
+   MaxEntries = floor( MaxTableSize / 32 )
+~~~
+
+MaxTableSize is the maximum size of the dynamic table as specified by the
+decoder (see {{maximum-table-size}}).
+
 
 The decoder reconstructs the Largest Reference using the following algorithm:
 
