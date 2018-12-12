@@ -402,7 +402,7 @@ retransmission timeout and set a timer for this period.
 
 When crypto packets are outstanding, the TLP and RTO timers are not active.
 
-#### Retry 
+#### Retry
 
 A Retry packet causes a client to send another Initial
 packet, effectively restarting the connection process and resetting congestion
