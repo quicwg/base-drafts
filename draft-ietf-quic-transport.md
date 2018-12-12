@@ -1544,12 +1544,15 @@ Clients MUST pad UDP datagrams that contain only Initial packets to at least
 it MAY send smaller datagrams.  Sending padded datagrams ensures that the server
 is not overly constrained by the amplification restriction.
 
-In order to prevent a handshake deadlock as a result of the server being unable
-to send, clients SHOULD send a packet upon a handshake timeout, as described in
-{{QUIC-RECOVERY}}.  If the client has no data to retransmit and does not have
-Handshake keys, it SHOULD send an Initial packet in a UDP datagram of at least
-1200 bytes.  If the client has Handshake keys, it SHOULD send a Handshake
-packet.
+Packet loss, e.g., of the server's Handshake packet, can cause a
+situation in which the server cannot send becaus of the
+anti-amplification limit and the client has no data to send. In order
+to prevent a handshake deadlock as a result of this situation, clients
+SHOULD send a packet upon a handshake timeout, as described in
+{{QUIC-RECOVERY}}. If the client has no data to retransmit and does
+not have Handshake keys, it SHOULD send an Initial packet in a UDP
+datagram of at least 1200 bytes.  If the client has Handshake keys, it
+SHOULD send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -1611,14 +1614,14 @@ carry the expected token.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
-Thus, a resumption token SHOULD include an expiration time.  The server MAY
+Thus, a token SHOULD include an expiration time.  The server MAY
 include either an explicit expiration time or an issued timestamp and
 dynamically calculate the expiration time.  It is also unlikely that the client
 port number is the same on two different connections; validating the port is
 therefore unlikely to be successful.
 
-A resumption token SHOULD be constructed to be easily distinguishable from
-tokens that are sent in Retry packets as they are carried in the same field.
+A token SHOULD be constructed to be easily distinguishable from tokens
+that are sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
@@ -1627,7 +1630,8 @@ Token field of its Initial packet.
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
-NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
+NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded
+during connection establishment (they will not be used with new connections).
 
 A client SHOULD NOT reuse a token in different connections. Reusing a token
 allows connections to be linked by entities on the network path
@@ -1697,9 +1701,10 @@ peer from a new local address.  In path validation, endpoints test reachability
 between a specific local address and a specific peer address, where an address
 is the two-tuple of IP address and port.
 
-Path validation tests that packets can be both sent to and received from a peer
-on the path.  Importantly, it validates that the packets received from the
-migrating endpoint do not carry a spoofed source address.
+Path validation tests that packets (PATH_CHALLENGE) can be both sent
+to and received (PATH_RESPONSE) from a peer on the path.  Importantly,
+it validates that the packets received from the migrating endpoint do
+not carry a spoofed source address.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -1734,7 +1739,7 @@ loss.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it
 would an Initial packet, ensuring that connection migration is no more load on a
 new path than establishing a new connection.
 
-The endpoint MUST use fresh random data in every PATH_CHALLENGE frame so that it
+The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that it
 can associate the peer's response with the causative PATH_CHALLENGE.
 
 
@@ -1755,27 +1760,26 @@ to the same remote address from which the PATH_CHALLENGE was received.
 
 ## Successful Path Validation
 
-A new address is considered valid when a PATH_RESPONSE frame is received
-containing data that was sent in a previous PATH_CHALLENGE. Receipt of an
-acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-validation, since the acknowledgment can be spoofed by a malicious peer.
+A new address is considered valid when A PATH_RESPONSE frame is received
+that meets the following criteria:
 
-For path validation to be successful, a PATH_RESPONSE frame MUST be received
-from the same remote address to which the corresponding PATH_CHALLENGE was
-sent. If a PATH_RESPONSE frame is received from a different remote address than
-the one to which the PATH_CHALLENGE was sent, path validation is considered to
-have failed, even if the data matches that sent in the PATH_CHALLENGE.
+- It contains that was sent in a previous PATH_CHALLENGE. Receipt of an
+  acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
+  validation, since the acknowledgment can be spoofed by a malicious peer.
 
-Additionally, the PATH_RESPONSE frame MUST be received on the same local address
-from which the corresponding PATH_CHALLENGE was sent.  An endpoint considers the
-path to be valid when a PATH_RESPONSE frame is received on the same path with
-the same payload as the PATH_CHALLENGE frame.
+- It is from the same remote address as that to which the
+  corresponding PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is
+  received from a different remote address than the one to which the
+  PATH_CHALLENGE was sent, path validation is considered to have failed,
+  even if the data matches that sent in the PATH_CHALLENGE.
 
-If a PATH_RESPONSE frame is received on a different local address than the one
-from which the PATH_CHALLENGE was sent, path validation is not considered to be
-successful, even if the data matches the PATH_CHALLENGE.  This doesn't result in
-path validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting.
+- It is received on the same local address from which the
+  corresponding PATH_CHALLENGE was sent.
+
+Note that receipt on a different local address doesn't result in path
+validation failure, as it might be a result of a forwarded packet (see
+{{off-path-forward}}) or misrouting. It is possible that a valid
+PATH_RESPONSE might be received in the future.
 
 
 ## Failed Path Validation
