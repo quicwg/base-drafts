@@ -1610,7 +1610,7 @@ A resumption token SHOULD be constructed to be easily distinguishable from
 tokens that are sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it can include that value in the
+to what it believes to be the same server, it SHOULD include that value in the
 Token field of its Initial packet.
 
 A token allows a server to correlate activity between the connection where the
@@ -1618,7 +1618,7 @@ token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
 NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded.
 
-A client SHOULD NOT reuse a token in different connections. Reusing a token
+A client MUST NOT reuse a token in different connections. Reusing a token
 allows connections to be linked by entities on the network path
 (see {{migration-linkability}}).  A client MUST NOT reuse a token if it
 believes that its point of network attachment has changed since the token was
@@ -1627,7 +1627,7 @@ interface.  A client needs to start the connection process over if it migrates
 prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it, unless it has already completed address
+MUST attempt to validate it, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
 a Retry. If the validation succeeds, the server SHOULD then allow the
