@@ -384,15 +384,14 @@ without any Huffman encoding applied.
 
 The encoder decides how to update the dynamic table and as such can control how
 much memory is used by the dynamic table.  To limit the memory requirements of
-the decoder, the dynamic table size is strictly bounded.
+the decoder, the dynamic table size is strictly bounded.  The decoder determines
+the maximum size that the encoder is permitted to use for the dynamic table.  In
+HTTP/3, this value is determined by the SETTINGS_HEADER_TABLE_SIZE setting (see
+{{configuration}}).  The maximum size of the dynamic table can be modified by
+the encoder, subject to a decoder-controlled limit (see {{configuration}} and
+{{size-update}}).
 
-The decoder determines the maximum size that the encoder is permitted to use for
-the dynamic table.  In HTTP/3, this value is determined by the
-SETTINGS_HEADER_TABLE_SIZE setting (see {{configuration}}).
-
-The maximum size of the dynamic table can be modified by the encoder, subject to
-a decoder-controlled limit (see {{configuration}} and {{size-update}}).  The
-initial maximum size is determined by the corresponding setting when HTTP
+The initial maximum size is determined by the corresponding setting when HTTP
 requests or responses are first permitted to be sent. For clients using 0-RTT
 data in HTTP/3, the table size is the remembered value of the setting, even if
 the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
@@ -421,12 +420,13 @@ evicted from the dynamic table prior to inserting the new entry.
 
 An encoder can choose to use less capacity than this maximum size (see
 {{size-update}}), but the chosen size MUST stay lower than or equal to the
-maximum set by the decoder.  Whenever the maximum size for the dynamic table is
-reduced, entries are evicted from the end of the dynamic table until the size of
-the dynamic table is less than or equal to the maximum size.
+maximum set by the decoder.
 
-This mechanism can be used to completely clear entries from the dynamic table by
-setting a maximum size of 0, which can subsequently be restored.
+Whenever the maximum size for the dynamic table is reduced, entries are evicted
+from the end of the dynamic table until the size of the dynamic table is less
+than or equal to the maximum size.  This mechanism can be used to completely
+clear entries from the dynamic table by setting a maxiumum size of 0, which can
+subsequently be restored.
 
 
 ### Absolute Indexing {#indexing}
@@ -670,10 +670,10 @@ maximum table size is represented as an integer with a 5-bit prefix (see Section
 {:#fig-size-change title="Maximum Dynamic Table Size Change"}
 
 The new maximum size MUST be lower than or equal to the limit determined by the
-protocol using QPACK.  A value that exceeds this limit MUST be treated as a
-connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.  In HTTP/3, this
-limit is the value of the SETTINGS_HEADER_TABLE_SIZE parameter (see
-{{configuration}}) received from the decoder.
+protocol using QPACK.  In HTTP/3, this limit is the value of the
+SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
+decoder.  A value that exceeds this limit MUST be treated as a connection error
+of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the maximum size of the dynamic table can cause entries to be evicted
 (see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
