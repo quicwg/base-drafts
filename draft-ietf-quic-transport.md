@@ -1610,7 +1610,7 @@ A resumption token SHOULD be constructed to be easily distinguishable from
 tokens that are sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it can include that value in the
+to what it believes to be the same server, it SHOULD include that value in the
 Token field of its Initial packet.
 
 A token allows a server to correlate activity between the connection where the
@@ -1627,7 +1627,7 @@ interface.  A client needs to start the connection process over if it migrates
 prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it, unless it has already completed address
+MUST attempt to validate it, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
 a Retry. If the validation succeeds, the server SHOULD then allow the
