@@ -2227,12 +2227,13 @@ An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
-An endpoint could receive packets from a new source address, indicating a client
-connection migration ({{migration}}), while in the closing period. An endpoint
-in the closing state MUST strictly limit the number of packets it sends to this
-new address until the address is validated (see {{migrate-validate}}). A server
-in the closing state MAY instead choose to discard packets received from a new
-source address.
+While in the closing period, an endpoint could receive packets from a
+new source address, indicating a client connection migration
+({{migration}}). An endpoint in the closing state MUST strictly limit
+the number of packets it sends to this new address until the address
+is validated (see {{migrate-validate}}). A server in the closing state
+MAY instead choose to discard packets received from a new source
+address.
 
 
 ## Idle Timeout
@@ -2278,11 +2279,12 @@ increase the time between packets.
 
 Note:
 
-: Allowing retransmission of a packet contradicts other advice in this document
-  that recommends the creation of new packet numbers for every packet.  Sending
-  new packet numbers is primarily of advantage to loss recovery and congestion
-  control, which are not expected to be relevant for a closed connection.
-  Retransmitting the final packet requires less state.
+: Allowing retransmission of a closing packet contradicts other advice
+  in this document that recommends the creation of new packet numbers
+  for every packet.  Sending new packet numbers is primarily of
+  advantage to loss recovery and congestion control, which are not
+  expected to be relevant for a closed connection.  Retransmitting the
+  final packet requires less state.
 
 New packets from unverified addresses could be used to create an amplification
 attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
@@ -2316,7 +2318,7 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 
 ## Stateless Reset {#stateless-reset}
 
-A stateless reset is provided as an option of last resort for an endpoint that
+A stateless reset is provided as an option of last resort for a server that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
 properly continue the connection.  A stateless reset is not appropriate for
@@ -2360,14 +2362,15 @@ of the packet header.  The remainder of the first byte and an arbitrary
 number of random bytes following it are set to unpredictable values.  The last
 16 bytes of the datagram contain a Stateless Reset Token.
 
-A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bits field needs to
-include at least 182 bits of random or unpredictable values (or 24 bytes, less
-the two fixed bits).  This is intended to allow for a destination connection ID
-of the maximum length permitted, with a minimal packet number, and payload.  The
-Stateless Reset Token corresponds to the minimum expansion of the packet
-protection AEAD.  More random bytes might be necessary if the endpoint could
-have negotiated a packet protection scheme with a larger minimum AEAD expansion.
+A stateless reset will be interpreted by a recipient as a packet with
+a short header.  For the packet to appear as valid, the Random Bits
+field needs to include at least 182 bits of data (or 24 bytes, less
+the two fixed bits). This is intended to allow for a destination
+connection ID of the maximum length permitted, with a minimal packet
+number, and payload.  The Stateless Reset Token corresponds to the
+minimum expansion of the packet protection AEAD.  More random bytes
+might be necessary if the endpoint could have negotiated a packet
+protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
@@ -2469,9 +2472,11 @@ Note that Stateless Reset packets do not have any cryptographic protection.
 
 ### Looping {#reset-looping}
 
-The design of a Stateless Reset is such that it is indistinguishable from a
-valid packet.  This means that a Stateless Reset might trigger the sending of a
-Stateless Reset in response, which could lead to infinite exchanges.
+The design of a Stateless Reset is such that without knowing the
+stateless reset token it is indistinguishable from a valid packet.
+This means that if a server sends a Stateless Reset to another server,
+that might trigger the sending of a Stateless Reset in response, which
+could lead to infinite exchanges.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
 the packet which triggered it, unless it maintains state sufficient to prevent
