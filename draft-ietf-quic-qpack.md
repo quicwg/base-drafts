@@ -1252,6 +1252,11 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-04
+
+- Changed calculation of Delta Base Index to avoid an illegal value (#2002,
+  #2005)
+
 ## Since draft-ietf-quic-qpack-03
 
 Substantial editorial reorganization; no technical changes.
