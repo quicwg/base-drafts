@@ -1259,6 +1259,20 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+## Since draft-ietf-quic-recovery-15
+
+- Redefine how congestion avoidance in terms of when the period starts (#1928,
+  #1930)
+- Document what needs to be tracked for packets that are in flight (#765, #1724,
+  #1939)
+- Integrate both time and packet thresholds into loss detection (#1969, #1212,
+  #934, #1974)
+- Reduce congestion window after idle, unless pacing is used (#2007, #2023)
+- Disable RTT calculation for packets that don't elicit acknowledgment (#2060,
+  #2078)
+- Limit ack_delay by max_ack_delay (#2060, #2099)
+
+
 ## Since draft-ietf-quic-recovery-14
 
 - Used max_ack_delay from transport params (#1796, #1782)
