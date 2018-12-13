@@ -436,7 +436,7 @@ conditions:
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
-delay may come into play, regardless of the number of packets ack-eliciting
+delay may come into play, regardless of the number of ack-eliciting
 packets in-flight. TCP's TLP assumes if at least 2 ack-eliciting packets are
 in-flight, acks will not be delayed.
 
