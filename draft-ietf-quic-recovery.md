@@ -1043,7 +1043,7 @@ kMaxDatagramSize:
   windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
-: Default limit on the initial amount of in-flight data in bytes.  Taken from
+: Default limit on the initial amount of data in flight, in bytes.  Taken from
   {{?RFC6928}}.  The RECOMMENDED value is the minimum of 10 * kMaxDatagramSize
   and max(2* kMaxDatagramSize, 14600)).
 
