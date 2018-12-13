@@ -2178,10 +2178,9 @@ is closing or draining.  While otherwise identical to the closing state, an
 endpoint in the draining state MUST NOT send any packets.  Retaining packet
 protection keys is unnecessary once a connection is in the draining state.
 
-An endpoint MAY transition from the closing period to the draining period if it
-can confirm that its peer is also closing or draining.  Receiving a
-CONNECTION_CLOSE frame is sufficient confirmation, as is receiving a stateless
-reset.  The draining period SHOULD end when the closing period would have ended.
+An endpoint MAY transition immediately from the closing period to the draining
+period upon receipt of a CONNECITON_CLOSE frame or a stateless reset.
+The draining period SHOULD end when the closing period would have ended.
 In other words, the endpoint can use the same end time, but cease retransmission
 of the closing packet.
 
