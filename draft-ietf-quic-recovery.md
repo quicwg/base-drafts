@@ -634,7 +634,7 @@ largest_sent_packet:
 : The packet number of the most recently sent packet.
 
 largest_acked_packet:
-: The largest packet number acknowledged in an ACK frame.
+: The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -682,6 +682,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
+   largest_acked_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -716,6 +717,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
+    largest_acked_packet = max(largest_acked_packet,
+                               ack.largest_acked)
+
     // If the largest acknowledged is newly acked and
     // ack-eliciting, update the RTT.
     if (sent_packets[ack.largest_acked] &&
@@ -741,7 +745,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       tlp_count = 0
       rto_count = 0
 
-    DetectLostPackets(ack.acked_packet)
+    DetectLostPackets()
     SetLossDetectionTimer()
 
     // Process ECN information if present.
@@ -853,7 +857,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        crypto_count++
      else if (loss_time != 0):
        // Time threshold loss Detection
-       DetectLostPackets(largest_acked_packet)
+       DetectLostPackets()
      else if (tlp_count < kMaxTLPs):
        // Tail Loss Probe.
        SendOnePacket()
@@ -875,13 +879,10 @@ the sent_packets for that packet number space. If the loss detection timer
 expires and the loss_time is set, the previous largest acknowledged packet
 is supplied.
 
-DetectLostPackets takes one parameter, largest_acked, which is the largest
-acked packet.
-
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-DetectLostPackets(largest_acked):
+DetectLostPackets():
   loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -890,10 +891,10 @@ DetectLostPackets(largest_acked):
   lost_send_time = now() - loss_delay
 
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked.packet_number - kPacketThreshold
+  lost_pn = largest_acked_packet - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if (unacked.packet_number > largest_acked.packet_number):
+    if (unacked.packet_number > largest_acked_packet):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
