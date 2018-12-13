@@ -1379,6 +1379,18 @@ values in the following registries:
 Issue and pull request numbers are listed with a leading octothorp.
 
 
+## Since draft-ietf-quic-tls-14
+
+- Update the salt used for Initial secrets (#1970)
+- Clarify that TLS_AES_128_CCM_8_SHA256 isn't supported (#2019)
+- Change header protection
+  - Sample from a fixed offset (#1575, #2030)
+  - Cover part of the first byte, including the key phase (#1322, #2006)
+- TLS provides an AEAD and KDF function (#2046)
+  - Clarify that the TLS KDF is used with TLS (#1997)
+  - Change the labels for calculation of QUIC keys (#1845, #1971, #1991)
+
+
 ## Since draft-ietf-quic-tls-13
 
 - Updated to TLS 1.3 final (#1660)
