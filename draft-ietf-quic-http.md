@@ -1926,8 +1926,6 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 - Clarify message processing rules for streams that aren't closed (#1972, #2003)
 - Removed reservation of error code 0 and moved HTTP_NO_ERROR to this value
   (#1922)
-- Removed prohibition of zero-length DATA frames (#2098)
-
 
 ## Since draft-ietf-quic-http-15
 
