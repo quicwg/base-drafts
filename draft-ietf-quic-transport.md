@@ -729,13 +729,15 @@ consumed on all streams to determine the maximum data limit to be advertised.
 
 A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
 frames at any time during the connection.  A receiver cannot renege on an
-advertisement however.  That is, once a receiver advertises an offset,
-advertising a smaller offset has no effect.  A sender MUST therefore ignore any
-MAX_STREAM_DATA or MAX_DATA frames that do not increase flow control limits.
+advertisement however.  That is, once a receiver advertises an offset, it MAY
+advertise a smaller offset, but this has no effect.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the sender violates the advertised connection or stream
 data limits.
+
+A sender MUST ignore any MAX_STREAM_DATA or MAX_DATA frames that do not increase
+flow control limits.
 
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send STREAM_DATA_BLOCKED or
