@@ -1722,7 +1722,7 @@ would an Initial packet, ensuring that connection migration is no more load on a
 new path than establishing a new connection.
 
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame
-so that it can associate the peer's response with the causative
+so that it can associate the peer's response with the corresponding
 PATH_CHALLENGE.
 
 
@@ -4944,7 +4944,7 @@ Frame Type:
 Reason Phrase Length:
 
 : A variable-length integer specifying the length of the reason phrase
-  in bytes.  Because CONNECTION_CLOSE frame cannot be split between
+  in bytes.  Because a CONNECTION_CLOSE frame cannot be split between
   packets, any limits on packet size will also limit the space
   available for a reason phrase.
 
