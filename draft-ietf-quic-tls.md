@@ -613,10 +613,6 @@ amount of data which the client can send in 0-RTT is controlled by the
 treat receipt of a NewSessionTicket that contains a "max_early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
-Early data within the TLS connection MUST NOT be used.  As it is for other TLS
-application data, a server MUST treat receiving early data on the TLS connection
-as a connection error of type PROTOCOL_VIOLATION.
-
 
 ## Rejecting 0-RTT
 
