@@ -157,19 +157,19 @@ Internally, TLS is a layered protocol, with the structure shown below:
 +--------------------------------------------+
 ~~~~
 
-Each upper layer (handshake, alerts, and application data) is carried as a
-series of typed TLS records. Records are individually cryptographically
-protected and then transmitted over a reliable transport (typically TCP) which
-provides sequencing and guaranteed delivery.
+Each upper layer (handshake, alerts, and application data, etc.) is
+carried as a series of typed TLS records. Records are individually
+cryptographically protected and then transmitted over a reliable
+transport (typically TCP) which provides sequencing and guaranteed
+delivery.
 
-Change Cipher Spec records cannot be sent in QUIC.
-
-The TLS authenticated key exchange occurs between two entities: client and
-server.  The client initiates the exchange and the server responds.  If the key
-exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
-PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
-when the DH keys are destroyed.
+The TLS authenticated key exchange occurs between two entities: client
+and server.  The client initiates the exchange and the server
+responds.  If the key exchange completes successfully, both client and
+server will agree on a secret.  TLS supports both pre-shared key (PSK)
+and Diffie-Hellman (DH) key exchanges, as well as a mode that combines
+PSK and DH.  PSK is the basis for 0-RTT; the latter provides perfect
+forward secrecy (PFS) when the DH keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
@@ -402,16 +402,19 @@ network, it proceeds as follows:
   find the proper location in the data sequence.  If the result of this process
   is that new data is available, then it is delivered to TLS in order.
 
-- If the packet is from a previously installed encryption level, it MUST not
-  contain data which extends past the end of previously received data in that
-  flow. Implementations MUST treat any violations of this requirement as a
-  connection error of type PROTOCOL_VIOLATION.
+- If the packet is from an encryption level prior to the current one,
+  it MUST not contain data which extends past the end of previously
+  received data in that flow. Implementations MUST treat any
+  violations of this requirement as a connection error of type
+  PROTOCOL_VIOLATION.
 
-- If the packet is from a new encryption level, it is saved for later processing
-  by TLS.  Once TLS moves to receiving from this encryption level, saved data
-  can be provided.  When providing data from any new encryption level to TLS, if
-  there is data from a previous encryption level that TLS has not consumed, this
-  MUST be treated as a connection error of type PROTOCOL_VIOLATION.
+- If the packet is from an encryption level after the current one, it
+  is saved for later processing by TLS.  Once TLS moves to receiving
+  from this encryption level, saved data can be provided.  When
+  providing data from any new encryption level to TLS, if there is
+  data from a previous encryption level that TLS has not consumed,
+  this MUST be treated as a connection error of type
+  PROTOCOL_VIOLATION.
 
 Each time that TLS is provided with new data, new handshake bytes are requested
 from TLS.  TLS might not provide any bytes if the handshake messages it has
@@ -448,11 +451,15 @@ Important:
 
 ### Encryption Level Changes
 
-As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as TLS starts using keys at a given encryption level, TLS
-indicates to QUIC that it is now reading or writing with keys at that encryption
-level.  These events are not asynchronous; they always occur immediately after
-TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
+As keys for new encryption levels become ready for use, TLS provides
+QUIC with those keys.  Note that keys may become known prior to being
+ready for use. For example the client's application write keys are known to
+the server before they are ready for use. Separately, as TLS starts
+using keys at a given encryption level, TLS indicates to QUIC that it
+is now reading or writing with keys at that encryption level.  These
+events are not asynchronous; they always occur immediately after TLS
+is provided with new handshake bytes, or after TLS produces handshake
+bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -492,7 +499,8 @@ detect lost Handshake packets.
 
 {{exchange-summary}} summarizes the exchange between QUIC and TLS for both
 client and server. Each arrow is tagged with the encryption level used for that
-transmission.
+transmission. Note that 0-RTT may not be available in some handshakes, in which
+case the related operations just do not occur.
 
 ~~~
 Client                                                    Server
