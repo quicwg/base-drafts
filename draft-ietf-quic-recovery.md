@@ -723,6 +723,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       latest_rtt = now - sent_packets[ack.largest_acked].time
       UpdateRtt(latest_rtt, ack.ack_delay)
 
+    // Process ECN information if present.
+    if (ACK frame contains ECN information):
+       ProcessECN(ack)
+
     // Find all newly acked packets in this ACK frame
     newly_acked_packets = DetermineNewlyAckedPackets(ack)
     for acked_packet in newly_acked_packets:
@@ -743,10 +747,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     DetectLostPackets(ack.acked_packet)
     SetLossDetectionTimer()
-
-    // Process ECN information if present.
-    if (ACK frame contains ECN information):
-       ProcessECN(ack)
 
 
   UpdateRtt(latest_rtt, ack_delay):
