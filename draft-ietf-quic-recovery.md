@@ -410,7 +410,7 @@ On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
 retransmission timeout and set a timer for this period.
 
-When crypto packets are outstanding, the TLP and RTO timers are not active.
+When crypto packets are in flight, the TLP and RTO timers are not active.
 
 #### Retry and Version Negotiation
 
@@ -446,9 +446,9 @@ conditions:
   PTO SHOULD be scheduled for min(RTO, PTO).
 
 QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
-delay may come into play, regardless of the number of packets outstanding.
-TCP's TLP assumes if at least 2 packets are outstanding, acks will not be
-delayed.
+delay may come into play, regardless of the number of ack-eliciting
+packets in flight. TCP's TLP assumes if at least 2 ack-eliciting packets are
+in flight, acks will not be delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
@@ -806,7 +806,7 @@ Pseudocode for SetLossDetectionTimer follows:
       loss_detection_timer.cancel()
       return
 
-    if (crypto packets are outstanding):
+    if (crypto packets are in flight):
       // Crypto retransmission timer.
       if (smoothed_rtt == 0):
         timeout = 2 * kInitialRtt
@@ -847,7 +847,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
    OnLossDetectionTimeout():
-     if (crypto packets are outstanding):
+     if (crypto packets are in flight):
        // Crypto retransmission timeout.
        RetransmitUnackedCryptoData()
        crypto_count++
@@ -1053,7 +1053,7 @@ kMaxDatagramSize:
   windows. The RECOMMENDED value is 1200 bytes.
 
 kInitialWindow:
-: Default limit on the initial amount of outstanding data in bytes.  Taken from
+: Default limit on the initial amount of data in flight, in bytes.  Taken from
   {{?RFC6928}}.  The RECOMMENDED value is the minimum of 10 * kMaxDatagramSize
   and max(2* kMaxDatagramSize, 14600)).
 
