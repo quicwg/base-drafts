@@ -837,7 +837,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
    OnLossDetectionTimeout():
-     if (crypto packets are in-fight):
+     if (crypto packets are in flight):
        // Crypto retransmission timeout.
        RetransmitUnackedCryptoData()
        crypto_count++
