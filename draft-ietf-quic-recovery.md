@@ -44,6 +44,15 @@ normative:
         org: Mozilla
         role: editor
 
+informative:
+
+  FACK:
+    title: "Forward Acknowledgement: Refining TCP Congestion Control"
+    author:
+      - ins: M. Mathis
+      - ins: J. Mahdavi
+    date: 1996-08
+    seriesinfo: ACM SIGCOMM
 
 --- abstract
 
@@ -300,7 +309,7 @@ frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
 ## Ack-based Detection
 
 Ack-based loss detection implements the spirit of TCP's Fast Retransmit
-{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK, SACK loss recovery
+{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK {{FACK}}, SACK loss recovery
 {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
 overview of how these algorithms are implemented in QUIC.
 
@@ -325,7 +334,8 @@ smaller initial reordering thresholds to minimize recovery latency.
 ### Packet Threshold
 
 The RECOMMENDED initial value for the packet reordering threshold
-(kPacketThreshold) is 3, based on TCP loss detection {{?RFC5681}} {{?RFC6675}}.
+(kPacketThreshold) is 3, based on best practices for TCP loss detection
+{{?RFC5681}} {{?RFC6675}}.
 
 Some networks may exhibit higher degrees of reordering, causing a sender to
 detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
