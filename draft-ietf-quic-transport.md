@@ -1650,6 +1650,13 @@ able to reuse a token.  To avoid attacks that exploit this property, a server
 can limit its use of tokens to only the information needed validate client
 addresses.
 
+Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
+protect against such attacks, servers SHOULD ensure that tokens sent in Retry
+packets are only accepted for a short time. Tokens that are provided in
+NEW_TOKEN frames (see {{frame-new-token}}) need to be valid for longer, but
+SHOULD NOT be accepted multiple times in a short period. Servers are encouraged
+to allow tokens to be used only once, if possible.
+
 
 ### Address Validation Token Integrity {#token-integrity}
 
