@@ -1545,7 +1545,7 @@ it MAY send smaller datagrams.  Sending padded datagrams ensures that the server
 is not overly constrained by the amplification restriction.
 
 Packet loss, e.g., of the server's Handshake packet, can cause a
-situation in which the server cannot send becaus of the
+situation in which the server cannot send because of the
 anti-amplification limit and the client has no data to send. In order
 to prevent a handshake deadlock as a result of this situation, clients
 SHOULD send a packet upon a handshake timeout, as described in
