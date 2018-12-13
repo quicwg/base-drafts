@@ -429,11 +429,10 @@ a subsequent connection attempt to the server.
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
 flight but an acknowledgement is not received within the expected period of
-time.  A PTO enables a connection to recover from loss of tail packets or acks,
-where acks of subsequent packets are not available to trigger ack-based loss
-detection.  The PTO algorithm used in QUIC implements the reliability functions
-of Tail Loss Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}}
-and F-RTO algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
+time.  A PTO enables a connection to recover from loss of tail packets or acks.
+The PTO algorithm used in QUIC implements the reliability functions of Tail Loss
+Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
+algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
 retransmission timeout period {{?RFC6298}}.
 
 #### Computing PTO
@@ -441,7 +440,9 @@ retransmission timeout period {{?RFC6298}}.
 When an ack-eliciting packet is transmitted, the sender schedules a timer for
 the PTO period as follows:
 
+~~~
 PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, kGranularity)
+~~~
 
 kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
 {{ld-consts-of-interest}} and {{ld-vars-of-interest}}.
@@ -452,8 +453,8 @@ network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.
 
-There is no requirement on the clock granularity. The PTO value MUST be set to
-at least kGranularity, to avoid the timer expiring immediately.
+The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
+immediately.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current value.
 This exponential reduction in the sender's rate is important because the PTOs
@@ -473,8 +474,7 @@ consecutive PTO expiration due to a single packet loss.
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
 the network.  Sending two packets on PTO expiration increases resilience to
-packet drop in both directions, thus reducing the probability of consecutive PTO
-events.
+packet drop, thus reducing the probability of consecutive PTO events.
 
 Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
 new data when possible.  A probe packet MAY carry retransmitted unacknowledged
@@ -486,9 +486,8 @@ sending new or retransmitted data based on the application's priorities.
 
 #### Loss Detection {#pto-loss}
 
-Delivery or loss of packets in flight is established when an acknowledgement is
-received that newly acknowledges one or more packets.  An endpoint might receive
-an acknowledgement after multiple consecutive PTO periods.
+Delivery or loss of packets in flight is established when an ACK frame is
+received that newly acknowledges one or more packets.
 
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost.  After a PTO timer has
@@ -569,7 +568,7 @@ kTimeThreshold:
 
 kGranularity:
 
-: Clock granularity. This is a system-dependent value.  However, implementations
+: Timer granularity. This is a system-dependent value.  However, implementations
   SHOULD use a value no smaller than 1ms.
 
 kDelayedAckTimeout:
@@ -820,7 +819,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        DetectLostPackets(largest_acked_packet)
      else:
        // PTO.
-       if (pto_count == 0)
+       if (pto_count == 0):
          largest_sent_before_pto = largest_sent_packet
        SendTwoPackets()
        pto_count++
