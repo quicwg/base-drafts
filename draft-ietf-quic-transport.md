@@ -3032,16 +3032,27 @@ an ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
 subsequent IP packets, with the expectation that either the network path or the
 peer no longer supports ECN.
 
-To protect the connection from arbitrary corruption of ECN codepoints by
-elements on the network path, an endpoint verifies the following when an ACK
-frame is received:
+To reduce the risk of non-standard compliant ECN markings affecting the
+operation of an endpoint, an endpoint verifies the counts it receives when it
+receives new acknowledgements:
 
 * The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
-  packets newly acknowledged that were sent with the corresponding codepoint.
+  packets newly acknowledged that were sent with the corresponding codepoint
+  minus the increase in the CE counter. This detects network remarking between
+  ECT(0) and ECT(1).
 
 * The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
   frame MUST be at least the total number of QUIC packets newly acknowledged in
-  this ACK frame.
+  this ACK frame. This detects if the network changes ECT(0), ECT(1) or CE to
+  Not-ECT.
+
+This validation is only performed if the ACK frame increases the largest
+received packet number. Reordered acknowledgments could have lower counter
+values and might not be successfully validated as a result.
+
+These counts might be inflated if acknowledgments are never received for packets
+that were successfully delivered. If validation succeeds, an endpoint MUST
+increase its expected counter values to those it receives.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE
@@ -3061,7 +3072,8 @@ retransmission timeout due to the absence of acknowledgments from the peer (see
 {{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
 the network path might be corrupting ECN codepoints, the endpoint MAY cease
 setting ECT codepoints in subsequent packets. Doing so allows the connection to
-traverse network elements that drop or corrupt ECN codepoints in the IP header.
+traverse network elements that drop IP packets with ECT or CE markings or
+corrupt ECN codepoints in the IP header.
 
 
 # Packet Size {#packet-size}
