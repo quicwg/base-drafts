@@ -796,7 +796,7 @@ Pseudocode for SetLossDetectionTimer follows:
       loss_detection_timer.cancel()
       return
 
-    if (crypto packets are in-flight):
+    if (crypto packets are in flight):
       // Crypto retransmission timer.
       if (smoothed_rtt == 0):
         timeout = 2 * kInitialRtt
