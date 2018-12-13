@@ -400,7 +400,7 @@ On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
 retransmission timeout and set a timer for this period.
 
-When crypto packets are in-flight, the TLP and RTO timers are not active.
+When crypto packets are in flight, the TLP and RTO timers are not active.
 
 #### Retry and Version Negotiation
 
