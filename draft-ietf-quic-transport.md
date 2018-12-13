@@ -1739,8 +1739,9 @@ loss.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it
 would an Initial packet, ensuring that connection migration is no more load on a
 new path than establishing a new connection.
 
-The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that it
-can associate the peer's response with the causative PATH_CHALLENGE.
+The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame
+so that it can associate the peer's response with the causative
+PATH_CHALLENGE.
 
 
 ## Path Validation Responses
@@ -2589,7 +2590,7 @@ and integrity protection. Details of packet protection are found in
 {{QUIC-TLS}}; this section includes an overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
-packet protection is not effective confidentiality protection, it only exists to
+packet protection is not effective confidentiality protection; it only exists to
 ensure that the sender of the packet is on the network path. Any entity that
 receives the Initial packet from a client can recover the keys necessary to
 remove packet protection or to generate packets that will be successfully
@@ -2604,9 +2605,10 @@ handshake ensures that only the communicating endpoints receive the
 corresponding keys.
 
 The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is applied
-(see {{QUIC-TLS}} for details).  The underlying packet number increases with
-each packet sent, see {{packet-numbers}} for details.
+confidentiality protection that is applied after packet protection is
+applied (see {{QUIC-TLS}} for details).  The underlying packet number
+increases with each packet sent in a given packet number space, see
+{{packet-numbers}} for details.
 
 
 ## Coalescing Packets {#packet-coalesce}
@@ -2784,7 +2786,7 @@ A sender can minimize per-packet bandwidth and computational costs by bundling
 as many frames as possible within a QUIC packet.  A sender MAY wait for a short
 period of time to bundle multiple frames before sending a packet that is not
 maximally packed, to avoid sending out large numbers of small packets.  An
-implementation may use knowledge about application sending behavior or
+implementation MAY use knowledge about application sending behavior or
 heuristics to determine whether and for how long to wait.  This waiting period
 is an implementation decision, and an implementation should be careful to delay
 conservatively, since any delay is likely to increase application-visible
@@ -2834,7 +2836,7 @@ Packets containing PADDING frames are considered
 to be in flight for congestion control purposes {{QUIC-RECOVERY}}. Sending only
 PADDING frames might cause the sender to become limited by the congestion
 controller (as described in {{QUIC-RECOVERY}}) with no acknowledgments
-forthcoming from the receiver. Therefore, a sender should ensure that other
+forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
 frames are sent in addition to PADDING frames to elicit acknowledgments from the
 receiver.
 
@@ -3662,7 +3664,7 @@ that are added to the Long Header before the Length field.
 {: #initial-format title="Initial Packet"}
 
 These fields include the token that was previously provided in a Retry packet or
-NEW_TOKEN frame:
+a NEW_TOKEN frame:
 
 Token Length:
 
@@ -3723,10 +3725,10 @@ Initial keys are discarded.
 
 <!-- TODO: delete this section after confirming that it is redundant -->
 
-The first Initial packet sent by either endpoint contains a packet number of
-0. The packet number MUST increase monotonically thereafter.  Initial packets
-are in a different packet number space to other packets (see
-{{packet-numbers}}).
+The first Initial packet sent by either endpoint MUST contain a packet
+number of 0. The packet number MUST increase monotonically thereafter.
+Initial packets are in a different packet number space to other
+packets (see {{packet-numbers}}).
 
 
 ### 0-RTT Packet Numbers {#retry-0rtt-pn}
@@ -3782,9 +3784,9 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
 {{negotiating-connection-ids}}).
 
-The first Handshake packet sent by a server contains a packet number of 0.
-Handshake packets are their own packet number space.  Packet numbers are
-incremented normally for other Handshake packets.
+
+Handshake packets are their own packet number space, and thus
+the first Handshake packet sent by a server contains a packet number of 0.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
@@ -3901,10 +3903,11 @@ MUST include the value of the Original Destination Connection ID field of the
 Retry packet (that is, the Destination Connection ID field from the client's
 first Initial packet) in the transport parameter.
 
-If the client received and processed a Retry packet, it validates that the
-original_connection_id transport parameter is present and correct; otherwise, it
-validates that the transport parameter is absent.  A client MUST treat a failed
-validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
+If the client received and processed a Retry packet, it MUST validate
+that the original_connection_id transport parameter is present and
+correct; otherwise, it validates that the transport parameter is
+absent.  A client MUST treat a failed validation as a connection error
+of type TRANSPORT_PARAMETER_ERROR.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
@@ -4239,9 +4242,6 @@ Block describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of bytes.
 
-The ACK frame uses the least significant bit (that is, type 0x03) to indicate
-ECN feedback and report receipt of QUIC packets with associated ECN codepoints
-of ECT(0), ECT(1), or CE in the packet's IP header.
 
 ~~~
  0                   1                   2                   3
@@ -4486,8 +4486,8 @@ FIN bit.
 
 ## NEW_TOKEN Frame {#frame-new-token}
 
-A server sends a NEW_TOKEN frame (type=0x07) to provide the client a token to
-send in the header of an Initial packet for a future connection.
+A server sends a NEW_TOKEN frame (type=0x07) to provide the client with
+a token to send in the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
 
@@ -4581,9 +4581,9 @@ Stream Data:
 When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
-The first byte in the stream has an offset of 0.  The largest offset delivered
-on a stream - the sum of the re-constructed offset and data length - MUST be
-less than 2^62.
+The first byte in the stream has an offset of 0.  The largest offset
+delivered on a stream - the sum of the offset and data length - MUST
+be less than 2^62.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -4987,10 +4987,10 @@ Frame Type:
 
 Reason Phrase Length:
 
-: A variable-length integer specifying the length of the reason phrase in bytes.
-  Note that a CONNECTION_CLOSE frame cannot be split between packets, so in
-  practice any limits on packet size will also limit the space available for a
-  reason phrase.
+: A variable-length integer specifying the length of the reason phrase
+  in bytes.  Because CONNECTION_CLOSE frame cannot be split between
+  packets, any limits on packet size will also limit the space
+  available for a reason phrase.
 
 Reason Phrase:
 
@@ -5367,7 +5367,7 @@ An accompanying transport parameter registration (see
 specification needs to describe the format and assigned semantics of any fields
 in the frame.
 
-Expert(s) are encouraged to be biased towards approving registrations unless
+Expert(s) SHOULD be biased towards approving registrations unless
 they are abusive, frivolous, or actively harmful (not merely aesthetically
 displeasing, or architecturally dubious).
 
