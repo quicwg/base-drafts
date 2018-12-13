@@ -1916,6 +1916,14 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 ## Since draft-ietf-quic-http-16
 
 - Rename "HTTP/QUIC" to "HTTP/3" (#1973)
+- Define INITIAL_PRIORITY frame (#1865, #2075)
+- Remove exclusive reprioritization (#2075)
+- Define DUPLICATE_PUSH frame to refer to another PUSH_PROMISE (#2072)
+- Set defaults for settings, allow request before receiving SETTINGS (#1809,
+  #1846, #2038)
+- Clarify message processing rules for streams that aren't closed (#1972, #2003)
+- Removed reservation of error code 0 (#1922)
+
 
 ## Since draft-ietf-quic-http-15
 
