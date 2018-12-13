@@ -438,7 +438,7 @@ conditions:
 QUIC includes MaxAckDelay in all probe timeouts, because it assumes the ack
 delay may come into play, regardless of the number of ack-eliciting
 packets in flight. TCP's TLP assumes if at least 2 ack-eliciting packets are
-in-flight, acks will not be delayed.
+in flight, acks will not be delayed.
 
 A PTO value of at least 1.5*SRTT ensures that the ACK is overdue.  The 1.5 is
 based on {{?TLP}}, but implementations MAY experiment with other constants.
