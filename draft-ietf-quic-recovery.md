@@ -935,7 +935,7 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If two consecutive PTOs have occurred (pto_count is at least 2), the network is
+If two consecutive PTOs have occurred (pto_count is at least 3), the network is
 considered to be experiencing persistent congestion, and the sender's congestion
 window MUST be reduced to the minimum congestion window.
 
@@ -1095,7 +1095,7 @@ window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
        // Collapse congestion window if persistent congestion
-       if (pto_count >= 2):
+       if (pto_count > 2):
          congestion_window = kMinimumWindow
 ~~~
 
