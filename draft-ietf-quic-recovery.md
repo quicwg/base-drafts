@@ -306,12 +306,12 @@ If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
 frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
 
-## Ack-based Detection {#ack-loss-detection}
+## Acknowledgement-based Detection {#ack-loss-detection}
 
-Ack-based loss detection implements the spirit of TCP's Fast Retransmit
-{{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK {{FACK}}, SACK loss recovery
-{{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section provides an
-overview of how these algorithms are implemented in QUIC.
+Acknowledgement-based loss detection implements the spirit of TCP's Fast
+Retransmit {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK {{FACK}}, SACK loss
+recovery {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section
+provides an overview of how these algorithms are implemented in QUIC.
 
 A packet is declared lost under the following conditions:
 
@@ -325,11 +325,12 @@ A packet is declared lost under the following conditions:
 The acknowledgement indicates that a packet sent later was delivered, while the
 packet and time thresholds provide some tolerance for packet reordering.
 
-Spuriously declaring packets lost leads to unnecessary retransmissions and may
-result in degraded performance due to the actions of the congestion controller
-upon detecting loss.  Implementations that detect spurious retransmissions and
-increase the reordering threshold in packets or time MAY choose to start with
-smaller initial reordering thresholds to minimize recovery latency.
+Spuriously declaring packets as lost leads to unnecessary retransmissions and
+may result in degraded performance due to the actions of the congestion
+controller upon detecting loss.  Implementations that detect spurious
+retransmissions and increase the reordering threshold in packets or time MAY
+choose to start with smaller initial reordering thresholds to minimize recovery
+latency.
 
 ### Packet Threshold
 
@@ -370,8 +371,8 @@ increases loss detection delay.
 ## Timeout Loss Detection
 
 Timeout loss detection recovers from losses that cannot be handled by
-ack-based loss detection.  It uses a single timer which switches between
-a crypto retransmission timer and a probe timer.
+acknowledgement-based loss detection.  It uses a single timer which switches
+between a crypto retransmission timer and a probe timer.
 
 ### Crypto Retransmission Timeout
 
@@ -494,14 +495,9 @@ prior unacknowledged packets to be marked as lost.  After a PTO timer has
 expired, an endpoint uses the following rules to mark packets as lost when an
 acknowledgement is received that newly acknowledges packets.
 
-If an acknowledgement is received that newly acknowledges packets sent prior to
-the first of one or more consecutive PTO expirations, the PTOs are considered
-spurious.  Loss detection proceeds as dictated by packet and time threshold
-mechanisms, see {{ack-loss-detection}}.
-
-If an ACK frame is received that newly acknowledges only those packets that were
-sent after a PTO timer expiration, all unacknowledged packets with lower packet
-numbers MUST be marked as lost.
+When an acknowledgement is received that newly acknowledges packets, loss
+detection proceeds as dictated by packet and time threshold mechanisms, see
+{{ack-loss-detection}}.
 
 
 ## Tracking Sent Packets {#tracking-sent-packets}
@@ -592,9 +588,6 @@ crypto_count:
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
-largest_sent_before_pto:
-: The last packet number sent prior to the first probe timeout.
-
 time_of_last_sent_ack_eliciting_packet:
 : The time the most recent ack-eliciting packet was sent.
 
@@ -648,7 +641,6 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = infinite
-   largest_sent_before_pto = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
@@ -695,20 +687,14 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
     // Find all newly acked packets in this ACK frame
     newly_acked_packets = DetermineNewlyAckedPackets(ack)
+    if (newly_acked_packets.empty()):
+      return
+
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
-    if (!newly_acked_packets.empty()):
-      // Find the smallest newly acknowledged packet
-      smallest_newly_acked =
-        FindSmallestNewlyAcked(newly_acked_packets)
-      // If any packets sent prior to PTO were acked, then the
-      // PTO was spurious. Otherwise, inform congestion control.
-      if (pto_count > 0 &&
-            smallest_newly_acked > largest_sent_before_pto):
-        OnProbeTimeoutVerified(smallest_newly_acked)
-      crypto_count = 0
-      pto_count = 0
+    crypto_count = 0
+    pto_count = 0
 
     DetectLostPackets(ack.acked_packet)
     SetLossDetectionTimer()
@@ -818,9 +804,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        // Time threshold loss Detection
        DetectLostPackets(largest_acked_packet)
      else:
-       // PTO.
-       if (pto_count == 0):
-         largest_sent_before_pto = largest_sent_packet
+       // PTO
        SendTwoPackets()
        pto_count++
 
@@ -951,11 +935,9 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-A PTO expiration is classified as spurious or valid when an ACK frame is
-received that newly acknowledges packets in flight, see {{pto-loss}}.  On a
-valid PTO, the congestion window MUST be reduced to the minimum congestion
-window and slow start is re-entered.
-
+If two consecutive PTOs have occurred (pto_count is at least 2), the network is
+considered to be experiencing persistent congestion, and the sender's congestion
+window MUST be reduced to the minimum congestion window.
 
 ## Pacing
 
@@ -1112,6 +1094,9 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+       // Collapse congestion window if persistent congestion
+       if (pto_count >= 2):
+         congestion_window = kMinimumWindow
 ~~~
 
 ### Process ECN Information
@@ -1148,21 +1133,6 @@ are detected lost.
      CongestionEvent(largest_lost_packet.time)
 ~~~
 
-### On Probe Timeout Verified
-
-QUIC decreases the congestion window to the minimum value once the probe timeout
-has been verified and removes any packets sent before the newly acknowledged
-packet.
-
-~~~
-   OnProbeTimeoutVerified(packet_number)
-     congestion_window = kMinimumWindow
-     // Declare all packets prior to packet_number lost.
-     for (sent_packet: sent_packets):
-       if (sent_packet.packet_number < packet_number):
-         bytes_in_flight -= sent_packet.size
-         sent_packets.remove(sent_packet.packet_number)
-~~~
 
 # Security Considerations
 
