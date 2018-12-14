@@ -433,7 +433,7 @@ flight but an acknowledgement is not received within the expected period of
 time.  A PTO enables a connection to recover from loss of tail packets or acks.
 The PTO algorithm used in QUIC implements the reliability functions of Tail Loss
 Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
-algorithms for TCP {{?RFC5682}}, and the computation is based on TCP's
+algorithms for TCP {{?RFC5682}}, and the timeout computation is based on TCP's
 retransmission timeout period {{?RFC6298}}.
 
 #### Computing PTO
@@ -475,14 +475,15 @@ consecutive PTO expiration due to a single packet loss.
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
 the network.  Sending two packets on PTO expiration increases resilience to
-packet drop, thus reducing the probability of consecutive PTO events.
+packet drops, thus reducing the probability of consecutive PTO events.
 
 Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
 new data when possible.  A probe packet MAY carry retransmitted unacknowledged
 data when new data is unavailable, when flow control does not permit new data to
-be sent, or to opportunistically reduce loss recovery delay.  Implementers MAY
-use alternate strategies for determining the content of probe packets, including
-sending new or retransmitted data based on the application's priorities.
+be sent, or to opportunistically reduce loss recovery delay.  Implementations
+MAY use alternate strategies for determining the content of probe packets,
+including sending new or retransmitted data based on the application's
+priorities.
 
 
 #### Loss Detection {#pto-loss}
