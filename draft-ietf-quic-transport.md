@@ -5455,6 +5455,30 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-16
+
+- Stream limits are defined as counts, not maximums (#1850, #1906)
+- Require amplification attack defense after closing (#1905, #1911)
+- Remove reservation of application error code 0 for STOPPING (#1804, #1922)
+- Renumbered frames (#1945)
+- Renumbered transport parameters (#1946)
+- Numeric transport parameters are expressed as varints (#1608, #1947, #1955)
+- Reorder the NEW_CONNECTION_ID frame (#1952, #1963)
+- Rework the first byte (#2006)
+  - Fix the 0x40 bit
+  - Change type values for long header
+  - Add spin bit to short header (#631, #1988)
+  - Encrypt the remainder of the first byte (#1322)
+  - Move packet number length to first byte
+  - Simplify packet number protection (#1575)
+- Allow STOP_SENDING to open a remote bidirectional stream (#1797, #2013)
+- Added mitigation for off-path migration attacks (#1278, #1749, #2033)
+- Don't let the PMTU to drop below 1280 (#2063, #2069)
+- Require peers to replace retired connection IDs (#2085)
+- Servers are required to ignore Version Negotiation packets (#2088)
+- Tokens are repeated in all Initial packets (#2089)
+- Clarified how PING frames are sent after loss (#2094)
+
 ## Since draft-ietf-quic-transport-15
 
 Substantial editorial reorganization; no technical changes.
