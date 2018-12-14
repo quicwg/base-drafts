@@ -936,7 +936,7 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If a threshold number of consecutive PTOs have occurred (pto_count is at least
+If a threshold number of consecutive PTOs have occurred (pto_count is more than
 kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
 considered to be experiencing persistent congestion, and the sender's congestion
 window MUST be reduced to the minimum congestion window.
@@ -1012,8 +1012,8 @@ kPersistentCongestionThreshold:
   reaches this threshold - that is, persistent congestion is established - the
   sender responds by collapsing its congestion window to kMinimumWindow, similar
   to a Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value
-  for kPersistentCongestionThreshold is 3, which is equivalent to having two
-  TLPs followed by an RTO in TCP.
+  for kPersistentCongestionThreshold is 2, which is equivalent to having two
+  TLPs before an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1108,7 +1108,7 @@ window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
        // Collapse congestion window if persistent congestion
-       if (pto_count >= kPersistentCongestionThreshold):
+       if (pto_count > kPersistentCongestionThreshold):
          congestion_window = kMinimumWindow
 ~~~
 
