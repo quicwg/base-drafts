@@ -937,9 +937,9 @@ until an acknowledgement is received that establishes loss or delivery of
 packets.
 
 If a threshold number of consecutive PTOs have occurred (pto_count is at least
-kPersistentCongestion, see {{cc-consts-of-interest}}), the network is considered
-to be experiencing persistent congestion, and the sender's congestion window
-MUST be reduced to the minimum congestion window.
+kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
+considered to be experiencing persistent congestion, and the sender's congestion
+window MUST be reduced to the minimum congestion window.
 
 ## Pacing
 
@@ -1004,15 +1004,16 @@ kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
   The RECOMMENDED value is 0.5.
 
-kPersistentCongestion:
+kPersistentCongestionThreshold:
 : Number of consecutive PTOs after which network is considered to be
   experiencing persistent congestion.  The rationale for this threshold is to
   enable a sender to use initial PTOs for aggressive probing, similar to Tail
   Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  Once the number of consecutive PTOs
   reaches this threshold - that is, persistent congestion is established - the
-  sender responds by collapsing its congestion window, similar to a
-  Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value is 3,
-  equivalent to having two TLPs followed by an RTO in TCP.
+  sender responds by collapsing its congestion window to kMinimumWindow, similar
+  to a Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value
+  for kPersistentCongestionThreshold is 3, which is equivalent to having two
+  TLPs followed by an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1107,7 +1108,7 @@ window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
        // Collapse congestion window if persistent congestion
-       if (pto_count >= kPersistentCongestion):
+       if (pto_count >= kPersistentCongestionThreshold):
          congestion_window = kMinimumWindow
 ~~~
 
