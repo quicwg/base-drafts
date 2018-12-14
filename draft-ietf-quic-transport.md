@@ -3152,7 +3152,7 @@ as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This validation
 SHOULD use the quoted packet supplied in the payload of an ICMP message to
 associate the message with a corresponding transport connection {{!DPLPMTUD}}.
 
-ICMP message validation SHOULD include matching IP addresses and UDP ports
+ICMP message validation MUST include matching IP addresses and UDP ports
 {{!RFC8085}} and, when possible, connection IDs to an active QUIC session.
 
 Further validation can also be provided:
