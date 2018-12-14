@@ -432,9 +432,9 @@ A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
 flight but an acknowledgement is not received within the expected period of
 time.  A PTO enables a connection to recover from loss of tail packets or acks.
 The PTO algorithm used in QUIC implements the reliability functions of Tail Loss
-Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}}, RTO {{?RFC5681}} and F-RTO
-algorithms for TCP {{?RFC5682}}, and the timeout computation is based on TCP's
-retransmission timeout period {{?RFC6298}}.
+Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
+F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
+TCP's retransmission timeout period {{?RFC6298}}.
 
 #### Computing PTO
 
