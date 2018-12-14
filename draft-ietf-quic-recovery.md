@@ -936,9 +936,10 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If two consecutive PTOs have occurred (pto_count is at least 3), the network is
-considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window.
+If a threshold number of consecutive PTOs have occurred (pto_count is at least
+kPersistentCongestion, see {{cc-consts-of-interest}}), the network is considered
+to be experiencing persistent congestion, and the sender's congestion window
+MUST be reduced to the minimum congestion window.
 
 ## Pacing
 
@@ -979,7 +980,7 @@ This recommendation is based on Section 4.1 of {{?RFC5681}}.
 
 ## Pseudocode
 
-### Constants of interest
+### Constants of interest {#cc-consts-of-interest}
 
 Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
@@ -1002,6 +1003,16 @@ kMinimumWindow:
 kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
   The RECOMMENDED value is 0.5.
+
+kPersistentCongestion:
+: Number of consecutive PTOs after which network is considered to be
+  experiencing persistent congestion.  The rationale for this threshold is to
+  enable a sender to use initial PTOs for aggressive probing, similar to Tail
+  Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  Once the number of consecutive PTOs
+  reaches this threshold - that is, persistent congestion is established - the
+  sender responds by collapsing its congestion window, similar to a
+  Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value is 3,
+  equivalent to having two TLPs followed by an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1096,7 +1107,7 @@ window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
        // Collapse congestion window if persistent congestion
-       if (pto_count > 2):
+       if (pto_count >= kPersistentCongestion):
          congestion_window = kMinimumWindow
 ~~~
 
