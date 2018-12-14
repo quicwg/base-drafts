@@ -1197,8 +1197,12 @@ This document has no IANA actions.  Yet.
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
+Issue and pull request numbers are listed with a leading octothorp.
+
 ## Since draft-ietf-quic-recovery-16
 
+- Unify TLP and RTO into a single PTO; eliminate min RTO, min TLP and min crypto
+  timeouts; eliminate timeout validation (#2114, #2166, #2168, #1017)
 - Redefine how congestion avoidance in terms of when the period starts (#1928,
   #1930)
 - Document what needs to be tracked for packets that are in flight (#765, #1724,
