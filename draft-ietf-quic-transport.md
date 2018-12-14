@@ -3139,8 +3139,7 @@ attacks that successfully guess the IP address 3-tuple and reduce the PMTU to a
 bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
-1280 bytes.  And endpoint MUST ignore an ICMP message that attempts to increase
-PMTU, unless the ICMP message was received in response to a PMTU probe packet.
+1280 bytes.
 
 QUIC endpoints SHOULD provide validation to protect from off-path injection of
 ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
@@ -3174,8 +3173,10 @@ Further validation can also be provided:
   use for validation (for example, the IP ID or UDP checksum).
 
 The endpoint SHOULD ignore all ICMP messages that are not validated or do not
-carry sufficient quoted packet payload to perform validation.  Any reduction in
-the QUIC maximum packet size MAY be provisional until QUIC's loss detection
+carry sufficient quoted packet payload to perform validation.
+
+An endpoint MUST NOT increase PMTU based on ICMP messages.  Any reduction in the
+QUIC maximum packet size MAY be provisional until QUIC's loss detection
 algorithm determines that the quoted packet has actually been lost.
 
 
