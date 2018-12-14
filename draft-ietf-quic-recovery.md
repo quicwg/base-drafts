@@ -768,7 +768,7 @@ Pseudocode for SetLossDetectionTimer follows:
         timeout = 2 * kInitialRtt
       else:
         timeout = 2 * smoothed_rtt
-      timeout = max(timeout, granularity)
+      timeout = max(timeout, kGranularity)
       timeout = timeout * (2 ^ crypto_count)
       loss_detection_timer.set(
         time_of_last_sent_crypto_packet + timeout)
@@ -781,7 +781,7 @@ Pseudocode for SetLossDetectionTimer follows:
     // Calculate PTO duration
     timeout =
       smoothed_rtt + 4 * rttvar + max_ack_delay
-    timeout = max(timeout, granularity)
+    timeout = max(timeout, kGranularity)
     timeout = timeout * (2 ^ pto_count)
 
     loss_detection_timer.set(
