@@ -1024,7 +1024,7 @@ cannot be unprotected successfully MUST be discarded.
 Failure to unprotect a packet does not necessarily indicate the existence of a
 protocol error in a peer or an attack.  The truncated packet number encoding
 used in QUIC can cause packet numbers to be decoded incorrectly if they are
-delayed significantly.
+delayed significantly, as can damaged packets.
 
 
 ## Use of 0-RTT Keys {#using-early-data}
@@ -1090,8 +1090,8 @@ decrypt the packet that contains the changed bit.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
-message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
-unexpected_message (see {{tls-errors}}).
+message as a connection error of type 0x10a (the QUIC mapping of a
+a fatal TLS alert of unexpected_message (see {{tls-errors}})).
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received and successfully decrypted a
