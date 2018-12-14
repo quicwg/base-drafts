@@ -2762,10 +2762,9 @@ encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
 encoded on a single byte.  For instance, though 0x4007 is a legitimate two-byte
 encoding for a variable-length integer with a value of 7, PING frames are always
-encoded as a single byte with the value 0x07.  An endpoint MUST treat the
-receipt of a frame type that uses a longer encoding than necessary as a
-connection error of type PROTOCOL_VIOLATION.
-
+encoded as a single byte with the value 0x07.  An endpoint MAY treat the receipt
+of a frame type that uses a longer encoding than necessary as a connection error
+of type PROTOCOL_VIOLATION.
 
 
 # Packetization and Reliability {#packetization}
