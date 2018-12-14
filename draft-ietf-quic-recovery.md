@@ -969,14 +969,17 @@ application limited or after a probe timeout. In order to limit
 the size of bursts sent into the network, the behavior when restarting from
 idle depends upon whether pacing is used.
 
-If the sender uses pacing, the connection should limit the initial burst of
-packets to no more than the initial congestion window and subsequent packets
-SHOULD be paced. The congestion window does not change while the connection
-is idle.
+If the sender uses pacing, the congestion window MUST not increase and does not
+need to be reduced while the connection is idle.  When restarting from idle, a
+paced connection SHOULD limit the initial burst of packets to no more than the
+initial congestion window and subsequent packets SHOULD be paced.
 
 A sender that does not use pacing SHOULD reset its congestion window to the
-minimum of the current congestion window and the initial congestion window.
-This recommendation is based on Section 4.1 of {{?RFC5681}}.
+smaller of the current congestion window and the initial congestion window, as
+recommended for TCP (see Section 4.1 of {{?RFC5681}}).
+
+A sender MAY implement alternate mechanisms to update its congestion window
+after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 ## Pseudocode
 
