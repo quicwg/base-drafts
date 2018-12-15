@@ -1619,8 +1619,9 @@ Token field of its Initial packet.
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
-NEW_TOKEN frame.  Tokens obtained in Retry packets MUST NOT be discarded
-during connection establishment (they will not be used with new connections).
+NEW_TOKEN frame.  A token obtained in a Retry packet must be used immediately
+during the connection attempt and cannot be used in subsequent connection
+attempts.
 
 A client SHOULD NOT reuse a token in different connections. Reusing a token
 allows connections to be linked by entities on the network path
@@ -1743,23 +1744,23 @@ to the same remote address from which the PATH_CHALLENGE was received.
 
 ## Successful Path Validation
 
-A new address is considered valid when A PATH_RESPONSE frame is received
+A new address is considered valid when a PATH_RESPONSE frame is received
 that meets the following criteria:
 
-- It contains that was sent in a previous PATH_CHALLENGE. Receipt of an
+- It contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
   acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
   validation, since the acknowledgment can be spoofed by a malicious peer.
 
-- It is from the same remote address as that to which the
-  corresponding PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is
-  received from a different remote address than the one to which the
-  PATH_CHALLENGE was sent, path validation is considered to have failed,
-  even if the data matches that sent in the PATH_CHALLENGE.
+- It was sent from the same remote address to which the corresponding
+  PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is received from a different
+  remote address than the one to which the PATH_CHALLENGE was sent, path
+  validation is considered to have failed, even if the data matches that sent in
+  the PATH_CHALLENGE.
 
-- It is received on the same local address from which the
-  corresponding PATH_CHALLENGE was sent.
+- It was received on the same local address from which the corresponding
+  PATH_CHALLENGE was sent.
 
-Note that receipt on a different local address doesn't result in path
+Note that receipt on a different local address does not result in path
 validation failure, as it might be a result of a forwarded packet (see
 {{off-path-forward}}) or misrouting. It is possible that a valid
 PATH_RESPONSE might be received in the future.
@@ -2301,7 +2302,7 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 
 ## Stateless Reset {#stateless-reset}
 
-A stateless reset is provided as an option of last resort for a server that
+A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
 properly continue the connection.  A stateless reset is not appropriate for
@@ -2341,15 +2342,15 @@ This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
-of the packet header.  The remainder of the first byte and an arbitrary
-number of random bytes following it are set to unpredictable values.  The last
-16 bytes of the datagram contain a Stateless Reset Token.
+of the packet header.  The remainder of the first byte and an arbitrary number
+of bytes following it that are set to unpredictable values.  The last 16 bytes
+of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with
 a short header.  For the packet to appear as valid, the Random Bits
 field needs to include at least 182 bits of data (or 24 bytes, less
-the two fixed bits). This is intended to allow for a destination
-connection ID of the maximum length permitted, with a minimal packet
+the two fixed bits). This is intended to allow for a Destination
+Connection ID of the maximum length permitted, with a minimal packet
 number, and payload.  The Stateless Reset Token corresponds to the
 minimum expansion of the packet protection AEAD.  More random bytes
 might be necessary if the endpoint could have negotiated a packet
@@ -2455,11 +2456,10 @@ Note that Stateless Reset packets do not have any cryptographic protection.
 
 ### Looping {#reset-looping}
 
-The design of a Stateless Reset is such that without knowing the
-stateless reset token it is indistinguishable from a valid packet.
-This means that if a server sends a Stateless Reset to another server,
-that might trigger the sending of a Stateless Reset in response, which
-could lead to infinite exchanges.
+The design of a Stateless Reset is such that without knowing the stateless reset
+token it is indistinguishable from a valid packet.  If a server sends a
+Stateless Reset to another server, it might receive another Stateless Reset in
+response, could lead to infinite exchanges.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
 the packet which triggered it, unless it maintains state sufficient to prevent
@@ -3743,7 +3743,6 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
 {{negotiating-connection-ids}}).
 
-
 Handshake packets are their own packet number space, and thus
 the first Handshake packet sent by a server contains a packet number of 0.
 
@@ -3860,7 +3859,7 @@ first Initial packet) in the transport parameter.
 
 If the client received and processed a Retry packet, it MUST validate
 that the original_connection_id transport parameter is present and
-correct; otherwise, it validates that the transport parameter is
+correct; otherwise, it MUST validate that the transport parameter is
 absent.  A client MUST treat a failed validation as a connection error
 of type TRANSPORT_PARAMETER_ERROR.
 
@@ -5338,7 +5337,7 @@ An accompanying transport parameter registration (see
 specification needs to describe the format and assigned semantics of any fields
 in the frame.
 
-Expert(s) SHOULD be biased towards approving registrations unless
+Expert(s) should be biased towards approving registrations unless
 they are abusive, frivolous, or actively harmful (not merely aesthetically
 displeasing, or architecturally dubious).
 
