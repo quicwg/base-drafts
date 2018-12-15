@@ -2982,11 +2982,11 @@ rewritten on the path. An endpoint verifies the path, both during connection
 establishment and when migrating to a new path (see {{migration}}).
 
 
-### ECN Counters
+### ECN Counts
 
 On receiving a QUIC packet with an ECT or CE codepoint, an endpoint that can
 access the ECN codepoints from the enclosing IP packet increases the
-corresponding ECT(0), ECT(1), or CE count, and includes these counters in
+corresponding ECT(0), ECT(1), or CE count, and includes these counts in
 subsequent ACK frames (see {{processing-and-ack}} and {{frame-ack}}).
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
@@ -2995,8 +2995,8 @@ concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{processing-and-ack}} with an ACK frame without
-increasing any ECN counters.  Similarly, if an endpoint does not have access to
-received ECN codepoints, it does not increase ECN counters.
+increasing any ECN counts.  Similarly, if an endpoint does not have access to
+received ECN codepoints, it does not increase ECN counts.
 
 Coalesced packets (see {{packet-coalesce}}) mean that several packets can share
 the same IP header.  The ECN counter for the ECN codepoint received in the
@@ -3004,17 +3004,17 @@ associated IP header are incremented once for each QUIC packet, not per
 enclosing IP packet or UDP datagram.
 
 Each packet number space maintains separate acknowledgement state and separate
-ECN counters.  For example, if one each of an Initial, 0-RTT, Handshake, and
-1-RTT QUIC packet are coalesced, the corresponding counters for the Initial and
-Handshake packet number space will be incremented by one and the counters for
-the 1-RTT packet number space will be increased by two.
+ECN counts.  For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT
+QUIC packet are coalesced, the corresponding counts for the Initial and
+Handshake packet number space will be incremented by one and the counts for the
+1-RTT packet number space will be increased by two.
 
 
 ### ECN Verification {#ecn-verification}
 
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
+other peer.  Even if ECN is not used on the path to the peer, the endpoint MUST
 provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
@@ -3031,33 +3031,28 @@ an ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
 subsequent IP packets, with the expectation that either the network path or the
 peer no longer supports ECN.
 
-To reduce the risk of non-standard compliant ECN markings affecting the
-operation of an endpoint, an endpoint verifies the counts it receives when it
-receives new acknowledgements:
+Network devices that corrupt or apply non-standard ECN markings might result in
+reduced throughput or other undesirable side-effects.  To reduce this risk, an
+endpoint uses the following steps to verify the counts it receives in an ACK
+frame.  Note that the counts MUST NOT be verified if the ACK frame does not
+increase the largest received packet number at the endpoint.
 
-* The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
-  packets newly acknowledged that were sent with the corresponding codepoint
-  minus the increase in the CE counter. This detects network remarking between
-  ECT(0) and ECT(1).
-
-* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
-  frame MUST be at least the total number of QUIC packets newly acknowledged in
-  this ACK frame. This detects if the network changes ECT(0), ECT(1) or CE to
+* The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
+  the total number of QUIC packets newly acknowledged in this ACK frame.  This
+  step detects any network remarking from ECT(0), ECT(1), or CE codepoints to
   Not-ECT.
 
-This validation is only performed if the ACK frame increases the largest
-received packet number. Reordered acknowledgments could have lower counter
-values and might not be successfully validated as a result.
-
-These counts might be inflated if acknowledgments are never received for packets
-that were successfully delivered. If validation succeeds, an endpoint MUST
-increase its expected counter values to those it receives.
+* Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
+  count, MUST be no smaller than the number of packets sent with the
+  corresponding ECT codepoint that are newly acknowledged in this ACK frame.
+  This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
+  vice versa).
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
-It is therefore possible for the total increase in ECT(0), ECT(1), and CE
-counters to be greater than the number of packets acknowledged in an ACK frame.
-When this happens, the local reference counts MUST be increased to match the
-counters in the ACK frame.
+It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
+to be greater than the number of packets acknowledged in an ACK frame.  When
+this happens, and if verification succeeds, the local reference counts MUST be
+increased to match the counts in the ACK frame.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
@@ -3070,9 +3065,9 @@ If an endpoint sets ECT codepoints on outgoing IP packets and encounters a
 retransmission timeout due to the absence of acknowledgments from the peer (see
 {{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
 the network path might be corrupting ECN codepoints, the endpoint MAY cease
-setting ECT codepoints in subsequent packets. Doing so allows the connection to
-traverse network elements that drop IP packets with ECT or CE markings or
-corrupt ECN codepoints in the IP header.
+setting ECT codepoints in subsequent packets.  Doing so allows the connection to
+be resilient to network elements that corrupt ECN codepoints in the IP header or
+drop packets with ECT or CE codepoints in the IP header.
 
 
 # Packet Size {#packet-size}
@@ -4296,7 +4291,7 @@ Additional ACK Block (repeated):
 ### ECN section
 
 The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
-section consists of 3 ECN counters as shown below.
+section consists of 3 ECN counts as shown below.
 
 ~~~
  0                   1                   2                   3
@@ -4322,7 +4317,7 @@ CE Count:
 : A variable-length integer representing the total number packets received with
   the CE codepoint.
 
-ECN counters are maintained separately for each packet number space.
+ECN counts are maintained separately for each packet number space.
 
 
 ## RESET_STREAM Frame {#frame-reset-stream}
