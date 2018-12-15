@@ -5134,32 +5134,17 @@ discarded using other methods, but no specific method is mandated in this
 document.
 
 
-## Spoofed ACK Attack
+## Amplification Attack
 
 An attacker might be able to receive an address validation token
-({{address-validation}}) from the server and then release the IP address it
-used to acquire that token.  The attacker may, in the future, spoof this same
-address (which now presumably addresses a different endpoint), and initiate a
-0-RTT connection with a server on the victim's behalf.  The attacker can then
-spoof ACK frames to the server which cause the server to send excessive amounts
-of data toward the new owner of the IP address.
+({{address-validation}}) from a server and then release the IP address it used
+to acquire that token.  At a later time, the attacker may initiate a 0-RTT
+connection with a server by spoofing this same address, which might now address
+a different (victim) endpoint.  The attacker can thus potentially cause the
+server to send an initial window's worth of data towards the victim.
 
-There are two possible mitigations to this attack.  The simplest one is that a
-server can unilaterally create a gap in packet-number space.  In the non-attack
-scenario, the client will send an ACK frame with the larger value for largest
-acknowledged.  In the attack scenario, the attacker could acknowledge a packet
-in the gap.  If the server sees an acknowledgment for a packet that was never
-sent, the connection can be aborted.
-
-The second mitigation is that the server can require that acknowledgments for
-sent packets match the encryption level of the sent packet.  This mitigation is
-useful if the connection has an ephemeral forward-secure key that is generated
-and used for every new connection.  If a packet sent is protected with a
-forward-secure key, then any acknowledgments that are received for them MUST
-also be forward-secure protected.  Since the attacker will not have the
-forward-secure key, the attacker will not be able to generate forward-secure
-protected packets with ACK frames.
-
+Servers SHOULD provide mitigations for this attack by limiting the usage and
+lifetime of address validation tokens (see {{validate-future}}).
 
 ## Optimistic ACK Attack
 
