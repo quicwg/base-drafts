@@ -961,22 +961,24 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-## Restart after idle
+## Sending data after an idle period
 
-A connection is idle if there are no bytes in flight and there is no pending
-ack-eliciting data to send.  This can occur when the connection is
-application limited or after a probe timeout. In order to limit
-the size of bursts sent into the network, the behavior when restarting from
-idle depends upon whether pacing is used.
+A sender is considered idle if it has no bytes in flight and no pending
+ack-eliciting data to send.  A sender can become idle when it is application
+limited or when it encounters a retransmission timeout.
 
-If the sender uses pacing, the congestion window MUST not increase and does not
-need to be reduced while the connection is idle.  When restarting from idle, a
-paced connection SHOULD limit the initial burst of packets to no more than the
-initial congestion window and subsequent packets SHOULD be paced.
+A sender's congestion window MUST not increase while it is idle.
 
-A sender that does not use pacing SHOULD reset its congestion window to the
-smaller of the current congestion window and the initial congestion window, as
-recommended for TCP (see Section 4.1 of {{?RFC5681}}).
+When a sender starts sending data after an idle period, it's sending rate SHOULD
+be decided as follows.
+
+  - If the sender uses pacing, it does not need to reduce its congestion
+    window. It SHOULD however pace the congestion window and MAY allow an
+    initial burst no larger than the initial congestion window.
+
+  - If the sender does not use pacing, it SHOULD reset its congestion window to
+    the smaller of the current congestion window and the initial congestion
+    window, as recommended for TCP (see Section 4.1 of {{?RFC5681}}).
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
