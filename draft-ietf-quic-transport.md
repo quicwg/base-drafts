@@ -2969,8 +2969,8 @@ The details of loss detection and congestion control are described in
 
 ## Explicit Congestion Notification {#ecn}
 
-QUIC endpoints use Explicit Congestion Notification (ECN) {{!RFC3168}} to detect
-and respond to network congestion.  ECN allows a network node to indicate
+QUIC endpoints can use Explicit Congestion Notification (ECN) {{!RFC3168}} to
+detect and respond to network congestion.  ECN allows a network node to indicate
 congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
@@ -2984,10 +2984,11 @@ establishment and when migrating to a new path (see {{migration}}).
 
 ### ECN Counters
 
-On receiving a QUIC packet with an ECT or CE codepoint, an endpoint that can
-access the ECN codepoints from the enclosing IP packet increases the
-corresponding ECT(0), ECT(1), or CE count, and includes these counters in
-subsequent ACK frames (see {{processing-and-ack}} and {{frame-ack}}).
+On receiving a QUIC packet with an ECT or CE codepoint, an ECN enabled QUIC
+implementation increases the corresponding ECT(0), ECT(1), or CE count, and
+includes these counters in subsequent ACK frames (see {{processing-and-ack}} and
+{{frame-ack}}).  Note that this requires being able to read the ECN codepoints
+from the enclosing IP packet, which is not possible on all platforms.
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
@@ -2995,8 +2996,9 @@ concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{processing-and-ack}} with an ACK frame without
-increasing any ECN counters.  Similarly, if an endpoint does not have access to
-received ECN codepoints, it does not increase ECN counters.
+increasing any ECN counters.  Similarly, if an endpoint does not implement ECN
+support or does not have access to received ECN codepoints, it does not increase
+ECN counters.
 
 Coalesced packets (see {{packet-coalesce}}) mean that several packets can share
 the same IP header.  The ECN counter for the ECN codepoint received in the
@@ -3014,11 +3016,11 @@ the 1-RTT packet number space will be increased by two.
 
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if ECN is not used on the path to the peer, the endpoint MUST
-provide feedback about ECN markings received (if accessible).
+other peer. Even if not setting ECN codepoints on packets it transmits, the
+endpoint MAY provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
-an endpoint MUST set the ECT(0) codepoint in the IP header of all outgoing
+an endpoint sets the ECT(0) codepoint in the IP header of all outgoing
 packets {{!RFC8311}}.
 
 If an ECT codepoint set in the IP header is not corrupted by a network device,
@@ -4133,7 +4135,9 @@ Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
 they have received and processed. The ACK frame contains one or more ACK Blocks.
 ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
-on the connection up until this point.
+on the connection up until this point. QUIC implementations MUST properly handle
+both types 0x02 and 0x03 and if they have enabled ECN for packets they send,
+SHOULD use the information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
