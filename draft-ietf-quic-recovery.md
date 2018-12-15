@@ -568,9 +568,6 @@ kGranularity:
 : Timer granularity. This is a system-dependent value.  However, implementations
   SHOULD use a value no smaller than 1ms.
 
-kDelayedAckTimeout:
-: The length of the peer's delayed ack timer. The RECOMMENDED value is 25ms.
-
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
