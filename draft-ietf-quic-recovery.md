@@ -683,7 +683,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     // ack-eliciting, update the RTT.
     if (sent_packets[ack.largest_acked] &&
         sent_packets[ack.largest_acked].ack_eliciting):
-      latest_rtt = now - sent_packets[ack.largest_acked].time_sent
+      latest_rtt = now - 
+                   sent_packets[ack.largest_acked].time_sent
       UpdateRtt(latest_rtt, ack.ack_delay)
 
     // Find all newly acked packets in this ACK frame
