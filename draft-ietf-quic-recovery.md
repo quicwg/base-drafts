@@ -541,7 +541,7 @@ sent_bytes:
 : The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
 
-time:
+time_sent:
 : The time the packet was sent.
 
 
@@ -656,7 +656,7 @@ Pseudocode for OnPacketSent follows:
               is_crypto_packet, sent_bytes):
    largest_sent_packet = packet_number
    sent_packets[packet_number].packet_number = packet_number
-   sent_packets[packet_number].time = now
+   sent_packets[packet_number].time_sent = now
    sent_packets[packet_number].ack_eliciting = ack_eliciting
    sent_packets[packet_number].in_flight = in_flight
    if (ack_eliciting):
@@ -680,7 +680,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     // ack-eliciting, update the RTT.
     if (sent_packets[ack.largest_acked] &&
         sent_packets[ack.largest_acked].ack_eliciting):
-      latest_rtt = now - sent_packets[ack.largest_acked].time
+      latest_rtt =
+        now - sent_packets[ack.largest_acked].time_sent
       UpdateRtt(latest_rtt, ack.ack_delay)
 
     // Find all newly acked packets in this ACK frame
@@ -1077,7 +1078,7 @@ acked_packet from sent_packets.
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (InRecovery(acked_packet.time)):
+     if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
      if (congestion_window < ssthresh):
@@ -1122,7 +1123,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
        // Start a new congestion event if the last acknowledged
        // packet was sent after the start of the previous
        // recovery epoch.
-       CongestionEvent(sent_packets[ack.largest_acked].time)
+       CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 
 
@@ -1140,7 +1141,7 @@ are detected lost.
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
-     CongestionEvent(largest_lost_packet.time)
+     CongestionEvent(largest_lost_packet.time_sent)
 ~~~
 
 
