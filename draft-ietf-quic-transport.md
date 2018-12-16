@@ -5141,7 +5141,7 @@ An attacker might be able to receive an address validation token
 to acquire that token.  At a later time, the attacker may initiate a 0-RTT
 connection with a server by spoofing this same address, which might now address
 a different (victim) endpoint.  The attacker can thus potentially cause the
-server to send an initial window's worth of data towards the victim.
+server to send an initial congestion window's worth of data towards the victim.
 
 Servers SHOULD provide mitigations for this attack by limiting the usage and
 lifetime of address validation tokens (see {{validate-future}}).
