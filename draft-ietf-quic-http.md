@@ -623,7 +623,7 @@ identifier" and a "setting value".
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
-can be implied by the use of SETTINGS -- each peer uses SETTINGS to advertise a
+can be implied by the use of SETTINGS - each peer uses SETTINGS to advertise a
 set of supported values. The definition of the setting would describe how each
 peer combines the two sets to conclude which choice will be used.  SETTINGS does
 not provide a mechanism to identify when the choice takes effect.
