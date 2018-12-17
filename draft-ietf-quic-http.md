@@ -621,6 +621,14 @@ Individually, a SETTINGS parameter can also be referred to as a "setting"; the
 identifier and value of each setting parameter can be referred to as a "setting
 identifier" and a "setting value".
 
+SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
+frame MUST be sent as the first frame of each control stream (see
+{{control-streams}}) by each peer, and MUST NOT be sent subsequently or on any
+other stream. If an endpoint receives a SETTINGS frame on a different stream,
+the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM. If
+an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
+connection error of type HTTP_UNEXPECTED_FRAME.
+
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
 can be implied by the use of SETTINGS - each peer uses SETTINGS to advertise a
@@ -632,9 +640,9 @@ Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
 while servers are more cautious about request size.
 
-Parameters MUST NOT occur more than once.  A receiver MAY treat the presence of
-the same parameter more than once as a connection error of type
-HTTP_MALFORMED_FRAME.
+Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
+treat the presence of the same parameter more than once as a connection error of
+type HTTP_MALFORMED_FRAME.
 
 The payload of a SETTINGS frame consists of zero or more parameters, each
 consisting of an unsigned 16-bit setting identifier and a value which uses the
@@ -656,14 +664,6 @@ trigger a connection error of type HTTP_MALFORMED_FRAME.
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
-
-SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of each control stream (see
-{{control-streams}}) by each peer, and MUST NOT be sent subsequently or on any
-other stream. If an endpoint receives a SETTINGS frame on a different stream,
-the endpoint MUST respond with a connection error of type HTTP_WRONG_STREAM. If
-an endpoint receives a second SETTINGS frame, the endpoint MUST respond with a
-connection error of type HTTP_UNEXPECTED_FRAME.
 
 The SETTINGS frame affects connection state. A badly formed or incomplete
 SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
