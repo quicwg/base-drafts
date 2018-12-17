@@ -2553,20 +2553,18 @@ order to guarantee consistent state between endpoints.
 
 # Packets and Frames {#packets-frames}
 
-QUIC endpoints communicate by exchanging packets. Packets are carried in UDP
-datagrams (see {{packet-coalesce}}) and have confidentiality and integrity
-protection (see {{packet-protected}}).
+QUIC endpoints communicate by exchanging packets. Packets have confidentiality
+and integrity protection (see {{packet-protected}}) and are carried in UDP
+datagrams (see {{packet-coalesce}}).
 
 This version of QUIC uses the long packet header (see {{long-header}}) during
-connection establishment and the short header (see {{short-header}}) once 1-RTT
-keys have been established.
+connection establishment.  Packets that carry the long header are Initial
+({{packet-initial}}), 0-RTT Protected ({{packet-0rtt}}), Handshake
+({{packet-handshake}}), and Retry ({{packet-retry}}).
 
-Packets that carry the long header are Initial {{packet-initial}}, Retry
-{{packet-retry}}, Handshake {{packet-handshake}}, and 0-RTT Protected packets
-{{packet-protected}}.
-
-Packets with the short header are designed for minimal overhead and are used
-after a connection is established.
+Packets with the short header ({{short-header}}) are designed for minimal
+overhead and are used after a connection is established and 1-RTT keys are
+available.
 
 Version negotiation uses a packet with a special format (see
 {{packet-version}}).
