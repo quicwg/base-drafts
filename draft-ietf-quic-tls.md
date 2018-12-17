@@ -1108,11 +1108,12 @@ updated keys, it indicates that its peer has updated keys twice without awaiting
 a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
-An endpoint SHOULD retain old keys for a short period, and discard them and
-the corresponding secrets afterwards.  This allows it to decrypt packets with
-smaller packet numbers than the packet that triggered the key update, which are
-reordered around the transition between keys.  Packets with higher packet
-numbers always use the updated keys and MUST NOT be decrypted with old keys.
+An endpoint SHOULD retain old keys for a period of no more than three times the
+Retransmitions Timeout (RTO, see {{QUIC-RECOVERY}}).  After this period, old
+keys and their corresponding secrets SHOULD be discarded.  Retaining keys allow
+endpoints to process packets that were sent with old keys and delayed in the
+network.  Packets with higher packet numbers always use the updated keys and
+MUST NOT be decrypted with old keys.
 
 This ensures that once the handshake is complete, packets with the same
 KEY_PHASE will have the same packet protection keys, unless there are multiple
