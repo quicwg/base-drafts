@@ -730,7 +730,7 @@ be used QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
-{{aead}}.  The packet number protection key uses the "quic hp" label, see
+{{aead}}.  The header protection key uses the "quic hp" label, see
 {{header-protect}}).  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
@@ -843,6 +843,10 @@ protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Phase
 bit is also protected for packets with a short header.
+
+The same header protection key is used for the duration of the connection, with
+the value not changing after a key update (see {{key-update}}).  This allows
+header protection to be used to protect the key phase.
 
 This process does not apply to Retry or Version Negotiation packets, which do
 not contain a protected payload or any of the fields that are protected by this
@@ -1096,6 +1100,7 @@ packet with a matching KEY_PHASE.
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
 and the corresponding read key and IV using the KDF function provided by TLS.
+The header protection key is not updated.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
