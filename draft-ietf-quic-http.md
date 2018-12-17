@@ -836,9 +836,7 @@ of a DUPLICATE_PUSH frame as a connection error of type HTTP_MALFORMED_FRAME.
 
 The DUPLICATE_PUSH frame carries a single variable-length integer that
 identifies the Push ID of a resource that the server has previously promised
-(see {{frame-push-promise}}).  A server MUST treat a DUPLICATE_PUSH frame
-payload that does not contain a single variable-length integer as a connection
-error of type HTTP_MALFORMED_FRAME.
+(see {{frame-push-promise}}).
 
 This frame allows the server to use the same server push in response to multiple
 concurrent requests.  Referencing the same server push ensures that a promise
