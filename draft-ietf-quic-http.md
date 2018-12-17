@@ -763,10 +763,10 @@ close a connection.
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY frame payload"}
 
-The GOAWAY frame carries a QUIC Stream ID for a client-initiated bidirectional
-stream encoded as a variable-length integer.  A client MUST treat receipt of a
-GOAWAY frame containing a Stream ID of any other type as a connection error of
-type HTTP_MALFORMED_FRAME.
+The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
+ID for a client-initiated bidirectional stream encoded as a variable-length
+integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
+of any other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -786,12 +786,12 @@ Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
 to the limit set by the QUIC MAX_STREAM_ID frame.
 
-The MAX_PUSH_ID frame is always sent on a control stream.  Receipt of a
+The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
 type HTTP_WRONG_STREAM.
 
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
-a MAX_PUSH_ID frame as a connection error of type HTTP_MALFORMED_FRAME.
+a MAX_PUSH_ID frame as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
@@ -812,9 +812,6 @@ the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
 MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
-
-A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
-variable-length integer as a connection error of type HTTP_MALFORMED_FRAME.
 
 ### DUPLICATE_PUSH {#frame-duplicate-push}
 
