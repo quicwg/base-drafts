@@ -3081,9 +3081,12 @@ corrupt ECN codepoints in the IP header.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-Clients MUST ensure they send the first Initial packet in single IP packet.  The
-payload of a UDP datagram carrying the first Initial packet MUST be expanded to
-at least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
+Clients MUST ensure they send the first Initial packet in single IP packet.
+Similarly, the first Initial packet sent after receiving a Retry packet MUST be
+sent in a single IP packet.
+
+The payload of a UDP datagram carrying the first Initial packet MUST be expanded
+to at least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
 combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
 Sending a UDP datagram of this size ensures that the network path supports a
 reasonable Maximum Transmission Unit (MTU), and helps reduce the amplitude of
