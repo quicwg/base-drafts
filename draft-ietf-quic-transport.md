@@ -1539,10 +1539,10 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST pad UDP datagrams that contain only Initial packets to 1200 bytes.
-Once a client has received an acknowledgment for a Handshake packet it MAY send
-smaller datagrams.  Sending padded datagrams ensures that the server is not
-overly constrained by the amplification restriction.
+Clients MUST pad UDP datagrams that contain only Initial packets to at least
+1200 bytes.  Once a client has received an acknowledgment for a Handshake packet
+it MAY send smaller datagrams.  Sending padded datagrams ensures that the server
+is not overly constrained by the amplification restriction.
 
 In order to prevent a handshake deadlock as a result of the server being unable
 to send, clients SHOULD send a packet upon a handshake timeout, as described in
