@@ -98,12 +98,12 @@ reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
 a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
 comparable security to running TLS over TCP, but with improved connection setup
-latency.
+latency (unless TCP Fast Open {{?RFC7413}}} is used).
 
-This document describes a mapping of HTTP semantics over the QUIC transport
-protocol, drawing heavily on design of HTTP/2. This document identifies HTTP/2
-features that are subsumed by QUIC, and describes how the other features can be
-implemented atop QUIC.
+This document defines a mapping of HTTP semantics over the QUIC transport
+protocol, drawing heavily on the design of HTTP/2. This document identifies
+HTTP/2 features that are subsumed by QUIC, and describes how the other features
+can be implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{!RFC7540}}.
@@ -225,7 +225,7 @@ some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
-token "hq" in the TLS handshake.  Support for other application-layer protocols
+token "h3" in the TLS handshake.  Support for other application-layer protocols
 MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
@@ -263,7 +263,8 @@ guarantees about order of delivery with regard to bytes on other streams. On the
 wire, data is framed into QUIC STREAM frames, but this framing is invisible to
 the HTTP framing layer. The transport layer buffers and orders received QUIC
 STREAM frames, exposing the data contained within as a reliable byte stream to
-the application.
+the application. Although QUIC permits out-of-order delivery within a stream
+HTTP/3 does not make use of this feature.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
@@ -324,7 +325,7 @@ transport parameter `initial_max_uni_streams`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
+unknown. Recipients of unknown stream types MAY send a QUIC STOP_SENDING
 frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
 streams to be an error of any kind.
 
@@ -390,9 +391,9 @@ implementation chooses.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-Frames are used on control streams, request streams, and push streams.  This
-section describes HTTP framing in QUIC.  For a comparison with HTTP/2 frames,
-see {{h2-frames}}.
+As discussed above, frames are carried on QUIC streams and used on control
+streams, request streams, and push streams.  This section describes HTTP framing
+in QUIC.  For a comparison with HTTP/2 frames, see {{h2-frames}}.
 
 ## Frame Layout
 
@@ -470,9 +471,15 @@ stream.
 When opening a new request stream, a PRIORITY frame MAY be sent as the first
 frame of the stream creating a dependency on an existing element.  In order to
 ensure that prioritization is processed in a consistent order, any subsequent
-PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame received
-after other frames on a request stream MUST be treated as a stream error of type
-HTTP_UNEXPECTED_FRAME.
+PRIORITY frames for that request stream MUST be sent on the control stream.  A
+PRIORITY frame received after other frames on a request stream MUST be treated
+as a stream error of type HTTP_UNEXPECTED_FRAME.
+
+A PRIORITY frame identifies an element to prioritize, and an element upon which
+it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
+request using the corresponding stream ID, a server push using a Push ID (see
+{{frame-push-promise}}), or a placeholder using a Placeholder ID (see
+{{placeholders}}).
 
 If, by the time a new request stream is opened, its priority information
 has already been received via the control stream, the PRIORITY frame
@@ -490,6 +497,7 @@ sent on the request stream MUST be ignored.
 +-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-priority title="PRIORITY frame payload"}
+
 
 The PRIORITY frame payload has the following fields:
 
@@ -523,12 +531,6 @@ The PRIORITY frame payload has the following fields:
     element (see {{!RFC7540}}, Section 5.3). Add one to the value to obtain a
     weight between 1 and 256.
 
-A PRIORITY frame identifies an element to prioritize, and an element upon which
-it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
-request using the corresponding stream ID, a server push using a Push ID (see
-{{frame-push-promise}}), or a placeholder using a Placeholder ID (see
-{{placeholders}}).
-
 The values for the Prioritized Element Type and Element Dependency Type imply
 the interpretation of the associated Element ID fields.
 
@@ -546,9 +548,9 @@ the interpretation of the associated Element ID fields.
 | 10        | Placeholder      | Placeholder ID                 |
 | 11        | Root of the tree | Absent                         |
 
-Note that the root of the tree cannot be referenced using a Stream ID of 0, as
-in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
-tree cannot be reprioritized. A PRIORITY frame sent on a request stream with the
+Note that unlike {{!RFC7540}}; the root of the tree cannot be referenced using a
+Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The root of
+the tree cannot be reprioritized.  A PRIORITY frame sent on a request stream with the
 Prioritized Element Type set to any value other than `11` or which expresses a
 dependency on a request with a greater Stream ID than the current stream MUST be
 treated as a stream error of type HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY
@@ -584,15 +586,15 @@ stream.  If the push stream has been opened by the server, the server SHOULD
 send a QUIC RESET_STREAM frame on that stream and cease transmission of the
 response.
 
-A server can send this frame to indicate that it will not be fulfilling a
-promise prior to creation of a push stream.  Once the push stream has been
-created, sending CANCEL_PUSH has no effect on the state of the push stream.  A
-QUIC RESET_STREAM frame SHOULD be used instead to abort transmission of the
-server push response.
+A server can send the CANCEL_PUSH frame to indicate that it will not be
+fulfilling a promise prior to creation of a push stream.  Once the push stream
+has been created, sending CANCEL_PUSH has no effect on the state of the push
+stream.  A QUIC RESET_STREAM frame SHOULD be used instead to abort transmission
+of the server push response.
 
-A CANCEL_PUSH frame is sent on the control stream.  Sending a CANCEL_PUSH frame
-on a stream other than the control stream MUST be treated as a stream error of
-type HTTP_WRONG_STREAM.
+A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
+frame on a stream other than the control stream MUST be treated as a stream
+error of type HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
