@@ -2602,10 +2602,17 @@ each packet sent, see {{packet-numbers}} for details.
 
 ## Coalescing Packets {#packet-coalesce}
 
-A sender can coalesce multiple QUIC packets into one UDP datagram.  This can
-reduce the number of UDP datagrams needed to complete the cryptographic
-handshake and starting sending data.  Receivers MUST be able to process
-coalesced packets.
+Initial ({{packet-initial}}), 0-RTT Protected ({{packet-0rtt}}), and Handshake
+({{packet-handshake}}) packets contain a Length field, which determines the end
+of the packet.  The Length field covers both the Packet Number and Payload
+fields, both of which are confidentiality protected and initially of unknown
+length. The length of the Payload field is learned once header protection is
+removed.
+
+Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
+datagram.  This can reduce the number of UDP datagrams needed to complete the
+cryptographic handshake and starting sending data.  Receivers MUST be able to
+process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT) makes it more likely the receiver will be able to process all
@@ -2627,7 +2634,7 @@ packet for later processing and MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header cannot be followed by
-other packets in the same UDP datagram.
+other packets in the same UDP datagram, as they do not contain a Length field.
 
 
 ## Packet Numbers {#packet-numbers}
@@ -2658,7 +2665,7 @@ level and can only be acknowledged in Handshake packets.
 
 This enforces cryptographic separation between the data sent in the different
 packet sequence number spaces.  Each packet number space starts at packet number
-0.  Subsequent packets sent in the same packet number space MUST increase the
+1.  Subsequent packets sent in the same packet number space MUST increase the
 packet number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
@@ -3396,12 +3403,6 @@ the connection.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0/32..144)            ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Packet Number (8/16/24/32)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~
 {: #fig-long-header title="Long Header Packet Format"}
 
@@ -3474,136 +3475,33 @@ Source Connection ID:
   either 0 bytes in length or between 4 and 18 bytes.
   {{negotiating-connection-ids}} describes the use of this field in more detail.
 
-Length:
-
-: The length of the remainder of the packet (that is, the Packet Number and
-  Payload fields) in bytes, encoded as a variable-length integer
-  ({{integer-encoding}}).
-
-Packet Number:
-
-: The packet number field is 1 to 4 bytes long. The packet number has
-  confidentiality protection separate from packet protection, as described in
-  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
-
-Payload:
-
-: The payload of the packet.
-
 The following packet types are defined:
 
 | Type | Name                          | Section                     |
 |-----:|:------------------------------|:----------------------------|
 |  0x0 | Initial                       | {{packet-initial}}          |
-|  0x1 | 0-RTT Protected               | {{packet-protected}}        |
+|  0x1 | 0-RTT Protected               | {{packet-0rtt}}        |
 |  0x2 | Handshake                     | {{packet-handshake}}        |
 |  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form bit, connection ID lengths byte, Destination and Source
 Connection ID fields, and Version fields of a long header packet are
-version-independent. The other fields in the first byte, plus the Length and
-Packet Number fields are version-specific.  See {{QUIC-INVARIANTS}} for details
-on how packets from different versions of QUIC are interpreted.
+version-independent. The other fields in the first byte are version-specific.
+See {{QUIC-INVARIANTS}} for details on how packets from different versions of
+QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
 packet type.  Type-specific semantics for this version are described in the
 following sections.
 
-The end of the packet is determined by the Length field.  The Length field
-covers both the Packet Number and Payload fields, both of which are
-confidentiality protected and initially of unknown length.  The length of the
-Payload field is learned once header protection is removed.  The Length field
-enables packet coalescing ({{packet-coalesce}}).
-
-
-## Short Header Packet {#short-header}
-
-~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|1|S|R|R|K|P P|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Destination Connection ID (0..144)           ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Packet Number (8/16/24/32)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Protected Payload (*)                   ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~
-{: #fig-short-header title="Short Header Packet Format"}
-
-The short header can be used after the version and 1-RTT keys are negotiated.
-Packets that use the short header contain the following fields:
-
-Header Form:
-
-: The most significant bit (0x80) of byte 0 is set to 0 for the short header.
-
-Fixed Bit:
-
-: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version and MUST be discarded.
-
-Spin Bit (S):
-
-: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
-  {{!SPIN=I-D.ietf-quic-spin-exp}}.
-
-Reserved Bits (R):
-
-: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
-  bits are protected using header protection (see Section 5.4 of
-  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
-  endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing protection as a connection error of type
-  PROTOCOL_VIOLATION.
-
-Key Phase (K):
-
-: The next bit (0x04) of byte 0 indicates the key phase, which allows a
-  recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
-  using header protection (see Section 5.4 of {{QUIC-TLS}}).
-
-Packet Number Length (P):
-
-: The least significant two bits (those with a mask of 0x03) of byte 0 contain
-  the length of the packet number, encoded as an unsigned, two-bit integer that
-  is one less than the length of the packet number field in bytes.  That is, the
-  length of the packet number field is the value of this field, plus one.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
-
-Destination Connection ID:
-
-: The Destination Connection ID is a connection ID that is chosen by the
-  intended recipient of the packet.  See {{connection-id}} for more details.
-
-Packet Number:
-
-: The packet number field is 1 to 4 bytes long. The packet number has
-  confidentiality protection separate from packet protection, as described in
-  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in Packet Number Length field. See {{packet-encoding}} for details.
-
-Protected Payload:
-
-: Packets with a short header always include a 1-RTT protected payload.
-
-The header form bit and the connection ID field of a short header packet are
-version-independent.  The remaining fields are specific to the selected QUIC
-version.  See {{QUIC-INVARIANTS}} for details on how packets from different
-versions of QUIC are interpreted.
-
 
 ## Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet is inherently not version-specific, and does not
-use the long packet header (see {{long-header}}). Upon receipt by a client, it
-will appear to be a packet using the long header, but will be identified as a
-Version Negotiation packet based on the Version field having a value of 0.
+A Version Negotiation packet is inherently not version-specific. Upon receipt by
+a client, it will appear to be a packet using the long header, but will be
+identified as a Version Negotiation packet based on the Version field having a
+value of 0.
 
 The Version Negotiation packet is a response to a client packet that contains a
 version that is not supported by the server, and is only sent by servers.
@@ -3674,8 +3572,8 @@ described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
 integrity against on-path attackers, but provides some level of protection
 against off-path attackers.
 
-An Initial packet (shown in {{initial-format}}) has two additional header fields
-that are added to the Long Header before the Length field.
+An Initial packet (shown in {{initial-format}}) has additional header fields
+after the Long Header.
 
 ~~~
 +-+-+-+-+-+-+-+-+
@@ -3702,9 +3600,6 @@ that are added to the Long Header before the Length field.
 ~~~
 {: #initial-format title="Initial Packet"}
 
-These fields include the token that was previously provided in a Retry packet or
-NEW_TOKEN frame:
-
 Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
@@ -3715,7 +3610,25 @@ Token Length:
 
 Token:
 
-: The value of the token.
+: The value of the token that was previously provided in a Retry packet or
+  NEW_TOKEN frame.
+
+Length:
+
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in bytes, encoded as a variable-length integer
+  ({{integer-encoding}}).
+
+Packet Number:
+
+: The packet number field is 1 to 4 bytes long. The packet number has
+  confidentiality protection separate from packet protection, as described in
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-encoding}} for details.
+
+Payload:
+
+: The payload of the packet.
 
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
@@ -3745,6 +3658,60 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
+## 0-RTT Protected {#packet-0rtt}
+
+A 0-RTT Protected packet uses long headers with a type value of 0x1.  It is used
+to carry "early" data from the client to the server as part of the first flight,
+prior to handshake completion.  As part of the TLS handshake, the server can
+accept or reject this early data.
+
+See Sections 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+limitations.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|1|T T|R R|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Packet Number (8/16/24/32)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+{: #fig-0rtt-format title="0-RTT Protected Packet Format"}
+
+In addition to the fields in the Long Header ({{long-header}}), 0-RTT Protected
+packets contain the following additional fields:
+
+Length:
+
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in bytes, encoded as a variable-length integer
+  ({{integer-encoding}}).
+
+Packet Number:
+
+: The packet number field is 1 to 4 bytes long. The packet number has
+  confidentiality protection separate from packet protection, as described in
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-encoding}} for details.
+
+Payload:
+
+: The payload of the packet.
+
+
 ## Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x3.  It is
@@ -3763,6 +3730,49 @@ includes the connection ID that the sender of the packet wishes to use (see
 The first Handshake packet sent by a server contains a packet number of 0.
 Handshake packets are their own packet number space.  Packet numbers are
 incremented normally for other Handshake packets.
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|1|T T|R R|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Packet Number (8/16/24/32)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+{: #fig-handshake-format title="Handshake Packet Format"}
+
+In addition to the fields in the Long Header ({{long-header}}), Handshake
+packets contain the following additional fields:
+
+Length:
+
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in bytes, encoded as a variable-length integer
+  ({{integer-encoding}}).
+
+Packet Number:
+
+: The packet number field is 1 to 4 bytes long. The packet number has
+  confidentiality protection separate from packet protection, as described in
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-encoding}} for details.
+
+Payload:
+
+: The payload of the packet.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
@@ -3796,12 +3806,8 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
 ~~~
 {: #retry-format title="Retry Packet"}
 
-A Retry packet (shown in {{retry-format}}) only uses the invariant portion of
-the long packet header {{QUIC-INVARIANTS}}; that is, the fields up to and
-including the Destination and Source Connection ID fields.  A Retry packet does
-not contain any protected fields.  Like Version Negotiation, a Retry packet
-contains the long header including the connection IDs, but omits the Length,
-Packet Number, and Payload fields.  These are replaced with:
+A Retry packet (shown in {{retry-format}}) does not contain any protected
+fields.  In addition to the long header, it contains these additional fields:
 
 ODCIL:
 
@@ -3882,6 +3888,85 @@ validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
+
+## Short Header Packet {#short-header}
+
+~~~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|0|1|S|R|R|K|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Destination Connection ID (0..144)           ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Packet Number (8/16/24/32)              ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Protected Payload (*)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~
+{: #fig-short-header title="Short Header Packet Format"}
+
+The short header can be used after the version and 1-RTT keys are negotiated.
+Packets that use the short header contain the following fields:
+
+Header Form:
+
+: The most significant bit (0x80) of byte 0 is set to 0 for the short header.
+
+Fixed Bit:
+
+: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
+  for this bit are not valid packets in this version and MUST be discarded.
+
+Spin Bit (S):
+
+: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
+  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+
+Reserved Bits (R):
+
+: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
+  bits are protected using header protection (see Section 5.4 of
+  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Key Phase (K):
+
+: The next bit (0x04) of byte 0 indicates the key phase, which allows a
+  recipient of a packet to identify the packet protection keys that are used to
+  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
+  using header protection (see Section 5.4 of {{QUIC-TLS}}).
+
+Packet Number Length (P):
+
+: The least significant two bits (those with a mask of 0x03) of byte 0 contain
+  the length of the packet number, encoded as an unsigned, two-bit integer that
+  is one less than the length of the packet number field in bytes.  That is, the
+  length of the packet number field is the value of this field, plus one.  These
+  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+
+Destination Connection ID:
+
+: The Destination Connection ID is a connection ID that is chosen by the
+  intended recipient of the packet.  See {{connection-id}} for more details.
+
+Packet Number:
+
+: The packet number field is 1 to 4 bytes long. The packet number has
+  confidentiality protection separate from packet protection, as described in
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in Packet Number Length field. See {{packet-encoding}} for details.
+
+Protected Payload:
+
+: Packets with a short header always include a 1-RTT protected payload.
+
+The header form bit and the connection ID field of a short header packet are
+version-independent.  The remaining fields are specific to the selected QUIC
+version.  See {{QUIC-INVARIANTS}} for details on how packets from different
+versions of QUIC are interpreted.
 
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
