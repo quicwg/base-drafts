@@ -612,10 +612,6 @@ The Push ID identifies the server push that is being cancelled (see
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
 
-An endpoint MUST treat a CANCEL_PUSH frame which does not contain exactly one
-properly-formatted variable-length integer as a connection error of type
-HTTP_MALFORMED_FRAME.
-
 
 ### SETTINGS {#frame-settings}
 
