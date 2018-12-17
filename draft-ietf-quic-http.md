@@ -422,10 +422,11 @@ A frame includes the following fields:
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
 
-Each frame's payload MUST contain exactly the identified fields.  A frame that
-contains additional bytes after the identified fields or a frame that terminates
-before the end of the identified fields MUST be treated as a connection error of
-type HTTP_MALFORMED_FRAME.
+Each frame's payload MUST contain exactly the fields identified in its
+description.  A frame payload that contains additional bytes after the
+identified fields or a frame payload that terminates before the end of the
+identified fields MUST be treated as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 ## Frame Definitions {#frames}
 
@@ -657,17 +658,8 @@ QUIC variable-length integer encoding.
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS parameter format"}
 
-Each value MUST be compared against the remaining length of the SETTINGS frame.
-A variable-length integer value which cannot fit within the remaining length of
-the SETTINGS frame MUST cause the SETTINGS frame to be considered malformed and
-trigger a connection error of type HTTP_MALFORMED_FRAME.
-
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
-
-The SETTINGS frame affects connection state. A badly formed or incomplete
-SETTINGS frame MUST be treated as a connection error ({{errors}}) of type
-HTTP_MALFORMED_FRAME.
 
 
 #### Defined SETTINGS Parameters {#settings-parameters}
