@@ -1259,7 +1259,8 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 ## Since draft-ietf-quic-qpack-03
 
-Substantial editorial reorganization; no technical changes.
+- Change HTTP settings defaults (#2038)
+- Substantial editorial reorganization
 
 ## Since draft-ietf-quic-qpack-02
 
