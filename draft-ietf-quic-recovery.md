@@ -964,9 +964,9 @@ in Linux (3.11 onwards).
 
 ## Sending data after an idle period
 
-A sender is considered idle if it has no bytes in flight.  A sender can become
-idle when it is application limited and has no data to send, or when it marks
-packets as lost (and therefore not in flight).
+A sender becomes idle if it has no bytes in flight.  A sender can become idle
+when it is application limited and has no data to send, or when it marks packets
+as lost (and therefore not in flight).
 
 A sender's congestion window MUST not increase while it is idle.
 
