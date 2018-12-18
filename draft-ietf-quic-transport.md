@@ -2663,7 +2663,7 @@ level and can only be acknowledged in Handshake packets.
 
 This enforces cryptographic separation between the data sent in the different
 packet sequence number spaces.  Each packet number space starts at packet number
-1.  Subsequent packets sent in the same packet number space MUST increase the
+0.  Subsequent packets sent in the same packet number space MUST increase the
 packet number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
