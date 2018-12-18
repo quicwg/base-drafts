@@ -3695,7 +3695,7 @@ acknowledged by a client.
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #initial-format title="Initial Packet"}
+{: #extended-format title="Extended Long Packet Header"}
 
 Token Length:
 
