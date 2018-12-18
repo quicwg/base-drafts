@@ -1109,11 +1109,11 @@ a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
 An endpoint SHOULD retain old keys for a period of no more than three times the
-Retransmitions Timeout (RTO, see {{QUIC-RECOVERY}}).  After this period, old
-keys and their corresponding secrets SHOULD be discarded.  Retaining keys allow
-endpoints to process packets that were sent with old keys and delayed in the
-network.  Packets with higher packet numbers always use the updated keys and
-MUST NOT be decrypted with old keys.
+Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
+their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
+to process packets that were sent with old keys and delayed in the network.
+Packets with higher packet numbers always use the updated keys and MUST NOT be
+decrypted with old keys.
 
 This ensures that once the handshake is complete, packets with the same
 KEY_PHASE will have the same packet protection keys, unless there are multiple
