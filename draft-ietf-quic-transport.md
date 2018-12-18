@@ -4157,8 +4157,8 @@ they have received and processed. The ACK frame contains one or more ACK Blocks.
 ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
 on the connection up until this point. QUIC implementations MUST properly handle
-both types 0x02 and 0x03, and if they have enabled ECN for packets they send,
-SHOULD use the information in the ECN section to manage their congestion state.
+both types and, if they have enabled ECN for packets they send, they SHOULD use
+the information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
