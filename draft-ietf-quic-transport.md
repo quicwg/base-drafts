@@ -2889,7 +2889,9 @@ information is determined to be lost and sending ceases when a packet
 containing that information is acknowledged.
 
 * Data sent in CRYPTO frames is retransmitted according to the rules in
-  {{QUIC-RECOVERY}}, until all data has been acknowledged.
+  {{QUIC-RECOVERY}}, until all data has been acknowledged.  Data in CRYPTO
+  frames for Initial and Handshake packets is discarded when keys for the
+  corresponding encryption level are discarded.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
@@ -2982,13 +2984,14 @@ rewritten on the path. An endpoint verifies the path, both during connection
 establishment and when migrating to a new path (see {{migration}}).
 
 
-### ECN Counters
+### ECN Counts
 
-On receiving a QUIC packet with an ECT or CE codepoint, an ECN enabled QUIC
-implementation increases the corresponding ECT(0), ECT(1), or CE count, and
-includes these counters in subsequent ACK frames (see {{processing-and-ack}} and
-{{frame-ack}}).  Note that this requires being able to read the ECN codepoints
-from the enclosing IP packet, which is not possible on all platforms.
+On receiving a QUIC packet with an ECT or CE codepoint, an ECN-enabled endpoint
+that can access the ECN codepoints from the enclosing IP packet increases the
+corresponding ECT(0), ECT(1), or CE count, and includes these counts in
+subsequent ACK frames (see {{processing-and-ack}} and {{frame-ack}}).  Note
+that this requires being able to read the ECN codepoints from the enclosing IP
+packet, which is not possible on all platforms.
 
 A packet detected by a receiver as a duplicate does not affect the receiver's
 local ECN codepoint counts; see ({{security-ecn}}) for relevant security
@@ -2996,9 +2999,9 @@ concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{processing-and-ack}} with an ACK frame without
-increasing any ECN counters.  Similarly, if an endpoint does not implement ECN
+increasing any ECN counts.  if an endpoint does not implement ECN
 support or does not have access to received ECN codepoints, it does not increase
-ECN counters.
+ECN counts.
 
 Coalesced packets (see {{packet-coalesce}}) mean that several packets can share
 the same IP header.  The ECN counter for the ECN codepoint received in the
@@ -3006,10 +3009,10 @@ associated IP header are incremented once for each QUIC packet, not per
 enclosing IP packet or UDP datagram.
 
 Each packet number space maintains separate acknowledgement state and separate
-ECN counters.  For example, if one each of an Initial, 0-RTT, Handshake, and
-1-RTT QUIC packet are coalesced, the corresponding counters for the Initial and
-Handshake packet number space will be incremented by one and the counters for
-the 1-RTT packet number space will be increased by two.
+ECN counts.  For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT
+QUIC packet are coalesced, the corresponding counts for the Initial and
+Handshake packet number space will be incremented by one and the counts for the
+1-RTT packet number space will be increased by two.
 
 
 ### ECN Verification {#ecn-verification}
@@ -3033,33 +3036,28 @@ an ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
 subsequent IP packets, with the expectation that either the network path or the
 peer no longer supports ECN.
 
-To reduce the risk of non-standard compliant ECN markings affecting the
-operation of an endpoint, an endpoint verifies the counts it receives when it
-receives new acknowledgements:
+Network devices that corrupt or apply non-standard ECN markings might result in
+reduced throughput or other undesirable side-effects.  To reduce this risk, an
+endpoint uses the following steps to verify the counts it receives in an ACK
+frame.  Counts MUST NOT be verified if the ACK frame does not increase the
+largest received packet number at the endpoint.
 
-* The increase in ECT(0) and ECT(1) counters MUST be at least the number of QUIC
-  packets newly acknowledged that were sent with the corresponding codepoint
-  minus the increase in the CE counter. This detects network remarking between
-  ECT(0) and ECT(1).
+* The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
+  the total number of QUIC packets sent with an ECT codepoint that are newly
+  acknowledged in this ACK frame.  This step detects any network remarking from
+  ECT(0), ECT(1), or CE codepoints to Not-ECT.
 
-* The total increase in ECT(0), ECT(1), and CE counters reported in the ACK
-  frame MUST be at least the total number of QUIC packets newly acknowledged in
-  this ACK frame. This detects if the network changes ECT(0), ECT(1) or CE to
-  Not-ECT.
-
-This validation is only performed if the ACK frame increases the largest
-received packet number. Reordered acknowledgments could have lower counter
-values and might not be successfully validated as a result.
-
-These counts might be inflated if acknowledgments are never received for packets
-that were successfully delivered. If validation succeeds, an endpoint MUST
-increase its expected counter values to those it receives.
+* Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
+  count, MUST be no smaller than the number of packets sent with the
+  corresponding ECT codepoint that are newly acknowledged in this ACK frame.
+  This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
+  vice versa).
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
-It is therefore possible for the total increase in ECT(0), ECT(1), and CE
-counters to be greater than the number of packets acknowledged in an ACK frame.
-When this happens, the local reference counts MUST be increased to match the
-counters in the ACK frame.
+It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
+to be greater than the number of packets acknowledged in an ACK frame.  When
+this happens, and if verification succeeds, the local reference counts MUST be
+increased to match the counts in the ACK frame.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
@@ -3072,9 +3070,9 @@ If an endpoint sets ECT codepoints on outgoing IP packets and encounters a
 retransmission timeout due to the absence of acknowledgments from the peer (see
 {{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
 the network path might be corrupting ECN codepoints, the endpoint MAY cease
-setting ECT codepoints in subsequent packets. Doing so allows the connection to
-traverse network elements that drop IP packets with ECT or CE markings or
-corrupt ECN codepoints in the IP header.
+setting ECT codepoints in subsequent packets.  Doing so allows the connection to
+be resilient to network elements that corrupt ECN codepoints in the IP header or
+drop packets with ECT or CE codepoints in the IP header.
 
 
 # Packet Size {#packet-size}
@@ -3082,14 +3080,17 @@ corrupt ECN codepoints in the IP header.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-Clients MUST ensure they send the first Initial packet in a UDP datagram that is
-at least 1200 bytes.  The payload of a UDP datagram carrying the Initial packet
-MUST be expanded to at least 1200 bytes, by adding PADDING frames to the Initial
-packet and/or by combining the Initial packet with a 0-RTT packet (see
-{{packet-coalesce}}).  Sending a UDP datagram of this size ensures that the
-network path supports a reasonable Maximum Transmission Unit (MTU), and helps
-reduce the amplitude of amplification attacks caused by server responses toward
-an unverified client address, see {{address-validation}}.
+Clients MUST ensure they send the first Initial packet in single IP packet.
+Similarly, the first Initial packet sent after receiving a Retry packet MUST be
+sent in a single IP packet.
+
+The payload of a UDP datagram carrying the first Initial packet MUST be expanded
+to at least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
+combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
+Sending a UDP datagram of this size ensures that the network path supports a
+reasonable Maximum Transmission Unit (MTU), and helps reduce the amplitude of
+amplification attacks caused by server responses toward an unverified client
+address, see {{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3701,6 +3702,21 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
+
+### Abandoning Initial Packets {#discard-initial}
+
+A client stops both sending and processing Initial packets when it sends its
+first Handshake packet.  A server stops sending and processing Initial packets
+when it receives its first Handshake packet.  Though packets might still be in
+flight or awaiting acknowledgment, no further Initial packets need to be
+exchanged beyond this point.  Initial packet protection keys are discarded (see
+Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
+control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+
+Any data in CRYPTO frames is discarded - and no longer retransmitted - when
+Initial keys are discarded.
+
+
 ### Starting Packet Numbers
 
 <!-- TODO: delete this section after confirming that it is redundant -->
@@ -3709,6 +3725,7 @@ The first Initial packet sent by either endpoint contains a packet number of
 0. The packet number MUST increase monotonically thereafter.  Initial packets
 are in a different packet number space to other packets (see
 {{packet-numbers}}).
+
 
 ### 0-RTT Packet Numbers {#retry-0rtt-pn}
 
@@ -3750,7 +3767,7 @@ the connection.
 
 ## Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x3.  It is
+A Handshake packet uses long headers with a type value of 0x2.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
@@ -3770,6 +3787,10 @@ incremented normally for other Handshake packets.
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
 MUST treat receipt of Handshake packets with other frames as a connection error.
+
+Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
+Handshake encryption level is discarded - and no longer retransmitted - when
+Handshake protection keys are discarded.
 
 
 ## Retry Packet {#packet-retry}
@@ -4136,7 +4157,7 @@ they have received and processed. The ACK frame contains one or more ACK Blocks.
 ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
 on the connection up until this point. QUIC implementations MUST properly handle
-both types 0x02 and 0x03 and if they have enabled ECN for packets they send,
+both types 0x02 and 0x03, and if they have enabled ECN for packets they send,
 SHOULD use the information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
@@ -4300,7 +4321,7 @@ Additional ACK Block (repeated):
 ### ECN section
 
 The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
-section consists of 3 ECN counters as shown below.
+section consists of 3 ECN counts as shown below.
 
 ~~~
  0                   1                   2                   3
@@ -4326,7 +4347,7 @@ CE Count:
 : A variable-length integer representing the total number packets received with
   the CE codepoint.
 
-ECN counters are maintained separately for each packet number space.
+ECN counts are maintained separately for each packet number space.
 
 
 ## RESET_STREAM Frame {#frame-reset-stream}
@@ -5466,6 +5487,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Servers are required to ignore Version Negotiation packets (#2088)
 - Tokens are repeated in all Initial packets (#2089)
 - Clarified how PING frames are sent after loss (#2094)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
 
 ## Since draft-ietf-quic-transport-15
 

@@ -243,7 +243,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 In order to quickly complete the handshake and avoid spurious retransmissions
 due to crypto retransmission timeouts, crypto packets SHOULD use a very short
 ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
-stack indicates all data for that encryption level has been received.
+stack indicates all data for that packet number space has been received.
 
 ## ACK Ranges
 
@@ -412,6 +412,7 @@ retransmission timeout and set a timer for this period.
 
 When crypto packets are in flight, the probe timer ({{pto}}) is not active.
 
+
 #### Retry and Version Negotiation
 
 A Retry or Version Negotiation packet causes a client to send another Initial
@@ -419,6 +420,16 @@ packet, effectively restarting the connection process and resetting congestion
 control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
+
+
+#### Discarding Initial State {#discard-initial}
+
+As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
+receiving Initial packets once they start exchanging Handshake packets.  At this
+point, all loss recovery state for the Initial packet number space is also
+discarded. Packets that are in flight for the packet number space are not
+declared as either acknowledged or lost.  After discarding state, new Initial
+packets will not be sent.
 
 The client MAY however compute an RTT estimate to the server as the time period
 from when the first Initial was sent to when a Retry or a Version Negotiation
@@ -596,7 +607,7 @@ largest_sent_packet:
 : The packet number of the most recently sent packet.
 
 largest_acked_packet:
-: The largest packet number acknowledged in an ACK frame.
+: The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -642,6 +653,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
+   largest_acked_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -676,6 +688,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
+    largest_acked_packet = max(largest_acked_packet,
+                               ack.largest_acked)
+
     // If the largest acknowledged is newly acked and
     // ack-eliciting, update the RTT.
     if (sent_packets[ack.largest_acked] &&
@@ -695,7 +710,7 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     crypto_count = 0
     pto_count = 0
 
-    DetectLostPackets(ack.acked_packet)
+    DetectLostPackets()
     SetLossDetectionTimer()
 
     // Process ECN information if present.
@@ -756,7 +771,7 @@ Pseudocode for SetLossDetectionTimer follows:
  SetLossDetectionTimer():
     // Don't arm timer if there are no ack-eliciting packets
     // in flight.
-    if (bytes_in_flight == 0):
+    if (no ack-eliciting packets in flight):
       loss_detection_timer.cancel()
       return
 
@@ -801,7 +816,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        crypto_count++
      else if (loss_time != 0):
        // Time threshold loss Detection
-       DetectLostPackets(largest_acked_packet)
+       DetectLostPackets()
      else:
        // PTO
        SendTwoPackets()
@@ -817,13 +832,10 @@ the sent_packets for that packet number space. If the loss detection timer
 expires and the loss_time is set, the previous largest acknowledged packet
 is supplied.
 
-DetectLostPackets takes one parameter, largest_acked, which is the largest
-acked packet.
-
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-DetectLostPackets(largest_acked):
+DetectLostPackets():
   loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -832,10 +844,10 @@ DetectLostPackets(largest_acked):
   lost_send_time = now() - loss_delay
 
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked.packet_number - kPacketThreshold
+  lost_pn = largest_acked_packet - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if (unacked.packet_number > largest_acked.packet_number):
+    if (unacked.packet_number > largest_acked_packet):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
@@ -959,22 +971,28 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-## Restart after idle
 
-A connection is idle if there are no bytes in flight and there is no pending
-ack-eliciting data to send.  This can occur when the connection is
-application limited or after a probe timeout. In order to limit
-the size of bursts sent into the network, the behavior when restarting from
-idle depends upon whether pacing is used.
+## Sending data after an idle period
 
-If the sender uses pacing, the connection should limit the initial burst of
-packets to no more than the initial congestion window and subsequent packets
-SHOULD be paced. The congestion window does not change while the connection
-is idle.
+A sender becomes idle if it ceases to send data and has no bytes in flight.  A
+sender's congestion window MUST not increase while it is idle.
 
-A sender that does not use pacing SHOULD reset its congestion window to the
-minimum of the current congestion window and the initial congestion window.
-This recommendation is based on Section 4.1 of {{?RFC5681}}.
+When sending data after becoming idle, a sender MUST reset its congestion window
+to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
+paces the sending of packets. A sender MAY retain its congestion window if it
+paces the sending of any packets in excess of the initial congestion window.
+
+A sender MAY implement alternate mechanisms to update its congestion window
+after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+
+## Discarding Packet Number Space State
+
+When keys for an packet number space are discarded, any packets sent with those
+keys are removed from the count of bytes in flight.  No loss events will occur
+any in-flight packets from that space, as a result of discarding loss recovery
+state (see {{discard-initial}}).  Note that it is expected that keys are
+discarded after those packets would be declared lost, but Initial secrets are
+destroyed earlier.
 
 ## Pseudocode
 
@@ -1211,6 +1229,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Disable RTT calculation for packets that don't elicit acknowledgment (#2060,
   #2078)
 - Limit ack_delay by max_ack_delay (#2060, #2099)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
 
 
 ## Since draft-ietf-quic-recovery-14
