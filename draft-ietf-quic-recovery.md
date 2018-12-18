@@ -969,7 +969,7 @@ limited or when it encounters a retransmission timeout.
 
 A sender's congestion window MUST not increase while it is idle.
 
-When a sender starts sending data after an idle period, it's sending rate SHOULD
+When a sender starts sending data after an idle period, its sending rate SHOULD
 be decided as follows.
 
   - If the sender uses pacing, it does not need to reduce its congestion
