@@ -5481,6 +5481,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Tokens are repeated in all Initial packets (#2089)
 - Clarified how PING frames are sent after loss (#2094)
 - Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- ICMP PTB validation clarifications (#2161, #2109, #2108)
+
 
 ## Since draft-ietf-quic-transport-15
 
