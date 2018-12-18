@@ -654,7 +654,8 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).
+handshake, as well as when keys are updated (see {{key-update}}).  Initial
+packet protection keys are treated specially, see {{discard-initial}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -704,6 +705,24 @@ will be marked as lost before this, as they leave a gap in the sequence of
 packet numbers.
 
 
+## Discarding Initial Keys {#discard-initial}
+
+Packets protected with Initial secrets ({{initial-secrets}}) are not
+authenticated, meaning that an attacker could spoof packets with the intent to
+disrupt a connection.  To limit these attacks, Initial packet protection keys
+can be discarded more aggressively than other keys.
+
+The successful use of Handshake packets indicates that no more Initial packets
+need to be exchanged, as these keys can only be produced after receiving all
+CRYPTO frames from Initial packets.  Thus, a client MUST discard Initial keys
+when it first sends a Handshake packet and a server MUST discard Initial keys
+when it first successfully processes a Handshake packet.  Endpoints MUST NOT
+send Initial packets after this point.
+
+This results in abandoning loss recovery state for the Initial encryption level
+and ignoring any outstanding Initial packets.
+
+
 # Packet Protection {#packet-protection}
 
 As with TLS over TCP, QUIC protects packets with keys derived from the TLS
@@ -730,7 +749,7 @@ be used QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
-{{aead}}.  The packet number protection key uses the "quic hp" label, see
+{{aead}}.  The header protection key uses the "quic hp" label, see
 {{header-protect}}).  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
@@ -818,8 +837,8 @@ The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags byte in either the short or long header, up to and
 including the unprotected packet number.
 
-The input plaintext, P, for the AEAD is the content of the QUIC frame following
-the header, as described in {{QUIC-TRANSPORT}}.
+The input plaintext, P, for the AEAD is the payload of the QUIC packet, as
+described in {{QUIC-TRANSPORT}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
@@ -843,6 +862,10 @@ protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Phase
 bit is also protected for packets with a short header.
+
+The same header protection key is used for the duration of the connection, with
+the value not changing after a key update (see {{key-update}}).  This allows
+header protection to be used to protect the key phase.
 
 This process does not apply to Retry or Version Negotiation packets, which do
 not contain a protected payload or any of the fields that are protected by this
@@ -1096,6 +1119,7 @@ packet with a matching KEY_PHASE.
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
 and the corresponding read key and IV using the KDF function provided by TLS.
+The header protection key is not updated.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
@@ -1377,6 +1401,19 @@ values in the following registries:
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-14
+
+- Update the salt used for Initial secrets (#1970)
+- Clarify that TLS_AES_128_CCM_8_SHA256 isn't supported (#2019)
+- Change header protection
+  - Sample from a fixed offset (#1575, #2030)
+  - Cover part of the first byte, including the key phase (#1322, #2006)
+- TLS provides an AEAD and KDF function (#2046)
+  - Clarify that the TLS KDF is used with TLS (#1997)
+  - Change the labels for calculation of QUIC keys (#1845, #1971, #1991)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
 
 
 ## Since draft-ietf-quic-tls-13
