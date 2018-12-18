@@ -3187,8 +3187,10 @@ Further validation can also be provided:
   use for validation (for example, the IP ID or UDP checksum).
 
 The endpoint SHOULD ignore all ICMP messages that are not validated or do not
-carry sufficient quoted packet payload to perform validation.  Any reduction in
-the QUIC maximum packet size MAY be provisional until QUIC's loss detection
+carry sufficient quoted packet payload to perform validation.
+
+An endpoint MUST NOT increase PMTU based on ICMP messages.  Any reduction in the
+QUIC maximum packet size MAY be provisional until QUIC's loss detection
 algorithm determines that the quoted packet has actually been lost.
 
 
