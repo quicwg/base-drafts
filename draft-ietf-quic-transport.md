@@ -3748,7 +3748,7 @@ the connection.
 
 ## Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x3.  It is
+A Handshake packet uses long headers with a type value of 0x2.  It is
 used to carry acknowledgments and cryptographic handshake messages from the
 server and client.
 
