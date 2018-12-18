@@ -380,26 +380,6 @@ The size of an entry is calculated using the length of its name and value
 without any Huffman encoding applied.
 
 
-### Maximum Table Size
-
-The encoder decides how to update the dynamic table size and as such can control
-how much memory is used by the dynamic table.  To limit the memory requirements
-of the decoder, the dynamic table size is strictly bounded.  The decoder
-determines the maximum size that the encoder is permitted to set for the dynamic
-table.  In HTTP/3, this value is determined by the SETTINGS_HEADER_TABLE_SIZE
-setting (see {{configuration}}).  The encoder MUST not set a dynamic table size
-that exceeds this maximum, but it can choose to use a lower dynamic table size
-(see {{size-update}}).
-
-The initial maximum size is determined by the corresponding setting when HTTP
-requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/3, the table size is the remembered value of the setting, even if
-the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
-servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
-initial maximum table size is the value of the setting in the peer's SETTINGS
-frame.
-
-
 ### Eviction
 
 Before a new entry is added to the dynamic table, entries are evicted from the
@@ -423,6 +403,26 @@ entries are evicted from the end of the dynamic table until the size of the
 dynamic table is less than or equal to the new maximum size.  This mechanism can
 be used to completely clear entries from the dynamic table by setting a maxiumum
 size of 0, which can subsequently be restored.
+
+
+### Maximum Table Size
+
+The encoder decides how to update the dynamic table size and as such can control
+how much memory is used by the dynamic table.  To limit the memory requirements
+of the decoder, the dynamic table size is strictly bounded.  The decoder
+determines the maximum size that the encoder is permitted to set for the dynamic
+table.  In HTTP/3, this value is determined by the SETTINGS_HEADER_TABLE_SIZE
+setting (see {{configuration}}).  The encoder MUST not set a dynamic table size
+that exceeds this maximum, but it can choose to use a lower dynamic table size
+(see {{size-update}}).
+
+The initial maximum size is determined by the corresponding setting when HTTP
+requests or responses are first permitted to be sent. For clients using 0-RTT
+data in HTTP/3, the table size is the remembered value of the setting, even if
+the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
+servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
+initial maximum table size is the value of the setting in the peer's SETTINGS
+frame.
 
 
 ### Absolute Indexing {#indexing}
