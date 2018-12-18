@@ -3155,27 +3155,19 @@ PMTU to a bandwidth-inefficient value.
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 1280 bytes.
 
-QUIC endpoints SHOULD provide validation to protect from off-path injection of
-ICMP messages as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This
-uses the quoted packet supplied in the payload of an ICMP message, which, when
-present, can be used to associate the message with a corresponding transport
-connection {{!DPLPMTUD}}.
-
 The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
 quoted packet should contain as much of the original packet as possible without
 exceeding the minimum MTU for the IP version.  The size of the quoted packet can
 actually be smaller, or the information unintelligible, as described in Section
 1.1 of {{!DPLPMTUD}}.
 
-When a randomized source port is used for a QUIC connection, this can provide
-some protection from off path attacks that forge ICMP messages. The source port
-in a quoted packet can be checked for UDP transports {{!RFC8085}} such as QUIC.
-When used, a stack will only pass ICMP messages to a QUIC endpoint where the
-port information in quoted packet within the ICMP payload matches a port used by
-QUIC.
+QUIC endpoints SHOULD validate ICMP messages to protect from off-path injection
+as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This validation
+SHOULD use the quoted packet supplied in the payload of an ICMP message to
+associate the message with a corresponding transport connection {{!DPLPMTUD}}.
 
-As a part of ICMP validation, QUIC endpoints SHOULD validate that connection ID
-information corresponds to an active session.
+ICMP message validation MUST include matching IP addresses and UDP ports
+{{!RFC8085}} and, when possible, connection IDs to an active QUIC session.
 
 Further validation can also be provided:
 
@@ -3186,11 +3178,7 @@ Further validation can also be provided:
 * An endpoint could store additional information from the IP or UDP headers to
   use for validation (for example, the IP ID or UDP checksum).
 
-The endpoint MUST ignore all ICMP messages that contain a quoted packet that was
-never sent or has already been acknowledged.
-
-The endpoint SHOULD ignore all ICMP messages that are not validated or do not
-carry sufficient quoted packet payload to perform validation.
+The endpoint SHOULD ignore all ICMP messages that fail validation.
 
 An endpoint MUST NOT increase PMTU based on ICMP messages.  Any reduction in the
 QUIC maximum packet size MAY be provisional until QUIC's loss detection
