@@ -961,24 +961,19 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
+
 ## Sending data after an idle period
 
-A sender is considered idle if it has no bytes in flight and no pending
-ack-eliciting data to send.  A sender can become idle when it is application
-limited or when it encounters a retransmission timeout.
+A sender is considered idle if it has no bytes in flight.  A sender can become
+idle when it is application limited and has no data to send, or when it marks
+packets as lost (and therefore not in flight).
 
 A sender's congestion window MUST not increase while it is idle.
 
-When a sender starts sending data after an idle period, its sending rate SHOULD
-be decided as follows:
-
-  - If the sender uses pacing, it does not need to reduce its congestion
-    window. It SHOULD however pace the congestion window and MAY allow an
-    initial burst no larger than the initial congestion window.
-
-  - If the sender does not use pacing, it SHOULD reset its congestion window to
-    the smaller of the current congestion window and the initial congestion
-    window, as recommended for TCP (see Section 4.1 of {{?RFC5681}}).
+When sending data after becoming idle, a sender MUST reset its congestion window
+to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
+paces the sending of packets. A sender MAY retain its congestion window if it
+paces the sending of any packets in excess of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
