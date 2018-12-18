@@ -756,7 +756,7 @@ Pseudocode for SetLossDetectionTimer follows:
  SetLossDetectionTimer():
     // Don't arm timer if there are no ack-eliciting packets
     // in flight.
-    if (bytes_in_flight == 0):
+    if (no ack-eliciting packets in flight):
       loss_detection_timer.cancel()
       return
 
