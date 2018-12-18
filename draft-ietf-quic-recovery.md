@@ -313,9 +313,9 @@ Retransmit {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK {{FACK}}, SACK loss
 recovery {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section
 provides an overview of how these algorithms are implemented in QUIC.
 
-A packet is declared lost under the following conditions:
+A packet is declared lost if it meets all the following conditions:
 
-* The packet is unacknowledged, ack-eliciting, and was sent prior to an
+* The packet is unacknowledged, in-flight, and was sent prior to an
   acknowledged packet.
 
 * Either its packet number is kPacketThreshold smaller than an acknowledged
@@ -854,7 +854,7 @@ DetectLostPackets():
     if (unacked.time_sent <= lost_send_time ||
         unacked.packet_number <= lost_pn):
       sent_packets.remove(unacked.packet_number)
-      if (unacked.ack_eliciting):
+      if (unacked.in_flight):
         lost_packets.insert(unacked)
     else if (loss_time == 0):
       loss_time = unacked.time_sent + loss_delay
