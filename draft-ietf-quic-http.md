@@ -499,7 +499,6 @@ sent on the request stream MUST be ignored.
 ~~~~~~~~~~
 {: #fig-priority title="PRIORITY frame payload"}
 
-
 The PRIORITY frame payload has the following fields:
 
   Prioritized Type:
@@ -549,14 +548,16 @@ the interpretation of the associated Element ID fields.
 | 10        | Placeholder      | Placeholder ID                 |
 | 11        | Root of the tree | Absent                         |
 
-Note that unlike {{!RFC7540}}; the root of the tree cannot be referenced using a
-Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The root of
-the tree cannot be reprioritized.  A PRIORITY frame sent on a request stream with the
-Prioritized Element Type set to any value other than `11` or which expresses a
-dependency on a request with a greater Stream ID than the current stream MUST be
-treated as a stream error of type HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY
-frame sent on a control stream with the Prioritized Element Type set to `11`
-MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+Note that unlike in {{!RFC7540}}; the root of the tree cannot be
+referenced using a Stream ID of 0, as in QUIC stream 0 carries a valid
+HTTP request.  The root of the tree cannot be reprioritized.  A
+PRIORITY frame sent on a request stream with the Prioritized Element
+Type set to any value other than `11` or which expresses a dependency
+on a request with a greater Stream ID than the current stream MUST be
+treated as a stream error of type HTTP_MALFORMED_FRAME.  Likewise, a
+PRIORITY frame sent on a control stream with the Prioritized Element
+Type set to `11` MUST be treated as a connection error of type
+HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
@@ -870,7 +871,7 @@ implementation chooses.
 
 A client sends an HTTP request on a client-initiated bidirectional QUIC
 stream. A client MUST send only a single request on a given stream.
-A server sends one or mote HTTP responses on the same stream as the request,
+A server sends one or more HTTP responses on the same stream as the request,
 as detailed below.
 
 An HTTP message (request or response) consists of:
@@ -885,7 +886,7 @@ An HTTP message (request or response) consists of:
    {{!RFC7230}}, Section 4.1.2).
 
 A server MAY interleave one or more PUSH_PROMISE frames (see
-{{frame-push-promise}}) with the pframes of a response message. These
+{{frame-push-promise}}) with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 

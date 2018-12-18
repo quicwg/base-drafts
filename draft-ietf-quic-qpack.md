@@ -312,7 +312,7 @@ permit the encoder to track the decoder's state.  These events are:
 
 - Complete processing of a header block
 - Abandonment of a stream which might have remaining header blocks
-- Receipt of new dynamic table entries
+- Receipt of new dynamic table entries (Table State Synchronize)
 
 Knowledge that a header block with references to the dynamic table has been
 processed permits the encoder to evict entries to which no unacknowledged
@@ -375,7 +375,7 @@ initial maximum table size is the value of the setting in the peer's SETTINGS
 frame.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
-end of the dynamic table until the size of the dynamic table is less than or
+end the dynamic table until the size of the dynamic table is less than or
 equal to (maximum size - new entry size) or until the table is empty. The
 encoder MUST NOT evict a dynamic table entry unless it has first been
 acknowledged by the decoder.
@@ -442,7 +442,7 @@ decoder (see {{maximum-table-size}}).
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes based on the context of the
 reference. The first entry inserted has an absolute index of "1"; indices
-increase sequentially with each insertion.
+increase by one with each insertion.
 
 ### Relative Indexing
 
