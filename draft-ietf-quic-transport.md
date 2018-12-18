@@ -3017,7 +3017,7 @@ the 1-RTT packet number space will be increased by two.
 Each endpoint independently verifies and enables use of ECN by setting the IP
 header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
 other peer. Even if not setting ECN codepoints on packets it transmits, the
-endpoint MAY provide feedback about ECN markings received (if accessible).
+endpoint SHOULD provide feedback about ECN markings received (if accessible).
 
 To verify both that a path supports ECN and the peer can provide ECN feedback,
 an endpoint sets the ECT(0) codepoint in the IP header of all outgoing
