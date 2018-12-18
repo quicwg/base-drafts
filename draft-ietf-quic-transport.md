@@ -3034,13 +3034,13 @@ peer no longer supports ECN.
 Network devices that corrupt or apply non-standard ECN markings might result in
 reduced throughput or other undesirable side-effects.  To reduce this risk, an
 endpoint uses the following steps to verify the counts it receives in an ACK
-frame.  Note that the counts MUST NOT be verified if the ACK frame does not
-increase the largest received packet number at the endpoint.
+frame.  Counts MUST NOT be verified if the ACK frame does not increase the
+largest received packet number at the endpoint.
 
 * The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
-  the total number of QUIC packets newly acknowledged in this ACK frame.  This
-  step detects any network remarking from ECT(0), ECT(1), or CE codepoints to
-  Not-ECT.
+  the total number of QUIC packets sent with an ECT codepoint that are newly
+  acknowledged in this ACK frame.  This step detects any network remarking from
+  ECT(0), ECT(1), or CE codepoints to Not-ECT.
 
 * Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
   count, MUST be no smaller than the number of packets sent with the
