@@ -1413,6 +1413,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - TLS provides an AEAD and KDF function (#2046)
   - Clarify that the TLS KDF is used with TLS (#1997)
   - Change the labels for calculation of QUIC keys (#1845, #1971, #1991)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
 
 
 ## Since draft-ietf-quic-tls-13
