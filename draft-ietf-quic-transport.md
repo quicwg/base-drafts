@@ -3497,9 +3497,8 @@ following sections.
 ## Version Negotiation Packet {#packet-version}
 
 A Version Negotiation packet is inherently not version-specific. Upon receipt by
-a client, it will appear to be a packet using the long header, but will be
-identified as a Version Negotiation packet based on the Version field having a
-value of 0.
+a client, it will be identified as a Version Negotiation packet based on the
+Version field having a value of 0.
 
 The Version Negotiation packet is a response to a client packet that contains a
 version that is not supported by the server, and is only sent by servers.
