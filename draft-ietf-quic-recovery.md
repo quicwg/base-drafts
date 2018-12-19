@@ -146,7 +146,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 
 * Packets that contain only ACK frames do not count toward congestion control
   limits and are not considered in-flight. Note that this means PADDING frames
-  cause packets to contribute toward bytes in-flight without directly causing an
+  cause packets to contribute toward bytes in flight without directly causing an
   acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
