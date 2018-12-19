@@ -711,10 +711,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
+    DetectLostPackets()
+
     crypto_count = 0
     pto_count = 0
 
-    DetectLostPackets()
     SetLossDetectionTimer()
 
 
