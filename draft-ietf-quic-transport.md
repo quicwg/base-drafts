@@ -943,15 +943,15 @@ the connection ID via a RETIRE_CONNECTION_ID frame
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs. Endpoints store received connection IDs for future use.
-They advertise how many unretired connection IDs they are willing to store in
-the transport parameters. An endpoint MUST NOT provide more connection IDs than
-this limit. An endpoint MUST treat receipt of more than this number of
-connection IDs as an error of type CONNECTION_ID_LIMIT_ERROR. If an endpoint has
-provided its peer with the maximum number of connection IDs, the earliest time
-it can provide a new connection ID is when the peer retires a connection ID.
-Endpoints that initiate migration and require non-zero-length connection IDs
-SHOULD provide their peers with new connection IDs before migration, or risk the
-peer closing the connection.
+An endpoint uses a transport parameter to advertise the maximum number of
+connection IDs it can store for future use. An endpoint MUST NOT provide more
+connection IDs than this limit. An endpoint MUST treat receipt of more than this
+number of connection IDs as an error of type CONNECTION_ID_LIMIT_ERROR. If an
+endpoint has provided its peer with the maximum number of connection IDs, it can
+only provide a new connection ID when the peer retires one. Endpoints that
+initiate migration and require non-zero-length connection IDs SHOULD provide
+their peers with new connection IDs before migration, or risk the peer closing
+the connection.
 
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
