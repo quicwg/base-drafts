@@ -1544,22 +1544,22 @@ Clients MUST pad UDP datagrams that contain only Initial packets to at least
 it MAY send smaller datagrams.  Sending padded datagrams ensures that the server
 is not overly constrained by the amplification restriction.
 
-Packet loss, e.g., of the server's Handshake packet, can cause a
-situation in which the server cannot send because of the
-anti-amplification limit and the client has no data to send. In order
-to prevent a handshake deadlock as a result of this situation, clients
-SHOULD send a packet upon a handshake timeout, as described in
-{{QUIC-RECOVERY}}. If the client has no data to retransmit and does
-not have Handshake keys, it SHOULD send an Initial packet in a UDP
-datagram of at least 1200 bytes.  If the client has Handshake keys, it
-SHOULD send a Handshake packet.
+Packet loss, in particular loss of a Handshake packet from the server, can cause
+a situation in which the server cannot send when the client has no data to send
+and the anti-amplification limit is reached. In order to avoid this causing a
+handshake deadlock, clients SHOULD send a packet upon a handshake timeout, as
+described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
+not have Handshake keys, it SHOULD send an Initial packet in a UDP datagram of
+at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
+Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
-address validation prior to completing the handshake. This token is delivered
-to the client during connection establishment with a Retry packet
-(see {{validate-retry}}) or in a previous connection using the NEW_TOKEN
-frame (see {{validate-future}}).
+address validation prior to completing the handshake. This token is delivered to
+the client during connection establishment with a Retry packet (see
+{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
+{{validate-future}}).
+
 
 ### Address Validation using Retry Packets {#validate-retry}
 
@@ -1606,22 +1606,22 @@ amount of data to a client in response to 0-RTT data.
 The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
 with an address validation token that can be used to validate future
 connections.  The client includes this token in Initial packets to provide
-address validation in a future connection.  The client MUST include the
-token in all Initial packets it sends, unless a Retry replaces the token
-with a newer token. The client MUST NOT use the token provided in a Retry
-for future connections. Servers MAY discard any Initial packet that does not
-carry the expected token.
+address validation in a future connection.  The client MUST include the token in
+all Initial packets it sends, unless a Retry replaces the token with a newer
+token. The client MUST NOT use the token provided in a Retry for future
+connections. Servers MAY discard any Initial packet that does not carry the
+expected token.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
-Thus, a token SHOULD include an expiration time.  The server MAY
-include either an explicit expiration time or an issued timestamp and
-dynamically calculate the expiration time.  It is also unlikely that the client
-port number is the same on two different connections; validating the port is
-therefore unlikely to be successful.
+Thus, a token SHOULD include an expiration time.  The server MAY include either
+an explicit expiration time or an issued timestamp and dynamically calculate the
+expiration time.  It is also unlikely that the client port number is the same on
+two different connections; validating the port is therefore unlikely to be
+successful.
 
-A token SHOULD be constructed to be easily distinguishable from tokens
-that are sent in Retry packets as they are carried in the same field.
+A token SHOULD be constructed to be easily distinguishable from tokens that are
+sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it can include that value in the
@@ -1630,7 +1630,7 @@ Token field of its Initial packet.
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
-NEW_TOKEN frame.  A token obtained in a Retry packet must be used immediately
+NEW_TOKEN frame.  A token obtained in a Retry packet MUST be used immediately
 during the connection attempt and cannot be used in subsequent connection
 attempts.
 
@@ -1702,10 +1702,10 @@ peer from a new local address.  In path validation, endpoints test reachability
 between a specific local address and a specific peer address, where an address
 is the two-tuple of IP address and port.
 
-Path validation tests that packets (PATH_CHALLENGE) can be both sent
-to and received (PATH_RESPONSE) from a peer on the path.  Importantly,
-it validates that the packets received from the migrating endpoint do
-not carry a spoofed source address.
+Path validation tests that packets (PATH_CHALLENGE) can be both sent to and
+received (PATH_RESPONSE) from a peer on the path.  Importantly, it validates
+that the packets received from the migrating endpoint do not carry a spoofed
+source address.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -1740,9 +1740,8 @@ loss.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it
 would an Initial packet, ensuring that connection migration is no more load on a
 new path than establishing a new connection.
 
-The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame
-so that it can associate the peer's response with the corresponding
-PATH_CHALLENGE.
+The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
+it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 
 ## Path Validation Responses
@@ -1762,8 +1761,8 @@ to the same remote address from which the PATH_CHALLENGE was received.
 
 ## Successful Path Validation
 
-A new address is considered valid when a PATH_RESPONSE frame is received
-that meets the following criteria:
+A new address is considered valid when a PATH_RESPONSE frame is received that
+meets the following criteria:
 
 - It contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
   acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
@@ -1780,8 +1779,8 @@ that meets the following criteria:
 
 Note that receipt on a different local address does not result in path
 validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting. It is possible that a valid
-PATH_RESPONSE might be received in the future.
+{{off-path-forward}}) or misrouting. It is possible that a valid PATH_RESPONSE
+might be received in the future.
 
 
 ## Failed Path Validation
@@ -2229,13 +2228,12 @@ An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
-While in the closing period, an endpoint could receive packets from a
-new source address, indicating a client connection migration
-({{migration}}). An endpoint in the closing state MUST strictly limit
-the number of packets it sends to this new address until the address
-is validated (see {{migrate-validate}}). A server in the closing state
-MAY instead choose to discard packets received from a new source
-address.
+While in the closing period, an endpoint could receive packets from a new source
+address, indicating a client connection migration ({{migration}}). An endpoint
+in the closing state MUST strictly limit the number of packets it sends to this
+new address until the address is validated (see {{migrate-validate}}). A server
+in the closing state MAY instead choose to discard packets received from a new
+source address.
 
 
 ## Idle Timeout
@@ -2281,12 +2279,11 @@ increase the time between packets.
 
 Note:
 
-: Allowing retransmission of a closing packet contradicts other advice
-  in this document that recommends the creation of new packet numbers
-  for every packet.  Sending new packet numbers is primarily of
-  advantage to loss recovery and congestion control, which are not
-  expected to be relevant for a closed connection.  Retransmitting the
-  final packet requires less state.
+: Allowing retransmission of a closing packet contradicts other advice in this
+  document that recommends the creation of new packet numbers for every packet.
+  Sending new packet numbers is primarily of advantage to loss recovery and
+  congestion control, which are not expected to be relevant for a closed
+  connection.  Retransmitting the final packet requires less state.
 
 New packets from unverified addresses could be used to create an amplification
 attack (see {{address-validation}}).  To avoid this, endpoints MUST either limit
@@ -2343,7 +2340,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|                   Random Bits (182..)                  ...
+|0|1|               Unpredictable Bits (182..)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2364,15 +2361,14 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
-A stateless reset will be interpreted by a recipient as a packet with
-a short header.  For the packet to appear as valid, the Random Bits
-field needs to include at least 182 bits of data (or 24 bytes, less
-the two fixed bits). This is intended to allow for a Destination
-Connection ID of the maximum length permitted, with a minimal packet
-number, and payload.  The Stateless Reset Token corresponds to the
-minimum expansion of the packet protection AEAD.  More random bytes
-might be necessary if the endpoint could have negotiated a packet
-protection scheme with a larger minimum AEAD expansion.
+A stateless reset will be interpreted by a recipient as a packet with a short
+header.  For the packet to appear as valid, the Random Bits field needs to
+include at least 182 bits of data (or 24 bytes, less the two fixed bits). This
+is intended to allow for a Destination Connection ID of the maximum length
+permitted, with a minimal packet number, and payload.  The Stateless Reset Token
+corresponds to the minimum expansion of the packet protection AEAD.  More
+unpredictable bytes might be necessary if the endpoint could have negotiated a
+packet protection scheme with a larger minimum AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
@@ -2475,9 +2471,9 @@ Note that Stateless Reset packets do not have any cryptographic protection.
 ### Looping {#reset-looping}
 
 The design of a Stateless Reset is such that without knowing the stateless reset
-token it is indistinguishable from a valid packet.  If a server sends a
-Stateless Reset to another server, it might receive another Stateless Reset in
-response, could lead to infinite exchanges.
+token it is indistinguishable from a valid packet.  For instance, if a server
+sends a Stateless Reset to another server it might receive another Stateless
+Reset in response, which could lead to an infinite exchange.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
 the packet which triggered it, unless it maintains state sufficient to prevent
@@ -2590,11 +2586,11 @@ and integrity protection. Details of packet protection are found in
 {{QUIC-TLS}}; this section includes an overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
-packet protection is not effective confidentiality protection; it only exists to
-ensure that the sender of the packet is on the network path. Any entity that
-receives the Initial packet from a client can recover the keys necessary to
-remove packet protection or to generate packets that will be successfully
-authenticated.
+packet protection is not effective confidentiality protection.  Initial
+protection only exists to ensure that the sender of the packet is on the network
+path. Any entity that receives the Initial packet from a client can recover the
+keys necessary to remove packet protection or to generate packets that will be
+successfully authenticated.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
@@ -2605,10 +2601,10 @@ handshake ensures that only the communicating endpoints receive the
 corresponding keys.
 
 The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is
-applied (see {{QUIC-TLS}} for details).  The underlying packet number
-increases with each packet sent in a given packet number space, see
-{{packet-numbers}} for details.
+confidentiality protection that is applied after packet protection is applied
+(see {{QUIC-TLS}} for details).  The underlying packet number increases with
+each packet sent in a given packet number space, see {{packet-numbers}} for
+details.
 
 
 ## Coalescing Packets {#packet-coalesce}
@@ -2832,13 +2828,12 @@ there are packet gaps which precede the received packet.  The endpoint MUST
 however acknowledge packets containing only ACK or PADDING frames when sending
 ACK frames in response to other packets.
 
-Packets containing PADDING frames are considered
-to be in flight for congestion control purposes {{QUIC-RECOVERY}}. Sending only
-PADDING frames might cause the sender to become limited by the congestion
-controller (as described in {{QUIC-RECOVERY}}) with no acknowledgments
-forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent in addition to PADDING frames to elicit acknowledgments from the
-receiver.
+Packets containing PADDING frames are considered to be in flight for congestion
+control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
+sender to become limited by the congestion controller (as described in
+{{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
+receiver. Therefore, a sender SHOULD ensure that other frames are sent in
+addition to PADDING frames to elicit acknowledgments from the receiver.
 
 An endpoint MUST NOT send more than one packet containing only an ACK frame per
 received packet that contains frames other than ACK and PADDING frames.
@@ -2858,9 +2853,9 @@ an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
 acknowledged again.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
-is only sending ACK frames will only receive acknowledgements for its packets
-if the sender includes them in packets with non-ACK frames.  A sender SHOULD
-bundle ACK frames with other frames when possible.
+is only sending ACK frames will only receive acknowledgements for its packets if
+the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
+ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Blocks it sends.  A receiver can do this even without receiving
@@ -3725,10 +3720,10 @@ Initial keys are discarded.
 
 <!-- TODO: delete this section after confirming that it is redundant -->
 
-The first Initial packet sent by either endpoint MUST contain a packet
-number of 0. The packet number MUST increase monotonically thereafter.
-Initial packets are in a different packet number space to other
-packets (see {{packet-numbers}}).
+The first Initial packet sent by either endpoint MUST contain a packet number of
+0. The packet number MUST increase monotonically thereafter.  Initial packets
+are in a different packet number space to other packets (see
+{{packet-numbers}}).
 
 
 ### 0-RTT Packet Numbers {#retry-0rtt-pn}
@@ -3784,8 +3779,8 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use (see
 {{negotiating-connection-ids}}).
 
-Handshake packets are their own packet number space, and thus
-the first Handshake packet sent by a server contains a packet number of 0.
+Handshake packets are their own packet number space, and thus the first
+Handshake packet sent by a server contains a packet number of 0.
 
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
@@ -4485,8 +4480,8 @@ FIN bit.
 
 ## NEW_TOKEN Frame {#frame-new-token}
 
-A server sends a NEW_TOKEN frame (type=0x07) to provide the client with
-a token to send in the header of an Initial packet for a future connection.
+A server sends a NEW_TOKEN frame (type=0x07) to provide the client with a token
+to send in the header of an Initial packet for a future connection.
 
 The NEW_TOKEN frame is as follows:
 
@@ -4580,9 +4575,8 @@ Stream Data:
 When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
-The first byte in the stream has an offset of 0.  The largest offset
-delivered on a stream - the sum of the offset and data length - MUST
-be less than 2^62.
+The first byte in the stream has an offset of 0.  The largest offset delivered
+on a stream - the sum of the offset and data length - MUST be less than 2^62.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -4986,10 +4980,9 @@ Frame Type:
 
 Reason Phrase Length:
 
-: A variable-length integer specifying the length of the reason phrase
-  in bytes.  Because a CONNECTION_CLOSE frame cannot be split between
-  packets, any limits on packet size will also limit the space
-  available for a reason phrase.
+: A variable-length integer specifying the length of the reason phrase in bytes.
+  Because a CONNECTION_CLOSE frame cannot be split between packets, any limits
+  on packet size will also limit the space available for a reason phrase.
 
 Reason Phrase:
 
@@ -5366,7 +5359,7 @@ An accompanying transport parameter registration (see
 specification needs to describe the format and assigned semantics of any fields
 in the frame.
 
-Expert(s) should be biased towards approving registrations unless
+Expert(s) are encouraged to be biased towards approving registrations unless
 they are abusive, frivolous, or actively harmful (not merely aesthetically
 displeasing, or architecturally dubious).
 
