@@ -975,7 +975,7 @@ in Linux (3.11 onwards).
 ## Sending data after an idle period
 
 A sender becomes idle if it ceases to send data and has no bytes in flight.  A
-sender's congestion window MUST not increase while it is idle.
+sender's congestion window MUST NOT increase while it is idle.
 
 When sending data after becoming idle, a sender MUST reset its congestion window
 to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
