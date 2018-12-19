@@ -3482,7 +3482,7 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |-----:|:------------------------------|:----------------------------|
 |  0x0 | Initial                       | {{packet-initial}}          |
-|  0x1 | 0-RTT Protected               | {{packet-0rtt}}        |
+|  0x1 | 0-RTT Protected               | {{packet-0rtt}}             |
 |  0x2 | Handshake                     | {{packet-handshake}}        |
 |  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
