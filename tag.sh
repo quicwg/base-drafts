@@ -7,7 +7,7 @@
 # https://trac.tools.ietf.org/tools/ietfdb/ticket/2390 still isn't fixed.
 
 if [[ $# -eq 0 ]]; then
-    files=(transport tls recovery http)
+    files=(transport tls recovery http qpack)
 else
     files=("$@")
 fi
