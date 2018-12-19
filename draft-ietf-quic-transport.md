@@ -2564,16 +2564,14 @@ and integrity protection (see {{packet-protected}}) and are carried in UDP
 datagrams (see {{packet-coalesce}}).
 
 This version of QUIC uses the long packet header (see {{long-header}}) during
-connection establishment.  Packets that carry the long header are Initial
+connection establishment.  Packets with the long header are Initial
 ({{packet-initial}}), 0-RTT Protected ({{packet-0rtt}}), Handshake
-({{packet-handshake}}), and Retry ({{packet-retry}}).
+({{packet-handshake}}), and Retry ({{packet-retry}}).  Version negotiation uses
+a version-independent packet with a long header (see {{packet-version}}).
 
 Packets with the short header ({{short-header}}) are designed for minimal
 overhead and are used after a connection is established and 1-RTT keys are
 available.
-
-Version negotiation uses a packet with a special format (see
-{{packet-version}}).
 
 
 ## Protected Packets {#packet-protected}
@@ -2609,7 +2607,7 @@ details.
 
 Initial ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), and Handshake
 ({{packet-handshake}}) packets contain a Length field, which determines the end
-of the packet.  The Length field includes both the Packet Number and Payload
+of the packet.  The length includes both the Packet Number and Payload
 fields, both of which are confidentiality protected and initially of unknown
 length. The length of the Payload field is learned once header protection is
 removed.
