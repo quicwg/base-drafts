@@ -2607,11 +2607,12 @@ details.
 
 ## Coalescing Packets {#packet-coalesce}
 
-Packets using the Extended Long Header ({{extended-long-header}}) contain a
-Length field, which determines the end of the packet.  The Length field covers
-both the Packet Number and Payload fields, both of which are confidentiality
-protected and initially of unknown length. The length of the Payload field is
-learned once header protection is removed.
+Initial ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), and Handshake
+({{packet-handshake}}) packets contain a Length field, which determines the end
+of the packet.  The Length field includes both the Packet Number and Payload
+fields, both of which are confidentiality protected and initially of unknown
+length. The length of the Payload field is learned once header protection is
+removed.
 
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
@@ -2669,7 +2670,7 @@ level and can only be acknowledged in Handshake packets.
 
 This enforces cryptographic separation between the data sent in the different
 packet sequence number spaces.  Each packet number space starts at packet number
-0.  Subsequent packets sent in the same packet number space MUST increase the
+1.  Subsequent packets sent in the same packet number space MUST increase the
 packet number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
@@ -3491,9 +3492,22 @@ See {{QUIC-INVARIANTS}} for details on how packets from different versions of
 QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
-packet type.  Type-specific semantics for this version are described in the
-following sections.
+packet type.  While type-specific semantics for this version are described in
+the following sections, several long-header packets in this version of QUIC
+contain these additional fields:
 
+Length:
+
+: The length of the remainder of the packet (that is, the Packet Number and
+  Payload fields) in bytes, encoded as a variable-length integer
+  ({{integer-encoding}}).
+
+Packet Number:
+
+: The packet number field is 1 to 4 bytes long. The packet number has
+  confidentiality protection separate from packet protection, as described in
+  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  in the plaintext packet number. See {{packet-encoding}} for details.
 
 ### Version Negotiation Packet {#packet-version}
 
@@ -3557,7 +3571,184 @@ a Version Negotiation packet consumes an entire UDP datagram.
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
-## Retry Packet {#packet-retry}
+### Initial Packet {#packet-initial}
+
+An Initial packet uses long headers with a type value of 0x0.  It carries the
+first CRYPTO frames sent by the client and server to perform key exchange, and
+carries ACKs in either direction.
+
+~~~
++-+-+-+-+-+-+-+-+
+|1|1| 0 |R R|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Token Length (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Token (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Packet Number (8/16/24/32)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #initial-format title="Initial Packet"}
+
+The Initial packet contains a long header as well as the Length and Packet
+Number fields.  Between the SCID and Length fields, there are two additional
+field specific to the Initial packet.
+
+Token Length:
+
+: A variable-length integer specifying the length of the Token field, in bytes.
+  This value is zero if no token is present.  Initial packets sent by the server
+  MUST set the Token Length field to zero; clients that receive an Initial
+  packet with a non-zero Token Length field MUST either discard the packet or
+  generate a connection error of type PROTOCOL_VIOLATION.
+
+Token:
+
+: The value of the token that was previously provided in a Retry packet or
+  NEW_TOKEN frame.
+
+Payload:
+
+: The payload of the packet.
+
+In order to prevent tampering by version-unaware middleboxes, Initial packets
+are protected with connection- and version-specific keys (Initial keys) as
+described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
+integrity against on-path attackers, but provides some level of protection
+against off-path attackers.
+
+The client and server use the Initial packet type for any packet that contains
+an initial cryptographic handshake message. This includes all cases where a new
+packet containing the initial cryptographic message needs to be created, such as
+the packets sent after receiving a Version Negotiation ({{packet-version}}) or
+Retry packet ({{packet-retry}}).
+
+A server sends its first Initial packet in response to a client Initial.  A
+server may send multiple Initial packets.  The cryptographic key exchange could
+require multiple round trips or retransmissions of this data.
+
+The payload of an Initial packet includes a CRYPTO frame (or frames) containing
+a cryptographic handshake message, ACK frames, or both.  PADDING and
+CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
+Initial packet containing other frames can either discard the packet as spurious
+or treat it as a connection error.
+
+The first packet sent by a client always includes a CRYPTO frame that contains
+the entirety of the first cryptographic handshake message.  This packet, and the
+cryptographic handshake message, MUST fit in a single UDP datagram (see
+{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
+(see {{handshake}}).
+
+Note that if the server sends a HelloRetryRequest, the client will send a second
+Initial packet.  This Initial packet will continue the cryptographic handshake
+and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
+frame sent in the first Initial packet.  Cryptographic handshake messages
+subsequent to the first do not need to fit within a single UDP datagram.
+
+#### Abandoning Initial Packets {#discard-initial}
+
+A client stops both sending and processing Initial packets when it sends its
+first Handshake packet.  A server stops sending and processing Initial packets
+when it receives its first Handshake packet.  Though packets might still be in
+flight or awaiting acknowledgment, no further Initial packets need to be
+exchanged beyond this point.  Initial packet protection keys are discarded (see
+Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
+control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+
+Any data in CRYPTO frames is discarded - and no longer retransmitted - when
+Initial keys are discarded.
+
+### 0-RTT Protected {#packet-0rtt}
+
+A 0-RTT Protected packet uses long headers with a type value of 0x1, followed by
+the Length and Packet Number fields. It is used to carry "early" data from the
+client to the server as part of the first flight, prior to handshake completion.
+As part of the TLS handshake, the server can accept or reject this early data.
+
+See Sections 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+limitations.
+
+~~~
++-+-+-+-+-+-+-+-+
+|1|1| 0 |R R|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Packet Number (8/16/24/32)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #0rtt-format title="0-RTT Protected Packet"}
+
+### Handshake Packet {#packet-handshake}
+
+A Handshake packet uses long headers with a type value of 0x2, followed by the
+Length and Packet Number fields.  It is used to carry acknowledgments and
+cryptographic handshake messages from the server and client.
+
+~~~
++-+-+-+-+-+-+-+-+
+|1|1| 0 |R R|P P|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|DCIL(4)|SCIL(4)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0/32..144)         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0/32..144)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Length (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Packet Number (8/16/24/32)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Payload (*)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #handshake-format title="Handshake Protected Packet"}
+
+Once a client has received a Handshake packet from a server, it uses Handshake
+packets to send subsequent cryptographic handshake messages and acknowledgments
+to the server.
+
+The Destination Connection ID field in a Handshake packet contains a connection
+ID that is chosen by the recipient of the packet; the Source Connection ID
+includes the connection ID that the sender of the packet wishes to use (see
+{{negotiating-connection-ids}}).
+
+Handshake packets are their own packet number space, and thus the first
+Handshake packet sent by a server contains a packet number of 0.
+
+The payload of this packet contains CRYPTO frames and could contain PADDING, or
+ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
+MUST treat receipt of Handshake packets with other frames as a connection error.
+
+Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
+Handshake encryption level is discarded - and no longer retransmitted - when
+Handshake protection keys are discarded.
+
+### Retry Packet {#packet-retry}
 
 A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
@@ -3666,154 +3857,6 @@ failed validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
-
-## Extended Long Header Packets {#extended-long-header}
-
-~~~
-+-+-+-+-+-+-+-+-+
-|1|1| 0 |R R|P P|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|DCIL(4)|SCIL(4)|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/32..144)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/32..144)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Token Length (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Token (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Packet Number (8/16/24/32)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~
-{: #extended-format title="Extended Long Packet Header"}
-
-Token Length:
-
-: A variable-length integer specifying the length of the Token field, in bytes.
-  This value is zero if no token is present.  Initial packets sent by the server
-  MUST set the Token Length field to zero; clients that receive an Initial
-  packet with a non-zero Token Length field MUST either discard the packet or
-  generate a connection error of type PROTOCOL_VIOLATION.
-
-Token:
-
-: The value of the token that was previously provided in a Retry packet or
-  NEW_TOKEN frame.
-
-Length:
-
-: The length of the remainder of the packet (that is, the Packet Number and
-  Payload fields) in bytes, encoded as a variable-length integer
-  ({{integer-encoding}}).
-
-Packet Number:
-
-: The packet number field is 1 to 4 bytes long. The packet number has
-  confidentiality protection separate from packet protection, as described in
-  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
-
-Payload:
-
-: The payload of the packet.
-
-### Initial Packet {#packet-initial}
-
-An Initial packet uses extended long headers with a type value of 0x0.  It
-carries the first CRYPTO frames sent by the client and server to perform key
-exchange, and carries ACKs in either direction.
-
-In order to prevent tampering by version-unaware middleboxes, Initial packets
-are protected with connection- and version-specific keys (Initial keys) as
-described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
-integrity against on-path attackers, but provides some level of protection
-against off-path attackers.
-
-The client and server use the Initial packet type for any packet that contains
-an initial cryptographic handshake message. This includes all cases where a new
-packet containing the initial cryptographic message needs to be created, such as
-the packets sent after receiving a Version Negotiation ({{packet-version}}) or
-Retry packet ({{packet-retry}}).
-
-A server sends its first Initial packet in response to a client Initial.  A
-server may send multiple Initial packets.  The cryptographic key exchange could
-require multiple round trips or retransmissions of this data.
-
-The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING and
-CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
-Initial packet containing other frames can either discard the packet as spurious
-or treat it as a connection error.
-
-The first packet sent by a client always includes a CRYPTO frame that contains
-the entirety of the first cryptographic handshake message.  This packet, and the
-cryptographic handshake message, MUST fit in a single UDP datagram (see
-{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
-(see {{handshake}}).
-
-Note that if the server sends a HelloRetryRequest, the client will send a second
-Initial packet.  This Initial packet will continue the cryptographic handshake
-and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
-frame sent in the first Initial packet.  Cryptographic handshake messages
-subsequent to the first do not need to fit within a single UDP datagram.
-
-#### Abandoning Initial Packets {#discard-initial}
-
-A client stops both sending and processing Initial packets when it sends its
-first Handshake packet.  A server stops sending and processing Initial packets
-when it receives its first Handshake packet.  Though packets might still be in
-flight or awaiting acknowledgment, no further Initial packets need to be
-exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
-
-Any data in CRYPTO frames is discarded - and no longer retransmitted - when
-Initial keys are discarded.
-
-
-### 0-RTT Protected {#packet-0rtt}
-
-A 0-RTT Protected packet uses extended long headers with a type value of 0x1.
-It is used to carry "early" data from the client to the server as part of the
-first flight, prior to handshake completion.  As part of the TLS handshake, the
-server can accept or reject this early data.
-
-See Sections 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
-limitations.
-
-### Handshake Packet {#packet-handshake}
-
-A Handshake packet uses extended long headers with a type value of 0x2.  It is
-used to carry acknowledgments and cryptographic handshake messages from the
-server and client.
-
-Once a client has received a Handshake packet from a server, it uses Handshake
-packets to send subsequent cryptographic handshake messages and acknowledgments
-to the server.
-
-The Destination Connection ID field in a Handshake packet contains a connection
-ID that is chosen by the recipient of the packet; the Source Connection ID
-includes the connection ID that the sender of the packet wishes to use (see
-{{negotiating-connection-ids}}).
-
-Handshake packets are their own packet number space, and thus the first
-Handshake packet sent by a server contains a packet number of 0.
-
-The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
-MUST treat receipt of Handshake packets with other frames as a connection error.
-
-Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
-Handshake encryption level is discarded - and no longer retransmitted - when
-Handshake protection keys are discarded.
-
 
 ## Short Header Packet {#short-header}
 
