@@ -421,11 +421,11 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
-If no new data or unacknowledged data is available to send, a retransmittable
-frame SHOULD be sent.  Sending a retransmittable frame ensures that any in
-flight packets are acknowledged or declared lost in a timely manner.
-Otherwise, a deadlock results if there is no available congestion window and
-all in-flight packets contain no data that can be retransmitted.
+If no new data or unacknowledged data is available to send, an ack-eliciting
+packet SHOULD be sent.  Sending a retransmittable frame ensures that any in
+flight packets are acknowledged or declared lost in a timely manner.  If no
+ack-eliciting packet is sent, the in flight packets should be declared lost
+to avoid repeatedly arming and firing the PTO timer.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
 a sender may have to arm or adjust the TLP timer on every sent retransmittable
