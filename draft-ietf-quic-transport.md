@@ -2565,9 +2565,9 @@ datagrams (see {{packet-coalesce}}).
 
 This version of QUIC uses the long packet header (see {{long-header}}) during
 connection establishment.  Packets with the long header are Initial
-({{packet-initial}}), 0-RTT Protected ({{packet-0rtt}}), Handshake
-({{packet-handshake}}), and Retry ({{packet-retry}}).  Version negotiation uses
-a version-independent packet with a long header (see {{packet-version}}).
+({{packet-initial}}), 0-RTT ({{packet-0rtt}}), Handshake ({{packet-handshake}}),
+and Retry ({{packet-retry}}).  Version negotiation uses a version-independent
+packet with a long header (see {{packet-version}}).
 
 Packets with the short header ({{short-header}}) are designed for minimal
 overhead and are used after a connection is established and 1-RTT keys are
@@ -3478,7 +3478,7 @@ The following packet types are defined:
 | Type | Name                          | Section                     |
 |-----:|:------------------------------|:----------------------------|
 |  0x0 | Initial                       | {{packet-initial}}          |
-|  0x1 | 0-RTT Protected               | {{packet-0rtt}}             |
+|  0x1 | 0-RTT                         | {{packet-0rtt}}             |
 |  0x2 | Handshake                     | {{packet-handshake}}        |
 |  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
@@ -3668,10 +3668,10 @@ control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
 
-### 0-RTT Protected {#packet-0rtt}
+### 0-RTT {#packet-0rtt}
 
-A 0-RTT Protected packet uses long headers with a type value of 0x1, followed by
-the Length and Packet Number fields. It is used to carry "early" data from the
+A 0-RTT packet uses long headers with a type value of 0x1, followed by the
+Length and Packet Number fields. It is used to carry "early" data from the
 client to the server as part of the first flight, prior to handshake completion.
 As part of the TLS handshake, the server can accept or reject this early data.
 
@@ -3697,7 +3697,7 @@ limitations.
 |                          Payload (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #0rtt-format title="0-RTT Protected Packet"}
+{: #0rtt-format title="0-RTT Packet"}
 
 ### Handshake Packet {#packet-handshake}
 
