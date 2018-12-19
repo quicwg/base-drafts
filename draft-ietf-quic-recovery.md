@@ -102,8 +102,9 @@ In-flight:
 
 : Packets are considered in-flight when they have been sent
   and neither acknowledged nor declared lost, and they are not
-  ACK-only.  Packets are still considered in-flight even if
-  their payloads no longer need to be delivered.
+  ACK-only.  For example, packets containing STREAM frames are
+  still considered in-flight after the corresponding stream
+  is reset.
 
 Ack-eliciting Frames:
 
