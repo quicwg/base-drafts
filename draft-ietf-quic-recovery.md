@@ -421,16 +421,6 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
-If no new data or unacknowledged data is available to send, an ack-eliciting
-packet SHOULD be sent.  Sending a retransmittable frame ensures that any in
-flight packets are acknowledged or declared lost in a timely manner.  If no
-ack-eliciting packet is sent, any packets currently in flight should be declared lost
-to avoid repeatedly arming and firing the PTO timer.
-
-A sender may not know that a packet being sent is a tail packet.  Consequently,
-a sender may have to arm or adjust the TLP timer on every sent retransmittable
-packet.
-
 #### Discarding Initial State {#discard-initial}
 
 As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
@@ -504,6 +494,12 @@ be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
+
+If no new data or unacknowledged data is available to send, an ack-eliciting
+packet SHOULD be sent.  Sending a retransmittable frame ensures that any in
+flight packets are acknowledged or declared lost in a timely manner.  If no
+ack-eliciting packet is sent, any packets currently in flight should be
+declared lost to avoid repeatedly arming and firing the PTO timer.
 
 
 #### Loss Detection {#pto-loss}
