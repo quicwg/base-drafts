@@ -362,10 +362,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-Implementations MAY experiment with absolute thresholds, thresholds from similar
-previous connections, adaptive thresholds, or including RTT variance in the
-threshold.  Smaller thresholds reduce reordering resilience and increase
-spurious retransmissions, and larger thresholds increases loss detection delay.
+Implementations MAY experiment with absolute thresholds, thresholds from
+previous connections, adaptive thresholds, or including RTT variance.  Smaller
+thresholds reduce reordering resilience and increase spurious retransmissions,
+and larger thresholds increases loss detection delay.
 
 
 ## Timeout Loss Detection
