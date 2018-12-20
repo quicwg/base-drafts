@@ -421,6 +421,7 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
+
 #### Discarding Initial State {#discard-initial}
 
 As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
