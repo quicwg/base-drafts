@@ -362,9 +362,9 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-Implementations MAY experiment with using other reordering thresholds, such as
-absolute values or thresholds from similar previous connections, with adaptive
-thresholds, or with including RTT variance in the threshold.  While
+Implementations MAY experiment with using other reordering thresholds such as
+absolute values or thresholds from similar previous connections, with using
+adaptive thresholds, or with including RTT variance in the threshold.  While
 experimenting, implementations should consider the tradeoff between using a
 smaller threshold, which reduce reordering resilience and increases spurious
 retransmissions, and using a higher threshold, which increases loss detection
