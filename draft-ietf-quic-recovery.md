@@ -497,13 +497,14 @@ including sending new or retransmitted data based on the application's
 priorities.
 
 When a PTO timer expires, new or previously-sent data may not available to send,
-and data may still be in flight.  Under these conditions, a sender MUST mark any
-packets still in flight as lost.  This can happen for example when data is sent
-on a stream which is then reset by a sender, and a PTO timer expires after this
-stream is reset.  A sender can be blocked from sending new data in the future if
-data is left in flight with no PTO armed.  Marking any in-flight packets as lost
-allows the sender to recover any congestion window space that is consumed by the
-packets still in flight.
+and data may still be in flight.  A sender can be blocked from sending new data
+in the future if data is left in flight with no PTO armed.  Under these
+conditions, a sender SHOULD mark any packets still in flight as lost.  Marking
+any in-flight packets as lost allows the sender to recover any congestion window
+space consumed by them.  Marking all packets as lost might be
+bandwidth-inefficient if a large amount of data is in flight.  A sender MAY
+optimize for bandwidth by sending an ack-eliciting packet and re-arming the PTO
+timer instead of marking all in-flight packets as lost.
 
 
 #### Loss Detection {#pto-loss}
