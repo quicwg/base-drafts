@@ -497,7 +497,7 @@ including sending new or retransmitted data based on the application's
 priorities.
 
 When a PTO timer expires, new or previously-sent data may not be available to
-send, and packets may still be in flight.  A sender can be blocked from sending
+send and packets may still be in flight.  A sender can be blocked from sending
 new data in the future if packets are left in flight.  Under these conditions, a
 sender SHOULD mark any packets still in flight as lost.  If a sender wishes to
 establish delivery of packets still in flight, it MAY send an ack-eliciting
