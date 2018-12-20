@@ -424,7 +424,7 @@ packet can be treated as an acknowledgment for the Initial.
 If no new data or unacknowledged data is available to send, an ack-eliciting
 packet SHOULD be sent.  Sending a retransmittable frame ensures that any in
 flight packets are acknowledged or declared lost in a timely manner.  If no
-ack-eliciting packet is sent, the in flight packets should be declared lost
+ack-eliciting packet is sent, any packets currently in flight should be declared lost
 to avoid repeatedly arming and firing the PTO timer.
 
 A sender may not know that a packet being sent is a tail packet.  Consequently,
