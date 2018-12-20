@@ -2639,7 +2639,7 @@ other packets in the same UDP datagram.
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is an integer in the range 0 to (2^62)-1.  This number is used
+The packet number is an integer in the range 0 to 2^62-1.  This number is used
 in determining the cryptographic nonce for packet protection.  Each endpoint
 maintains a separate packet number for sending and receiving.
 
@@ -3300,10 +3300,10 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers are integers in the range 0 to (2^62)-1 ({{packet-numbers}}).
-When present in long or short packet headers, they are encoded in 1 to 4 bytes.
-The number of bits required to represent the packet number is reduced by
-including the least significant bits of the packet number.
+Packet numbers are integers in the range 0 to 2^62-1 ({{packet-numbers}}).  When
+present in long or short packet headers, they are encoded in 1 to 4 bytes.  The
+number of bits required to represent the packet number is reduced by including
+the least significant bits of the packet number.
 
 The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
