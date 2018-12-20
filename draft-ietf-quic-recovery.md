@@ -496,15 +496,12 @@ MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
-When a PTO timer expires, new or previously-sent data may not available to send,
-and data may still be in flight.  A sender can be blocked from sending new data
-in the future if data is left in flight with no PTO armed.  Under these
-conditions, a sender SHOULD mark any packets still in flight as lost.  Marking
-any in-flight packets as lost allows the sender to recover any congestion window
-space consumed by them.  Marking all packets as lost might be
-bandwidth-inefficient if a large amount of data is in flight.  A sender MAY
-optimize for bandwidth by sending an ack-eliciting packet and re-arming the PTO
-timer instead of marking all in-flight packets as lost.
+When a PTO timer expires, new or previously-sent data may not be available to
+send, and data may still be in flight.  A sender can be blocked from sending new
+data in the future if packets are left in flight with no PTO armed.  Under these
+conditions, a sender SHOULD mark any packets still in flight as lost.  If a
+sender wishes to establish delivery of packets still in flight, it MAY send an
+ack-eliciting packet and re-arm the PTO timer instead.
 
 
 #### Loss Detection {#pto-loss}
