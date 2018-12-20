@@ -496,11 +496,14 @@ MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
-If no new data or unacknowledged data is available to send, an ack-eliciting
-packet SHOULD be sent.  Sending a retransmittable frame ensures that any in
-flight packets are acknowledged or declared lost in a timely manner.  If no
-ack-eliciting packet is sent, any packets currently in flight should be
-declared lost to avoid repeatedly arming and firing the PTO timer.
+When a PTO timer expires, new or previously-sent data may not available to send,
+and data may still be in flight.  Under these conditions, a sender MUST mark any
+packets still in flight as lost.  This can happen for example when data is sent on
+a stream which is then reset by a sender, and a PTO timer expires after this stream
+is reset.  A sender can be blocked from sending new data in the future if data is
+left in flight with no PTO armed.  Marking any in-flight packets as lost allows the
+sender to recover any congestion window space that is consumed by the packets still
+in flight.
 
 
 #### Loss Detection {#pto-loss}
