@@ -1036,10 +1036,11 @@ kLossReductionFactor:
 kPersistentCongestionThreshold:
 : Number of consecutive PTOs after which network might be considered to be
   experiencing persistent congestion.  The rationale for this threshold is to
-  enable a sender to use initial PTOs for aggressive probing, similar to Tail
-  Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  The RECOMMENDED value for
-  kPersistentCongestionThreshold is 2, which is equivalent to having two TLPs
-  before an RTO in TCP.
+  enable a sender to use initial PTOs for aggressive probing, as TCP does with
+  Tail Loss Probe (TLP) {{TLP}} {{RACK}}, before establishing persistent
+  congestion, as TCP does with a Retransmission Timeout (RTO) {{?RFC5681}}.  The
+  RECOMMENDED value for kPersistentCongestionThreshold is 2, which is equivalent
+  to having two TLPs before an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
