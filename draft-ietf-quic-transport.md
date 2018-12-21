@@ -2858,8 +2858,8 @@ discussed in more detail in {{QUIC-RECOVERY}}.
 
 To limit ACK Blocks to those that have not yet been received by the sender, the
 receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
-an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
-acknowledged again.
+an ACK frame has been acknowledged, an endpoint SHOULD omit all ACK Blocks that
+have not changed since the ACK frame was sent from future ACK frames.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
