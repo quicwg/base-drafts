@@ -3508,7 +3508,7 @@ Spin Bit (S):
 : The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
   {{!SPIN=I-D.ietf-quic-spin-exp}}.
 
-Reserved Bits (R):
+Reserved Bit (R):
 
 : The next bit (0x10) of byte 0 is reserved.  This bit is protected using header
   protection (see Section 5.4 of {{QUIC-TLS}}).  The value included prior to
