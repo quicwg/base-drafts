@@ -3065,8 +3065,10 @@ this happens, and if verification succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
 
 Processing counts out of order can result in verification failure.  An endpoint
-MUST NOT perform this verification if the ACK frame is received in a packet with
-packet number lower than a previously received ACK frame.
+SHOULD NOT perform this verification if the ACK frame is received in a packet
+with packet number lower than a previously received ACK frame.  Verifying based
+on ACK frames that arrive out of order can result in disabling ECN
+unnecessarily.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
