@@ -1791,7 +1791,7 @@ abandons its attempt to validate the path.
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
 round-trip time than the original.  A value of three times the larger of the
-current Probe Timeout (PTO) or the initial timeout (that is, kInitialRtt*2) as
+current Probe Timeout (PTO) or the initial timeout (that is, 2*kInitialRtt) as
 defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
 
 ~~~
