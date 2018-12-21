@@ -1098,50 +1098,23 @@ anticipation of receiving a ClientHello.
 # Key Update
 
 Once the 1-RTT keys are established and the short header is in use, it is
-possible to update the keys. The KEY_PHASE bit in the short header is used to
-indicate whether key updates have occurred. The KEY_PHASE bit is initially set
-to 0 and then inverted with each key update.
+possible to update the keys used to protect packets. The KEY_PHASE bit in the
+short header is used to indicate whether key updates have occurred. The
+KEY_PHASE bit is initially set to 0 and then inverted with each key update.
 
 The KEY_PHASE bit allows a recipient to detect a change in keying material
-without necessarily needing to receive the first packet that triggered the
-change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
-decrypt the packet that contains the changed bit.
+without needing to receive the first packet that triggered the change.  An
+endpoint that notices a changed KEY_PHASE bit can update keys and decrypt the
+packet that contains the changed bit.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-An endpoint MUST NOT initiate more than one key update at a time.  A new key
-cannot be used until the endpoint has received and successfully decrypted a
-packet with a matching KEY_PHASE.
-
-A receiving endpoint detects an update when the KEY_PHASE bit does not match
-what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the KDF function provided by TLS.
-The header protection key is not updated.
-
-If the packet can be decrypted and authenticated using the updated key and IV,
-then the keys the endpoint uses for packet protection are also updated.  The
-next packet sent by the endpoint will then use the new keys.
-
-An endpoint does not always need to send packets when it detects that its peer
-has updated keys.  The next packet that it sends will simply use the new keys.
-If an endpoint detects a second update before it has sent any packets with
-updated keys, it indicates that its peer has updated keys twice without awaiting
-a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
-error and abort the connection.
-
-An endpoint SHOULD retain old keys for a period of no more than three times the
-Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
-their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
-to process packets that were sent with old keys and delayed in the network.
-Packets with higher packet numbers always use the updated keys and MUST NOT be
-decrypted with old keys.
-
-This ensures that once the handshake is complete, packets with the same
+This process ensures that once the handshake is complete, packets with the same
 KEY_PHASE will have the same packet protection keys, unless there are multiple
-key updates in a short time frame succession and significant packet reordering.
+key updates in short succession and significant packet reordering.
 
 ~~~
    Initiating Peer                    Responding Peer
@@ -1157,11 +1130,60 @@ key updates in a short time frame succession and significant packet reordering.
 ~~~
 {: #ex-key-update title="Key Update"}
 
+
+## Initiating Key Update
+
+Endpoints maintain separate read and write secrets for packet protection.  An
+endpoint initiates a key update by updating its packet protection write secret
+and using that to protect new packets.  The endpoint creates a new write secret
+from the existing write secret as performed in Section 7.2 of {{!TLS13}}.  This
+uses the KDF function provided by TLS with a label of "quic ku".  The
+corresponding key and IV are created from that secret as defined in
+{{protection-keys}}.  The header protection key is not updated.
+
+The endpoint uses the key and IV to protect all subsequent packets, and inverts
+the value of the KEY_PHASE bit to signal the change of keys.
+
+An endpoint MUST NOT initiate more than one key update at a time.  A new key
+cannot be used until the endpoint has received an acknowledgment for a packet it
+sends with the new keys.  An endpoint that receives a packet protected with old
+keys that includes an acknowledgement for a packet protected with newer keys MAY
+treat that as a connection error of type PROTOCOL_VIOLATION.
+
+
+## Responding to a Key Update
+
+A receiving endpoint detects an update when the KEY_PHASE bit does not match
+what it is expecting.  The endpoint creates a new read secret and the
+corresponding read key and IV using the same process as its peer.
+
+If the packet can be decrypted and authenticated using the updated key and IV,
+then the keys the endpoint uses for packet protection (the write secret) are
+also updated using the same KDF and label as for the read secret.  The next
+packet sent by the endpoint MUST use the new packet protection keys.
+
+An endpoint does not always need to send packets when it detects that its peer
+has updated keys.  The next packet that it sends will simply use the new keys.
+If an endpoint detects a second update before it has sent any packets with
+updated keys, it indicates that its peer has updated keys twice without awaiting
+a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
+error and abort the connection.
+
+An endpoint SHOULD retain old read keys for a period of no more than three times
+the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old read
+keys and their corresponding secrets SHOULD be discarded.  Retaining keys allows
+endpoints to process packets that were sent with old keys and delayed in the
+network.  Packets with higher packet numbers always use the updated keys and
+MUST NOT be decrypted with old keys.
+
 A packet that triggers a key update could arrive after successfully processing a
 packet with a higher packet number.  This is only possible if there is a key
 compromise and an attack, or if the peer is incorrectly reverting to use of old
 keys.  Because the latter cannot be differentiated from an attack, an endpoint
 MUST immediately terminate the connection if it detects this condition.
+
+
+## Key Update Frequency
 
 In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
 specific keys, as described in Section 5.5 of {{!TLS13}}.
