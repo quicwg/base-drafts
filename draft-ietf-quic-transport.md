@@ -1790,8 +1790,13 @@ abandons its attempt to validate the path.
 
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
-round-trip time than the original.  A value of three times the current
-Retransmittion Timeout (RTO) as defined in {{QUIC-RECOVERY}} is RECOMMENDED.
+round-trip time than the original.  A value of three times the larger of the
+current Probe Timeout (PTO) or the initial timeout (that is, kInitialRtt*2) as
+defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
+
+~~~
+   validation_timeout = max(3*PTO, 6*kInitialRtt)
+~~~
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
@@ -2183,8 +2188,8 @@ of three ways:
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.
+These states SHOULD persist for three times the current Probe Timeout (PTO)
+interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
@@ -2255,9 +2260,9 @@ The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
-draining state before the packets arrive.  If a peer could timeout within an RTO
-(see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
-before sending any data that cannot be retried safely.
+draining state before the packets arrive.  If a peer could timeout within an
+Probe Timeout (PTO, see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to
+test for liveness before sending any data that cannot be retried safely.
 
 
 ## Immediate Close
@@ -4287,7 +4292,7 @@ The value of the Gap field establishes the largest packet number value for the
 ACK Block that follows the gap using the following formula:
 
 ~~~
-  largest = previous_smallest - gap - 2
+   largest = previous_smallest - gap - 2
 ~~~
 
 If the calculated value for largest or smallest packet number for any ACK Block
