@@ -989,9 +989,10 @@ associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
 address/port tuple of a connection where the host did not require connection
-IDs, QUIC processes the packet as part of that connection. Endpoints MUST drop
-packets with zero-length Destination Connection ID fields if they do not
-correspond to a single connection.
+IDs, QUIC processes the packet as part of that connection.  Endpoints SHOULD
+either reject connection attempts that use the same addresses as existing
+connections, or use a non-zero-length Destination Connection ID so that packets
+can be correctly attributed to connections.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
