@@ -861,7 +861,7 @@ the Packet Number field.  The four least-significant bits of the first byte are
 protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Phase
-bit is also protected for packets with a short header.
+bits are also protected for packets with a short header.
 
 The same header protection key is used for the duration of the connection, with
 the value not changing after a key update (see {{key-update}}).  This allows
@@ -1098,13 +1098,13 @@ anticipation of receiving a ClientHello.
 # Key Update
 
 Once the 1-RTT keys are established and the short header is in use, it is
-possible to update the keys used to protect packets. The KEY_PHASE bit in the
-short header is used to indicate whether key updates have occurred. The
-KEY_PHASE bit is initially set to 0 and then inverted with each key update.
+possible to update the keys used to protect packets. The Key Phase bits in the
+short header are used to indicate whether key updates have occurred. The
+Key Phase is initially set to 0 and then incremented with each key update.
 
-The KEY_PHASE bit allows a recipient to detect a change in keying material
+The Key Phase allows a recipient to detect a change in keying material
 without needing to receive the first packet that triggered the change.  An
-endpoint that notices a changed KEY_PHASE bit can update keys and decrypt the
+endpoint that notices a changed Key Phase bit can update keys and decrypt the
 packet that contains the changed bit.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
@@ -1113,7 +1113,7 @@ message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
 This process ensures that once the handshake is complete, packets with the same
-KEY_PHASE will have the same packet protection keys, unless there are multiple
+Key Phase will have the same packet protection keys, unless there are multiple
 key updates in short succession and significant packet reordering.
 
 ~~~
@@ -1131,7 +1131,7 @@ key updates in short succession and significant packet reordering.
 {: #ex-key-update title="Key Update"}
 
 
-## Initiating Key Update
+## Initiating a Key Update
 
 Endpoints maintain separate read and write secrets for packet protection.  An
 endpoint initiates a key update by updating its packet protection write secret
@@ -1141,21 +1141,29 @@ uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
-The endpoint uses the key and IV to protect all subsequent packets, and inverts
-the value of the KEY_PHASE bit to signal the change of keys.
+The endpoint uses the key and IV to protect all subsequent packets, and
+increments the value of the Key Phase bits modulo 4 in the short packet header
+to signal the change of keys.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
-cannot be used until the endpoint has received an acknowledgment for a packet it
-sends with the new keys.  An endpoint that receives a packet protected with old
-keys that includes an acknowledgement for a packet protected with newer keys MAY
-treat that as a connection error of type PROTOCOL_VIOLATION.
+cannot be used until the endpoint has received an indication that its peer is
+using the same key phase.
+
+An endpoint that receives a packet protected with old keys that includes an
+acknowledgement for a packet protected with newer keys MAY treat that as a
+connection error of type PROTOCOL_VIOLATION.
 
 
 ## Responding to a Key Update
 
-A receiving endpoint detects an update when the KEY_PHASE bit does not match
+A receiving endpoint detects an update when the Key Phase is one greater than
 what it is expecting.  The endpoint creates a new read secret and the
 corresponding read key and IV using the same process as its peer.
+
+A packet with a Key Phase other than the expected or next value MUST be
+discarded.  However, endpoints MUST NOT generate a timing side-channel signal
+that might indicate that this specific field was invalid (see
+{{header-protect-analysis}}).
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection (the write secret) are
@@ -1362,15 +1370,15 @@ authenticated using packet protection; the entire packet header is part of the
 authenticated additional data.  Protected fields that are falsified or modified
 can only be detected once the packet protection is removed.
 
-An attacker could guess values for packet numbers and have an endpoint confirm
-guesses through timing side channels.  Similarly, guesses for the packet number
-length can be trialed and exposed.  If the recipient of a packet discards
-packets with duplicate packet numbers without attempting to remove packet
-protection they could reveal through timing side-channels that the packet number
-matches a received packet.  For authentication to be free from side-channels,
-the entire process of header protection removal, packet number recovery, and
-packet protection removal MUST be applied together without timing and other
-side-channels.
+An attacker could guess values for packet numbers or key phase and have an
+endpoint confirm guesses through timing side channels.  Similarly, guesses for
+the packet number length can be trialed and exposed.  If the recipient of a
+packet discards packets with duplicate packet numbers without attempting to
+remove packet protection they could reveal through timing side-channels that the
+packet number matches a received packet.  For authentication to be free from
+side-channels, the entire process of header protection removal, packet number
+recovery, and packet protection removal MUST be applied together without timing
+and other side-channels.
 
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet

@@ -3480,7 +3480,7 @@ enables packet coalescing ({{packet-coalesce}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|1|S|R|R|K|P P|
+|0|1|S|R| K | P |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3510,19 +3510,19 @@ Spin Bit (S):
 
 Reserved Bits (R):
 
-: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
-  bits are protected using header protection (see Section 5.4 of
-  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
-  endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing protection as a connection error of type
-  PROTOCOL_VIOLATION.
+: The next bit (0x10) of byte 0 is reserved.  This bit is protected using header
+  protection (see Section 5.4 of {{QUIC-TLS}}).  The value included prior to
+  protection MUST be set to 0.  An endpoint MUST treat receipt of a packet that
+  has a non-zero value for this bit after removing protection as a connection
+  error of type PROTOCOL_VIOLATION.
 
 Key Phase (K):
 
-: The next bit (0x04) of byte 0 indicates the key phase, which allows a
-  recipient of a packet to identify the packet protection keys that are used to
-  protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
-  using header protection (see Section 5.4 of {{QUIC-TLS}}).
+: The next two bits (those with a mask of 0x0c) of byte 0 indicate the key
+  phase, which allows a recipient of a packet to identify the packet protection
+  keys that are used to protect the packet.  See {{QUIC-TLS}} for details.
+  These bits are protected using header protection (see Section 5.4 of
+  {{QUIC-TLS}}).
 
 Packet Number Length (P):
 
