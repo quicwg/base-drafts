@@ -829,7 +829,7 @@ an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
-number.  The 64 bits of the reconstructed QUIC packet number in network byte
+number.  The 62 bits of the reconstructed QUIC packet number in network byte
 order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 

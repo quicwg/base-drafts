@@ -2639,11 +2639,14 @@ other packets in the same UDP datagram.
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is an integer in the range 0 to 2^62-1. Where present, packet
-numbers are encoded as a variable-length integer (see {{integer-encoding}}).
-This number is used in determining the cryptographic nonce for packet
-protection.  Each endpoint maintains a separate packet number for sending and
-receiving.
+The packet number is an integer in the range 0 to 2^62-1.  This number is used
+in determining the cryptographic nonce for packet protection.  Each endpoint
+maintains a separate packet number for sending and receiving.
+
+Packet numbers are limited to this range because they need to be representable
+in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
+When present in a long or short header however, packet numbers are reduced and
+encoded in 1 to 4 bytes, see {{packet-encoding}}).
 
 Version Negotiation ({{packet-version}}) and Retry {{packet-retry}} packets do
 not include a packet number.
@@ -3297,9 +3300,10 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded in 1 to 4 bytes.
-The number of bits required to represent the packet number is reduced by
-including the least significant bits of the packet number.
+Packet numbers are integers in the range 0 to 2^62-1 ({{packet-numbers}}).  When
+present in long or short packet headers, they are encoded in 1 to 4 bytes.  The
+number of bits required to represent the packet number is reduced by including
+the least significant bits of the packet number.
 
 The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
