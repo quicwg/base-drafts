@@ -825,17 +825,11 @@ The decoder reconstructs the Largest Reference using the following algorithm:
 
 ~~~
    if LargestReference > 0:
-      LargestReference -= 1
-      CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
-
-      if CurrentWrapped >= LargestReference + MaxEntries:
-         # Largest Reference wrapped around 1 extra time
-         LargestReference += 2 * MaxEntries
-      else if CurrentWrapped + MaxEntries < LargestReference
-         # Decoder wrapped around 1 extra time
-         CurrentWrapped += 2 * MaxEntries
-
-      LargestReference += TotalNumberOfInserts - CurrentWrapped
+      LargestReference += MaxEntries - 2
+      LargestReference -= \
+         TotalNumberOfInserts mod (2 * MaxEntries)
+      LargestReference = LargestReference mod (2 * MaxEntries)
+      LargestReference += TotalNumberOfInserts - MaxEntries + 1
 ~~~
 
 TotalNumberOfInserts is the total number of inserts into the decoder's
