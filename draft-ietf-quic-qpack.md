@@ -784,12 +784,18 @@ streams emit the headers for an HTTP request or response.
 
 ### Header Data Prefix {#header-prefix}
 
-Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
+Header data starts with an integer `WrappedLR` encoded with an 8-bit prefix.
+The next byte has a `sign` bit, and an integer `Delta Base Index` encoded with a
+7-bit prefix.  There fields together constitute the Header Data Prefix, which
+encodes two integers, Largest Reference and Base Index.
+
+Header Data Prefix is followed by compressed headers, each header field
+encoded using one of the instructions below.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-|     Largest Reference (8+)    |
+|         WrappedLR (8+)        |
 +---+---------------------------+
 | S |   Delta Base Index (7+)   |
 +---+---------------------------+
@@ -800,13 +806,17 @@ Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 
 #### Largest Reference
 
-`Largest Reference` identifies the largest absolute dynamic index referenced in
+Largest Reference identifies the largest absolute dynamic index referenced in
 the block.  Blocking decoders use the Largest Reference to determine when it is
-safe to process the rest of the block.  If Largest Reference is greater than
-zero, the encoder transforms it as follows before encoding:
+safe to process the rest of the block.  The encoder transforms Largest
+Reference to `WrappedLR` by wrapping it with a modulus of `2 * MaxEntries` if
+it is greater than one:
 
 ~~~
-   LargestReference = (LargestReference mod (2 * MaxEntries)) + 1
+   if LargestReference == 0:
+      WrappedLR = 0
+   else:
+      WrappedLR = (LargestReference mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
@@ -824,8 +834,10 @@ decoder (see {{maximum-table-size}}).
 The decoder reconstructs the Largest Reference using the following algorithm:
 
 ~~~
-   if LargestReference > 0:
-      LargestReference -= 1
+   if WrappedLR == 0:
+      LargestReference = 0
+   else:
+      LargestReference = WrappedLR - 1
       CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
 
       if CurrentWrapped >= LargestReference + MaxEntries:
@@ -844,7 +856,7 @@ long-lived connections.
 
 #### Base Index
 
-`Base Index` is used to resolve references in the dynamic table as described in
+Base Index is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
 To save space, Base Index is encoded relative to Largest Reference using a
