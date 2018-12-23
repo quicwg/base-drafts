@@ -142,7 +142,8 @@ Base Index:
 
 Largest Reference:
 
-: The largest absolute index of an entry referenced in a header block.
+: The largest absolute dynamic table index referenced in a header block, or zero
+  if the header block does not reference any dynamic table entries.
 
 QPACK is a name, not an acronym.
 
@@ -800,10 +801,11 @@ Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
 
 #### Largest Reference
 
-`Largest Reference` identifies the largest absolute dynamic index referenced in
-the block.  Blocking decoders use the Largest Reference to determine when it is
-safe to process the rest of the block.  If Largest Reference is greater than
-zero, the encoder transforms it as follows before encoding:
+`Largest Reference` is the largest absolute dynamic index referenced in the
+block, or zero if the header block does not reference any dynamic table entries.
+Blocking decoders use the Largest Reference to determine when it is safe to
+process the rest of the block.  If Largest Reference is greater than zero, the
+encoder transforms it as follows before encoding:
 
 ~~~
    LargestReference = (LargestReference mod (2 * MaxEntries)) + 1
@@ -874,8 +876,7 @@ Largest Reference and Base Index to the same value.  In such case, both the sign
 bit and the Delta Base Index will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
-Base Index; setting both Largest Reference and Base Index to zero is the most
-efficient encoding.
+Base Index; setting Delta Base Index to zero is the most efficient encoding.
 
 
 ### Indexed Header Field
