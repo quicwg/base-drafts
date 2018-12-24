@@ -2584,7 +2584,7 @@ Version negotiation uses a packet with a special format (see
 ## Protected Packets {#packet-protected}
 
 All QUIC packets except Version Negotiation and Retry packets use authenticated
-encryption with additional data (AEAD) {{!RFC5119}} to provide confidentiality
+encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
 and integrity protection. Details of packet protection are found in
 {{QUIC-TLS}}; this section includes an overview of the process.
 
