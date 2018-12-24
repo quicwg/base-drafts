@@ -1003,7 +1003,7 @@ electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the counter input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode:
 
 ~~~
 mask = AES-ECB(pn_key, sample)
