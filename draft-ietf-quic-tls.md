@@ -1100,12 +1100,13 @@ anticipation of receiving a ClientHello.
 Once the 1-RTT keys are established and the short header is in use, it is
 possible to update the keys used to protect packets. The Key Phase bits in the
 short header are used to indicate whether key updates have occurred. The
-Key Phase is initially set to 0 and then incremented with each key update.
+Key Phase is initially set to 0 and then incremented modulo 4 with each key
+update.
 
 The Key Phase allows a recipient to detect a change in keying material
 without needing to receive the first packet that triggered the change.  An
-endpoint that notices a changed Key Phase bit can update keys and decrypt the
-packet that contains the changed bit.
+endpoint that notices a changed Key Phase updates keys and decrypts the packet
+that contains the changed value.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
@@ -1142,8 +1143,8 @@ corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
 The endpoint uses the key and IV to protect all subsequent packets, and
-increments the value of the Key Phase bits modulo 4 in the short packet header
-to signal the change of keys.
+increments the value of the Key Phase modulo 4 in the short packet header to
+signal the change of keys.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A new key
 cannot be used until the endpoint has received an indication that its peer is
@@ -1160,9 +1161,18 @@ A receiving endpoint detects an update when the Key Phase is one greater than
 what it is expecting.  The endpoint creates a new read secret and the
 corresponding read key and IV using the same process as its peer.
 
-A packet with a Key Phase other than the expected or next value MUST be
-discarded.  However, endpoints MUST NOT generate a timing side-channel signal
-that might indicate that this specific field was invalid (see
+A packet with a Key Phase other than the expected or next two values MUST be
+discarded, unless the packet number is smaller than the lowest packet number
+received with the current keys.  Old keys can be used to remove protection with
+lower-numbered packets.
+
+Allowing for two increments is necessary in the case where both endpoints
+simultaneously update keys.  If one endpoint updates when it sees the change and
+all packets it sends from the first update are lost, then a gap in Key Phase
+will be observed by its peer.
+
+In all cases, endpoints MUST NOT generate a timing side-channel signal that
+might indicate that this specific field was invalid (see
 {{header-protect-analysis}}).
 
 If the packet can be decrypted and authenticated using the updated key and IV,
