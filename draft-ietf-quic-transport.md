@@ -620,7 +620,6 @@ acknowledged before the transition to a "closed" or "half-closed" state.
 | Ready/Send/Data Sent   | Reset Recvd/Reset Read | half-closed (remote) |
 | Data Recvd             | Recv/Size Known        | half-closed (local)  |
 | Reset Sent/Reset Recvd | Recv/Size Known        | half-closed (local)  |
-| Data Recvd             | Recv/Size Known        | half-closed (local)  |
 | Reset Sent/Reset Recvd | Data Recvd/Data Read   | closed               |
 | Reset Sent/Reset Recvd | Reset Recvd/Reset Read | closed               |
 | Data Recvd             | Data Recvd/Data Read   | closed               |
