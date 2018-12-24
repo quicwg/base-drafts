@@ -3054,8 +3054,7 @@ peer no longer supports ECN.
 Network devices that corrupt or apply non-standard ECN markings might result in
 reduced throughput or other undesirable side-effects.  To reduce this risk, an
 endpoint uses the following steps to verify the counts it receives in an ACK
-frame.  Counts MUST NOT be verified if the ACK frame does not increase the
-largest received packet number at the endpoint.
+frame.
 
 * The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
   the total number of QUIC packets sent with an ECT codepoint that are newly
@@ -3073,6 +3072,12 @@ It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
 to be greater than the number of packets acknowledged in an ACK frame.  When
 this happens, and if verification succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
+
+Processing counts out of order can result in verification failure.  An endpoint
+SHOULD NOT perform this verification if the ACK frame is received in a packet
+with packet number lower than a previously received ACK frame.  Verifying based
+on ACK frames that arrive out of order can result in disabling ECN
+unnecessarily.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
