@@ -2854,10 +2854,10 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Blocks to those that have not yet been received by the sender, the
-receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
-an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
-acknowledged again.
+To limit ACK Blocks to those that have not yet been received by the sender,
+the receiver SHOULD track which ACK frames have been acknowledged.  The
+receiver SHOULD exclude already acknowledged packets from future ACK frames
+whenever these packets would unnecessarily contribute to the ACK frame size.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
