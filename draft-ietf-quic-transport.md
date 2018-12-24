@@ -371,7 +371,7 @@ Note:
   with an implementation that implements these states.
 
 
-## Send Stream States {#stream-send-states}
+## Sending Stream States {#stream-send-states}
 
 {{fig-stream-send-states}} shows the states for the part of a stream that sends
 data to a peer.
@@ -411,18 +411,18 @@ data to a peer.
    | Recvd |                   | Recvd |
    +-------+                   +-------+
 ~~~
-{: #fig-stream-send-states title="States for Send Streams"}
+{: #fig-stream-send-states title="States for Sending Parts of Streams"}
 
-The sending part of stream that the endpoint initiates (types 0 and 2 for
-clients, 1 and 3 for servers) is opened by the application.  The "Ready" state
-represents a newly created stream that is able to accept data from the
-application.  Stream data might be buffered in this state in preparation for
+The sending part of stream that the endpoint initiates (types 0
+and 2 for clients, 1 and 3 for servers) is opened by the application.  The
+"Ready" state represents a newly created stream that is able to accept data from
+the application.  Stream data might be buffered in this state in preparation for
 sending.
 
-Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
-enter the "Send" state.  An implementation might choose to defer allocating a
-stream ID to a send stream until it sends the first frame and enters this state,
-which can allow for better stream prioritization.
+Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a sending part of a
+stream to enter the "Send" state.  An implementation might choose to defer
+allocating a stream ID to a stream until it sends the first frame and enters
+this state, which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
@@ -437,16 +437,16 @@ blocked from sending by stream or connection flow control limits
 {{data-flow-control}}.
 
 After the application indicates that all stream data has been sent and a STREAM
-frame containing the FIN bit is sent, the send stream enters the "Data Sent"
-state.  From this state, the endpoint only retransmits stream data as necessary.
-The endpoint does not need to check flow control limits or send
-STREAM_DATA_BLOCKED frames for a send stream in this state.  MAX_STREAM_DATA
-frames might be received until the peer receives the final stream offset. The
-endpoint can safely ignore any MAX_STREAM_DATA frames it receives from its peer
-for a stream in this state.
+frame containing the FIN bit is sent, the sending part of the stream enters the
+"Data Sent" state.  From this state, the endpoint only retransmits stream data
+as necessary.  The endpoint does not need to check flow control limits or send
+STREAM_DATA_BLOCKED frames for a stream in this state.  MAX_STREAM_DATA frames
+might be received until the peer receives the final stream offset. The endpoint
+can safely ignore any MAX_STREAM_DATA frames it receives from its peer for a
+stream in this state.
 
-Once all stream data has been successfully acknowledged, the send stream enters
-the "Data Recvd" state, which is a terminal state.
+Once all stream data has been successfully acknowledged, the sending part of the
+stream enters the "Data Recvd" state, which is a terminal state.
 
 From any of the "Ready", "Send", or "Data Sent" states, an application can
 signal that it wishes to abandon transmission of stream data. Alternatively, an
@@ -454,22 +454,23 @@ endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
 endpoint sends a RESET_STREAM frame, which causes the stream to enter the "Reset
 Sent" state.
 
-An endpoint MAY send a RESET_STREAM as the first frame on a send stream; this
-causes the send stream to open and then immediately transition to the "Reset
-Sent" state.
+An endpoint MAY send a RESET_STREAM as the first frame that mentions a stream;
+this causes the sending part of that stream to open and then immediately
+transition to the "Reset Sent" state.
 
-Once a packet containing a RESET_STREAM has been acknowledged, the send stream
-enters the "Reset Recvd" state, which is a terminal state.
+Once a packet containing a RESET_STREAM has been acknowledged, the sending part
+of the stream enters the "Reset Recvd" state, which is a terminal state.
 
 
-## Receive Stream States {#stream-recv-states}
+## Receiving Stream States {#stream-recv-states}
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
-receives data from a peer.  The states for a receive stream mirror only some of
-the states of the send stream at the peer.  A receive stream does not track
-states on the send stream that cannot be observed, such as the "Ready" state.
-Instead, receive streams track the delivery of data to the application, some of
-which cannot be observed by the sender.
+receives data from a peer.  The states for a receiving part of a stream mirror
+only some of the states of the sending part of the stream at the peer.  The
+receiving part of a stream does not track states on the sending part that cannot
+be observed, such as the "Ready" state.  Instead, the receiving part of a stream
+tracks the delivery of data to the application, some of which cannot be observed
+by the sender.
 
 ~~~
        o
@@ -504,18 +505,18 @@ which cannot be observed by the sender.
    | Read  |                   | Read  |
    +-------+                   +-------+
 ~~~
-{: #fig-stream-recv-states title="States for Receive Streams"}
+{: #fig-stream-recv-states title="States for Receiving Parts of Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
 or RESET_STREAM is received for that stream.  For bidirectional streams
 initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
 sending part of the stream also creates the receiving part.  The initial state
-for a receive stream is "Recv".
+for the receiving part of stream is "Recv".
 
-The receive stream enters the "Recv" state when the sending part of a
-bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
-a server) enters the "Ready" state.
+The receiving part of a stream enters the "Recv" state when the sending part of
+a bidirectional stream initiated by the endpoint (type 0 for a client, type 1
+for a server) enters the "Ready" state.
 
 An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
 frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
@@ -536,11 +537,11 @@ buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
 allow the peer to send more data.
 
 When a STREAM frame with a FIN bit is received, the final offset is known (see
-{{final-offset}}).  The receive stream enters the "Size Known" state.  In this
-state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it only
-receives any retransmissions of stream data.
+{{final-offset}}).  The receiving part of the stream then enters the "Size
+Known" state.  In this state, the endpoint no longer needs to send
+MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 
-Once all data for the stream has been received, the receive stream enters the
+Once all data for the stream has been received, the receiving part enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  In this state, the endpoint
 has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
@@ -564,12 +565,12 @@ RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
 RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
 suppressed or withheld if stream data is completely received and is buffered to
-be read by the application.  In the latter case, the receive stream transitions
-from "Reset Recvd" to "Data Recvd".
+be read by the application.  In the latter case, the receiving part of the
+stream transitions from "Reset Recvd" to "Data Recvd".
 
-Once the application has been delivered the signal indicating that the receive
-stream was reset, the receive stream transitions to the "Reset Read" state,
-which is a terminal state.
+Once the application has been delivered the signal indicating that the stream
+was reset, the receiving part of the stream transitions to the "Reset Read"
+state, which is a terminal state.
 
 
 ## Permitted Frame Types
@@ -598,20 +599,20 @@ frames in any state as a result of delayed delivery of packets.
 
 ## Bidirectional Stream States {#stream-bidi-states}
 
-A bidirectional stream is composed of a send stream and a receive stream.
+A bidirectional stream is composed of sending and receiving parts.
 Implementations may represent states of the bidirectional stream as composites
-of send and receive stream states.  The simplest model presents the stream as
-"open" when either send or receive stream is in a non-terminal state and
-"closed" when both send and receive streams are in a terminal state.
+of sending and receiving stream states.  The simplest model presents the stream
+as "open" when either sending or receiving parts are in a non-terminal state and
+"closed" when both sending and receiving streams are in terminal states.
 
 {{stream-bidi-mapping}} shows a more complex mapping of bidirectional stream
 states that loosely correspond to the stream states in HTTP/2
-{{?HTTP2=RFC7540}}.  This shows that multiple states on send or receive streams
-are mapped to the same composite state.  Note that this is just one possibility
-for such a mapping; this mapping requires that data is acknowledged before the
-transition to a "closed" or "half-closed" state.
+{{?HTTP2=RFC7540}}.  This shows that multiple states on sending or receiving
+parts of streams are mapped to the same composite state.  Note that this is just
+one possibility for such a mapping; this mapping requires that data is
+acknowledged before the transition to a "closed" or "half-closed" state.
 
-| Send Stream            | Receive Stream         | Composite State      |
+| Sending Part           | Receiving Part         | Composite State      |
 |:-----------------------|:-----------------------|:---------------------|
 | No Stream/Ready        | No Stream/Recv *1      | idle                 |
 | Ready/Send/Data Sent   | Recv/Size Known        | open                 |
@@ -629,7 +630,8 @@ transition to a "closed" or "half-closed" state.
 Note (*1):
 
 : A stream is considered "idle" if it has not yet been created, or if the
-  receive stream is in the "Recv" state without yet having received any frames.
+  receiving part of the stream is in the "Recv" state without yet having
+  received any frames.
 
 
 ## Solicited State Transitions
@@ -651,13 +653,13 @@ STOP_SENDING frame, but MAY use any application error code.  The endpoint
 that sends a STOP_SENDING frame can ignore the error code carried in any
 RESET_STREAM frame it receives.
 
-If the STOP_SENDING frame is received on a send stream that is already in the
+If the STOP_SENDING frame is received on a stream that is already in the
 "Data Sent" state, an endpoint that wishes to cease retransmission of
 previously-sent STREAM frames on that stream MUST first send a RESET_STREAM
 frame.
 
-STOP_SENDING SHOULD only be sent for a receive stream that has not been
-reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
+STOP_SENDING SHOULD only be sent for a stream that has not been reset by the
+peer. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
 states.
 
 An endpoint is expected to send another STOP_SENDING frame if a packet
@@ -815,8 +817,8 @@ RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
 data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
 incoming unidirectional streams.
 
-An endpoint will know the final offset for a stream when the receive stream
-enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
+An endpoint will know the final offset for a stream when the receiving part of
+the stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
@@ -2915,12 +2917,13 @@ containing that information is acknowledged.
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
   (that is, either the "Reset Recvd" or "Data Recvd" state is reached on the
-  send stream). The content of a RESET_STREAM frame MUST NOT change when it is
-  sent again.
+  sending part of the stream). The content of a RESET_STREAM frame MUST NOT
+  change when it is sent again.
 
 * Similarly, a request to cancel stream transmission, as encoded in a
-  STOP_SENDING frame, is sent until the receive stream enters either a "Data
-  Recvd" or "Reset Recvd" state, see {{solicited-state-transitions}}.
+  STOP_SENDING frame, is sent until the receiving part of the stream enters
+  either a "Data Recvd" or "Reset Recvd" state, see
+  {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
   frames, are not sent again when packet loss is detected, but as described in
@@ -2934,11 +2937,11 @@ containing that information is acknowledged.
   MAX_DATA frames to be sent.
 
 * The current maximum stream data offset is sent in MAX_STREAM_DATA frames.
-  Like MAX_DATA, an updated value is sent when the packet containing
-  the most recent MAX_STREAM_DATA frame for a stream is lost or when the limit
-  is updated, with care taken to prevent the frame from being sent too often. An
-  endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
-  enters a "Size Known" state.
+  Like MAX_DATA, an updated value is sent when the packet containing the most
+  recent MAX_STREAM_DATA frame for a stream is lost or when the limit is
+  updated, with care taken to prevent the frame from being sent too often. An
+  endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receiving part of
+  the stream enters a "Size Known" state.
 
 * The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
   MAX_DATA, an updated value is sent when a packet containing the most recent
@@ -4410,9 +4413,9 @@ to abruptly terminate transmission on a stream.
 Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-send stream that is "Ready" or not yet created MUST be treated as a connection
-error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
-frame for a receive-only stream MUST terminate the connection with error
+stream that is "Ready" or not yet created MUST be treated as a connection error
+of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING frame for
+a receive-only stream MUST terminate the connection with error
 PROTOCOL_VIOLATION.
 
 The STOP_SENDING frame is as follows:
