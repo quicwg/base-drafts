@@ -2853,7 +2853,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Blocks to those that have not yet been received by the sender,
+To limit ACK Ranges to those that have not yet been received by the sender,
 the receiver SHOULD track which ACK frames have been acknowledged.  The
 receiver SHOULD exclude already acknowledged packets from future ACK frames
 whenever these packets would unnecessarily contribute to the ACK frame size.
@@ -2864,7 +2864,7 @@ the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
 ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Blocks it sends.  A receiver can do this even without receiving
+number of ACK Ranges it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
@@ -4165,8 +4165,8 @@ prevent the majority of middleboxes from losing state for UDP flows.
 ## ACK Frames {#frame-ack}
 
 Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
-they have received and processed. The ACK frame contains one or more ACK Blocks.
-ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
+they have received and processed. The ACK frame contains one or more ACK Ranges.
+ACK Ranges are ranges of acknowledged packets. If the frame type is 0x03, ACK
 frames also contain the sum of QUIC packets with associated ECN marks received
 on the connection up until this point. QUIC implementations MUST properly handle
 both types and, if they have enabled ECN for packets they send, they SHOULD use
@@ -4195,9 +4195,9 @@ An ACK frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
+|                       ACK Range Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
+|                          ACK Ranges (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         [ECN Section]                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4225,27 +4225,27 @@ ACK Delay:
   larger range of values with a shorter encoding at the cost of lower
   resolution.
 
-ACK Block Count:
+ACK Range Count:
 
-: A variable-length integer specifying the number of Additional ACK Block (and
-  Gap) fields after the First ACK Block.
+: A variable-length integer specifying the number of Additional ACK Ranges
+  after the First ACK Range.
 
-ACK Blocks:
+ACK Ranges:
 
 : Contains one or more blocks of packet numbers which have been successfully
-  received, see {{ack-block-section}}.
+  received, see {{ack-range-section}}.
 
 
-### ACK Block Section {#ack-block-section}
+### ACK Range Section {#ack-range-section}
 
-The ACK Block Section consists of alternating Gap and ACK Block fields in
-descending packet number order.  A First Ack Block field is followed by a
-variable number of alternating Gap and Additional ACK Blocks.  The number of
-Gap and Additional ACK Block fields is determined by the ACK Block Count field.
+The ACK Range Section consists of alternating Gap and ACK Range fields in
+descending packet number order.  A First Ack Range field is followed by a
+variable number of alternating Gap and Additional ACK Ranges.  The number of
+Gap and Additional ACK Range fields is determined by the ACK Range Count field.
 
-Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
+Gap and ACK Range fields use a relative integer encoding for efficiency.  Though
 each encoded value is positive, the values are subtracted, so that each ACK
-Block describes progressively lower-numbered packets.  As long as contiguous
+Range describes progressively lower-numbered packets.  As long as contiguous
 ranges of packets are small, the variable-length integer encoding ensures that
 each range can be expressed in a small number of bytes.
 
@@ -4254,29 +4254,29 @@ each range can be expressed in a small number of bytes.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      First ACK Block (i)                    ...
+|                      First ACK Range (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                             Gap (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                    Additional ACK Range (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                             Gap (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                    Additional ACK Range (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                             Gap (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                    Additional ACK Range (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-block-format title="ACK Block Section"}
+{: #ack-range-format title="ACK Range Section"}
 
-Each ACK Block acknowledges a contiguous range of packets by indicating the
+Each ACK Range acknowledges a contiguous range of packets by indicating the
 number of acknowledged packets that precede the largest packet number in that
 block.  A value of zero indicates that only the largest packet number is
-acknowledged.  Larger ACK Block values indicate a larger range, with
+acknowledged.  Larger ACK Range values indicate a larger range, with
 corresponding lower values for the smallest packet number in the range.  Thus,
 given a largest packet number for the ACK, the smallest value is determined by
 the formula:
@@ -4285,31 +4285,31 @@ the formula:
    smallest = largest - ack_block
 ~~~
 
-The range of packets that are acknowledged by the ACK Block include the range
+The range of packets that are acknowledged by the ACK Range include the range
 from the smallest packet number to the largest, inclusive.
 
-The largest value for the First ACK Block is determined by the Largest
-Acknowledged field; the largest for Additional ACK Blocks is determined by
-cumulatively subtracting the size of all preceding ACK Blocks and Gaps.
+The largest value for the First ACK Range is determined by the Largest
+Acknowledged field; the largest for Additional ACK Range is determined by
+cumulatively subtracting the size of all preceding ACK Ranges and Gaps.
 
 Each Gap indicates a range of packets that are not being acknowledged.  The
 number of packets in the gap is one higher than the encoded value of the Gap
 Field.
 
 The value of the Gap field establishes the largest packet number value for the
-ACK Block that follows the gap using the following formula:
+ACK Range that follows the gap using the following formula:
 
 ~~~
    largest = previous_smallest - gap - 2
 ~~~
 
-If the calculated value for largest or smallest packet number for any ACK Block
+If the calculated value for largest or smallest packet number for any ACK Range
 is negative, an endpoint MUST generate a connection error of type
 FRAME_ENCODING_ERROR indicating an error in an ACK frame.
 
-The fields in the ACK Block Section are:
+The fields in the ACK Range Section are:
 
-First ACK Block:
+First ACK Range:
 
 : A variable-length integer indicating the number of contiguous packets
   preceding the Largest Acknowledged that are being acknowledged.
@@ -4318,9 +4318,9 @@ Gap (repeated):
 
 : A variable-length integer indicating the number of contiguous unacknowledged
   packets preceding the packet number one lower than the smallest in the
-  preceding ACK Block.
+  preceding ACK Range.
 
-Additional ACK Block (repeated):
+Additional ACK Range (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
