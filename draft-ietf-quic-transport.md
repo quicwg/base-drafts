@@ -1749,10 +1749,6 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
-However, because a PATH_CHALLENGE might be sent from a spoofed address, an
-endpoint MUST limit the rate at which it sends PATH_RESPONSE frames and MAY
-silently discard PATH_CHALLENGE frames that would cause it to respond at a
-higher rate.
 
 To ensure that packets can be both sent to and received from the peer, the
 PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
