@@ -4238,7 +4238,7 @@ ACK Ranges:
 
 ### ACK Range Section {#ack-range-section}
 
-The ACK Range Section consists of alternating Gap and ACK Range fields in
+The ACK Range Section consists of alternating ACK Range and Gap fields in
 descending packet number order.  A First Ack Range field is followed by a
 variable number of alternating Gap and Additional ACK Ranges.  The number of
 Gap and Additional ACK Range fields is determined by the ACK Range Count field.
