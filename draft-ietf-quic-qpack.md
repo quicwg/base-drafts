@@ -416,13 +416,10 @@ setting (see {{configuration}}).  The encoder MUST not set a dynamic table size
 that exceeds this maximum, but it can choose to use a lower dynamic table size
 (see {{size-update}}).
 
-The initial maximum size is determined by the corresponding setting when HTTP
-requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/3, the table size is the remembered value of the setting, even if
-the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
-servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
-initial maximum table size is the value of the setting in the peer's SETTINGS
-frame.
+For clients using 0-RTT data in HTTP/3, the table size is the remembered value
+of the setting, even if the server later specifies a larger maximum in its
+SETTINGS frame. For HTTP/3 servers and HTTP/3 clients when 0-RTT is not
+attempted or is rejected, the initial maximum table size is zero.
 
 
 ### Absolute Indexing {#indexing}
