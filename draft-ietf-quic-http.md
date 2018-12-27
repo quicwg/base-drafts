@@ -159,9 +159,9 @@ the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 ({{!ALTSVC=RFC7838}}), using the ALPN token defined in
 {{connection-establishment}}.
 
-For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
-HTTP/3 was available on UDP port 50781 at the same hostname by including the
-following header field in any response:
+For example, an origin could indicate in an HTTP response that HTTP/3 was
+available on UDP port 50781 at the same hostname by including the following
+header field:
 
 ~~~ example
 Alt-Svc: h3=":50781"
