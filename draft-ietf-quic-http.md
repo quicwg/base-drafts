@@ -225,7 +225,7 @@ some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
-token "hq" in the TLS handshake.  Support for other application-layer protocols
+token "h3" in the TLS handshake.  Support for other application-layer protocols
 MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
