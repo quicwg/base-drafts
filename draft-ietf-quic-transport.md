@@ -647,10 +647,10 @@ upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
-frame for that stream.  An endpoint SHOULD copy the error code from the
-STOP_SENDING frame, but MAY use any application error code.  The endpoint
-that sends a STOP_SENDING frame can ignore the error code carried in any
-RESET_STREAM frame it receives.
+frame for that stream, if the stream is in the Ready or the Send state.  An
+endpoint SHOULD copy the error code from the STOP_SENDING frame, but MAY use
+any application error code.  The endpoint that sends a STOP_SENDING frame can
+ignore the error code carried in any RESET_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a stream that is already in the
 "Data Sent" state, an endpoint that wishes to cease retransmission of
