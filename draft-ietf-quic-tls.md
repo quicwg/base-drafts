@@ -654,7 +654,8 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).
+handshake, as well as when keys are updated (see {{key-update}}).  Initial
+packet protection keys are treated specially, see {{discard-initial}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -677,10 +678,10 @@ been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
 carry CRYPTO frames, this timer starts when the first packets protected with
 1-RTT are sent or received.  To limit the effect of packet loss around a change
 in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Retransmission Timeout (RTO) interval as
-defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
-containing CRYPTO or ACK frames at that encryption level to be sent if packets
-are determined to be lost or new packets require acknowledgment.
+for at least three times the current Probe Timeout (PTO) interval as defined in
+{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
+CRYPTO or ACK frames at that encryption level to be sent if packets are
+determined to be lost or new packets require acknowledgment.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -702,6 +703,24 @@ only be performed once per round trip time, only packets that are delayed by
 more than a round trip will be lost as a result of changing keys; such packets
 will be marked as lost before this, as they leave a gap in the sequence of
 packet numbers.
+
+
+## Discarding Initial Keys {#discard-initial}
+
+Packets protected with Initial secrets ({{initial-secrets}}) are not
+authenticated, meaning that an attacker could spoof packets with the intent to
+disrupt a connection.  To limit these attacks, Initial packet protection keys
+can be discarded more aggressively than other keys.
+
+The successful use of Handshake packets indicates that no more Initial packets
+need to be exchanged, as these keys can only be produced after receiving all
+CRYPTO frames from Initial packets.  Thus, a client MUST discard Initial keys
+when it first sends a Handshake packet and a server MUST discard Initial keys
+when it first successfully processes a Handshake packet.  Endpoints MUST NOT
+send Initial packets after this point.
+
+This results in abandoning loss recovery state for the Initial encryption level
+and ignoring any outstanding Initial packets.
 
 
 # Packet Protection {#packet-protection}
@@ -730,7 +749,7 @@ be used QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
-{{aead}}.  The packet number protection key uses the "quic hp" label, see
+{{aead}}.  The header protection key uses the "quic hp" label, see
 {{header-protect}}).  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
@@ -810,7 +829,7 @@ an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
-number.  The 64 bits of the reconstructed QUIC packet number in network byte
+number.  The 62 bits of the reconstructed QUIC packet number in network byte
 order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 
@@ -818,8 +837,8 @@ The associated data, A, for the AEAD is the contents of the QUIC header,
 starting from the flags byte in either the short or long header, up to and
 including the unprotected packet number.
 
-The input plaintext, P, for the AEAD is the content of the QUIC frame following
-the header, as described in {{QUIC-TRANSPORT}}.
+The input plaintext, P, for the AEAD is the payload of the QUIC packet, as
+described in {{QUIC-TRANSPORT}}.
 
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
@@ -843,6 +862,10 @@ protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Phase
 bit is also protected for packets with a short header.
+
+The same header protection key is used for the duration of the connection, with
+the value not changing after a key update (see {{key-update}}).  This allows
+header protection to be used to protect the key phase.
 
 This process does not apply to Retry or Version Negotiation packets, which do
 not contain a protected payload or any of the fields that are protected by this
@@ -980,7 +1003,7 @@ electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the counter input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode:
 
 ~~~
 mask = AES-ECB(pn_key, sample)
@@ -1096,6 +1119,7 @@ packet with a matching KEY_PHASE.
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
 and the corresponding read key and IV using the KDF function provided by TLS.
+The header protection key is not updated.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
@@ -1108,16 +1132,12 @@ updated keys, it indicates that its peer has updated keys twice without awaiting
 a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
-An endpoint SHOULD retain old keys for a short period to allow it to decrypt
-packets with smaller packet numbers than the packet that triggered the key
-update.  This allows an endpoint to consume packets that are reordered around
-the transition between keys.  Packets with higher packet numbers always use the
-updated keys and MUST NOT be decrypted with old keys.
-
-Keys and their corresponding secrets SHOULD be discarded when an endpoint has
-received all packets with packet numbers lower than the lowest packet number
-used for the new key.  An endpoint might discard keys if it determines that the
-length of the delay to affected packets is excessive.
+An endpoint SHOULD retain old keys for a period of no more than three times the
+Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
+their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
+to process packets that were sent with old keys and delayed in the network.
+Packets with higher packet numbers always use the updated keys and MUST NOT be
+decrypted with old keys.
 
 This ensures that once the handshake is complete, packets with the same
 KEY_PHASE will have the same packet protection keys, unless there are multiple
@@ -1377,6 +1397,19 @@ values in the following registries:
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-14
+
+- Update the salt used for Initial secrets (#1970)
+- Clarify that TLS_AES_128_CCM_8_SHA256 isn't supported (#2019)
+- Change header protection
+  - Sample from a fixed offset (#1575, #2030)
+  - Cover part of the first byte, including the key phase (#1322, #2006)
+- TLS provides an AEAD and KDF function (#2046)
+  - Clarify that the TLS KDF is used with TLS (#1997)
+  - Change the labels for calculation of QUIC keys (#1845, #1971, #1991)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
 
 
 ## Since draft-ietf-quic-tls-13

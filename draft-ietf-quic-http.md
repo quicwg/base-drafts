@@ -446,10 +446,6 @@ connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 ~~~~~~~~~~
 {: #fig-data title="DATA frame payload"}
 
-DATA frames MUST contain a non-zero-length payload.  If a DATA frame is received
-with a payload length of zero, the recipient MUST respond with a stream error
-({{errors}}) of type HTTP_MALFORMED_FRAME.
-
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry a header block, compressed using
@@ -468,19 +464,27 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the sender-advised priority of a
-stream.  In order to ensure that prioritization is processed in a consistent
-order, PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame
-sent on any other stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM.
+The PRIORITY (type=0x02) frame specifies the client-advised priority of a
+stream.
+
+When opening a new request stream, a PRIORITY frame MAY be sent as the first
+frame of the stream creating a dependency on an existing element.  In order to
+ensure that prioritization is processed in a consistent order, any subsequent
+PRIORITY frames MUST be sent on the control stream.  A PRIORITY frame received
+after other frames on a request stream MUST be treated as a stream error of type
+HTTP_UNEXPECTED_FRAME.
+
+If, by the time a new request stream is opened, its priority information
+has already been received via the control stream, the PRIORITY frame
+sent on the request stream MUST be ignored.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT |Empty|E|          Prioritized Element ID (i)         ...
+|PT |DT | Empty |         [Prioritized Element ID (i)]        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Element Dependency ID (i)                   ...
+|                [Element Dependency ID (i)]                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Weight (8)  |
 +-+-+-+-+-+-+-+-+
@@ -490,36 +494,34 @@ HTTP_WRONG_STREAM.
 The PRIORITY frame payload has the following fields:
 
   Prioritized Type:
-  : A two-bit field indicating the type of element being prioritized.
+  : A two-bit field indicating the type of element being prioritized.   When
+    sent on a request stream, this MUST be set to `11`.  When sent on the
+    control stream, this MUST NOT be set to `11`.
 
   Dependency Type:
   : A two-bit field indicating the type of element being depended on.
 
   Empty:
-  : A three-bit field which MUST be zero when sent and MUST be ignored
+  : A four-bit field which MUST be zero when sent and MUST be ignored
     on receipt.
-
-  Exclusive:
-  : A flag which indicates that the stream dependency is exclusive (see
-    {{!RFC7540}}, Section 5.3).
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
     Depending on the value of Prioritized Type, this contains the Stream ID of a
-    request stream, the Push ID of a promised resource, or a Placeholder ID of a
-    placeholder.
+    request stream, the Push ID of a promised resource, a Placeholder ID of a
+    placeholder, or is absent.
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
     is being expressed. Depending on the value of Dependency Type, this contains
     the Stream ID of a request stream, the Push ID of a promised resource, the
-    Placeholder ID of a placeholder, or is ignored.  For details of
+    Placeholder ID of a placeholder, or is absent.  For details of
     dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
 
   Weight:
-  : An unsigned 8-bit integer representing a priority weight for the stream (see
-    {{!RFC7540}}, Section 5.3). Add one to the value to obtain a weight between
-    1 and 256.
+  : An unsigned 8-bit integer representing a priority weight for the prioritized
+    element (see {{!RFC7540}}, Section 5.3). Add one to the value to obtain a
+    weight between 1 and 256.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
 it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
@@ -530,17 +532,28 @@ request using the corresponding stream ID, a server push using a Push ID (see
 The values for the Prioritized Element Type and Element Dependency Type imply
 the interpretation of the associated Element ID fields.
 
-| Type Bits | Type Description | Element ID Contents |
-| --------- | ---------------- | ------------------- |
-| 00        | Request stream   | Stream ID           |
-| 01        | Push stream      | Push ID             |
-| 10        | Placeholder      | Placeholder ID      |
-| 11        | Root of the tree | Ignored             |
+| Type Bits | Type Description | Prioritized Element ID Contents |
+| --------- | ---------------- | ------------------------------- |
+| 00        | Request stream   | Stream ID                       |
+| 01        | Push stream      | Push ID                         |
+| 10        | Placeholder      | Placeholder ID                  |
+| 11        | Current stream   | Absent                          |
+
+| Type Bits | Type Description | Element Dependency ID Contents |
+| --------- | ---------------- | ------------------------------ |
+| 00        | Request stream   | Stream ID                      |
+| 01        | Push stream      | Push ID                        |
+| 10        | Placeholder      | Placeholder ID                 |
+| 11        | Root of the tree | Absent                         |
 
 Note that the root of the tree cannot be referenced using a Stream ID of 0, as
 in {{!RFC7540}}; QUIC stream 0 carries a valid HTTP request.  The root of the
-tree cannot be reprioritized. A PRIORITY frame that prioritizes the root of the
-tree MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+tree cannot be reprioritized. A PRIORITY frame sent on a request stream with the
+Prioritized Element Type set to any value other than `11` or which expresses a
+dependency on a request with a greater Stream ID than the current stream MUST be
+treated as a stream error of type HTTP_MALFORMED_FRAME.  Likewise, a PRIORITY
+frame sent on a control stream with the Prioritized Element Type set to `11`
+MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
@@ -551,6 +564,11 @@ A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
 greater than the server's limit MUST be treated as an HTTP_MALFORMED_FRAME
 error.
 
+A PRIORITY frame received on any stream other than a request or control stream
+MUST be treated as a connection error of type HTTP_WRONG_STREAM.
+
+PRIORITY frames received by a client MUST be treated as a stream error of type
+HTTP_UNEXPECTED_FRAME.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
@@ -723,37 +741,20 @@ The payload consists of:
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
-  ({{frame-cancel-push}}), and PRIORITY frames ({{frame-priority}}).
+  ({{frame-cancel-push}}), DUPLICATE_PUSH frames ({{frame-duplicate-push}}), and
+  PRIORITY frames ({{frame-priority}}).
 
 Header Block:
 : QPACK-compressed request header fields for the promised response.  See [QPACK]
   for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
-MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat receipt of a
-PUSH_PROMISE that contains a larger Push ID than the client has advertised as a
-connection error of type HTTP_MALFORMED_FRAME.
+MAX_PUSH_ID frame ({{frame-max-push-id}}) and MUST NOT use the same Push ID in
+multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
+that contains a larger Push ID than the client has advertised or a Push ID which
+has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
 
-A server MAY use the same Push ID in multiple PUSH_PROMISE frames.  This allows
-the server to use the same server push in response to multiple concurrent
-requests.  Referencing the same server push ensures that a PUSH_PROMISE can be
-made in relation to every response in which server push might be needed without
-duplicating pushes.
-
-A server that uses the same Push ID in multiple PUSH_PROMISE frames MUST include
-the same header fields each time.  The bytes of the header block MAY be
-different due to differing encoding, but the header fields and their values MUST
-be identical.  Note that ordering of header fields is significant.  A client
-MUST treat receipt of a PUSH_PROMISE with conflicting header field values for
-the same Push ID as a connection error of type HTTP_MALFORMED_FRAME.
-
-Allowing duplicate references to the same Push ID is primarily to reduce
-duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
-ID over a long period.  Clients are likely to consume server push responses and
-not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
-a Push ID that they have since consumed and discarded are forced to ignore the
-PUSH_PROMISE.
-
+See {{server-push}} for a description of the overall server push mechanism.
 
 ### GOAWAY {#frame-goaway}
 
@@ -824,6 +825,46 @@ MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 A server MUST treat a MAX_PUSH_ID frame payload that does not contain a single
 variable-length integer as a connection error of type HTTP_MALFORMED_FRAME.
+
+### DUPLICATE_PUSH {#frame-duplicate-push}
+
+The DUPLICATE_PUSH frame (type=0xE) is used by servers to indicate that an
+existing pushed resource is related to multiple client requests.
+
+The DUPLICATE_PUSH frame is always sent on a request stream.  Receipt of a
+DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
+of type HTTP_WRONG_STREAM.
+
+A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
+of a DUPLICATE_PUSH frame as a connection error of type HTTP_MALFORMED_FRAME.
+
+~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~
+{: #fig-duplicate-push title="DUPLICATE_PUSH frame payload"}
+
+The DUPLICATE_PUSH frame carries a single variable-length integer that
+identifies the Push ID of a resource that the server has previously promised
+(see {{frame-push-promise}}).  A server MUST treat a DUPLICATE_PUSH frame
+payload that does not contain a single variable-length integer as a connection
+error of type HTTP_MALFORMED_FRAME.
+
+This frame allows the server to use the same server push in response to multiple
+concurrent requests.  Referencing the same server push ensures that a promise
+can be made in relation to every response in which server push might be needed
+without duplicating request headers or pushed responses.
+
+Allowing duplicate references to the same Push ID is primarily to reduce
+duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
+ID over a long period.  Clients are likely to consume server push responses and
+not retain them for reuse over time.  Clients that see a DUPLICATE_PUSH that
+uses a Push ID that they have since consumed and discarded are forced to ignore
+the DUPLICATE_PUSH.
+
 
 ### Reserved Frame Types {#frame-grease}
 
@@ -1007,11 +1048,20 @@ HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 another request, which expresses the preference that the latter stream (the
 "parent" request) be allocated resources before the former stream (the
 "dependent" request). Taken together, the dependencies across all requests in a
-connection form a dependency tree. The structure of the dependency tree changes
-as PRIORITY frames add, remove, or change the dependency links between requests.
+connection form a dependency tree.
 
-The PRIORITY frame {{frame-priority}} identifies a prioritized element. The
-elements which can be prioritized are:
+When a client request is first sent, its parent and weight are determined by the
+PRIORITY frame (see {{frame-priority}}) which begins the stream, if present.
+Otherwise, the element is dependent on the root of the priority tree.
+Placeholders are also dependent on the root of the priority tree when first
+allocated.  Pushed streams are initially dependent on the client request on
+which the PUSH_PROMISE frame was sent. In all cases, elements are assigned an
+initial weight of 16 unless an PRIORITY frame begins the stream.
+
+The structure of the dependency tree changes as PRIORITY frames on the control
+stream modify the dependency links between requests. The PRIORITY frame
+{{frame-priority}} identifies a prioritized element. The elements which can be
+prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
@@ -1022,22 +1072,30 @@ An element can depend on another element or on the root of the tree.  A
 reference to an element which is no longer in the tree is treated as a reference
 to the root of the tree.
 
+Due to reordering between streams, an element can also be prioritized which is
+not yet in the tree. Such elements are added to the tree with the requested
+priority.
+
 ### Placeholders
 
 In HTTP/2, certain implementations used closed or unused streams as placeholders
-in describing the relative priority of requests.  However, this created
+in describing the relative priority of requests.  This created
 confusion as servers could not reliably identify which elements of the priority
-tree could safely be discarded. Clients could potentially reference closed
+tree could be discarded safely. Clients could potentially reference closed
 streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
 In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to maintain
-these IDs in the tree, clients can use them with confidence that the server will
-not have discarded the state.
+the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
+maintaining these IDs in the tree, clients can use them with confidence that the
+server will not have discarded the state.  Clients MUST NOT send the
+`SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a server MUST be
+treated as a connection error of type `HTTP_WRONG_SETTING_DIRECTION`.
 
 Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
+
+Like streams, placeholders have priority information associated with them.
 
 ### Priority Tree Maintenance
 
@@ -1085,9 +1143,11 @@ NOT declare a dependency on a stream it knows to have been closed.
 HTTP/3 server push is similar to what is described in HTTP/2 {{!RFC7540}}, but
 uses different mechanisms.
 
-Each server push is identified by a unique Push ID. The same Push ID can be used
-in one or more PUSH_PROMISE frames (see {{frame-push-promise}}), then included
-with the push stream which ultimately fulfills those promises.
+Each server push is identified by a unique Push ID. This Push ID is used in a
+single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
+headers, possibly included in one or more DUPLICATE_PUSH frames (see
+{{frame-duplicate-push}}), then included with the push stream which ultimately
+fulfills those promises.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push until it
@@ -1103,6 +1163,17 @@ allows the server push to be associated with a client request. Ordering of a
 PUSH_PROMISE in relation to certain parts of the response is important (see
 Section 8.2.1 of {{!RFC7540}}).  Promised requests MUST conform to the
 requirements in Section 8.2 of {{!RFC7540}}.
+
+The same server push can be associated with additional client requests using a
+DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
+DUPLICATE_PUSH in relation to certain parts of the response is similarly
+important.  Due to reordering, DUPLICATE_PUSH frames can arrive before the
+corresponding PUSH_PROMISE frame, in which case the request headers of the push
+would not be immediately available.  Clients which receive a DUPLICATE_PUSH
+frame for an as-yet-unknown Push ID can either delay generating new requests for
+content referenced following the DUPLICATE_PUSH frame until the request headers
+become available, or can initiate requests for discovered resources and cancel
+the requests if the requested resource is already being pushed.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
@@ -1279,6 +1350,10 @@ HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
+HTTP_WRONG_SETTING_DIRECTION (0x01):
+: A client-only setting was sent by a server, or a server-only setting by a
+  client.
+
 HTTP_PUSH_REFUSED (0x02):
 : The server has attempted to push content which the client will not accept
   on this connection.
@@ -1441,6 +1516,7 @@ The entries in the following table are registered by this document.
 | Reserved         | 0x8    | N/A                        |
 | Reserved         | 0x9    | N/A                        |
 | MAX_PUSH_ID      | 0xD    | {{frame-max-push-id}}      |
+| DUPLICATE_PUSH   | 0xE    | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
@@ -1534,6 +1610,7 @@ The entries in the following table are registered by this document.
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
+| HTTP_WRONG_SETTING_DIRECTION        | 0x0001     | Setting sent in wrong direction          | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
@@ -1656,8 +1733,8 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent on the control stream and the PRIORITY section is
-removed from the HEADERS frame.
+PRIORITY frames are sent on the control stream and exclusive prioritization
+has been removed.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
@@ -1839,6 +1916,18 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 ## Since draft-ietf-quic-http-16
 
 - Rename "HTTP/QUIC" to "HTTP/3" (#1973)
+- Changes to PRIORITY frame (#1865, #2075)
+  - Permitted as first frame of request streams
+  - Remove exclusive reprioritization
+  - Changes to Prioritized Element Type bits
+- Define DUPLICATE_PUSH frame to refer to another PUSH_PROMISE (#2072)
+- Set defaults for settings, allow request before receiving SETTINGS (#1809,
+  #1846, #2038)
+- Clarify message processing rules for streams that aren't closed (#1972, #2003)
+- Removed reservation of error code 0 and moved HTTP_NO_ERROR to this value
+  (#1922)
+- Removed prohibition of zero-length DATA frames (#2098)
+
 
 ## Since draft-ietf-quic-http-15
 
