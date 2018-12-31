@@ -996,9 +996,9 @@ static (S=1) or dynamic (S=0) table.
 
 ### Literal Header Field With Post-Base Name Reference
 
-For entries in the dynamic table with an absolute index greater than the Base,
-the header field name is represented using the post-base index of that entry
-(see {{post-base}}) encoded as an integer with a 3-bit prefix.
+For entries in the dynamic table with an absolute index greater than or equal to
+the Base, the header field name is represented using the post-base index of that
+entry (see {{post-base}}) encoded as an integer with a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
