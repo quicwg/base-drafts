@@ -250,19 +250,24 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains the total number of entries added to the dynamic
-table - the Required Insert Count - which identifies the table state necessary
-for decoding (see {{header-prefix}}). If the Required Insert Count is greater
-than the number of dynamic table entries received, the stream is considered
-"blocked."  While blocked, header field data SHOULD remain in the blocked
-stream's flow control window.  When the Required Insert Count is zero, the frame
-contains no references to the dynamic table and can always be processed
-immediately. A stream becomes unblocked when the number of entries inserted in
-the dynamic table becomes greater than or equal to the Required Insert Count for
-all header blocks the decoder has started reading from the stream.  If the
-decoder encounters a header block where the largest Absolute Index used not
-equal to the largest value permitted by the Required Insert Count, it MAY treat
-this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+Each header block contains a Required Insert Count, the lowest possible value
+for the Insert Count with which the header block can be decoded. For a header
+block with no references to the dynamic table, the Required Insert Count is
+zero.
+
+When the Required Insert Count is zero, the frame contains no references to the
+dynamic table and can always be processed immediately.
+
+If the Required Insert Count is greater than the number of dynamic table entries
+received, the stream is considered "blocked."  While blocked, header field data
+SHOULD remain in the blocked stream's flow control window.  A stream becomes
+unblocked when the Insert Count becomes greater than or equal to the Required
+Insert Count for all header blocks the decoder has started reading from the
+stream.
+
+If the decoder encounters a header block where the largest Absolute Index used
+is not equal to the largest value permitted by the Required Insert Count, it MAY
+treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
 upper bound on the number of streams which can be blocked. An encoder MUST limit
@@ -812,15 +817,16 @@ Header data is prefixed with two integers, `Required Insert Count` and `Base`.
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
-#### Insert Count
+#### Required Insert Count
 
-`Insert Count` identifies the state of the dynamic table needed to process the
-header block successfully.  Blocking decoders use the Insert Count to determine
-when it is safe to process the rest of the block.  If Insert Count is greater
-than zero, the encoder transforms it as follows before encoding:
+Required Insert Count identifies the state of the dynamic table needed to
+process the header block successfully.  Blocking decoders use the Required
+Insert Count to determine when it is safe to process the rest of the block.  If
+Required Insert Count is greater than zero, the encoder transforms it as follows
+before encoding:
 
 ~~~
-   EncodedInsertCount = (InsertCount mod (2 * MaxEntries)) + 1
+   EncodedInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
@@ -840,28 +846,28 @@ algorithm:
 
 ~~~
    if EncodedInsertCount == 0:
-      InsertCount = 0
+      ReqInsertCount = 0
    else:
       InsertCount = EncodedInsertCount - 1
       CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
 
       if CurrentWrapped >= InsertCount + MaxEntries:
          # Insert Count wrapped around 1 extra time
-         InsertCount += 2 * MaxEntries
+         ReqInsertCount += 2 * MaxEntries
       else if CurrentWrapped + MaxEntries < InsertCount:
          # Decoder wrapped around 1 extra time
          CurrentWrapped += 2 * MaxEntries
 
-      InsertCount += TotalNumberOfInserts - CurrentWrapped
+      ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
 ~~~
 
 Where TotalNumberOfInserts is the total number of inserts into the decoder's
 dynamic table.  This encoding limits the length of the prefix on long-lived
 connections.
 
-For example, if the dynamic table is 100 bytes, then the Insert Count will be
-encoded modulo 6.  If a decoder has received 10 inserts, then an encoded value
-of 3 indicates that the InsertCount is 9 for the header block.
+For example, if the dynamic table is 100 bytes, then the Required Insert Count
+will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
+value of 3 indicates that the Required Insert Count is 9 for the header block.
 
 #### Base
 
@@ -876,31 +882,32 @@ indicates that the Base is less than the Insert Count.  That is:
 
 ~~~
    if S == 0:
-      Base = InsertCount + DeltaBase
+      Base = ReqInsertCount + DeltaBase
    else:
-      Base = InsertCount - DeltaBase - 1
+      Base = ReqInsertCount - DeltaBase - 1
 ~~~
 
 A single-pass encoder determines the Base before encoding a header block.  If
 the encoder inserted entries in the dynamic table while encoding the header
-block, Insert Count will be greater than the Base, so the encoded difference is
-negative and the sign bit is set to 1.  If the header block did not reference
-the most recent entry in the table and did not insert any new entries, Base will
-be greater than the Insert Count, so the delta will be positive and the sign bit
-is set to 0.
+block, Required Insert Count will be greater than the Base, so the encoded
+difference is negative and the sign bit is set to 1.  If the header block did
+not reference the most recent entry in the table and did not insert any new
+entries, Base will be greater than the Required Insert Count, so the delta will
+be positive and the sign bit is set to 0.
 
 An encoder that produces table updates before encoding a header block might set
-Insert Count and Base to the same value.  In such case, both the sign bit and
-the Delta Base will be set to zero.
+Required Insert Count and Base to the same value.  In such case, both the sign
+bit and the Delta Base will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
-Base; setting both Insert Count and Delta Base to zero is the most efficient
-encoding.
+Base; setting both Required Insert Count and Delta Base to zero is the most
+efficient encoding.
 
-For example, with an Insert Count of 9, a decoder receives a S bit of 1 and a
-Delta Base of 2.  This sets the Base to 6 and enables post-base indexing for
-three entries.  In this example, a regular index of 1 refers to the 5th entry
-that was added to the table; a post-base index of 1 refers to the 8th entry.
+For example, with an Required Insert Count of 9, a decoder receives a S bit of 1
+and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
+for three entries.  In this example, a regular index of 1 refers to the 5th
+entry that was added to the table; a post-base index of 1 refers to the 8th
+entry.
 
 
 ### Indexed Header Field
