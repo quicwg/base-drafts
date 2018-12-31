@@ -3454,7 +3454,7 @@ Packet Number:
 : The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
+  in the Packet Number Length bits of byte 0 (see above).
 
 Payload:
 
