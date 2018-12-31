@@ -573,8 +573,8 @@ HTTP_UNEXPECTED_FRAME.
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
-push prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push by Push ID (see {{frame-push-promise}}), encoded as a
+push prior to the push stream being received.  The CANCEL_PUSH frame identifies
+a server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the
