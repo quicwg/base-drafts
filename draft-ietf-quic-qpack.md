@@ -800,9 +800,15 @@ HEADERS and PUSH_PROMISE frames on request and push streams reference the
 dynamic table in a particular state without modifying it.  Frames on these
 streams emit the headers for an HTTP request or response.
 
-### Header Data Prefix {#header-prefix}
+### Header Block Prefix {#header-prefix}
 
-Header data is prefixed with two integers, `Required Insert Count` and `Base`.
+Each header block is prefixed with two integers.  The Required Insert Count
+encoded as an integer with an 8-bit prefix after the encoding described in
+{{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
+bit and a value with a 7-bit prefix (see {{base}}).
+
+These two values are followed by instructions for compressed headers.  The
+entire block is expected to be framed by the using protocol.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
@@ -816,7 +822,7 @@ Header data is prefixed with two integers, `Required Insert Count` and `Base`.
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
-#### Required Insert Count
+#### Required Insert Count {#ric}
 
 Required Insert Count identifies the state of the dynamic table needed to
 process the header block successfully.  Blocking decoders use the Required
@@ -868,7 +874,7 @@ For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
 value of 3 indicates that the Required Insert Count is 9 for the header block.
 
-#### Base
+#### Base {#base}
 
 `Base` is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
