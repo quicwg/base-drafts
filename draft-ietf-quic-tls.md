@@ -1006,7 +1006,7 @@ This algorithm samples 16 bytes from the packet ciphertext. This value is used
 as the input to AES-ECB.  In pseudocode:
 
 ~~~
-mask = AES-ECB(pn_key, sample)
+mask = AES-ECB(hp_key, sample)
 ~~~
 
 
@@ -1027,7 +1027,7 @@ pseudocode:
 ~~~
 counter = DecodeLE(sample[0..3])
 nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
-mask = ChaCha20(pn_key, counter, nonce, {0,0,0,0,0})
+mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
 
 
@@ -1318,7 +1318,7 @@ this document are assumed to be PRFs.
 The header protection algorithms defined in this document take the form:
 
 ~~~
-protected_field = field XOR PRF(pn_key, sample)
+protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
