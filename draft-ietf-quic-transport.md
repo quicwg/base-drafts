@@ -5486,6 +5486,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   - Add spin bit to short header (#631, #1988)
   - Encrypt the remainder of the first byte (#1322)
   - Move packet number length to first byte
+  - Move ODCIL to first byte of retry packets
   - Simplify packet number protection (#1575)
 - Allow STOP_SENDING to open a remote bidirectional stream (#1797, #2013)
 - Added mitigation for off-path migration attacks (#1278, #1749, #2033)
