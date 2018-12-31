@@ -3012,7 +3012,7 @@ concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{processing-and-ack}} with an ACK frame without
-increasing any ECN counts.  if an endpoint does not implement ECN
+increasing any ECN counts.  If an endpoint does not implement ECN
 support or does not have access to received ECN codepoints, it does not increase
 ECN counts.
 
@@ -5494,7 +5494,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Servers are required to ignore Version Negotiation packets (#2088)
 - Tokens are repeated in all Initial packets (#2089)
 - Clarified how PING frames are sent after loss (#2094)
-- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Initial keys are discarded once Handshake are available (#1951, #2045)
 - ICMP PTB validation clarifications (#2161, #2109, #2108)
 
 
