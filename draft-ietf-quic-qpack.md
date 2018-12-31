@@ -466,18 +466,17 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Control Stream"}
 
-Because frames from request streams can be delivered out of order with
-instructions on the encoder stream, relative indices are relative to the Base at
-the beginning of the header block (see {{header-prefix}}). The Base is encoded
-as a value relative to the Required Insert Count. The Base identifies which
-dynamic table entries can be referenced using relative indexing, starting with 0
-at the last entry added.
+Unlike on the encoder stream, relative indices on push and request streams are
+relative to the Base at the beginning of the header block (see
+{{header-prefix}}). This ensures that references are stable even if the dynamic
+table is updated while decoding a header block.
+
+The Base is encoded as a value relative to the Required Insert Count. The Base
+identifies which dynamic table entries can be referenced using relative
+indexing, starting with 0 at the last entry added.
 
 Post-base references are used for entries inserted after base, starting at 0 for
 the first entry added after Base, see {{post-base}}.
-
-Though new entries could be added while processing a header block, the relative
-indices of entries do not change.
 
 ~~~~~ drawing
  Required
