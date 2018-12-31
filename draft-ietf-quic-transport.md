@@ -2421,7 +2421,7 @@ the packet other than the last 16 bytes for carrying data.
 ### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset when a incoming packet
-with a short header either cannot be associated with a connection;
+with a short header either cannot be associated with a connection,
 cannot be decrypted, or is marked as a duplicate packet.  The endpoint
 then compares the last 16 bytes of the packet with the Stateless Reset
 Token provided by its peer, either in a NEW_CONNECTION_ID frame or
