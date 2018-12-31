@@ -3402,9 +3402,10 @@ Reserved Bits (R):
 
 : The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
   bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
-  The value included prior to protection MUST be set to 0.  An endpoint MUST
-  silently drop any packet that has a non-zero value for these bits after
-  removing protection.
+  The value included prior to protection MUST be set to 0.  An endpoint MUST treat
+  receipt of a packet that has a non-zero value for these bits after removing
+  packet (not just header) protection as a connection error of type
+  PROTOCOL_VIOLATION.
 
 Packet Number Length (P):
 
@@ -3528,8 +3529,9 @@ Reserved Bits (R):
 : The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
   bits are protected using header protection (see Section 5.4 of
   {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
-  endpoint MUST silently drop any packet that has a non-zero value for these
-  bits after removing protection.
+  endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing packet (not just header) protection as a connection error
+  of type PROTOCOL_VIOLATION.
 
 Key Phase (K):
 
