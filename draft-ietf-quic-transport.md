@@ -2366,7 +2366,7 @@ of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Bits field needs to
-include at least 182 bits of data (or 24 bytes, less the two fixed bits). This
+include at least 182 bits of data (or 23 bytes, less the two fixed bits). This
 is intended to allow for a Destination Connection ID of the maximum length
 permitted, with a minimal packet number, and payload.  The Stateless Reset Token
 corresponds to the minimum expansion of the packet protection AEAD.  More
@@ -2775,7 +2775,7 @@ encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
 encoded on a single byte.  For instance, though 0x4007 is a legitimate two-byte
 encoding for a variable-length integer with a value of 7, PING frames are always
-encoded as a single byte with the value 0x07.  An endpoint MAY treat the receipt
+encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
 
