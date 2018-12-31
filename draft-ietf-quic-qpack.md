@@ -437,7 +437,7 @@ frame.
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes based on the context of the
-reference. The first entry inserted has an absolute index of "1"; indices
+reference. The first entry inserted has an absolute index of "0"; indices
 increase sequentially with each insertion.
 
 ### Relative Indexing
@@ -453,7 +453,7 @@ on the encoder stream.
 
 ~~~~~ drawing
       +---+---------------+-----------+
-      | n |      ...      |   d + 1   |  Absolute Index
+      | n |      ...      |     d     |  Absolute Index
       + - +---------------+ - - - - - +
       | 0 |      ...      | n - d - 1 |  Relative Index
       +---+---------------+-----------+
@@ -485,7 +485,7 @@ the first entry added after Base, see {{post-base}}.
     |         |
     V         V
     +---+-----+-----+-----+-------+
-    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
+    | n | n-1 | n-2 | ... |   d   |  Absolute Index
     +---+-----+  -  +-----+   -   +
               |  0  | ... | n-d-3 |  Relative Index
               +-----+-----+-------+
@@ -511,7 +511,7 @@ Base.
               |
               V
     +---+-----+-----+-----+-----+
-    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
+    | n | n-1 | n-2 | ... |  d  |  Absolute Index
     +---+-----+-----+-----+-----+
     | 1 |  0  |                    Post-Base Index
     +---+-----+
@@ -526,7 +526,7 @@ d = count of entries dropped
 
 If the decoder encounters a reference on a request or push stream to a dynamic
 table entry which has already been evicted or which has an absolute index
-greater than allowed by the declared Required Insert Count (see
+greater than or equal to the declared Required Insert Count (see
 {{header-prefix}}), it MUST treat this as a stream error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
@@ -822,13 +822,16 @@ entire block is expected to be framed by the using protocol.
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
+
 #### Required Insert Count {#ric}
 
 Required Insert Count identifies the state of the dynamic table needed to
 process the header block successfully.  Blocking decoders use the Required
-Insert Count to determine when it is safe to process the rest of the block.  If
-Required Insert Count is greater than zero, the encoder transforms it as follows
-before encoding:
+Insert Count to determine when it is safe to process the rest of the block.
+
+If no references are made to the dynamic table, a value of 0 is encoded.
+Alternatively, where the Required Insert Count is greater than zero, the encoder
+transforms it as follows before encoding:
 
 ~~~
    EncodedInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
