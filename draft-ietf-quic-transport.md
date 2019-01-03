@@ -811,7 +811,12 @@ endpoints sends CONNECTION_CLOSE.
 
 ## Stream Final Size {#final-size}
 
-The final size is the amount of data that is transmitted on a stream.  For a
+The final size is the amount of flow control credit that is consumed by a
+stream.  Assuming that every contiguous byte on the stream was sent, the final
+size is the number of bytes sent.  More generally, this is one higher than the
+largest byte offset sent on the stream.
+
+For a
 stream that is reset, the final size is carried explicitly in a RESET_STREAM
 frame.  Otherwise, the final size is the offset plus the length of a STREAM
 frame marked with a FIN flag, or 0 in the case of incoming unidirectional
