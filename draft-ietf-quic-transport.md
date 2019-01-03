@@ -813,8 +813,7 @@ endpoints sends CONNECTION_CLOSE.
 The final offset is the count of the number of bytes that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in a
 RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
-data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
-incoming unidirectional streams.
+data carried in a STREAM frame marked with a FIN flag.
 
 An endpoint will know the final offset for a stream when the receiving part of
 the stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
