@@ -4042,11 +4042,12 @@ initial_max_stream_data_bidi_remote (0x0006):
 initial_max_stream_data_uni (0x0007):
 
 : This parameter is an integer value specifying the initial flow control limit
-  for unidirectional streams.  This limit applies to newly created bidirectional
-  streams opened by the endpoint that receives the transport parameter.  In
-  client transport parameters, this applies to streams with an identifier with
-  the least significant two bits set to 0x3; in server transport parameters,
-  this applies to streams with the least significant two bits set to 0x2.
+  for unidirectional streams.  This limit applies to newly created
+  unidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x3; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x2.
 
 initial_max_streams_bidi (0x0008):
 
