@@ -955,13 +955,14 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-When an ACK frame is received that establishes loss after a threshold number of
-consecutive PTOs (pto_count is more than kPersistentCongestionThreshold, see
-{{cc-consts-of-interest}}), the network is considered to be experiencing
-persistent congestion, and the sender's congestion window MUST be reduced to the
-minimum congestion window (kMinimumWindow).  This response of collapsing the
-congestion window on persistent congestion is functionally similar to a sender's
-response on a Retransmission Timeout (RTO) in TCP {{RFC5681}}.
+When an ACK frame is received that establishes loss of all in flight packets
+sent prior to a threshold number of consecutive PTOs (pto_count is more than
+kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
+considered to be experiencing persistent congestion, and the sender's congestion
+window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
+response of collapsing the congestion window on persistent congestion is
+functionally similar to a sender's response on a Retransmission Timeout (RTO) in
+TCP {{RFC5681}}.
 
 
 ## Pacing
