@@ -2116,6 +2116,9 @@ packets.
 A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
 
+Servers MAY communicate a preferred address of each address family (IPv4 and
+IPv6) to allow clients to pick the one most suited to their network attachment.
+
 Once the handshake is finished, the client SHOULD initiate path validation (see
 {{migrate-validate}}) of the server's preferred address using the connection ID
 provided in the preferred_address transport parameter.
@@ -4099,11 +4102,13 @@ preferred_address (0x000d):
   the end of the handshake, as described in {{preferred-address}}.  The format
   of this transport parameter is the PreferredAddress struct shown in
   {{fig-preffered-address}}.  This transport parameter is only sent by a server.
+  Servers MAY choose to only send a preferred address of one address family by
+  sending a zero-length address for the other family.
 
 ~~~
    struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
+     opaque ipv4Address<0..2^8-1>;
+     opaque ipv6Address<0..2^8-1>;
      uint16 port;
      opaque connectionId<0..18>;
      opaque statelessResetToken[16];
