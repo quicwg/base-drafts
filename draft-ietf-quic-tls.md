@@ -1370,7 +1370,7 @@ The QUIC packet protection keys and IVs are derived using a different label than
 the equivalent keys in TLS.
 
 To preserve this separation, a new version of QUIC SHOULD define new labels for
-key derivation for packet protection key and IV, plus the packet number
+key derivation for packet protection key and IV, plus the header
 protection keys.
 
 The initial secrets also use a key that is specific to the negotiated QUIC
