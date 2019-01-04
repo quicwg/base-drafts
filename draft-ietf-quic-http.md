@@ -421,10 +421,10 @@ A frame includes the following fields:
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
 
-Each frame's payload MUST contain exactly the identified fields.  A frame that
-contains additional bytes after the identified fields or a frame that terminates
+Each frame's payload MUST contain the identified fields.  A frame that terminates
 before the end of the identified fields MUST be treated as a connection error of
-type HTTP_MALFORMED_FRAME.
+type HTTP_MALFORMED_FRAME.  Any additional bytes after the identified fields of
+a given frame MUST be silently ignored, to allow future extensibility.
 
 ## Frame Definitions {#frames}
 
