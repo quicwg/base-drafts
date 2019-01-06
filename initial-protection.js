@@ -10,7 +10,7 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var assert = require('assert');
 
-var INITIAL_SECRET = Buffer.from('ef4fb0abb47470c41befcf8031334fae485e09a0', 'hex');
+var INITIAL_SALT = Buffer.from('ef4fb0abb47470c41befcf8031334fae485e09a0', 'hex');
 var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
@@ -74,7 +74,7 @@ class QHKDF {
 
 class InitialProtection {
   constructor(label, cid) {
-    var qhkdf = QHKDF.extract(SHA256, INITIAL_SECRET, cid);
+    var qhkdf = QHKDF.extract(SHA256, INITIAL_SALT, cid);
     log('initial_secret', qhkdf.prk);
     qhkdf = new QHKDF(qhkdf.hmac, qhkdf.expand_label(label, 32));
     log(label + ' secret', qhkdf.prk);
