@@ -5076,7 +5076,7 @@ FINAL_SIZE_ERROR (0x6):
   previously established final size.  Or an endpoint received a RESET_STREAM
   frame containing a final size that was lower than the size of stream data that
   was already received.  Or an endpoint received a RESET_STREAM frame containing
-  a different final stream size to the one already established.
+  a different final size to the one already established.
 
 FRAME_ENCODING_ERROR (0x7):
 
