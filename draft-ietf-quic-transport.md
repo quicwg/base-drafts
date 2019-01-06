@@ -2853,12 +2853,12 @@ if the sender includes them in packets with non-ACK frames.  A sender SHOULD
 bundle ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Range fields it sends.  A receiver can do this even without
-receiving acknowledgment of its ACK frames, with the knowledge this could cause
-the sender to unnecessarily retransmit some data.  Standard QUIC
-{{QUIC-RECOVERY}} algorithms declare packets lost after sufficiently newer
-packets are acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge
-newly received packets in preference to packets received in the past.
+number of ACK Ranges it sends.  A receiver can do this even without receiving
+acknowledgment of its ACK frames, with the knowledge this could cause the sender
+to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
+algorithms declare packets lost after sufficiently newer packets are
+acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
+received packets in preference to packets received in the past.
 
 
 ### ACK Frames and Packet Protection
@@ -4200,27 +4200,30 @@ ACK Range Count:
 First ACK Range:
 
 : A variable-length integer indicating the number of contiguous packets
-  preceding the Largest Acknowledged that are being acknowledged.
+  preceding the Largest Acknowledged that are being acknowledged.  The First ACK
+  Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
+  Largest Acknowledged.  That is, the smallest packet number included in the
+  range is determined by subtracting the First ACK Range value from the Largest
+  Acknowledged.
 
 ACK Ranges:
 
 : Contains additional ranges of packet numbers which are alternately not
-  acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges-section}}.
+  acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
 
 ECN Counters:
 
 : The three ECN Counters, see {{ack-ecn-counters}}.
 
 
-### ACK Ranges Section {#ack-ranges-section}
+### ACK Ranges {#ack-ranges}
 
-The ACK Range Section consists of alternating Gap and ACK Range fields in
-descending packet number order.  The First Ack Range field is followed by a
-variable number of alternating Gap and ACK Range fields.  The number of Gap and
-ACK Range fields is determined by the ACK Range Count field; one of each field
-is present for each value in the ACK Range Count field.
+The ACK Ranges field consists of alternating Gap and ACK Range values in
+descending packet number order.  The number of Gap and ACK Range values is
+determined by the ACK Range Count field; one of each value is present for each
+value in the ACK Range Count field.
 
-The ACK Ranges field is structured as follows:
+ACK Ranges are structured as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4243,46 +4246,7 @@ The ACK Ranges field is structured as follows:
 ~~~
 {: #ack-range-format title="ACK Ranges"}
 
-Gap and ACK Range fields use a relative integer encoding for efficiency.  Though
-each encoded value is positive, the values are subtracted, so that each ACK
-Range describes progressively lower-numbered packets.
-
-Each ACK Range acknowledges a contiguous range of packets by indicating the
-number of acknowledged packets that precede the largest packet number in that
-range.  A value of zero indicates that only the largest packet number is
-acknowledged.  Larger ACK range values indicate a larger range, with
-corresponding lower values for the smallest packet number in the range.  Thus,
-given a largest packet number for the range, the smallest value is determined by
-the formula:
-
-~~~
-   smallest = largest - ack_range
-~~~
-
-The packets that are acknowledged by the ACK Range include the range from the
-smallest packet number to the largest, inclusive.
-
-The largest packet number value for the First ACK Range is determined by the
-Largest Acknowledged field; the largest value for subsequent ACK Range fields is
-determined by cumulatively subtracting the size of all preceding ACK Range and
-Gap fields.
-
-Each Gap field indicates a range of packets that are not being acknowledged.
-The number of packets in the gap is one higher than the encoded value of the Gap
-field.
-
-The value of the Gap field establishes the largest packet number value for the
-ACK Range that follows the gap using the following formula:
-
-~~~
-  largest = previous_smallest - gap - 2
-~~~
-
-If the calculated value for largest or smallest packet number for any ACK Range
-is negative, an endpoint MUST generate a connection error of type
-FRAME_ENCODING_ERROR indicating an error in an ACK frame.
-
-The fields that form the ACK Ranges field are:
+The fields that form the ACK Ranges are:
 
 Gap (repeated):
 
@@ -4295,6 +4259,43 @@ ACK Range (repeated):
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
   preceding Gap.
+
+Gap and ACK Range value use a relative integer encoding for efficiency.  Though
+each encoded value is positive, the values are subtracted, so that each ACK
+Range describes progressively lower-numbered packets.
+
+Each ACK Range acknowledges a contiguous range of packets by indicating the
+number of acknowledged packets that precede the largest packet number in that
+range.  A value of zero indicates that only the largest packet number is
+acknowledged.  Larger ACK Range values indicate a larger range, with
+corresponding lower values for the smallest packet number in the range.  Thus,
+given a largest packet number for the range, the smallest value is determined by
+the formula:
+
+~~~
+   smallest = largest - ack_range
+~~~
+
+An ACK Range acknowledges all packet numbers between the smallest packet number
+and the largest, inclusive.
+
+The largest value for an ACK Range is determined by cumulatively subtracting the
+size of all preceding ACK Ranges and Gaps.
+
+Each Gap indicates a range of packets that are not being acknowledged.  The
+number of packets in the gap is one higher than the encoded value of the Gap
+field.
+
+The value of the Gap field establishes the largest packet number value for the
+subsequent ACK Range using the following formula:
+
+~~~
+  largest = previous_smallest - gap - 2
+~~~
+
+If any computed packet number is negative, an endpoint MUST generate a
+connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
+frame.
 
 
 ### ECN Counters {#ack-ecn-counters}
@@ -4318,7 +4319,7 @@ The ECN section consists of three counters (see {{ecn-counters}}) as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields that form the ECN Counters field are:
+The fields that form the ECN Counters are:
 
 ECT(0) Count:
 : A variable-length integer representing the total number packets received with
