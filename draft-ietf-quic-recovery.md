@@ -243,7 +243,7 @@ delayed acknowledgement should be generated after processing incoming packets.
 In order to quickly complete the handshake and avoid spurious retransmissions
 due to crypto retransmission timeouts, crypto packets SHOULD use a very short
 ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
-stack indicates all data for that encryption level has been received.
+stack indicates all data for that packet number space has been received.
 
 ## ACK Ranges
 
@@ -313,9 +313,9 @@ Retransmit {{?RFC5681}}, Early Retransmit {{?RFC5827}}, FACK {{FACK}}, SACK loss
 recovery {{?RFC6675}}, and RACK {{?RACK=I-D.ietf-tcpm-rack}}. This section
 provides an overview of how these algorithms are implemented in QUIC.
 
-A packet is declared lost under the following conditions:
+A packet is declared lost if it meets all the following conditions:
 
-* The packet is unacknowledged, ack-eliciting, and was sent prior to an
+* The packet is unacknowledged, in-flight, and was sent prior to an
   acknowledged packet.
 
 * Either its packet number is kPacketThreshold smaller than an acknowledged
@@ -362,10 +362,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-Implementers MAY experiment with using other reordering thresholds, including
-absolute thresholds, bearing in mind that a lower multiplier reduces reordering
-resilience and increases spurious retransmissions, and a higher multiplier
-increases loss detection delay.
+Implementations MAY experiment with absolute thresholds, thresholds from
+previous connections, adaptive thresholds, or including RTT variance.  Smaller
+thresholds reduce reordering resilience and increase spurious retransmissions,
+and larger thresholds increase loss detection delay.
 
 
 ## Timeout Loss Detection
@@ -412,6 +412,7 @@ retransmission timeout and set a timer for this period.
 
 When crypto packets are in flight, the probe timer ({{pto}}) is not active.
 
+
 #### Retry and Version Negotiation
 
 A Retry or Version Negotiation packet causes a client to send another Initial
@@ -419,6 +420,16 @@ packet, effectively restarting the connection process and resetting congestion
 control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
+
+
+#### Discarding Initial State {#discard-initial}
+
+As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
+receiving Initial packets once they start exchanging Handshake packets.  At this
+point, all loss recovery state for the Initial packet number space is also
+discarded. Packets that are in flight for the packet number space are not
+declared as either acknowledged or lost.  After discarding state, new Initial
+packets will not be sent.
 
 The client MAY however compute an RTT estimate to the server as the time period
 from when the first Initial was sent to when a Retry or a Version Negotiation
@@ -484,6 +495,13 @@ be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
+
+When a PTO timer expires, new or previously-sent data may not be available to
+send and packets may still be in flight.  A sender can be blocked from sending
+new data in the future if packets are left in flight.  Under these conditions, a
+sender SHOULD mark any packets still in flight as lost.  If a sender wishes to
+establish delivery of packets still in flight, it MAY send an ack-eliciting
+packet and re-arm the PTO timer instead.
 
 
 #### Loss Detection {#pto-loss}
@@ -596,7 +614,7 @@ largest_sent_packet:
 : The packet number of the most recently sent packet.
 
 largest_acked_packet:
-: The largest packet number acknowledged in an ACK frame.
+: The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -642,6 +660,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    largest_sent_packet = 0
+   largest_acked_packet = 0
 ~~~
 
 ### On Sending a Packet
@@ -659,10 +678,11 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].time_sent = now
    sent_packets[packet_number].ack_eliciting = ack_eliciting
    sent_packets[packet_number].in_flight = in_flight
-   if (ack_eliciting):
+   if (in_flight):
      if (is_crypto_packet):
        time_of_last_sent_crypto_packet = now
-     time_of_last_sent_ack_eliciting_packet = now
+     if (ack_eliciting):
+       time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -676,6 +696,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
   OnAckReceived(ack):
+    largest_acked_packet = max(largest_acked_packet,
+                               ack.largest_acked)
+
     // If the largest acknowledged is newly acked and
     // ack-eliciting, update the RTT.
     if (sent_packets[ack.largest_acked] &&
@@ -683,6 +706,10 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
       latest_rtt =
         now - sent_packets[ack.largest_acked].time_sent
       UpdateRtt(latest_rtt, ack.ack_delay)
+
+    // Process ECN information if present.
+    if (ACK frame contains ECN information):
+       ProcessECN(ack)
 
     // Find all newly acked packets in this ACK frame
     newly_acked_packets = DetermineNewlyAckedPackets(ack)
@@ -692,15 +719,12 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
+    DetectLostPackets()
+
     crypto_count = 0
     pto_count = 0
 
-    DetectLostPackets(ack.acked_packet)
     SetLossDetectionTimer()
-
-    // Process ECN information if present.
-    if (ACK frame contains ECN information):
-       ProcessECN(ack)
 
 
   UpdateRtt(latest_rtt, ack_delay):
@@ -756,7 +780,7 @@ Pseudocode for SetLossDetectionTimer follows:
  SetLossDetectionTimer():
     // Don't arm timer if there are no ack-eliciting packets
     // in flight.
-    if (bytes_in_flight == 0):
+    if (no ack-eliciting packets in flight):
       loss_detection_timer.cancel()
       return
 
@@ -801,7 +825,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        crypto_count++
      else if (loss_time != 0):
        // Time threshold loss Detection
-       DetectLostPackets(largest_acked_packet)
+       DetectLostPackets()
      else:
        // PTO
        SendTwoPackets()
@@ -817,13 +841,10 @@ the sent_packets for that packet number space. If the loss detection timer
 expires and the loss_time is set, the previous largest acknowledged packet
 is supplied.
 
-DetectLostPackets takes one parameter, largest_acked, which is the largest
-acked packet.
-
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-DetectLostPackets(largest_acked):
+DetectLostPackets():
   loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -832,17 +853,17 @@ DetectLostPackets(largest_acked):
   lost_send_time = now() - loss_delay
 
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked.packet_number - kPacketThreshold
+  lost_pn = largest_acked_packet - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if (unacked.packet_number > largest_acked.packet_number):
+    if (unacked.packet_number > largest_acked_packet):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
         unacked.packet_number <= lost_pn):
       sent_packets.remove(unacked.packet_number)
-      if (unacked.ack_eliciting):
+      if (unacked.in_flight):
         lost_packets.insert(unacked)
     else if (loss_time == 0):
       loss_time = unacked.time_sent + loss_delay
@@ -934,10 +955,15 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If a threshold number of consecutive PTOs have occurred (pto_count is more than
+When an ACK frame is received that establishes loss of all in-flight packets
+sent prior to a threshold number of consecutive PTOs (pto_count is more than
 kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
 considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window.
+window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
+response of collapsing the congestion window on persistent congestion is
+functionally similar to a sender's response on a Retransmission Timeout (RTO) in
+TCP {{RFC5681}}.
+
 
 ## Pacing
 
@@ -959,22 +985,28 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-## Restart after idle
 
-A connection is idle if there are no bytes in flight and there is no pending
-ack-eliciting data to send.  This can occur when the connection is
-application limited or after a probe timeout. In order to limit
-the size of bursts sent into the network, the behavior when restarting from
-idle depends upon whether pacing is used.
+## Sending data after an idle period
 
-If the sender uses pacing, the connection should limit the initial burst of
-packets to no more than the initial congestion window and subsequent packets
-SHOULD be paced. The congestion window does not change while the connection
-is idle.
+A sender becomes idle if it ceases to send data and has no bytes in flight.  A
+sender's congestion window MUST NOT increase while it is idle.
 
-A sender that does not use pacing SHOULD reset its congestion window to the
-minimum of the current congestion window and the initial congestion window.
-This recommendation is based on Section 4.1 of {{?RFC5681}}.
+When sending data after becoming idle, a sender MUST reset its congestion window
+to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
+paces the sending of packets. A sender MAY retain its congestion window if it
+paces the sending of any packets in excess of the initial congestion window.
+
+A sender MAY implement alternate mechanisms to update its congestion window
+after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+
+## Discarding Packet Number Space State
+
+When keys for an packet number space are discarded, any packets sent with those
+keys are removed from the count of bytes in flight.  No loss events will occur
+any in-flight packets from that space, as a result of discarding loss recovery
+state (see {{discard-initial}}).  Note that it is expected that keys are
+discarded after those packets would be declared lost, but Initial secrets are
+destroyed earlier.
 
 ## Pseudocode
 
@@ -1003,15 +1035,13 @@ kLossReductionFactor:
   The RECOMMENDED value is 0.5.
 
 kPersistentCongestionThreshold:
-: Number of consecutive PTOs after which network is considered to be
-  experiencing persistent congestion.  The rationale for this threshold is to
-  enable a sender to use initial PTOs for aggressive probing, similar to Tail
-  Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  Once the number of consecutive PTOs
-  reaches this threshold - that is, persistent congestion is established - the
-  sender responds by collapsing its congestion window to kMinimumWindow, similar
-  to a Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value
-  for kPersistentCongestionThreshold is 2, which is equivalent to having two
-  TLPs before an RTO in TCP.
+: Number of consecutive PTOs required for persistent congestion to be
+  established.  The rationale for this threshold is to enable a sender to use
+  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
+  {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
+  a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
+  kPersistentCongestionThreshold is 2, which is equivalent to having two TLPs
+  before an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1211,6 +1241,10 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Disable RTT calculation for packets that don't elicit acknowledgment (#2060,
   #2078)
 - Limit ack_delay by max_ack_delay (#2060, #2099)
+- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Reorder ECN and loss detection in pseudocode (#2142)
+- Only cancel loss detection timer if ack-eliciting packets are in flight
+  (#2093, #2117)
 
 
 ## Since draft-ietf-quic-recovery-14
