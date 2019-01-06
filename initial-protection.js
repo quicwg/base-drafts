@@ -265,7 +265,7 @@ var crypto_frame = '060040c4' +
     '5ff183d7bb1495207236647037002b0003020304000d0020001e040305030603' +
     '020308040805080604010501060102010402050206020202002d00020101001c' +
     '00024001';
-test('client', cid, ci_hdr, 0, crypto_frame);
+test('client', cid, ci_hdr, 2, crypto_frame);
 
 // This should be a valid server Initial.
 var frames = '0d0000000018410a' +
@@ -275,4 +275,4 @@ var frames = '0d0000000018410a' +
     '690b84d08a60993c144eca684d1081287c834d5311' +
     'bcf32bb9da1a002b00020304';
 var si_hdr = 'c1' + version + '05' + 'f067a5502a4262b5' + '00';
-test('server', cid, si_hdr, 0, frames);
+test('server', cid, si_hdr, 1, frames);
