@@ -2875,6 +2875,10 @@ algorithms declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
 
+An endpoint SHOULD treat receipt an acknowledgment for a packet it did not send
+as a connection error of type PROTOCOL_VIOLATION, if it is able to detect the
+condition.
+
 
 ### ACK Frames and Packet Protection
 
