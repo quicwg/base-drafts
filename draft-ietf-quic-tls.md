@@ -1208,15 +1208,18 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 prior to the completion of the handshake, though it means that a downgrade
 causes a handshake failure.
 
-TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
-application protocol.  The application-layer protocol MAY restrict the QUIC
-versions that it can operate over.  Servers MUST select an application protocol
-compatible with the QUIC version that the client has selected.
+QUIC requires that the cryptographic handshake provide authenticated protocol
+negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
+{{!RFC7301}} to select an application protocol.  Unless another mechanism is
+used for agreeing on an application protocol, endpoints MUST use ALPN for this
+purpose.
 
-If the server cannot select a compatible combination of application protocol and
-QUIC version, it MUST abort the connection. A client MUST abort a connection if
-the server picks an incompatible combination of QUIC version and ALPN
-identifier.
+An application-layer protocol MAY restrict the QUIC versions that it can operate
+over.  Servers MUST select an application protocol compatible with the QUIC
+version that the client has selected.  If the server cannot select a compatible
+combination of application protocol and QUIC version, it MUST abort the
+connection. A client MUST abort a connection if the server picks an incompatible
+combination of QUIC version and ALPN identifier.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
