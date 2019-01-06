@@ -4086,6 +4086,7 @@ max_ack_delay (0x000b):
   delays in alarms firing.  For example, if a receiver sets a timer for 5ms
   and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
+  Values of 2^14 or greater are invalid.
 
 disable_migration (0x000c):
 
