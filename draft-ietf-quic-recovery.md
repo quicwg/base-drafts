@@ -1001,12 +1001,21 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 ## Discarding Packet Number Space State
 
-When keys for an packet number space are discarded, any packets sent with those
-keys are removed from the count of bytes in flight.  No loss events will occur
-any in-flight packets from that space, as a result of discarding loss recovery
-state (see {{discard-initial}}).  Note that it is expected that keys are
-discarded after those packets would be declared lost, but Initial secrets are
-destroyed earlier.
+When keys for an packet number space are discarded, any in-flight packets
+sent with those keys are removed from the count of bytes in flight.  Loss
+recovery state is also discarded, so no loss events will occur for any
+in-flight packets from that space(see {{discard-initial}}).  Note that it is
+expected that keys are discarded after those packets would be declared lost,
+but Initial secrets are destroyed earlier.
+
+## Discarding 0-RTT packet state
+
+When 0-RTT is rejected, all in-flight 0-RTT packets still are removed from
+the count of bytes in flight.  Loss recovery state is also discarded, so no
+loss events will occur for any in-flight 0-RTT packets.  If a server does not
+buffer out-of-order packets and accepts 0-RTT, there is a chance of declaring
+0-RTT packets lost that were actually discarded by the server, but this is
+expected to be infrequent.
 
 ## Pseudocode
 
