@@ -1210,9 +1210,9 @@ causes a handshake failure.
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
-{{!RFC7301}} to select an application protocol.  Clients and servers MUST use
-ALPN to negotiate an application protocol, unless another mechanism is used for
-agreeing on an application protocol.
+{{!RFC7301}} to select an application protocol.  Unless another mechanism is
+used for agreeing on an application protocol, endpoints MUST use ALPN for this
+purpose.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
