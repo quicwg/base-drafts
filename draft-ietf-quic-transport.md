@@ -812,7 +812,7 @@ endpoints sends CONNECTION_CLOSE.
 ## Stream Final Size {#final-size}
 
 The final size is the amount of flow control credit that is consumed by a
-stream.  Assuming that every contiguous byte on the stream was sent, the final
+stream.  Assuming that every contiguous byte on the stream was sent once, the final
 size is the number of bytes sent.  More generally, this is one higher than the
 largest byte offset sent on the stream.
 
