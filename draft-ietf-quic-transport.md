@@ -812,15 +812,14 @@ endpoints sends CONNECTION_CLOSE.
 ## Stream Final Size {#final-size}
 
 The final size is the amount of flow control credit that is consumed by a
-stream.  Assuming that every contiguous byte on the stream was sent once, the final
-size is the number of bytes sent.  More generally, this is one higher than the
-largest byte offset sent on the stream.
+stream.  Assuming that every contiguous byte on the stream was sent once, the
+final size is the number of bytes sent.  More generally, this is one higher
+than the largest byte offset sent on the stream.
 
-For a
-stream that is reset, the final size is carried explicitly in a RESET_STREAM
-frame.  Otherwise, the final size is the offset plus the length of a STREAM
-frame marked with a FIN flag, or 0 in the case of incoming unidirectional
-streams.
+For a stream that is reset, the final size is carried explicitly in a
+RESET_STREAM frame.  Otherwise, the final size is the offset plus the length of
+a STREAM frame marked with a FIN flag, or 0 in the case of incoming
+unidirectional streams.
 
 An endpoint will know the final size for a stream when the receiving part of the
 stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
@@ -1671,7 +1670,7 @@ pass information to clients that the server can later recover and use to
 validate a client address.  Tokens are not integrated into the cryptographic
 handshake and so they are not authenticated.  For instance, a client might be
 able to reuse a token.  To avoid attacks that exploit this property, a server
-can limit its use of tokens to only the information needed validate client
+can limit its use of tokens to only the information needed to validate client
 addresses.
 
 Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
@@ -2069,7 +2068,7 @@ effective endpoints need to ensure that connections IDs they provide cannot be
 linked by any other entity.
 
 This eliminates the use of the connection ID for linking activity from
-the same connection on different networks.  Protection of packet numbers ensures
+the same connection on different networks.  Header protection ensures
 that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
@@ -2245,7 +2244,7 @@ in the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
-## Idle Timeout
+## Idle Timeout {#idle-timeout}
 
 If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
@@ -2956,7 +2955,7 @@ containing that information is acknowledged.
   updated, with care taken to prevent the frame from being sent too often.
 
 * Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
-  STREAMS_BLOCKED frames. DATA_BLOCKED streams have connection scope,
+  STREAMS_BLOCKED frames. DATA_BLOCKED frames have connection scope,
   STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
   scoped to a specific stream type. New frames are sent if packets containing
   the most recent frame for a scope is lost, but only while the endpoint is
@@ -3106,7 +3105,7 @@ drop packets with ECT or CE codepoints in the IP header.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-Clients MUST ensure they send the first Initial packet in single IP packet.
+Clients MUST ensure they send the first Initial packet in a single IP packet.
 Similarly, the first Initial packet sent after receiving a Retry packet MUST be
 sent in a single IP packet.
 
@@ -4002,8 +4001,9 @@ original_connection_id (0x0000):
 
 idle_timeout (0x0001):
 
-: The idle timeout is a value in seconds that is encoded as an integer.  If this
-  parameter is absent or zero then the idle timeout is disabled.
+: The idle timeout is a value in seconds that is encoded as an integer, see
+  ({{idle-timeout}}).  If this parameter is absent or zero then the idle
+  timeout is disabled.
 
 stateless_reset_token (0x0002):
 
@@ -4049,11 +4049,12 @@ initial_max_stream_data_bidi_remote (0x0006):
 initial_max_stream_data_uni (0x0007):
 
 : This parameter is an integer value specifying the initial flow control limit
-  for unidirectional streams.  This limit applies to newly created bidirectional
-  streams opened by the endpoint that receives the transport parameter.  In
-  client transport parameters, this applies to streams with an identifier with
-  the least significant two bits set to 0x3; in server transport parameters,
-  this applies to streams with the least significant two bits set to 0x2.
+  for unidirectional streams.  This limit applies to newly created
+  unidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x3; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x2.
 
 initial_max_streams_bidi (0x0008):
 
@@ -4928,7 +4929,7 @@ The PATH_CHALLENGE frames are as follows:
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                            Data (8)                           +
++                           Data (64)                           +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
