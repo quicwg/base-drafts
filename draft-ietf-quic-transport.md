@@ -5067,10 +5067,11 @@ STREAM_STATE_ERROR (0x5):
 FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a RESET_STREAM
-  frame containing a final offset that was lower than the maximum offset of data
-  that was already received.  Or an endpoint received a RESET_STREAM frame
-  containing a different final offset to the one already established.
+  previously established final offset.  Or an endpoint received a STREAM frame
+  or a RESET_STREAM frame containing a final offset that was lower than the
+  maximum offset of data that was already received.  Or an endpoint received a
+  STREAM frame or a RESET_STREAM frame containing a different final offset
+  to the one already established.
 
 FRAME_ENCODING_ERROR (0x7):
 
