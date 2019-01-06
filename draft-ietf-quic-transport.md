@@ -764,10 +764,12 @@ larger resource commitments at the receiver.  Thus there is a trade-off between
 resource commitment and overhead when determining how large a limit is
 advertised.
 
-A receiver MAY use an autotuning mechanism to tune the frequency and amount of
+A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
-implementations.
+implementations.  As an optimization, sending frames related to flow control
+only when there are other frames to send or when a peer is blocked ensures that
+flow control doesn't cause extra packets to be sent.
 
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  It is generally considered best to not let the
