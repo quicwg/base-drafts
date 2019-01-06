@@ -1001,7 +1001,8 @@ losses or increases in the ECN-CE counter.
 
 ## Loss of protected packets during the handshake
 
-0RTT and 1RTT packets sent prior to handshake completion can arrive before
+Handshake and 0-RTT packets sent by clients and 1-RTT packets sent by servers
+prior to handshake completion can arrive before
 the peer has keys to unprotect them.  In those cases, the peer may decide
 not to buffer the packets.  This will cause the packets to never be
 acknowledged and eventually declared lost, despite being delivered to
