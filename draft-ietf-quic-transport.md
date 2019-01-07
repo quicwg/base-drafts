@@ -2856,7 +2856,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit the ranges of acknowledged packet numbers to those that have not yet
+To limit the ranges of acknowledged packets to those that have not yet
 been received by the sender, the receiver SHOULD track which ACK frames have
 been acknowledged by its peer.  The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
