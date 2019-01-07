@@ -3700,7 +3700,7 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING and
+a cryptographic handshake message, ACK frames, or both.  PADDING, PING and
 CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
 Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
