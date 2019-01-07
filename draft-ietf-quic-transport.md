@@ -1148,11 +1148,7 @@ unsupported versions. To help ensure this, a server SHOULD include a reserved
 version (see {{versions}}) while generating a Version Negotiation packet.
 
 The design of version negotiation permits a server to avoid maintaining state
-for packets that it rejects in this fashion. The validation of version
-negotiation (see {{version-validation}}) only validates the result of version
-negotiation, which is the same no matter which reserved version was sent.
-A server MAY therefore send different reserved version numbers in the Version
-Negotiation Packet and in its transport parameters.
+for packets that it rejects in this fashion.
 
 A client MAY send a packet using a reserved version number.  This can be used to
 solicit a list of supported versions from a server.
@@ -5083,8 +5079,7 @@ attacker can potentially send packets that will be accepted by QUIC endpoints.
 This version of QUIC attempts to detect this sort of attack, but it expects that
 endpoints will fail to establish a connection rather than recovering.  For the
 most part, the cryptographic handshake protocol {{QUIC-TLS}} is responsible for
-detecting tampering during the handshake, though additional validation is
-required for version negotiation (see {{version-validation}}).
+detecting tampering during the handshake.
 
 Endpoints are permitted to use other methods to detect and attempt to recover
 from interference with the handshake.  Invalid packets may be identified and
