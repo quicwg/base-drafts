@@ -452,14 +452,14 @@ referenced by a given relative index will change while interpreting instructions
 on the encoder stream.
 
 ~~~~~ drawing
-      +---+---------------+-----------+
-      | n |      ...      |     d     |  Absolute Index
-      + - +---------------+ - - - - - +
-      | 0 |      ...      | n - d - 1 |  Relative Index
-      +---+---------------+-----------+
-      ^                               |
-      |                               V
-Insertion Point                 Dropping Point
+      +-----+---------------+-------+
+      | n-1 |      ...      |   d   |  Absolute Index
+      + - - +---------------+ - - - +
+      |  0  |      ...      | n-d-1 |  Relative Index
+      +-----+---------------+-------+
+      ^                             |
+      |                             V
+Insertion Point               Dropping Point
 
 n = count of entries inserted
 d = count of entries dropped
@@ -475,7 +475,7 @@ The Base is encoded as a value relative to the Required Insert Count. The Base
 identifies which dynamic table entries can be referenced using relative
 indexing, starting with 0 at the last entry added.
 
-Post-base references are used for entries inserted after base, starting at 0 for
+Post-Base references are used for entries inserted after base, starting at 0 for
 the first entry added after Base, see {{post-base}}.
 
 ~~~~~ drawing
@@ -802,7 +802,7 @@ streams emit the headers for an HTTP request or response.
 
 ### Header Block Prefix {#header-prefix}
 
-Each header block is prefixed with two integers.  The Required Insert Count
+Each header block is prefixed with two integers.  The Required Insert Count is
 encoded as an integer with an 8-bit prefix after the encoding described in
 {{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
 bit and a value with a 7-bit prefix (see {{base}}).
@@ -850,7 +850,8 @@ decoder (see {{maximum-table-size}}).
 
 
 The decoder reconstructs the Required Insert Count using the following
-algorithm:
+algorithm, where TotalNumberOfInserts is the total number of inserts into the
+decoder's dynamic table:
 
 ~~~
    if EncodedInsertCount == 0:
@@ -869,9 +870,7 @@ algorithm:
       ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
 ~~~
 
-Where TotalNumberOfInserts is the total number of inserts into the decoder's
-dynamic table.  This encoding limits the length of the prefix on long-lived
-connections.
+This encoding limits the length of the prefix on long-lived connections.
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
@@ -908,8 +907,7 @@ Required Insert Count and Base to the same value.  In such case, both the sign
 bit and the Delta Base will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
-Base; setting both Required Insert Count and Delta Base to zero is the most
-efficient encoding.
+Base; setting Delta Base to zero is the most efficient encoding.
 
 For example, with an Required Insert Count of 9, a decoder receives a S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
