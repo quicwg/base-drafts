@@ -3630,6 +3630,9 @@ The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
 a Version Negotiation packet consumes an entire UDP datagram.
 
+A server MUST NOT send more than one Version Negotiation packet in response to a
+single UDP datagram.
+
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
@@ -3872,7 +3875,9 @@ Destination Connection ID of subsequent packets that it sends.
 
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
-can send multiple Retry packets as it receives Initial or 0-RTT packets.
+can send multiple Retry packets as it receives Initial or 0-RTT packets.  A
+server MUST NOT send more than one Retry packet in response to a single UDP
+datagram.
 
 A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
