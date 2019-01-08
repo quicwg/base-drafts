@@ -2830,6 +2830,12 @@ valid frames? -->
 
 ### Sending ACK Frames
 
+An endpoint MUST NOT send more than one packet containing only an ACK frame per
+received packet that contains frames other than ACK and PADDING frames.
+An endpoint MUST NOT send an ACK frame in response to a packet containing only
+ACK or PADDING frames, even if there are packet gaps which precede the received
+packet. This prevents an indefinite feedback loop of ACKs.
+
 An endpoint MUST NOT send more than one packet containing only an ACK frame
 per received packet that contains frames other than ACK and PADDING frames,
 even if there are packet gaps which precede the received packet.
