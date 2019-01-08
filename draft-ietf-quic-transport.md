@@ -4243,7 +4243,7 @@ First ACK Range:
 : A variable-length integer indicating the number of contiguous packets
   preceding the Largest Acknowledged that are being acknowledged.  The First ACK
   Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
-  Largest Acknowledged.  That is, the smallest packet acknowleged in the
+  Largest Acknowledged.  That is, the smallest packet acknowledged in the
   range is determined by subtracting the First ACK Range value from the Largest
   Acknowledged.
 
