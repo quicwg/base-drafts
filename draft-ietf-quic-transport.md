@@ -2830,13 +2830,15 @@ valid frames? -->
 
 ### Sending ACK Frames
 
-<!-- TODO: Re-read this section for flow and redundancy. -->
-
-To avoid creating an indefinite feedback loop, an endpoint MUST NOT send an ACK
-frame in response to a packet containing only ACK or PADDING frames, even if
-there are packet gaps which precede the received packet.  The endpoint MUST
-however acknowledge packets containing only ACK or PADDING frames when sending
-ACK frames in response to other packets.
+ACK frames are sent to acknowledge received packets and indicate the frames
+within them has been processed. An endpoint MUST NOT send more than one packet
+containing only an ACK frame per received packet that contains frames other
+than ACK and PADDING frames. Specifically, to avoid creating an indefinite
+feedback loop, an endpoint MUST NOT send an ACK frame in response to a packet
+containing only ACK or PADDING frames, even if there are packet gaps which
+precede the received packet.  The endpoint MUST however acknowledge packets
+containing only ACK or PADDING frames when sending ACK frames in response to
+other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2844,9 +2846,6 @@ sender to become limited by the congestion controller (as described in
 {{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
 receiver. Therefore, a sender SHOULD ensure that other frames are sent in
 addition to PADDING frames to elicit acknowledgments from the receiver.
-
-An endpoint MUST NOT send more than one packet containing only an ACK frame per
-received packet that contains frames other than ACK and PADDING frames.
 
 The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
@@ -2857,11 +2856,10 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit the ranges of acknowledged packet numbers to those that have not yet
-been received by the sender, the receiver SHOULD track which ACK frames have
-been acknowledged by its peer.  The receiver SHOULD exclude already acknowledged
-packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.
+To limit ACK ranges to those that have not yet been received by the sender, the
+receiver SHOULD track which ACK frames have been acknowledged by its peer.
+The receiver SHOULD exclude already acknowledged packets from future ACK frames
+whenever these packets would unnecessarily contribute to the ACK frame size.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
@@ -4245,13 +4243,13 @@ First ACK Range:
 : A variable-length integer indicating the number of contiguous packets
   preceding the Largest Acknowledged that are being acknowledged.  The First ACK
   Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
-  Largest Acknowledged.  That is, the smallest packet number included in the
+  Largest Acknowledged.  That is, the smallest packet acknowleged in the
   range is determined by subtracting the First ACK Range value from the Largest
   Acknowledged.
 
 ACK Ranges:
 
-: Contains additional ranges of packet numbers which are alternately not
+: Contains additional ranges of packets which are alternately not
   acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
 
 ECN Counts:
@@ -4319,8 +4317,8 @@ the formula:
    smallest = largest - ack_range
 ~~~
 
-An ACK Range acknowledges all packet numbers between the smallest packet number
-and the largest, inclusive.
+An ACK Range acknowledges all packets between the smallest packet number and the
+largest, inclusive.
 
 The largest value for an ACK Range is determined by cumulatively subtracting the
 size of all preceding ACK Ranges and Gaps.
