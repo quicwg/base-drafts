@@ -536,9 +536,9 @@ for delivery to the application.  As data is consumed by the application and
 buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
 allow the peer to send more data.
 
-When a STREAM frame with a FIN bit is received, the final offset is known (see
-{{final-offset}}).  The receiving part of the stream then enters the "Size
-Known" state.  In this state, the endpoint no longer needs to send
+When a STREAM frame with a FIN bit is received, the final size of the stream is
+known (see {{final-size}}).  The receiving part of the stream then enters the
+"Size Known" state.  In this state, the endpoint no longer needs to send
 MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 
 Once all data for the stream has been received, the receiving part enters the
@@ -798,10 +798,11 @@ could disagree on the number of bytes that count towards connection flow
 control.
 
 To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
-final offset of data sent on the stream.  On receiving a RESET_STREAM frame, a
+final size of data sent on the stream.  On receiving a RESET_STREAM frame, a
 receiver definitively knows how many bytes were sent on that stream before the
-RESET_STREAM frame, and the receiver MUST use the final offset to account for
-all bytes sent on the stream in its connection level flow controller.
+RESET_STREAM frame, and the receiver MUST use the final size of the stream to
+account for all bytes sent on the stream in its connection level flow
+controller.
 
 RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
 stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
@@ -810,26 +811,31 @@ direction until that direction enters a terminal state, or until one of the
 endpoints sends CONNECTION_CLOSE.
 
 
-## Stream Final Offset {#final-offset}
+## Stream Final Size {#final-size}
 
-The final offset is the count of the number of bytes that are transmitted on a
-stream.  For a stream that is reset, the final offset is carried explicitly in a
-RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
-data carried in a STREAM frame marked with a FIN flag.
+The final size is the amount of flow control credit that is consumed by a
+stream.  Assuming that every contiguous byte on the stream was sent once, the
+final size is the number of bytes sent.  More generally, this is one higher
+than the largest byte offset sent on the stream.
 
-An endpoint will know the final offset for a stream when the receiving part of
-the stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
+For a stream that is reset, the final size is carried explicitly in a
+RESET_STREAM frame.  Otherwise, the final size is the offset plus the length of
+a STREAM frame marked with a FIN flag, or 0 in the case of incoming
+unidirectional streams.
 
-An endpoint MUST NOT send data on a stream at or beyond the final offset.
+An endpoint will know the final size for a stream when the receiving part of the
+stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
-Once a final offset for a stream is known, it cannot change.  If a RESET_STREAM
-or STREAM frame is received indicating a change in the final offset for the
-stream, an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
+An endpoint MUST NOT send data on a stream at or beyond the final size.
+
+Once a final size for a stream is known, it cannot change.  If a RESET_STREAM or
+STREAM frame is received indicating a change in the final size for the stream,
+an endpoint SHOULD respond with a FINAL_SIZE_ERROR error (see
 {{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
-final offset as a FINAL_OFFSET_ERROR error, even after a stream is closed.
+final size as a FINAL_SIZE_ERROR error, even after a stream is closed.
 Generating these errors is not mandatory, but only because requiring that an
 endpoint generate these errors also means that the endpoint needs to maintain
-the final offset state for closed streams, which could mean a significant state
+the final size state for closed streams, which could mean a significant state
 commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
@@ -4408,7 +4414,7 @@ The RESET_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Final Offset (i)                     ...
+|                        Final Size (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -4424,10 +4430,10 @@ Application Protocol Error Code:
 : A 16-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
 
-Final Offset:
+Final Size:
 
-: A variable-length integer indicating the absolute byte offset of the end of
-  data written on this stream by the RESET_STREAM sender.
+: A variable-length integer indicating the final size of the stream by the
+  RESET_STREAM sender, in unit of bytes.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
@@ -4565,7 +4571,7 @@ are present in the frame.
   the Length field is present.
 
 * The FIN bit (0x01) of the frame type is set only on frames that contain the
-  final offset of the stream.  Setting this bit indicates that the frame
+  final size of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
@@ -5088,14 +5094,14 @@ STREAM_STATE_ERROR (0x5):
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x6):
+FINAL_SIZE_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a STREAM frame
-  or a RESET_STREAM frame containing a final offset that was lower than the
-  maximum offset of data that was already received.  Or an endpoint received a
-  STREAM frame or a RESET_STREAM frame containing a different final offset
-  to the one already established.
+  previously established final size.  Or an endpoint received a STREAM frame or
+  a RESET_STREAM frame containing a final size that was lower than the size of
+  stream data that was already received.  Or an endpoint received a STREAM frame
+  or a RESET_STREAM frame containing a different final size to the one already
+  established.
 
 FRAME_ENCODING_ERROR (0x7):
 
@@ -5449,7 +5455,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
-| 0x6   | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
+| 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
