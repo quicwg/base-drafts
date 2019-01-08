@@ -4375,7 +4375,7 @@ of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
 discard any data that it already received on that stream.
 
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+terminate the connection with error STREAM_STATE_ERROR.
 
 The RESET_STREAM frame is as follows:
 
@@ -4419,9 +4419,9 @@ Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
 stream that is "Ready" or not yet created MUST be treated as a connection error
-of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING frame for
+of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
 a receive-only stream MUST terminate the connection with error
-PROTOCOL_VIOLATION.
+STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
@@ -4548,7 +4548,7 @@ are present in the frame.
   marks the end of the stream.
 
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error PROTOCOL_VIOLATION.
+the connection with error STREAM_STATE_ERROR.
 
 The STREAM frames are as follows:
 
@@ -4634,10 +4634,10 @@ The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+it has not opened MUST terminate the connection with error STREAM_STATE_ERROR.
 
 Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
 bidirectional stream it has not opened.
@@ -4750,7 +4750,7 @@ send data, but is unable to due to stream-level flow control.  This frame is
 analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 The STREAM_DATA_BLOCKED frame is as follows:
 
@@ -5477,6 +5477,9 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-16
+- Stream-related errors now use STREAM_STATE_ERROR (#2305)
 
 ## Since draft-ietf-quic-transport-16
 
