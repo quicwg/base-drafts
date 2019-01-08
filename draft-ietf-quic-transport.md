@@ -2985,6 +2985,12 @@ Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
 {{stream-prioritization}}).
 
+Even though a sender is encouraged to assemble frames containing up-to-date
+information every time it sends a packet, it is not forbidden to retransmit
+frames of lost packets as they are.  A receiver MUST accept packets containing
+an outdated frame, such as a MAX_DATA frame carrying a smaller maximum data than
+one found in an older packet.
+
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
 {{QUIC-RECOVERY}}.
