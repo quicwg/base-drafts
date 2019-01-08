@@ -4103,13 +4103,14 @@ preferred_address (0x000d):
   of this transport parameter is the PreferredAddress struct shown in
   {{fig-preffered-address}}.  This transport parameter is only sent by a server.
   Servers MAY choose to only send a preferred address of one address family by
-  sending a zero-length address for the other family.
+  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
 
 ~~~
    struct {
-     opaque ipv4Address<0..2^8-1>;
-     opaque ipv6Address<0..2^8-1>;
-     uint16 port;
+     opaque ipv4Address[4];
+     uint16 ipv4Port;
+     opaque ipv6Address[16];
+     uint16 ipv6Port;
      opaque connectionId<0..18>;
      opaque statelessResetToken[16];
    } PreferredAddress;
