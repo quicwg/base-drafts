@@ -3366,7 +3366,7 @@ Example pseudo-code for packet number decoding can be found in
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|1|T T|R R|P P|
+|1|1|T T|X X X X|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3401,21 +3401,9 @@ Long Packet Type (T):
 : The next two bits (those with a mask of 0x30) of byte 0 contain a packet type.
   Packet types are listed in {{long-packet-types}}.
 
-Reserved Bits (R):
+Type-Specific Bits (X):
 
-: The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
-  The value included prior to protection MUST be set to 0.  An endpoint MUST
-  treat receipt of a packet that has a non-zero value for these bits after
-  removing protection as a connection error of type PROTOCOL_VIOLATION.
-
-Packet Number Length (P):
-
-: The least significant two bits (those with a mask of 0x03) of byte 0 contain
-  the length of the packet number, encoded as an unsigned, two-bit integer that
-  is one less than the length of the packet number field in bytes.  That is, the
-  length of the packet number field is the value of this field, plus one.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+: The lower four bits (those with a mask of 0x0f) of byte 0 are type-specific.
 
 Version:
 
@@ -3469,6 +3457,24 @@ The interpretation of the fields and the payload are specific to a version and
 packet type.  While type-specific semantics for this version are described in
 the following sections, several long-header packets in this version of QUIC
 contain these additional fields:
+
+Reserved Bits (R):
+
+: Two bits (those with a mask of 0x0c) of byte 0 are reserved across multiple
+  packet types.  These bits are protected using header protection (see Section
+  5.4 of {{QUIC-TLS}}). The value included prior to protection MUST be set to 0.
+  An endpoint MUST treat receipt of a packet that has a non-zero value for these
+  bits after removing protection as a connection error of type
+  PROTOCOL_VIOLATION.
+
+Packet Number Length (P):
+
+: In packet types which contain a Packet Number field, the least significant two
+  bits (those with a mask of 0x03) of byte 0 contain the length of the packet
+  number, encoded as an unsigned, two-bit integer that is one less than the
+  length of the packet number field in bytes.  That is, the length of the packet
+  number field is the value of this field, plus one.  These bits are protected
+  using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
 Length:
 
@@ -3577,7 +3583,8 @@ carries ACKs in either direction.
 {: #initial-format title="Initial Packet"}
 
 The Initial packet contains a long header as well as the Length and Packet
-Number fields.  Between the SCID and Length fields, there are two additional
+Number fields.  The first byte contains the Reserved and Packet Number Length
+bits.  Between the SCID and Length fields, there are two additional
 field specific to the Initial packet.
 
 Token Length:
@@ -3647,9 +3654,10 @@ Initial keys are discarded.
 ### 0-RTT {#packet-0rtt}
 
 A 0-RTT packet uses long headers with a type value of 0x1, followed by the
-Length and Packet Number fields. It is used to carry "early" data from the
-client to the server as part of the first flight, prior to handshake completion.
-As part of the TLS handshake, the server can accept or reject this early data.
+Length and Packet Number fields. The first byte contains the Reserved and Packet
+Number Length bits.  It is used to carry "early" data from the client to the
+server as part of the first flight, prior to handshake completion. As part of
+the TLS handshake, the server can accept or reject this early data.
 
 See Sections 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
 limitations.
@@ -3709,7 +3717,8 @@ the connection.
 ### Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x2, followed by the
-Length and Packet Number fields.  It is used to carry acknowledgments and
+Length and Packet Number fields.  The first byte contains the Reserved and
+Packet Number Length bits.  It is used to carry acknowledgments and
 cryptographic handshake messages from the server and client.
 
 ~~~
