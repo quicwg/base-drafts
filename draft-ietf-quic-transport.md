@@ -2228,10 +2228,11 @@ An endpoint enters a closing period after initiating an immediate close
 they contain a CONNECTION_CLOSE frame (see {{immediate-close}} for details).  An
 endpoint retains only enough information to generate a packet containing a
 CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
-The connection ID and QUIC version is sufficient information to identify packets
-for a closing connection; an endpoint can discard all other connection state.
-An endpoint MAY retain packet protection keys for incoming packets to allow it
-to read and process a CONNECTION_CLOSE frame.
+The source and the destination connection ID and the QUIC version are sufficient
+information to identify packets for a closing connection; an endpoint can
+discard all other connection state. An endpoint MAY retain packet protection
+keys for incoming packets to allow it to read and process a CONNECTION_CLOSE
+frame.
 
 The draining state is entered once an endpoint receives a signal that its peer
 is closing or draining.  While otherwise identical to the closing state, an
@@ -2262,7 +2263,7 @@ An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
-While in the closing period, an endpoint could receive packets from a new source
+While in the closing period, a server could receive packets from a new source
 address, indicating a client connection migration ({{migration}}). An endpoint
 in the closing state MUST strictly limit the number of packets it sends to this
 new address until the address is validated (see {{migrate-validate}}). A server
