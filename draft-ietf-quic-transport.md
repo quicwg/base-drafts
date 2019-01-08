@@ -5478,6 +5478,9 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-16
+- Stream-related errors now use STREAM_STATE_ERROR (#2305)
+
+## Since draft-ietf-quic-transport-16
 
 - Stream limits are defined as counts, not maximums (#1850, #1906)
 - Require amplification attack defense after closing (#1905, #1911)
