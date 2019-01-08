@@ -2225,9 +2225,6 @@ connection state.  This results in new packets on the connection being handled
 generically.  For instance, an endpoint MAY send a stateless reset in response
 to any further incoming packets.
 
-The draining and closing periods do not apply when a stateless reset
-({{stateless-reset}}) is sent.
-
 An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
