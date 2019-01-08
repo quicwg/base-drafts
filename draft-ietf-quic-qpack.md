@@ -213,7 +213,7 @@ acknowledged by the decoder.
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
 existing entry) if doing so would evict an entry with unacknowledged references.
 For header blocks that might rely on the newly added entry, the encoder can use
-a literal representation and maybe insert the entry later.
+a literal representation.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
