@@ -1001,7 +1001,7 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 ## Discarding Packet Number Space State
 
-When keys for an packet number space are discarded, any in-flight packets
+When keys for a packet number space are discarded, any in-flight packets
 sent with those keys are removed from the count of bytes in flight.  Loss
 recovery state is also discarded, so no loss events will occur for any
 in-flight packets from that space (see {{discard-initial}}).  Note that it is
