@@ -1008,8 +1008,6 @@ in-flight packets from that space (see {{discard-initial}}).  Note that it is
 expected that keys are discarded after those packets would be declared lost,
 but Initial secrets are destroyed earlier.
 
-## Discarding 0-RTT packet state
-
 When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
 the count of bytes in flight.  Loss recovery state is also discarded, so no
 loss events will occur for any in-flight 0-RTT packets.  If a server does not
