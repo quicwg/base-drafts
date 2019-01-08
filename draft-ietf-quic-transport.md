@@ -2220,8 +2220,8 @@ of three ways:
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for three times the current Probe Timeout (PTO)
-interval as defined in {{QUIC-RECOVERY}}.
+These states SHOULD persist for at least three times the current Probe Timeout
+(PTO) interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
