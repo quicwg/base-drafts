@@ -1010,7 +1010,7 @@ but Initial secrets are destroyed earlier.
 
 ## Discarding 0-RTT packet state
 
-When 0-RTT is rejected, all in-flight 0-RTT packets still are removed from
+When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
 the count of bytes in flight.  Loss recovery state is also discarded, so no
 loss events will occur for any in-flight 0-RTT packets.  If a server does not
 buffer out-of-order packets and accepts 0-RTT, there is a chance of declaring
