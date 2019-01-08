@@ -1377,9 +1377,11 @@ particular, version negotiation MUST be validated (see {{version-validation}})
 before the connection establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Any given parameter MUST appear at most
-once in a given transport parameters extension.  An endpoint MUST treat receipt
-of duplicate transport parameters as a connection error of type
+{{transport-parameter-definitions}}.  An endpoint MUST treat receipt of a
+transport parameter with an invalid value as a connection error of type
+TRANSPORT_PARAMETER_ERROR.  Any given parameter MUST appear at most once in a
+given transport parameters extension.  An endpoint MUST treat receipt of
+duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
@@ -4089,6 +4091,7 @@ max_ack_delay (0x000b):
   delays in alarms firing.  For example, if a receiver sets a timer for 5ms
   and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
+  Values of 2^14 or greater are invalid.
 
 disable_migration (0x000c):
 
