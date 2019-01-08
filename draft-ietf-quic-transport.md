@@ -2857,10 +2857,11 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Blocks to those that have not yet been received by the sender,
-the receiver SHOULD track which ACK frames have been acknowledged.  The
-receiver SHOULD exclude already acknowledged packets from future ACK frames
-whenever these packets would unnecessarily contribute to the ACK frame size.
+To limit the ranges of acknowledged packet numbers to those that have not yet
+been received by the sender, the receiver SHOULD track which ACK frames have
+been acknowledged by its peer.  The receiver SHOULD exclude already acknowledged
+packets from future ACK frames whenever these packets would unnecessarily
+contribute to the ACK frame size.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
@@ -2868,12 +2869,13 @@ the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
 ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Blocks it sends.  A receiver can do this even without receiving
+number of ACK Ranges it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
+
 
 ### ACK Frames and Packet Protection
 
@@ -4171,12 +4173,12 @@ prevent the majority of middleboxes from losing state for UDP flows.
 ## ACK Frames {#frame-ack}
 
 Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
-they have received and processed. The ACK frame contains one or more ACK Blocks.
-ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
-frames also contain the sum of QUIC packets with associated ECN marks received
-on the connection up until this point. QUIC implementations MUST properly handle
-both types and, if they have enabled ECN for packets they send, they SHOULD use
-the information in the ECN section to manage their congestion state.
+they have received and processed. The ACK frame contains one or more ACK Ranges.
+ACK Ranges identify acknowledged packets. If the frame type is 0x03, ACK frames
+also contain the sum of QUIC packets with associated ECN marks received on the
+connection up until this point.  QUIC implementations MUST properly handle both
+types and, if they have enabled ECN for packets they send, they SHOULD use the
+information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -4201,11 +4203,13 @@ An ACK frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
+|                       ACK Range Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
+|                       First ACK Range (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         [ECN Section]                       ...
+|                          ACK Ranges (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          [ECN Counts]                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -4231,112 +4235,121 @@ ACK Delay:
   larger range of values with a shorter encoding at the cost of lower
   resolution.
 
-ACK Block Count:
+ACK Range Count:
 
-: A variable-length integer specifying the number of Additional ACK Block (and
-  Gap) fields after the First ACK Block.
+: A variable-length integer specifying the number of Gap and ACK Range fields in
+  the frame.
 
-ACK Blocks:
+First ACK Range:
 
-: Contains one or more blocks of packet numbers which have been successfully
-  received, see {{ack-block-section}}.
+: A variable-length integer indicating the number of contiguous packets
+  preceding the Largest Acknowledged that are being acknowledged.  The First ACK
+  Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
+  Largest Acknowledged.  That is, the smallest packet number included in the
+  range is determined by subtracting the First ACK Range value from the Largest
+  Acknowledged.
+
+ACK Ranges:
+
+: Contains additional ranges of packet numbers which are alternately not
+  acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
+
+ECN Counts:
+
+: The three ECN Counts, see {{ack-ecn-counts}}.
 
 
-### ACK Block Section {#ack-block-section}
+### ACK Ranges {#ack-ranges}
 
-The ACK Block Section consists of alternating Gap and ACK Block fields in
-descending packet number order.  A First Ack Block field is followed by a
-variable number of alternating Gap and Additional ACK Blocks.  The number of
-Gap and Additional ACK Block fields is determined by the ACK Block Count field.
+The ACK Ranges field consists of alternating Gap and ACK Range values in
+descending packet number order.  The number of Gap and ACK Range values is
+determined by the ACK Range Count field; one of each value is present for each
+value in the ACK Range Count field.
 
-Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
-each encoded value is positive, the values are subtracted, so that each ACK
-Block describes progressively lower-numbered packets.  As long as contiguous
-ranges of packets are small, the variable-length integer encoding ensures that
-each range can be expressed in a small number of bytes.
-
+ACK Ranges are structured as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      First ACK Block (i)                    ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-block-format title="ACK Block Section"}
+{: #ack-range-format title="ACK Ranges"}
 
-Each ACK Block acknowledges a contiguous range of packets by indicating the
-number of acknowledged packets that precede the largest packet number in that
-block.  A value of zero indicates that only the largest packet number is
-acknowledged.  Larger ACK Block values indicate a larger range, with
-corresponding lower values for the smallest packet number in the range.  Thus,
-given a largest packet number for the ACK, the smallest value is determined by
-the formula:
-
-~~~
-   smallest = largest - ack_block
-~~~
-
-The range of packets that are acknowledged by the ACK Block include the range
-from the smallest packet number to the largest, inclusive.
-
-The largest value for the First ACK Block is determined by the Largest
-Acknowledged field; the largest for Additional ACK Blocks is determined by
-cumulatively subtracting the size of all preceding ACK Blocks and Gaps.
-
-Each Gap indicates a range of packets that are not being acknowledged.  The
-number of packets in the gap is one higher than the encoded value of the Gap
-Field.
-
-The value of the Gap field establishes the largest packet number value for the
-ACK Block that follows the gap using the following formula:
-
-~~~
-   largest = previous_smallest - gap - 2
-~~~
-
-If the calculated value for largest or smallest packet number for any ACK Block
-is negative, an endpoint MUST generate a connection error of type
-FRAME_ENCODING_ERROR indicating an error in an ACK frame.
-
-The fields in the ACK Block Section are:
-
-First ACK Block:
-
-: A variable-length integer indicating the number of contiguous packets
-  preceding the Largest Acknowledged that are being acknowledged.
+The fields that form the ACK Ranges are:
 
 Gap (repeated):
 
 : A variable-length integer indicating the number of contiguous unacknowledged
   packets preceding the packet number one lower than the smallest in the
-  preceding ACK Block.
+  preceding ACK Range.
 
-Additional ACK Block (repeated):
+ACK Range (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
+Gap and ACK Range value use a relative integer encoding for efficiency.  Though
+each encoded value is positive, the values are subtracted, so that each ACK
+Range describes progressively lower-numbered packets.
 
-### ECN section
+Each ACK Range acknowledges a contiguous range of packets by indicating the
+number of acknowledged packets that precede the largest packet number in that
+range.  A value of zero indicates that only the largest packet number is
+acknowledged.  Larger ACK Range values indicate a larger range, with
+corresponding lower values for the smallest packet number in the range.  Thus,
+given a largest packet number for the range, the smallest value is determined by
+the formula:
 
-The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
-section consists of 3 ECN counts as shown below.
+~~~
+   smallest = largest - ack_range
+~~~
+
+An ACK Range acknowledges all packet numbers between the smallest packet number
+and the largest, inclusive.
+
+The largest value for an ACK Range is determined by cumulatively subtracting the
+size of all preceding ACK Ranges and Gaps.
+
+Each Gap indicates a range of packets that are not being acknowledged.  The
+number of packets in the gap is one higher than the encoded value of the Gap
+field.
+
+The value of the Gap field establishes the largest packet number value for the
+subsequent ACK Range using the following formula:
+
+~~~
+   largest = previous_smallest - gap - 2
+~~~
+
+If any computed packet number is negative, an endpoint MUST generate a
+connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
+frame.
+
+
+### ECN Counts {#ack-ecn-counts}
+
+The ACK frame uses the least significant bit (that is, type 0x03) to indicate
+ECN feedback and report receipt of QUIC packets with associated ECN codepoints
+of ECT(0), ECT(1), or CE in the packet's IP header.  ECN Counts are only present
+when the ACK frame type is 0x03.
+
+ECN Counts are only parsed when the ACK frame type is 0x03.  There are 3 ECN
+counts, as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4349,6 +4362,8 @@ section consists of 3 ECN counts as shown below.
 |                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+
+The three ECN Counts are:
 
 ECT(0) Count:
 : A variable-length integer representing the total number packets received with
