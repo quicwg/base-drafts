@@ -159,9 +159,9 @@ the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 ({{!ALTSVC=RFC7838}}), using the ALPN token defined in
 {{connection-establishment}}.
 
-For example, an origin could indicate in an HTTP/1.1 or HTTP/2 response that
-HTTP/3 was available on UDP port 50781 at the same hostname by including the
-following header field in any response:
+For example, an origin could indicate in an HTTP response that HTTP/3 was
+available on UDP port 50781 at the same hostname by including the following
+header field:
 
 ~~~ example
 Alt-Svc: h3=":50781"
@@ -225,7 +225,7 @@ some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
-token "hq" in the TLS handshake.  Support for other application-layer protocols
+token "h3" in the TLS handshake.  Support for other application-layer protocols
 MAY be offered in the same handshake.
 
 While connection-level options pertaining to the core QUIC protocol are set in
@@ -573,8 +573,8 @@ HTTP_UNEXPECTED_FRAME.
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
-push prior to the push stream being created.  The CANCEL_PUSH frame identifies a
-server push by Push ID (see {{frame-push-promise}}), encoded as a
+push prior to the push stream being received.  The CANCEL_PUSH frame identifies
+a server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
 When a server receives this frame, it aborts sending the response for the

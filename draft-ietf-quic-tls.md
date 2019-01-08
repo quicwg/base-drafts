@@ -599,10 +599,10 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 ## Enabling 0-RTT {#enable-0rtt}
 
 In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "max_early_data" extension with the value 0xffffffff; the
-amount of data which the client can send in 0-RTT is controlled by the
-"initial_max_data" transport parameter supplied by the server.  A client MUST
-treat receipt of a NewSessionTicket that contains a "max_early_data" extension
+that contains the "early_data" extension with a max_early_data_size of
+0xffffffff; the amount of data which the client can send in 0-RTT is controlled
+by the "initial_max_data" transport parameter supplied by the server.  A client
+MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 Early data within the TLS connection MUST NOT be used.  As it is for other TLS
@@ -678,10 +678,10 @@ been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
 carry CRYPTO frames, this timer starts when the first packets protected with
 1-RTT are sent or received.  To limit the effect of packet loss around a change
 in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Retransmission Timeout (RTO) interval as
-defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
-containing CRYPTO or ACK frames at that encryption level to be sent if packets
-are determined to be lost or new packets require acknowledgment.
+for at least three times the current Probe Timeout (PTO) interval as defined in
+{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
+CRYPTO or ACK frames at that encryption level to be sent if packets are
+determined to be lost or new packets require acknowledgment.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -793,6 +793,9 @@ modifying the contents of handshake packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
+{{test-vectors-initial}} contains test vectors for the initial packet
+encryption.
+
 Note:
 
 : The Destination Connection ID is of arbitrary length, and it could be zero
@@ -829,7 +832,7 @@ an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
-number.  The 64 bits of the reconstructed QUIC packet number in network byte
+number.  The 62 bits of the reconstructed QUIC packet number in network byte
 order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 
@@ -1003,10 +1006,10 @@ electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the counter input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode:
 
 ~~~
-mask = AES-ECB(pn_key, sample)
+mask = AES-ECB(hp_key, sample)
 ~~~
 
 
@@ -1027,7 +1030,7 @@ pseudocode:
 ~~~
 counter = DecodeLE(sample[0..3])
 nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
-mask = ChaCha20(pn_key, counter, nonce, {0,0,0,0,0})
+mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
 
 
@@ -1208,15 +1211,18 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 prior to the completion of the handshake, though it means that a downgrade
 causes a handshake failure.
 
-TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
-application protocol.  The application-layer protocol MAY restrict the QUIC
-versions that it can operate over.  Servers MUST select an application protocol
-compatible with the QUIC version that the client has selected.
+QUIC requires that the cryptographic handshake provide authenticated protocol
+negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
+{{!RFC7301}} to select an application protocol.  Unless another mechanism is
+used for agreeing on an application protocol, endpoints MUST use ALPN for this
+purpose.
 
-If the server cannot select a compatible combination of application protocol and
-QUIC version, it MUST abort the connection. A client MUST abort a connection if
-the server picks an incompatible combination of QUIC version and ALPN
-identifier.
+An application-layer protocol MAY restrict the QUIC versions that it can operate
+over.  Servers MUST select an application protocol compatible with the QUIC
+version that the client has selected.  If the server cannot select a compatible
+combination of application protocol and QUIC version, it MUST abort the
+connection. A client MUST abort a connection if the server picks an incompatible
+combination of QUIC version and ALPN identifier.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1318,7 +1324,7 @@ this document are assumed to be PRFs.
 The header protection algorithms defined in this document take the form:
 
 ~~~
-protected_field = field XOR PRF(pn_key, sample)
+protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
@@ -1370,7 +1376,7 @@ The QUIC packet protection keys and IVs are derived using a different label than
 the equivalent keys in TLS.
 
 To preserve this separation, a new version of QUIC SHOULD define new labels for
-key derivation for packet protection key and IV, plus the packet number
+key derivation for packet protection key and IV, plus the header
 protection keys.
 
 The initial secrets also use a key that is specific to the negotiated QUIC
@@ -1390,6 +1396,201 @@ values in the following registries:
 
 
 --- back
+
+# Sample Initial Packet Protection {#test-vectors-initial}
+
+This section shows examples of packet protection for Initial packets so that
+implementations can be verified incrementally.  These packets use an 8-byte
+client-chosen Destination Connection ID of 0x8394c8f03e515708.  Values for both
+server and client packet protection are shown together with values in
+hexadecimal.
+
+
+## Keys
+
+The labels generated by the HKDF-Expand-Label function are:
+
+client in:
+: 00200f746c73313320636c69656e7420696e00
+
+server in:
+: 00200f746c7331332073657276657220696e00
+
+quic key:
+: 00100e746c7331332071756963206b657900
+
+quic iv:
+: 000c0d746c733133207175696320697600
+
+quic hp:
+: 00100d746c733133207175696320687000
+
+The initial secret is common:
+
+~~~
+initial_secret = HKDF-Extract(initial_salt, cid)
+    = 4496d3903d3f97cc5e45ac5790ddc686
+      683c7c0067012bb09d900cc21832d596
+~~~
+
+The secrets for protecting client packets are:
+
+~~~
+client_initial_secret
+    = HKDF-Expand-Label(initial_secret, "client in", _, 32)
+    = 8a3515a14ae3c31b9c2d6d5bc58538ca
+      5cd2baa119087143e60887428dcb52f6
+
+key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
+    = 98b0d7e5e7a402c67c33f350fa65ea54
+
+iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
+    = 19e94387805eb0b46c03a788
+
+hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
+    = 0edd982a6ac527f2eddcbb7348dea5d7
+~~~
+
+The secrets for protecting server packets are:
+
+~~~
+server_initial_secret
+    = HKDF-Expand-Label(initial_secret, "server in", _, 32)
+    = 47b2eaea6c266e32c0697a9e2a898bdf
+      5c4fb3e5ac34f0e549bf2c58581a3811
+
+key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
+    = 9a8be902a9bdd91d16064ca118045fb4
+
+iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
+    = 0a82086d32205ba22241d8dc
+
+hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
+    = 94b9452d2b3c7c7f6da7fdd8593537fd
+~~~
+
+
+## Client Initial
+
+The client sends an Initial packet.  The unprotected payload of this packet
+contains the following CRYPTO frame, plus enough PADDING frames to make an 1163
+byte payload:
+
+~~~
+060040c4010000c003036660261ff947 cea49cce6cfad687f457cf1b14531ba1
+4131a0e8f309a1d0b9c4000006130113 031302010000910000000b0009000006
+736572766572ff01000100000a001400 12001d00170018001901000101010201
+03010400230000003300260024001d00 204cfdfcd178b784bf328cae793b136f
+2aedce005ff183d7bb14952072366470 37002b0003020304000d0020001e0403
+05030603020308040805080604010501 060102010402050206020202002d0002
+0101001c00024001
+~~~
+
+The unprotected header includes the connection ID and a 4 byte packet number
+encoding for a packet number of 2:
+
+~~~
+c3ff000012508394c8f03e51570800449f00000002
+~~~
+
+Protecting the payload produces output that is sampled for header protection.
+Because the header uses a 4 byte packet number encoding, the first 16 bytes of
+the protected payload is sampled, then applied to the header:
+
+~~~
+sample = 0000f3a694c75775b4e546172ce9e047
+
+mask = AES-ECB(hp, sample)[0..4]
+     = 020dbc1958
+
+header[0] ^= mask[0] & 0x0f
+     = c1
+header[17..20] ^= mask[1..4]
+     = 0dbc195a
+header = c1ff000012508394c8f03e51570800449f0dbc195a
+~~~
+
+The resulting protected packet is:
+
+~~~
+c1ff000012508394c8f03e5157080044 9f0dbc195a0000f3a694c75775b4e546
+172ce9e047cd0b5bee5181648c727adc 87f7eae54473ec6cba6bdad4f5982317
+4b769f12358abd292d4f3286934484fb 8b239c38732e1f3bbbc6a003056487eb
+8b5c88b9fd9279ffff3b0f4ecf95c462 4db6d65d4113329ee9b0bf8cdd7c8a8d
+72806d55df25ecb66488bc119d7c9a29 abaf99bb33c56b08ad8c26995f838bb3
+b7a3d5c1858b8ec06b839db2dcf918d5 ea9317f1acd6b663cc8925868e2f6a1b
+da546695f3c3f33175944db4a11a346a fb07e78489e509b02add51b7b203eda5
+c330b03641179a31fbba9b56ce00f3d5 b5e3d7d9c5429aebb9576f2f7eacbe27
+bc1b8082aaf68fb69c921aa5d33ec0c8 510410865a178d86d7e54122d55ef2c2
+bbc040be46d7fece73fe8a1b24495ec1 60df2da9b20a7ba2f26dfa2a44366dbc
+63de5cd7d7c94c57172fe6d79c901f02 5c0010b02c89b395402c009f62dc053b
+8067a1e0ed0a1e0cf5087d7f78cbd94a fe0c3dd55d2d4b1a5cfe2b68b86264e3
+51d1dcd858783a240f893f008ceed743 d969b8f735a1677ead960b1fb1ecc5ac
+83c273b49288d02d7286207e663c45e1 a7baf50640c91e762941cf380ce8d79f
+3e86767fbbcd25b42ef70ec334835a3a 6d792e170a432ce0cb7bde9aaa1e7563
+7c1c34ae5fef4338f53db8b13a4d2df5 94efbfa08784543815c9c0d487bddfa1
+539bc252cf43ec3686e9802d651cfd2a 829a06a9f332a733a4a8aed80efe3478
+093fbc69c8608146b3f16f1a5c4eac93 20da49f1afa5f538ddecbbe7888f4355
+12d0dd74fd9b8c99e3145ba84410d8ca 9a36dd884109e76e5fb8222a52e1473d
+a168519ce7a8a3c32e9149671b16724c 6c5c51bb5cd64fb591e567fb78b10f9f
+6fee62c276f282a7df6bcf7c17747bc9 a81e6c9c3b032fdd0e1c3ac9eaa5077d
+e3ded18b2ed4faf328f49875af2e36ad 5ce5f6cc99ef4b60e57b3b5b9c9fcbcd
+4cfb3975e70ce4c2506bcd71fef0e535 92461504e3d42c885caab21b782e2629
+4c6a9d61118cc40a26f378441ceb48f3 1a362bf8502a723a36c63502229a462c
+c2a3796279a5e3a7f81a68c7f81312c3 81cc16a4ab03513a51ad5b54306ec1d7
+8a5e47e2b15e5b7a1438e5b8b2882dbd ad13d6a4a8c3558cae043501b68eb3b0
+40067152337c051c40b5af809aca2856 986fd1c86a4ade17d254b6262ac1bc07
+7343b52bf89fa27d73e3c6f3118c9961 f0bebe68a5c323c2d84b8c29a2807df6
+63635223242a2ce9828d4429ac270aab 5f1841e8e49cf433b1547989f419caa3
+c758fff96ded40cf3427f0761b678daa 1a9e5554465d46b7a917493fc70f9ec5
+e4e5d786ca501730898aaa1151dcd318 29641e29428d90e6065511c24d3109f7
+cba32225d4accfc54fec42b733f95852 52ee36fa5ea0c656934385b468eee245
+315146b8c047ed27c519b2c0a52d33ef e72c186ffe0a230f505676c5324baa6a
+e006a73e13aa8c39ab173ad2b2778eea 0b34c46f2b3beae2c62a2c8db238bf58
+fc7c27bdceb96c56d29deec87c12351b fd5962497418716a4b915d334ffb5b92
+ca94ffe1e4f78967042638639a9de325 357f5f08f6435061e5a274703936c06f
+c56af92c420797499ca431a7abaa4618 63bca656facfad564e6274d4a741033a
+ca1e31bf63200df41cdf41c10b912bec
+~~~
+
+## Server Initial
+
+The server sends the following payload in response, including an ACK frame, a
+CRYPTO frame, and no PADDING frames:
+
+~~~
+0d0000000018410a020000560303eefc e7f7b37ba1d1632e96677825ddf73988
+cfc79825df566dc5430b9a045a120013 0100002e00330024001d00209d3c940d
+89690b84d08a60993c144eca684d1081 287c834d5311bcf32bb9da1a002b0002
+0304
+~~~
+
+The header from the server includes a new connection ID and a 2-byte packet
+number encoding for a packet number of 1:
+
+~~~
+c1ff00001205f067a5502a4262b50040740001
+~~~
+
+As a result, after protection, the header protection sample is taken starting
+from the third protected octet:
+
+~~~
+sample = c4c2a2303d297e3c519bf6b22386e3d0
+mask   = 75f7ec8b62
+header = c4ff00001205f067a5502a4262b5004074f7ed
+~~~
+
+The final protected packet is then:
+
+~~~
+c4ff00001205f067a5502a4262b50040 74f7ed5f01c4c2a2303d297e3c519bf6
+b22386e3d0bd6dfc6612167729803104 1bb9a79c9f0f9d4c5877270a660f5da3
+6207d98b73839b2fdf2ef8e7df5a51b1 7b8c68d864fd3e708c6c1b71a98a3318
+15599ef5014ea38c44bdfd387c03b527 5c35e009b6238f831420047c7271281c
+cb54df7884
+~~~
+
 
 # Change Log
 

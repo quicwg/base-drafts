@@ -371,7 +371,7 @@ Note:
   with an implementation that implements these states.
 
 
-## Send Stream States {#stream-send-states}
+## Sending Stream States {#stream-send-states}
 
 {{fig-stream-send-states}} shows the states for the part of a stream that sends
 data to a peer.
@@ -411,18 +411,18 @@ data to a peer.
    | Recvd |                   | Recvd |
    +-------+                   +-------+
 ~~~
-{: #fig-stream-send-states title="States for Send Streams"}
+{: #fig-stream-send-states title="States for Sending Parts of Streams"}
 
-The sending part of stream that the endpoint initiates (types 0 and 2 for
-clients, 1 and 3 for servers) is opened by the application.  The "Ready" state
-represents a newly created stream that is able to accept data from the
-application.  Stream data might be buffered in this state in preparation for
+The sending part of stream that the endpoint initiates (types 0
+and 2 for clients, 1 and 3 for servers) is opened by the application.  The
+"Ready" state represents a newly created stream that is able to accept data from
+the application.  Stream data might be buffered in this state in preparation for
 sending.
 
-Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a send stream to
-enter the "Send" state.  An implementation might choose to defer allocating a
-stream ID to a send stream until it sends the first frame and enters this state,
-which can allow for better stream prioritization.
+Sending the first STREAM or STREAM_DATA_BLOCKED frame causes a sending part of a
+stream to enter the "Send" state.  An implementation might choose to defer
+allocating a stream ID to a stream until it sends the first frame and enters
+this state, which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
 server, type 1 for a client) enters the "Ready" state then immediately
@@ -437,16 +437,16 @@ blocked from sending by stream or connection flow control limits
 {{data-flow-control}}.
 
 After the application indicates that all stream data has been sent and a STREAM
-frame containing the FIN bit is sent, the send stream enters the "Data Sent"
-state.  From this state, the endpoint only retransmits stream data as necessary.
-The endpoint does not need to check flow control limits or send
-STREAM_DATA_BLOCKED frames for a send stream in this state.  MAX_STREAM_DATA
-frames might be received until the peer receives the final stream offset. The
-endpoint can safely ignore any MAX_STREAM_DATA frames it receives from its peer
-for a stream in this state.
+frame containing the FIN bit is sent, the sending part of the stream enters the
+"Data Sent" state.  From this state, the endpoint only retransmits stream data
+as necessary.  The endpoint does not need to check flow control limits or send
+STREAM_DATA_BLOCKED frames for a stream in this state.  MAX_STREAM_DATA frames
+might be received until the peer receives the final stream offset. The endpoint
+can safely ignore any MAX_STREAM_DATA frames it receives from its peer for a
+stream in this state.
 
-Once all stream data has been successfully acknowledged, the send stream enters
-the "Data Recvd" state, which is a terminal state.
+Once all stream data has been successfully acknowledged, the sending part of the
+stream enters the "Data Recvd" state, which is a terminal state.
 
 From any of the "Ready", "Send", or "Data Sent" states, an application can
 signal that it wishes to abandon transmission of stream data. Alternatively, an
@@ -454,22 +454,23 @@ endpoint might receive a STOP_SENDING frame from its peer.  In either case, the
 endpoint sends a RESET_STREAM frame, which causes the stream to enter the "Reset
 Sent" state.
 
-An endpoint MAY send a RESET_STREAM as the first frame on a send stream; this
-causes the send stream to open and then immediately transition to the "Reset
-Sent" state.
+An endpoint MAY send a RESET_STREAM as the first frame that mentions a stream;
+this causes the sending part of that stream to open and then immediately
+transition to the "Reset Sent" state.
 
-Once a packet containing a RESET_STREAM has been acknowledged, the send stream
-enters the "Reset Recvd" state, which is a terminal state.
+Once a packet containing a RESET_STREAM has been acknowledged, the sending part
+of the stream enters the "Reset Recvd" state, which is a terminal state.
 
 
-## Receive Stream States {#stream-recv-states}
+## Receiving Stream States {#stream-recv-states}
 
 {{fig-stream-recv-states}} shows the states for the part of a stream that
-receives data from a peer.  The states for a receive stream mirror only some of
-the states of the send stream at the peer.  A receive stream does not track
-states on the send stream that cannot be observed, such as the "Ready" state.
-Instead, receive streams track the delivery of data to the application, some of
-which cannot be observed by the sender.
+receives data from a peer.  The states for a receiving part of a stream mirror
+only some of the states of the sending part of the stream at the peer.  The
+receiving part of a stream does not track states on the sending part that cannot
+be observed, such as the "Ready" state.  Instead, the receiving part of a stream
+tracks the delivery of data to the application, some of which cannot be observed
+by the sender.
 
 ~~~
        o
@@ -504,18 +505,18 @@ which cannot be observed by the sender.
    | Read  |                   | Read  |
    +-------+                   +-------+
 ~~~
-{: #fig-stream-recv-states title="States for Receive Streams"}
+{: #fig-stream-recv-states title="States for Receiving Parts of Streams"}
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
 or RESET_STREAM is received for that stream.  For bidirectional streams
 initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
 sending part of the stream also creates the receiving part.  The initial state
-for a receive stream is "Recv".
+for the receiving part of stream is "Recv".
 
-The receive stream enters the "Recv" state when the sending part of a
-bidirectional stream initiated by the endpoint (type 0 for a client, type 1 for
-a server) enters the "Ready" state.
+The receiving part of a stream enters the "Recv" state when the sending part of
+a bidirectional stream initiated by the endpoint (type 0 for a client, type 1
+for a server) enters the "Ready" state.
 
 An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
 frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
@@ -536,11 +537,11 @@ buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
 allow the peer to send more data.
 
 When a STREAM frame with a FIN bit is received, the final offset is known (see
-{{final-offset}}).  The receive stream enters the "Size Known" state.  In this
-state, the endpoint no longer needs to send MAX_STREAM_DATA frames, it only
-receives any retransmissions of stream data.
+{{final-offset}}).  The receiving part of the stream then enters the "Size
+Known" state.  In this state, the endpoint no longer needs to send
+MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 
-Once all data for the stream has been received, the receive stream enters the
+Once all data for the stream has been received, the receiving part enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  In this state, the endpoint
 has all stream data.  Any STREAM or STREAM_DATA_BLOCKED frames it receives for
@@ -564,12 +565,12 @@ RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
 RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
 suppressed or withheld if stream data is completely received and is buffered to
-be read by the application.  In the latter case, the receive stream transitions
-from "Reset Recvd" to "Data Recvd".
+be read by the application.  In the latter case, the receiving part of the
+stream transitions from "Reset Recvd" to "Data Recvd".
 
-Once the application has been delivered the signal indicating that the receive
-stream was reset, the receive stream transitions to the "Reset Read" state,
-which is a terminal state.
+Once the application has been delivered the signal indicating that the stream
+was reset, the receiving part of the stream transitions to the "Reset Read"
+state, which is a terminal state.
 
 
 ## Permitted Frame Types
@@ -598,20 +599,20 @@ frames in any state as a result of delayed delivery of packets.
 
 ## Bidirectional Stream States {#stream-bidi-states}
 
-A bidirectional stream is composed of a send stream and a receive stream.
+A bidirectional stream is composed of sending and receiving parts.
 Implementations may represent states of the bidirectional stream as composites
-of send and receive stream states.  The simplest model presents the stream as
-"open" when either send or receive stream is in a non-terminal state and
-"closed" when both send and receive streams are in a terminal state.
+of sending and receiving stream states.  The simplest model presents the stream
+as "open" when either sending or receiving parts are in a non-terminal state and
+"closed" when both sending and receiving streams are in terminal states.
 
 {{stream-bidi-mapping}} shows a more complex mapping of bidirectional stream
 states that loosely correspond to the stream states in HTTP/2
-{{?HTTP2=RFC7540}}.  This shows that multiple states on send or receive streams
-are mapped to the same composite state.  Note that this is just one possibility
-for such a mapping; this mapping requires that data is acknowledged before the
-transition to a "closed" or "half-closed" state.
+{{?HTTP2=RFC7540}}.  This shows that multiple states on sending or receiving
+parts of streams are mapped to the same composite state.  Note that this is just
+one possibility for such a mapping; this mapping requires that data is
+acknowledged before the transition to a "closed" or "half-closed" state.
 
-| Send Stream            | Receive Stream         | Composite State      |
+| Sending Part           | Receiving Part         | Composite State      |
 |:-----------------------|:-----------------------|:---------------------|
 | No Stream/Ready        | No Stream/Recv *1      | idle                 |
 | Ready/Send/Data Sent   | Recv/Size Known        | open                 |
@@ -619,7 +620,6 @@ transition to a "closed" or "half-closed" state.
 | Ready/Send/Data Sent   | Reset Recvd/Reset Read | half-closed (remote) |
 | Data Recvd             | Recv/Size Known        | half-closed (local)  |
 | Reset Sent/Reset Recvd | Recv/Size Known        | half-closed (local)  |
-| Data Recvd             | Recv/Size Known        | half-closed (local)  |
 | Reset Sent/Reset Recvd | Data Recvd/Data Read   | closed               |
 | Reset Sent/Reset Recvd | Reset Recvd/Reset Read | closed               |
 | Data Recvd             | Data Recvd/Data Read   | closed               |
@@ -629,7 +629,8 @@ transition to a "closed" or "half-closed" state.
 Note (*1):
 
 : A stream is considered "idle" if it has not yet been created, or if the
-  receive stream is in the "Recv" state without yet having received any frames.
+  receiving part of the stream is in the "Recv" state without yet having
+  received any frames.
 
 
 ## Solicited State Transitions
@@ -651,13 +652,13 @@ STOP_SENDING frame, but MAY use any application error code.  The endpoint
 that sends a STOP_SENDING frame can ignore the error code carried in any
 RESET_STREAM frame it receives.
 
-If the STOP_SENDING frame is received on a send stream that is already in the
+If the STOP_SENDING frame is received on a stream that is already in the
 "Data Sent" state, an endpoint that wishes to cease retransmission of
 previously-sent STREAM frames on that stream MUST first send a RESET_STREAM
 frame.
 
-STOP_SENDING SHOULD only be sent for a receive stream that has not been
-reset. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
+STOP_SENDING SHOULD only be sent for a stream that has not been reset by the
+peer. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
 states.
 
 An endpoint is expected to send another STOP_SENDING frame if a packet
@@ -763,10 +764,12 @@ larger resource commitments at the receiver.  Thus there is a trade-off between
 resource commitment and overhead when determining how large a limit is
 advertised.
 
-A receiver MAY use an autotuning mechanism to tune the frequency and amount of
+A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
-implementations.
+implementations.  As an optimization, sending frames related to flow control
+only when there are other frames to send or when a peer is blocked ensures that
+flow control doesn't cause extra packets to be sent.
 
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  It is generally considered best to not let the
@@ -812,11 +815,10 @@ endpoints sends CONNECTION_CLOSE.
 The final offset is the count of the number of bytes that are transmitted on a
 stream.  For a stream that is reset, the final offset is carried explicitly in a
 RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
-data carried in a STREAM frame marked with a FIN flag, or 0 in the case of
-incoming unidirectional streams.
+data carried in a STREAM frame marked with a FIN flag.
 
-An endpoint will know the final offset for a stream when the receive stream
-enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
+An endpoint will know the final offset for a stream when the receiving part of
+the stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
 An endpoint MUST NOT send data on a stream at or beyond the final offset.
 
@@ -989,9 +991,10 @@ associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
 address/port tuple of a connection where the host did not require connection
-IDs, QUIC processes the packet as part of that connection. Endpoints MUST drop
-packets with zero-length Destination Connection ID fields if they do not
-correspond to a single connection.
+IDs, QUIC processes the packet as part of that connection.  Endpoints SHOULD
+either reject connection attempts that use the same addresses as existing
+connections, or use a non-zero-length Destination Connection ID so that packets
+can be correctly attributed to connections.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
@@ -1374,9 +1377,11 @@ particular, version negotiation MUST be validated (see {{version-validation}})
 before the connection establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Any given parameter MUST appear at most
-once in a given transport parameters extension.  An endpoint MUST treat receipt
-of duplicate transport parameters as a connection error of type
+{{transport-parameter-definitions}}.  An endpoint MUST treat receipt of a
+transport parameter with an invalid value as a connection error of type
+TRANSPORT_PARAMETER_ERROR.  Any given parameter MUST appear at most once in a
+given transport parameters extension.  An endpoint MUST treat receipt of
+duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
@@ -1663,7 +1668,7 @@ pass information to clients that the server can later recover and use to
 validate a client address.  Tokens are not integrated into the cryptographic
 handshake and so they are not authenticated.  For instance, a client might be
 able to reuse a token.  To avoid attacks that exploit this property, a server
-can limit its use of tokens to only the information needed validate client
+can limit its use of tokens to only the information needed to validate client
 addresses.
 
 Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
@@ -1748,10 +1753,6 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
-However, because a PATH_CHALLENGE might be sent from a spoofed address, an
-endpoint MUST limit the rate at which it sends PATH_RESPONSE frames and MAY
-silently discard PATH_CHALLENGE frames that would cause it to respond at a
-higher rate.
 
 To ensure that packets can be both sent to and received from the peer, the
 PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
@@ -1790,8 +1791,13 @@ abandons its attempt to validate the path.
 
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
-round-trip time than the original.  A value of three times the current
-Retransmittion Timeout (RTO) as defined in {{QUIC-RECOVERY}} is RECOMMENDED.
+round-trip time than the original.  A value of three times the larger of the
+current Probe Timeout (PTO) or the initial timeout (that is, 2*kInitialRtt) as
+defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
+
+~~~
+   validation_timeout = max(3*PTO, 6*kInitialRtt)
+~~~
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
@@ -2060,7 +2066,7 @@ effective endpoints need to ensure that connections IDs they provide cannot be
 linked by any other entity.
 
 This eliminates the use of the connection ID for linking activity from
-the same connection on different networks.  Protection of packet numbers ensures
+the same connection on different networks.  Header protection ensures
 that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
@@ -2183,8 +2189,8 @@ of three ways:
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for three times the current Retransmission Timeout
-(RTO) interval as defined in {{QUIC-RECOVERY}}.
+These states SHOULD persist for three times the current Probe Timeout (PTO)
+interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
@@ -2236,7 +2242,7 @@ in the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
-## Idle Timeout
+## Idle Timeout {#idle-timeout}
 
 If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
@@ -2255,9 +2261,9 @@ The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
-draining state before the packets arrive.  If a peer could timeout within an RTO
-(see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to test for liveness
-before sending any data that cannot be retried safely.
+draining state before the packets arrive.  If a peer could timeout within an
+Probe Timeout (PTO, see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to
+test for liveness before sending any data that cannot be retried safely.
 
 
 ## Immediate Close
@@ -2363,7 +2369,7 @@ of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
 header.  For the packet to appear as valid, the Random Bits field needs to
-include at least 182 bits of data (or 24 bytes, less the two fixed bits). This
+include at least 182 bits of data (or 23 bytes, less the two fixed bits). This
 is intended to allow for a Destination Connection ID of the maximum length
 permitted, with a minimal packet number, and payload.  The Stateless Reset Token
 corresponds to the minimum expansion of the packet protection AEAD.  More
@@ -2417,13 +2423,15 @@ the packet other than the last 16 bytes for carrying data.
 
 ### Detecting a Stateless Reset
 
-An endpoint detects a potential stateless reset when a packet with a short
-header either cannot be decrypted or is marked as a duplicate packet.  The
-endpoint then compares the last 16 bytes of the packet with the Stateless Reset
-Token provided by its peer, either in a NEW_CONNECTION_ID frame or the server's
-transport parameters.  If these values are identical, the endpoint MUST enter
-the draining period and not send any further packets on this connection.  If the
-comparison fails, the packet can be discarded.
+An endpoint detects a potential stateless reset when a incoming packet
+with a short header either cannot be associated with a connection,
+cannot be decrypted, or is marked as a duplicate packet.  The endpoint
+then compares the last 16 bytes of the packet with the Stateless Reset
+Token provided by its peer, either in a NEW_CONNECTION_ID frame or
+the server's transport parameters.  If these values are identical,
+the endpoint MUST enter the draining period and not send any further
+packets on this connection.  If the comparison fails, the packet can be
+discarded.
 
 
 ### Calculating a Stateless Reset Token {#reset-token}
@@ -2486,7 +2494,7 @@ separate limits for different remote addresses will ensure that Stateless Reset
 packets can be used to close connections when other peers or connections have
 exhausted limits.
 
-Reducing the size of a Stateless Reset below the recommended minimum size of 37
+Reducing the size of a Stateless Reset below the recommended minimum size of 39
 bytes could mean that the packet could reveal to an observer that it is a
 Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
 a small packet might result in Stateless Reset not being useful in detecting
@@ -2494,7 +2502,7 @@ cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
 
 An endpoint can increase the odds that a packet will trigger a Stateless Reset
-if it cannot be processed by padding it to at least 38 bytes.
+if it cannot be processed by padding it to at least 40 bytes.
 
 
 # Error Handling {#error-handling}
@@ -2577,7 +2585,7 @@ available.
 ## Protected Packets {#packet-protected}
 
 All QUIC packets except Version Negotiation and Retry packets use authenticated
-encryption with additional data (AEAD) {{!RFC5119}} to provide confidentiality
+encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
 and integrity protection. Details of packet protection are found in
 {{QUIC-TLS}}; this section includes an overview of the process.
 
@@ -2631,9 +2639,9 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.  For example, if
-decryption fails (because the keys are not available or any other reason) or the
-packet is of an unknown type, the receiver MAY either discard or buffer the
-packet for later processing and MUST attempt to process the remaining packets.
+decryption fails (because the keys are not available or any other reason), the
+the receiver MAY either discard or buffer the packet for later processing and
+MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header cannot be followed by
@@ -2642,11 +2650,14 @@ other packets in the same UDP datagram, as they do not contain a Length field.
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is an integer in the range 0 to 2^62-1. Where present, packet
-numbers are encoded as a variable-length integer (see {{integer-encoding}}).
-This number is used in determining the cryptographic nonce for packet
-protection.  Each endpoint maintains a separate packet number for sending and
-receiving.
+The packet number is an integer in the range 0 to 2^62-1.  This number is used
+in determining the cryptographic nonce for packet protection.  Each endpoint
+maintains a separate packet number for sending and receiving.
+
+Packet numbers are limited to this range because they need to be representable
+in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
+When present in a long or short header however, packet numbers are reduced and
+encoded in 1 to 4 bytes, see {{packet-encoding}}).
 
 Version Negotiation ({{packet-version}}) and Retry {{packet-retry}} packets do
 not include a packet number.
@@ -2762,8 +2773,9 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
-All QUIC frames are idempotent.  That is, a valid frame does not cause
-undesirable side effects or errors when received more than once.
+All QUIC frames are idempotent in this version of QUIC.  That is, a valid
+frame does not cause undesirable side effects or errors when received more
+than once.
 
 The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
@@ -2772,7 +2784,7 @@ encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
 encoded on a single byte.  For instance, though 0x4007 is a legitimate two-byte
 encoding for a variable-length integer with a value of 7, PING frames are always
-encoded as a single byte with the value 0x07.  An endpoint MAY treat the receipt
+encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
 
@@ -2850,10 +2862,11 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Blocks to those that have not yet been received by the sender, the
-receiver SHOULD track which ACK frames have been acknowledged by its peer.  Once
-an ACK frame has been acknowledged, the packets it acknowledges SHOULD NOT be
-acknowledged again.
+To limit the ranges of acknowledged packet numbers to those that have not yet
+been received by the sender, the receiver SHOULD track which ACK frames have
+been acknowledged by its peer.  The receiver SHOULD exclude already acknowledged
+packets from future ACK frames whenever these packets would unnecessarily
+contribute to the ACK frame size.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
@@ -2861,12 +2874,13 @@ the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
 ACK frames with other frames when possible.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Blocks it sends.  A receiver can do this even without receiving
+number of ACK Ranges it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
 to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
+
 
 ### ACK Frames and Packet Protection
 
@@ -2913,12 +2927,13 @@ containing that information is acknowledged.
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
   (that is, either the "Reset Recvd" or "Data Recvd" state is reached on the
-  send stream). The content of a RESET_STREAM frame MUST NOT change when it is
-  sent again.
+  sending part of the stream). The content of a RESET_STREAM frame MUST NOT
+  change when it is sent again.
 
 * Similarly, a request to cancel stream transmission, as encoded in a
-  STOP_SENDING frame, is sent until the receive stream enters either a "Data
-  Recvd" or "Reset Recvd" state, see {{solicited-state-transitions}}.
+  STOP_SENDING frame, is sent until the receiving part of the stream enters
+  either a "Data Recvd" or "Reset Recvd" state, see
+  {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
   frames, are not sent again when packet loss is detected, but as described in
@@ -2932,11 +2947,11 @@ containing that information is acknowledged.
   MAX_DATA frames to be sent.
 
 * The current maximum stream data offset is sent in MAX_STREAM_DATA frames.
-  Like MAX_DATA, an updated value is sent when the packet containing
-  the most recent MAX_STREAM_DATA frame for a stream is lost or when the limit
-  is updated, with care taken to prevent the frame from being sent too often. An
-  endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receive stream
-  enters a "Size Known" state.
+  Like MAX_DATA, an updated value is sent when the packet containing the most
+  recent MAX_STREAM_DATA frame for a stream is lost or when the limit is
+  updated, with care taken to prevent the frame from being sent too often. An
+  endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receiving part of
+  the stream enters a "Size Known" state.
 
 * The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
   MAX_DATA, an updated value is sent when a packet containing the most recent
@@ -2944,7 +2959,7 @@ containing that information is acknowledged.
   updated, with care taken to prevent the frame from being sent too often.
 
 * Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
-  STREAMS_BLOCKED frames. DATA_BLOCKED streams have connection scope,
+  STREAMS_BLOCKED frames. DATA_BLOCKED frames have connection scope,
   STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
   scoped to a specific stream type. New frames are sent if packets containing
   the most recent frame for a scope is lost, but only while the endpoint is
@@ -3008,7 +3023,7 @@ concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{processing-and-ack}} with an ACK frame without
-increasing any ECN counts.  if an endpoint does not implement ECN
+increasing any ECN counts.  If an endpoint does not implement ECN
 support or does not have access to received ECN codepoints, it does not increase
 ECN counts.
 
@@ -3048,8 +3063,7 @@ peer no longer supports ECN.
 Network devices that corrupt or apply non-standard ECN markings might result in
 reduced throughput or other undesirable side-effects.  To reduce this risk, an
 endpoint uses the following steps to verify the counts it receives in an ACK
-frame.  Counts MUST NOT be verified if the ACK frame does not increase the
-largest received packet number at the endpoint.
+frame.
 
 * The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
   the total number of QUIC packets sent with an ECT codepoint that are newly
@@ -3067,6 +3081,12 @@ It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
 to be greater than the number of packets acknowledged in an ACK frame.  When
 this happens, and if verification succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
+
+Processing counts out of order can result in verification failure.  An endpoint
+SHOULD NOT perform this verification if the ACK frame is received in a packet
+with packet number lower than a previously received ACK frame.  Verifying based
+on ACK frames that arrive out of order can result in disabling ECN
+unnecessarily.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
@@ -3089,7 +3109,7 @@ drop packets with ECT or CE codepoints in the IP header.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-Clients MUST ensure they send the first Initial packet in single IP packet.
+Clients MUST ensure they send the first Initial packet in a single IP packet.
 Similarly, the first Initial packet sent after receiving a Retry packet MUST be
 sent in a single IP packet.
 
@@ -3300,9 +3320,10 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers in long and short packet headers are encoded in 1 to 4 bytes.
-The number of bits required to represent the packet number is reduced by
-including the least significant bits of the packet number.
+Packet numbers are integers in the range 0 to 2^62-1 ({{packet-numbers}}).  When
+present in long or short packet headers, they are encoded in 1 to 4 bytes.  The
+number of bits required to represent the packet number is reduced by including
+the least significant bits of the packet number.
 
 The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
@@ -3460,7 +3481,7 @@ Packet Number:
 : The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the plaintext packet number. See {{packet-encoding}} for details.
+  in the Packet Number Length bits of byte 0 (see above).
 
 ### Version Negotiation Packet {#packet-version}
 
@@ -3742,7 +3763,7 @@ wishes to perform a stateless retry (see {{validate-handshake}}).
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|1|1| 3 |ODCIL(4|
+|1|1| 3 | ODCIL |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3999,8 +4020,9 @@ original_connection_id (0x0000):
 
 idle_timeout (0x0001):
 
-: The idle timeout is a value in seconds that is encoded as an integer.  If this
-  parameter is absent or zero then the idle timeout is disabled.
+: The idle timeout is a value in seconds that is encoded as an integer, see
+  ({{idle-timeout}}).  If this parameter is absent or zero then the idle
+  timeout is disabled.
 
 stateless_reset_token (0x0002):
 
@@ -4046,11 +4068,12 @@ initial_max_stream_data_bidi_remote (0x0006):
 initial_max_stream_data_uni (0x0007):
 
 : This parameter is an integer value specifying the initial flow control limit
-  for unidirectional streams.  This limit applies to newly created bidirectional
-  streams opened by the endpoint that receives the transport parameter.  In
-  client transport parameters, this applies to streams with an identifier with
-  the least significant two bits set to 0x3; in server transport parameters,
-  this applies to streams with the least significant two bits set to 0x2.
+  for unidirectional streams.  This limit applies to newly created
+  unidirectional streams opened by the endpoint that receives the transport
+  parameter.  In client transport parameters, this applies to streams with an
+  identifier with the least significant two bits set to 0x3; in server transport
+  parameters, this applies to streams with the least significant two bits set to
+  0x2.
 
 initial_max_streams_bidi (0x0008):
 
@@ -4086,6 +4109,7 @@ max_ack_delay (0x000b):
   delays in alarms firing.  For example, if a receiver sets a timer for 5ms
   and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
+  Values of 2^14 or greater are invalid.
 
 disable_migration (0x000c):
 
@@ -4170,12 +4194,12 @@ prevent the majority of middleboxes from losing state for UDP flows.
 ## ACK Frames {#frame-ack}
 
 Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
-they have received and processed. The ACK frame contains one or more ACK Blocks.
-ACK Blocks are ranges of acknowledged packets. If the frame type is 0x03, ACK
-frames also contain the sum of QUIC packets with associated ECN marks received
-on the connection up until this point. QUIC implementations MUST properly handle
-both types and, if they have enabled ECN for packets they send, they SHOULD use
-the information in the ECN section to manage their congestion state.
+they have received and processed. The ACK frame contains one or more ACK Ranges.
+ACK Ranges identify acknowledged packets. If the frame type is 0x03, ACK frames
+also contain the sum of QUIC packets with associated ECN marks received on the
+connection up until this point.  QUIC implementations MUST properly handle both
+types and, if they have enabled ECN for packets they send, they SHOULD use the
+information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -4200,11 +4224,13 @@ An ACK frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          ACK Delay (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       ACK Block Count (i)                   ...
+|                       ACK Range Count (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          ACK Blocks (*)                     ...
+|                       First ACK Range (i)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         [ECN Section]                       ...
+|                          ACK Ranges (*)                     ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          [ECN Counts]                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -4230,112 +4256,121 @@ ACK Delay:
   larger range of values with a shorter encoding at the cost of lower
   resolution.
 
-ACK Block Count:
+ACK Range Count:
 
-: A variable-length integer specifying the number of Additional ACK Block (and
-  Gap) fields after the First ACK Block.
+: A variable-length integer specifying the number of Gap and ACK Range fields in
+  the frame.
 
-ACK Blocks:
+First ACK Range:
 
-: Contains one or more blocks of packet numbers which have been successfully
-  received, see {{ack-block-section}}.
+: A variable-length integer indicating the number of contiguous packets
+  preceding the Largest Acknowledged that are being acknowledged.  The First ACK
+  Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
+  Largest Acknowledged.  That is, the smallest packet number included in the
+  range is determined by subtracting the First ACK Range value from the Largest
+  Acknowledged.
+
+ACK Ranges:
+
+: Contains additional ranges of packet numbers which are alternately not
+  acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
+
+ECN Counts:
+
+: The three ECN Counts, see {{ack-ecn-counts}}.
 
 
-### ACK Block Section {#ack-block-section}
+### ACK Ranges {#ack-ranges}
 
-The ACK Block Section consists of alternating Gap and ACK Block fields in
-descending packet number order.  A First Ack Block field is followed by a
-variable number of alternating Gap and Additional ACK Blocks.  The number of
-Gap and Additional ACK Block fields is determined by the ACK Block Count field.
+The ACK Ranges field consists of alternating Gap and ACK Range values in
+descending packet number order.  The number of Gap and ACK Range values is
+determined by the ACK Range Count field; one of each value is present for each
+value in the ACK Range Count field.
 
-Gap and ACK Block fields use a relative integer encoding for efficiency.  Though
-each encoded value is positive, the values are subtracted, so that each ACK
-Block describes progressively lower-numbered packets.  As long as contiguous
-ranges of packets are small, the variable-length integer encoding ensures that
-each range can be expressed in a small number of bytes.
-
+ACK Ranges are structured as follows:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      First ACK Block (i)                    ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
                                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                             Gap (i)                         ...
+|                           [Gap (i)]                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Additional ACK Block (i)                 ...
+|                          [ACK Range (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #ack-block-format title="ACK Block Section"}
+{: #ack-range-format title="ACK Ranges"}
 
-Each ACK Block acknowledges a contiguous range of packets by indicating the
-number of acknowledged packets that precede the largest packet number in that
-block.  A value of zero indicates that only the largest packet number is
-acknowledged.  Larger ACK Block values indicate a larger range, with
-corresponding lower values for the smallest packet number in the range.  Thus,
-given a largest packet number for the ACK, the smallest value is determined by
-the formula:
-
-~~~
-   smallest = largest - ack_block
-~~~
-
-The range of packets that are acknowledged by the ACK Block include the range
-from the smallest packet number to the largest, inclusive.
-
-The largest value for the First ACK Block is determined by the Largest
-Acknowledged field; the largest for Additional ACK Blocks is determined by
-cumulatively subtracting the size of all preceding ACK Blocks and Gaps.
-
-Each Gap indicates a range of packets that are not being acknowledged.  The
-number of packets in the gap is one higher than the encoded value of the Gap
-Field.
-
-The value of the Gap field establishes the largest packet number value for the
-ACK Block that follows the gap using the following formula:
-
-~~~
-  largest = previous_smallest - gap - 2
-~~~
-
-If the calculated value for largest or smallest packet number for any ACK Block
-is negative, an endpoint MUST generate a connection error of type
-FRAME_ENCODING_ERROR indicating an error in an ACK frame.
-
-The fields in the ACK Block Section are:
-
-First ACK Block:
-
-: A variable-length integer indicating the number of contiguous packets
-  preceding the Largest Acknowledged that are being acknowledged.
+The fields that form the ACK Ranges are:
 
 Gap (repeated):
 
 : A variable-length integer indicating the number of contiguous unacknowledged
   packets preceding the packet number one lower than the smallest in the
-  preceding ACK Block.
+  preceding ACK Range.
 
-Additional ACK Block (repeated):
+ACK Range (repeated):
 
 : A variable-length integer indicating the number of contiguous acknowledged
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
+Gap and ACK Range value use a relative integer encoding for efficiency.  Though
+each encoded value is positive, the values are subtracted, so that each ACK
+Range describes progressively lower-numbered packets.
 
-### ECN section
+Each ACK Range acknowledges a contiguous range of packets by indicating the
+number of acknowledged packets that precede the largest packet number in that
+range.  A value of zero indicates that only the largest packet number is
+acknowledged.  Larger ACK Range values indicate a larger range, with
+corresponding lower values for the smallest packet number in the range.  Thus,
+given a largest packet number for the range, the smallest value is determined by
+the formula:
 
-The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
-section consists of 3 ECN counts as shown below.
+~~~
+   smallest = largest - ack_range
+~~~
+
+An ACK Range acknowledges all packet numbers between the smallest packet number
+and the largest, inclusive.
+
+The largest value for an ACK Range is determined by cumulatively subtracting the
+size of all preceding ACK Ranges and Gaps.
+
+Each Gap indicates a range of packets that are not being acknowledged.  The
+number of packets in the gap is one higher than the encoded value of the Gap
+field.
+
+The value of the Gap field establishes the largest packet number value for the
+subsequent ACK Range using the following formula:
+
+~~~
+   largest = previous_smallest - gap - 2
+~~~
+
+If any computed packet number is negative, an endpoint MUST generate a
+connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
+frame.
+
+
+### ECN Counts {#ack-ecn-counts}
+
+The ACK frame uses the least significant bit (that is, type 0x03) to indicate
+ECN feedback and report receipt of QUIC packets with associated ECN codepoints
+of ECT(0), ECT(1), or CE in the packet's IP header.  ECN Counts are only present
+when the ACK frame type is 0x03.
+
+ECN Counts are only parsed when the ACK frame type is 0x03.  There are 3 ECN
+counts, as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4348,6 +4383,8 @@ section consists of 3 ECN counts as shown below.
 |                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+
+The three ECN Counts are:
 
 ECT(0) Count:
 : A variable-length integer representing the total number packets received with
@@ -4374,7 +4411,7 @@ of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
 discard any data that it already received on that stream.
 
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+terminate the connection with error STREAM_STATE_ERROR.
 
 The RESET_STREAM frame is as follows:
 
@@ -4417,10 +4454,10 @@ to abruptly terminate transmission on a stream.
 Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-send stream that is "Ready" or not yet created MUST be treated as a connection
-error of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING
-frame for a receive-only stream MUST terminate the connection with error
-PROTOCOL_VIOLATION.
+stream that is "Ready" or not yet created MUST be treated as a connection error
+of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
+a receive-only stream MUST terminate the connection with error
+STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
@@ -4547,7 +4584,7 @@ are present in the frame.
   marks the end of the stream.
 
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error PROTOCOL_VIOLATION.
+the connection with error STREAM_STATE_ERROR.
 
 The STREAM frames are as follows:
 
@@ -4633,10 +4670,10 @@ The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+it has not opened MUST terminate the connection with error STREAM_STATE_ERROR.
 
 Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
 bidirectional stream it has not opened.
@@ -4749,7 +4786,7 @@ send data, but is unable to due to stream-level flow control.  This frame is
 analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 The STREAM_DATA_BLOCKED frame is as follows:
 
@@ -4925,7 +4962,7 @@ The PATH_CHALLENGE frames are as follows:
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                            Data (8)                           +
++                           Data (64)                           +
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
@@ -5069,10 +5106,11 @@ STREAM_STATE_ERROR (0x5):
 FINAL_OFFSET_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a RESET_STREAM
-  frame containing a final offset that was lower than the maximum offset of data
-  that was already received.  Or an endpoint received a RESET_STREAM frame
-  containing a different final offset to the one already established.
+  previously established final offset.  Or an endpoint received a STREAM frame
+  or a RESET_STREAM frame containing a final offset that was lower than the
+  maximum offset of data that was already received.  Or an endpoint received a
+  STREAM frame or a RESET_STREAM frame containing a different final offset
+  to the one already established.
 
 FRAME_ENCODING_ERROR (0x7):
 
@@ -5477,6 +5515,9 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-16
+- Stream-related errors now use STREAM_STATE_ERROR (#2305)
+
+## Since draft-ietf-quic-transport-16
 
 - Stream limits are defined as counts, not maximums (#1850, #1906)
 - Require amplification attack defense after closing (#1905, #1911)
@@ -5491,6 +5532,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   - Add spin bit to short header (#631, #1988)
   - Encrypt the remainder of the first byte (#1322)
   - Move packet number length to first byte
+  - Move ODCIL to first byte of retry packets
   - Simplify packet number protection (#1575)
 - Allow STOP_SENDING to open a remote bidirectional stream (#1797, #2013)
 - Added mitigation for off-path migration attacks (#1278, #1749, #2033)
@@ -5499,7 +5541,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Servers are required to ignore Version Negotiation packets (#2088)
 - Tokens are repeated in all Initial packets (#2089)
 - Clarified how PING frames are sent after loss (#2094)
-- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Initial keys are discarded once Handshake are available (#1951, #2045)
 - ICMP PTB validation clarifications (#2161, #2109, #2108)
 
 
