@@ -3659,12 +3659,12 @@ Number Length bits.  It is used to carry "early" data from the client to the
 server as part of the first flight, prior to handshake completion. As part of
 the TLS handshake, the server can accept or reject this early data.
 
-See Sections 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+See Section 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
 +-+-+-+-+-+-+-+-+
-|1|1| 0 |R R|P P|
+|1|1| 1 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3723,7 +3723,7 @@ cryptographic handshake messages from the server and client.
 
 ~~~
 +-+-+-+-+-+-+-+-+
-|1|1| 0 |R R|P P|
+|1|1| 2 |R R|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
