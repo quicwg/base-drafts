@@ -2830,15 +2830,12 @@ valid frames? -->
 
 ### Sending ACK Frames
 
-ACK frames are sent to acknowledge received packets and indicate the frames
-within them has been processed. An endpoint MUST NOT send more than one packet
-containing only an ACK frame per received packet that contains frames other
-than ACK and PADDING frames. Specifically, to avoid creating an indefinite
-feedback loop, an endpoint MUST NOT send an ACK frame in response to a packet
-containing only ACK or PADDING frames, even if there are packet gaps which
-precede the received packet.  The endpoint MUST however acknowledge packets
-containing only ACK or PADDING frames when sending ACK frames in response to
-other packets.
+An endpoint MUST NOT send more than one packet containing only an ACK frame
+per received packet that contains frames other than ACK and PADDING frames,
+even if there are packet gaps which precede the received packet.
+This avoids creating an indefinite feedback loop of ACKs eliciting ACKs.
+The endpoint MUST however acknowledge packets containing only
+ACK or PADDING frames when sending ACK frames in response to other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2856,10 +2853,11 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been received by the sender, the
-receiver SHOULD track which ACK frames have been acknowledged by its peer.
-The receiver SHOULD exclude already acknowledged packets from future ACK frames
-whenever these packets would unnecessarily contribute to the ACK frame size.
+To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
+received by the sender, the receiver SHOULD track which ACK frames have been
+acknowledged by its peer. The receiver SHOULD exclude already acknowledged
+packets from future ACK frames whenever these packets would unnecessarily
+contribute to the ACK frame size.
 
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
