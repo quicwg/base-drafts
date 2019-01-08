@@ -536,9 +536,9 @@ for delivery to the application.  As data is consumed by the application and
 buffer space becomes available, the endpoint sends MAX_STREAM_DATA frames to
 allow the peer to send more data.
 
-When a STREAM frame with a FIN bit is received, the final offset is known (see
-{{final-offset}}).  The receiving part of the stream then enters the "Size
-Known" state.  In this state, the endpoint no longer needs to send
+When a STREAM frame with a FIN bit is received, the final size of the stream is
+known (see {{final-size}}).  The receiving part of the stream then enters the
+"Size Known" state.  In this state, the endpoint no longer needs to send
 MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 
 Once all data for the stream has been received, the receiving part enters the
@@ -798,10 +798,11 @@ could disagree on the number of bytes that count towards connection flow
 control.
 
 To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
-final offset of data sent on the stream.  On receiving a RESET_STREAM frame, a
+final size of data sent on the stream.  On receiving a RESET_STREAM frame, a
 receiver definitively knows how many bytes were sent on that stream before the
-RESET_STREAM frame, and the receiver MUST use the final offset to account for
-all bytes sent on the stream in its connection level flow controller.
+RESET_STREAM frame, and the receiver MUST use the final size of the stream to
+account for all bytes sent on the stream in its connection level flow
+controller.
 
 RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
 stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
@@ -810,26 +811,31 @@ direction until that direction enters a terminal state, or until one of the
 endpoints sends CONNECTION_CLOSE.
 
 
-## Stream Final Offset {#final-offset}
+## Stream Final Size {#final-size}
 
-The final offset is the count of the number of bytes that are transmitted on a
-stream.  For a stream that is reset, the final offset is carried explicitly in a
-RESET_STREAM frame.  Otherwise, the final offset is the offset of the end of the
-data carried in a STREAM frame marked with a FIN flag.
+The final size is the amount of flow control credit that is consumed by a
+stream.  Assuming that every contiguous byte on the stream was sent once, the
+final size is the number of bytes sent.  More generally, this is one higher
+than the largest byte offset sent on the stream.
 
-An endpoint will know the final offset for a stream when the receiving part of
-the stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
+For a stream that is reset, the final size is carried explicitly in a
+RESET_STREAM frame.  Otherwise, the final size is the offset plus the length of
+a STREAM frame marked with a FIN flag, or 0 in the case of incoming
+unidirectional streams.
 
-An endpoint MUST NOT send data on a stream at or beyond the final offset.
+An endpoint will know the final size for a stream when the receiving part of the
+stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
 
-Once a final offset for a stream is known, it cannot change.  If a RESET_STREAM
-or STREAM frame is received indicating a change in the final offset for the
-stream, an endpoint SHOULD respond with a FINAL_OFFSET_ERROR error (see
+An endpoint MUST NOT send data on a stream at or beyond the final size.
+
+Once a final size for a stream is known, it cannot change.  If a RESET_STREAM or
+STREAM frame is received indicating a change in the final size for the stream,
+an endpoint SHOULD respond with a FINAL_SIZE_ERROR error (see
 {{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
-final offset as a FINAL_OFFSET_ERROR error, even after a stream is closed.
+final size as a FINAL_SIZE_ERROR error, even after a stream is closed.
 Generating these errors is not mandatory, but only because requiring that an
 endpoint generate these errors also means that the endpoint needs to maintain
-the final offset state for closed streams, which could mean a significant state
+the final size state for closed streams, which could mean a significant state
 commitment.
 
 ## Controlling Concurrency {#controlling-concurrency}
@@ -1377,9 +1383,11 @@ particular, version negotiation MUST be validated (see {{version-validation}})
 before the connection establishment is considered properly complete.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  Any given parameter MUST appear at most
-once in a given transport parameters extension.  An endpoint MUST treat receipt
-of duplicate transport parameters as a connection error of type
+{{transport-parameter-definitions}}.  An endpoint MUST treat receipt of a
+transport parameter with an invalid value as a connection error of type
+TRANSPORT_PARAMETER_ERROR.  Any given parameter MUST appear at most once in a
+given transport parameters extension.  An endpoint MUST treat receipt of
+duplicate transport parameters as a connection error of type
 TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
@@ -2634,9 +2642,9 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.  For example, if
-decryption fails (because the keys are not available or any other reason) or the
-packet is of an unknown type, the receiver MAY either discard or buffer the
-packet for later processing and MUST attempt to process the remaining packets.
+decryption fails (because the keys are not available or any other reason), the
+the receiver MAY either discard or buffer the packet for later processing and
+MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header cannot be followed by
@@ -2768,8 +2776,9 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
-All QUIC frames are idempotent.  That is, a valid frame does not cause
-undesirable side effects or errors when received more than once.
+All QUIC frames are idempotent in this version of QUIC.  That is, a valid
+frame does not cause undesirable side effects or errors when received more
+than once.
 
 The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
@@ -2829,13 +2838,13 @@ valid frames? -->
 
 ### Sending ACK Frames
 
-<!-- TODO: Re-read this section for flow and redundancy. -->
-
-To avoid creating an indefinite feedback loop, an endpoint MUST NOT send an ACK
-frame in response to a packet containing only ACK or PADDING frames, even if
-there are packet gaps which precede the received packet.  The endpoint MUST
-however acknowledge packets containing only ACK or PADDING frames when sending
-ACK frames in response to other packets.
+An endpoint MUST NOT send more than one packet containing only an ACK frame per
+received packet that contains frames other than ACK and PADDING frames.
+An endpoint MUST NOT send a packet containing only an ACK frame in response
+to a packet containing only ACK or PADDING frames, even if there are packet
+gaps which precede the received packet. This prevents an indefinite feedback
+loop of ACKs. The endpoint MUST however acknowledge packets containing only
+ACK or PADDING frames when sending ACK frames in response to other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2843,9 +2852,6 @@ sender to become limited by the congestion controller (as described in
 {{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
 receiver. Therefore, a sender SHOULD ensure that other frames are sent in
 addition to PADDING frames to elicit acknowledgments from the receiver.
-
-An endpoint MUST NOT send more than one packet containing only an ACK frame per
-received packet that contains frames other than ACK and PADDING frames.
 
 The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
@@ -2856,9 +2862,9 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit the ranges of acknowledged packets to those that have not yet
-been received by the sender, the receiver SHOULD track which ACK frames have
-been acknowledged by its peer.  The receiver SHOULD exclude already acknowledged
+To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
+received by the sender, the receiver SHOULD track which ACK frames have been
+acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
 contribute to the ACK frame size.
 
@@ -2985,6 +2991,12 @@ containing that information is acknowledged.
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
 {{stream-prioritization}}).
+
+Even though a sender is encouraged to assemble frames containing up-to-date
+information every time it sends a packet, it is not forbidden to retransmit
+copies of frames from lost packets.  A receiver MUST accept packets containing
+an outdated frame, such as a MAX_DATA frame carrying a smaller maximum data than
+one found in an older packet.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
@@ -4092,6 +4104,7 @@ max_ack_delay (0x000b):
   delays in alarms firing.  For example, if a receiver sets a timer for 5ms
   and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
+  Values of 2^14 or greater are invalid.
 
 disable_migration (0x000c):
 
@@ -4248,13 +4261,13 @@ First ACK Range:
 : A variable-length integer indicating the number of contiguous packets
   preceding the Largest Acknowledged that are being acknowledged.  The First ACK
   Range is encoded as an ACK Range (see {{ack-ranges}}) starting from the
-  Largest Acknowledged.  That is, the smallest packet number included in the
+  Largest Acknowledged.  That is, the smallest packet acknowledged in the
   range is determined by subtracting the First ACK Range value from the Largest
   Acknowledged.
 
 ACK Ranges:
 
-: Contains additional ranges of packet numbers which are alternately not
+: Contains additional ranges of packets which are alternately not
   acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
 
 ECN Counts:
@@ -4322,8 +4335,8 @@ the formula:
    smallest = largest - ack_range
 ~~~
 
-An ACK Range acknowledges all packet numbers between the smallest packet number
-and the largest, inclusive.
+An ACK Range acknowledges all packets between the smallest packet number and the
+largest, inclusive.
 
 The largest value for an ACK Range is determined by cumulatively subtracting the
 size of all preceding ACK Ranges and Gaps.
@@ -4348,11 +4361,11 @@ frame.
 
 The ACK frame uses the least significant bit (that is, type 0x03) to indicate
 ECN feedback and report receipt of QUIC packets with associated ECN codepoints
-of ECT(0), ECT(1), or CE in the packet's IP header.  The ECN section is only
-present when the ACK frame type is 0x03.
+of ECT(0), ECT(1), or CE in the packet's IP header.  ECN Counts are only present
+when the ACK frame type is 0x03.
 
-The ECN section should only be parsed when the ACK frame type is 0x03.  The ECN
-section consists of 3 ECN counts as follows:
+ECN Counts are only parsed when the ACK frame type is 0x03.  There are 3 ECN
+counts, as follows:
 
 ~~~
  0                   1                   2                   3
@@ -4366,7 +4379,7 @@ section consists of 3 ECN counts as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
-The fields that form the ECN Counts are:
+The three ECN Counts are:
 
 ECT(0) Count:
 : A variable-length integer representing the total number packets received with
@@ -4393,7 +4406,7 @@ of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
 discard any data that it already received on that stream.
 
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
-terminate the connection with error PROTOCOL_VIOLATION.
+terminate the connection with error STREAM_STATE_ERROR.
 
 The RESET_STREAM frame is as follows:
 
@@ -4405,7 +4418,7 @@ The RESET_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |  Application Error Code (16)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Final Offset (i)                     ...
+|                        Final Size (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
@@ -4421,10 +4434,10 @@ Application Protocol Error Code:
 : A 16-bit application protocol error code (see {{app-error-codes}}) which
   indicates why the stream is being closed.
 
-Final Offset:
+Final Size:
 
-: A variable-length integer indicating the absolute byte offset of the end of
-  data written on this stream by the RESET_STREAM sender.
+: A variable-length integer indicating the final size of the stream by the
+  RESET_STREAM sender, in unit of bytes.
 
 
 ## STOP_SENDING Frame {#frame-stop-sending}
@@ -4437,9 +4450,9 @@ Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
 stream that is "Ready" or not yet created MUST be treated as a connection error
-of type PROTOCOL_VIOLATION.  An endpoint that receives a STOP_SENDING frame for
+of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
 a receive-only stream MUST terminate the connection with error
-PROTOCOL_VIOLATION.
+STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
@@ -4562,11 +4575,11 @@ are present in the frame.
   the Length field is present.
 
 * The FIN bit (0x01) of the frame type is set only on frames that contain the
-  final offset of the stream.  Setting this bit indicates that the frame
+  final size of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error PROTOCOL_VIOLATION.
+the connection with error STREAM_STATE_ERROR.
 
 The STREAM frames are as follows:
 
@@ -4652,10 +4665,10 @@ The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error PROTOCOL_VIOLATION.
+it has not opened MUST terminate the connection with error STREAM_STATE_ERROR.
 
 Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
 bidirectional stream it has not opened.
@@ -4768,7 +4781,7 @@ send data, but is unable to due to stream-level flow control.  This frame is
 analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
-MUST terminate the connection with error PROTOCOL_VIOLATION.
+MUST terminate the connection with error STREAM_STATE_ERROR.
 
 The STREAM_DATA_BLOCKED frame is as follows:
 
@@ -5085,13 +5098,14 @@ STREAM_STATE_ERROR (0x5):
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame (see {{stream-states}}).
 
-FINAL_OFFSET_ERROR (0x6):
+FINAL_SIZE_ERROR (0x6):
 
 : An endpoint received a STREAM frame containing data that exceeded the
-  previously established final offset.  Or an endpoint received a RESET_STREAM
-  frame containing a final offset that was lower than the maximum offset of data
-  that was already received.  Or an endpoint received a RESET_STREAM frame
-  containing a different final offset to the one already established.
+  previously established final size.  Or an endpoint received a STREAM frame or
+  a RESET_STREAM frame containing a final size that was lower than the size of
+  stream data that was already received.  Or an endpoint received a STREAM frame
+  or a RESET_STREAM frame containing a different final size to the one already
+  established.
 
 FRAME_ENCODING_ERROR (0x7):
 
@@ -5445,7 +5459,7 @@ from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
-| 0x6   | FINAL_OFFSET_ERROR        | Change to final stream offset | {{error-codes}} |
+| 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | VERSION_NEGOTIATION_ERROR | Version negotiation failure   | {{error-codes}} |
@@ -5494,6 +5508,9 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-16
+- Stream-related errors now use STREAM_STATE_ERROR (#2305)
 
 ## Since draft-ietf-quic-transport-16
 
