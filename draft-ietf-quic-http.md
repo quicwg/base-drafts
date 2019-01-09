@@ -972,11 +972,14 @@ Implementations SHOULD cancel requests by aborting both directions of a stream.
 When the server rejects a request without performing any application processing,
 it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
 In this context, "processed" means that some data from the stream was passed to
-some higher layer of software that might have taken some action as a result.
-The client can treat requests rejected by the server as though they had never
-been sent at all, thereby allowing them to be retried later on a new connection.
+some higher layer of software that might have taken some action as a result. The
+client can treat requests rejected by the server as though they had never been
+sent at all, thereby allowing them to be retried later on a new connection.
 Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
-were partially or fully processed.
+were partially or fully processed.  When a client sends a STOP_SENDING with
+HTTP_REQUEST_CANCELLED, a server MAY indicate the error code
+HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM if no processing was
+performed.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1871,11 +1874,10 @@ FRAME_SIZE_ERROR (0x6):
 : HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
-: When used to indicate that a request was not processed, HTTP_REQUEST_REJECTED
-  in {{http-error-codes}}.
-: When used to indicate that an active stream limit was exceeded, not applicable
-  because QUIC handles stream management.  Would provoke a STREAM_ID_ERROR from
-  the QUIC layer.
+: HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
+  request was not processed. Otherwise, not applicable because QUIC handles
+  stream management.  A STREAM_ID_ERROR at the QUIC layer is used for streams
+  that are improperly opened.
 
 CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
