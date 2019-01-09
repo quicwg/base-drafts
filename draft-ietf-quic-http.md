@@ -723,7 +723,7 @@ with its 0-RTT data.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
-set from server to client, as in HTTP/2.
+set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -753,6 +753,9 @@ MAX_PUSH_ID frame ({{frame-max-push-id}}) and MUST NOT use the same Push ID in
 multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
 that contains a larger Push ID than the client has advertised or a Push ID which
 has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
+
+If a DATA frame is received on either control stream, the recipient MUST respond
+with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 See {{server-push}} for a description of the overall server push mechanism.
 
