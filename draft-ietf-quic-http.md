@@ -754,8 +754,8 @@ multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
 that contains a larger Push ID than the client has advertised or a Push ID which
 has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
 
-If a DATA frame is received on either control stream, the recipient MUST respond
-with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+If a PUSH_PROMISE frame is received on either control stream, the recipient MUST
+respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 See {{server-push}} for a description of the overall server push mechanism.
 
