@@ -2644,8 +2644,9 @@ the receiver MAY either discard or buffer the packet for later processing and
 MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
-({{packet-version}}), and packets with a short header cannot be followed by
-other packets in the same UDP datagram, as they do not contain a Length field.
+({{packet-version}}), and packets with a short header ({{short-header}}) do not
+contain a Length field and so cannot be followed by other packets in the same
+UDP datagram.
 
 
 ## Packet Numbers {#packet-numbers}
