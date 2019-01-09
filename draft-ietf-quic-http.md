@@ -325,7 +325,7 @@ transport parameter `initial_max_uni_streams`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY send a QUIC STOP_SENDING
+unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
 frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
 streams to be an error of any kind.
 
@@ -548,14 +548,13 @@ the interpretation of the associated Element ID fields.
 | 10        | Placeholder      | Placeholder ID                 |
 | 11        | Root of the tree | Absent                         |
 
-Note that unlike in {{!RFC7540}}; the root of the tree cannot be
-referenced using a Stream ID of 0, as in QUIC stream 0 carries a valid
-HTTP request.  The root of the tree cannot be reprioritized.  A
-PRIORITY frame sent on a request stream with the Prioritized Element
-Type set to any value other than `11` or which expresses a dependency
-on a request with a greater Stream ID than the current stream MUST be
-treated as a stream error of type HTTP_MALFORMED_FRAME.  Likewise, a
-PRIORITY frame sent on a control stream with the Prioritized Element
+Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
+using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
+root of the tree cannot be reprioritized.  A PRIORITY frame sent on a request
+stream with the Prioritized Element Type set to any value other than `11` or
+which expresses a dependency on a request with a greater Stream ID than the
+current stream MUST be treated as a stream error of type HTTP_MALFORMED_FRAME.
+Likewise, a PRIORITY frame sent on a control stream with the Prioritized Element
 Type set to `11` MUST be treated as a connection error of type
 HTTP_MALFORMED_FRAME.
 
