@@ -1009,6 +1009,11 @@ to more quickly identify when a connection becomes unusable.
 Packets that are matched to an existing connection, but for which the endpoint
 cannot remove packet protection, are discarded.
 
+Invalid packets without packet protection, such as Initial, Retry, or Version
+Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
+it commits changes to state before discovering an error.
+
+
 ### Client Packet Handling {#client-pkt-handling}
 
 Valid packets sent to clients always include a Destination Connection ID that
