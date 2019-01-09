@@ -467,7 +467,7 @@ HEADERS frames can only be sent on request / push streams.
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the client-advised priority of a
-stream.
+request stream, server push or placeholder.
 
 When opening a new request stream, a PRIORITY frame MAY be sent as the first
 frame of the stream creating a dependency on an existing element.  In order to
@@ -531,8 +531,9 @@ The PRIORITY frame payload has the following fields:
     element (see {{!RFC7540}}, Section 5.3). Add one to the value to obtain a
     weight between 1 and 256.
 
-The values for the Prioritized Element Type and Element Dependency Type imply
-the interpretation of the associated Element ID fields.
+The values for the Prioritized Element Type ({{prioritized-element-types}}) and
+Element Dependency Type ({{element-dependency-types}}) imply the interpretation
+of the associated Element ID fields.
 
 | Type Bits | Type Description | Prioritized Element ID Contents |
 | --------- | ---------------- | ------------------------------- |
@@ -540,6 +541,7 @@ the interpretation of the associated Element ID fields.
 | 01        | Push stream      | Push ID                         |
 | 10        | Placeholder      | Placeholder ID                  |
 | 11        | Current stream   | Absent                          |
+{: #prioritized-element-types title="Prioritized Element Types"}
 
 | Type Bits | Type Description | Element Dependency ID Contents |
 | --------- | ---------------- | ------------------------------ |
@@ -547,6 +549,7 @@ the interpretation of the associated Element ID fields.
 | 01        | Push stream      | Push ID                        |
 | 10        | Placeholder      | Placeholder ID                 |
 | 11        | Root of the tree | Absent                         |
+{: #element-dependency-types title="Element Dependency Types"}
 
 Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
 using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
@@ -1025,40 +1028,46 @@ RST bit set, as a stream error of type HTTP_CONNECT_ERROR
 ({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
 the RST bit set if it detects an error with the stream or the QUIC connection.
 
-## Request Prioritization {#priority}
+## Prioritization {#priority}
 
 HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
-5.3. In this priority scheme, a given stream can be designated as dependent upon
-another request, which expresses the preference that the latter stream (the
-"parent" request) be allocated resources before the former stream (the
-"dependent" request). Taken together, the dependencies across all requests in a
-connection form a dependency tree.
-
-When a client request is first sent, its parent and weight are determined by the
-PRIORITY frame (see {{frame-priority}}) which begins the stream, if present.
-Otherwise, the element is dependent on the root of the priority tree.
-Placeholders are also dependent on the root of the priority tree when first
-allocated.  Pushed streams are initially dependent on the client request on
-which the PUSH_PROMISE frame was sent. In all cases, elements are assigned an
-initial weight of 16 unless a PRIORITY frame begins the stream.
-
-The structure of the dependency tree changes as PRIORITY frames on the control
-stream modify the dependency links between requests. The PRIORITY frame
-{{frame-priority}} identifies a prioritized element. The elements which can be
-prioritized are:
+5.3. In this priority scheme, a given element can be designated as dependent
+upon another element. This information is expressed in the PRIORITY frame
+{{frame-priority}} which identifies the element and the dependency. The elements
+that can be prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
   ({{frame-push-promise}})
 - Placeholders, identified by a Placeholder ID
 
-An element can depend on another element or on the root of the tree.  A
-reference to an element which is no longer in the tree is treated as a reference
-to the root of the tree.
+Taken together, the dependencies across all prioritized elements in a connection
+form a dependency tree. An element can depend on another element or on the root
+of the tree. A reference to an element which is no longer in the tree is treated
+as a reference to the root of the tree. The structure of the dependency tree
+changes as PRIORITY frames modify the dependency links between prioritized
+elements.
 
 Due to reordering between streams, an element can also be prioritized which is
 not yet in the tree. Such elements are added to the tree with the requested
 priority.
+
+
+In all cases, elements are assigned an initial weight of 16 unless a PRIORITY
+frame begins the stream.
+
+When a client request is first sent, its parent and weight are determined by the
+PRIORITY frame (see {{frame-priority}}) which begins the stream, if present.
+Otherwise, the element is dependent on the root of the priority tree. A request
+stream dependent upon another request stream expresses the preference that the
+latter stream (the "parent" request) be allocated resources before the former
+stream (the "dependent" request).
+
+Placeholders are dependent on the root of the priority tree when first
+allocated.
+
+Pushed streams are initially dependent on the client request on
+which the PUSH_PROMISE frame was sent.
 
 ### Placeholders
 
