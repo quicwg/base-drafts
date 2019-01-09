@@ -557,12 +557,12 @@ MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
-of PRIORITY frame with a Stream ID of any other type as a connection error of
-type HTTP_MALFORMED_FRAME.
+of a PRIORITY frame identifying a stream of any other type as a connection error
+of type HTTP_MALFORMED_FRAME.
 
-A PRIORITY frame that references a non-existent Push ID or a Placeholder ID
-greater than the server's limit MUST be treated as an HTTP_MALFORMED_FRAME
-error.
+A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
+greater than the server's limit, or a Stream ID the client is not permitted to
+open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
@@ -1385,8 +1385,9 @@ HTTP_VERSION_FALLBACK (0x09):
 HTTP_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_PUSH_LIMIT_EXCEEDED (0x0B):
-: A Push ID greater than the current maximum Push ID was referenced.
+HTTP_LIMIT_EXCEEDED (0x0B):
+: An identifier greater than the current maximum for that identifier was
+  referenced.
 
 HTTP_DUPLICATE_PUSH (0x0C):
 : A Push ID was referenced in two different stream headers.
@@ -1620,7 +1621,7 @@ The entries in the following table are registered by this document.
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_PUSH_LIMIT_EXCEEDED            | 0x000B     | Maximum Push ID exceeded                 | {{http-error-codes}}   |
+| HTTP_LIMIT_EXCEEDED                 | 0x000B     | An identifier limit was exceeded         | {{http-error-codes}}   |
 | HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
 | HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
