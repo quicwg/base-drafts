@@ -294,7 +294,7 @@ the decoder.  The Known Received Count tracks the total number of acknowledged
 insertions.
 
 When blocking references are permitted, the encoder uses header block
-acknowledgement to identify the Known Received Count, as described in
+acknowledgement to maintain the Known Received Count, as described in
 {{header-acknowledgement}}.
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
@@ -476,7 +476,7 @@ identifies which dynamic table entries can be referenced using relative
 indexing, starting with 0 at the last entry added.
 
 Post-Base references are used for entries inserted after base, starting at 0 for
-the first entry added after Base, see {{post-base}}.
+the first entry added after the Base, see {{post-base}}.
 
 ~~~~~ drawing
  Required
@@ -504,7 +504,7 @@ single pass and include references to entries added while processing this (or
 other) header blocks. Newly added entries are referenced using Post-Base
 instructions. Indices for Post-Base instructions increase in the same direction
 as absolute indices, with the zero value being the first entry inserted after
-Base.
+the Base.
 
 ~~~~~ drawing
              Base
@@ -826,8 +826,8 @@ entire block is expected to be framed by the using protocol.
 #### Required Insert Count {#ric}
 
 Required Insert Count identifies the state of the dynamic table needed to
-process the header block successfully.  Blocking decoders use the Required
-Insert Count to determine when it is safe to process the rest of the block.
+process the header block.  Blocking decoders use the Required Insert Count to
+determine when it is safe to process the rest of the block.
 
 If no references are made to the dynamic table, a value of 0 is encoded.
 Alternatively, where the Required Insert Count is greater than zero, the encoder
@@ -878,14 +878,14 @@ value of 3 indicates that the Required Insert Count is 9 for the header block.
 
 #### Base {#base}
 
-`Base` is used to resolve references in the dynamic table as described in
+The `Base` is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
-To save space, Base is encoded relative to the Insert Count using a one-bit sign
-and the `Delta Base` value.  A sign bit of 0 indicates that the Base is greater
-than or equal to the value of the Insert Count; the value of Delta Base is added
-to the Insert Count to determine the value of the Base.  A sign bit of 1
-indicates that the Base is less than the Insert Count.  That is:
+To save space, the Base is encoded relative to the Insert Count using a one-bit
+sign and the `Delta Base` value.  A sign bit of 0 indicates that the Base is
+greater than or equal to the value of the Insert Count; the value of Delta Base
+is added to the Insert Count to determine the value of the Base.  A sign bit of
+1 indicates that the Base is less than the Insert Count.  That is:
 
 ~~~
    if S == 0:
@@ -899,15 +899,15 @@ the encoder inserted entries in the dynamic table while encoding the header
 block, Required Insert Count will be greater than the Base, so the encoded
 difference is negative and the sign bit is set to 1.  If the header block did
 not reference the most recent entry in the table and did not insert any new
-entries, Base will be greater than the Required Insert Count, so the delta will
-be positive and the sign bit is set to 0.
+entries, the Base will be greater than the Required Insert Count, so the delta
+will be positive and the sign bit is set to 0.
 
 An encoder that produces table updates before encoding a header block might set
-Required Insert Count and Base to the same value.  In such case, both the sign
-bit and the Delta Base will be set to zero.
+Required Insert Count and the Base to the same value.  In such case, both the
+sign bit and the Delta Base will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
-Base; setting Delta Base to zero is the most efficient encoding.
+the Base; setting Delta Base to zero is the most efficient encoding.
 
 For example, with an Required Insert Count of 9, a decoder receives a S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
@@ -940,10 +940,11 @@ field is represented as an integer with a 6-bit prefix (see Section 5.1 of
 
 ### Indexed Header Field With Post-Base Index
 
-If the entry is in the dynamic table with an absolute index greater than Base,
-the representation starts with the '0001' 4-bit pattern, followed by the
-post-base index (see {{post-base}}) of the matching header field, represented as
-an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+If the entry is in the dynamic table with an absolute index greater than or
+equal to the Base, the representation starts with the '0001' 4-bit pattern,
+followed by the post-base index (see {{post-base}}) of the matching header
+field, represented as an integer with a 4-bit prefix (see Section 5.1 of
+[RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -963,7 +964,8 @@ table or the dynamic table.
 If the entry is in the static table, or in the dynamic table with an absolute
 index less than the Base, this representation starts with the '01' two-bit
 pattern.  If the entry is in the dynamic table with an absolute index greater
-than the Base, the representation starts with the '0000' four-bit pattern.
+than or equal to the Base, the representation starts with the '0000' four-bit
+pattern.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
