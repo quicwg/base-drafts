@@ -427,15 +427,33 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-#### Discarding Initial State {#discard-initial}
+#### Discarding Packet State {#discarding-packets}
+
+When keys are discarded, recovery state for all in-flight packets sent with
+those keys is discarded.  The packets are removed from the count of
+bytes in flight and no acknowledgements or loss events will occur
+for those packets.  Note that it is expected that keys are discarded after those
+packets would be declared lost, but Initial secrets are destroyed earlier.
 
 As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
 receiving Initial packets once they start exchanging Handshake packets.  At this
-point, all loss recovery state for the Initial packet number space is also
-discarded. Packets that are in flight for the packet number space are not
-declared as either acknowledged or lost.  After discarding state, new Initial
-packets will not be sent.
+point, recovery state for all in-flight Initial packets is discarded. 
 
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+#### Ignoring Loss of Undecryptable Packets
+
+During the handshake, the keys to remove packet protection may not yet be
+available when the packet arrives. In particular, Handshake and 0-RTT packets
+will not be processable until the Initial flight arrives and 1-RTT packets
+will not be processable until the handshake completes.  Implementations MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that arrive before the
+peer has packet protection keys to process those packets.
 
 ### Probe Timeout {#pto}
 
@@ -998,23 +1016,6 @@ paces the sending of any packets in excess of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
-
-## Discarding Packet Number Space State
-
-When keys for a packet number space are discarded, any in-flight packets
-sent with those keys are removed from the count of bytes in flight.  Loss
-recovery state is also discarded, so no loss events will occur for any
-in-flight packets from that space (see {{discard-initial}}).  Note that it is
-expected that keys are discarded after those packets would be declared lost,
-but Initial secrets are destroyed earlier.
-
-When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
-the count of bytes in flight.  Loss recovery state is also discarded, so no
-loss events will occur for any in-flight 0-RTT packets.
-
-If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
-before Initial packets, early 0-RTT packets will be declared lost, but that
-is expected to be infrequent.
 
 ## Pseudocode
 
