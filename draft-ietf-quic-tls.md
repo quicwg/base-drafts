@@ -1215,9 +1215,8 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!RFC7301}} to select an application protocol.  Unless another mechanism is
 used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  Specifically, the client MUST send the ALPN extension, the server MUST
-reply with the selected protocol, and the peers MUST abort the connection if the
-preceeding requirements are violated.
+purpose.  When using ALPN, endpoints MUST abort a connection if an application
+protocol is not negotiated.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC

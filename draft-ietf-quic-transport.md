@@ -1225,11 +1225,6 @@ properties:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-The negotiation of the application protocol is not merely available in QUIC, but
-is REQUIRED.  Without it, the peers would infer the protocol used from context
-(e.g. UDP port number), which could potentially lead to the situation in which
-they disagree on the application protocol without being aware of it.
-
 The first CRYPTO frame from a client MUST be sent in a single packet.  Any
 second attempt that is triggered by address validation (see
 {{validate-handshake}}) MUST also be sent within a single packet. This avoids
@@ -1245,6 +1240,9 @@ first packets it sends, as described in {{ecn-verification}}.
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
 handshake data start from zero in each packet number space.
+
+Endpoints MUST explicitly negotiate an application protocol.  This avoids
+situations where there is a disagreement about the protocol that is in use.
 
 
 ## Example Handshake Flows
