@@ -1098,7 +1098,7 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 
-# Key Update
+# Key Update {#key-update}
 
 Once the 1-RTT keys are established and the short header is in use, it is
 possible to update the keys used to protect packets. The Key Update field in the
@@ -1131,7 +1131,7 @@ message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
 {{ex-key-update}} shows a key update process, with keys used identified with @M
-and @N.  Values in brackets [] indicate the value of Key Update bits.
+and @N.  Values in brackets \[] indicate the value of Key Update bits.
 
 ~~~
    Initiating Peer                    Responding Peer
