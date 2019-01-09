@@ -430,7 +430,7 @@ frame.
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes based on the context of the
 reference. The first entry inserted has an absolute index of "1"; indices
-increase sequentially with each insertion.
+increase by one with each insertion.
 
 ### Relative Indexing
 
