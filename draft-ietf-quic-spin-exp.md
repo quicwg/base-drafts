@@ -130,31 +130,25 @@ version negotiation and connection establishment are completed.
 
 ## Proposed Short Header Format Including Spin Bit {#header}
 
-As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the sixth most significant bit (0x04) of the first byte in
-the short header for the spin bit.
+{{QUIC-TRANSPORT}} specifies using the third most significant bit of the first
+byte in the short header for the spin bit (0x20, labeled S in
+{{fig-short-header}}). The Spin bit is set 0 or 1 depending on the stored spin
+value that is updated on packet reception as explained in {{spinbit}}.
 
-~~~~~
-
+~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~~~
-{: #fig-short-header title="Short Header Format including proposed Spin Bit"}
-
-S: The Spin bit is set 0 or 1 depending on the stored spin value that is
-updated on packet reception as explained in {{spinbit}}.
-
-R: Two additional bits are reserved for experimentation in the short header.
+{: #fig-short-header title="Short Header Packet Format"}
 
 ## Setting the Spin Bit on Outgoing Packets {#spinbit}
 
