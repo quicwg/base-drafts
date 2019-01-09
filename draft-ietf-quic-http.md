@@ -561,8 +561,8 @@ of a PRIORITY frame identifying a stream of any other type as a connection error
 of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
-greater than the server's limit, or a Stream ID the client is not permitted to
-open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
+greater than the server's limit, or a Stream ID the client is not yet permitted
+to open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
@@ -1386,8 +1386,8 @@ HTTP_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
 
 HTTP_LIMIT_EXCEEDED (0x0B):
-: An identifier greater than the current maximum for that identifier was
-  referenced.
+: A Stream ID, Push ID, or Placeholder ID greater than the current maximum for
+  that identifier was referenced.
 
 HTTP_DUPLICATE_PUSH (0x0C):
 : A Push ID was referenced in two different stream headers.
