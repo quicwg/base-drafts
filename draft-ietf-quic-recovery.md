@@ -437,7 +437,7 @@ packets would be declared lost, but Initial secrets are destroyed earlier.
 
 As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
 receiving Initial packets once they start exchanging Handshake packets.  At this
-point, recovery state for all in-flight Initial packets is discarded. 
+point, recovery state for all in-flight Initial packets is discarded.
 
 When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
 discarded.
