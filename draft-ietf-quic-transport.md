@@ -93,8 +93,8 @@ informative:
 --- abstract
 
 This document defines the core of the QUIC transport protocol.  Accompanying
-documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}} and the use of TLS for key negotiation {{QUIC-TLS}}.
+documents describe QUIC's loss detection and congestion control and the use of
+TLS for key negotiation.
 
 
 --- note_Note_to_Readers
