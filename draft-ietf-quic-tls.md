@@ -1115,7 +1115,6 @@ without needing to receive the first packet that triggered the change.  An
 endpoint that notices a changed Key Phase updates keys and decrypts the packet
 that contains the changed value.
 
-
 The high bit of the Key Update field (0x08) is the Key Update Permitted bit.
 Endpoints set this value to 0 until they successfully process a packet with keys
 from the same key phase as they are using to send.  An endpoint MUST NOT
@@ -1229,11 +1228,17 @@ MUST treat this as a connection error of type KEY_UPDATE_ERROR.
 
 An endpoint SHOULD retain old read keys for a period of no more than three times
 the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old read
-keys and their corresponding secrets SHOULD be discarded.  An endpoint MAY keep
-the Key Update Permitted bit set to 0 until it discards old read keys to limit
-the number of keys it maintains.  An endpoint MAY also prevent key update until
-it discards keys from the handshake, including any 0-RTT keys.  An endpoint
-SHOULD set the Key Update Permitted bit when possible.
+keys and their corresponding secrets SHOULD be discarded.
+
+An endpoint MAY keep the Key Update Permitted bit set to 0 until it discards old
+read keys to limit the number of keys it maintains.  An endpoint MAY also
+prevent key update until it discards keys from the handshake, including any
+0-RTT keys.  An endpoint SHOULD set the Key Update Permitted bit when possible.
+
+Once set, the Key Update Permitted bit MUST NOT be cleared for packets protected
+with the same keys.  An endpoint MAY treat receipt of a packet with the Key
+Update Permitted bit cleared as a connection error of type KEY_UPDATE_ERROR if
+the bit was previously set on packets protected with the same keys.
 
 Endpoints MUST NOT generate a timing side-channel signal that might indicate
 that the Key Update field was invalid (see {{header-protect-analysis}}).
