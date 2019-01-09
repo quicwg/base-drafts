@@ -1213,17 +1213,10 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-<<<<<<< 64585a30a8ddc7a766080499cd44cd5d4206fe1d
-Once GOAWAY is sent, the server MUST cancel requests sent on streams with an
+Once GOAWAY is sent, the server MUST reject requests sent on streams with an
 identifier higher than the indicated last Stream ID.  Clients MUST NOT send new
 requests on the connection after receiving GOAWAY, although requests might
 already be in transit. A new connection can be established for new requests.
-=======
-Once sent, the server MUST reject requests sent on streams with an identifier
-higher than the indicated last Stream ID.  Clients MUST NOT send new requests on
-the connection after receiving GOAWAY, although requests might already be in
-transit. A new connection can be established for new requests.
->>>>>>> Introduce HTTP_REQUEST_REJECTED
 
 If the client has sent requests on streams with a higher Stream ID than
 indicated in the GOAWAY frame, those requests are considered rejected
