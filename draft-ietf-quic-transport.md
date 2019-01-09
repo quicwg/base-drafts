@@ -2271,7 +2271,7 @@ endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an
-Probe Timeout (PTO, see Section 5.3.3 of {{QUIC-RECOVERY}}), it is advisable to
+Probe Timeout (PTO, see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
 test for liveness before sending any data that cannot be retried safely.
 
 
@@ -2907,7 +2907,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 5.3.1 of {{QUIC-RECOVERY}}.
+a reduced delay; see Section 6.2.1 of {{QUIC-RECOVERY}}.
 
 
 ## Retransmission of Information
