@@ -421,6 +421,11 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
+
 
 #### Discarding Initial State {#discard-initial}
 
@@ -430,11 +435,6 @@ point, all loss recovery state for the Initial packet number space is also
 discarded. Packets that are in flight for the packet number space are not
 declared as either acknowledged or lost.  After discarding state, new Initial
 packets will not be sent.
-
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
 
 
 ### Probe Timeout {#pto}
