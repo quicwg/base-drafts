@@ -1001,9 +1001,8 @@ Packets that are matched to an existing connection, but for which the endpoint
 cannot remove packet protection, are discarded.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
-Negotiation, SHOULD be discarded without altering connection state.  An endpoint
-MUST generate a connection error if it commits changes to state before
-discovering an error.
+Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
+it commits changes to state before discovering an error.
 
 
 ### Client Packet Handling {#client-pkt-handling}
