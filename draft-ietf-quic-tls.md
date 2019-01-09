@@ -1102,13 +1102,13 @@ anticipation of receiving a ClientHello.
 
 Once the 1-RTT keys are established and the short header is in use, it is
 possible to update the keys used to protect packets. The Key Update field in the
-short header are used to indicate when key updates are permitted and when they
+short header is used to indicate when key updates are permitted and when they
 have occurred.
 
-The the low bit of the Key Update field (0x04) is the Key Phase bit.  The Key
-Phase is used to indicate which packet protection keys are in use.  The Key
-Phase bit is initially set to 0 for the first set of 1-RTT packets.  The Key
-Phase is toggled to signal each key update.
+The low bit of the Key Update field (0x04) is the Key Phase bit.  The Key Phase
+is used to indicate which packet protection keys are used to protect the packet.
+The Key Phase bit is initially set to 0 for the first set of 1-RTT packets.  The
+Key Phase is toggled to signal each key update.
 
 The Key Phase bit allows a recipient to detect a change in keying material
 without needing to receive the first packet that triggered the change.  An
@@ -1137,17 +1137,19 @@ and @N.  Values in brackets [] indicate the value of Key Update bits.
    Initiating Peer                    Responding Peer
 
 @M [10] QUIC Packets
-. Update to @N
-@N [01] QUIC Packets
                       -------->
                                      QUIC Packets [10] @M
-                                           Update to @N .
+                      <--------
+... Update to @N
+@N [01] QUIC Packets
+                      -------->
+                                         Update to @N ...
                                      QUIC Packets [11] @N
                       <--------
-. Key Update Permitted
+... Key Update Permitted
 @N [11] QUIC Packets
                       -------->
-                                   Key Update Permitted .
+                                 Key Update Permitted ...
 ~~~
 {: #ex-key-update title="Key Update"}
 
@@ -1162,13 +1164,14 @@ uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
-The endpoint uses the key and IV to protect all subsequent packets, clears the
-Key Update Permitted bit, and toggles the value of the low Key Phase bit.
+The endpoint clears the Key Update Permitted bit, and toggles the value of the
+low Key Phase bit, and uses the updated key and IV to protect all subsequent
+packets.
 
-An endpoint MUST NOT initiate more than one key update at a time.  A new key
-cannot be used until the endpoint has successfully processed a packet with a
-matching Key Phase and the Key Update Permitted bit set.  Together, these
-indicate that the key update was received and acted on.
+An endpoint MUST NOT initiate more than one key update at a time.  A subsequent
+key update can only be performed after the endpoint has successfully processed a
+packet with a matching Key Phase and the Key Update Permitted bit set.
+Together, these indicate that the key update was received and acted on.
 
 Once an endpoint has received and successfully processed packets with the same
 Key Phase value, this indicates that the peer has also updated keys.  The
@@ -1199,7 +1202,7 @@ receiving.
 If the packet protection is successfully removed using the updated key and IV,
 then the keys the endpoint initiates a key update in response, as described in
 {{key-update-initiate}}.  However, as packets with a matching Key Phase have
-been received, the Key Update Permitted bit MAY be set to 1 on the next packet
+been received, the Key Update Permitted bit can be set to 1 on the next packet
 it sends.
 
 An endpoint does not always need to send packets when it detects that its peer
@@ -1228,7 +1231,9 @@ An endpoint SHOULD retain old read keys for a period of no more than three times
 the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old read
 keys and their corresponding secrets SHOULD be discarded.  An endpoint MAY keep
 the Key Update Permitted bit set to 0 until it discards old read keys to limit
-the number of keys it maintains.
+the number of keys it maintains.  An endpoint MAY also prevent key update until
+it discards keys from the handshake, including any 0-RTT keys.  An endpoint
+SHOULD set the Key Update Permitted bit when possible.
 
 Endpoints MUST NOT generate a timing side-channel signal that might indicate
 that the Key Update field was invalid (see {{header-protect-analysis}}).
