@@ -863,7 +863,7 @@ This protection applies to the least-significant bits of the first byte, plus
 the Packet Number field.  The four least-significant bits of the first byte are
 protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
-this covers the reserved bits and the Packet Number Length field; the Key Phase
+this covers the reserved bits and the Packet Number Length field; the Key Update
 bits are also protected for packets with a short header.
 
 The same header protection key is used for the duration of the connection, with
@@ -1105,21 +1105,23 @@ possible to update the keys used to protect packets. The Key Update field in the
 short header is used to indicate when key updates are permitted and when they
 have occurred.
 
-The low bit of the Key Update field (0x04) is the Key Phase bit.  The Key Phase
+The low bit of the Key Update field (0x04) is the Key Phase bit.  The key phase
 is used to indicate which packet protection keys are used to protect the packet.
 The Key Phase bit is initially set to 0 for the first set of 1-RTT packets.  The
-Key Phase is toggled to signal each key update.
+key phase is toggled to signal each key update.
 
-The Key Phase bit allows a recipient to detect a change in keying material
-without needing to receive the first packet that triggered the change.  An
-endpoint that notices a changed Key Phase updates keys and decrypts the packet
-that contains the changed value.
+The key phase allows a recipient to detect a change in keying material without
+needing to receive the first packet that triggered the change.  An endpoint that
+notices a changed key phase updates keys and decrypts the packet that contains
+the changed value.
 
-The high bit of the Key Update field (0x08) is the Key Update Permitted bit.
-Endpoints set this value to 0 until they successfully process a packet with keys
-from the same key phase as they are using to send.  An endpoint MUST NOT
-initiate a key update until it receives a packet with the Key Update Permitted
-bit set.
+The high bit of the Key Update field (0x08) is the Key Update Permitted bit.  An
+endpoint MUST NOT initiate a key update unless they have received a packet with
+the current Key Phase and the Key Update Permitted bit set to 1.  An endpoint
+MAY keep this value set to 0, forbidding key updates.  An endpoint MUST NOT set
+this value to 1 until it successfully processes a packet with keys from the same
+key phase. Once this bit is set it MUST NOT be cleared for packets in the same
+key phase.
 
 Only packets that increase the largest received packet number are used to
 trigger key updates or changes in the Key Update Permitted bit.
@@ -1164,20 +1166,20 @@ corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
 The endpoint clears the Key Update Permitted bit, and toggles the value of the
-low Key Phase bit, and uses the updated key and IV to protect all subsequent
+Key Phase bit, and uses the updated key and IV to protect all subsequent
 packets.
 
 An endpoint MUST NOT initiate more than one key update at a time.  A subsequent
 key update can only be performed after the endpoint has successfully processed a
-packet with a matching Key Phase and the Key Update Permitted bit set.
+packet with a matching key phase and the Key Update Permitted bit set.
 Together, these indicate that the key update was received and acted on.
 
 Once an endpoint has received and successfully processed packets with the same
-Key Phase value, this indicates that the peer has also updated keys.  The
+key phase, this indicates that the peer has also updated keys.  The
 endpoint can then set the Key Update Permitted bit to 1 on packets it
 subsequently sends.  An endpoint MUST NOT set Key Update Permitted to 1 on
 packets it sends unless it has successfully processed packets with a matching
-Key Phase.  An endpoint MAY defer setting Key Update Permitted to 1 until it has
+key phase.  An endpoint MAY defer setting Key Update Permitted to 1 until it has
 discarded old keys, see {{key-update-old-keys}}.
 
 Using Key Update Permitted in this manner guarantees at least one round trip
@@ -1192,7 +1194,7 @@ connection error of type KEY_UDPATE_ERROR.
 ## Responding to a Key Update
 
 An endpoint that sets Key Update Permitted to 1 on packets it sends is willing
-to accept key updates.  If a packet is received with a Key Phase that differs
+to accept key updates.  If a packet is received with a key phase that differs
 from the value the endpoint expects, the endpoint creates a new packet
 protection secret for reading and the corresponding key and IV.  The endpoint
 uses the same key derivation process as its peer uses to generate keys for
@@ -1200,7 +1202,7 @@ receiving.
 
 If the packet protection is successfully removed using the updated key and IV,
 then the keys the endpoint initiates a key update in response, as described in
-{{key-update-initiate}}.  However, as packets with a matching Key Phase have
+{{key-update-initiate}}.  However, as packets with a matching key phase have
 been received, the Key Update Permitted bit can be set to 1 on the next packet
 it sends.
 
@@ -1215,7 +1217,7 @@ connection error of type KEY_UDPATE_ERROR.
 ## Using Old Keys {#key-update-old-keys}
 
 If the most recent packet sent by the endpoint contained a Key Update Permitted
-bit set to 0, a Key Phase other than the value expected indicates that the
+bit set to 0, a key phase other than the value expected indicates that the
 packet was protected with old keys.  If those old keys are available, then they
 can be used to remove packet protection.
 
@@ -1235,10 +1237,10 @@ read keys to limit the number of keys it maintains.  An endpoint MAY also
 prevent key update until it discards keys from the handshake, including any
 0-RTT keys.  An endpoint SHOULD set the Key Update Permitted bit when possible.
 
-Once set, the Key Update Permitted bit MUST NOT be cleared for packets protected
-with the same keys.  An endpoint MAY treat receipt of a packet with the Key
-Update Permitted bit cleared as a connection error of type KEY_UPDATE_ERROR if
-the bit was previously set on packets protected with the same keys.
+Once set, the Key Update Permitted bit MUST NOT be cleared for packets with the
+same key phase.  An endpoint MAY treat receipt of a packet with the Key Update
+Permitted bit cleared as a connection error of type KEY_UPDATE_ERROR if the bit
+was previously set on packets protected with the same keys.
 
 Endpoints MUST NOT generate a timing side-channel signal that might indicate
 that the Key Update field was invalid (see {{header-protect-analysis}}).
