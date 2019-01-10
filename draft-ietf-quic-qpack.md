@@ -674,9 +674,10 @@ of [RFC7541]).
 
 The new capacity MUST be lower than or equal to the limit described in
 {{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
-decoder.  The decoder MUST treat a new dynamic table capacity value that exceeds
-this limit as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter (see {{configuration}}) received
+from the decoder.  The decoder MUST treat a new dynamic table capacity value
+that exceeds this limit as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
 {{eviction}}).  This MUST NOT cause the eviction of entries with outstanding
@@ -1019,7 +1020,8 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is zero
-    bytes.  See {{table-dynamic}} for usage.
+    bytes.  See {{table-dynamic}} for usage.  This is the equivalent of the
+    SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
   : An integer with a maximum value of 2^16 - 1.  The default value is zero.
@@ -1062,7 +1064,7 @@ The entries in the following table are registered by this document.
 |------------------------------|--------|---------------------------|
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
-| HEADER_TABLE_SIZE            | 0x1    | {{configuration}}         |
+| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
 | ---------------------------- | ------ | ------------------------- |
 
@@ -1262,7 +1264,7 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 - Introduced the terms dynamic table capacity and maximum dynamic table
   capacity.
-- Renamed SETTINGS_HEADER_TABLE_SIZE to SETTINGS_MAXIMUM_DYNAMIC_TABLE_CAPACITY.
+- Renamed SETTINGS_HEADER_TABLE_SIZE to SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 
 ## Since draft-ietf-quic-qpack-04
 
