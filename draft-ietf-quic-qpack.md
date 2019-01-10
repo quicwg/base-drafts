@@ -299,8 +299,8 @@ acknowledgement to maintain the Known Received Count, as described in
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
 for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends a Table State Synchronize instruction (see
-{{table-state-synchronize}}).
+streams, the decoder sends a Insert Count Increment instruction (see
+{{insert-count-increment}}).
 
 
 ## Decoder
@@ -329,12 +329,12 @@ blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
 indication that these header blocks will never be processed serves a similar
 function; see {{stream-cancellation}}.
 
-The decoder chooses when to emit Table State Synchronize instructions (see
-{{table-state-synchronize}}). Emitting an instruction after adding each new
+The decoder chooses when to emit Insert Count Increment instructions (see
+{{insert-count-increment}}). Emitting an instruction after adding each new
 dynamic table entry will provide the most timely feedback to the encoder, but
-could be redundant with other decoder feedback. By delaying a Table State
-Synchronize instruction, the decoder might be able to coalesce multiple Table
-State Synchronize instructions, or replace them entirely with Header
+could be redundant with other decoder feedback. By delaying a Insert Count
+Increment instruction, the decoder might be able to coalesce multiple Insert
+Count Increment instructions, or replace them entirely with Header
 Acknowledgements (see {{header-acknowledgement}}). However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
@@ -707,27 +707,27 @@ header blocks and table updates.
 The contents of the decoder stream are an unframed sequence of the following
 instructions.
 
-### Table State Synchronize
+### Insert Count Increment
 
-The Table State Synchronize instruction begins with the '00' two-bit pattern.
+The Insert Count Increment instruction begins with the '00' two-bit pattern.
 The instruction specifies the total number of dynamic table inserts and
-duplications since the last Table State Synchronize or Header Acknowledgement
+duplications since the last Insert Count Increment or Header Acknowledgement
 that increased the Known Received Count for the dynamic table (see
-{{known-received-count}}).  The Insert Count Delta is encoded as a 6-bit prefix
+{{known-received-count}}).  The Increment field is encoded as a 6-bit prefix
 integer. The encoder uses this value to determine which table entries might
 cause a stream to become blocked, as described in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |Insert Count Delta (6+)|
+| 0 | 0 |     Increment (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
-{:#fig-size-sync title="Table State Synchronize"}
+{:#fig-size-sync title="Insert Count Increment"}
 
-An encoder that receives an Insert Count Delta equal to zero or one that
-increases the Known Received Count beyond what the encoder has sent MUST treat
-this as a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+An encoder that receives an Increment field equal to zero or one that increases
+the Known Received Count beyond what the encoder has sent MUST treat this as a
+connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 ### Header Acknowledgement
 
