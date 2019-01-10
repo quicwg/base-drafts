@@ -299,7 +299,7 @@ acknowledgement to maintain the Known Received Count, as described in
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
 for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends a Insert Count Increment instruction (see
+streams, the decoder sends an Insert Count Increment instruction (see
 {{insert-count-increment}}).
 
 
@@ -332,7 +332,7 @@ function; see {{stream-cancellation}}.
 The decoder chooses when to emit Insert Count Increment instructions (see
 {{insert-count-increment}}). Emitting an instruction after adding each new
 dynamic table entry will provide the most timely feedback to the encoder, but
-could be redundant with other decoder feedback. By delaying a Insert Count
+could be redundant with other decoder feedback. By delaying an Insert Count
 Increment instruction, the decoder might be able to coalesce multiple Insert
 Count Increment instructions, or replace them entirely with Header
 Acknowledgements (see {{header-acknowledgement}}). However, delaying too long
