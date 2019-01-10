@@ -481,14 +481,14 @@ the first entry added after the Base, see {{post-base}}.
 ~~~~~ drawing
  Required
   Insert
-  Count      Base
-    |         |
-    V         V
-    +---+-----+-----+-----+-------+
-    | n | n-1 | n-2 | ... |   d   |  Absolute Index
-    +---+-----+  -  +-----+   -   +
-              |  0  | ... | n-d-3 |  Relative Index
-              +-----+-----+-------+
+  Count        Base
+    |           |
+    V           V
+    +-----+-----+-----+-----+-------+
+    | n-1 | n-2 | n-3 | ... |   d   |  Absolute Index
+    +-----+-----+  -  +-----+   -   +
+                |  0  | ... | n-d-3 |  Relative Index
+                +-----+-----+-------+
 
 n = count of entries inserted
 d = count of entries dropped
@@ -507,14 +507,14 @@ as absolute indices, with the zero value being the first entry inserted after
 the Base.
 
 ~~~~~ drawing
-             Base
-              |
-              V
-    +---+-----+-----+-----+-----+
-    | n | n-1 | n-2 | ... |  d  |  Absolute Index
-    +---+-----+-----+-----+-----+
-    | 1 |  0  |                    Post-Base Index
-    +---+-----+
+               Base
+                |
+                V
+    +-----+-----+-----+-----+-----+
+    | n-1 | n-2 | n-3 | ... |  d  |  Absolute Index
+    +-----+-----+-----+-----+-----+
+    |  1  |  0  |                    Post-Base Index
+    +-----+-----+
 
 n = count of entries inserted
 d = count of entries dropped
