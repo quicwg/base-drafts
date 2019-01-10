@@ -1186,13 +1186,14 @@ will need to open a new connection for new requests if the existing connection
 has been idle for longer than the server's advertised idle timeout, and SHOULD
 do so if approaching the idle timeout.
 
-HTTP clients are expected to use QUIC PING frames to keep connections open while
-there are responses outstanding for requests or server pushes. If the client is
-not expecting a response from the server, allowing an idle connection to time
-out is preferred over expending effort maintaining a connection that might not
-be needed.  A gateway MAY use PING to maintain connections in anticipation of
-need rather than incur the latency cost of connection establishment to servers.
-Servers SHOULD NOT use PING frames to keep a connection open.
+HTTP clients are expected to request that the transport keep connections open
+while there are responses outstanding for requests or server pushes, as
+described in Section 19.2 of {{QUIC-TRANSPORT}}. If the client is not expecting
+a response from the server, allowing an idle connection to time out is preferred
+over expending effort maintaining a connection that might not be needed.  A
+gateway MAY maintain connections in anticipation of need rather than incur the
+latency cost of connection establishment to servers. Servers SHOULD NOT actively
+keep connections open.
 
 ## Connection Shutdown
 
