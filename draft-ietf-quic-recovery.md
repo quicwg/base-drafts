@@ -362,10 +362,10 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-Implementers MAY experiment with using other reordering thresholds, including
-absolute thresholds, bearing in mind that a lower multiplier reduces reordering
-resilience and increases spurious retransmissions, and a higher multiplier
-increases loss detection delay.
+Implementations MAY experiment with absolute thresholds, thresholds from
+previous connections, adaptive thresholds, or including RTT variance.  Smaller
+thresholds reduce reordering resilience and increase spurious retransmissions,
+and larger thresholds increase loss detection delay.
 
 
 ## Timeout Loss Detection
@@ -421,6 +421,11 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
+
 
 #### Discarding Initial State {#discard-initial}
 
@@ -430,11 +435,6 @@ point, all loss recovery state for the Initial packet number space is also
 discarded. Packets that are in flight for the packet number space are not
 declared as either acknowledged or lost.  After discarding state, new Initial
 packets will not be sent.
-
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
 
 
 ### Probe Timeout {#pto}
@@ -495,6 +495,13 @@ be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
+
+When a PTO timer expires, new or previously-sent data may not be available to
+send and packets may still be in flight.  A sender can be blocked from sending
+new data in the future if packets are left in flight.  Under these conditions, a
+sender SHOULD mark any packets still in flight as lost.  If a sender wishes to
+establish delivery of packets still in flight, it MAY send an ack-eliciting
+packet and re-arm the PTO timer instead.
 
 
 #### Loss Detection {#pto-loss}
@@ -671,10 +678,11 @@ Pseudocode for OnPacketSent follows:
    sent_packets[packet_number].time_sent = now
    sent_packets[packet_number].ack_eliciting = ack_eliciting
    sent_packets[packet_number].in_flight = in_flight
-   if (ack_eliciting):
+   if (in_flight):
      if (is_crypto_packet):
        time_of_last_sent_crypto_packet = now
-     time_of_last_sent_ack_eliciting_packet = now
+     if (ack_eliciting):
+       time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
      sent_packets[packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -711,10 +719,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
     for acked_packet in newly_acked_packets:
       OnPacketAcked(acked_packet.packet_number)
 
+    DetectLostPackets()
+
     crypto_count = 0
     pto_count = 0
 
-    DetectLostPackets()
     SetLossDetectionTimer()
 
 
@@ -946,10 +955,15 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If a threshold number of consecutive PTOs have occurred (pto_count is more than
+When an ACK frame is received that establishes loss of all in-flight packets
+sent prior to a threshold number of consecutive PTOs (pto_count is more than
 kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
 considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window.
+window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
+response of collapsing the congestion window on persistent congestion is
+functionally similar to a sender's response on a Retransmission Timeout (RTO) in
+TCP {{RFC5681}}.
+
 
 ## Pacing
 
@@ -975,7 +989,7 @@ in Linux (3.11 onwards).
 ## Sending data after an idle period
 
 A sender becomes idle if it ceases to send data and has no bytes in flight.  A
-sender's congestion window MUST not increase while it is idle.
+sender's congestion window MUST NOT increase while it is idle.
 
 When sending data after becoming idle, a sender MUST reset its congestion window
 to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
@@ -987,12 +1001,20 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 ## Discarding Packet Number Space State
 
-When keys for an packet number space are discarded, any packets sent with those
-keys are removed from the count of bytes in flight.  No loss events will occur
-any in-flight packets from that space, as a result of discarding loss recovery
-state (see {{discard-initial}}).  Note that it is expected that keys are
-discarded after those packets would be declared lost, but Initial secrets are
-destroyed earlier.
+When keys for a packet number space are discarded, any in-flight packets
+sent with those keys are removed from the count of bytes in flight.  Loss
+recovery state is also discarded, so no loss events will occur for any
+in-flight packets from that space (see {{discard-initial}}).  Note that it is
+expected that keys are discarded after those packets would be declared lost,
+but Initial secrets are destroyed earlier.
+
+When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
+the count of bytes in flight.  Loss recovery state is also discarded, so no
+loss events will occur for any in-flight 0-RTT packets.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
 
 ## Pseudocode
 
@@ -1021,15 +1043,13 @@ kLossReductionFactor:
   The RECOMMENDED value is 0.5.
 
 kPersistentCongestionThreshold:
-: Number of consecutive PTOs after which network is considered to be
-  experiencing persistent congestion.  The rationale for this threshold is to
-  enable a sender to use initial PTOs for aggressive probing, similar to Tail
-  Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  Once the number of consecutive PTOs
-  reaches this threshold - that is, persistent congestion is established - the
-  sender responds by collapsing its congestion window to kMinimumWindow, similar
-  to a Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value
-  for kPersistentCongestionThreshold is 2, which is equivalent to having two
-  TLPs before an RTO in TCP.
+: Number of consecutive PTOs required for persistent congestion to be
+  established.  The rationale for this threshold is to enable a sender to use
+  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
+  {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
+  a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
+  kPersistentCongestionThreshold is 2, which is equivalent to having two TLPs
+  before an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
