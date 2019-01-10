@@ -427,7 +427,7 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-#### Discarding Packet State {#discarding-packets}
+#### Discarding Keys and Packet State {#discarding-packets}
 
 When keys are discarded, recovery state for all in-flight packets sent with
 those keys is discarded.  The packets are removed from the count of
