@@ -429,11 +429,12 @@ a subsequent connection attempt to the server.
 
 #### Discarding Keys and Packet State {#discarding-packets}
 
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), recovery state for all in-flight packets sent with
-those keys is discarded.  The packets are removed from the count of
-bytes in flight and no acknowledgements or loss events will occur
-for those packets.  Note that it is expected that keys are discarded after those
-packets would be declared lost, but Initial secrets are destroyed earlier.
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}),
+recovery state for all in-flight packets sent with those keys is discarded.
+The packets are removed from the count of bytes in flight and no
+acknowledgements or loss events will occur for those packets.  Note that it
+is expected that keys are discarded after those packets would be declared lost,
+but Initial secrets are destroyed earlier.
 
 As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
 receiving Initial packets once they start exchanging Handshake packets.  At this
