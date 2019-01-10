@@ -713,21 +713,21 @@ The Table State Synchronize instruction begins with the '00' two-bit pattern.
 The instruction specifies the total number of dynamic table inserts and
 duplications since the last Table State Synchronize or Header Acknowledgement
 that increased the Known Received Count for the dynamic table (see
-{{known-received-count}}).  This is encoded as a 6-bit prefix integer. The
-encoder uses this value to determine which table entries might cause a stream to
-become blocked, as described in {{state-synchronization}}.
+{{known-received-count}}).  The Insert Count Delta is encoded as a 6-bit prefix
+integer. The encoder uses this value to determine which table entries might
+cause a stream to become blocked, as described in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |   Insert Count (6+)   |
+| 0 | 0 |Insert Count Delta (6+)|
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-size-sync title="Table State Synchronize"}
 
-An encoder that receives an Insert Count equal to zero or one that increases
-Known Received Count beyond what the encoder has sent MUST treat this as a
-connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+An encoder that receives an Insert Count Delta equal to zero or one that
+increases the Known Received Count beyond what the encoder has sent MUST treat
+this as a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 ### Header Acknowledgement
 
