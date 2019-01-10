@@ -448,7 +448,7 @@ is expected to be infrequent.
 
 #### Ignoring Loss of Undecryptable Packets
 
-During the handshake, the keys to remove packet protection may not yet be
+During the handshake, some packet protection keys might not be
 available when the packet arrives. In particular, Handshake and 0-RTT packets
 will not be processable until the Initial flight arrives and 1-RTT packets
 will not be processable until the handshake completes.  Implementations MAY
