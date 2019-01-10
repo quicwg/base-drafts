@@ -377,7 +377,7 @@ name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by the decoder.
 
 
-### Calculating Table Size
+### Dynamic Table Size
 
 The size of the dynamic table is the sum of the size of its entries.
 
@@ -385,52 +385,58 @@ The size of an entry is the sum of its name's length in bytes (as defined in
 {{string-literals}}), its value's length in bytes, and 32.
 
 The size of an entry is calculated using the length of its name and value
-without any Huffman encoding applied.
+without Huffman encoding applied.
 
 
-### Eviction
+### Dynamic Table Capacity and Eviction {#eviction}
+
+The encoder sets the capacity of the dynamic table, which serves as the upper
+limit on its size.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
-equal to (maximum size - new entry size) or until the table is empty. The
+equal to (table capacity - size of new entry) or until the table is empty. The
 encoder MUST NOT evict a dynamic table entry unless it has first been
 acknowledged by the decoder.
 
-If the size of the new entry is less than or equal to the maximum size, that
-entry is added to the table.  It is an error to attempt to add an entry that is
-larger than the maximum size; this MUST be treated as a connection error of type
+If the size of the new entry is less than or equal to the dynamic table
+capacity, then that entry is added to the table.  It is an error if the encoder
+attempts to add an entry that is larger than the dynamic table capacity; the
+decoder MUST treat this as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
-cautioned to avoid deleting the referenced name if the referenced entry is
-evicted from the dynamic table prior to inserting the new entry.
+cautioned to avoid deleting the referenced name or value if the referenced entry
+is evicted from the dynamic table prior to inserting the new entry.
 
-Whenever the maximum size for the dynamic table is reduced by the encoder,
-entries are evicted from the end of the dynamic table until the size of the
-dynamic table is less than or equal to the new maximum size.  This mechanism can
-be used to completely clear entries from the dynamic table by setting a maxiumum
-size of 0, which can subsequently be restored.
+Whenever the dynamic table capacity is reduced by the encoder, entries are
+evicted from the end of the dynamic table until the size of the dynamic table is
+less than or equal to the new table capacity.  This mechanism can be used to
+completely clear entries from the dynamic table by setting a capacity of 0,
+which can subsequently be restored.
 
 
-### Maximum Table Size
+### Maximum Dynamic Table Capacity
 
-The encoder decides how to update the dynamic table size and as such can control
-how much memory is used by the dynamic table.  To limit the memory requirements
-of the decoder, the dynamic table size is strictly bounded.  The decoder
-determines the maximum size that the encoder is permitted to set for the dynamic
-table.  In HTTP/3, this value is determined by the SETTINGS_HEADER_TABLE_SIZE
-setting (see {{configuration}}).  The encoder MUST not set a dynamic table size
-that exceeds this maximum, but it can choose to use a lower dynamic table size
-(see {{size-update}}).
+To bound the memory requirements of the decoder, the decoder limits the maximum
+value the encoder is permitted to set for the dynamic table capacity.  In
+HTTP/3, this limit is determined by the value of
+SETTINGS_QPACK_MAX_TABLE_CAPACITY sent by the decoder (see {{configuration}}).
+The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
+it can choose to use a lower dynamic table capacity (see
+{{set-dynamic-capacity}}).
 
-The initial maximum size is determined by the corresponding setting when HTTP
-requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/3, the table size is the remembered value of the setting, even if
-the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
-servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
-initial maximum table size is the value of the setting in the peer's SETTINGS
-frame.
+
+### Initial Dynamic Table Capacity
+
+The initial dynamic table capacity is determined by the corresponding setting
+when HTTP requests or responses are first permitted to be sent.  For clients
+using 0-RTT data in HTTP/3, the initial table capacity is the remembered value
+of the setting, even if the server later specifies a larger maximum dynamic
+table capacity in its SETTINGS frame.  For HTTP/3 servers and HTTP/3 clients
+when 0-RTT is not attempted or is rejected, the initial table capacity is the
+value of the setting in the peer's SETTINGS frame.
 
 
 ### Absolute Indexing {#indexing}
@@ -439,6 +445,7 @@ Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes based on the context of the
 reference. The first entry inserted has an absolute index of "0"; indices
 increase by one with each insertion.
+
 
 ### Relative Indexing
 
@@ -668,32 +675,32 @@ entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
 
-### Dynamic Table Size Update {#size-update}
+### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
-An encoder informs the decoder of a change to the size of the dynamic table
-using an instruction which begins with the '001' three-bit pattern.  The new
-maximum table size is represented as an integer with a 5-bit prefix (see Section
-5.1 of [RFC7541]).
+An encoder informs the decoder of a change to the dynamic table capacity using
+an instruction which begins with the '001' three-bit pattern.  The new dynamic
+table capacity is represented as an integer with a 5-bit prefix (see Section 5.1
+of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 | 1 |   Max size (5+)   |
+| 0 | 0 | 1 |   Capacity (5+)   |
 +---+---+---+-------------------+
 ~~~~~~~~~~
-{:#fig-size-change title="Maximum Dynamic Table Size Change"}
+{:#fig-set-capacity title="Set Dynamic Table Capacity"}
 
-The new maximum size MUST be lower than or equal to the limit described in
-{{maximum-table-size}}.  In HTTP/3, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
-decoder.  The decoder MUST treat a value that exceeds this limit as a connection
-error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+The new capacity MUST be lower than or equal to the limit described in
+{{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter (see {{configuration}}) received
+from the decoder.  The decoder MUST treat a new dynamic table capacity value
+that exceeds this limit as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
-Reducing the maximum size of the dynamic table can cause entries to be evicted
-(see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
-with outstanding references (see {{reference-tracking}}).  Changing the size of
-the dynamic table is not acknowledged as this instruction does not insert an
-entry.
+Reducing the dynamic table capacity can cause entries to be evicted (see
+{{eviction}}).  This MUST NOT cause the eviction of entries with outstanding
+references (see {{reference-tracking}}).  Changing the capacity of the dynamic
+table is not acknowledged as this instruction does not insert an entry.
 
 
 ## Decoder Stream
@@ -786,9 +793,9 @@ end of a stream, it generates a Stream Cancellation instruction on the decoder
 stream.  Similarly, when an endpoint abandons reading of a stream it needs to
 signal this using the Stream Cancellation instruction.  This signals to the
 encoder that all references to the dynamic table on that stream are no longer
-outstanding.  A decoder with a maximum dynamic table size equal to zero (see
-{{maximum-table-size}}) MAY omit sending Stream Cancellations, because the
-encoder cannot have any dynamic table references.
+outstanding.  A decoder with a maximum dynamic table capacity equal to zero (see
+{{maximum-dynamic-table-capacity}}) MAY omit sending Stream Cancellations,
+because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
@@ -842,11 +849,11 @@ have.  The smallest entry has empty name and value strings and has the size of
 32.  Hence `MaxEntries` is calculated as
 
 ~~~
-   MaxEntries = floor( MaxTableSize / 32 )
+   MaxEntries = floor( MaxTableCapacity / 32 )
 ~~~
 
-`MaxTableSize` is the maximum size of the dynamic table as specified by the
-decoder (see {{maximum-table-size}}).
+`MaxTableCapacity` is the maximum capacity of the dynamic table as specified by
+the decoder (see {{maximum-dynamic-table-capacity}}).
 
 
 The decoder reconstructs the Required Insert Count using the following
@@ -1050,9 +1057,10 @@ represented as an 8-bit prefix string literal.
 
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
-  SETTINGS_HEADER_TABLE_SIZE (0x1):
+  SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is zero
-    bytes.  See {{table-dynamic}} for usage.
+    bytes.  See {{table-dynamic}} for usage.  This is the equivalent of the
+    SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
   : An integer with a maximum value of 2^16 - 1.  The default value is zero.
@@ -1095,7 +1103,7 @@ The entries in the following table are registered by this document.
 |------------------------------|--------|---------------------------|
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
-| HEADER_TABLE_SIZE            | 0x1    | {{configuration}}         |
+| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
 | ---------------------------- | ------ | ------------------------- |
 
@@ -1290,6 +1298,12 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-05
+
+- Introduced the terms dynamic table capacity and maximum dynamic table
+  capacity.
+- Renamed SETTINGS_HEADER_TABLE_SIZE to SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 
 ## Since draft-ietf-quic-qpack-04
 
