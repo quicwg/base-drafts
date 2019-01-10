@@ -44,7 +44,7 @@ normative:
         org: Mozilla
         role: editor
 
-    QUIC-TLS:
+  QUIC-TLS:
     title: "Using TLS to Secure QUIC"
     date: {DATE}
     seriesinfo:
@@ -54,6 +54,12 @@ normative:
         ins: M. Thomson
         name: Martin Thomson
         org: Mozilla
+        role: editor
+      -
+        ins: S. Turner
+        name: Sean Turner
+        org: sn3rd
+        email: sean@sn3rd.com
         role: editor
 
 informative:
