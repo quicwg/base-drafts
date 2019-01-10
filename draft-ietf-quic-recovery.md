@@ -44,6 +44,18 @@ normative:
         org: Mozilla
         role: editor
 
+    QUIC-TLS:
+    title: "Using TLS to Secure QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-tls-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+
 informative:
 
   FACK:
