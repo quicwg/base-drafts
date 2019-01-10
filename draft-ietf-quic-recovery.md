@@ -449,7 +449,7 @@ is expected to be infrequent.
 #### Ignoring Loss of Undecryptable Packets
 
 During the handshake, some packet protection keys might not be
-available when the packet arrives. In particular, Handshake and 0-RTT packets
+available when a packet arrives. In particular, Handshake and 0-RTT packets
 will not be processable until the Initial flight arrives and 1-RTT packets
 will not be processable until the handshake completes.  Implementations MAY
 ignore the loss of Handshake, 0-RTT, and 1-RTT packets that arrive before the
