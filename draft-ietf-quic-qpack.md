@@ -411,12 +411,13 @@ which can subsequently be restored.
 
 ### Maximum Dynamic Table Capacity
 
-To bound the memory requirements of the decoder, the value that the encoder is
-permitted to set as dynamic table capacity is limited.  In HTTP/3, this limit is
-determined by the value of SETTINGS_MAXIMUM_DYNAMIC_TABLE_CAPACITY sent by the
-decoder (see {{configuration}}).  The encoder MUST not set a dynamic table
-capacity that exceeds this maximum, but it can choose to use a lower dynamic
-table capacity (see {{capacity-update}}).
+To bound the memory requirements of the decoder, the decoder limits the maximum
+value the encoder is permitted to set for the dynamic table capacity.  In
+HTTP/3, this limit is determined by the value of
+SETTINGS_QPACK_MAX_TABLE_CAPACITY sent by the decoder (see {{configuration}}).
+The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
+it can choose to use a lower dynamic table capacity (see
+{{set-dynamic-capacity}}).
 
 
 ### Initial Dynamic Table Capacity
@@ -656,7 +657,7 @@ entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
 
-### Dynamic Table Capacity Update {#capacity-update}
+### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
 An encoder informs the decoder of a change to the dynamic table capacity using
 an instruction which begins with the '001' three-bit pattern.  The new dynamic
@@ -669,7 +670,7 @@ of [RFC7541]).
 | 0 | 0 | 1 |   Capacity (5+)   |
 +---+---+---+-------------------+
 ~~~~~~~~~~
-{:#fig-capacity-update title="Dynamic Table Capacity Update"}
+{:#fig-set-capacity title="Set Dynamic Table Capacity"}
 
 The new capacity MUST be lower than or equal to the limit described in
 {{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
@@ -1016,7 +1017,7 @@ represented as an 8-bit prefix string literal.
 
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
-  SETTINGS_MAXIMUM_DYNAMIC_TABLE_CAPACITY (0x1):
+  SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is zero
     bytes.  See {{table-dynamic}} for usage.
 
