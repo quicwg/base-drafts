@@ -429,7 +429,7 @@ a subsequent connection attempt to the server.
 
 #### Discarding Keys and Packet State {#discarding-packets}
 
-When keys are discarded, recovery state for all in-flight packets sent with
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), recovery state for all in-flight packets sent with
 those keys is discarded.  The packets are removed from the count of
 bytes in flight and no acknowledgements or loss events will occur
 for those packets.  Note that it is expected that keys are discarded after those
