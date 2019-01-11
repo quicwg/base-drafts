@@ -130,31 +130,25 @@ version negotiation and connection establishment are completed.
 
 ## Proposed Short Header Format Including Spin Bit {#header}
 
-As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the sixth most significant bit (0x04) of the first byte in
-the short header for the spin bit.
+{{QUIC-TRANSPORT}} specifies using the third most significant bit of the first
+byte in the short header for the spin bit (0x20, labeled S in
+{{fig-short-header}}). The Spin bit is set 0 or 1 depending on the stored spin
+value that is updated on packet reception as explained in {{spinbit}}.
 
-~~~~~
-
+~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~~~
-{: #fig-short-header title="Short Header Format including proposed Spin Bit"}
-
-S: The Spin bit is set 0 or 1 depending on the stored spin value that is
-updated on packet reception as explained in {{spinbit}}.
-
-R: Two additional bits are reserved for experimentation in the short header.
+{: #fig-short-header title="Short Header Packet Format"}
 
 ## Setting the Spin Bit on Outgoing Packets {#spinbit}
 
@@ -235,12 +229,25 @@ Implementations SHOULD allow administrators of clients and servers to disable
 the spin bit either globally or on a per-connection basis.
 Even when the spin bit is not disabled by the administrator implementations
 SHOULD disable the spin bit on a randomly chosen
-fraction of connections.  The selection process should be designed such that
-on average the spin bit is disabled for at least 1/8th of the connections.
+fraction of connections.
 
-When the spin bit is disabled, endpoints SHOULD set the spin bit value to zero,
-regardless of the values received from their peer. Addendums or revisions to
-this document MAY define alternative behaviors in the future.
+The selection process SHOULD be designed such that
+on average the spin bit is disabled for at least one eighth of network paths.
+The selection process SHOULD be externally unpredictable but consistent for
+any given combination of source and destination address/port. For instance,
+the implementation might have a static key which it uses to key a pseudorandom
+function over these values and use the output to determine whether to
+send the spin bit. The selection process performed at the beginning
+of the connection SHOULD be applied for all paths used by the connection.
+
+Note that where multiple connections use the same path,
+the use of the spin bit MAY be coordinated by endpoints,
+recognizing that this might not be possible in many cases.
+
+When the spin bit is disabled, endpoints MAY set the spin bit to any value,
+and MUST accept any incoming value. It is RECOMMENDED that they
+set the spin bit to a random value either chosen independently for each packet,
+or chosen independently for each path and kept constant for that path.
 
 # IANA Considerations
 
