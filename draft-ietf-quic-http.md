@@ -467,20 +467,20 @@ HEADERS frames can only be sent on request / push streams.
 ### PRIORITY {#frame-priority}
 
 The PRIORITY (type=0x02) frame specifies the client-advised priority of a
-request stream, server push or placeholder.
-
-When opening a new request stream, a PRIORITY frame MAY be sent as the first
-frame of the stream creating a dependency on an existing element.  In order to
-ensure that prioritization is processed in a consistent order, any subsequent
-PRIORITY frames for that request stream MUST be sent on the control stream.  A
-PRIORITY frame received after other frames on a request stream MUST be treated
-as a stream error of type HTTP_UNEXPECTED_FRAME.
+request, server push or placeholder.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
 it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
 request using the corresponding stream ID, a server push using a Push ID (see
 {{frame-push-promise}}), or a placeholder using a Placeholder ID (see
 {{placeholders}}).
+
+When a client initiates a request, a PRIORITY frame MAY be sent as the first
+frame of the stream, creating a dependency on an existing element.  In order to
+ensure that prioritization is processed in a consistent order, any subsequent
+PRIORITY frames for that request MUST be sent on the control stream.  A
+PRIORITY frame received after other frames on a request stream MUST be treated
+as a stream error of type HTTP_UNEXPECTED_FRAME.
 
 If, by the time a new request stream is opened, its priority information
 has already been received via the control stream, the PRIORITY frame
@@ -501,13 +501,14 @@ sent on the request stream MUST be ignored.
 
 The PRIORITY frame payload has the following fields:
 
-  Prioritized Type:
-  : A two-bit field indicating the type of element being prioritized.   When
-    sent on a request stream, this MUST be set to `11`.  When sent on the
-    control stream, this MUST NOT be set to `11`.
+  PT (Prioritized Element Type):
+  : A two-bit field indicating the type of element being prioritized (see
+    {{prioritized-element-types}}). When sent on a request stream, this MUST be
+    set to `11`.  When sent on the control stream, this MUST NOT be set to `11`.
 
-  Dependency Type:
-  : A two-bit field indicating the type of element being depended on.
+  DT (Element Dependency Type):
+  : A two-bit field indicating the type of element being depended on (see
+    {{element-dependency-types}}).
 
   Empty:
   : A four-bit field which MUST be zero when sent and MUST be ignored
@@ -535,7 +536,7 @@ The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
 of the associated Element ID fields.
 
-| Type Bits | Type Description | Prioritized Element ID Contents |
+| PT Bits   | Type Description | Prioritized Element ID Contents |
 | --------- | ---------------- | ------------------------------- |
 | 00        | Request stream   | Stream ID                       |
 | 01        | Push stream      | Push ID                         |
@@ -543,7 +544,7 @@ of the associated Element ID fields.
 | 11        | Current stream   | Absent                          |
 {: #prioritized-element-types title="Prioritized Element Types"}
 
-| Type Bits | Type Description | Element Dependency ID Contents |
+| DT Bits   | Type Description | Element Dependency ID Contents |
 | --------- | ---------------- | ------------------------------ |
 | 00        | Request stream   | Stream ID                      |
 | 01        | Push stream      | Push ID                        |
@@ -1052,22 +1053,14 @@ Due to reordering between streams, an element can also be prioritized which is
 not yet in the tree. Such elements are added to the tree with the requested
 priority.
 
+When a prioritized element is first created it has a default inital weight
+of 16 and a default dependency. Requests and placeholders are dependent on the
+root of the priority tree, pushes are dependent on the client request on which
+the PUSH_PROMISE frame was sent.
 
-In all cases, elements are assigned an initial weight of 16 unless a PRIORITY
-frame begins the stream.
-
-When a client request is first sent, its parent and weight are determined by the
-PRIORITY frame (see {{frame-priority}}) which begins the stream, if present.
-Otherwise, the element is dependent on the root of the priority tree. A request
-stream dependent upon another request stream expresses the preference that the
-latter stream (the "parent" request) be allocated resources before the former
-stream (the "dependent" request).
-
-Placeholders are dependent on the root of the priority tree when first
-allocated.
-
-Pushed streams are initially dependent on the client request on
-which the PUSH_PROMISE frame was sent.
+Requests may override the default intial values by including a PRIORTIY frame
+(see {{frame-priority}}) at the beginning of the stream. Pushes and placeholders
+may be later updated by sending a PRIORITY frame on the control stream.
 
 ### Placeholders
 
@@ -1080,10 +1073,11 @@ the prioritization the client had attempted to express.
 
 In HTTP/3, a number of placeholders are explicitly permitted by the server using
 the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintaining these IDs in the tree, clients can use them with confidence that the
-server will not have discarded the state.  Clients MUST NOT send the
-`SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a server MUST be
-treated as a connection error of type `HTTP_WRONG_SETTING_DIRECTION`.
+maintaining these placeholders in the prioritization tree, clients can use them
+with confidence that the server will not have discarded the state. Clients MUST
+NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
+server MUST be treated as a connection error of type
+`HTTP_WRONG_SETTING_DIRECTION`.
 
 Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
@@ -1094,7 +1088,7 @@ Like streams, placeholders have priority information associated with them.
 
 Because placeholders will be used to "root" any persistent structure of the tree
 which the client cares about retaining, servers can aggressively prune inactive
-regions from the priority tree For prioritization purposes, a node in the tree
+regions from the priority tree. For prioritization purposes, a node in the tree
 is considered "inactive" when the corresponding stream has been closed for at
 least two round-trip times (using any reasonable estimate available on the
 server).  This delay helps mitigate race conditions where the server has pruned
