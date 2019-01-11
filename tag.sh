@@ -7,7 +7,7 @@
 # https://trac.tools.ietf.org/tools/ietfdb/ticket/2390 still isn't fixed.
 
 if [[ $# -eq 0 ]]; then
-    files=(transport tls recovery http)
+    files=(transport tls recovery http qpack)
 else
     files=("$@")
 fi
@@ -16,12 +16,6 @@ enabled() {
     r="$1"; shift
     for e; do [[ "$e" == "$r" ]] && return 0; done
     return 1
-}
-
-tag() {
-    message="Tag for $2 created by $(git config --get user.name)"
-    git -c user.email="$1" tag -am "$message" "$2"
-    git push origin "$2"
 }
 
 declare -A authors=( \
@@ -34,10 +28,24 @@ declare -A authors=( \
     [spin-exp]=ietf@trammell.ch \
 )
 
-for t in $(make show-next); do
+if ! make; then
+    echo "FAILED TO BUILD STOP" 1>&2
+    exit 1
+fi
+
+all=($(make show-next))
+tags=()
+thisuser=$(git config --get user.name)
+
+for t in "${all[@]}"; do
     r="${t%-[0-9][0-9]}"
     r="${r#draft-ietf-quic-}"
     if enabled "$r" "${files[@]}"; then
-        tag "${authors[$r]}" "$t"
+        message="Tag for $t created by $thisuser"
+        git -c user.email="${authors[$r]}" tag -am "$message" "$t"
+	tags+=("$t")
     fi
+done
+for t in "${tags[@]}"; do
+    git push origin "$t"
 done

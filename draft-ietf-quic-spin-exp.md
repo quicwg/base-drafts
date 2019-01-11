@@ -3,7 +3,7 @@ title: The QUIC Latency Spin Bit
 abbrev: QUIC Spin Bit
 docname: draft-ietf-quic-spin-exp-latest
 date: {DATE}
-category: exp
+category: std
 
 ipr: trust200902
 workgroup: QUIC
@@ -104,7 +104,7 @@ code and issues list for this draft can be found at
 # Introduction
 
 The QUIC transport protocol {{QUIC-TRANSPORT}} uses
-Transport Layer Security (TLS) {{?TLS=I-D.ietf-tls-tls13}} to encrypt most of
+Transport Layer Security (TLS) {{?TLS=RFC8446}} to encrypt most of
 its protocol internals. In contrast to TCP where the sequence and
 acknowledgement numbers and timestamps (if the respective option is in use)
 can be seen by on-path observers and used to estimate end-to-end latency,
@@ -128,33 +128,27 @@ measure handshake RTT without a spin bit, it is sufficient to include the spin
 bit in the short packet header. The spin bit therefore appears only after
 version negotiation and connection establishment are completed.
 
-## Proposed Short Header Format Including Spin Bit
+## Proposed Short Header Format Including Spin Bit {#header}
 
-As of the current editor's version of {{QUIC-TRANSPORT}}, this proposal
-specifies using the sixth most significant bit (0x04) of the first octet in
-the short header for the spin bit.
+{{QUIC-TRANSPORT}} specifies using the third most significant bit of the first
+byte in the short header for the spin bit (0x20, labeled S in
+{{fig-short-header}}). The Spin bit is set 0 or 1 depending on the stored spin
+value that is updated on packet reception as explained in {{spinbit}}.
 
-~~~~~
-
+~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+
-|0|K|1|1|0|S|R R|
+|0|1|S|R|R|K|P P|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Destination Connection ID (0..144)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Packet Number (8/16/32)                ...
+|                     Packet Number (8/16/24/32)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     Protected Payload (*)                   ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~~~
-{: #fig-short-header title="Short Header Format including proposed Spin Bit"}
-
-S: The Spin bit is set 0 or 1 depending on the stored spin value that is
-updated on packet reception as explained in {{spinbit}}.
-
-R: Two additional bits are reserved for experimentation in the short header.
+{: #fig-short-header title="Short Header Packet Format"}
 
 ## Setting the Spin Bit on Outgoing Packets {#spinbit}
 
@@ -184,7 +178,7 @@ observing these changes in the latency spin bit, as described in {{usage}}.
 See {{?QUIC-SPIN=I-D.trammell-quic-spin}} for further illustration of this
 mechanism in action.
 
-## Resetting Spin Value State
+## Resetting Spin Value State {#state-reset}
 
 Each client and server resets it spin value to zero when sending the first
 packet of a given connection with a new connection ID. This reduces the risk
@@ -198,16 +192,6 @@ direction changes value once per round-trip time (RTT). An on-path observer
 can observe the time difference between edges (changes from 1 to 0 or 0 to 1)
 in the spin bit signal in a single direction to measure one sample of
 end-to-end RTT.
-
-An observer can store the largest observed packet number per flow, and reject
-edges that do not have a monotonically increasing packet number (greater than
-the largest observed packet number).  This will avoid detecting spurious edges
-caused by reordering events that include an edge, which would lead to very low
-RTT estimates if not ignored.
-
-If the spin bit edge occurs after a long packet number gap, it should be
-ignored: this filters out high RTT estimates due to loss of an actual edge in
-a burst of lost packets.
 
 Note that this measurement, as with passive RTT measurement for TCP, includes
 any transport protocol delay (e.g., delayed sending of acknowledgements)
@@ -224,11 +208,12 @@ small amount of periodic application traffic, where that period is longer than
 the RTT, measuring the spin bit provides information about the application
 period, not the network RTT.
 
-Simple heuristics based on the observed data rate per flow or changes in the
-RTT series can be used to reject bad RTT samples due to application or flow
-control limitation; for example, QoF {{TMA-QOF}} rejects component RTTs
-significantly higher than RTTs over the history of the flow. These heuristics
-may use the handshake RTT as an initial RTT estimate for a given flow.
+Simple heuristics based on the observed data rate per flow or changes in the RTT
+series can be used to reject bad RTT samples due to lost or reordered edges in
+the spin signal, as well as application or flow control limitation; for example,
+QoF {{TMA-QOF}} rejects component RTTs significantly higher than RTTs over the
+history of the flow. These heuristics may use the handshake RTT as an initial
+RTT estimate for a given flow.
 
 An on-path observer that can see traffic in both directions (from client to
 server and from server to client) can also use the spin bit to measure
@@ -238,6 +223,31 @@ and the observer and the client, respectively. It does this by measuring the
 delay between a spin edge observed in the upstream direction and that observed
 in the downstream direction, and vice versa.
 
+# Disabling the Spin Bit
+
+Implementations SHOULD allow administrators of clients and servers to disable
+the spin bit either globally or on a per-connection basis.
+Even when the spin bit is not disabled by the administrator implementations
+SHOULD disable the spin bit on a randomly chosen
+fraction of connections.
+
+The selection process SHOULD be designed such that
+on average the spin bit is disabled for at least one eighth of network paths.
+The selection process SHOULD be externally unpredictable but consistent for
+any given combination of source and destination address/port. For instance,
+the implementation might have a static key which it uses to key a pseudorandom
+function over these values and use the output to determine whether to
+send the spin bit. The selection process performed at the beginning
+of the connection SHOULD be applied for all paths used by the connection.
+
+Note that where multiple connections use the same path,
+the use of the spin bit MAY be coordinated by endpoints,
+recognizing that this might not be possible in many cases.
+
+When the spin bit is disabled, endpoints MAY set the spin bit to any value,
+and MUST accept any incoming value. It is RECOMMENDED that they
+set the spin bit to a random value either chosen independently for each packet,
+or chosen independently for each path and kept constant for that path.
 
 # IANA Considerations
 
@@ -251,7 +261,22 @@ same as those for passive RTT measurement in general. It has been shown
 {{PAM-RTT}} that RTT measurements do not provide more information for
 geolocation than is available in the most basic, freely-available IP address
 based location databases. The risk of exposure of per-flow network RTT to
-on-path devices is therefore negligible.
+on-path devices is in most cases negligible.
+
+There is however an exception, when parts of the path from client to server
+are hidden from observers. An example would be a server accessed through a
+proxy. The spin bit allows for measurement of the end-to-end
+RTT, and will thus enable adversaries near the endpoint to discover that
+the connection does not terminate at the visible destination address.
+
+Endpoints that want to hide their use of a proxy or a relay will want to
+disable the spin bit. However, if only privacy-sensitive clients or servers ever
+disabled the spin bit, they would stick out. The probabilistic disabling
+behavior explained in {{disabling-the-spin-bit}} ensures that other endpoints
+will also disable the spin bit some of the time, thus hiding the
+privacy sensitive endpoints in a large anonymity set. It also provides
+for a minimal greasing of the spin bit, in order to mitigate risks of
+ossification.
 
 
 # Change Log
@@ -261,7 +286,7 @@ on-path devices is therefore negligible.
 
 ## Since draft-ietf-spin-exp-00
 
-Nothing yet.
+Adding section on disabling the spin bit and privacy considerations.
 
 # Acknowledgments
 {:numbered="false"}
@@ -286,4 +311,4 @@ Internet (MAMI), and by the Swiss State Secretariat for Education, Research,
 and Innovation under contract no. 15.0268. This support does not imply
 endorsement.
 
-
+--- back
