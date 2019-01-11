@@ -1005,7 +1005,7 @@ limits.
 
 When the sender is pacing(see {{pacing}}) packets, the sender may be unable
 to use the full congestion window for a period of time after receiving an
-ACK due to pacing.  In this case, the sender should not consider themselves
+ACK, due to pacing.  In this case, the sender should not consider themselves
 application limited and should allow the congestion window to increase.
 
 ## Discarding Packet Number Space State
