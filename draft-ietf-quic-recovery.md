@@ -944,12 +944,6 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
-## Application Limited Sending
-
-If the sender is sufficiently application limited that the congestion window is
-not fully utilized, the congestion window should not be increased in slow start
-or congestion avoidance.
-
 ## Probe Timeout
 
 Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
@@ -968,8 +962,7 @@ response of collapsing the congestion window on persistent congestion is
 functionally similar to a sender's response on a Retransmission Timeout (RTO) in
 TCP {{RFC5681}}.
 
-
-## Pacing
+## Pacing {#pacing}
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
@@ -1002,6 +995,18 @@ paces the sending of any packets in excess of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+
+## Application Limited Sending
+
+The congestion window should not be increased in slow start or congestion
+avoidance when it is not fully utilized.  The congestion window could be
+under-utilized due to insufficient application data to send or flow control
+limits.
+
+When the sender is pacing(see {{pacing}}) packets, the sender may be unable
+to use the full congestion window for a period of time after receiving an
+ACK due to pacing.  In this case, the sender should not consider themselves
+application limited and should allow the congestion window to increase.
 
 ## Discarding Packet Number Space State
 
