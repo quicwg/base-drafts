@@ -1053,14 +1053,14 @@ Due to reordering between streams, an element can also be prioritized which is
 not yet in the tree. Such elements are added to the tree with the requested
 priority.
 
-When a prioritized element is first created it has a default inital weight
+When a prioritized element is first created, it has a default initial weight
 of 16 and a default dependency. Requests and placeholders are dependent on the
-root of the priority tree, pushes are dependent on the client request on which
+root of the priority tree; pushes are dependent on the client request on which
 the PUSH_PROMISE frame was sent.
 
 Requests may override the default intial values by including a PRIORTIY frame
-(see {{frame-priority}}) at the beginning of the stream. Pushes and placeholders
-may be later updated by sending a PRIORITY frame on the control stream.
+(see {{frame-priority}}) at the beginning of the stream. These priorities
+can be updated by sending a PRIORITY frame on the control stream.
 
 ### Placeholders
 
