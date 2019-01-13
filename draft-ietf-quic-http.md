@@ -334,6 +334,10 @@ them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
 
+A sender can close or reset an extended unidirectional stream. A receiver MUST
+torelate unidirectional streams being closed or reset prior to receiving the
+unidirecitonal stream header.
+
 ###  Control Streams
 
 A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
