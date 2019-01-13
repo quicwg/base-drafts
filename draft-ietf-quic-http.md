@@ -336,7 +336,7 @@ sent until the peer is known to support them.
 
 A sender can close or reset a unidirectional stream unless specified otherwise.
 A receiver MUST tolerate unidirectional streams being closed or reset prior to
-the reception of the unidirecitonal stream header.
+the reception of the unidirectional stream header.
 
 ###  Control Streams
 
