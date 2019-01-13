@@ -588,7 +588,7 @@ instruction space:
 <!-- s/exactly/no more than/  ? -->
 There MUST be exactly one of each unidirectional stream type in each direction.
 Receipt of a second instance of either stream type MUST be treated as a
-connection error of HTTP_WRONG_STREAM_COUNT.  The streams MUST NOT be closed.
+connection error of HTTP_WRONG_STREAM_COUNT.  These streams MUST NOT be closed.
 Closure of either unidirectional stream MUST be treated as a connection error of
 type HTTP_CLOSED_CRITICAL_STREAM.
 
