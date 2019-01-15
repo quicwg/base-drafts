@@ -599,10 +599,10 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 ## Enabling 0-RTT {#enable-0rtt}
 
 In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "max_early_data" extension with the value 0xffffffff; the
-amount of data which the client can send in 0-RTT is controlled by the
-"initial_max_data" transport parameter supplied by the server.  A client MUST
-treat receipt of a NewSessionTicket that contains a "max_early_data" extension
+that contains the "early_data" extension with a max_early_data_size of
+0xffffffff; the amount of data which the client can send in 0-RTT is controlled
+by the "initial_max_data" transport parameter supplied by the server.  A client
+MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 Early data within the TLS connection MUST NOT be used.  As it is for other TLS
@@ -1215,7 +1215,8 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!RFC7301}} to select an application protocol.  Unless another mechanism is
 used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.
+purpose.  When using ALPN, endpoints MUST abort a connection if an application
+protocol is not negotiated.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC

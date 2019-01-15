@@ -421,6 +421,11 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
+
 
 #### Discarding Initial State {#discard-initial}
 
@@ -430,11 +435,6 @@ point, all loss recovery state for the Initial packet number space is also
 discarded. Packets that are in flight for the packet number space are not
 declared as either acknowledged or lost.  After discarding state, new Initial
 packets will not be sent.
-
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
 
 
 ### Probe Timeout {#pto}
@@ -1001,12 +1001,20 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 ## Discarding Packet Number Space State
 
-When keys for an packet number space are discarded, any packets sent with those
-keys are removed from the count of bytes in flight.  No loss events will occur
-any in-flight packets from that space, as a result of discarding loss recovery
-state (see {{discard-initial}}).  Note that it is expected that keys are
-discarded after those packets would be declared lost, but Initial secrets are
-destroyed earlier.
+When keys for a packet number space are discarded, any in-flight packets
+sent with those keys are removed from the count of bytes in flight.  Loss
+recovery state is also discarded, so no loss events will occur for any
+in-flight packets from that space (see {{discard-initial}}).  Note that it is
+expected that keys are discarded after those packets would be declared lost,
+but Initial secrets are destroyed earlier.
+
+When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
+the count of bytes in flight.  Loss recovery state is also discarded, so no
+loss events will occur for any in-flight 0-RTT packets.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
 
 ## Pseudocode
 
