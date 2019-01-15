@@ -334,7 +334,7 @@ them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
 
-A sender can close or reset a unidirectional stream unless specified otherwise.
+A sender can close or reset a unidirectional stream unless otherwise specified.
 A receiver MUST tolerate unidirectional streams being closed or reset prior to
 the reception of the unidirectional stream header.
 
