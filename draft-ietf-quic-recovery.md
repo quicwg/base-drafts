@@ -231,9 +231,9 @@ loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
 packet which is not the next expected one. That is, its packet number is not one
 greater than the largest received packet number.  A receiver MAY immediately
 ack subsequent packets after first receiving a packet out of order. A receiver
-SHOULD NOT send an immediate ACK any time there is a gap in the ACK frame,
-because that will cause it to send an ACK for every packet for at least an RTT
-after a single packet loss.
+SHOULD NOT send an immediate ACK any time there is a gap in the ACK frame being
+sent, because that will cause it to send an ACK for every packet for at least an
+RTT after a single packet loss.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
