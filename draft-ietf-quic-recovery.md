@@ -229,9 +229,8 @@ receiving a second packet.
 Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
 loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
 packet which is not the next expected one. That is, its packet number is not one
-greater than the largest received packet number.  A receiver SHOULD immediately
-ack at least three subsequent packets after first receiving a packet out of
-order, after which it SHOULD resume delaying acknowledgements.  A receiver
+greater than the largest received packet number.  A receiver MAY immediately
+ack subsequent packets after first receiving a packet out of order. A receiver
 SHOULD NOT send an immediate ACK any time there is a gap in the ACK frame,
 because that will cause it to send an ACK for every packet for at least an RTT
 after a single packet loss.
