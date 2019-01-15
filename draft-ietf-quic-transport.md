@@ -89,6 +89,13 @@ informative:
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
+  QUIC-MANAGEABILITY:
+    title: "Manageability of the QUIC Transport Protocol"
+    author:
+      - ins: M. Kuehlewind
+    date: 2018-10-22
+    target:
+      "https://datatracker.ietf.org/doc/draft-ietf-quic-manageability/"
 
 --- abstract
 
@@ -2751,6 +2758,46 @@ encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
 
+## Latency Spin Bit {#spin-bit}
+
+The latency spin bit enables latency monitoring from observation points on the
+network path throughout the duration of a connection. Since it is possible to
+measure handshake RTT without a spin bit, it is sufficient to include the spin
+bit in the short packet header. The spin bit therefore appears only after
+version negotiation and connection establishment are completed.
+
+The spin bit utilizes a single bit in the first byte of the short header. The
+spin bits location in the short header packets and procedure for how to set it
+in both clients and servers are defined in {{short-header}}.
+
+Implementations MAY select to not implement the full spin bit functionality. In
+that case they are only REQUIRED to implement what is defined for the spin bit
+when disabled.
+
+Each endpoint unilateral decided if the spin bit is enabled or disabled for a
+connection. Implementations SHOULD allow administrators of clients and servers
+to disable the spin bit either globally or on a per-connection basis.  Even when
+the spin bit is not disabled by the administrator implementations SHOULD disable
+the spin bit on a randomly chosen fraction of connections, except if connection
+is explicitly configured to enable spin bit.
+
+The selection process SHOULD be designed such that on average the spin bit is
+disabled for at least one eighth of network paths.  The selection process should
+be externally unpredictable but consistent for any given combination of source
+and destination address/port. For instance, the implementation might have a
+static key which it uses to key a pseudorandom function over these values and
+use the output to determine whether to send the spin bit. The selection process
+performed at the beginning of the connection SHOULD be applied for all paths
+used by the connection.
+
+In case multiple connections share the same five-tuple, i.e. same source and
+destination IP address and UDP port the setting of the spin bit needs to be
+coordinated across all connections to ensure a clear signal to any on path
+measurement point, however that might not be possible.
+
+On-path measurement and use of the Latency Spin Bit is further discussed in
+{{QUIC-MANAGEABILITY}}.
+
 
 # Packetization and Reliability {#packetization}
 
@@ -3882,8 +3929,33 @@ Fixed Bit:
 
 Spin Bit (S):
 
-: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
-  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+: The third most significant bit (0x20) of byte 0 is the Latency Spin Bit.
+
+: When the spin bit is disabled, endpoints MAY set the spin bit to any value,
+and MUST accept any incoming value. It is RECOMMENDED that they
+set the spin bit to a random value either chosen independently for each packet,
+or chosen independently for each path and kept constant for that path.
+
+: If the spin bit is enabled for the connection the endpoint maintains a spin
+value, 0 or 1, and sets the spin bit in the short header to the currently stored
+value when a packet with a short header is sent out. The spin value is
+initialized to 0 in the endpoint at connection start.  Each endpoint also
+remembers the highest packet number seen from its peer on the connection.
+
+: When a server receives a packet from a client, if that packet has a short
+header and if it increments the highest packet number seen by the server from
+the client, the server sets the spin value to the value observed in the spin bit
+in the received packet.
+
+: When a client receives a packet from a server, if the packet has a short
+header and if it increments the highest packet number seen by the client from
+the server, it sets the spin value to the opposite of the spin bit in the
+received packet.
+
+: The endpoint resets it spin value to zero when sending the first packet of a
+given connection with a new connection ID. This reduces the risk that transient
+spin bit state can be used to link flows across connection migration or ID
+change.
 
 Reserved Bits (R):
 
@@ -3931,6 +4003,7 @@ The header form bit and the connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
+
 
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
