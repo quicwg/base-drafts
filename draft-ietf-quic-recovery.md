@@ -5,7 +5,7 @@ docname: draft-ietf-quic-recovery-latest
 date: {DATE}
 category: std
 ipr: trust200902
-area: Transportf
+area: Transport
 workgroup: QUIC
 
 stand_alone: yes
