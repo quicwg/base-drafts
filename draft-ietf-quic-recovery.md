@@ -222,9 +222,8 @@ the peer spurious timeouts.  The maximum ack delay is communicated in the
 `max_ack_delay` transport parameter and the default value is 25ms.
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
-packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
-algorithms do not assume the peer generates an acknowledgement immediately when
-receiving a second packet.
+ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends an
+an ACK immediately when receiving a second ack-eliciting packet.
 
 Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
 loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
