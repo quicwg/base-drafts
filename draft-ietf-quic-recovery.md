@@ -465,15 +465,6 @@ If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
 before Initial packets, early 0-RTT packets will be declared lost, but that
 is expected to be infrequent.
 
-#### Ignoring Loss of Undecryptable Packets
-
-During the handshake, some packet protection keys might not be
-available when a packet arrives. In particular, Handshake and 0-RTT packets
-cannot be processed until the Initial packets arrive, and 1-RTT packets
-cannot be processed until the handshake completes.  Endpoints MAY
-ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before the
-peer has packet protection keys to process those packets.
-
 ### Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
@@ -982,6 +973,14 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+#### Ignoring Loss of Undecryptable Packets
+
+During the handshake, some packet protection keys might not be
+available when a packet arrives. In particular, Handshake and 0-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
+cannot be processed until the handshake completes.  Endpoints MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before the
+peer has packet protection keys to process those packets.
 
 ## Probe Timeout
 
