@@ -334,6 +334,10 @@ them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
 
+A sender can close or reset a unidirectional stream unless otherwise specified.
+A receiver MUST tolerate unidirectional streams being closed or reset prior to
+the reception of the unidirectional stream header.
+
 ###  Control Streams
 
 A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
@@ -345,8 +349,9 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
-MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream.  If the
+control stream is closed at any point, this MUST be treated as a connection
+error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon they are able.  Depending
