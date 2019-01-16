@@ -973,7 +973,7 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
-#### Ignoring Loss of Undecryptable Packets
+## Ignoring Loss of Undecryptable Packets
 
 During the handshake, some packet protection keys might not be
 available when a packet arrives. In particular, Handshake and 0-RTT packets
