@@ -961,7 +961,7 @@ header list is calculated based on the uncompressed size of header fields,
 including the length of the name and value in bytes plus an overhead of 32 bytes
 for each header field.
 
-### Request Cancellation
+### Request Cancellation and Rejection {#request-cancellation}
 
 Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
 STOP_SENDING frames, as appropriate) with an error code of
@@ -979,7 +979,8 @@ Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
 were partially or fully processed.  When a client sends a STOP_SENDING with
 HTTP_REQUEST_CANCELLED, a server MAY indicate the error code
 HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM if no processing was
-performed.
+performed.  Clients MUST NOT reset streams with the HTTP_REQUEST_REJECTED error
+code except in response to a QUIC STOP_SENDING frame.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1224,9 +1225,9 @@ new requests.
 
 If the client has sent requests on streams with a Stream ID greater than or
 equal to that indicated in the GOAWAY frame, those requests are considered
-rejected ({{request-cancellation}}).  Clients SHOULD reset any rejected streams
-with the error code HTTP_REQUEST_REJECTED.  Servers MAY also reject requests on
-streams below the indicated ID if these requests were not processed.
+rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
+streams above this ID.  Servers MAY also reject requests on streams below the
+indicated ID if these requests were not processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
