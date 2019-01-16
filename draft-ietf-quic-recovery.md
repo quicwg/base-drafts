@@ -469,7 +469,7 @@ is expected to be infrequent.
 
 During the handshake, some packet protection keys might not be
 available when a packet arrives. In particular, Handshake and 0-RTT packets
-can't be processed until the Initial flight arrives and 1-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
 can't be processed until the handshake completes.  Endpoints MAY
 ignore the loss of Handshake, 0-RTT, and 1-RTT packets that arrive before the
 peer has packet protection keys to process those packets.
