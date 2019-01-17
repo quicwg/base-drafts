@@ -289,12 +289,14 @@ be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
-Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}.
+A sender calculates both smoothed RTT and RTT variance similar to those
+specified in {{?RFC6298}}, see {{on-ack-received}}.
 
-A sender might take multiple samples per RTT, and as suggested in {{?RFC6298}},
-this can cause the smoothed RTT to retain inadequate RTT history.  Changing
-these constants is currently an open research question.
+A sender will commonly receive ACK frames that acknowledge larger packet numbers
+than before.  A sender might therefore take multiple samples per RTT (see
+{{on-ack-received}}), and as suggested in {{?RFC6298}}, this can cause the
+smoothed RTT to retain inadequate RTT history.  Changing these constants is
+currently an open research question.
 
 min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
@@ -692,7 +694,7 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
-### On Receiving an Acknowledgment
+### On Receiving an Acknowledgment {#on-ack-received}
 
 When an ACK frame is received, it may newly acknowledge any number of packets.
 
