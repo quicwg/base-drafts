@@ -292,6 +292,10 @@ ack delay field should be ignored.
 Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
 specified in {{?RFC6298}}.
 
+A sender might take multiple samples per RTT, and as suggested in {{?RFC6298}},
+this can cause the smoothed RTT to retain inadequate RTT history.  Changing
+these constants is currently an open research question.
+
 min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
