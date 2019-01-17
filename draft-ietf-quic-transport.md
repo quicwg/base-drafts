@@ -2173,6 +2173,9 @@ receiving a probe packet from a different address.  Servers MUST NOT send more
 than a minimum congestion window's worth of non-probing packets to the new
 address before path validation is complete.
 
+When a client wishes to migrate to a new local address that is of a different
+address family from the currently used server address, the client can attempt
+migration with the server's preferred address from the matching address family.
 
 # Connection Termination {#termination}
 
