@@ -1579,8 +1579,9 @@ the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
 
-The amount of data that a client sends to a server prior to validating the
-address is capped by the initial congestion window.
+The amount that servers are permitted to send is also constrained by the limit
+set by the congestion avoidance algorithm.  Clients are only constrained in what
+they can send prior to address validation by congestion control.
 
 
 ### Address Validation using Retry Packets {#validate-retry}
