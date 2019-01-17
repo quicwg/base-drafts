@@ -1579,7 +1579,7 @@ the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
 
-The amount of data that a server sends to a client prior to validating the
+The amount of data that a client sends to a server prior to validating the
 address is capped by the initial congestion window.
 
 
