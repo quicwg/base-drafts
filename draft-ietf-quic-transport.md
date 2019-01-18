@@ -1579,9 +1579,9 @@ the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
 
-The amount that servers are permitted to send is also constrained by the limit
-set by the congestion avoidance algorithm.  Clients are only constrained in what
-they can send prior to address validation by congestion control.
+In addition to sending limits imposed prior to address validation, servers are
+also constrained in what they can send by the limits set by the congestion
+controller.  Clients are only constrained by the congestion controller.
 
 
 ### Address Validation using Retry Packets {#validate-retry}
