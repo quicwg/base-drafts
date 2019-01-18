@@ -1168,7 +1168,8 @@ ignore a Version Negotiation packet if it has already received and acted on a
 Version Negotiation packet.
 
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
-version.
+version.  If the client does not support any of the versions the server offers,
+it aborts the connection attempt.
 
 A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
 client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
