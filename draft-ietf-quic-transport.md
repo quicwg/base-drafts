@@ -4491,10 +4491,9 @@ to abruptly terminate transmission on a stream.
 Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
 has not yet been created or is in the "Ready" state (see
 {{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-stream that is "Ready" or not yet created MUST be treated as a connection error
-of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
-a receive-only stream MUST terminate the connection with error
-STREAM_STATE_ERROR.
+stream that is not yet created MUST be treated as a connection error of type
+STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for a
+receive-only stream MUST terminate the connection with error STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
