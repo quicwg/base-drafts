@@ -326,19 +326,12 @@ encryption levels:
 
 - CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
-- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
-  0-RTT.
-
 - PADDING frames MAY appear in packets of any encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- All stream- and flow control-related frame types (RESET_STREAM, STOP_SENDING,
-  STREAM, MAX_DATA, MAX_STREAM_DATA, MAX_STREAMS, DATA_BLOCKED,
-  STREAM_DATA_BLOCKED, and STREAM_BLOCKED) MAY appear in the 0-RTT level.
-
-- All other frame types MAY appear at the 1-RTT levels.
+- All other frame types MUST be sent in the 0-RTT and 1-RTT levels.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -1281,6 +1274,32 @@ of issues is well captured in the relevant sections of the main text.
 
 Never assume that because it isn't in the security considerations section it
 doesn't affect security.  Most of this document does.
+
+
+## Replay Attacks with 0-RTT
+
+As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
+exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
+replay attack.
+
+The management of QUIC protocol state based on the frame types defined in
+{{QUIC-TRANSPORT}} is not vulnerable to replay.  Processing of QUIC frames is
+idempotent and does not produce invalid states if frames are reordered or lost.
+
+QUIC connections do not produce side-effects, except for those produced by the
+application it serves.  Replay risk in QUIC is therefore limited to those frames
+that carry information that an application protocol consumes: STREAM,
+RESET_STREAM, and STOP_SENDING.
+
+Extensions to QUIC might create an additional exposure to replay attack.  QUIC
+extensions MUST describe how replay attacks affects their operation.  Extensions
+MUST either be disabled in 0-RTT or provide replay mitigation strategies.
+
+An application protocol that uses 0-RTT MUST provide an analysis of the effects
+of replay on that protocol.  An application protocol that uses QUIC MUST
+describe how the protocol uses 0-RTT and the measures that are employed to
+protect against replay attack.  Applications protocols can forbid the use of
+0-RTT.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
