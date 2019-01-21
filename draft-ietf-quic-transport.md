@@ -2242,10 +2242,10 @@ If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
 A connection enters the draining state when the idle timeout expires.
 
-Each endpoint advertises its own idle timeout to its peer.  Endpoints restart
-any timer they maintain when a packet from their peer is received and processed
-successfully.  The timer is also restarted when sending a packet containing
-frames other than ACK or PADDING (an ACK-eliciting packet, see
+Each endpoint advertises its own idle timeout to its peer.  An enpdpoint
+restarts any timer it maintains when a packet from their peer is received and
+processed successfully.  The timer is also restarted when sending a packet
+containing frames other than ACK or PADDING (an ACK-eliciting packet, see
 {{QUIC-RECOVERY}}), but only if no other ACK-eliciting packets have been sent
 since last receiving a packet.  Restarting when sending packets ensures that
 connections do not prematurely time out when initiating new activity.
