@@ -331,7 +331,7 @@ encryption levels:
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- All other frame types MUST be sent in the 0-RTT and 1-RTT levels.
+- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
