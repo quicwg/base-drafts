@@ -2139,9 +2139,13 @@ packets.
 A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
 
-Once the handshake is finished, the client SHOULD initiate path validation (see
-{{migrate-validate}}) of the server's preferred address using the connection ID
-provided in the preferred_address transport parameter.
+Servers MAY communicate a preferred address of each address family (IPv4 and
+IPv6) to allow clients to pick the one most suited to their network attachment.
+
+Once the handshake is finished, the client SHOULD select one of the two
+server's preferred addresses and initiate path validation (see
+{{migrate-validate}}) of that address using the connection ID provided in the
+preferred_address transport parameter.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
@@ -2191,6 +2195,9 @@ Servers SHOULD initiate path validation to the client's new address upon
 receiving a probe packet from a different address.  Servers MUST NOT send more
 than a minimum congestion window's worth of non-probing packets to the new
 address before path validation is complete.
+
+A client that migrates to a new address SHOULD use a preferred address from the
+same address family for the server.
 
 
 # Connection Termination {#termination}
@@ -4165,18 +4172,21 @@ preferred_address (0x000d):
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
   of this transport parameter is the PreferredAddress struct shown in
-  {{fig-preffered-address}}.  This transport parameter is only sent by a server.
+  {{fig-preferred-address}}.  This transport parameter is only sent by a server.
+  Servers MAY choose to only send a preferred address of one address family by
+  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
 
 ~~~
    struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
-     uint16 port;
+     opaque ipv4Address[4];
+     uint16 ipv4Port;
+     opaque ipv6Address[16];
+     uint16 ipv6Port;
      opaque connectionId<0..18>;
      opaque statelessResetToken[16];
    } PreferredAddress;
 ~~~
-{: #fig-preffered-address title="Preferred Address format"}
+{: #fig-preferred-address title="Preferred Address format"}
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
