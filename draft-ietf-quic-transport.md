@@ -4479,16 +4479,15 @@ Final Size:
 ## STOP_SENDING Frame {#frame-stop-sending}
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
-data is being discarded on receipt at application request.  This signals a peer
-to abruptly terminate transmission on a stream.
+data is being discarded on receipt at application request.  STOP_SENDING
+requests that a peer to cease transmission on a stream.
 
-Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
-has not yet been created or is in the "Ready" state (see
-{{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-stream that is "Ready" or not yet created MUST be treated as a connection error
-of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
-a receive-only stream MUST terminate the connection with error
-STREAM_STATE_ERROR.
+A STOP_SENDING frame can be sent for streams in the Recv of Size Known states
+(see {{stream-send-states}}). Receiving a STOP_SENDING frame for a
+locally-initiated stream that has not yet been created MUST be treated as a
+connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
+STOP_SENDING frame for a receive-only stream MUST terminate the connection with
+error STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
