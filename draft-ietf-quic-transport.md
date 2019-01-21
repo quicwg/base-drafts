@@ -4480,7 +4480,7 @@ Final Size:
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  STOP_SENDING
-requests that a peer to cease transmission on a stream.
+requests that a peer cease transmission on a stream.
 
 A STOP_SENDING frame can be sent for streams in the Recv or Size Known states
 (see {{stream-send-states}}). Receiving a STOP_SENDING frame for a
