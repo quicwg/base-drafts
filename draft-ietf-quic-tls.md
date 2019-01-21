@@ -334,9 +334,11 @@ encryption levels:
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
+- All stream- and flow control-related frame types (RESET_STREAM, STOP_SENDING,
+  STREAM, MAX_DATA, MAX_STREAM_DATA, MAX_STREAMS, DATA_BLOCKED,
+  STREAM_DATA_BLOCKED, and STREAM_BLOCKED) MAY appear in the 0-RTT level.
 
-- All other frame types MUST only appear at the 1-RTT levels.
+- All other frame types MAY appear at the 1-RTT levels.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
