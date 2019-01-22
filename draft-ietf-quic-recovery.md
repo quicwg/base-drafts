@@ -292,8 +292,9 @@ ack delay field should be ignored.
 A sender calculates both smoothed RTT and RTT variance similar to those
 specified in {{?RFC6298}}, see {{on-ack-received}}.
 
-A sender takes multiple samples per RTT when ACK frames are received within an
-RTT that acknowledge larger packet numbers than before (see
+A sender takes an RTT sample when an ACK frame is received that acknowledges a
+larger packet number than before.  A sender will take multiple RTT samples per
+RTT when multiple such ACK frames are received within an RTT (see
 {{on-ack-received}}).  When multiple samples are generated within an RTT, the
 smoothed RTT and RTT variance may retain inadequate history, as suggested in
 {{?RFC6298}}.  Changing these computations is currently an open research
