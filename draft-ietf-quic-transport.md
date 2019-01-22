@@ -2812,26 +2812,27 @@ of type PROTOCOL_VIOLATION.
 
 ## Latency Spin Bit {#spin-bit}
 
-The latency spin bit enables latency monitoring from observation points on the
-network path throughout the duration of a connection. Since it is possible to
-measure handshake RTT without a spin bit, it is sufficient to include the spin
-bit in the short packet header. The spin bit therefore appears only after
-version negotiation and connection establishment are completed.
+The latency spin bit enables passive latency monitoring from observation points
+on the network path throughout the duration of a connection. The spin bit is
+only present in the short packet header, since it is possible to measure the
+initial RTT of a connection by observing the handshake. Therefore, the spin bit
+will appear after version negotiation and connection establishment are
+completed.
 
-The spin bit utilizes a single bit in the first byte of the short header. The
-spin bits location in the short header packets and procedure for how to set it
-in both clients and servers are defined in {{short-header}}.
+The spin bit utilizes a single bit in the first byte of the short header. The  
+location of the bit and procedures for how to set it by clients and servers are
+defined in {{short-header}}.
 
 Implementations MAY select to not implement the full spin bit functionality. In
 that case they are only REQUIRED to implement what is defined for the spin bit
-when disabled.
+when it is disabled.
 
-Each endpoint unilateral decided if the spin bit is enabled or disabled for a
+Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations SHOULD allow administrators of clients and servers
-to disable the spin bit either globally or on a per-connection basis.  Even when
+to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator implementations SHOULD disable
-the spin bit on a randomly chosen fraction of connections, except if connection
-is explicitly configured to enable spin bit.
+the spin bit on a randomly chosen fraction of connections, except for
+connections that are explicitly configured to have the spin bit enabled.  
 
 The selection process SHOULD be designed such that on average the spin bit is
 disabled for at least one eighth of network paths.  The selection process should
