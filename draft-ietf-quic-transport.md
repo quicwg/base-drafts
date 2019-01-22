@@ -5583,7 +5583,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
 
 ## Since draft-ietf-quic-transport-16
-g
+
 - Stream limits are defined as counts, not maximums (#1850, #1906)
 - Require amplification attack defense after closing (#1905, #1911)
 - Remove reservation of application error code 0 for STOPPING (#1804, #1922)
