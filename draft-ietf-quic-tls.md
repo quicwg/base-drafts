@@ -324,7 +324,8 @@ the connection can usually appear at any encryption level, whereas those
 associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
-- CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
+- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
+  level except 0-RTT.
 
 - PADDING frames MAY appear in packets of any encryption level.
 
