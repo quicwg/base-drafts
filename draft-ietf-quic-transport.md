@@ -5565,8 +5565,23 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-transport-16
+## Since draft-ietf-quic-transport-17
+
 - Stream-related errors now use STREAM_STATE_ERROR (#2305)
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Expanded conditions for ignoring ICMP packet too big messages (#2108, #2161)
+- Remove rate control from PATH_CHALLENGE/PATH_RESPONSE (#2129, #2241)
+- Endpoints are permitted to discard malformed initial packets (#2141)
+- Clarified ECN implementation and usage requirements (#2156, #2201)
+- Disable ECN count verification for packets that arrive out of order (#2198,
+  #2215)
+- Use Probe Timeout (PTO) instead of RTO (#2206, #2238)
+- Loosen constraints on retransmission of ACK ranges (#2199, #2245)
+- Limit Retry and Version Negotiation to once per datagram (#2259, #2303)
+- Set a maximum value for max_ack_delay transport parameter (#2282, #2301)
+- Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
+- Corrected requirements for migration to a preferred address (#2146, #2349)
 
 ## Since draft-ietf-quic-transport-16
 

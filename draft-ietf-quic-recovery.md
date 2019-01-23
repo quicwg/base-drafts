@@ -1242,6 +1242,23 @@ This document has no IANA actions.  Yet.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-17
+
+- After Probe Timeout discard in-flight packets or send another (#2212, #1965)
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- 0-RTT state is discarded when 0-RTT is rejected (#2300)
+- Loss detection timer is cancelled when ack-eliciting frames are in flight
+  (#2117, #2093)
+- Packets are declared lost if they are in flight (#2104)
+- After becoming idle, either pace packets or reset the congestion controller
+  (#2138, 2187)
+- Process ECN counts before marking packets lost (#2142)
+- Mark packets lost before resetting crypto_count and pto_count (#2208, #2209)
+- Congestion and loss recovery state are discarded when keys are discarded
+  (#2237)
+
+
 ## Since draft-ietf-quic-recovery-16
 
 - Unify TLP and RTO into a single PTO; eliminate min RTO, min TLP and min crypto

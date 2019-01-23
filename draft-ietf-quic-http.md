@@ -1921,6 +1921,13 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-17
+
+- HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
+  #2325)
+- Changed error code for GOAWAY on the wrong stream (#2231, #2343)
+
+
 ## Since draft-ietf-quic-http-16
 
 - Rename "HTTP/QUIC" to "HTTP/3" (#1973)
