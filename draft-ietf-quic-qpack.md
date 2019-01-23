@@ -864,13 +864,13 @@ decoder's dynamic table:
    if EncodedInsertCount == 0:
       ReqInsertCount = 0
    else:
-      InsertCount = EncodedInsertCount - 1
+      ReqInsertCount = EncodedInsertCount - 1
       CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
 
-      if CurrentWrapped >= InsertCount + MaxEntries:
+      if CurrentWrapped >= ReqInsertCount + MaxEntries:
          # Insert Count wrapped around 1 extra time
          ReqInsertCount += 2 * MaxEntries
-      else if CurrentWrapped + MaxEntries < InsertCount:
+      else if CurrentWrapped + MaxEntries < ReqInsertCount:
          # Decoder wrapped around 1 extra time
          CurrentWrapped += 2 * MaxEntries
 
