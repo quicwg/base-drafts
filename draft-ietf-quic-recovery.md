@@ -1003,14 +1003,21 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-When an ACK frame is received that establishes loss of all in-flight packets
-sent prior to a threshold number of consecutive PTOs (pto_count is more than
-kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
-considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
-response of collapsing the congestion window on persistent congestion is
-functionally similar to a sender's response on a Retransmission Timeout (RTO) in
-TCP {{RFC5681}}.
+## Persistent Congestion
+
+The network is considered to be experiencing persistent congestion when the
+sender goes a period of time without receiving any ACK frames for its in-flight,
+ack-eliciting packets.  Generally, this can be calculated as a number of
+consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
+{{cc-consts-of-interest}}), but since a PTO only occurs if no other
+ack-eliciting packets have been sent, an explicit time out must be used to
+account for those cases where PTOs don't occur.
+
+When persistent congestion is encountered the sender's congestion window MUST be
+reduced to the minimum congestion window (kMinimumWindow).  This response of
+collapsing the congestion window on persistent congestion is functionally
+similar to a sender's response on a Retransmission Timeout (RTO) in TCP
+{{RFC5681}}.
 
 
 ## Pacing
@@ -1103,6 +1110,10 @@ bytes_in_flight:
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
+probe_start_time:
+: The time when QUIC started probing the network, after the most recent ACK
+  received from the peer.
+
 recovery_start_time:
 : The time when QUIC first detects a loss, causing it to enter recovery.
   When a packet sent after this time is acknowledged, QUIC exits recovery.
@@ -1120,6 +1131,7 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
+   probe_start_time = 0
    recovery_start_time = 0
    ssthresh = infinite
    ecn_ce_counter = 0
@@ -1132,6 +1144,8 @@ increases bytes_in_flight.
 
 ~~~
    OnPacketSentCC(bytes_sent):
+     if (bytes_in_flight == 0):
+       probe_start_time = Now()
      bytes_in_flight += bytes_sent
 ~~~
 
@@ -1147,6 +1161,8 @@ acked_packet from sent_packets.
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
+     if (bytes_in_flight != 0):
+       probe_start_time = Now()
      if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
@@ -1166,6 +1182,12 @@ detected. May start a new recovery period and reduces the congestion
 window.
 
 ~~~
+   InPersistentCongestion():
+     return
+       (Now() - probe_start_time) >
+       (smoothed_rtt + 4 * rttvar + max_ack_delay) *
+       ((2 ^ kPersistentCongestionThreshold) - 1)
+
    CongestionEvent(sent_time):
      // Start a new congestion event if the sent time is larger
      // than the start time of the previous recovery epoch.
@@ -1175,7 +1197,7 @@ window.
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
        // Collapse congestion window if persistent congestion
-       if (pto_count > kPersistentCongestionThreshold):
+       if (InPersistentCongestion()):
          congestion_window = kMinimumWindow
 ~~~
 
