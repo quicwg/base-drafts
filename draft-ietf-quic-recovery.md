@@ -293,10 +293,10 @@ continue making forward progress.
 
 # Computing the RTT estimate
 
-RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest acked packet was sent.  An RTT sample
-MUST NOT be taken for a packet that is not newly acknowledged or not
-ack-eliciting.
+Round trip time, abbreviated RTT, is calculated when an ACK frame arrives by
+computing the difference between the current time and the time the largest
+acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
+is not newly acknowledged or not ack-eliciting.
 
 When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
 to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
