@@ -1009,16 +1009,15 @@ The network is considered to be experiencing persistent congestion when the
 sender goes a period of time without receiving any ACK frames for its in-flight,
 ack-eliciting packets.  Generally, this can be calculated as a number of
 consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
-{{cc-consts-of-interest}}), but since a PTO only occurs if no other
-ack-eliciting packets have been sent, an explicit time out must be used to
-account for those cases where PTOs don't occur.
+{{cc-consts-of-interest}}), but since the PTO timer is reset when a new
+ack-eliciting packet is sent, an explicit time out must be used to account for
+those cases where PTOs don't occur.
 
 When persistent congestion is encountered the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 {{RFC5681}}.
-
 
 ## Pacing
 
@@ -1161,8 +1160,8 @@ acked_packet from sent_packets.
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (bytes_in_flight != 0):
-       probe_start_time = Now()
+     // Reset probe start time
+     probe_start_time = Now()
      if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
