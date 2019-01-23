@@ -59,7 +59,6 @@ normative:
         ins: S. Turner
         name: Sean Turner
         org: sn3rd
-        email: sean@sn3rd.com
         role: editor
 
 informative:
