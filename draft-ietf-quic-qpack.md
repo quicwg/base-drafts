@@ -253,7 +253,16 @@ received.
 Each header block contains a Required Insert Count, the lowest possible value
 for the Insert Count with which the header block can be decoded. For a header
 block with no references to the dynamic table, the Required Insert Count is
-zero.
+zero.  For a header block with references to the dynamic table, the Required
+Insert Count is one larger than the largest Absolute Index of all referenced
+dynamic table entries.
+
+If the decoder encounters a header block with a Required Insert Count value
+larger than defined here, it MAY treat this as a stream error of type
+HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
+a Required Insert Count value smaller than defined here, it MUST treat this as a
+stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
+{{invalid-references}}.
 
 When the Required Insert Count is zero, the frame contains no references to the
 dynamic table and can always be processed immediately.
@@ -264,10 +273,6 @@ SHOULD remain in the blocked stream's flow control window.  A stream becomes
 unblocked when the Insert Count becomes greater than or equal to the Required
 Insert Count for all header blocks the decoder has started reading from the
 stream.
-
-If the decoder encounters a header block where the largest Absolute Index used
-is not equal to the largest value permitted by the Required Insert Count, it MAY
-treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
 upper bound on the number of streams which can be blocked. An encoder MUST limit
