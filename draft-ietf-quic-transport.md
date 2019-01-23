@@ -2162,12 +2162,12 @@ MUST continue sending all future packets to the server's original IP address.
 A server might receive a packet addressed to its preferred IP address at any
 time after it accepts a connection.  If this packet contains a PATH_CHALLENGE
 frame, the server sends a PATH_RESPONSE frame as per {{migrate-validate}}.  The
-server MAY send other non-probing frames from its preferred address, but MUST
-continue sending all probing packets from its original IP address.
+server MUST send other non-probing frames from its original address until it
+receives a non-probing packet from the client at its preferred address and until
+the server has validated the new path.
 
-The server SHOULD also initiate path validation of the client using its
-preferred address and the address from which it received the client probe.  This
-helps to guard against spurious migration initiated by an attacker.
+The server MUST probe on the path toward the client from its preferred address.
+This helps to guard against spurious migration initiated by an attacker.
 
 Once the server has completed its path validation and has received a non-probing
 packet with a new largest packet number on its preferred address, the server
