@@ -1162,7 +1162,8 @@ acked_packet from sent_packets.
        // Do not increase congestion window in recovery period.
        return
      if (IsAppLimited())
-       // Do not increase congestion_window if application limited.
+       // Do not increase congestion_window if application
+       // limited.
        return
      if (congestion_window < ssthresh):
        // Slow start.
