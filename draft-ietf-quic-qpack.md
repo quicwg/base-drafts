@@ -210,10 +210,18 @@ acknowledged by the decoder.
 
 ### Blocked Dynamic Table Insertions {#blocked-insertion}
 
+The encoder considers a dynamic table entry to be blocking if it has not yet
+received acknowledgement of insertion of the entry, or if it has not yet
+received acknowledgement of all references to the entry.  Note that a dynamic
+table entry that has never been referenced can still be blocking.  Also note
+that a blocking entry cannot be evicted, which is unrelated to a blocked stream,
+which cannot be decoded.  In particular, dynamic table entries can be blocking
+even if blocked streams are not allowed.
+
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict an entry with unacknowledged references.
-For header blocks that might rely on the newly added entry, the encoder can use
-a literal representation.
+existing entry) if doing so would evict a blocking entry.  For header blocks
+that would rely on the newly added entry, the encoder can instead use a literal
+representation.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -223,7 +231,7 @@ reference such an entry, the encoder can emit a Duplicate instruction (see
 Determining which entries are too close to eviction to reference is an encoder
 preference.  One heuristic is to target a fixed amount of available space in the
 dynamic table: either unused space or space that can be reclaimed by evicting
-unreferenced entries.  To achieve this, the encoder can maintain a draining
+non-blocking entries.  To achieve this, the encoder can maintain a draining
 index, which is the smallest absolute index in the dynamic table that it will
 emit a reference for.  As new entries are inserted, the encoder increases the
 draining index to maintain the section of the table that it will not reference.
@@ -324,10 +332,9 @@ permit the encoder to track the decoder's state.  These events are:
 
 Knowledge that a header block with references to the dynamic table has been
 processed permits the encoder to evict entries to which no unacknowledged
-references remain, regardless of whether those references were potentially
-blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
-indication that these header blocks will never be processed serves a similar
-function; see {{stream-cancellation}}.
+references remain; see {{blocked-insertion}}.  When a stream is reset or
+abandoned, the indication that these header blocks will never be processed
+serves a similar function; see {{stream-cancellation}}.
 
 The decoder chooses when to emit Insert Count Increment instructions (see
 {{insert-count-increment}}). Emitting an instruction after adding each new
@@ -396,8 +403,8 @@ limit on its size.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (table capacity - size of new entry) or until the table is empty. The
-encoder MUST NOT evict a dynamic table entry unless it has first been
-acknowledged by the decoder.
+encoder MUST NOT evict a blocking dynamic table entry (see
+{{blocked-insertion}}).
 
 If the size of the new entry is less than or equal to the dynamic table
 capacity, then that entry is added to the table.  It is an error if the encoder
@@ -698,9 +705,9 @@ that exceeds this limit as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of entries with outstanding
-references (see {{reference-tracking}}).  Changing the capacity of the dynamic
-table is not acknowledged as this instruction does not insert an entry.
+{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
+{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
+acknowledged as this instruction does not insert an entry.
 
 
 ## Decoder Stream
