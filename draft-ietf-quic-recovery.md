@@ -179,7 +179,7 @@ QUIC uses separate packet number spaces for each encryption level, except 0-RTT
 and all generations of 1-RTT keys use the same packet number space.  Separate
 packet number spaces ensures acknowledgement of packets sent with one level of
 encryption will not cause spurious retransmission of packets sent with a
-different encryption level.  Congestion control and round trip time (RTT)
+different encryption level.  Congestion control and round-trip time (RTT)
 measurement are unified across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
@@ -293,7 +293,7 @@ continue making forward progress.
 
 # Computing the RTT estimate
 
-Round trip time (RTT) is calculated when an ACK frame arrives by
+Round-trip time (RTT) is calculated when an ACK frame arrives by
 computing the difference between the current time and the time the largest
 acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
 is not newly acknowledged or not ack-eliciting.
