@@ -864,6 +864,9 @@ decoder's dynamic table:
    if EncodedInsertCount == 0:
       ReqInsertCount = 0
    else:
+      if EncodedInsertCount > 2 * MaxEntries:
+         Error
+
       ReqInsertCount = EncodedInsertCount - 1
       CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
 
@@ -875,7 +878,13 @@ decoder's dynamic table:
          CurrentWrapped += 2 * MaxEntries
 
       ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
+
+      if ReqInsertCount <= 0:
+         Error
 ~~~
+
+An error detected by the decoding algorithm indicates invalid input, and MUST be
+treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 This encoding limits the length of the prefix on long-lived connections.
 
