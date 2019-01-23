@@ -16,7 +16,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
   -
     ins: S. Turner
@@ -1599,6 +1599,13 @@ cb54df7884
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-17
+
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Use of ALPN or equivalent is mandatory (#2263, #2284)
 
 
 ## Since draft-ietf-quic-tls-14
