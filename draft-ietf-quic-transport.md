@@ -22,7 +22,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
 
 normative:
