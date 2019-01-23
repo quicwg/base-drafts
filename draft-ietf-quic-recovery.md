@@ -1011,7 +1011,7 @@ ack-eliciting packets.  Generally, this can be calculated as a number of
 consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
 {{cc-consts-of-interest}}), but since the PTO timer is reset when a new
 ack-eliciting packet is sent, an explicit timeout must be used to account for
-those cases where PTOs don't occur.
+those cases where PTOs do not occur.
 
 When persistent congestion is encountered the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow).  This response of
