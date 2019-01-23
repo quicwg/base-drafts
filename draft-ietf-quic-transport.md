@@ -5581,6 +5581,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Limit Retry and Version Negotiation to once per datagram (#2259, #2303)
 - Set a maximum value for max_ack_delay transport parameter (#2282, #2301)
 - Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
+- Corrected requirements for migration to a preferred address (#2146, #2349)
 
 ## Since draft-ietf-quic-transport-16
 

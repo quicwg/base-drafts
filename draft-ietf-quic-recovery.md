@@ -1248,6 +1248,8 @@ Issue and pull request numbers are listed with a leading octothorp.
   (#2138, 2187)
 - Process ECN counts before marking packets lost (#2142)
 - Mark packets lost before resetting crypto_count and pto_count (#2208, #2209)
+- Congestion and loss recovery state are discarded when keys are discarded
+  (#2237)
 
 
 ## Since draft-ietf-quic-recovery-16
