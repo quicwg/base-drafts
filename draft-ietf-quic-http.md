@@ -334,6 +334,10 @@ them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
 
+A sender can close or reset a unidirectional stream unless otherwise specified.
+A receiver MUST tolerate unidirectional streams being closed or reset prior to
+the reception of the unidirectional stream header.
+
 ###  Control Streams
 
 A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
@@ -345,8 +349,9 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
-MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream.  If the
+control stream is closed at any point, this MUST be treated as a connection
+error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon they are able.  Depending
@@ -717,7 +722,7 @@ with its 0-RTT data.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
-set from server to client, as in HTTP/2.
+set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -748,6 +753,9 @@ multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
 that contains a larger Push ID than the client has advertised or a Push ID which
 has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
 
+If a PUSH_PROMISE frame is received on either control stream, the recipient MUST
+respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+
 See {{server-push}} for a description of the overall server push mechanism.
 
 ### GOAWAY {#frame-goaway}
@@ -770,7 +778,7 @@ close a connection.
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_MALFORMED_FRAME.
+of any other type as a connection error of type HTTP_WRONG_STREAM.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -965,22 +973,26 @@ header list is calculated based on the uncompressed size of header fields,
 including the length of the name and value in bytes plus an overhead of 32 bytes
 for each header field.
 
-### Request Cancellation
+### Request Cancellation and Rejection {#request-cancellation}
 
-Either client or server can cancel requests by aborting the stream (QUIC
-RESET_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
+Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
+STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 response, it indicates that this response is no longer of interest.
 Implementations SHOULD cancel requests by aborting both directions of a stream.
 
-When the server aborts its response stream using HTTP_REQUEST_CANCELLED, it
-indicates that no application processing was performed.  In this context,
-"processed" means that some data from the stream was passed to some higher layer
-of software that might have taken some action as a result.  The client can treat
-requests cancelled by the server as though they had never been sent at all,
-thereby allowing them to be retried later on a new connection.  Servers MUST NOT
-use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
-processed.
+When the server rejects a request without performing any application processing,
+it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
+In this context, "processed" means that some data from the stream was passed to
+some higher layer of software that might have taken some action as a result. The
+client can treat requests rejected by the server as though they had never been
+sent at all, thereby allowing them to be retried later on a new connection.
+Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
+were partially or fully processed.  When a client sends a STOP_SENDING with
+HTTP_REQUEST_CANCELLED, a server MAY indicate the error code
+HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM if no processing was
+performed.  Clients MUST NOT reset streams with the HTTP_REQUEST_REJECTED error
+code except in response to a QUIC STOP_SENDING frame.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1210,23 +1222,24 @@ function by communicating with clients.
 Servers initiate the shutdown of a connection by sending a GOAWAY frame
 ({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
 on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were not accepted. This enables
+requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
 connection shutdown.  This identifier MAY be lower than the stream limit
 identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Once GOAWAY is sent, the server MUST cancel requests sent on streams with an
-identifier higher than the indicated last Stream ID.  Clients MUST NOT send new
-requests on the connection after receiving GOAWAY, although requests might
-already be in transit. A new connection can be established for new requests.
+Once GOAWAY is sent, the server MUST reject requests sent on streams with an
+identifier greater than or equal to the indicated last Stream ID.  Clients MUST
+NOT send new requests on the connection after receiving GOAWAY, although
+requests might already be in transit. A new connection can be established for
+new requests.
 
-If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests are considered cancelled
-({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
-the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
-streams below the indicated ID if these requests were not processed.
+If the client has sent requests on streams with a Stream ID greater than or
+equal to that indicated in the GOAWAY frame, those requests are considered
+rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
+streams above this ID.  Servers MAY also reject requests on streams below the
+indicated ID if these requests were not processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
@@ -1234,7 +1247,7 @@ successfully, reset individually, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
-know whether a stream has been partially processed or not.  For example, if an
+know whether a request has been partially processed or not.  For example, if an
 HTTP client sends a POST at the same time that a server closes a QUIC
 connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
@@ -1403,6 +1416,9 @@ HTTP_MISSING_SETTINGS (0x0012):
 
 HTTP_UNEXPECTED_FRAME (0x0013):
 : A frame was received which was not permitted in the current state.
+
+HTTP_REQUEST_REJECTED (0x0014):
+: A server rejected a request without performing any application processing.
 
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
@@ -1618,6 +1634,7 @@ The entries in the following table are registered by this document.
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
@@ -1872,8 +1889,10 @@ FRAME_SIZE_ERROR (0x6):
 : HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  STREAM_ID_ERROR from the QUIC layer.
+: HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
+  request was not processed. Otherwise, not applicable because QUIC handles
+  stream management.  A STREAM_ID_ERROR at the QUIC layer is used for streams
+  that are improperly opened.
 
 CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
@@ -1901,6 +1920,13 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-17
+
+- HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
+  #2325)
+- Changed error code for GOAWAY on the wrong stream (#2231, #2343)
+
 
 ## Since draft-ietf-quic-http-16
 

@@ -22,7 +22,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
 
 normative:
@@ -647,10 +647,14 @@ upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
-frame for that stream.  An endpoint SHOULD copy the error code from the
-STOP_SENDING frame, but MAY use any application error code.  The endpoint
-that sends a STOP_SENDING frame can ignore the error code carried in any
-RESET_STREAM frame it receives.
+frame if the stream is in the Ready or Send state. If the stream is in the Data
+Sent state and any outstanding data is declared lost, an endpoint SHOULD send a
+RESET_STREAM frame in lieu of a retransmission.
+
+An endpoint SHOULD copy the error code from the STOP_SENDING frame to the
+RESET_STREAM frame it sends, but MAY use any application error code.  The
+endpoint that sends a STOP_SENDING frame MAY ignore the error code carried in
+any RESET_STREAM frame it receives.
 
 If the STOP_SENDING frame is received on a stream that is already in the
 "Data Sent" state, an endpoint that wishes to cease retransmission of
@@ -1168,7 +1172,8 @@ ignore a Version Negotiation packet if it has already received and acted on a
 Version Negotiation packet.
 
 A client MUST ignore a Version Negotiation packet that lists the client's chosen
-version.
+version.  If the client does not support any of the versions the server offers,
+it aborts the connection attempt.
 
 A client MAY attempt 0-RTT after receiving a Version Negotiation packet.  A
 client that sends additional 0-RTT packets MUST NOT reset the packet number to 0
@@ -1578,6 +1583,10 @@ address validation prior to completing the handshake. This token is delivered to
 the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
+
+In addition to sending limits imposed prior to address validation, servers are
+also constrained in what they can send by the limits set by the congestion
+controller.  Clients are only constrained by the congestion controller.
 
 
 ### Address Validation using Retry Packets {#validate-retry}
@@ -2134,9 +2143,13 @@ packets.
 A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
 
-Once the handshake is finished, the client SHOULD initiate path validation (see
-{{migrate-validate}}) of the server's preferred address using the connection ID
-provided in the preferred_address transport parameter.
+Servers MAY communicate a preferred address of each address family (IPv4 and
+IPv6) to allow clients to pick the one most suited to their network attachment.
+
+Once the handshake is finished, the client SHOULD select one of the two
+server's preferred addresses and initiate path validation (see
+{{migrate-validate}}) of that address using the connection ID provided in the
+preferred_address transport parameter.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
@@ -2149,12 +2162,12 @@ MUST continue sending all future packets to the server's original IP address.
 A server might receive a packet addressed to its preferred IP address at any
 time after it accepts a connection.  If this packet contains a PATH_CHALLENGE
 frame, the server sends a PATH_RESPONSE frame as per {{migrate-validate}}.  The
-server MAY send other non-probing frames from its preferred address, but MUST
-continue sending all probing packets from its original IP address.
+server MUST send other non-probing frames from its original address until it
+receives a non-probing packet from the client at its preferred address and until
+the server has validated the new path.
 
-The server SHOULD also initiate path validation of the client using its
-preferred address and the address from which it received the client probe.  This
-helps to guard against spurious migration initiated by an attacker.
+The server MUST probe on the path toward the client from its preferred address.
+This helps to guard against spurious migration initiated by an attacker.
 
 Once the server has completed its path validation and has received a non-probing
 packet with a new largest packet number on its preferred address, the server
@@ -2186,6 +2199,9 @@ Servers SHOULD initiate path validation to the client's new address upon
 receiving a probe packet from a different address.  Servers MUST NOT send more
 than a minimum congestion window's worth of non-probing packets to the new
 address before path validation is complete.
+
+A client that migrates to a new address SHOULD use a preferred address from the
+same address family for the server.
 
 
 # Connection Termination {#termination}
@@ -2262,14 +2278,13 @@ If the idle timeout is enabled, a connection that remains idle for longer than
 the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
 A connection enters the draining state when the idle timeout expires.
 
-Each endpoint advertises its own idle timeout to its peer. The idle timeout
-starts from the last packet received.  In order to ensure that initiating new
-activity postpones an idle timeout, an endpoint restarts this timer when sending
-a packet.  An endpoint does not postpone the idle timeout if another packet has
-been sent containing frames other than ACK or PADDING, and that other packet has
-not been acknowledged or declared lost.  Packets that contain only ACK or
-PADDING frames are not acknowledged until an endpoint has other frames to send,
-so they could prevent the timeout from being refreshed.
+Each endpoint advertises its own idle timeout to its peer.  An enpdpoint
+restarts any timer it maintains when a packet from its peer is received and
+processed successfully.  The timer is also restarted when sending a packet
+containing frames other than ACK or PADDING (an ACK-eliciting packet, see
+{{QUIC-RECOVERY}}), but only if no other ACK-eliciting packets have been sent
+since last receiving a packet.  Restarting when sending packets ensures that
+connections do not prematurely time out when initiating new activity.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
@@ -2797,8 +2812,8 @@ The Frame Type field uses a variable length integer encoding (see
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  Though a two-, four- or eight-byte encoding of the frame types
 defined in this document is possible, the Frame Type field for these frames is
-encoded on a single byte.  For instance, though 0x4007 is a legitimate two-byte
-encoding for a variable-length integer with a value of 7, PING frames are always
+encoded on a single byte.  For instance, though 0x4001 is a legitimate two-byte
+encoding for a variable-length integer with a value of 1, PING frames are always
 encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
@@ -3570,6 +3585,9 @@ The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
 a Version Negotiation packet consumes an entire UDP datagram.
 
+A server MUST NOT send more than one Version Negotiation packet in response to a
+single UDP datagram.
+
 See {{version-negotiation}} for a description of the version negotiation
 process.
 
@@ -3845,7 +3863,9 @@ Destination Connection ID of subsequent packets that it sends.
 
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
-can send multiple Retry packets as it receives Initial or 0-RTT packets.
+can send multiple Retry packets as it receives Initial or 0-RTT packets.  A
+server MUST NOT send more than one Retry packet in response to a single UDP
+datagram.
 
 A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
@@ -4155,18 +4175,21 @@ preferred_address (0x000d):
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
   of this transport parameter is the PreferredAddress struct shown in
-  {{fig-preffered-address}}.  This transport parameter is only sent by a server.
+  {{fig-preferred-address}}.  This transport parameter is only sent by a server.
+  Servers MAY choose to only send a preferred address of one address family by
+  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
 
 ~~~
    struct {
-     enum { IPv4(4), IPv6(6), (15) } ipVersion;
-     opaque ipAddress<4..2^8-1>;
-     uint16 port;
+     opaque ipv4Address[4];
+     uint16 ipv4Port;
+     opaque ipv6Address[16];
+     uint16 ipv6Port;
      opaque connectionId<0..18>;
      opaque statelessResetToken[16];
    } PreferredAddress;
 ~~~
-{: #fig-preffered-address title="Preferred Address format"}
+{: #fig-preferred-address title="Preferred Address format"}
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
@@ -4479,16 +4502,15 @@ Final Size:
 ## STOP_SENDING Frame {#frame-stop-sending}
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
-data is being discarded on receipt at application request.  This signals a peer
-to abruptly terminate transmission on a stream.
+data is being discarded on receipt at application request.  STOP_SENDING
+requests that a peer cease transmission on a stream.
 
-Receipt of a STOP_SENDING frame is invalid for a locally-initiated stream that
-has not yet been created or is in the "Ready" state (see
-{{stream-send-states}}). Receiving a STOP_SENDING frame for a locally-initiated
-stream that is "Ready" or not yet created MUST be treated as a connection error
-of type STREAM_STATE_ERROR.  An endpoint that receives a STOP_SENDING frame for
-a receive-only stream MUST terminate the connection with error
-STREAM_STATE_ERROR.
+A STOP_SENDING frame can be sent for streams in the Recv or Size Known states
+(see {{stream-send-states}}). Receiving a STOP_SENDING frame for a
+locally-initiated stream that has not yet been created MUST be treated as a
+connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
+STOP_SENDING frame for a receive-only stream MUST terminate the connection with
+error STREAM_STATE_ERROR.
 
 The STOP_SENDING frame is as follows:
 
@@ -4700,14 +4722,12 @@ the initial limits (see {{zerortt-parameters}}).
 The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
-An endpoint that receives a MAX_STREAM_DATA frame for a receive-only stream
-MUST terminate the connection with error STREAM_STATE_ERROR.
-
-An endpoint that receives a MAX_STREAM_DATA frame for a send-only stream
-it has not opened MUST terminate the connection with error STREAM_STATE_ERROR.
-
-Note that an endpoint may legally receive a MAX_STREAM_DATA frame on a
-bidirectional stream it has not opened.
+A MAX_STREAM_DATA frame can be sent for streams in the Recv state (see
+{{stream-send-states}}). Receiving a MAX_STREAM_DATA frame for a
+locally-initiated stream that has not yet been created MUST be treated as a
+connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
+MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
+with error STREAM_STATE_ERROR.
 
 The MAX_STREAM_DATA frame is as follows:
 
@@ -5545,8 +5565,23 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-transport-16
+## Since draft-ietf-quic-transport-17
+
 - Stream-related errors now use STREAM_STATE_ERROR (#2305)
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Expanded conditions for ignoring ICMP packet too big messages (#2108, #2161)
+- Remove rate control from PATH_CHALLENGE/PATH_RESPONSE (#2129, #2241)
+- Endpoints are permitted to discard malformed initial packets (#2141)
+- Clarified ECN implementation and usage requirements (#2156, #2201)
+- Disable ECN count verification for packets that arrive out of order (#2198,
+  #2215)
+- Use Probe Timeout (PTO) instead of RTO (#2206, #2238)
+- Loosen constraints on retransmission of ACK ranges (#2199, #2245)
+- Limit Retry and Version Negotiation to once per datagram (#2259, #2303)
+- Set a maximum value for max_ack_delay transport parameter (#2282, #2301)
+- Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
+- Corrected requirements for migration to a preferred address (#2146, #2349)
 
 ## Since draft-ietf-quic-transport-16
 

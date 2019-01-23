@@ -44,6 +44,23 @@ normative:
         org: Mozilla
         role: editor
 
+  QUIC-TLS:
+    title: "Using TLS to Secure QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-tls-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner
+        name: Sean Turner
+        org: sn3rd
+        role: editor
+
 informative:
 
   FACK:
@@ -289,8 +306,15 @@ be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
-Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}.
+A sender calculates both smoothed RTT and RTT variance similar to those
+specified in {{?RFC6298}}, see {{on-ack-received}}.
+
+A sender takes an RTT sample when an ACK frame is received that acknowledges a
+larger packet number than before (see {{on-ack-received}}).  A sender will take
+multiple RTT samples per RTT when multiple such ACK frames are received within
+an RTT.  When multiple samples are generated within an RTT, the smoothed RTT and
+RTT variance could retain inadequate history, as suggested in {{?RFC6298}}.
+Changing these computations is currently an open research question.
 
 min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
@@ -427,14 +451,30 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-#### Discarding Initial State {#discard-initial}
+#### Discarding Keys and Packet State {#discarding-packets}
 
-As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
-receiving Initial packets once they start exchanging Handshake packets.  At this
-point, all loss recovery state for the Initial packet number space is also
-discarded. Packets that are in flight for the packet number space are not
-declared as either acknowledged or lost.  After discarding state, new Initial
-packets will not be sent.
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
+packets that were sent with those keys can no longer be acknowledged because
+their acknowledgements cannot be processed anymore. The sender considers them no
+longer in flight. That is, the sender SHOULD discard all recovery state
+associated with those packets and MUST remove them from the count of bytes in
+flight.
+
+Endpoints stop sending and receiving Initial packets once they start exchanging
+Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+recovery state for all in-flight Initial packets is discarded.
+
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  Initial secrets however might be destroyed
+sooner, as soon as handshake keys are available (see Section 4.10 of
+{{QUIC-TLS}}).
 
 
 ### Probe Timeout {#pto}
@@ -688,7 +728,7 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
-### On Receiving an Acknowledgment
+### On Receiving an Acknowledgment {#on-ack-received}
 
 When an ACK frame is received, it may newly acknowledge any number of packets.
 
@@ -944,6 +984,15 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+## Ignoring Loss of Undecryptable Packets
+
+During the handshake, some packet protection keys might not be
+available when a packet arrives. In particular, Handshake and 0-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
+cannot be processed until the handshake completes.  Endpoints MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
+the peer has packet protection keys to process those packets.
+
 ## Probe Timeout
 
 Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
@@ -1008,23 +1057,6 @@ to use the full congestion window for a period of time after receiving
 acknowledgements, due to pacing.  In this case, the sender should not consider
 themselves application limited and should allow the congestion window to
 increase.
-
-## Discarding Packet Number Space State
-
-When keys for a packet number space are discarded, any in-flight packets
-sent with those keys are removed from the count of bytes in flight.  Loss
-recovery state is also discarded, so no loss events will occur for any
-in-flight packets from that space (see {{discard-initial}}).  Note that it is
-expected that keys are discarded after those packets would be declared lost,
-but Initial secrets are destroyed earlier.
-
-When 0-RTT is rejected, all in-flight 0-RTT packets are removed from
-the count of bytes in flight.  Loss recovery state is also discarded, so no
-loss events will occur for any in-flight 0-RTT packets.
-
-If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
-before Initial packets, early 0-RTT packets will be declared lost, but that
-is expected to be infrequent.
 
 ## Pseudocode
 
@@ -1247,6 +1279,23 @@ This document has no IANA actions.  Yet.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-17
+
+- After Probe Timeout discard in-flight packets or send another (#2212, #1965)
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- 0-RTT state is discarded when 0-RTT is rejected (#2300)
+- Loss detection timer is cancelled when ack-eliciting frames are in flight
+  (#2117, #2093)
+- Packets are declared lost if they are in flight (#2104)
+- After becoming idle, either pace packets or reset the congestion controller
+  (#2138, 2187)
+- Process ECN counts before marking packets lost (#2142)
+- Mark packets lost before resetting crypto_count and pto_count (#2208, #2209)
+- Congestion and loss recovery state are discarded when keys are discarded
+  (#2237)
+
 
 ## Since draft-ietf-quic-recovery-16
 
