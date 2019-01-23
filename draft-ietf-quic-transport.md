@@ -2765,10 +2765,10 @@ on the network path throughout the duration of a connection. The spin bit is
 only present in the short packet header, since it is possible to measure the
 initial RTT of a connection by observing the handshake. Therefore, the spin bit
 will appear after version negotiation and connection establishment are
-completed. On-path measurement and use of the Latency Spin Bit is further 
+completed. On-path measurement and use of the Latency Spin Bit is further
 discussed in {{QUIC-MANAGEABILITY}}.
 
-The spin bit utilizes a single bit in the first byte of the short header. The  
+The spin bit utilizes a single bit in the first byte of the short header. The
 location of the bit and procedures for how to set it by clients and servers are
 defined in {{short-header}}.
 
@@ -2780,17 +2780,17 @@ Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations SHOULD allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator implementations SHOULD disable
-the spin bit on a randomly chosen fraction of connections. However, connections 
+the spin bit on a randomly chosen fraction of connections. However, connections
 may be configured to explicitly enable spinning, for example in the case of
 explicit customer support and debugging.
-The random selection process SHOULD be designed such that on average the spin bit 
-is disabled for at least one eighth of network paths. The selection process 
-should be externally unpredictable but consistent for any given combination of source
-and destination address and port. For instance, the implementation might have a
-static key which it uses to key a pseudorandom function over these values and
-use the output to determine whether to send the spin bit. The selection process
-performed at the beginning of the connection SHOULD be applied for all paths
-used by the connection.
+The random selection process SHOULD be designed such that on average the spin
+bit is disabled for at least one eighth of network paths. The selection process
+should be externally unpredictable but consistent for any given combination of
+source and destination address and port. For instance, the implementation might
+have a static key which it uses to key a pseudorandom function over these values
+and use the output to determine whether to send the spin bit. The selection
+process performed at the beginning of the connection SHOULD be applied for all
+paths used by the connection.
 
 In case multiple connections share the same five-tuple, i.e. same source and
 destination IP address and UDP port the setting of the spin bit needs to be
