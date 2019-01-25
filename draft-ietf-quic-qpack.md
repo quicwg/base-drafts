@@ -210,18 +210,20 @@ acknowledged by the decoder.
 
 ### Blocked Dynamic Table Insertions {#blocked-insertion}
 
-The encoder considers a dynamic table entry to be blocking if it has not yet
-received acknowledgement of insertion of the entry, or if it has not yet
-received acknowledgement of all references to the entry.  Note that a dynamic
-table entry that has never been referenced can still be blocking.  Also note
-that a blocking entry cannot be evicted, which is unrelated to a blocked stream,
-which cannot be decoded.  In particular, dynamic table entries can be blocking
-even if blocked streams are not allowed.
+A dynamic table entry is considered blocking and cannot be evicted until its
+insertion has been acknowledged and there are no outstanding unacknowledged
+references to the entry.  In particular, a dynamic table entry that has never
+been referenced can still be blocking.
+
+Note:
+: A blocking entry is unrelated to a blocked stream, which is a stream that a
+  decoder cannot decode as a result of references to entries that are not yet
+  available.  Any encoder that uses the dynamic table has to keep track of
+  blocked entries, whereas blocked streams are optional.
 
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict a blocking entry.  For header blocks
-that would rely on the newly added entry, the encoder can instead use a literal
-representation.
+existing entry) if doing so would evict a blocking entry.  In this case, the
+encoder can send literal representations of header fields.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -332,9 +334,9 @@ permit the encoder to track the decoder's state.  These events are:
 
 Knowledge that a header block with references to the dynamic table has been
 processed permits the encoder to evict entries to which no unacknowledged
-references remain; see {{blocked-insertion}}.  When a stream is reset or
+references remain (see {{blocked-insertion}}).  When a stream is reset or
 abandoned, the indication that these header blocks will never be processed
-serves a similar function; see {{stream-cancellation}}.
+serves a similar function (see {{stream-cancellation}}).
 
 The decoder chooses when to emit Insert Count Increment instructions (see
 {{insert-count-increment}}). Emitting an instruction after adding each new
