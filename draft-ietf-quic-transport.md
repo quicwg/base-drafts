@@ -1847,6 +1847,11 @@ endpoint migrates to a new address.
 An endpoint MUST NOT initiate connection migration before the handshake is
 finished and the endpoint has 1-RTT keys.  The design of QUIC relies on
 endpoints retaining a stable address for the duration of the handshake.
+Clients MUST NOT initiate connection migration before they are
+certain that their peer also considers the handshake finished. This
+means that in addition to waiting for availability of 1-RTT keys,
+clients MUST wait acknowledgement by the server of one of their
+1-RTT messages before initiating connection migration.
 
 An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
