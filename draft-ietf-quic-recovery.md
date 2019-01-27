@@ -44,6 +44,23 @@ normative:
         org: Mozilla
         role: editor
 
+  QUIC-TLS:
+    title: "Using TLS to Secure QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-tls-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+        role: editor
+      -
+        ins: S. Turner
+        name: Sean Turner
+        org: sn3rd
+        role: editor
+
 informative:
 
   FACK:
@@ -162,8 +179,8 @@ QUIC uses separate packet number spaces for each encryption level, except 0-RTT
 and all generations of 1-RTT keys use the same packet number space.  Separate
 packet number spaces ensures acknowledgement of packets sent with one level of
 encryption will not cause spurious retransmission of packets sent with a
-different encryption level.  Congestion control and RTT measurement are unified
-across packet number spaces.
+different encryption level.  Congestion control and round-trip time (RTT)
+measurement are unified across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -276,10 +293,10 @@ continue making forward progress.
 
 # Computing the RTT estimate
 
-RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest acked packet was sent.  An RTT sample
-MUST NOT be taken for a packet that is not newly acknowledged or not
-ack-eliciting.
+Round-trip time (RTT) is calculated when an ACK frame arrives by
+computing the difference between the current time and the time the largest
+acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
+is not newly acknowledged or not ack-eliciting.
 
 When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
 to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
@@ -289,8 +306,15 @@ be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
-Like TCP, QUIC calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}.
+A sender calculates both smoothed RTT and RTT variance similar to those
+specified in {{?RFC6298}}, see {{on-ack-received}}.
+
+A sender takes an RTT sample when an ACK frame is received that acknowledges a
+larger packet number than before (see {{on-ack-received}}).  A sender will take
+multiple RTT samples per RTT when multiple such ACK frames are received within
+an RTT.  When multiple samples are generated within an RTT, the smoothed RTT and
+RTT variance could retain inadequate history, as suggested in {{?RFC6298}}.
+Changing these computations is currently an open research question.
 
 min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
@@ -299,8 +323,7 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 # Loss Detection
 
 QUIC senders use both ack information and timeouts to detect lost packets, and
-this section provides a description of these algorithms. Estimating the network
-round-trip time (RTT) is critical to these algorithms and is described first.
+this section provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
@@ -421,20 +444,36 @@ control and loss recovery state, including resetting any pending timers.  Either
 packet indicates that the Initial was received but not processed.  Neither
 packet can be treated as an acknowledgment for the Initial.
 
-
-#### Discarding Initial State {#discard-initial}
-
-As described in Section 17.5.1 of {{QUIC-TRANSPORT}}, endpoints stop sending and
-receiving Initial packets once they start exchanging Handshake packets.  At this
-point, all loss recovery state for the Initial packet number space is also
-discarded. Packets that are in flight for the packet number space are not
-declared as either acknowledged or lost.  After discarding state, new Initial
-packets will not be sent.
-
 The client MAY however compute an RTT estimate to the server as the time period
 from when the first Initial was sent to when a Retry or a Version Negotiation
 packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
+
+
+#### Discarding Keys and Packet State {#discarding-packets}
+
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
+packets that were sent with those keys can no longer be acknowledged because
+their acknowledgements cannot be processed anymore. The sender considers them no
+longer in flight. That is, the sender SHOULD discard all recovery state
+associated with those packets and MUST remove them from the count of bytes in
+flight.
+
+Endpoints stop sending and receiving Initial packets once they start exchanging
+Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+recovery state for all in-flight Initial packets is discarded.
+
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  Initial secrets however might be destroyed
+sooner, as soon as handshake keys are available (see Section 4.10 of
+{{QUIC-TLS}}).
 
 
 ### Probe Timeout {#pto}
@@ -688,7 +727,7 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
-### On Receiving an Acknowledgment
+### On Receiving an Acknowledgment {#on-ack-received}
 
 When an ACK frame is received, it may newly acknowledge any number of packets.
 
@@ -945,6 +984,14 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+## Ignoring Loss of Undecryptable Packets
+
+During the handshake, some packet protection keys might not be
+available when a packet arrives. In particular, Handshake and 0-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
+cannot be processed until the handshake completes.  Endpoints MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
+the peer has packet protection keys to process those packets.
 
 ## Probe Timeout
 
@@ -955,10 +1002,15 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-If a threshold number of consecutive PTOs have occurred (pto_count is more than
+When an ACK frame is received that establishes loss of all in-flight packets
+sent prior to a threshold number of consecutive PTOs (pto_count is more than
 kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
 considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window.
+window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
+response of collapsing the congestion window on persistent congestion is
+functionally similar to a sender's response on a Retransmission Timeout (RTO) in
+TCP {{RFC5681}}.
+
 
 ## Pacing
 
@@ -994,15 +1046,6 @@ paces the sending of any packets in excess of the initial congestion window.
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
-## Discarding Packet Number Space State
-
-When keys for an packet number space are discarded, any packets sent with those
-keys are removed from the count of bytes in flight.  No loss events will occur
-any in-flight packets from that space, as a result of discarding loss recovery
-state (see {{discard-initial}}).  Note that it is expected that keys are
-discarded after those packets would be declared lost, but Initial secrets are
-destroyed earlier.
-
 ## Pseudocode
 
 ### Constants of interest {#cc-consts-of-interest}
@@ -1030,15 +1073,13 @@ kLossReductionFactor:
   The RECOMMENDED value is 0.5.
 
 kPersistentCongestionThreshold:
-: Number of consecutive PTOs after which network is considered to be
-  experiencing persistent congestion.  The rationale for this threshold is to
-  enable a sender to use initial PTOs for aggressive probing, similar to Tail
-  Loss Probe (TLP) in TCP {{TLP}} {{RACK}}.  Once the number of consecutive PTOs
-  reaches this threshold - that is, persistent congestion is established - the
-  sender responds by collapsing its congestion window to kMinimumWindow, similar
-  to a Retransmission Timeout (RTO) in TCP {{RFC5681}}.  The RECOMMENDED value
-  for kPersistentCongestionThreshold is 2, which is equivalent to having two
-  TLPs before an RTO in TCP.
+: Number of consecutive PTOs required for persistent congestion to be
+  established.  The rationale for this threshold is to enable a sender to use
+  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
+  {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
+  a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
+  kPersistentCongestionThreshold is 2, which is equivalent to having two TLPs
+  before an RTO in TCP.
 
 ### Variables of interest {#vars-of-interest}
 
@@ -1223,6 +1264,23 @@ This document has no IANA actions.  Yet.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-17
+
+- After Probe Timeout discard in-flight packets or send another (#2212, #1965)
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- 0-RTT state is discarded when 0-RTT is rejected (#2300)
+- Loss detection timer is cancelled when ack-eliciting frames are in flight
+  (#2117, #2093)
+- Packets are declared lost if they are in flight (#2104)
+- After becoming idle, either pace packets or reset the congestion controller
+  (#2138, 2187)
+- Process ECN counts before marking packets lost (#2142)
+- Mark packets lost before resetting crypto_count and pto_count (#2208, #2209)
+- Congestion and loss recovery state are discarded when keys are discarded
+  (#2327)
+
 
 ## Since draft-ietf-quic-recovery-16
 

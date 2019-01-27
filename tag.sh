@@ -19,11 +19,11 @@ enabled() {
 }
 
 declare -A authors=( \
-    [transport]=martin.thomson@gmail.com \
-    [tls]=martin.thomson@gmail.com \
+    [transport]=mt@lowentropy.net \
+    [tls]=mt@lowentropy.net \
     [recovery]=ianswett@google.com \
     [http]=mbishop@evequefou.be \
-    [invariants]=martin.thomson@gmail.com \
+    [invariants]=mt@lowentropy.net \
     [qpack]=afrind@fb.com \
     [spin-exp]=ietf@trammell.ch \
 )
