@@ -1844,14 +1844,15 @@ addresses (that is, IP address and/or port), such as those caused by an endpoint
 migrating to a new network.  This section describes the process by which an
 endpoint migrates to a new address.
 
-An endpoint MUST NOT initiate connection migration before the handshake is
-finished and the endpoint has 1-RTT keys.  The design of QUIC relies on
+The design of QUIC relies on
 endpoints retaining a stable address for the duration of the handshake.
-Clients MUST NOT initiate connection migration before they are
-certain that their peer also considers the handshake finished. This
-means that in addition to waiting for availability of 1-RTT keys,
-clients MUST wait acknowledgement by the server of one of their
-1-RTT messages before initiating connection migration.
+An endpoint MUST NOT initiate connection migration before the handshake is
+finished for it and its peer and the endpoint has 1-RTT keys. This means
+that the server MUST NOT initiate connection migration before it has
+received at least one 1-RTT data from the client, and the client 
+MUST NOT initiate connection migration before receiving 
+acknowledgement by the server of at least one of its
+1-RTT messages.
 
 An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
