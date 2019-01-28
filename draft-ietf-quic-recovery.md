@@ -535,11 +535,11 @@ MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
-When the PTO timer expires multiple times, implementations must choose between
-sending the same payload every time or sending different payloads.  Sending the
-same payload may be simpler and ensures the highest priority frames arrive
-first.  Sending different payloads each time reduces the changes of spurious
-retransmission.
+When the PTO timer expires multiple times and new data cannot be sent,
+implementations must choose between sending the same payload every time
+or sending different payloads.  Sending the same payload may be simpler
+and ensures the highest priority frames arrive first.  Sending different
+payloads each time reduces the chances of spurious retransmission.
 
 When a PTO timer expires, new or previously-sent data may not be available to
 send and packets may still be in flight.  A sender can be blocked from sending
