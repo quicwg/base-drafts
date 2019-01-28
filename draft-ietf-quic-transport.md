@@ -2266,11 +2266,11 @@ An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
-While in the closing period, a server could receive packets from a new source
-address, indicating a client connection migration ({{migration}}). An endpoint
-in the closing state MUST strictly limit the number of packets it sends to this
-new address until the address is validated (see {{migrate-validate}}). A server
-in the closing state MAY instead choose to discard packets received from a new
+While in the closing period, an endpoint could receive packets from a new source
+address, indicating a connection migration ({{migration}}). An endpoint in the
+closing state MUST strictly limit the number of packets it sends to this new
+address until the address is validated (see {{migrate-validate}}). A server in
+the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
