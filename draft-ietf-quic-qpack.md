@@ -391,7 +391,7 @@ without Huffman encoding applied.
 ### Dynamic Table Capacity and Eviction {#eviction}
 
 The encoder sets the capacity of the dynamic table, which serves as the upper
-limit on its size.
+limit on its size.  The initial capcity of the dynamic table is zero.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -430,8 +430,8 @@ it can choose to use a lower dynamic table capacity (see
 For clients using 0-RTT data in HTTP/3, the maximum table capacity is the
 remembered value of the setting. If the remembered value is not present or is 0,
 the server MAY set it to a non-zero value in its SETTINGS frame. If the
-remembered value is non-zero, the server MUST send this value in its SETTINGS
-frame.  If it specifies any other value, or omits
+remembered value is non-zero, the server MUST send the same non-zero value in
+its SETTINGS frame.  If it specifies any other value, or omits
 SETTINGS_QPACK_MAX_TABLE_CAPACITY from SETTINGS, the encoder must treat this as
 a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
