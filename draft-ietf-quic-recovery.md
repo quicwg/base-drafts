@@ -1206,10 +1206,9 @@ are detected lost.
 
 ~~~
    InPersistentCongestion(oldest_loss_time):
-     return
-       (Now() - oldest_loss_time) >
-       (smoothed_rtt + 4 * rttvar + max_ack_delay) *
-       ((2 ^ kPersistentCongestionThreshold) - 1)
+     elapsed_time = Now() - oldest_loss_time
+     pto = smoothed_rtt + 4 * rttvar + max_ack_delay
+     return elapsed_time > pto * (2 ^ kPersistentCongestionThreshold - 1)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
