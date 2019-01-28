@@ -861,21 +861,23 @@ algorithm, where TotalNumberOfInserts is the total number of inserts into the
 decoder's dynamic table:
 
 ~~~
+   FullRange = 2 * MaxEntries
    if EncodedInsertCount == 0:
       ReqInsertCount = 0
    else:
-      InsertCount = EncodedInsertCount - 1
-      CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
-
-      if CurrentWrapped >= InsertCount + MaxEntries:
-         # Insert Count wrapped around 1 extra time
-         ReqInsertCount += 2 * MaxEntries
-      else if CurrentWrapped + MaxEntries < InsertCount:
-         # Decoder wrapped around 1 extra time
-         CurrentWrapped += 2 * MaxEntries
-
-      ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
+      MaxValue = TotalNumberOfInserts + MaxEntries
+      # MaxWrapped is the largest possible value of
+      # ReqInsertCount that is 0 mod 2*MaxEntries
+      MaxWrapped = floor(MaxValue / FullRange) * FullRange
+      ReqInsertCount = MaxWrapped + EncodedInsertCount - 1
+      if ReqInsertCount > MaxValue:
+         # The Encoder's value wrapped one fewer time
+         if ReqInsertCount < FullRange:
+            Error
+         ReqInsertCount -= FullRange
 ~~~
+An error detected by the decoding algorithm indicates invalid input, and MUST be
+treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 This encoding limits the length of the prefix on long-lived connections.
 
