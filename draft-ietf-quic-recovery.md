@@ -1109,10 +1109,6 @@ bytes_in_flight:
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
-probe_start_time:
-: The time when QUIC started probing the network, after the most recent ACK
-  received from the peer.
-
 recovery_start_time:
 : The time when QUIC first detects a loss, causing it to enter recovery.
   When a packet sent after this time is acknowledged, QUIC exits recovery.
@@ -1130,7 +1126,6 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
-   probe_start_time = 0
    recovery_start_time = 0
    ssthresh = infinite
    ecn_ce_counter = 0
@@ -1143,8 +1138,6 @@ increases bytes_in_flight.
 
 ~~~
    OnPacketSentCC(bytes_sent):
-     if (bytes_in_flight == 0):
-       probe_start_time = Now()
      bytes_in_flight += bytes_sent
 ~~~
 
@@ -1160,8 +1153,6 @@ acked_packet from sent_packets.
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     // Reset probe start time
-     probe_start_time = Now()
      if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
@@ -1181,12 +1172,6 @@ detected. May start a new recovery period and reduces the congestion
 window.
 
 ~~~
-   InPersistentCongestion():
-     return
-       (Now() - probe_start_time) >
-       (smoothed_rtt + 4 * rttvar + max_ack_delay) *
-       ((2 ^ kPersistentCongestionThreshold) - 1)
-
    CongestionEvent(sent_time):
      // Start a new congestion event if the sent time is larger
      // than the start time of the previous recovery epoch.
@@ -1195,9 +1180,6 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
-       // Collapse congestion window if persistent congestion
-       if (InPersistentCongestion()):
-         congestion_window = kMinimumWindow
 ~~~
 
 ### Process ECN Information
@@ -1223,15 +1205,26 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
+   InPersistentCongestion(oldest_loss_time):
+     return
+       (Now() - oldest_loss_time) >
+       (smoothed_rtt + 4 * rttvar + max_ack_delay) *
+       ((2 ^ kPersistentCongestionThreshold) - 1)
+
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
+	 smallest_lost_packet = lost_packets.first()
      largest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
      CongestionEvent(largest_lost_packet.time_sent)
+
+     // Collapse congestion window if persistent congestion
+     if (InPersistentCongestion(smallest_lost_packet.time_sent)):
+       congestion_window = kMinimumWindow
 ~~~
 
 
