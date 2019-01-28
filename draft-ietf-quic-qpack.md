@@ -252,16 +252,16 @@ received.
 
 Each header block contains a Required Insert Count, the lowest possible value
 for the Insert Count with which the header block can be decoded. For a header
-block with no references to the dynamic table, the Required Insert Count is
-zero.  For a header block with references to the dynamic table, the Required
-Insert Count is one larger than the largest Absolute Index of all referenced
-dynamic table entries.
+block with references to the dynamic table, the Required Insert Count is one
+larger than the largest Absolute Index of all referenced dynamic table
+entries. For a header block with no references to the dynamic table, the
+Required Insert Count is zero.
 
 If the decoder encounters a header block with a Required Insert Count value
-larger than defined here, it MAY treat this as a stream error of type
+larger than defined above, it MAY treat this as a stream error of type
 HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
-a Required Insert Count value smaller than defined here, it MUST treat this as a
-stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
+a Required Insert Count value smaller than defined above, it MUST treat this as
+a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
 {{invalid-references}}.
 
 When the Required Insert Count is zero, the frame contains no references to the
