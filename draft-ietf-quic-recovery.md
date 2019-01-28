@@ -1013,7 +1013,7 @@ consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
 ack-eliciting packet is sent, an explicit timeout must be used to account for
 those cases where PTOs do not occur.
 
-When persistent congestion is encountered the sender's congestion window MUST be
+When persistent congestion is established, the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
