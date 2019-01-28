@@ -599,7 +599,7 @@ response.
 A server can send the CANCEL_PUSH frame to indicate that it will not be
 fulfilling a promise prior to creation of a push stream.  Once the push stream
 has been created, sending CANCEL_PUSH has no effect on the state of the push
-stream.  A QUIC RESET_STREAM frame SHOULD be used instead to abort transmission
+stream.  A QUIC STOP_SENDING frame SHOULD be used instead to abort transmission
 of the server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
