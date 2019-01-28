@@ -836,12 +836,13 @@ Required Insert Count identifies the state of the dynamic table needed to
 process the header block.  Blocking decoders use the Required Insert Count to
 determine when it is safe to process the rest of the block.
 
-If no references are made to the dynamic table, a value of 0 is encoded.
-Alternatively, where the Required Insert Count is greater than zero, the encoder
-transforms it as follows before encoding:
+The encoder transforms the Required Insert Count as follows before encoding:
 
 ~~~
-   EncodedInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
+   if ReqInsertCount == 0:
+      EncInsertCount = 0
+   else:
+      EncInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
