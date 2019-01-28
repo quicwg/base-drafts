@@ -2228,7 +2228,7 @@ An endpoint enters a closing period after initiating an immediate close
 they contain a CONNECTION_CLOSE frame (see {{immediate-close}} for details).  An
 endpoint retains only enough information to generate a packet containing a
 CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
-The source and the destination connection ID and the QUIC version are sufficient
+The endpoint's selected connection ID and the QUIC version are sufficient
 information to identify packets for a closing connection; an endpoint can
 discard all other connection state. An endpoint MAY retain packet protection
 keys for incoming packets to allow it to read and process a CONNECTION_CLOSE
@@ -2258,6 +2258,9 @@ Once the closing or draining period has ended, an endpoint SHOULD discard all
 connection state.  This results in new packets on the connection being handled
 generically.  For instance, an endpoint MAY send a stateless reset in response
 to any further incoming packets.
+
+The draining and closing periods do not apply when a stateless reset
+({{stateless-reset}}) is sent.
 
 An endpoint is not expected to handle key updates when it is closing or
 draining.  A key update might prevent the endpoint from moving from the closing
