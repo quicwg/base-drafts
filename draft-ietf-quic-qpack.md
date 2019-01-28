@@ -840,9 +840,9 @@ The encoder transforms the Required Insert Count as follows before encoding:
 
 ~~~
    if ReqInsertCount == 0:
-      EncodedInsertCount = 0
+      EncInsertCount = 0
    else:
-     EncodedInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
+      EncInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
