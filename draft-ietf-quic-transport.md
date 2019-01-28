@@ -1653,7 +1653,8 @@ sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it SHOULD include that value in the
-Token field of its Initial packet.
+Token field of its Initial packet.  Including a token might allow the server to
+validate the client address without an additional round trip.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -1671,7 +1672,7 @@ interface.  A client needs to start the connection process over if it migrates
 prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-MUST attempt to validate it, unless it has already completed address
+MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
 a Retry. If the validation succeeds, the server SHOULD then allow the
