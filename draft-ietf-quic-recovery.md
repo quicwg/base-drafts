@@ -1005,9 +1005,9 @@ packets.
 
 ## Persistent Congestion
 
-The network is considered to be experiencing persistent congestion when the
-sender goes a period of time without receiving any ACK frames for its in-flight,
-ack-eliciting packets.  Generally, this can be calculated as a number of
+When an ACK frame is received that establishes loss of all in-flight packets
+sent over a long enough period of time, the network is considered to be
+experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
 {{cc-consts-of-interest}}), but since the PTO timer is reset when a new
 ack-eliciting packet is sent, an explicit timeout must be used to account for
@@ -1208,21 +1208,23 @@ are detected lost.
    InPersistentCongestion(oldest_loss_time):
      elapsed_time = Now() - oldest_loss_time
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
-     return elapsed_time > pto * (2 ^ kPersistentCongestionThreshold - 1)
+     return
+       elapsed_time >
+       pto * (2 ^ kPersistentCongestionThreshold - 1)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     smallest_lost_packet = lost_packets.first()
-     largest_lost_packet = lost_packets.last()
+     oldest_lost_packet = lost_packets.first()
+     newest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
-     CongestionEvent(largest_lost_packet.time_sent)
+     CongestionEvent(newest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(smallest_lost_packet.time_sent)):
+     if (InPersistentCongestion(oldest_lost_packet.time_sent)):
        congestion_window = kMinimumWindow
 ~~~
 
