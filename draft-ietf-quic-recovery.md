@@ -1215,7 +1215,7 @@ are detected lost.
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-	 smallest_lost_packet = lost_packets.first()
+     smallest_lost_packet = lost_packets.first()
      largest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
