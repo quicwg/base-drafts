@@ -1532,6 +1532,24 @@ be unambiguously different to ensure no confusion about their interpretation.
 One way that a new format could be introduced is to define a TLS extension with
 a different codepoint.
 
+### Handshake Completion {#handshake-completion}
+
+The connection establishment handshake concludes when both parties have
+successfully agreed on the protocol version and on encryption keys, and
+have obtained insurance that all necessary Initial and Handshake messages
+have been properly received by their peers, as defined in {{QUIC-TLS}}.
+
+For the server, this is achieved when the TLS stack informs the
+transport that the session establishment is complete, and that the
+1-RTT receive keys can now be used, as indicated in section 4.1.3 of
+{{QUIC-TLS}}.
+
+For the client, this is achieved after the 1-RTT keys become available 
+when the server acknowledges either the client's Handshake message carrying
+the last element of the Crypto Stream or an 1-RTT message sent by the client.
+Waiting for either of these events allows the client to verify the
+completion of the handshake even in cases where the Handshake
+acknowledgement is lost.
 
 # Address Validation
 
@@ -1847,12 +1865,7 @@ endpoint migrates to a new address.
 The design of QUIC relies on
 endpoints retaining a stable address for the duration of the handshake.
 An endpoint MUST NOT initiate connection migration before the handshake is
-finished for it and its peer and the endpoint has 1-RTT keys. This means
-that the server MUST NOT initiate connection migration before it has
-received at least one 1-RTT data from the client, and the client 
-MUST NOT initiate connection migration before receiving 
-acknowledgement by the server of at least one of its
-1-RTT messages.
+complete, as specified in {{handshake-completion}}.
 
 An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
