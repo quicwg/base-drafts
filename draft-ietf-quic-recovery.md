@@ -306,8 +306,8 @@ be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
-A sender calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}, see {{on-ack-received}}.
+A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
+to those specified in {{?RFC6298}}, see {{on-ack-received}}.
 
 A sender takes an RTT sample when an ACK frame is received that acknowledges a
 larger packet number than before (see {{on-ack-received}}).  A sender will take
