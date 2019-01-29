@@ -1008,7 +1008,7 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs (pto_count is more than kPersistentCongestionThreshold, see
 {{cc-consts-of-interest}}), but since the PTO timer is reset when a new
-ack-eliciting packet is sent, an explicit timeout must be used to account for
+ack-eliciting packet is sent, an explicit duration must be used to account for
 those cases where PTOs do not occur or are substantially delayed.
 
 When persistent congestion is established, the sender's congestion window MUST
@@ -1222,7 +1222,7 @@ are detected lost.
      congestion_period = Now() - oldest_loss_time
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
      return
-       elapsed_time >
+       congestion_period >
        pto * (2 ^ kPersistentCongestionThreshold - 1)
 
    OnPacketsLost(lost_packets):
