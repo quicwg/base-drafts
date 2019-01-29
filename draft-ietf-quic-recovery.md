@@ -1006,7 +1006,7 @@ packets.
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
-consecutive PTOs (pto_count is more than  kPersistentCongestionThreshold, see
+consecutive PTOs (pto_count is more than kPersistentCongestionThreshold, see
 {{cc-consts-of-interest}}), but since the PTO timer is reset when a new
 ack-eliciting packet is sent, an explicit timeout must be used to account for
 those cases where PTOs do not occur or are substantially delayed.
