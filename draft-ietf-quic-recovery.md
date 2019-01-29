@@ -831,12 +831,12 @@ Pseudocode for SetLossDetectionTimer follows:
         timeout = 2 * smoothed_rtt
       timeout = max(timeout, kGranularity)
       timeout = timeout * (2 ^ crypto_count)
-      loss_detection_timer.set(
+      loss_detection_timer.update(
         time_of_last_sent_crypto_packet + timeout)
       return
     if (loss_time != 0):
       // Time threshold loss detection.
-      loss_detection_timer.set(loss_time)
+      loss_detection_timer.update(loss_time)
       return
 
     // Calculate PTO duration
@@ -845,7 +845,7 @@ Pseudocode for SetLossDetectionTimer follows:
     timeout = max(timeout, kGranularity)
     timeout = timeout * (2 ^ pto_count)
 
-    loss_detection_timer.set(
+    loss_detection_timer.update(
       time_of_last_sent_ack_eliciting_packet + timeout)
 ~~~
 
