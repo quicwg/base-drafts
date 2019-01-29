@@ -179,8 +179,8 @@ QUIC uses separate packet number spaces for each encryption level, except 0-RTT
 and all generations of 1-RTT keys use the same packet number space.  Separate
 packet number spaces ensures acknowledgement of packets sent with one level of
 encryption will not cause spurious retransmission of packets sent with a
-different encryption level.  Congestion control and RTT measurement are unified
-across packet number spaces.
+different encryption level.  Congestion control and round-trip time (RTT)
+measurement are unified across packet number spaces.
 
 ### Monotonically Increasing Packet Numbers
 
@@ -293,10 +293,10 @@ continue making forward progress.
 
 # Computing the RTT estimate
 
-RTT is calculated when an ACK frame arrives by computing the difference between
-the current time and the time the largest acked packet was sent.  An RTT sample
-MUST NOT be taken for a packet that is not newly acknowledged or not
-ack-eliciting.
+Round-trip time (RTT) is calculated when an ACK frame arrives by
+computing the difference between the current time and the time the largest
+acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
+is not newly acknowledged or not ack-eliciting.
 
 When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
 to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
@@ -306,8 +306,8 @@ be subtracted from the RTT as long as the result is larger than the min_rtt.
 If the result is smaller than the min_rtt, the RTT should be used, but the
 ack delay field should be ignored.
 
-A sender calculates both smoothed RTT and RTT variance similar to those
-specified in {{?RFC6298}}, see {{on-ack-received}}.
+A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
+to those specified in {{?RFC6298}}, see {{on-ack-received}}.
 
 A sender takes an RTT sample when an ACK frame is received that acknowledges a
 larger packet number than before (see {{on-ack-received}}).  A sender will take
@@ -323,8 +323,7 @@ underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 # Loss Detection
 
 QUIC senders use both ack information and timeouts to detect lost packets, and
-this section provides a description of these algorithms. Estimating the network
-round-trip time (RTT) is critical to these algorithms and is described first.
+this section provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
@@ -963,7 +962,6 @@ congestion window is less than ssthresh, which typically only occurs after an
 PTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each acknowledgment is processed.
 
-
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
@@ -1019,7 +1017,7 @@ collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 {{RFC5681}}.
 
-## Pacing
+## Pacing {#pacing}
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
@@ -1052,6 +1050,17 @@ paces the sending of any packets in excess of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+
+## Application Limited Sending
+
+The congestion window should not be increased in slow start or congestion
+avoidance when it is not fully utilized.  The congestion window could be
+under-utilized due to insufficient application data or flow control credit.
+
+A sender that paces packets (see {{pacing}}) might delay sending packets
+and not fully utilize the congestion window due to this delay. A sender
+should not consider itself application limited if it would have fully
+utilized the congestion window without pacing delay.
 
 ## Pseudocode
 
@@ -1155,6 +1164,10 @@ acked_packet from sent_packets.
      bytes_in_flight -= acked_packet.size
      if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
+       return
+     if (IsAppLimited())
+       // Do not increase congestion_window if application
+       // limited.
        return
      if (congestion_window < ssthresh):
        // Slow start.
@@ -1295,7 +1308,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Process ECN counts before marking packets lost (#2142)
 - Mark packets lost before resetting crypto_count and pto_count (#2208, #2209)
 - Congestion and loss recovery state are discarded when keys are discarded
-  (#2237)
+  (#2327)
 
 
 ## Since draft-ietf-quic-recovery-16

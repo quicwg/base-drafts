@@ -1652,8 +1652,9 @@ A token SHOULD be constructed to be easily distinguishable from tokens that are
 sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it can include that value in the
-Token field of its Initial packet.
+to what it believes to be the same server, it SHOULD include that value in the
+Token field of its Initial packet.  Including a token might allow the server to
+validate the client address without an additional round trip.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -1671,7 +1672,7 @@ interface.  A client needs to start the connection process over if it migrates
 prior to completing the handshake.
 
 When a server receives an Initial packet with an address validation token, it
-SHOULD attempt to validate it, unless it has already completed address
+MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
 a Retry. If the validation succeeds, the server SHOULD then allow the
@@ -2219,18 +2220,19 @@ of three ways:
 
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for three times the current Probe Timeout (PTO)
-interval as defined in {{QUIC-RECOVERY}}.
+These states SHOULD persist for at least three times the current Probe Timeout
+(PTO) interval as defined in {{QUIC-RECOVERY}}.
 
 An endpoint enters a closing period after initiating an immediate close
 ({{immediate-close}}).  While closing, an endpoint MUST NOT send packets unless
 they contain a CONNECTION_CLOSE frame (see {{immediate-close}} for details).  An
 endpoint retains only enough information to generate a packet containing a
 CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
-The connection ID and QUIC version is sufficient information to identify packets
-for a closing connection; an endpoint can discard all other connection state.
-An endpoint MAY retain packet protection keys for incoming packets to allow it
-to read and process a CONNECTION_CLOSE frame.
+The endpoint's selected connection ID and the QUIC version are sufficient
+information to identify packets for a closing connection; an endpoint can
+discard all other connection state. An endpoint MAY retain packet protection
+keys for incoming packets to allow it to read and process a CONNECTION_CLOSE
+frame.
 
 The draining state is entered once an endpoint receives a signal that its peer
 is closing or draining.  While otherwise identical to the closing state, an
@@ -2265,10 +2267,10 @@ draining.  A key update might prevent the endpoint from moving from the closing
 state to draining, but it otherwise has no impact.
 
 While in the closing period, an endpoint could receive packets from a new source
-address, indicating a client connection migration ({{migration}}). An endpoint
-in the closing state MUST strictly limit the number of packets it sends to this
-new address until the address is validated (see {{migrate-validate}}). A server
-in the closing state MAY instead choose to discard packets received from a new
+address, indicating a connection migration ({{migration}}). An endpoint in the
+closing state MUST strictly limit the number of packets it sends to this new
+address until the address is validated (see {{migrate-validate}}). A server in
+the closing state MAY instead choose to discard packets received from a new
 source address.
 
 
