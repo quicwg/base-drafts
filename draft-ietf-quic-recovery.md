@@ -1219,7 +1219,7 @@ are detected lost.
 
 ~~~
    InPersistentCongestion(oldest_loss_time):
-     elapsed_time = Now() - oldest_loss_time
+     congestion_period = Now() - oldest_loss_time
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
      return
        elapsed_time >
