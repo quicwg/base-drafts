@@ -95,8 +95,8 @@ of transport and security experience, and implements mechanisms that make it
 attractive as a modern general-purpose transport.  The QUIC protocol is
 described in {{QUIC-TRANSPORT}}.
 
-QUIC implements the spirit of known TCP loss recovery mechanisms, described in
-RFCs, various Internet-drafts, and also those prevalent in the Linux TCP
+QUIC implements the spirit of existing TCP loss recovery mechanisms, described
+in RFCs, various Internet-drafts, and also those prevalent in the Linux TCP
 implementation.  This document describes QUIC congestion control and loss
 recovery, and where applicable, attributes the TCP equivalent in RFCs,
 Internet-drafts, academic papers, and/or TCP implementations.
@@ -162,9 +162,10 @@ of frames contained in a packet affect recovery and congestion control logic:
   acknowledgement and retransmission.
 
 * Packets that contain only ACK frames do not count toward congestion control
-  limits and are not considered in-flight. Note that this means PADDING frames
-  cause packets to contribute toward bytes in flight without directly causing an
-  acknowledgment to be sent.
+  limits and are not considered in-flight.
+  
+* PADDING frames cause packets to contribute toward bytes in flight without
+  directly causing an acknowledgment to be sent.
 
 ## Relevant Differences Between QUIC and TCP
 
@@ -252,15 +253,17 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case they can determine whether an immediate or
-delayed acknowledgement should be generated after processing incoming packets.
+ACK frames in response.  In this case the receiver can determine whether an
+immediate or delayed acknowledgement should be generated after processing
+incoming packets.
 
 ## Crypto Handshake Data
 
 In order to quickly complete the handshake and avoid spurious retransmissions
 due to crypto retransmission timeouts, crypto packets SHOULD use a very short
-ack delay, such as 1ms.  ACK frames MAY be sent immediately when the crypto
-stack indicates all data for that packet number space has been received.
+ack delay, such as the local timer granularity.  ACK frames MAY be sent
+immediately when the crypto stack indicates all data for that packet number
+space has been received.
 
 ## ACK Ranges
 
@@ -379,8 +382,7 @@ multiplier, is 9/8.
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
 * the latest RTT sample is lower than the SRTT, perhaps due to reordering where
-  packet whose ack triggered the Early Retransmit process encountered a shorter
-  path;
+  the acknowledgement encountered a shorter path;
 
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
@@ -454,10 +456,9 @@ a subsequent connection attempt to the server.
 
 When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
 packets that were sent with those keys can no longer be acknowledged because
-their acknowledgements cannot be processed anymore. The sender considers them no
-longer in flight. That is, the sender SHOULD discard all recovery state
-associated with those packets and MUST remove them from the count of bytes in
-flight.
+their acknowledgements cannot be processed anymore. The sender SHOULD discard
+all recovery state associated with those packets and MUST remove them from
+the count of bytes in flight.
 
 Endpoints stop sending and receiving Initial packets once they start exchanging
 Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
@@ -549,13 +550,9 @@ Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
 
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
-prior unacknowledged packets to be marked as lost.  After a PTO timer has
-expired, an endpoint uses the following rules to mark packets as lost when an
-acknowledgement is received that newly acknowledges packets.
-
-When an acknowledgement is received that newly acknowledges packets, loss
-detection proceeds as dictated by packet and time threshold mechanisms, see
-{{ack-loss-detection}}.
+prior unacknowledged packets to be marked as lost. When an acknowledgement
+is received that newly acknowledges packets, loss detection proceeds as
+dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
 
 
 ## Tracking Sent Packets {#tracking-sent-packets}
@@ -676,8 +673,8 @@ max_ack_delay:
   or lost ACKs.
 
 loss_time:
-: The time at which the next packet will be considered lost based on early
-transmit or exceeding the reordering window in time.
+: The time at which the next packet will be considered lost based on
+  exceeding the reordering window in time.
 
 sent_packets:
 : An association of packet numbers to information about them.  Described
@@ -867,7 +864,7 @@ Pseudocode for OnLossDetectionTimeout follows:
        DetectLostPackets()
      else:
        // PTO
-       SendTwoPackets()
+       SendOneOrTwoPackets()
        pto_count++
 
      SetLossDetectionTimer()
@@ -997,7 +994,7 @@ the peer has packet protection keys to process those packets.
 
 Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
 however count these packets as being additionally in flight, since these packets
-adds network load without establishing packet loss.  Note that sending probe
+add network load without establishing packet loss.  Note that sending probe
 packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
