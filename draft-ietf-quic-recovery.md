@@ -1050,7 +1050,6 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 The congestion window should not be increased in slow start or congestion
 avoidance when it is not fully utilized.  The congestion window could be
 under-utilized due to insufficient application data or flow control credit.
-limits.
 
 When the sender is pacing (see {{pacing}}) packets, the sender may be unable
 to use the full congestion window for a period of time after receiving
