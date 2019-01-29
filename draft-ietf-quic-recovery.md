@@ -163,7 +163,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 
 * Packets that contain only ACK frames do not count toward congestion control
   limits and are not considered in-flight.
-  
+
 * PADDING frames cause packets to contribute toward bytes in flight without
   directly causing an acknowledgment to be sent.
 
@@ -456,7 +456,7 @@ a subsequent connection attempt to the server.
 
 When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
 packets that were sent with those keys can no longer be acknowledged because
-their acknowledgements cannot be processed anymore. The sender SHOULD discard
+their acknowledgements cannot be processed anymore. The sender MUST discard
 all recovery state associated with those packets and MUST remove them from
 the count of bytes in flight.
 
