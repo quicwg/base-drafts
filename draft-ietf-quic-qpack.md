@@ -866,12 +866,15 @@ decoder's dynamic table:
       ReqInsertCount = 0
    else:
       MaxValue = TotalNumberOfInserts + MaxEntries
+
       # MaxWrapped is the largest possible value of
       # ReqInsertCount that is 0 mod 2*MaxEntries
       MaxWrapped = floor(MaxValue / FullRange) * FullRange
       ReqInsertCount = MaxWrapped + EncodedInsertCount - 1
+
+      # If ReqInsertCount exceeds MaxValue, the Encoder's value
+      # must have wrapped one fewer time
       if ReqInsertCount > MaxValue:
-         # The Encoder's value wrapped one fewer time
          if ReqInsertCount < FullRange:
             Error
          ReqInsertCount -= FullRange
