@@ -962,7 +962,6 @@ congestion window is less than ssthresh, which typically only occurs after an
 PTO. While in slow start, QUIC increases the congestion window by the number of
 bytes acknowledged when each acknowledgment is processed.
 
-
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
@@ -1011,8 +1010,7 @@ response of collapsing the congestion window on persistent congestion is
 functionally similar to a sender's response on a Retransmission Timeout (RTO) in
 TCP {{RFC5681}}.
 
-
-## Pacing
+## Pacing {#pacing}
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
@@ -1045,6 +1043,17 @@ paces the sending of any packets in excess of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+
+## Application Limited Sending
+
+The congestion window should not be increased in slow start or congestion
+avoidance when it is not fully utilized.  The congestion window could be
+under-utilized due to insufficient application data or flow control credit.
+
+A sender that paces packets (see {{pacing}}) might delay sending packets
+and not fully utilize the congestion window due to this delay. A sender
+should not consider itself application limited if it would have fully
+utilized the congestion window without pacing delay.
 
 ## Pseudocode
 
@@ -1148,6 +1157,10 @@ acked_packet from sent_packets.
      bytes_in_flight -= acked_packet.size
      if (InRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
+       return
+     if (IsAppLimited())
+       // Do not increase congestion_window if application
+       // limited.
        return
      if (congestion_window < ssthresh):
        // Slow start.
