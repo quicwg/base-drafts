@@ -1056,12 +1056,6 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-When the sender is pacing (see {{pacing}}) packets, the sender may be unable
-to use the full congestion window for a period of time after receiving
-acknowledgements, due to pacing.  In this case, the sender should not consider
-themselves application limited and should allow the congestion window to
-increase.
-
 ## Pseudocode
 
 ### Constants of interest {#cc-consts-of-interest}
