@@ -391,13 +391,7 @@ thresholds reduce reordering resilience and increase spurious retransmissions,
 and larger thresholds increase loss detection delay.
 
 
-## Timeout Loss Detection
-
-Timeout loss detection recovers from losses that cannot be handled by
-acknowledgement-based loss detection.  It uses a single timer which switches
-between a crypto retransmission timer and a probe timer.
-
-### Crypto Retransmission Timeout
+## Crypto Retransmission Timeout
 
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
@@ -436,7 +430,7 @@ retransmission timeout and set a timer for this period.
 When crypto packets are in flight, the probe timer ({{pto}}) is not active.
 
 
-#### Retry and Version Negotiation
+### Retry and Version Negotiation
 
 A Retry or Version Negotiation packet causes a client to send another Initial
 packet, effectively restarting the connection process and resetting congestion
@@ -450,7 +444,7 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-#### Discarding Keys and Packet State {#discarding-packets}
+### Discarding Keys and Packet State {#discarding-packets}
 
 When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
 packets that were sent with those keys can no longer be acknowledged because
@@ -476,7 +470,7 @@ sooner, as soon as handshake keys are available (see Section 4.10 of
 {{QUIC-TLS}}).
 
 
-### Probe Timeout {#pto}
+## Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
 flight but an acknowledgement is not received within the expected period of
@@ -486,7 +480,7 @@ Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
 
-#### Computing PTO
+### Computing PTO
 
 When an ack-eliciting packet is transmitted, the sender schedules a timer for
 the PTO period as follows:
@@ -516,7 +510,7 @@ sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
 
-#### Sending Probe Packets
+### Sending Probe Packets
 
 When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
 probe. A sender MAY send up to two ack-eliciting packets, to avoid an expensive
@@ -543,7 +537,7 @@ establish delivery of packets still in flight, it MAY send an ack-eliciting
 packet and re-arm the PTO timer instead.
 
 
-#### Loss Detection {#pto-loss}
+### PTO Loss Detection {#pto-loss}
 
 Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
