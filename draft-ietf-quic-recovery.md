@@ -537,7 +537,7 @@ establish delivery of packets still in flight, it MAY send an ack-eliciting
 packet and re-arm the PTO timer instead.
 
 
-### PTO Loss Detection {#pto-loss}
+### Loss Detection {#pto-loss}
 
 Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
