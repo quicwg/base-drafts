@@ -227,9 +227,9 @@ an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
 send an immediate ACK when it receives a new packet which is not one greater
-than the largest received packet number. A receiver MAY send acknowledgements
-immediately for the next few ack-eliciting packets that are received, but the
-receiver SHOULD revert back to delaying acknowledgements after 1/8 RTT.
+than the largest received packet number. A receiver MAY send immediate ACKs
+for the next few ack-eliciting packets that are received, but not for more
+than 1/8 RTT after receiving the out-of-order packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
