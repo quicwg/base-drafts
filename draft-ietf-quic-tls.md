@@ -743,14 +743,14 @@ based on the client's initial Destination Connection ID, as described in
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The header protection key uses the "quic hp" label, see
-{{header-protect}}).  Using these labels provides key separation between QUIC
+{{header-protect}}.  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
