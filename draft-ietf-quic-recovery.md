@@ -1009,7 +1009,7 @@ experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
 where PTOs do not occur or are substantially delayed.  This duration is the
-equivalent of kPersistentCongestionThreshold consecutive PTOS, smoothed_rtt +
+equivalent of kPersistentCongestionThreshold consecutive PTOS: smoothed_rtt +
 4 * rttvar + max_ack_delay * ((2 ^ kPersistentCongestionThreshold) - 1).
 
 When persistent congestion is established, the sender's congestion window MUST
