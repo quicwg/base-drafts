@@ -228,7 +228,7 @@ an ACK immediately when receiving a second ack-eliciting packet.
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
 send an immediate ACK when it receives a new packet which is not one greater
 than the largest received packet number. A receiver MAY send immediate ACKs
-for the next few ack-eliciting packets that are received, but SHOULD not
+for the next few ack-eliciting packets that are received, but SHOULD NOT
 send an immediate ACK for more than 1/8 RTT after receiving an out-of-order
 packet.
 
