@@ -1223,7 +1223,7 @@ are detected lost.
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
      return
        congestion_period >
-       pto * (2 ^ kPersistentCongestionThreshold - 1)
+         pto * (2 ^ kPersistentCongestionThreshold - 1)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
