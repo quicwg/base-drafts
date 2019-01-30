@@ -2110,7 +2110,7 @@ infrequently.
 
 Endpoints that use connection IDs with length greater than zero could have their
 activity correlated if their peers keep using the same destination connection ID
-after migration.  The goal here is to ensure that packets sent on different
+after migration.  The goal is to ensure that packets sent on different
 paths cannot be correlated. To fulfill this privacy requirement, endpoints that
 initiate migration and use connection IDs with length greater than zero SHOULD
 provide their peers with new connection IDs before migration.
