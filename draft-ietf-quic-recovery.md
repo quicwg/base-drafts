@@ -1006,10 +1006,11 @@ packets.
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
-consecutive PTOs (pto_count is more than kPersistentCongestionThreshold, see
-{{cc-consts-of-interest}}), but since the PTO timer is reset when a new
-ack-eliciting packet is sent, an explicit duration must be used to account for
-those cases where PTOs do not occur or are substantially delayed.
+consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
+packet is sent, an explicit duration must be used to account for those cases
+where PTOs do not occur or are substantially delayed.  This duration is the
+equivalent of kPersistentCongestionThreshold consecutive PTOS, smoothed_rtt +
+4 * rttvar + max_ack_delay * ((2 ^ kPersistentCongestionThreshold) - 1).
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
