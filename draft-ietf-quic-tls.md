@@ -818,8 +818,8 @@ packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
-are protected with AEAD_AES_128_GCM and a key derived from the destination
-connection ID in the client's first Initial packet (see {{initial-secrets}}).
+are protected with AEAD_AES_128_GCM and a key derived from the Destination
+Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
