@@ -324,10 +324,10 @@ the connection can usually appear at any encryption level, whereas those
 associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
+- PADDING frames MAY appear in packets of any encryption level.
+
 - CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
   level except 0-RTT.
-
-- PADDING frames MAY appear in packets of any encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
