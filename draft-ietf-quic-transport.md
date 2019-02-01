@@ -2203,7 +2203,7 @@ address before path validation is complete.
 A client that migrates to a new address SHOULD use a preferred address from the
 same address family for the server.
 
-## Use of IPv6 Flow-Label and migration {ipv6-flow-label}
+## Use of IPv6 Flow-Label and Migration {#ipv6-flow-label}
 
 Quic nodes that send data using IPv6 SHOULD document the IPv6 flow label
 in compliance with {{!RFC6437}}, unless the local API does not allow
