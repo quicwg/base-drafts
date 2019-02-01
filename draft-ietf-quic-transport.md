@@ -1534,22 +1534,7 @@ a different codepoint.
 
 ### Handshake Completion {#handshake-completion}
 
-The connection establishment handshake concludes when both parties have
-successfully agreed on the protocol version and on encryption keys, and
-have obtained insurance that all necessary Initial and Handshake messages
-have been properly received by their peers, as defined in {{QUIC-TLS}}.
-
-For the server, this is achieved when the TLS stack informs the
-transport that the session establishment is complete, and that the
-1-RTT receive keys can now be used, as indicated in section 4.1.3 of
-{{QUIC-TLS}}.
-
-For the client, this is achieved after the 1-RTT keys become available 
-when the server acknowledges either the client's Handshake message carrying
-the last element of the Crypto Stream or an 1-RTT message sent by the client.
-Waiting for either of these events allows the client to verify the
-completion of the handshake even in cases where the Handshake
-acknowledgement is lost.
+TBD
 
 # Address Validation
 
