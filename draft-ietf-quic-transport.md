@@ -2209,7 +2209,7 @@ Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
 in compliance with {{!RFC6437}}, unless the local API does not allow
 setting this parameter.
 
-The IPv6 flow label should be a pseudo-random function of the source
+The IPv6 flow label SHOULD be a pseudo-random function of the source
 and destination addresses, source and destination UDP ports, and the destination
 CID. The flow label generation MUST be designed to minimize the chances of
 collision with a previously used flow label, as this would enable linkability
