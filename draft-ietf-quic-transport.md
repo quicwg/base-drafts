@@ -2205,7 +2205,7 @@ same address family for the server.
 
 ## Use of IPv6 Flow-Label and Migration {#ipv6-flow-label}
 
-Quic nodes that send data using IPv6 SHOULD document the IPv6 flow label
+Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
 in compliance with {{!RFC6437}}, unless the local API does not allow
 setting this parameter.
 
