@@ -239,13 +239,15 @@ the peer spurious timeouts.  The maximum ack delay is communicated in the
 `max_ack_delay` transport parameter and the default value is 25ms.
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
-packet but the delay SHOULD NOT exceed the maximum ack delay. QUIC recovery
-algorithms do not assume the peer generates an acknowledgement immediately when
-receiving a second full-packet.
+ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends an
+an ACK immediately when receiving a second ack-eliciting packet.
 
-Out-of-order packets SHOULD be acknowledged more quickly, in order to accelerate
-loss recovery.  The receiver SHOULD send an immediate ACK when it receives a new
-packet which is not one greater than the largest received packet number.
+In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
+send an immediate ACK when it receives a new packet which is not one greater
+than the largest received packet number. A receiver MAY send immediate ACKs
+for the next few ack-eliciting packets that are received, but SHOULD NOT
+send an immediate ACK for more than 1/8 RTT after receiving an out-of-order
+packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
