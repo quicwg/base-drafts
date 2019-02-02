@@ -3293,6 +3293,22 @@ The considerations for processing ICMP messages in the previous section also
 apply if these messages are used by DPLPMTUD.
 
 
+### PMTU Probes Containing Source Connection ID
+
+Endpoints that rely on the destination connection ID for routing QUIC packets
+are likely to require that connection ID included in PMTU probe packets in order
+to route resulting ICMP messages ({{icmp-pmtud}}) back to the correct endpoints.
+
+Only long header packets ({{long-header}}) contain source connection IDs, but
+long header packets will not be acknowledged once the connection has been
+established.  One way to construct a PMTU probe is to coalesce (see
+{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
+header PMTU probe packet in a single UDP datagram.  If the datagram reaches the
+endpoint, the short header PMTU probe packet will be acknowledged.  If the
+datagram elicits an ICMP message, that message may contain the source connection
+ID within the quoted portion of the datagram.
+
+
 # Versions {#versions}
 
 QUIC versions are identified using a 32-bit unsigned number.
