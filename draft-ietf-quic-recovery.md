@@ -240,7 +240,7 @@ the peer spurious timeouts.  The maximum ack delay is communicated in the
 `max_ack_delay` transport parameter and the default value is 25ms.
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
-ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends an
+ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
