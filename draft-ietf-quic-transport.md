@@ -2108,12 +2108,13 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-Endpoints that use connection IDs with length greater than zero could have their
-activity correlated if their peers keep using the same destination connection ID
-after migration.  The goal is to ensure that packets sent on different
-paths cannot be correlated. To fulfill this privacy requirement, endpoints that
-initiate migration and use connection IDs with length greater than zero SHOULD
-provide their peers with new connection IDs before migration.
+Endpoints that supply connection IDs with length greater than zero could have
+their activity correlated if their peers keep using the same destination
+connection ID after migration.  To ensure that packets sent on different paths
+cannot be correlated, endpoints SHOULD provide with new connection IDs before
+peers migrate.  To fulfill this privacy requirement, endpoints that initiate
+migration and use connection IDs with length greater than zero SHOULD provide
+their peers with new connection IDs before migration.
 
 
 ## Server's Preferred Address {#preferred-address}
