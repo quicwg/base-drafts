@@ -2276,9 +2276,10 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled, a connection that remains idle for longer than
-the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
-A connection enters the draining state when the idle timeout expires.
+If the idle timeout is enabled, a connection is silently closed and the state is
+discarded when it remains idle for longer than both the advertised
+idle timeout (see {{transport-parameter-definitions}}) and three times the
+current Probe Timeout (PTO).
 
 Each endpoint advertises its own idle timeout to its peer.  An enpdpoint
 restarts any timer it maintains when a packet from its peer is received and
