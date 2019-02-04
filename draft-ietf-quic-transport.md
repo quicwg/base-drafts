@@ -2207,7 +2207,7 @@ same address family for the server.
 
 Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
 in compliance with {{!RFC6437}}, unless the local API does not allow
-setting this parameter.
+setting IPv6 flow labels.
 
 The IPv6 flow label SHOULD be a pseudo-random function of the source
 and destination addresses, source and destination UDP ports, and the destination
