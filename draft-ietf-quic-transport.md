@@ -2215,7 +2215,7 @@ CID. The flow label generation MUST be designed to minimize the chances of
 linkability with a previously used flow label, as this would enable correlating
 activity on multiple paths (see {{migration-linkability}}).
 
-A possible implementation is to compute the flow label as a one way
+A possible implementation is to compute the flow label as a one-way
 hash function of the source and destination addresses, source and
 destination UDP ports, destination CID, and a local secret.
 
