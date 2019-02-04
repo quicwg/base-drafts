@@ -3888,7 +3888,7 @@ Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see
-{{validate-future}}).
+{{token-integrity}}).
 
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
