@@ -2689,9 +2689,10 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.  For example, if
-decryption fails (because the keys are not available or any other reason),
-the receiver MAY either discard or buffer the packet for later processing and
-MUST attempt to process the remaining packets.
+decryption fails (because the keys are not available, the UDP datagram is a PMTU
+probe (see {{pmtu-probes-src-cid}}), or any other reason), the receiver MAY
+either discard or buffer the packet for later processing and MUST attempt to
+process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
@@ -3293,7 +3294,7 @@ The considerations for processing ICMP messages in the previous section also
 apply if these messages are used by DPLPMTUD.
 
 
-### PMTU Probes Containing Source Connection ID
+### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
 Endpoints that rely on the destination connection ID for routing QUIC packets
 are likely to require that connection ID included in PMTU probe packets in order
@@ -3303,10 +3304,10 @@ Only long header packets ({{long-header}}) contain source connection IDs, but
 long header packets will not be acknowledged once the connection has been
 established.  One way to construct a PMTU probe is to coalesce (see
 {{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
-header PMTU probe packet in a single UDP datagram.  If the datagram reaches the
-endpoint, the short header PMTU probe packet will be acknowledged.  If the
-datagram elicits an ICMP message, that message may contain the source connection
-ID within the quoted portion of the datagram.
+header packet in a single UDP datagram.  If the UDP datagram reaches the
+endpoint, the short header packet will be acknowledged.  If the UDP datagram
+elicits an ICMP message, that message may contain the source connection ID
+within the quoted portion of the UDP datagram.
 
 
 # Versions {#versions}
