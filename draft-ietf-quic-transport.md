@@ -2281,7 +2281,7 @@ discarded when it remains idle for longer than both the advertised
 idle timeout (see {{transport-parameter-definitions}}) and three times the
 current Probe Timeout (PTO).
 
-Each endpoint advertises its own idle timeout to its peer.  An enpdpoint
+Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
 processed successfully.  The timer is also restarted when sending a packet
 containing frames other than ACK or PADDING (an ACK-eliciting packet, see
