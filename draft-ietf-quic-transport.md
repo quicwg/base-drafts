@@ -3519,9 +3519,9 @@ Reserved Bits (R):
   packet types.  These bits are protected using header protection (see Section
   5.4 of {{QUIC-TLS}}). The value included prior to protection MUST be set to 0.
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits, after removing both packet and header protection, as a connection error of
-  type PROTOCOL_VIOLATION. Discarding such a packet after only removing header
-  protection can expose the endpoint to attacks (see Section 9.3 of
+  bits, after removing both packet and header protection, as a connection error
+  of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
+  header protection can expose the endpoint to attacks (see Section 9.3 of
   {{QUIC-TLS}}).
 
 Packet Number Length (P):
@@ -5019,7 +5019,8 @@ type PROTOCOL_VIOLATION.
 
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
-contained.  The peer MAY treat this as a connection error of type PROTOCOL_VIOLATION.
+contained.  The peer MAY treat this as a connection error of type
+PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
