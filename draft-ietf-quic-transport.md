@@ -3420,19 +3420,7 @@ Long Packet Type (T):
 
 Type-Specific Bits (X):
 
-: The next two bits (those with a mask of 0x0c) of byte 0 are reserved.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
-  The value included prior to protection MUST be set to 0.  An endpoint MUST treat
-  receipt of a packet that has a non-zero value for these bits after removing
-  packet and header protection as a connection error of type PROTOCOL_VIOLATION.
-
-Packet Number Length (P):
-
-: The least significant two bits (those with a mask of 0x03) of byte 0 contain
-  the length of the packet number, encoded as an unsigned, two-bit integer that
-  is one less than the length of the packet number field in bytes.  That is, the
-  length of the packet number field is the value of this field, plus one.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+: The lower four bits (those with a mask of 0x0f) of byte 0 are type-specific.
 
 Version:
 
@@ -3944,7 +3932,7 @@ Reserved Bits (R):
   bits are protected using header protection (see Section 5.4 of
   {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
   endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing protection as a connection error of type
+  bits after removing packet and header protection as a connection error of type
   PROTOCOL_VIOLATION.
 
 Key Phase (K):
