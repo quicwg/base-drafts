@@ -3481,7 +3481,7 @@ Reserved Bits (R):
   packet types.  These bits are protected using header protection (see Section
   5.4 of {{QUIC-TLS}}). The value included prior to protection MUST be set to 0.
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing both packet and header protection as a connection error of
+  bits, after removing both packet and header protection, as a connection error of
   type PROTOCOL_VIOLATION. Discarding such a packet after only removing header
   protection can expose the endpoint to attacks (see Section 9.3 of
   {{QUIC-TLS}}).
@@ -3934,7 +3934,7 @@ Reserved Bits (R):
   bits are protected using header protection (see Section 5.4 of
   {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
   endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits after removing both packet and header protection as a connection error
+  bits, after removing both packet and header protection, as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
   header protection can expose the endpoint to attacks (see Section 9.3 of
   {{QUIC-TLS}}).
