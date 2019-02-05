@@ -2089,17 +2089,19 @@ different local addresses, as discussed in {{connection-id}}.  For this to be
 effective endpoints need to ensure that connections IDs they provide cannot be
 linked by any other entity.
 
-An endpoint MUST use a new connection ID if it initiates connection migration,
-unless the peer has selected a zero-length connection ID.  This eliminates the
-use of the connection ID for linking activity from the same connection on
-different networks.  Header protection ensures that packet numbers cannot be
-used to correlate activity.  This does not prevent other properties of packets,
-such as timing and size, from being used to correlate activity.
+Endpoints MAY move to a new connection ID at any time.
 
-Clients MAY move to a new connection ID at any time based on
-implementation-specific concerns.  For example, after a period of network
-inactivity, where NAT rebinding might occur when the client begins sending data
-again.
+An endpoint MUST use a new connection ID if it initiates connection migration,
+unless the peer has selected a zero-length connection ID.  Using a new
+connection ID eliminates the use of the connection ID for linking activity from
+the same connection on different networks.  Header protection ensures that
+packet numbers cannot be used to correlate activity.  This does not prevent
+other properties of packets, such as timing and size, from being used to
+correlate activity.
+
+Unintentional changes in path without a change in connection ID are possible.
+For example, after a period of network inactivity, NAT rebinding might cause
+packets to be sent on a new path when the client resumes sending.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -2110,13 +2112,15 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-An endpoint cannot migrate to a new path if it does not have a connection ID to
-use on that path.  An endpoint that exhausts available connection IDs cannot
-migrate.  If a peer chooses to receive packets with zero-length connection IDs,
-an endpoint can always migrate - zero-length connection IDs provide no
-significant linkability.  To ensure that migration is possible and packets sent
-on different paths cannot be correlated, endpoints SHOULD provide new connection
-IDs before peers migrate.
+An endpoint MUST NOT intentionally migrate to a new path if it does not have a
+connection ID to use on that path.  An endpoint that exhausts available
+connection IDs cannot migrate.  To ensure that migration is possible and packets
+sent on different paths cannot be correlated, endpoints SHOULD provide new
+connection IDs before peers migrate.
+
+If a peer chooses to receive packets with zero-length connection IDs, an
+endpoint can always migrate - zero-length connection IDs provide no significant
+linkability.
 
 
 ## Server's Preferred Address {#preferred-address}
