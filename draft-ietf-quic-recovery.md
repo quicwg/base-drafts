@@ -840,10 +840,10 @@ time_of_last_sent_ack_eliciting_packet:
 time_of_last_sent_crypto_packet:
 : The time the most recent crypto packet was sent.
 
-largest_sent_packet:
-: The packet number of the most recently sent packet.
+largest_sent_packet[pn_space]:
+: The packet number of the most recently sent packet in the packet number space.
 
-largest_acked_packet:
+largest_acked_packet[pn_space]:
 : The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
@@ -868,11 +868,12 @@ max_ack_delay:
 
 loss_time:
 : The time at which the next packet will be considered lost based on
-  exceeding the reordering window in time.
+  exceeding the reordering window in time. Only applies to the 1-RTT packet
+  number space.
 
-sent_packets:
-: An association of packet numbers to information about them.  Described
-  in detail above in {{tracking-sent-packets}}.
+sent_packets[pn_space]:
+: An association of packet numbers in a packet number space to information
+  about them.  Described in detail above in {{tracking-sent-packets}}.
 
 
 ## Initialization
@@ -890,8 +891,9 @@ follows:
    min_rtt = infinite
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
-   largest_sent_packet = 0
-   largest_acked_packet = 0
+   for pn_space in packet number spaces:
+     largest_sent_packet[pn_space] = 0
+     largest_acked_packet[pn_space] = 0
 ~~~
 
 
@@ -903,20 +905,20 @@ to OnPacketSent are described in detail above in {{sent-packets-fields}}.
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, ack_eliciting, in_flight,
-              is_crypto_packet, sent_bytes):
-   largest_sent_packet = packet_number
-   sent_packets[packet_number].packet_number = packet_number
-   sent_packets[packet_number].time_sent = now
-   sent_packets[packet_number].ack_eliciting = ack_eliciting
-   sent_packets[packet_number].in_flight = in_flight
+ OnPacketSent(packet_number, pn_space, ack_eliciting,
+              in_flight, is_crypto_packet, sent_bytes):
+   largest_sent_packet[pn_space] = packet_number
+   sent_packets[pn_space][packet_number].packet_number = packet_number
+   sent_packets[pn_space][packet_number].time_sent = now
+   sent_packets[pn_space][packet_number].ack_eliciting = ack_eliciting
+   sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (is_crypto_packet):
        time_of_last_sent_crypto_packet = now
      if (ack_eliciting):
        time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
-     sent_packets[packet_number].size = sent_bytes
+     sent_packets[pn_space][packet_number].size = sent_bytes
      SetLossDetectionTimer()
 ~~~
 
@@ -928,16 +930,16 @@ When an ACK frame is received, it may newly acknowledge any number of packets.
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
-  OnAckReceived(ack):
-    largest_acked_packet = max(largest_acked_packet,
+  OnAckReceived(ack, pn_space):
+    largest_acked_packet[pn_space] = max(largest_acked_packet,
                                ack.largest_acked)
 
     // If the largest acknowledged is newly acked and
     // ack-eliciting, update the RTT.
-    if (sent_packets[ack.largest_acked] &&
-        sent_packets[ack.largest_acked].ack_eliciting):
+    if (sent_packets[pn_space][ack.largest_acked] &&
+        sent_packets[pn_space][ack.largest_acked].ack_eliciting):
       latest_rtt =
-        now - sent_packets[ack.largest_acked].time_sent
+        now - sent_packets[pn_space][ack.largest_acked].time_sent
       UpdateRtt(latest_rtt, ack.ack_delay)
 
     // Process ECN information if present.
@@ -945,14 +947,14 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
        ProcessECN(ack)
 
     // Find all newly acked packets in this ACK frame
-    newly_acked_packets = DetermineNewlyAckedPackets(ack)
+    newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
     if (newly_acked_packets.empty()):
       return
 
     for acked_packet in newly_acked_packets:
-      OnPacketAcked(acked_packet.packet_number)
+      OnPacketAcked(acked_packet.packet_number, pn_space)
 
-    DetectLostPackets()
+    DetectLostPackets(pn_space)
 
     crypto_count = 0
     pto_count = 0
@@ -986,16 +988,17 @@ function is called.  Note that a single ACK frame may newly acknowledge several
 packets. OnPacketAcked must be called once for each of these newly acknowledged
 packets.
 
-OnPacketAcked takes one parameter, acked_packet, which is the struct detailed in
-{{sent-packets-fields}}.
+OnPacketAcked takes two parameters: acked_packet, which is the struct detailed in
+{{sent-packets-fields}}, and the packet number space that this ACK frame was sent
+for.
 
 Pseudocode for OnPacketAcked follows:
 
 ~~~
-   OnPacketAcked(acked_packet):
+   OnPacketAcked(acked_packet, pn_space):
      if (acked_packet.ack_eliciting):
        OnPacketAckedCC(acked_packet)
-     sent_packets.remove(acked_packet.packet_number)
+     sent_packets[pn_space].remove(acked_packet.packet_number)
 ~~~
 
 
@@ -1032,6 +1035,7 @@ Pseudocode for SetLossDetectionTimer follows:
       return
     if (loss_time != 0):
       // Time threshold loss detection.
+      // Only applies to the 1-RTT packet number space.
       loss_detection_timer.update(loss_time)
       return
 
@@ -1061,7 +1065,8 @@ Pseudocode for OnLossDetectionTimeout follows:
        crypto_count++
      else if (loss_time != 0):
        // Time threshold loss Detection
-       DetectLostPackets()
+       // Only applies to the 1-RTT packet number space.
+       DetectLostPackets(1-RTT)
      else:
        // PTO
        SendOneOrTwoPackets()
@@ -1081,8 +1086,9 @@ is supplied.
 Pseudocode for DetectLostPackets follows:
 
 ~~~
-DetectLostPackets():
-  loss_time = 0
+DetectLostPackets(pn_space):
+  if (pn_space == 1-RTT):
+    loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
@@ -1102,10 +1108,11 @@ DetectLostPackets():
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else if (loss_time == 0):
-      loss_time = unacked.time_sent + loss_delay
-    else:
-      loss_time = min(loss_time, unacked.time_sent + loss_delay)
+    else if (pn_space == 1-RTT):
+      if (loss_time == 0):
+        loss_time = unacked.time_sent + loss_delay
+      else:
+        loss_time = min(loss_time, unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
