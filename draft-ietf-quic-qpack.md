@@ -855,16 +855,23 @@ have.  The smallest entry has empty name and value strings and has the size of
 `MaxTableCapacity` is the maximum capacity of the dynamic table as specified by
 the decoder (see {{maximum-dynamic-table-capacity}}).
 
+This encoding limits the length of the prefix on long-lived connections.
 
-The decoder reconstructs the Required Insert Count using the following
-algorithm, where TotalNumberOfInserts is the total number of inserts into the
-decoder's dynamic table:
+The decoder can reconstruct the Required Insert Count using an algorithm such as
+the following.  If the decoder encounters a value of EncodedInsertCount that
+could not have been produced by a conformant encoder, it MUST treat this as a
+stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+TotalNumberOfInserts is the total number of inserts into the decoder's dynamic
+table.
 
 ~~~
    FullRange = 2 * MaxEntries
    if EncodedInsertCount == 0:
       ReqInsertCount = 0
    else:
+      if EncodedInsertCount > FullRange:
+         Error
       MaxValue = TotalNumberOfInserts + MaxEntries
 
       # MaxWrapped is the largest possible value of
@@ -879,10 +886,6 @@ decoder's dynamic table:
             Error
          ReqInsertCount -= FullRange
 ~~~
-An error detected by the decoding algorithm indicates invalid input, and MUST be
-treated as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
-
-This encoding limits the length of the prefix on long-lived connections.
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
