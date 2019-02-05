@@ -2113,9 +2113,10 @@ infrequently.
 An endpoint cannot migrate to a new path if it does not have a connection ID to
 use on that path.  An endpoint that exhausts available connection IDs cannot
 migrate.  If a peer chooses to receive packets with zero-length connection IDs,
-an endpoint can always migrate.  To ensure that migration is possible and
-packets sent on different paths cannot be correlated, endpoints SHOULD provide
-new connection IDs before peers migrate.
+an endpoint can always migrate - zero-length connection IDs provide no
+significant linkability.  To ensure that migration is possible and packets sent
+on different paths cannot be correlated, endpoints SHOULD provide new connection
+IDs before peers migrate.
 
 
 ## Server's Preferred Address {#preferred-address}
