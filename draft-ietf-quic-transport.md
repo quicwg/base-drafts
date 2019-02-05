@@ -2204,6 +2204,21 @@ address before path validation is complete.
 A client that migrates to a new address SHOULD use a preferred address from the
 same address family for the server.
 
+## Use of IPv6 Flow-Label and Migration {#ipv6-flow-label}
+
+Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
+in compliance with {{!RFC6437}}, unless the local API does not allow
+setting IPv6 flow labels.
+
+The IPv6 flow label SHOULD be a pseudo-random function of the source
+and destination addresses, source and destination UDP ports, and the destination
+CID. The flow label generation MUST be designed to minimize the chances of
+linkability with a previously used flow label, as this would enable correlating
+activity on multiple paths (see {{migration-linkability}}).
+
+A possible implementation is to compute the flow label as a cryptographic hash
+function of the source and destination addresses, source and destination
+UDP ports, destination CID, and a local secret.
 
 # Connection Termination {#termination}
 
