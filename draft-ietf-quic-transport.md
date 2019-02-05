@@ -4998,6 +4998,10 @@ Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
 than any previously sent to the peer MAY be treated as a connection error of
 type PROTOCOL_VIOLATION.
 
+The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
+to the DCID of the packet in which this frame is contained.  The peer MAY
+treat this as a connection error of type PROTOCOL_VIOLATION.
+
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
 ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
