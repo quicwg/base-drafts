@@ -2276,11 +2276,12 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled, a connection that remains idle for longer than
-the advertised idle timeout (see {{transport-parameter-definitions}}) is closed.
-A connection enters the draining state when the idle timeout expires.
+If the idle timeout is enabled, a connection is silently closed and the state is
+discarded when it remains idle for longer than both the advertised
+idle timeout (see {{transport-parameter-definitions}}) and three times the
+current Probe Timeout (PTO).
 
-Each endpoint advertises its own idle timeout to its peer.  An enpdpoint
+Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
 processed successfully.  The timer is also restarted when sending a packet
 containing frames other than ACK or PADDING (an ACK-eliciting packet, see
@@ -3887,7 +3888,7 @@ Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see
-{{validate-future}}).
+{{token-integrity}}).
 
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
