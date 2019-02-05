@@ -136,13 +136,14 @@ Absolute Index:
 
 : A unique index for each entry in the dynamic table.
 
-Base Index:
+Base:
 
-: An absolute index in a header block from which relative indices are made.
+: A reference point for relative indicies.  Dynamic references are made relative
+  to a Base in header blocks.
 
-Largest Reference:
+Insert Count:
 
-: The largest absolute index of an entry referenced in a header block.
+: The total number of entries inserted in the dynamic table.
 
 QPACK is a name, not an acronym.
 
@@ -212,7 +213,7 @@ acknowledged by the decoder.
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
 existing entry) if doing so would evict an entry with unacknowledged references.
 For header blocks that might rely on the newly added entry, the encoder can use
-a literal representation and maybe insert the entry later.
+a literal representation.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -237,8 +238,8 @@ entries will eventually become zero, allowing them to be evicted.
    +----------+---------------------------------+--------+
    ^          ^                                 ^
    |          |                                 |
- Dropping    Draining Index               Base Index /
-  Point                                   Insertion Point
+ Dropping    Draining Index               Insertion Point
+  Point
 ~~~~~~~~~~
 {:#fig-draining-index title="Draining Dynamic Table Entries"}
 
@@ -249,18 +250,29 @@ Because QUIC does not guarantee order between data on different streams, a
 header block might reference an entry in the dynamic table that has not yet been
 received.
 
-Each header block contains a Largest Reference ({{header-prefix}}) which
-identifies the table state necessary for decoding. If the greatest absolute
-index in the dynamic table is less than the value of the Largest Reference, the
-stream is considered "blocked."  While blocked, header field data SHOULD remain
-in the blocked stream's flow control window.  When the Largest Reference is
-zero, the frame contains no references to the dynamic table and can always be
-processed immediately. A stream becomes unblocked when the greatest absolute
-index in the dynamic table becomes greater than or equal to the Largest
-Reference for all header blocks the decoder has started reading from the stream.
-If the decoder encounters a header block where the actual largest reference is
-not equal to the Largest Reference declared in the prefix, it MAY treat this as
-a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+Each header block contains a Required Insert Count, the lowest possible value
+for the Insert Count with which the header block can be decoded. For a header
+block with references to the dynamic table, the Required Insert Count is one
+larger than the largest Absolute Index of all referenced dynamic table
+entries. For a header block with no references to the dynamic table, the
+Required Insert Count is zero.
+
+If the decoder encounters a header block with a Required Insert Count value
+larger than defined above, it MAY treat this as a stream error of type
+HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
+a Required Insert Count value smaller than defined above, it MUST treat this as
+a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
+{{invalid-references}}.
+
+When the Required Insert Count is zero, the frame contains no references to the
+dynamic table and can always be processed immediately.
+
+If the Required Insert Count is greater than the number of dynamic table entries
+received, the stream is considered "blocked."  While blocked, header field data
+SHOULD remain in the blocked stream's flow control window.  A stream becomes
+unblocked when the Insert Count becomes greater than or equal to the Required
+Insert Count for all header blocks the decoder has started reading from the
+stream.
 
 The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
 upper bound on the number of streams which can be blocked. An encoder MUST limit
@@ -279,20 +291,21 @@ table entries which have been acknowledged, but this could mean using
 literals. Since literals make the header block larger, this can result in the
 encoder becoming blocked on congestion or flow control limits.
 
-### Largest Known Received
+### Known Received Count
 
-In order to identify which dynamic table entries can be safely used
-without a stream becoming blocked, the encoder tracks the absolute index of the
-decoder's Largest Known Received entry.
+In order to identify which dynamic table entries can be safely used without a
+stream becoming blocked, the encoder tracks the number of entries received by
+the decoder.  The Known Received Count tracks the total number of acknowledged
+insertions.
 
 When blocking references are permitted, the encoder uses header block
-acknowledgement to identify the Largest Known Received index, as described in
+acknowledgement to maintain the Known Received Count, as described in
 {{header-acknowledgement}}.
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
 for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends a Table State Synchronize instruction (see
-{{table-state-synchronize}}).
+streams, the decoder sends an Insert Count Increment instruction (see
+{{insert-count-increment}}).
 
 
 ## Decoder
@@ -321,21 +334,21 @@ blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
 indication that these header blocks will never be processed serves a similar
 function; see {{stream-cancellation}}.
 
-The decoder chooses when to emit Table State Synchronize instructions (see
-{{table-state-synchronize}}). Emitting an instruction after adding each new
+The decoder chooses when to emit Insert Count Increment instructions (see
+{{insert-count-increment}}). Emitting an instruction after adding each new
 dynamic table entry will provide the most timely feedback to the encoder, but
-could be redundant with other decoder feedback. By delaying a Table State
-Synchronize instruction, the decoder might be able to coalesce multiple Table
-State Synchronize instructions, or replace them entirely with Header
+could be redundant with other decoder feedback. By delaying an Insert Count
+Increment instruction, the decoder might be able to coalesce multiple Insert
+Count Increment instructions, or replace them entirely with Header
 Acknowledgements (see {{header-acknowledgement}}). However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
 
 ### Blocked Decoding
 
-To track blocked streams, the necessary Largest Reference value for each stream
-can be used.  Whenever the decoder processes a table update, it can begin
-decoding any blocked streams that now have their dependencies satisfied.
+To track blocked streams, the Required Insert Count value for each stream can be
+used.  Whenever the decoder processes a table update, it can begin decoding any
+blocked streams that now have their dependencies satisfied.
 
 
 # Header Tables
@@ -369,7 +382,7 @@ name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by the decoder.
 
 
-### Calculating Table Size
+### Dynamic Table Size
 
 The size of the dynamic table is the sum of the size of its entries.
 
@@ -377,60 +390,67 @@ The size of an entry is the sum of its name's length in bytes (as defined in
 {{string-literals}}), its value's length in bytes, and 32.
 
 The size of an entry is calculated using the length of its name and value
-without any Huffman encoding applied.
+without Huffman encoding applied.
 
 
-### Eviction
+### Dynamic Table Capacity and Eviction {#eviction}
+
+The encoder sets the capacity of the dynamic table, which serves as the upper
+limit on its size.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
-equal to (maximum size - new entry size) or until the table is empty. The
+equal to (table capacity - size of new entry) or until the table is empty. The
 encoder MUST NOT evict a dynamic table entry unless it has first been
 acknowledged by the decoder.
 
-If the size of the new entry is less than or equal to the maximum size, that
-entry is added to the table.  It is an error to attempt to add an entry that is
-larger than the maximum size; this MUST be treated as a connection error of type
+If the size of the new entry is less than or equal to the dynamic table
+capacity, then that entry is added to the table.  It is an error if the encoder
+attempts to add an entry that is larger than the dynamic table capacity; the
+decoder MUST treat this as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
-cautioned to avoid deleting the referenced name if the referenced entry is
-evicted from the dynamic table prior to inserting the new entry.
+cautioned to avoid deleting the referenced name or value if the referenced entry
+is evicted from the dynamic table prior to inserting the new entry.
 
-Whenever the maximum size for the dynamic table is reduced by the encoder,
-entries are evicted from the end of the dynamic table until the size of the
-dynamic table is less than or equal to the new maximum size.  This mechanism can
-be used to completely clear entries from the dynamic table by setting a maxiumum
-size of 0, which can subsequently be restored.
+Whenever the dynamic table capacity is reduced by the encoder, entries are
+evicted from the end of the dynamic table until the size of the dynamic table is
+less than or equal to the new table capacity.  This mechanism can be used to
+completely clear entries from the dynamic table by setting a capacity of 0,
+which can subsequently be restored.
 
 
-### Maximum Table Size
+### Maximum Dynamic Table Capacity
 
-The encoder decides how to update the dynamic table size and as such can control
-how much memory is used by the dynamic table.  To limit the memory requirements
-of the decoder, the dynamic table size is strictly bounded.  The decoder
-determines the maximum size that the encoder is permitted to set for the dynamic
-table.  In HTTP/3, this value is determined by the SETTINGS_HEADER_TABLE_SIZE
-setting (see {{configuration}}).  The encoder MUST not set a dynamic table size
-that exceeds this maximum, but it can choose to use a lower dynamic table size
-(see {{size-update}}).
+To bound the memory requirements of the decoder, the decoder limits the maximum
+value the encoder is permitted to set for the dynamic table capacity.  In
+HTTP/3, this limit is determined by the value of
+SETTINGS_QPACK_MAX_TABLE_CAPACITY sent by the decoder (see {{configuration}}).
+The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
+it can choose to use a lower dynamic table capacity (see
+{{set-dynamic-capacity}}).
 
-The initial maximum size is determined by the corresponding setting when HTTP
-requests or responses are first permitted to be sent. For clients using 0-RTT
-data in HTTP/3, the table size is the remembered value of the setting, even if
-the server later specifies a larger maximum in its SETTINGS frame.  For HTTP/3
-servers and HTTP/3 clients when 0-RTT is not attempted or is rejected, the
-initial maximum table size is the value of the setting in the peer's SETTINGS
-frame.
+
+### Initial Dynamic Table Capacity
+
+The initial dynamic table capacity is determined by the corresponding setting
+when HTTP requests or responses are first permitted to be sent.  For clients
+using 0-RTT data in HTTP/3, the initial table capacity is the remembered value
+of the setting, even if the server later specifies a larger maximum dynamic
+table capacity in its SETTINGS frame.  For HTTP/3 servers and HTTP/3 clients
+when 0-RTT is not attempted or is rejected, the initial table capacity is the
+value of the setting in the peer's SETTINGS frame.
 
 
 ### Absolute Indexing {#indexing}
 
 Each entry possesses both an absolute index which is fixed for the lifetime of
 that entry and a relative index which changes based on the context of the
-reference. The first entry inserted has an absolute index of "1"; indices
-increase sequentially with each insertion.
+reference. The first entry inserted has an absolute index of "0"; indices
+increase by one with each insertion.
+
 
 ### Relative Indexing
 
@@ -444,60 +464,69 @@ referenced by a given relative index will change while interpreting instructions
 on the encoder stream.
 
 ~~~~~ drawing
-    +---+---------------+-----------+
-    | n |      ...      |   d + 1   |  Absolute Index
-    + - +---------------+ - - - - - +
-    | 0 |      ...      | n - d - 1 |  Relative Index
-    +---+---------------+-----------+
-      ^                       |
-      |                       V
-Insertion Point         Dropping Point
+      +-----+---------------+-------+
+      | n-1 |      ...      |   d   |  Absolute Index
+      + - - +---------------+ - - - +
+      |  0  |      ...      | n-d-1 |  Relative Index
+      +-----+---------------+-------+
+      ^                             |
+      |                             V
+Insertion Point               Dropping Point
 
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Control Stream"}
 
-Because frames from request streams can be delivered out of order with
-instructions on the encoder stream, relative indices are relative to the Base
-Index at the beginning of the header block (see {{header-prefix}}). The Base
-Index is an absolute index. When interpreting the rest of the frame, the entry
-identified by Base Index has a relative index of zero.  The relative indices of
-entries do not change while interpreting headers on a request or push stream.
+Unlike on the encoder stream, relative indices on push and request streams are
+relative to the Base at the beginning of the header block (see
+{{header-prefix}}). This ensures that references are stable even if the dynamic
+table is updated while decoding a header block.
+
+The Base is encoded as a value relative to the Required Insert Count. The Base
+identifies which dynamic table entries can be referenced using relative
+indexing, starting with 0 at the last entry added.
+
+Post-Base references are used for entries inserted after base, starting at 0 for
+the first entry added after the Base, see {{post-base}}.
 
 ~~~~~ drawing
-             Base Index
-                 |
-                 V
-    +---+-----+-----+-----+-------+
-    | n | n-1 | n-2 | ... |  d+1  |  Absolute Index
-    +---+-----+  -  +-----+   -   +
-              |  0  | ... | n-d-3 |  Relative Index
-              +-----+-----+-------+
+ Required
+  Insert
+  Count        Base
+    |           |
+    V           V
+    +-----+-----+-----+-----+-------+
+    | n-1 | n-2 | n-3 | ... |   d   |  Absolute Index
+    +-----+-----+  -  +-----+   -   +
+                |  0  | ... | n-d-3 |  Relative Index
+                +-----+-----+-------+
 
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Relative Index on Request Stream"}
 
-### Post-Base Indexing
+
+### Post-Base Indexing {#post-base}
 
 A header block on the request stream can reference entries added after the entry
-identified by the Base Index. This allows an encoder to process a header block
-in a single pass and include references to entries added while processing this
-(or other) header blocks. Newly added entries are referenced using Post-Base
+identified by the Base. This allows an encoder to process a header block in a
+single pass and include references to entries added while processing this (or
+other) header blocks. Newly added entries are referenced using Post-Base
 instructions. Indices for Post-Base instructions increase in the same direction
-as absolute indices, but the zero value is one higher than the Base Index.
+as absolute indices, with the zero value being the first entry inserted after
+the Base.
 
 ~~~~~ drawing
-             Base Index
-                 |
-                 V
-    +---+-----+-----+-----+-----+
-    | n | n-1 | n-2 | ... | d+1 |  Absolute Index
-    +---+-----+-----+-----+-----+
-    | 1 |  0  |                    Post-Base Index
-    +---+-----+
+               Base
+                |
+                V
+    +-----+-----+-----+-----+-----+
+    | n-1 | n-2 | n-3 | ... |  d  |  Absolute Index
+    +-----+-----+-----+-----+-----+
+    |  1  |  0  |                    Post-Base Index
+    +-----+-----+
 
 n = count of entries inserted
 d = count of entries dropped
@@ -509,8 +538,9 @@ d = count of entries dropped
 
 If the decoder encounters a reference on a request or push stream to a dynamic
 table entry which has already been evicted or which has an absolute index
-greater than the declared Largest Reference (see {{header-prefix}}), it MUST
-treat this as a stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+greater than or equal to the declared Required Insert Count (see
+{{header-prefix}}), it MUST treat this as a stream error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 If the decoder encounters a reference on the encoder stream to a dynamic table
 entry which has already been dropped, it MUST treat this as a connection error
@@ -563,9 +593,9 @@ instruction space:
 <!-- s/exactly/no more than/  ? -->
 There MUST be exactly one of each unidirectional stream type in each direction.
 Receipt of a second instance of either stream type MUST be treated as a
-connection error of HTTP_WRONG_STREAM_COUNT.  Closure of either unidirectional
-stream MUST be treated as a connection error of type
-HTTP_CLOSED_CRITICAL_STREAM.
+connection error of HTTP_WRONG_STREAM_COUNT.  These streams MUST NOT be closed.
+Closure of either unidirectional stream MUST be treated as a connection error of
+type HTTP_CLOSED_CRITICAL_STREAM.
 
 This section describes the instructions which are possible on each stream type.
 
@@ -650,32 +680,32 @@ entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
 
-### Dynamic Table Size Update {#size-update}
+### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
-An encoder informs the decoder of a change to the size of the dynamic table
-using an instruction which begins with the '001' three-bit pattern.  The new
-maximum table size is represented as an integer with a 5-bit prefix (see Section
-5.1 of [RFC7541]).
+An encoder informs the decoder of a change to the dynamic table capacity using
+an instruction which begins with the '001' three-bit pattern.  The new dynamic
+table capacity is represented as an integer with a 5-bit prefix (see Section 5.1
+of [RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 | 1 |   Max size (5+)   |
+| 0 | 0 | 1 |   Capacity (5+)   |
 +---+---+---+-------------------+
 ~~~~~~~~~~
-{:#fig-size-change title="Maximum Dynamic Table Size Change"}
+{:#fig-set-capacity title="Set Dynamic Table Capacity"}
 
-The new maximum size MUST be lower than or equal to the limit described in
-{{maximum-table-size}}.  In HTTP/3, this limit is the value of the
-SETTINGS_HEADER_TABLE_SIZE parameter (see {{configuration}}) received from the
-decoder.  The decoder MUST treat a value that exceeds this limit as a connection
-error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+The new capacity MUST be lower than or equal to the limit described in
+{{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter (see {{configuration}}) received
+from the decoder.  The decoder MUST treat a new dynamic table capacity value
+that exceeds this limit as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
-Reducing the maximum size of the dynamic table can cause entries to be evicted
-(see Section 4.3 of [RFC7541]).  This MUST NOT cause the eviction of entries
-with outstanding references (see {{reference-tracking}}).  Changing the size of
-the dynamic table is not acknowledged as this instruction does not insert an
-entry.
+Reducing the dynamic table capacity can cause entries to be evicted (see
+{{eviction}}).  This MUST NOT cause the eviction of entries with outstanding
+references (see {{reference-tracking}}).  Changing the capacity of the dynamic
+table is not acknowledged as this instruction does not insert an entry.
 
 
 ## Decoder Stream
@@ -689,36 +719,36 @@ header blocks and table updates.
 The contents of the decoder stream are an unframed sequence of the following
 instructions.
 
-### Table State Synchronize
+### Insert Count Increment
 
-The Table State Synchronize instruction begins with the '00' two-bit pattern.
+The Insert Count Increment instruction begins with the '00' two-bit pattern.
 The instruction specifies the total number of dynamic table inserts and
-duplications since the last Table State Synchronize or Header Acknowledgement
-that increased the Largest Known Received dynamic table entry (see
-{{largest-known-received}}).  This is encoded as a 6-bit prefix integer. The
-encoder uses this value to determine which table entries might cause a stream to
-become blocked, as described in {{state-synchronization}}.
+duplications since the last Insert Count Increment or Header Acknowledgement
+that increased the Known Received Count for the dynamic table (see
+{{known-received-count}}).  The Increment field is encoded as a 6-bit prefix
+integer. The encoder uses this value to determine which table entries might
+cause a stream to become blocked, as described in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 0 | 0 |   Insert Count (6+)   |
+| 0 | 0 |     Increment (6+)    |
 +---+---+-----------------------+
 ~~~~~~~~~~
-{:#fig-size-sync title="Table State Synchronize"}
+{:#fig-size-sync title="Insert Count Increment"}
 
-An encoder that receives an Insert Count equal to zero or one that increases
-Largest Known Received beyond what the encoder has sent MUST treat this as a
+An encoder that receives an Increment field equal to zero or one that increases
+the Known Received Count beyond what the encoder has sent MUST treat this as a
 connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 ### Header Acknowledgement
 
-After processing a header block whose declared Largest Reference is not zero,
-the decoder emits a Header Acknowledgement instruction on the decoder stream.
-The instruction begins with the '1' one-bit pattern and includes the request
-stream's stream ID, encoded as a 7-bit prefix integer.  It is used by the peer's
-encoder to know when it is safe to evict an entry, and possibly update Largest
-Known Received.
+After processing a header block whose declared Required Insert Count is not
+zero, the decoder emits a Header Acknowledgement instruction on the decoder
+stream.  The instruction begins with the '1' one-bit pattern and includes the
+request stream's stream ID, encoded as a 7-bit prefix integer.  It is used by
+the peer's encoder to know when it is safe to evict an entry, and possibly
+update the Known Received Count.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -735,17 +765,17 @@ processed in order, this gives the encoder precise feedback on which header
 blocks within a stream have been fully processed.
 
 If an encoder receives a Header Acknowledgement instruction referring to a
-stream on which every header block with a non-zero Largest Reference has already
-been acknowledged, that MUST be treated as a connection error of type
+stream on which every header block with a non-zero Required Insert Count has
+already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 When blocking references are permitted, the encoder uses acknowledgement of
-header blocks to update the Largest Known Received index.  If a header block was
+header blocks to update the Known Received Count.  If a header block was
 potentially blocking, the acknowledgement implies that the decoder has received
-all dynamic table state necessary to process the header block.  If the Largest
-Reference of an acknowledged header block was greater than the encoder's current
-Largest Known Received index, the block's Largest Reference becomes the new
-Largest Known Received.
+all dynamic table state necessary to process the header block.  If the Required
+Insert Count of an acknowledged header block was greater than the encoder's
+current Known Received Count, the block's Required Insert Count becomes the new
+Known Received Count.
 
 
 ### Stream Cancellation
@@ -768,9 +798,9 @@ end of a stream, it generates a Stream Cancellation instruction on the decoder
 stream.  Similarly, when an endpoint abandons reading of a stream it needs to
 signal this using the Stream Cancellation instruction.  This signals to the
 encoder that all references to the dynamic table on that stream are no longer
-outstanding.  A decoder with a maximum dynamic table size equal to zero (see
-{{maximum-table-size}}) MAY omit sending Stream Cancellations, because the
-encoder cannot have any dynamic table references.
+outstanding.  A decoder with a maximum dynamic table capacity equal to zero (see
+{{maximum-dynamic-table-capacity}}) MAY omit sending Stream Cancellations,
+because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
@@ -782,31 +812,42 @@ HEADERS and PUSH_PROMISE frames on request and push streams reference the
 dynamic table in a particular state without modifying it.  Frames on these
 streams emit the headers for an HTTP request or response.
 
-### Header Data Prefix {#header-prefix}
+### Header Block Prefix {#header-prefix}
 
-Header data is prefixed with two integers, `Largest Reference` and `Base Index`.
+Each header block is prefixed with two integers.  The Required Insert Count is
+encoded as an integer with an 8-bit prefix after the encoding described in
+{{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
+bit and a value with a 7-bit prefix (see {{base}}).
+
+These two values are followed by instructions for compressed headers.  The
+entire block is expected to be framed by the using protocol.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-|     Largest Reference (8+)    |
+|   Required Insert Count (8+)  |
 +---+---------------------------+
-| S |   Delta Base Index (7+)   |
+| S |      Delta Base (7+)      |
 +---+---------------------------+
 |      Compressed Headers     ...
 +-------------------------------+
 ~~~~~~~~~~
 {:#fig-base-index title="Frame Payload"}
 
-#### Largest Reference
 
-`Largest Reference` identifies the largest absolute dynamic index referenced in
-the block.  Blocking decoders use the Largest Reference to determine when it is
-safe to process the rest of the block.  If Largest Reference is greater than
-zero, the encoder transforms it as follows before encoding:
+#### Required Insert Count {#ric}
+
+Required Insert Count identifies the state of the dynamic table needed to
+process the header block.  Blocking decoders use the Required Insert Count to
+determine when it is safe to process the rest of the block.
+
+The encoder transforms the Required Insert Count as follows before encoding:
 
 ~~~
-   LargestReference = (LargestReference mod (2 * MaxEntries)) + 1
+   if ReqInsertCount == 0:
+      EncInsertCount = 0
+   else:
+      EncInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
@@ -814,68 +855,78 @@ have.  The smallest entry has empty name and value strings and has the size of
 32.  Hence `MaxEntries` is calculated as
 
 ~~~
-   MaxEntries = floor( MaxTableSize / 32 )
+   MaxEntries = floor( MaxTableCapacity / 32 )
 ~~~
 
-`MaxTableSize` is the maximum size of the dynamic table as specified by the
-decoder (see {{maximum-table-size}}).
+`MaxTableCapacity` is the maximum capacity of the dynamic table as specified by
+the decoder (see {{maximum-dynamic-table-capacity}}).
 
 
-The decoder reconstructs the Largest Reference using the following algorithm:
+The decoder reconstructs the Required Insert Count using the following
+algorithm, where TotalNumberOfInserts is the total number of inserts into the
+decoder's dynamic table:
 
 ~~~
-   if LargestReference > 0:
-      LargestReference -= 1
+   if EncodedInsertCount == 0:
+      ReqInsertCount = 0
+   else:
+      InsertCount = EncodedInsertCount - 1
       CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
 
-      if CurrentWrapped >= LargestReference + MaxEntries:
-         # Largest Reference wrapped around 1 extra time
-         LargestReference += 2 * MaxEntries
-      else if CurrentWrapped + MaxEntries < LargestReference
+      if CurrentWrapped >= InsertCount + MaxEntries:
+         # Insert Count wrapped around 1 extra time
+         ReqInsertCount += 2 * MaxEntries
+      else if CurrentWrapped + MaxEntries < InsertCount:
          # Decoder wrapped around 1 extra time
          CurrentWrapped += 2 * MaxEntries
 
-      LargestReference += TotalNumberOfInserts - CurrentWrapped
+      ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
 ~~~
 
-TotalNumberOfInserts is the total number of inserts into the decoder's
-dynamic table.  This encoding limits the length of the prefix on
-long-lived connections.
+This encoding limits the length of the prefix on long-lived connections.
 
-#### Base Index
+For example, if the dynamic table is 100 bytes, then the Required Insert Count
+will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
+value of 3 indicates that the Required Insert Count is 9 for the header block.
 
-`Base Index` is used to resolve references in the dynamic table as described in
+#### Base {#base}
+
+The `Base` is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
-To save space, Base Index is encoded relative to Largest Reference using a
-one-bit sign and the `Delta Base Index` value.  A sign bit of 0 indicates that
-the Base Index has an absolute index that is greater than or equal to the
-Largest Reference; the value of Delta Base Index is added to the Largest
-Reference to determine the absolute value of the Base Index.  A sign bit of 1
-indicates that the Base Index is less than the Largest Reference.  That is:
+To save space, the Base is encoded relative to the Insert Count using a one-bit
+sign and the `Delta Base` value.  A sign bit of 0 indicates that the Base is
+greater than or equal to the value of the Insert Count; the value of Delta Base
+is added to the Insert Count to determine the value of the Base.  A sign bit of
+1 indicates that the Base is less than the Insert Count.  That is:
 
 ~~~
-   if sign == 0:
-      baseIndex = largestReference + deltaBaseIndex
+   if S == 0:
+      Base = ReqInsertCount + DeltaBase
    else:
-      baseIndex = largestReference - deltaBaseIndex - 1
+      Base = ReqInsertCount - DeltaBase - 1
 ~~~
 
-A single-pass encoder determines the absolute value of Base Index before
-encoding a header block.  If the encoder inserted entries in the dynamic table
-while encoding the header block, Largest Reference will be greater than Base
-Index, so the encoded difference is negative and the sign bit is set to 1.  If
-the header block did not reference the most recent entry in the table and did
-not insert any new entries, Base Index will be greater than the Largest
-Reference, so the delta will be positive and the sign bit is set to 0.
+A single-pass encoder determines the Base before encoding a header block.  If
+the encoder inserted entries in the dynamic table while encoding the header
+block, Required Insert Count will be greater than the Base, so the encoded
+difference is negative and the sign bit is set to 1.  If the header block did
+not reference the most recent entry in the table and did not insert any new
+entries, the Base will be greater than the Required Insert Count, so the delta
+will be positive and the sign bit is set to 0.
 
 An encoder that produces table updates before encoding a header block might set
-Largest Reference and Base Index to the same value.  In such case, both the sign
-bit and the Delta Base Index will be set to zero.
+Required Insert Count and the Base to the same value.  In such case, both the
+sign bit and the Delta Base will be set to zero.
 
 A header block that does not reference the dynamic table can use any value for
-Base Index; setting both Largest Reference and Base Index to zero is the most
-efficient encoding.
+the Base; setting Delta Base to zero is the most efficient encoding.
+
+For example, with an Required Insert Count of 9, a decoder receives a S bit of 1
+and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
+for three entries.  In this example, a regular index of 1 refers to the 5th
+entry that was added to the table; a post-base index of 1 refers to the 8th
+entry.
 
 
 ### Indexed Header Field
@@ -893,19 +944,20 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 {: title="Indexed Header Field"}
 
 If the entry is in the static table, or in the dynamic table with an absolute
-index less than or equal to Base Index, this representation starts with the '1'
-1-bit pattern, followed by the `S` bit indicating whether the reference is into
-the static (S=1) or dynamic (S=0) table. Finally, the relative index of the
-matching header field is represented as an integer with a 6-bit prefix (see
-Section 5.1 of [RFC7541]).
+index less than the Base, this representation starts with the '1' 1-bit pattern,
+followed by the `S` bit indicating whether the reference is into the static
+(S=1) or dynamic (S=0) table. Finally, the relative index of the matching header
+field is represented as an integer with a 6-bit prefix (see Section 5.1 of
+[RFC7541]).
 
 
 ### Indexed Header Field With Post-Base Index
 
-If the entry is in the dynamic table with an absolute index greater than Base
-Index, the representation starts with the '0001' 4-bit pattern, followed by the
-post-base index (see {{post-base-indexing}}) of the matching header field,
-represented as an integer with a 4-bit prefix (see Section 5.1 of [RFC7541]).
+If the entry is in the dynamic table with an absolute index greater than or
+equal to the Base, the representation starts with the '0001' 4-bit pattern,
+followed by the post-base index (see {{post-base}}) of the matching header
+field, represented as an integer with a 4-bit prefix (see Section 5.1 of
+[RFC7541]).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -923,9 +975,9 @@ header field name matches the header field name of an entry stored in the static
 table or the dynamic table.
 
 If the entry is in the static table, or in the dynamic table with an absolute
-index less than or equal to Base Index, this representation starts with the '01'
-two-bit pattern.  If the entry is in the dynamic table with an absolute index
-greater than Base Index, the representation starts with the '0000' four-bit
+index less than the Base, this representation starts with the '01' two-bit
+pattern.  If the entry is in the dynamic table with an absolute index greater
+than or equal to the Base, the representation starts with the '0000' four-bit
 pattern.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
@@ -950,16 +1002,16 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 {: title="Literal Header Field With Name Reference"}
 
 For entries in the static table or in the dynamic table with an absolute index
-less than or equal to Base Index, the header field name is represented using the
-relative index of that entry, which is represented as an integer with a 4-bit
-prefix (see Section 5.1 of [RFC7541]). The `S` bit indicates whether the
-reference is to the static (S=1) or dynamic (S=0) table.
+less than the Base, the header field name is represented using the relative
+index of that entry, which is represented as an integer with a 4-bit prefix (see
+Section 5.1 of [RFC7541]). The `S` bit indicates whether the reference is to the
+static (S=1) or dynamic (S=0) table.
 
 ### Literal Header Field With Post-Base Name Reference
 
-For entries in the dynamic table with an absolute index greater than Base Index,
-the header field name is represented using the post-base index of that entry
-(see {{post-base-indexing}}) encoded as an integer with a 3-bit prefix.
+For entries in the dynamic table with an absolute index greater than or equal to
+the Base, the header field name is represented using the post-base index of that
+entry (see {{post-base}}) encoded as an integer with a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1011,9 +1063,10 @@ represented as an 8-bit prefix string literal.
 
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
-  SETTINGS_HEADER_TABLE_SIZE (0x1):
+  SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : An integer with a maximum value of 2^30 - 1.  The default value is zero
-    bytes.  See {{table-dynamic}} for usage.
+    bytes.  See {{table-dynamic}} for usage.  This is the equivalent of the
+    SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
   : An integer with a maximum value of 2^16 - 1.  The default value is zero.
@@ -1056,7 +1109,7 @@ The entries in the following table are registered by this document.
 |------------------------------|--------|---------------------------|
 | Setting Name                 | Code   | Specification             |
 | ---------------------------- | :----: | ------------------------- |
-| HEADER_TABLE_SIZE            | 0x1    | {{configuration}}         |
+| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
 | ---------------------------- | ------ | ------------------------- |
 
@@ -1251,6 +1304,12 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-05
+
+- Introduced the terms dynamic table capacity and maximum dynamic table
+  capacity.
+- Renamed SETTINGS_HEADER_TABLE_SIZE to SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 
 ## Since draft-ietf-quic-qpack-04
 

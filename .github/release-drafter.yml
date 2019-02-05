@@ -1,0 +1,14 @@
+categories:
+  - title: Transport
+    label: -transport
+  - title: Recovery
+    label: -recovery
+  - title: TLS
+    label: -tls
+  - title: HTTP/3
+    label: -http
+change-template: - $TITLE (#$NUMBER)
+template: |
+  ## What’s Changed
+
+  $CHANGES

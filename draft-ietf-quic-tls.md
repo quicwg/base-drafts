@@ -16,7 +16,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
   -
     ins: S. Turner
@@ -743,14 +743,14 @@ based on the client's initial Destination Connection ID, as described in
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The header protection key uses the "quic hp" label, see
-{{header-protect}}).  Using these labels provides key separation between QUIC
+{{header-protect}}.  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
@@ -818,8 +818,8 @@ packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
-are protected with AEAD_AES_128_GCM and a key derived from the destination
-connection ID in the client's first Initial packet (see {{initial-secrets}}).
+are protected with AEAD_AES_128_GCM and a key derived from the Destination
+Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
@@ -1599,6 +1599,13 @@ cb54df7884
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-17
+
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Use of ALPN or equivalent is mandatory (#2263, #2284)
 
 
 ## Since draft-ietf-quic-tls-14
