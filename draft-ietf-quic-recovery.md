@@ -918,9 +918,11 @@ Pseudocode for OnPacketSent follows:
  OnPacketSent(packet_number, pn_space, ack_eliciting,
               in_flight, is_crypto_packet, sent_bytes):
    largest_sent_packet[pn_space] = packet_number
-   sent_packets[pn_space][packet_number].packet_number = packet_number
+   sent_packets[pn_space][packet_number].packet_number =
+                                            packet_number
    sent_packets[pn_space][packet_number].time_sent = now
-   sent_packets[pn_space][packet_number].ack_eliciting = ack_eliciting
+   sent_packets[pn_space][packet_number].ack_eliciting =
+                                            ack_eliciting
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (is_crypto_packet):
@@ -940,54 +942,54 @@ When an ACK frame is received, it may newly acknowledge any number of packets.
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
-  OnAckReceived(ack, pn_space):
-    largest_acked_packet[pn_space] = max(largest_acked_packet,
-                               ack.largest_acked)
+OnAckReceived(ack, pn_space):
+  largest_acked_packet[pn_space] = max(largest_acked_packet,
+                              ack.largest_acked)
 
-    // If the largest acknowledged is newly acked and
-    // ack-eliciting, update the RTT.
-    if (sent_packets[pn_space][ack.largest_acked] &&
-        sent_packets[pn_space][ack.largest_acked].ack_eliciting):
-      latest_rtt =
-        now - sent_packets[pn_space][ack.largest_acked].time_sent
-      UpdateRtt(latest_rtt, ack.ack_delay)
+  // If the largest acknowledged is newly acked and
+  // ack-eliciting, update the RTT.
+  if (sent_packets[pn_space][ack.largest_acked] &&
+      sent_packets[pn_space][ack.largest_acked].ack_eliciting):
+    latest_rtt =
+      now - sent_packets[pn_space][ack.largest_acked].time_sent
+    UpdateRtt(latest_rtt, ack.ack_delay)
 
-    // Process ECN information if present.
-    if (ACK frame contains ECN information):
-       ProcessECN(ack)
+  // Process ECN information if present.
+  if (ACK frame contains ECN information):
+      ProcessECN(ack)
 
-    // Find all newly acked packets in this ACK frame
-    newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
-    if (newly_acked_packets.empty()):
-      return
+  // Find all newly acked packets in this ACK frame
+  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
+  if (newly_acked_packets.empty()):
+    return
 
-    for acked_packet in newly_acked_packets:
-      OnPacketAcked(acked_packet.packet_number, pn_space)
+  for acked_packet in newly_acked_packets:
+    OnPacketAcked(acked_packet.packet_number, pn_space)
 
-    DetectLostPackets(pn_space)
+  DetectLostPackets(pn_space)
 
-    crypto_count = 0
-    pto_count = 0
+  crypto_count = 0
+  pto_count = 0
 
-    SetLossDetectionTimer()
+  SetLossDetectionTimer()
 
 
-  UpdateRtt(latest_rtt, ack_delay):
-    // min_rtt ignores ack delay.
-    min_rtt = min(min_rtt, latest_rtt)
-    // Limit ack_delay by max_ack_delay
-    ack_delay = min(ack_delay, max_ack_delay)
-    // Adjust for ack delay if it's plausible.
-    if (latest_rtt - min_rtt > ack_delay):
-      latest_rtt -= ack_delay
-    // Based on {{?RFC6298}}.
-    if (smoothed_rtt == 0):
-      smoothed_rtt = latest_rtt
-      rttvar = latest_rtt / 2
-    else:
-      rttvar_sample = abs(smoothed_rtt - latest_rtt)
-      rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
-      smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
+UpdateRtt(latest_rtt, ack_delay):
+  // min_rtt ignores ack delay.
+  min_rtt = min(min_rtt, latest_rtt)
+  // Limit ack_delay by max_ack_delay
+  ack_delay = min(ack_delay, max_ack_delay)
+  // Adjust for ack delay if it's plausible.
+  if (latest_rtt - min_rtt > ack_delay):
+    latest_rtt -= ack_delay
+  // Based on {{?RFC6298}}.
+  if (smoothed_rtt == 0):
+    smoothed_rtt = latest_rtt
+    rttvar = latest_rtt / 2
+  else:
+    rttvar_sample = abs(smoothed_rtt - latest_rtt)
+    rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
+    smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
 ~~~
 
 
@@ -998,9 +1000,9 @@ function is called.  Note that a single ACK frame may newly acknowledge several
 packets. OnPacketAcked must be called once for each of these newly acknowledged
 packets.
 
-OnPacketAcked takes two parameters: acked_packet, which is the struct detailed in
-{{sent-packets-fields}}, and the packet number space that this ACK frame was sent
-for.
+OnPacketAcked takes two parameters: acked_packet, which is the struct detailed
+in {{sent-packets-fields}}, and the packet number space that this ACK frame was
+sent for.
 
 Pseudocode for OnPacketAcked follows:
 
@@ -1122,7 +1124,8 @@ DetectLostPackets(pn_space):
       if (loss_time == 0):
         loss_time = unacked.time_sent + loss_delay
       else:
-        loss_time = min(loss_time, unacked.time_sent + loss_delay)
+        loss_time = min(loss_time, unacked.time_sent +
+                                              loss_delay)
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
