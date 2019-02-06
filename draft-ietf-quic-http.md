@@ -1463,6 +1463,13 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+Certain HTTP implementations use the client address for logging or
+access-control purposes.  Since QUIC supports path migration (and future
+versions might support simultaneous use of multiple paths), such implementations
+will need to actively retrieve the client's current address or addresses when
+they are relevant instead of assuming that the client's initial address remains
+accurate for the lifetime of the connection.
+
 
 # IANA Considerations
 
