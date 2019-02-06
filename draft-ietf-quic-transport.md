@@ -1010,8 +1010,10 @@ Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
 to more quickly identify when a connection becomes unusable.
 
-Packets that are matched to an existing connection, but for which the endpoint
-cannot remove packet protection, are discarded.
+Packets that are matched to an existing connection are discarded if the packets
+are inconsistent with the state of that connection -- for example, if they
+indicate a different protocol version than that of the connection, or if the
+endpoint cannot remove packet protection.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
 Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
