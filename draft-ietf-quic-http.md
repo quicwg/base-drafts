@@ -402,17 +402,17 @@ stream. This section describes HTTP/3 frame formats and the streams types on
 which they are permitted; see {{stream-frame-mapping}} for an overiew.  A
 comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 
-| Frame           | Control Stream | Request Stream | Push Stream | Section        |
-| --------------- | ---------------| -------------- | ------------| -------------- |
-| DATA            | No             | Yes            | Yes         | {{frame-data}} |
-| HEADERS         | No             | Yes            | Yes         | {{frame-headers}} |
-| PRIORITY        | Yes            | Yes            | No          | {{frame-priority}} |
-| CANCEL_PUSH     | Yes            | No             | No          | {{frame-cancel-push}} |
-| SETTINGS        | Yes            | No             | No          | {{frame-settings}} |
-| PUSH_PROMISE    | No             | Yes            | No          | {{frame-push-promise}} |
-| GOAWAY          | Yes            | No             | No          | {{frame-goaway}} |
-| MAX_PUSH_ID     | Yes            | No             | No          | {{frame-max-push-id}} |
-| DUPLICATE_PUSH  | No             | Yes            | No          | {{frame-duplicate-push}} |
+| Frame          | Control Stream | Request Stream | Push Stream | Section                  |
+| -------------- | -------------- | -------------- | ----------- | ------------------------ |
+| DATA           | No             | Yes            | Yes         | {{frame-data}}           |
+| HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
+| PRIORITY       | Yes            | Yes            | No          | {{frame-priority}}       |
+| CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
+| SETTINGS       | Yes            | No             | No          | {{frame-settings}}       |
+| PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
+| GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
+| MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
+| DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 ## Frame Layout
@@ -556,20 +556,20 @@ The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
 of the associated Element ID fields.
 
-| PT Bits   | Type Description | Prioritized Element ID Contents |
-| --------- | ---------------- | ------------------------------- |
-| 00        | Request stream   | Stream ID                       |
-| 01        | Push stream      | Push ID                         |
-| 10        | Placeholder      | Placeholder ID                  |
-| 11        | Current stream   | Absent                          |
+| PT Bits | Type Description | Prioritized Element ID Contents |
+| ------- | ---------------- | ------------------------------- |
+| 00      | Request stream   | Stream ID                       |
+| 01      | Push stream      | Push ID                         |
+| 10      | Placeholder      | Placeholder ID                  |
+| 11      | Current stream   | Absent                          |
 {: #prioritized-element-types title="Prioritized Element Types"}
 
-| DT Bits   | Type Description | Element Dependency ID Contents |
-| --------- | ---------------- | ------------------------------ |
-| 00        | Request stream   | Stream ID                      |
-| 01        | Push stream      | Push ID                        |
-| 10        | Placeholder      | Placeholder ID                 |
-| 11        | Root of the tree | Absent                         |
+| DT Bits | Type Description | Element Dependency ID Contents |
+| ------- | ---------------- | ------------------------------ |
+| 00      | Request stream   | Stream ID                      |
+| 01      | Push stream      | Push ID                        |
+| 10      | Placeholder      | Placeholder ID                 |
+| 11      | Root of the tree | Absent                         |
 {: #element-dependency-types title="Element Dependency Types"}
 
 Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
@@ -1523,20 +1523,20 @@ Specification:
 The entries in the following table are registered by this document.
 
 | ---------------- | ------ | -------------------------- |
-| Frame Type       | Code   | Specification              |
+| Frame Type       |  Code  | Specification              |
 | ---------------- | :----: | -------------------------- |
-| DATA             | 0x0    | {{frame-data}}             |
-| HEADERS          | 0x1    | {{frame-headers}}          |
-| PRIORITY         | 0x2    | {{frame-priority}}         |
-| CANCEL_PUSH      | 0x3    | {{frame-cancel-push}}      |
-| SETTINGS         | 0x4    | {{frame-settings}}         |
-| PUSH_PROMISE     | 0x5    | {{frame-push-promise}}     |
-| Reserved         | 0x6    | N/A                        |
-| GOAWAY           | 0x7    | {{frame-goaway}}           |
-| Reserved         | 0x8    | N/A                        |
-| Reserved         | 0x9    | N/A                        |
-| MAX_PUSH_ID      | 0xD    | {{frame-max-push-id}}      |
-| DUPLICATE_PUSH   | 0xE    | {{frame-duplicate-push}}   |
+| DATA             |  0x0   | {{frame-data}}             |
+| HEADERS          |  0x1   | {{frame-headers}}          |
+| PRIORITY         |  0x2   | {{frame-priority}}         |
+| CANCEL_PUSH      |  0x3   | {{frame-cancel-push}}      |
+| SETTINGS         |  0x4   | {{frame-settings}}         |
+| PUSH_PROMISE     |  0x5   | {{frame-push-promise}}     |
+| Reserved         |  0x6   | N/A                        |
+| GOAWAY           |  0x7   | {{frame-goaway}}           |
+| Reserved         |  0x8   | N/A                        |
+| Reserved         |  0x9   | N/A                        |
+| MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
+| DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
@@ -1578,14 +1578,14 @@ Specification:
 The entries in the following table are registered by this document.
 
 | ---------------------------- | ------ | ------------------------- |
-| Setting Name                 | Code   | Specification             |
+| Setting Name                 |  Code  | Specification             |
 | ---------------------------- | :----: | ------------------------- |
-| Reserved                     | 0x2    | N/A                       |
-| Reserved                     | 0x3    | N/A                       |
-| Reserved                     | 0x4    | N/A                       |
-| Reserved                     | 0x5    | N/A                       |
-| MAX_HEADER_LIST_SIZE         | 0x6    | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             | 0x8    | {{settings-parameters}}   |
+| Reserved                     |  0x2   | N/A                       |
+| Reserved                     |  0x3   | N/A                       |
+| Reserved                     |  0x4   | N/A                       |
+| Reserved                     |  0x5   | N/A                       |
+| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x?a?a` where each `?` is any four bits
@@ -1680,10 +1680,10 @@ Sender:
 The entries in the following table are registered by this document.
 
 | ---------------- | ------ | -------------------------- | ------ |
-| Stream Type      | Code   | Specification              | Sender |
+| Stream Type      |  Code  | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
-| Control Stream   | 0x43   | {{control-streams}}        | Both   |
-| Push Stream      | 0x50   | {{server-push}}            | Server |
+| Control Stream   |  0x43  | {{control-streams}}        | Both   |
+| Push Stream      |  0x50  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, for each code of the format `0x1f * N` for values of N in the
