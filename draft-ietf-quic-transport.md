@@ -972,8 +972,11 @@ the connection.
 ### Consuming and Retiring Connection IDs {#retiring-cids}
 
 An endpoint can change the connection ID it uses for a peer to another available
-one at any time during the connection.  An endpoint consumes connection IDs in
-response to a migrating peer, see {{migration-linkability}} for more.
+one at any time during the connection, though excessive consumption of
+connection IDs might lead to running out of spares if the issuer limits the
+frequency of issuance or the total number of connection IDs issued for each
+connection.  An endpoint consumes connection IDs in response to a migrating
+peer, see {{migration-linkability}} for more.
 
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
