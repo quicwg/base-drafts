@@ -88,22 +88,39 @@ code and issues list for this draft can be found at
 
 HTTP semantics are used for a broad range of services on the Internet. These
 semantics have commonly been used with two different TCP mappings, HTTP/1.1 and
-HTTP/2.  HTTP/2 introduced a framing and multiplexing layer to improve latency
-without modifying the transport layer.  However, TCP's lack of visibility into
-parallel requests in both mappings limited the possible performance gains.
+HTTP/2.  HTTP/3 supports the same semantics over a new transport protocol, QUIC.
+
+## Prior versions of HTTP
+
+HTTP/1.1 was a TCP mapping which used whitespace-delimited text fields to convey
+HTTP messages.  While these exchanges were human-readable, the whitespace led to
+parsing difficulties and workarounds to be tolerant of variant behavior.
+Because each connection could be used only for a single HTTP request and
+response at a time, multiple parallel TCP connections were used, reducing the
+ability of the congestion controller to accurately manage traffic between
+endpoints.
+
+HTTP/2 introduced a binary framing and multiplexing layer to improve latency
+without modifying the transport layer.  However, because the parallel nature
+of HTTP/2's multiplexing was not visible to TCP's loss recovery mechanisms,
+a lost or reordered packet caused all active transactions to experience a stall
+regardless of whether that transaction was impacted by the lost packet.
+
+## Delegation to QUIC
 
 The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
 a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
-comparable security to running TLS over TCP, but with improved connection setup
-latency (unless TCP Fast Open {{?RFC7413}}} is used).
+comparable security to running TLS over TCP, with the improved connection setup
+latency of TCP Fast Open {{?RFC7413}}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
-protocol, drawing heavily on the design of HTTP/2. This document identifies
-HTTP/2 features that are subsumed by QUIC, and describes how the other features
-can be implemented atop QUIC.
+protocol, drawing heavily on the design of HTTP/2.  While delegating stream
+management and flow control issues to QUIC, a similar binary framing is used on
+each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
+implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{!RFC7540}}.
@@ -922,10 +939,10 @@ implementation chooses.
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a client-initiated bidirectional QUIC
-stream. A client MUST send only a single request on a given stream.
-A server sends one or more HTTP responses on the same stream as the request,
-as detailed below.
+A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
+A client MUST send only a single request on a given stream. A server sends zero
+or more non-final HTTP responses on the same stream as the request, followed by
+a single final HTTP response, as detailed below.
 
 An HTTP message (request or response) consists of:
 
