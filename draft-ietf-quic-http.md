@@ -423,21 +423,22 @@ All frames have the following format:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
+|    Type (8)   |               Length (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Type (8)   |               Frame Payload (*)             ...
+|                     Frame Payload (*)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/3 frame format"}
 
 A frame includes the following fields:
 
+  Type:
+  : An 8-bit type for the frame.
+
+
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
     This length does not include the Type field.
-
-  Type:
-  : An 8-bit type for the frame.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
