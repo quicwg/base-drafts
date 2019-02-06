@@ -396,9 +396,24 @@ implementation chooses.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-As discussed above, frames are carried on QUIC streams and used on control
-streams, request streams, and push streams.  This section describes HTTP framing
-in QUIC.  For a comparison with HTTP/2 frames, see {{h2-frames}}.
+HTTP frames are carried on QUIC streams, as described in {{stream-mapping}}.
+HTTP/3 defines three stream types: control stream, request stream, and push
+stream. This section describes HTTP/3 frame formats and the streams types on
+which they are permitted; see {{stream-frame-mapping}} for an overiew.  A
+comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
+
+| Frame           | Control Stream | Request Stream | Push Stream | Section        |
+| --------------- | ---------------| -------------- | ------------| -------------- |
+| DATA            | No             | Yes            | Yes         | {{frame-data}} |
+| HEADERS         | No             | Yes            | Yes         | {{frame-headers}} |
+| PRIORITY        | Yes            | Yes            | No          | {{frame-priority}} |
+| CANCEL_PUSH     | Yes            | No             | No          | {{frame-cancel-push}} |
+| SETTINGS        | Yes            | No             | No          | {{frame-settings}} |
+| PUSH_PROMISE    | No             | Yes            | No          | {{frame-push-promise}} |
+| GOAWAY          | Yes            | No             | No          | {{frame-goaway}} |
+| MAX_PUSH_ID     | Yes            | No             | No          | {{frame-max-push-id}} |
+| DUPLICATE_PUSH  | No             | Yes            | No          | {{frame-duplicate-push}} |
+{: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 ## Frame Layout
 
