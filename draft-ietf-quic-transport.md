@@ -2119,8 +2119,8 @@ sent on different paths cannot be correlated, endpoints SHOULD provide new
 connection IDs before peers migrate.
 
 If a peer chooses to receive packets with zero-length connection IDs, an
-endpoint can always migrate - zero-length connection IDs provide no significant
-linkability.
+endpoint can always migrate, because  zero-length connection IDs provide no
+significant linkability.
 
 
 ## Server's Preferred Address {#preferred-address}
