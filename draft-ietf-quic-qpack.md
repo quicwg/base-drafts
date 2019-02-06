@@ -427,13 +427,14 @@ The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
 it can choose to use a lower dynamic table capacity (see
 {{set-dynamic-capacity}}).
 
-For clients using 0-RTT data in HTTP/3, the maximum table capacity is the
-remembered value of the setting. If the remembered value is not present or is 0,
-the server MAY set it to a non-zero value in its SETTINGS frame. If the
-remembered value is non-zero, the server MUST send the same non-zero value in
-its SETTINGS frame.  If it specifies any other value, or omits
-SETTINGS_QPACK_MAX_TABLE_CAPACITY from SETTINGS, the encoder must treat this as
-a connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+For clients using 0-RTT data in HTTP/3, the server's maximum table capacity is
+the remembered value of the setting, or zero if the value was not previously
+sent.  When the client's 0-RTT value of the SETTING is 0, the server MAY set it
+to a non-zero value in its SETTINGS frame. If the remembered value is non-zero,
+the server MUST send the same non-zero value in its SETTINGS frame.  If it
+specifies any other value, or omits SETTINGS_QPACK_MAX_TABLE_CAPACITY from
+SETTINGS, the encoder must treat this as a connection error of type
+`HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 For HTTP/3 servers and HTTP/3 clients when 0-RTT is not attempted or is
 rejected, the maximum table capacity is 0 until the encoder processes a SETTINGS
