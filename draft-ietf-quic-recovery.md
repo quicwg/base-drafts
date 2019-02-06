@@ -134,7 +134,7 @@ Crypto Packets:
 
 : Packets containing CRYPTO data sent in Initial or Handshake
   packets.
-  
+
 Out-of-order Packets:
 
 : Packets that do not increase the largest received packet number for its
