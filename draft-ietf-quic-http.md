@@ -416,7 +416,8 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
-these are indicated in {{stream-frame-mapping}} with a (1).
+these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
+is provided in the relevant section.
 
 ## Frame Layout
 
