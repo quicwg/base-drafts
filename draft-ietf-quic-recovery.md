@@ -819,6 +819,16 @@ kGranularity:
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
+pn_space:
+: An enum to enumerate the three packet number spaces.
+~~~
+  enum pn_space {
+    Initial,
+    Handshake,
+    1-RTT,
+  }
+~~~
+
 ## Variables of interest {#ld-vars-of-interest}
 
 Variables required to implement the congestion control mechanisms
@@ -891,7 +901,7 @@ follows:
    min_rtt = infinite
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
-   for pn_space in packet number spaces:
+   for pn_space in [ Initial, Handshake, 1-RTT ]:
      largest_sent_packet[pn_space] = 0
      largest_acked_packet[pn_space] = 0
 ~~~
