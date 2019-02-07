@@ -819,10 +819,10 @@ kGranularity:
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
 
-pn_space:
+kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
 ~~~
-  enum pn_space {
+  enum kPacketNumberSpace {
     Initial,
     Handshake,
     1-RTT,
@@ -850,10 +850,10 @@ time_of_last_sent_ack_eliciting_packet:
 time_of_last_sent_crypto_packet:
 : The time the most recent crypto packet was sent.
 
-largest_sent_packet[pn_space]:
+largest_sent_packet[kPacketNumberSpace]:
 : The packet number of the most recently sent packet in the packet number space.
 
-largest_acked_packet[pn_space]:
+largest_acked_packet[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
@@ -881,7 +881,7 @@ loss_time:
   exceeding the reordering window in time. Only applies to the 1-RTT packet
   number space.
 
-sent_packets[pn_space]:
+sent_packets[kPacketNumberSpace]:
 : An association of packet numbers in a packet number space to information
   about them.  Described in detail above in {{tracking-sent-packets}}.
 
