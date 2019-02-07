@@ -886,12 +886,11 @@ the DUPLICATE_PUSH.
 
 ### Reserved Frame Types {#frame-grease}
 
-Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
-requirement that unknown types be ignored ({{extensions}}). These frames have no
-semantic value, and can be sent when application-layer padding is desired. They
-MAY also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
+Frame types of the format `0x1f * N` are reserved to exercise the requirement
+that unknown types be ignored ({{extensions}}). These frames have no semantic
+value, and can be sent when application-layer padding is desired. They MAY also
+be sent on connections where no request data is currently being transferred.
+Endpoints MUST NOT consider these frames to have any meaning upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
@@ -1549,9 +1548,9 @@ The entries in the following table are registered by this document.
 | DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
-Additionally, each code of the format `0xb + (0x1f * N)` for all integer values
-of N (that is, `0xb`, `0x2a`, ..., through `0x3fffffffffffffe8`) MUST NOT be
-assigned by IANA.
+Additionally, each code of the format `0x1f * N` for integer values of N (that
+is, `0x00`, `0x1f`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be assigned by
+IANA.
 
 ## Settings Parameters {#iana-settings}
 
