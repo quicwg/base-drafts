@@ -1503,10 +1503,11 @@ This document creates a new registration for version-negotiation hints in the
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
 Frame Type" registry governs a 62-bit space. This space is split into three
-spaces that are governed by different policies. Values between 0x00 and 0x3f (in
-hexadecimal) are assigned via the Standards Action or IESG Review policies
-{{!RFC8126}}. Values from 0x40 to 0x3fff operate on the Specification Required
-policy {{!RFC8126}}. All other values are assigned to Private Use {{!RFC8126}}.
+spaces that are governed by different policies. Values between `0x00` and `0x3f`
+(in hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{RFC7540}}, it is preferable that the assignments parallel each other where the
@@ -1658,11 +1659,11 @@ The entries in the following table are registered by this document.
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
 "HTTP/3 Stream Type" registry governs a 62-bit space. This space is split into
-three spaces that are governed by different policies. Values between 0x00 and
+three spaces that are governed by different policies. Values between `0x00` and
 0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
-policies {{!RFC8126}}. Values from 0x40 to 0x3fff operate on the Specification
-Required policy {{!RFC8126}}. All other values are assigned to Private Use
-{{!RFC8126}}.
+policies {{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the
+Specification Required policy {{!RFC8126}}. All other values are assigned to
+Private Use {{!RFC8126}}.
 
 New entries in this registry require the following information:
 
