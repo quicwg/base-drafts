@@ -825,7 +825,7 @@ kPacketNumberSpace:
   enum kPacketNumberSpace {
     Initial,
     Handshake,
-    1-RTT,
+    Application data,
   }
 ~~~
 
@@ -878,8 +878,8 @@ max_ack_delay:
 
 loss_time:
 : The time at which the next packet will be considered lost based on
-  exceeding the reordering window in time. Only applies to the 1-RTT packet
-  number space.
+  exceeding the reordering window in time. Only applies to the Application data
+  packet number space.
 
 sent_packets[kPacketNumberSpace]:
 : An association of packet numbers in a packet number space to information
@@ -901,7 +901,7 @@ follows:
    min_rtt = infinite
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
-   for pn_space in [ Initial, Handshake, 1-RTT ]:
+   for pn_space in [ Initial, Handshake, Applicaton data ]:
      largest_sent_packet[pn_space] = 0
      largest_acked_packet[pn_space] = 0
 ~~~
@@ -1027,38 +1027,38 @@ timers wake up late. Timers set in the past SHOULD fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
- SetLossDetectionTimer():
-    // Don't arm timer if there are no ack-eliciting packets
-    // in flight.
-    if (no ack-eliciting packets in flight):
-      loss_detection_timer.cancel()
-      return
+SetLossDetectionTimer():
+  // Don't arm timer if there are no ack-eliciting packets
+  // in flight.
+  if (no ack-eliciting packets in flight):
+    loss_detection_timer.cancel()
+    return
 
-    if (crypto packets are in flight):
-      // Crypto retransmission timer.
-      if (smoothed_rtt == 0):
-        timeout = 2 * kInitialRtt
-      else:
-        timeout = 2 * smoothed_rtt
-      timeout = max(timeout, kGranularity)
-      timeout = timeout * (2 ^ crypto_count)
-      loss_detection_timer.update(
-        time_of_last_sent_crypto_packet + timeout)
-      return
-    if (loss_time != 0):
-      // Time threshold loss detection.
-      // Only applies to the 1-RTT packet number space.
-      loss_detection_timer.update(loss_time)
-      return
-
-    // Calculate PTO duration
-    timeout =
-      smoothed_rtt + 4 * rttvar + max_ack_delay
+  if (crypto packets are in flight):
+    // Crypto retransmission timer.
+    if (smoothed_rtt == 0):
+      timeout = 2 * kInitialRtt
+    else:
+      timeout = 2 * smoothed_rtt
     timeout = max(timeout, kGranularity)
-    timeout = timeout * (2 ^ pto_count)
-
+    timeout = timeout * (2 ^ crypto_count)
     loss_detection_timer.update(
-      time_of_last_sent_ack_eliciting_packet + timeout)
+      time_of_last_sent_crypto_packet + timeout)
+    return
+  if (loss_time != 0):
+    // Time threshold loss detection.
+    // Only applies to the Application data packet number space.
+    loss_detection_timer.update(loss_time)
+    return
+
+  // Calculate PTO duration
+  timeout =
+    smoothed_rtt + 4 * rttvar + max_ack_delay
+  timeout = max(timeout, kGranularity)
+  timeout = timeout * (2 ^ pto_count)
+
+  loss_detection_timer.update(
+    time_of_last_sent_ack_eliciting_packet + timeout)
 ~~~
 
 
@@ -1070,21 +1070,21 @@ to be performed.
 Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
-   OnLossDetectionTimeout():
-     if (crypto packets are in flight):
-       // Crypto retransmission timeout.
-       RetransmitUnackedCryptoData()
-       crypto_count++
-     else if (loss_time != 0):
-       // Time threshold loss Detection
-       // Only applies to the 1-RTT packet number space.
-       DetectLostPackets(1-RTT)
-     else:
-       // PTO
-       SendOneOrTwoPackets()
-       pto_count++
+OnLossDetectionTimeout():
+  if (crypto packets are in flight):
+    // Crypto retransmission timeout.
+    RetransmitUnackedCryptoData()
+    crypto_count++
+  else if (loss_time != 0):
+    // Time threshold loss Detection
+    // Only applies to the Application data packet number space.
+    DetectLostPackets(Application data)
+  else:
+    // PTO
+    SendOneOrTwoPackets()
+    pto_count++
 
-     SetLossDetectionTimer()
+  SetLossDetectionTimer()
 ~~~
 
 
@@ -1099,7 +1099,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  if (pn_space == 1-RTT):
+  if (pn_space == Application data):
     loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -1120,7 +1120,7 @@ DetectLostPackets(pn_space):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else if (pn_space == 1-RTT):
+    else if (pn_space == Application data):
       if (loss_time == 0):
         loss_time = unacked.time_sent + loss_delay
       else:
