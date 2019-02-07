@@ -1441,9 +1441,10 @@ HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
   specific error code, or endpoint declines to use the more specific error code.
 
 HTTP_MALFORMED_FRAME (0x01XX):
-: An error in a specific frame type.  The frame type is included as the last
-  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
-  indicated with the code (0x10D).
+: An error in a specific frame type.  If the frame type is `0xfe` or less, the
+  type is included as the last byte of the error code.  For example, an error in
+  a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
+  `0xff` is used to indicate any frame type greater than `0xfe`.
 
 
 # Security Considerations
