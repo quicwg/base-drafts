@@ -901,7 +901,7 @@ follows:
    min_rtt = infinite
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
-   for pn_space in [ Initial, Handshake, Applicaton data ]:
+   for pn_space in [ Initial, Handshake, ApplicatonData ]:
      largest_sent_packet[pn_space] = 0
      largest_acked_packet[pn_space] = 0
 ~~~
@@ -1045,6 +1045,7 @@ SetLossDetectionTimer():
     loss_detection_timer.update(
       time_of_last_sent_crypto_packet + timeout)
     return
+
   if (loss_time != 0):
     // Time threshold loss detection.
     // Only applies to the ApplicationData packet number space.
