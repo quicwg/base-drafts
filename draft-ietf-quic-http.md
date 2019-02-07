@@ -234,6 +234,17 @@ SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
 respective HTTP control stream (see {{control-streams}}).
 
+## Early Data and HTTP/3
+
+QUIC provides a facility for early data during the first flight of packets sent
+by the client.  Early data is not subject to the same security guarantees as
+data sent after the handshake completes.  In particular, this data can be
+replayed by an attacker able to capture the packets and the server will not know
+whether the data is legitimate or a replay until the handshake completes.
+
+Implementations which send or accept early data MUST implement the safeguards
+defined in {{!RFC8470}}.
+
 ## Connection Reuse
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
