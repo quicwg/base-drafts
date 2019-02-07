@@ -653,8 +653,30 @@ experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
 where PTOs do not occur or are substantially delayed.  This duration is the
-equivalent of kPersistentCongestionThreshold consecutive PTOS: smoothed_rtt +
-4 * rttvar + max_ack_delay * ((2 ^ kPersistentCongestionThreshold) - 1).
+equivalent of kPersistentCongestionThreshold consecutive PTOS: (smoothed_rtt +
+4 * rttvar + max_ack_delay) * ((2 ^ kPersistentCongestionThreshold) - 1).
+
+For example, assume:
+
+  smoothed_rtt = 1
+  rttvar = 0
+  max_ack_delay = 0
+  kPersistentCongestionThreshold = 2
+  
+If an eck-eliciting packet is sent at time = 0, the following scenario would
+illustrate persistent congestion:
+
+  t=0 | Send Pkt #1 (App Data)
+  t=1 | Send Pkt #2 (PTO 1)
+  t=3 | Send Pkt #3 (PTO 2)
+  t=7 | Send Pkt #4 (PTO 3)
+  t=8 | Recv ACK of Pkt #4
+  
+The first three packets determined to be lost when the ACK of packet 4 is
+received at t=8.  The congestion period is calculated as the time between the
+oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
+congestion is equal to: (1 * 3) = 3.  Because the threshold was reached, the
+network is considered to have experienced persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -1287,8 +1309,7 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
-   InPersistentCongestion(oldest_loss_time):
-     congestion_period = Now() - oldest_loss_time
+   InPersistentCongestion(congestion_period):
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
      return
        congestion_period >
@@ -1306,7 +1327,9 @@ are detected lost.
      CongestionEvent(newest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(oldest_lost_packet.time_sent)):
+     if (InPersistentCongestion(
+           newest_lost_packet.time_sent -
+             oldest_lost_packet.time_sent)):
        congestion_window = kMinimumWindow
 ~~~
 
