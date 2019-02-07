@@ -825,7 +825,7 @@ kPacketNumberSpace:
   enum kPacketNumberSpace {
     Initial,
     Handshake,
-    Application data,
+    ApplicationData,
   }
 ~~~
 
@@ -878,7 +878,7 @@ max_ack_delay:
 
 loss_time:
 : The time at which the next packet will be considered lost based on
-  exceeding the reordering window in time. Only applies to the Application data
+  exceeding the reordering window in time. Only applies to the ApplicationData
   packet number space.
 
 sent_packets[kPacketNumberSpace]:
@@ -1047,7 +1047,7 @@ SetLossDetectionTimer():
     return
   if (loss_time != 0):
     // Time threshold loss detection.
-    // Only applies to the Application data packet number space.
+    // Only applies to the ApplicationData packet number space.
     loss_detection_timer.update(loss_time)
     return
 
@@ -1077,8 +1077,8 @@ OnLossDetectionTimeout():
     crypto_count++
   else if (loss_time != 0):
     // Time threshold loss Detection
-    // Only applies to the Application data packet number space.
-    DetectLostPackets(Application data)
+    // Only applies to the ApplicationData packet number space.
+    DetectLostPackets(ApplicationData)
   else:
     // PTO
     SendOneOrTwoPackets()
@@ -1099,7 +1099,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  if (pn_space == Application data):
+  if (pn_space == ApplicationData):
     loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -1120,7 +1120,7 @@ DetectLostPackets(pn_space):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else if (pn_space == Application data):
+    else if (pn_space == ApplicationData):
       if (loss_time == 0):
         loss_time = unacked.time_sent + loss_delay
       else:
