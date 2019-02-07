@@ -1009,10 +1009,10 @@ partial processing, it SHOULD abort its response stream with the error code
 HTTP_REQUEST_CANCELLED.
 
 When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
-indicate the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
+send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
 if no processing was performed.  Clients MUST NOT reset streams with the
 HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
-frame.
+frame that contains the same code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1386,7 +1386,7 @@ HTTP_PUSH_ALREADY_IN_CACHE (0x04):
 : The server has attempted to push content which the client has cached.
 
 HTTP_REQUEST_CANCELLED (0x05):
-: The sender is no longer processing the request or response.
+: The request or its response is cancelled.
 
 HTTP_INCOMPLETE_REQUEST (0x06):
 : The client's stream terminated without containing a fully-formed request.
