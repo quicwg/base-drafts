@@ -1816,7 +1816,9 @@ CONTINUATION (0x9):
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/3 if still applicable.  The IDs of frames defined in {{!RFC7540}} have been
-reserved for simplicity.  See {{iana-frames}}.
+reserved for simplicity.  Note that the frame type space in HTTP/3 is
+substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
+equivalent HTTP/2 code point.   See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
@@ -1860,7 +1862,9 @@ use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
 the format of their settings to avoid using the 62-bit encoding.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity. See
+settings defined in {{!RFC7540}} have been reserved for simplicity.  Note that
+the settings identifier space in HTTP/3 is substantially larger (62 bits versus
+16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
 
