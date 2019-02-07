@@ -303,15 +303,16 @@ specify a value of zero for the QUIC transport parameter
 ## Unidirectional Streams
 
 Unidirectional streams, in either direction, are used for a range of purposes.
-The purpose is indicated by a stream type, which is sent as a single byte header
-at the start of the stream. The format and structure of data that follows this
-header is determined by the stream type.
+The purpose is indicated by a stream type, which is sent as a variable-length
+integer at the start of the stream. The format and structure of data that
+follows this header is determined by the stream type.
 
 ~~~~~~~~~~ drawing
- 0 1 2 3 4 5 6 7
-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|
-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Type (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
@@ -340,8 +341,8 @@ the reception of the unidirectional stream header.
 
 ###  Control Streams
 
-A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
-this stream consists of HTTP/3 frames, as defined in {{frames}}.
+A control stream is indicated by a stream type of `0x00`.  Data on this stream
+consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  If
@@ -360,11 +361,11 @@ able to send stream data first after the cryptographic handshake completes.
 
 ### Push Streams
 
-A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
-the Push ID of the promise that it fulfills, encoded as a variable-length
-integer. The remaining data on this stream consists of HTTP/3 frames, as defined
-in {{frames}}, and fulfills a promised server push.  Server push and Push IDs
-are described in {{server-push}}.
+A push stream is indicated by a stream type of `0x01`, followed by the Push ID
+of the promise that it fulfills, encoded as a variable-length integer. The
+remaining data on this stream consists of HTTP/3 frames, as defined in
+{{frames}}, and fulfills a promised server push.  Server push and Push IDs are
+described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -373,7 +374,9 @@ MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|                  Push ID (i)                ...
+|                        Stream Type (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
@@ -1654,10 +1657,12 @@ The entries in the following table are registered by this document.
 ## Stream Types {#iana-stream-types}
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
-"HTTP/3 Stream Type" registry manages an 8-bit space.  The "HTTP/3 Stream Type"
-registry operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+"HTTP/3 Stream Type" registry governs a 62-bit space. This space is split into
+three spaces that are governed by different policies. Values between 0x00 and
+0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
+policies {{!RFC8126}}. Values from 0x40 to 0x3fff operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.
 
 New entries in this registry require the following information:
 
@@ -1665,7 +1670,7 @@ Stream Type:
 : A name or label for the stream type.
 
 Code:
-: The 8-bit code assigned to the stream type.
+: The 62-bit code assigned to the stream type.
 
 Specification:
 : A reference to a specification that includes a description of the stream type,
@@ -1680,22 +1685,13 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 | Stream Type      |  Code  | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
-| Control Stream   |  0x43  | {{control-streams}}        | Both   |
-| Push Stream      |  0x50  | {{server-push}}            | Server |
+| Control Stream   |  0x00  | {{control-streams}}        | Both   |
+| Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, for each code of the format `0x1f * N` for values of N in the
-range (0..8) (that is, `0x00`, `0x1f`, `0x3e`, `0x5d`, `0x7c`, `0x9b`, `0xba`,
-`0xd9`, `0xf8`), the following values should be registered:
-
-Stream Type:
-: Reserved - GREASE
-
-Specification:
-: {{stream-grease}}
-
-Sender:
-: Both
+Additionally, each code of the format `0x1f * N` for integer values of N (that
+is, `0x00`, `0x1f`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be assigned by
+IANA.
 
 --- back
 

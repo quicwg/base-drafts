@@ -585,12 +585,12 @@ and follows the definitions in [RFC7541] without modification.
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - The encoder stream is a unidirectional stream of type `0x48` (ASCII 'H')
-   which carries table updates from encoder to decoder.
+ - The encoder stream is a unidirectional stream of type `0x02` which carries
+   table updates from encoder to decoder.
 
- - The decoder stream is a unidirectional stream of type `0x68` (ASCII 'h')
-   which carries acknowledgements of table modifications and header processing
-   from decoder to encoder.
+ - The decoder stream is a unidirectional stream of type `0x03` which carries
+   acknowledgements of table modifications and header processing from decoder to
+   encoder.
 
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    and push streams reference the QPACK table state.
@@ -1136,8 +1136,8 @@ The entries in the following table are registered by this document.
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
 | ---------------------------- | :----: | ------------------------- | ------ |
-| QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
-| QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
+| QPACK Encoder Stream         | 0x02   | {{wire-format}}           | Both   |
+| QPACK Decoder Stream         | 0x03   | {{wire-format}}           | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
 
 ## Error Code Registration
