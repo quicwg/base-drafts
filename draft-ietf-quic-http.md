@@ -674,14 +674,16 @@ treat the presence of the same parameter more than once as a connection error of
 type HTTP_MALFORMED_FRAME.
 
 The payload of a SETTINGS frame consists of zero or more parameters, each
-consisting of an unsigned 16-bit setting identifier and a value which uses the
+consisting of a setting identifier and a value, each of which uses the
 QUIC variable-length integer encoding.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identifier (16)       |           Value (i)         ...
+|                        Identifier (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Value (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS parameter format"}
@@ -701,7 +703,7 @@ The following settings are defined in HTTP/3:
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
-Setting identifiers of the format `0x?a?a` are reserved to exercise the
+Setting identifiers of the format `0x1f * N` are reserved to exercise the
 requirement that unknown identifiers be ignored.  Such settings have no defined
 meaning. Endpoints SHOULD include at least one such setting in their SETTINGS
 frame. Endpoints MUST NOT consider such settings to have any meaning upon
@@ -1554,10 +1556,12 @@ assigned by IANA.
 ## Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
-registry manages a 16-bit space.  The "HTTP/3 Settings" registry operates under
-the "Expert Review" policy {{?RFC8126}} for values in the range from 0x0000 to
-0xefff, with values between and 0xf000 and 0xffff being reserved for
-Experimental Use.  The designated experts are the same as those for the "HTTP/2
+registry governs a 62-bit space. This space is split into three spaces that are
+governed by different policies. Values between `0x00` and `0x3f` (in
+hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.  The designated experts are the same as those for the "HTTP/2
 Settings" registry defined in {{RFC7540}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
@@ -1571,7 +1575,7 @@ Name:
 : A symbolic name for the setting.  Specifying a setting name is optional.
 
 Code:
-: The 16-bit code assigned to the setting.
+: The 62-bit code assigned to the setting.
 
 Specification:
 : An optional reference to a specification that describes the use of the
@@ -1590,15 +1594,9 @@ The entries in the following table are registered by this document.
 | NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
-Additionally, each code of the format `0x?a?a` where each `?` is any four bits
-(that is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values
-should be registered:
-
-Name:
-: Reserved - GREASE
-
-Specification:
-: {{settings-parameters}}
+Additionally, each code of the format `0x1f * N` for integer values of N (that
+is, `0x00`, `0x1f`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be assigned by
+IANA.
 
 ## Error Codes {#iana-error-codes}
 
