@@ -423,7 +423,9 @@ All frames have the following format:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Type (8)   |                  Length (i)                 ...
+|                           Type (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Length (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Frame Payload (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -433,12 +435,10 @@ All frames have the following format:
 A frame includes the following fields:
 
   Type:
-  : An 8-bit type for the frame.
-
+  : A variable-length type for the frame.
 
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
-    This length does not include the Type field.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
@@ -1498,15 +1498,17 @@ This document creates a new registration for version-negotiation hints in the
 ## Frame Types {#iana-frames}
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
-Frame Type" registry manages an 8-bit space.  The "HTTP/3 Frame Type" registry
-operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+Frame Type" registry governs a 62-bit space. This space is split into three
+spaces that are governed by different policies. Values between 0x00 and 0x3f (in
+hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from 0x40 to 0x3fff operate on the Specification Required
+policy {{!RFC8126}}. All other values are assigned to Private Use {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
-entry is present in only one registry, every effort SHOULD be made to avoid
-assigning the corresponding value to an unrelated operation.
+{{RFC7540}}, it is preferable that the assignments parallel each other where the
+code spaces overlap.  If an entry is present in only one registry, every effort
+SHOULD be made to avoid assigning the corresponding value to an unrelated
+operation.
 
 New entries in this registry require the following information:
 
@@ -1514,7 +1516,7 @@ Frame Type:
 : A name or label for the frame type.
 
 Code:
-: The 8-bit code assigned to the frame type.
+: The 62-bit code assigned to the frame type.
 
 Specification:
 : A reference to a specification that includes a description of the frame layout
@@ -1540,15 +1542,9 @@ The entries in the following table are registered by this document.
 | DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
-Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
-range (0..7) (that is, `0xb`, `0x2a`, `0x49`, `0x68`, `0x87`, `0xa6`, `0xc5`,
-and `0xe4`), the following values should be registered:
-
-Frame Type:
-: Reserved - GREASE
-
-Specification:
-: {{frame-grease}}
+Additionally, each code of the format `0xb + (0x1f * N)` for all integer values
+of N (that is, `0xb`, `0x2a`, ..., through `0x3fffffffffffffe8`) MUST NOT be
+assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
 
