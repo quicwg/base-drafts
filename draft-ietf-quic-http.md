@@ -389,10 +389,9 @@ client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
 Stream types of the format `0x1f * N` for non-zero values of N are reserved to
 exercise the requirement that unknown types be ignored. These streams have no
-semantic meaning, and can be sent when application-layer padding is desired.
-They MAY also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these streams to have any meaning upon
-receipt.
+semantics, and can be sent when application-layer padding is desired. They MAY
+also be sent on connections where no data is currently being transferred.
+Endpoints MUST NOT consider these streams to have any meaning upon receipt.
 
 The payload and length of the stream are selected in any manner the
 implementation chooses.
@@ -439,7 +438,7 @@ All frames have the following format:
 A frame includes the following fields:
 
   Type:
-  : A variable-length type for the frame.
+  : A variable-length integer that identifies the frame type.
 
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
@@ -674,9 +673,9 @@ Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
 treat the presence of the same parameter more than once as a connection error of
 type HTTP_MALFORMED_FRAME.
 
-The payload of a SETTINGS frame consists of zero or more parameters, each
-consisting of a setting identifier and a value, each of which uses the
-QUIC variable-length integer encoding.
+The payload of a SETTINGS frame consists of zero or more parameters.  Each
+parameter consists of a setting identifier and a value, both encoded as a QUIC
+variable-length integer.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -889,10 +888,10 @@ the DUPLICATE_PUSH.
 
 Frame types of the format `0x1f * N` for non-zero values of N are reserved to
 exercise the requirement that unknown types be ignored ({{extensions}}). These
-frames have no semantic value, and can be sent when application-layer padding is
-desired. They MAY also be sent on connections where no request data is currently
-being transferred. Endpoints MUST NOT consider these frames to have any meaning
-upon receipt.
+frames have no semantics, and can be sent when application-layer padding is
+desired. They MAY also be sent on connections where no data is currently being
+transferred. Endpoints MUST NOT consider these frames to have any meaning upon
+receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
