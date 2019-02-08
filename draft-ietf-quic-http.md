@@ -674,8 +674,8 @@ treat the presence of the same parameter more than once as a connection error of
 type HTTP_MALFORMED_FRAME.
 
 The payload of a SETTINGS frame consists of zero or more parameters.  Each
-parameter consists of a setting identifier and a value, both encoded as a QUIC
-variable-length integer.
+parameter consists of a setting identifier and a value, both encoded as QUIC
+variable-length integers.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
