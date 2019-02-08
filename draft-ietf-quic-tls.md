@@ -244,7 +244,7 @@ shown below.
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
-|              |              | | (h2q, etc.) |
+|              |              | |  (h3, etc.) |
 +--------------+--------------+-+-------------+
 |                                             |
 |                QUIC Transport               |
