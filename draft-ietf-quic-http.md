@@ -305,7 +305,7 @@ specify a value of zero for the QUIC transport parameter
 Unidirectional streams, in either direction, are used for a range of purposes.
 The purpose is indicated by a stream type, which is sent as a variable-length
 integer at the start of the stream. The format and structure of data that
-follows this header is determined by the stream type.
+follows this integer is determined by the stream type.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
