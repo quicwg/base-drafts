@@ -963,6 +963,9 @@ followed by the `S` bit indicating whether the reference is into the static
 field is represented as an integer with a 6-bit prefix (see Section 5.1 of
 [RFC7541]).
 
+If the entry in the static or dynamic table does not provide any header field
+value (as opposed to a name), a zero-length string MUST be used.
+
 
 ### Indexed Header Field With Post-Base Index
 
