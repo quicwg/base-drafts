@@ -653,8 +653,12 @@ experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
 where PTOs do not occur or are substantially delayed.  This duration is the
-equivalent of kPersistentCongestionThreshold consecutive PTOS: (smoothed_rtt +
-4 * rttvar + max_ack_delay) * ((2 ^ kPersistentCongestionThreshold) - 1).
+equivalent of kPersistentCongestionThreshold consecutive PTOS, and is computed
+as follows:
+~~~
+(smoothed_rtt + 4 * rttvar + max_ack_delay) * 
+    ((2 ^ kPersistentCongestionThreshold) - 1).
+~~~
 
 For example, assume:
 
@@ -682,7 +686,7 @@ When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
-{{RFC5681}}.
+{{RFC5681}} after Tail Loss Probes (TLP) {{TLP}}.
 
 ## Pacing {#pacing}
 
@@ -1311,9 +1315,8 @@ are detected lost.
 ~~~
    InPersistentCongestion(congestion_period):
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
-     return
-       congestion_period >
-         pto * (2 ^ kPersistentCongestionThreshold - 1)
+     return congestion_period >
+       pto * (2 ^ kPersistentCongestionThreshold - 1)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
