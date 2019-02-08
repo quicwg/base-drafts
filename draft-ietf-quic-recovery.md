@@ -662,7 +662,7 @@ For example, assume:
   rttvar = 0
   max_ack_delay = 0
   kPersistentCongestionThreshold = 2
-  
+
 If an eck-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
 
@@ -671,7 +671,7 @@ illustrate persistent congestion:
   t=3 | Send Pkt #3 (PTO 2)
   t=7 | Send Pkt #4 (PTO 3)
   t=8 | Recv ACK of Pkt #4
-  
+
 The first three packets are determined to be lost when the ACK of packet 4 is
 received at t=8.  The congestion period is calculated as the time between the
 oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
