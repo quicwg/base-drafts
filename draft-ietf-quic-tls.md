@@ -14,7 +14,7 @@ pi: [toc, sortrefs, symrefs, docmapping]
 author:
   -
     ins: M. Thomson
-    name: Martin Thomsonf
+    name: Martin Thomson
     org: Mozilla
     email: mt@lowentropy.net
     role: editor
