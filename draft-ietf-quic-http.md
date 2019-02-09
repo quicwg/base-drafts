@@ -1464,11 +1464,11 @@ ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
 Certain HTTP implementations use the client address for logging or
-access-control purposes.  Since QUIC supports path migration (and future
-versions might support simultaneous use of multiple paths), such implementations
-will need to actively retrieve the client's current address or addresses when
-they are relevant instead of assuming that the client's initial address remains
-accurate for the lifetime of the connection.
+access-control purposes.  Since a QUIC client's address might change during a
+connection (and future versions might support simultaneous use of multiple
+addresses), such implementations will need to either actively retrieve the
+client's current address or addresses when they are relevant or explicitly
+accept that the original address might change.
 
 
 # IANA Considerations
