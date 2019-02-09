@@ -14,7 +14,7 @@ pi: [toc, sortrefs, symrefs, docmapping]
 author:
   -
     ins: M. Thomson
-    name: Martin Thomson
+    name: Martin Thomsonf
     org: Mozilla
     email: mt@lowentropy.net
     role: editor
@@ -216,7 +216,7 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
+- Initial Keys
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
