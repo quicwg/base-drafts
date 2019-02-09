@@ -216,10 +216,12 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
-- Early Data (0-RTT) Keys
-- Handshake Keys
-- Application Data (1-RTT) Keys
+- Initial Keys can be derived by any observer, and so they do not
+  provide cryptographic protection or authentication.
+- Early Data (0-RTT) Keys. These keys are not forward-secure and must protect
+  only idempotent data.
+- Handshake Keys do not authenticate either endpoint.
+- Application Data (1-RTT) Keys provide full authentication and encryption.
 
 Application data may appear only in the early data and application data
 levels. Handshake and Alert messages may appear in any level.
@@ -269,7 +271,7 @@ At a high level, there are two main interactions between the TLS and QUIC
 components:
 
 * The TLS component sends and receives messages via the QUIC component, with
-  QUIC providing a reliable stream abstraction to TLS.
+  QUIC providing a reliable stream and record abstraction to TLS.
 
 * The TLS component provides a series of updates to the QUIC component,
   including (a) new packet protection keys to install (b) state changes such as
@@ -344,13 +346,14 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type         | Encryption Level | PN Space  |
+|:--------------------|:-----------------|:----------|
+| Initial             | Initial secrets  | Initial   |
+| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
+| Handshake           | Handshake        | Handshake |
+| Retry               | N/A              | N/A       |
+| Version Negotiation | N/A              | N/A       |
+| Short Header        | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -505,26 +508,24 @@ Rekey tx to 0-RTT Keys
                                                    Get Handshake
                      <------------- Initial
                                           Rekey rx to 0-RTT keys
-                                              Handshake Received
-                                      Rekey rx to Handshake keys
+                                      Rekey tx to Handshake keys
                                                    Get Handshake
                      <----------- Handshake
+                                      Rekey rx to Handshake keys
                                           Rekey tx to 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey rx to Handshake keys
+Rekey tx and rx to Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx to 1-RTT keys
+Rekey tx and rx to 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
                                           Rekey rx to 1-RTT keys
-                                                   Get Handshake
                                               Handshake Complete
                      <--------------- 1-RTT
-Handshake Received
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
