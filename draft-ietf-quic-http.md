@@ -406,14 +406,18 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | -------------- | -------------- | -------------- | ----------- | ------------------------ |
 | DATA           | No             | Yes            | Yes         | {{frame-data}}           |
 | HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
-| PRIORITY       | Yes            | Yes            | No          | {{frame-priority}}       |
+| PRIORITY       | Yes            | Yes (1)        | No          | {{frame-priority}}       |
 | CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
-| SETTINGS       | Yes            | No             | No          | {{frame-settings}}       |
+| SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
+
+Certain frames can only occur as the first frame of a particular stream type;
+these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
+is provided in the relevant section.
 
 ## Frame Layout
 
