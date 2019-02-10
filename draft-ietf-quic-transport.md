@@ -968,8 +968,9 @@ or the total number of connection IDs issued for each connection to avoid the
 risk of running out of connection IDs (see {{reset-token}}).
 
 Endpoints that initiate migration and require non-zero-length connection IDs
-SHOULD provide their peers with new connection IDs before migration, or risk the
-peer closing the connection.
+SHOULD ensure that the pool of connection IDs available to their peers allows
+them to use a new connection ID on migration, as the peer will close the
+connection if the pool is exhausted.
 
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
