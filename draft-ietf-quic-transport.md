@@ -2093,12 +2093,11 @@ linked by any other entity.
 
 Endpoints MAY move to a new connection ID at any time.
 
-An endpoint MUST use a new connection ID if it initiates connection migration,
-unless the peer has selected a zero-length connection ID.  Using a new
-connection ID eliminates the use of the connection ID for linking activity from
-the same connection on different networks.  Header protection ensures that
-packet numbers cannot be used to correlate activity.  This does not prevent
-other properties of packets, such as timing and size, from being used to
+An endpoint MUST use a new connection ID if it initiates connection migration.
+Using a new connection ID eliminates the use of the connection ID for linking
+activity from the same connection on different networks.  Header protection
+ensures that packet numbers cannot be used to correlate activity.  This does not
+prevent other properties of packets, such as timing and size, from being used to
 correlate activity.
 
 Unintentional changes in path without a change in connection ID are possible.
@@ -2114,11 +2113,9 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-An endpoint MUST NOT intentionally migrate to a new path if it does not have a
-connection ID to use on that path.  An endpoint that exhausts available
-connection IDs cannot migrate.  To ensure that migration is possible and packets
-sent on different paths cannot be correlated, endpoints SHOULD provide new
-connection IDs before peers migrate.
+An endpoint that exhausts available connection IDs cannot migrate.  To ensure
+that migration is possible and packets sent on different paths cannot be
+correlated, endpoints SHOULD provide new connection IDs before peers migrate.
 
 
 ## Server's Preferred Address {#preferred-address}
