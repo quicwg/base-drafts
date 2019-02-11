@@ -1066,14 +1066,18 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  if (crypto packets are in flight):
+  packets_lost = false
+  for pn_space in [ Initial, Handshake, ApplicatonData ]:
+    if (loss_times[pn_space] != 0):
+      // Time threshold loss Detection
+      DetectLostPackets(pn_space)
+      packets_lost = true
+  // Don't retransmit all crypto data if a packet was just lost.
+  if (!packets_lost &&
+      crypto packets are in flight):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
-  else if (loss_time != 0):
-    // Time threshold loss Detection
-    // Only applies to the ApplicationData packet number space.
-    DetectLostPackets(ApplicationData)
   else:
     // PTO
     SendOneOrTwoPackets()
