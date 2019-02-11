@@ -2091,7 +2091,8 @@ different local addresses, as discussed in {{connection-id}}.  For this to be
 effective endpoints need to ensure that connections IDs they provide cannot be
 linked by any other entity.
 
-Endpoints MAY move to a new connection ID at any time.
+At any time, endpoints MAY change the Destination Connection ID they send to a
+value that has not been used on another path.
 
 An endpoint MUST use a new connection ID if it initiates connection migration.
 Using a new connection ID eliminates the use of the connection ID for linking
