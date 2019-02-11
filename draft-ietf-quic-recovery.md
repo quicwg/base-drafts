@@ -139,7 +139,7 @@ Out-of-order Packets:
 
 : Packets that do not increase the largest received packet number for its
 packet number space by exactly one. Packets usually arrive out of order
-because earlier packets are lost or delayed.
+  when earlier packets are lost or delayed.
 
 # Design of the QUIC Transmission Machinery
 
