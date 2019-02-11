@@ -254,9 +254,8 @@ can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
 Streams can be created by either endpoint, can concurrently send data
-interleaved with other streams, and can be cancelled.  Any stream can be
-initiated by either endpoint.  QUIC does not provide any means of ensuring
-ordering between bytes on different streams.
+interleaved with other streams, and can be cancelled. QUIC does not provide any
+means of ensuring ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
