@@ -251,10 +251,10 @@ an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
 send immediate ACKs for an interval after it receives an out-of-order packet.
-This interval SHOULD NOT exceed 1/8 RTT unless more out-of-order packets arrive
-during the interval. Therefore, if out-of-order packets consistently arrive
-within one interval of the previous one, the receiver SHOULD continuously send
-immediate ACKs.
+This interval SHOULD be between zero (immediately acking only out-of-order
+packets) and 1/8 RTT unless more out-of-order packets arrive during the
+interval. If every packet arrives out-of-order, then an immediate ACK would be
+sent for every received packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
