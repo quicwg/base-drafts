@@ -216,7 +216,7 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
+- Initial Keys
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
@@ -745,7 +745,7 @@ The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
 Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used QUIC.
+be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
@@ -788,7 +788,7 @@ The value of initial_salt is a 20 byte sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of handshake packets from future versions.
+modifying the contents of packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
@@ -1242,8 +1242,8 @@ protection for these values.
 
 The `extension_data` field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters when the
-version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+quic_transport_parameters extension carries a TransportParameters struct when
+the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.
