@@ -850,9 +850,6 @@ time_of_last_sent_ack_eliciting_packet:
 time_of_last_sent_crypto_packet:
 : The time the most recent crypto packet was sent.
 
-largest_sent_packet[kPacketNumberSpace]:
-: The packet number of the most recently sent packet in the packet number space.
-
 largest_acked_packet[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
 
@@ -902,7 +899,6 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicatonData ]:
-     largest_sent_packet[pn_space] = 0
      largest_acked_packet[pn_space] = 0
 ~~~
 
@@ -917,7 +913,6 @@ Pseudocode for OnPacketSent follows:
 ~~~
  OnPacketSent(packet_number, pn_space, ack_eliciting,
               in_flight, is_crypto_packet, sent_bytes):
-   largest_sent_packet[pn_space] = packet_number
    sent_packets[pn_space][packet_number].packet_number =
                                             packet_number
    sent_packets[pn_space][packet_number].time_sent = now
