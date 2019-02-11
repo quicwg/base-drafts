@@ -1023,7 +1023,7 @@ Pseudocode for SetLossDetectionTimer follows:
 ~~~
 // Returns the earliest loss_time and the packet number
 // space it's from.  Returns 0 if all times are 0.
-GetEarliestLossTimer():
+GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicatonData ]:
