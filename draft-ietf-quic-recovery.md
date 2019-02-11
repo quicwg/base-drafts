@@ -1082,11 +1082,8 @@ OnLossDetectionTimeout():
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
-    SetLossDetectionTimer()
-    return
   // Don't retransmit all crypto data if a packet was just lost.
-  if (!packets_lost &&
-      crypto packets are in flight):
+  else if (crypto packets are in flight):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
