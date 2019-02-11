@@ -653,7 +653,7 @@ experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
 where PTOs do not occur or are substantially delayed.  This duration is the
-equivalent of kPersistentCongestionThreshold consecutive PTOS, and is computed
+equivalent of kPersistentCongestionThreshold consecutive PTOs, and is computed
 as follows:
 ~~~
 (smoothed_rtt + 4 * rttvar + max_ack_delay) *
