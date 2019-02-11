@@ -138,7 +138,8 @@ Crypto Packets:
 Out-of-order Packets:
 
 : Packets that do not increase the largest received packet number for its
-cryptographic context by exactly one.
+packet number space by exactly one. Packets usually arrive out of order
+because earlier packets are lost or delayed.
 
 # Design of the QUIC Transmission Machinery
 
@@ -251,7 +252,9 @@ an ACK immediately when receiving a second ack-eliciting packet.
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
 send immediate ACKs for an interval after it receives an out-of-order packet.
 This interval SHOULD NOT exceed 1/8 RTT unless more out-of-order packets arrive
-during the interval.
+during the interval. Therefore, if out-of-order packets consistently arrive
+within one interval of the previous one, the receiver SHOULD continuously send
+immediate ACKs.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
