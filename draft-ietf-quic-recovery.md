@@ -1040,7 +1040,7 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
-  [loss_time, pn_space] = GetEarliestLossTimer()
+  [loss_time, pn_space] = GetEarliestLossTime()
   if (loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
@@ -1078,7 +1078,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  [loss_time, pn_space] = GetEarliestLossTimer()
+  [loss_time, pn_space] = GetEarliestLossTime()
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
@@ -1130,7 +1130,7 @@ DetectLostPackets(pn_space):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else if (pn_space == ApplicationData):
+    else:
       if (loss_time[pn_space] == 0):
         loss_time[pn_space] = unacked.time_sent + loss_delay
       else:
