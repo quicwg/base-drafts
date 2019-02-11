@@ -250,11 +250,10 @@ ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send immediate ACKs for an interval after it receives an out-of-order packet.
-This interval SHOULD be between zero (immediately acking only out-of-order
-packets) and 1/8 RTT unless more out-of-order packets arrive during the
-interval. If every packet arrives out-of-order, then an immediate ACK would be
-sent for every received packet.
+send an immediate ACK after it receives an out-of-order packet. it could send
+immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
+1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
+order, then an immediate ACK SHOULD be sent for every received packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
