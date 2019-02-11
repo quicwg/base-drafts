@@ -3301,8 +3301,8 @@ are likely to require that connection ID included in PMTU probe packets in order
 to route resulting ICMP messages ({{icmp-pmtud}}) back to the correct endpoints.
 
 Only long header packets ({{long-header}}) contain source connection IDs, but
-long header packets will not be acknowledged once the connection has been
-established.  One way to construct a PMTU probe is to coalesce (see
+long header packets will not be decrypted or acknowledged by the peer once the
+handshake is complete.  One way to construct a PMTU probe is to coalesce (see
 {{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
 header packet in a single UDP datagram.  If the UDP datagram reaches the
 endpoint, the Handshake packet will be ignored, but the short header packet will
