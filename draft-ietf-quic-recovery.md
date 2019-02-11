@@ -250,7 +250,7 @@ ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send an immediate ACK after it receives an out-of-order packet. it could send
+send an immediate ACK after it receives an out-of-order packet. It could send
 immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
 1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
 order, then an immediate ACK SHOULD be sent for every received packet.
