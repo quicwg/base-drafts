@@ -216,12 +216,10 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Initial Keys can be derived by any observer, and so they do not
-  provide cryptographic protection or authentication.
-- Early Data (0-RTT) Keys. These keys are not forward-secure and must protect
-  only idempotent data.
-- Handshake Keys do not authenticate either endpoint.
-- Application Data (1-RTT) Keys provide full authentication and encryption.
+- Initial Keys
+- Early Data (0-RTT) Keys
+- Handshake Keys
+- Application Data (1-RTT) Keys
 
 Application data may appear only in the early data and application data
 levels. Handshake and Alert messages may appear in any level.
@@ -525,7 +523,9 @@ Rekey tx and rx to 1-RTT keys
                                               Handshake Received
                                           Rekey rx to 1-RTT keys
                                               Handshake Complete
+                                                   Get Handshake
                      <--------------- 1-RTT
+Handshake Received
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
