@@ -362,6 +362,9 @@ addressed.
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
 
+All entries in the static table have a name and a value.  However values can be
+empty, that is, have a length of 0.
+
 Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
 
@@ -962,9 +965,6 @@ followed by the `S` bit indicating whether the reference is into the static
 (S=1) or dynamic (S=0) table. Finally, the relative index of the matching header
 field is represented as an integer with a 6-bit prefix (see Section 5.1 of
 [RFC7541]).
-
-If the entry in the static or dynamic table does not provide any header field
-value (as opposed to a name), a zero-length string MUST be used.
 
 
 ### Indexed Header Field With Post-Base Index
