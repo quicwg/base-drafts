@@ -873,7 +873,7 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-loss_times[kPacketNumberSpace]:
+loss_time[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
   considered lost based on exceeding the reordering window in time.
 
@@ -898,7 +898,7 @@ follows:
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicatonData ]:
      largest_acked_packet[pn_space] = 0
-     loss_times[pn_space] = 0
+     loss_time[pn_space] = 0
 ~~~
 
 
@@ -1021,6 +1021,18 @@ timers wake up late. Timers set in the past SHOULD fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
+// Returns the earliest loss_time and the packet number
+// space it's from.  Returns 0 if all times are 0.
+GetEarliestLossTimer():
+  time = loss_time[Initial]
+  space = Initial
+  for pn_space in [ Handshake, ApplicatonData ]:
+    if loss_time[pn_space] != 0 &&
+       (time == 0 || loss_time[pn_space] < time):
+      time = loss_time[pn_space];
+      space = Initial
+  return [time, space]
+
 SetLossDetectionTimer():
   // Don't arm timer if there are no ack-eliciting packets
   // in flight.
@@ -1028,11 +1040,11 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
-  for (loss_time : loss_times) {
-    if (loss_time != 0):
-      // Time threshold loss detection.
-      loss_detection_timer.update(loss_time)
-      return
+  [loss_time, pn_space] = GetEarliestLossTimer()
+  if (loss_time != 0):
+    // Time threshold loss detection.
+    loss_detection_timer.update(loss_time)
+    return
 
   if (crypto packets are in flight):
     // Crypto retransmission timer.
@@ -1066,12 +1078,12 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  packets_lost = false
-  for pn_space in [ Initial, Handshake, ApplicatonData ]:
-    if (loss_times[pn_space] != 0):
-      // Time threshold loss Detection
-      DetectLostPackets(pn_space)
-      packets_lost = true
+  [loss_time, pn_space] = GetEarliestLossTimer()
+  if (loss_time != 0):
+    // Time threshold loss Detection
+    DetectLostPackets(pn_space)
+    SetLossDetectionTimer()
+    return
   // Don't retransmit all crypto data if a packet was just lost.
   if (!packets_lost &&
       crypto packets are in flight):
@@ -1098,7 +1110,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  loss_times[pn_space] = 0
+  loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
@@ -1119,7 +1131,7 @@ DetectLostPackets(pn_space):
       if (unacked.in_flight):
         lost_packets.insert(unacked)
     else if (pn_space == ApplicationData):
-      if (loss_times[pn_space] == 0):
+      if (loss_time[pn_space] == 0):
         loss_time[pn_space] = unacked.time_sent + loss_delay
       else:
         loss_time[pn_space] = min(loss_time[pn_space],
