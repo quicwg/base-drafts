@@ -4071,7 +4071,7 @@ original_connection_id (0x0000):
 
 idle_timeout (0x0001):
 
-: The idle timeout is a value in seconds that is encoded as an integer, see
+: The idle timeout is a value in milliseconds that is encoded as an integer, see
   ({{idle-timeout}}).  If this parameter is absent or zero then the idle
   timeout is disabled.
 
