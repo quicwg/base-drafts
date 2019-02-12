@@ -387,11 +387,12 @@ client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
 ### Reserved Stream Types {#stream-grease}
 
-Stream types of the format `0x1f * N` for non-zero values of N are reserved to
-exercise the requirement that unknown types be ignored. These streams have no
-semantics, and can be sent when application-layer padding is desired. They MAY
-also be sent on connections where no data is currently being transferred.
-Endpoints MUST NOT consider these streams to have any meaning upon receipt.
+Stream types of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown types be ignored. These
+streams have no semantics, and can be sent when application-layer padding is
+desired. They MAY also be sent on connections where no data is currently being
+transferred. Endpoints MUST NOT consider these streams to have any meaning upon
+receipt.
 
 The payload and length of the stream are selected in any manner the
 implementation chooses.
@@ -703,7 +704,7 @@ The following settings are defined in HTTP/3:
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
-Setting identifiers of the format `0x1f * N` for non-zero values of N are
+Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
 reserved to exercise the requirement that unknown identifiers be ignored.  Such
 settings have no defined meaning. Endpoints SHOULD include at least one such
 setting in their SETTINGS frame. Endpoints MUST NOT consider such settings to
@@ -886,12 +887,12 @@ the DUPLICATE_PUSH.
 
 ### Reserved Frame Types {#frame-grease}
 
-Frame types of the format `0x1f * N` for non-zero values of N are reserved to
-exercise the requirement that unknown types be ignored ({{extensions}}). These
-frames have no semantics, and can be sent when application-layer padding is
-desired. They MAY also be sent on connections where no data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
+Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
+to exercise the requirement that unknown types be ignored ({{extensions}}).
+These frames have no semantics, and can be sent when application-layer padding
+is desired. They MAY also be sent on connections where no data is currently
+being transferred. Endpoints MUST NOT consider these frames to have any meaning
+upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
@@ -1549,8 +1550,8 @@ The entries in the following table are registered by this document.
 | DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
-Additionally, each code of the format `0x1f * N` for for non-zero integer values
-of N (that is, `0x1f`, `0x3e`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
 assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
@@ -1594,8 +1595,8 @@ The entries in the following table are registered by this document.
 | NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
-Additionally, each code of the format `0x1f * N` for for non-zero integer values
-of N (that is, `0x1f`, `0x3e`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
 assigned by IANA.
 
 ## Error Codes {#iana-error-codes}
@@ -1688,8 +1689,8 @@ The entries in the following table are registered by this document.
 | Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, each code of the format `0x1f * N` for non-zero integer values of
-N (that is, `0x1f`, `0x3e`, ..., through `0x‭3FFFFFFFFFFFFFFC‬`) MUST NOT be
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
 assigned by IANA.
 
 --- back
