@@ -506,9 +506,10 @@ delay sending an acknowledgement.
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
-When a PTO timer expires, the PTO period MUST be set to twice its current value.
-This exponential reduction in the sender's rate is important because the PTOs
-might be caused by loss of packets or acknowledgements due to severe congestion.
+When a PTO timer expires, the sender sends a probe packet as described in the
+next section. The PTO period MUST be set to twice its current value. This
+exponential reduction in the sender's rate is important because the PTOs might
+be caused by loss of packets or acknowledgements due to severe congestion.
 
 A sender computes its PTO timer every time an ack-eliciting packet is sent. A
 sender might choose to optimize this by setting the timer fewer times if it
