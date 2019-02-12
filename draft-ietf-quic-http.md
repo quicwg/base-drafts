@@ -1259,21 +1259,21 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Once GOAWAY is sent, the server MUST reject requests sent on streams with an
-identifier greater than or equal to the indicated last Stream ID.  Clients MUST
-NOT send new requests on the connection after receiving GOAWAY, although
-requests might already be in transit. A new connection can be established for
-new requests.
+Clients MUST NOT send new requests on the connection after receiving GOAWAY,
+although a new connection MAY be established to send additional requests.
 
-If the client has sent requests on streams with a Stream ID greater than or
-equal to that indicated in the GOAWAY frame, those requests are considered
-rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
-streams above this ID.  Servers MAY also reject requests on streams below the
-indicated ID if these requests were not processed.
+Some requests might already be in transit. If the client has already sent
+requests on streams with a Stream ID greater than or equal to that indicated in
+the GOAWAY frame, those requests will not be processed and can be retried by the
+client.  It is RECOMMENDED that the server explicitly reject such requests (see
+{{request-cancellation}}) in order to clean up transport state for the affected
+streams.  The client MAY also cancel requests which will not be processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.
+successfully, reset individually, or the connection terminates.  Servers MAY
+reject individual requests on streams below the indicated ID if these requests
+were not processed.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
