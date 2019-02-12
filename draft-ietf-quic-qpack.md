@@ -252,8 +252,17 @@ received.
 
 Each header block contains a Required Insert Count, the lowest possible value
 for the Insert Count with which the header block can be decoded. For a header
-block with no references to the dynamic table, the Required Insert Count is
-zero.
+block with references to the dynamic table, the Required Insert Count is one
+larger than the largest Absolute Index of all referenced dynamic table
+entries. For a header block with no references to the dynamic table, the
+Required Insert Count is zero.
+
+If the decoder encounters a header block with a Required Insert Count value
+larger than defined above, it MAY treat this as a stream error of type
+HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
+a Required Insert Count value smaller than defined above, it MUST treat this as
+a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
+{{invalid-references}}.
 
 When the Required Insert Count is zero, the frame contains no references to the
 dynamic table and can always be processed immediately.
@@ -264,10 +273,6 @@ SHOULD remain in the blocked stream's flow control window.  A stream becomes
 unblocked when the Insert Count becomes greater than or equal to the Required
 Insert Count for all header blocks the decoder has started reading from the
 stream.
-
-If the decoder encounters a header block where the largest Absolute Index used
-is not equal to the largest value permitted by the Required Insert Count, it MAY
-treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
 upper bound on the number of streams which can be blocked. An encoder MUST limit
@@ -391,7 +396,7 @@ without Huffman encoding applied.
 ### Dynamic Table Capacity and Eviction {#eviction}
 
 The encoder sets the capacity of the dynamic table, which serves as the upper
-limit on its size.
+limit on its size.  The initial capcity of the dynamic table is zero.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -427,16 +432,21 @@ The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
 it can choose to use a lower dynamic table capacity (see
 {{set-dynamic-capacity}}).
 
+For clients using 0-RTT data in HTTP/3, the server's maximum table capacity is
+the remembered value of the setting, or zero if the value was not previously
+sent.  When the client's 0-RTT value of the SETTING is 0, the server MAY set it
+to a non-zero value in its SETTINGS frame. If the remembered value is non-zero,
+the server MUST send the same non-zero value in its SETTINGS frame.  If it
+specifies any other value, or omits SETTINGS_QPACK_MAX_TABLE_CAPACITY from
+SETTINGS, the encoder must treat this as a connection error of type
+`HTTP_QPACK_DECODER_STREAM_ERROR`.
 
-### Initial Dynamic Table Capacity
+For HTTP/3 servers and HTTP/3 clients when 0-RTT is not attempted or is
+rejected, the maximum table capacity is 0 until the encoder processes a SETTINGS
+frame with a non-zero value of SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 
-The initial dynamic table capacity is determined by the corresponding setting
-when HTTP requests or responses are first permitted to be sent.  For clients
-using 0-RTT data in HTTP/3, the initial table capacity is the remembered value
-of the setting, even if the server later specifies a larger maximum dynamic
-table capacity in its SETTINGS frame.  For HTTP/3 servers and HTTP/3 clients
-when 0-RTT is not attempted or is rejected, the initial table capacity is the
-value of the setting in the peer's SETTINGS frame.
+When the maximum table capacity is 0, the encoder MUST NOT insert entries into
+the dynamic table, and MUST NOT send any instructions on the encoder stream.
 
 
 ### Absolute Indexing {#indexing}
@@ -575,12 +585,12 @@ and follows the definitions in [RFC7541] without modification.
 QPACK instructions occur in three locations, each of which uses a separate
 instruction space:
 
- - The encoder stream is a unidirectional stream of type `0x48` (ASCII 'H')
-   which carries table updates from encoder to decoder.
+ - The encoder stream is a unidirectional stream of type `0x02` which carries
+   table updates from encoder to decoder.
 
- - The decoder stream is a unidirectional stream of type `0x68` (ASCII 'h')
-   which carries acknowledgements of table modifications and header processing
-   from decoder to encoder.
+ - The decoder stream is a unidirectional stream of type `0x03` which carries
+   acknowledgements of table modifications and header processing from decoder to
+   encoder.
 
  - Finally, the contents of HEADERS and PUSH_PROMISE frames on request streams
    and push streams reference the QPACK table state.
@@ -588,9 +598,9 @@ instruction space:
 <!-- s/exactly/no more than/  ? -->
 There MUST be exactly one of each unidirectional stream type in each direction.
 Receipt of a second instance of either stream type MUST be treated as a
-connection error of HTTP_WRONG_STREAM_COUNT.  Closure of either unidirectional
-stream MUST be treated as a connection error of type
-HTTP_CLOSED_CRITICAL_STREAM.
+connection error of HTTP_WRONG_STREAM_COUNT.  These streams MUST NOT be closed.
+Closure of either unidirectional stream MUST be treated as a connection error of
+type HTTP_CLOSED_CRITICAL_STREAM.
 
 This section describes the instructions which are possible on each stream type.
 
@@ -836,12 +846,13 @@ Required Insert Count identifies the state of the dynamic table needed to
 process the header block.  Blocking decoders use the Required Insert Count to
 determine when it is safe to process the rest of the block.
 
-If no references are made to the dynamic table, a value of 0 is encoded.
-Alternatively, where the Required Insert Count is greater than zero, the encoder
-transforms it as follows before encoding:
+The encoder transforms the Required Insert Count as follows before encoding:
 
 ~~~
-   EncodedInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
+   if ReqInsertCount == 0:
+      EncInsertCount = 0
+   else:
+      EncInsertCount = (ReqInsertCount mod (2 * MaxEntries)) + 1
 ~~~
 
 Here `MaxEntries` is the maximum number of entries that the dynamic table can
@@ -855,29 +866,37 @@ have.  The smallest entry has empty name and value strings and has the size of
 `MaxTableCapacity` is the maximum capacity of the dynamic table as specified by
 the decoder (see {{maximum-dynamic-table-capacity}}).
 
+This encoding limits the length of the prefix on long-lived connections.
 
-The decoder reconstructs the Required Insert Count using the following
-algorithm, where TotalNumberOfInserts is the total number of inserts into the
-decoder's dynamic table:
+The decoder can reconstruct the Required Insert Count using an algorithm such as
+the following.  If the decoder encounters a value of EncodedInsertCount that
+could not have been produced by a conformant encoder, it MUST treat this as a
+stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+TotalNumberOfInserts is the total number of inserts into the decoder's dynamic
+table.
 
 ~~~
+   FullRange = 2 * MaxEntries
    if EncodedInsertCount == 0:
       ReqInsertCount = 0
    else:
-      InsertCount = EncodedInsertCount - 1
-      CurrentWrapped = TotalNumberOfInserts mod (2 * MaxEntries)
+      if EncodedInsertCount > FullRange:
+         Error
+      MaxValue = TotalNumberOfInserts + MaxEntries
 
-      if CurrentWrapped >= InsertCount + MaxEntries:
-         # Insert Count wrapped around 1 extra time
-         ReqInsertCount += 2 * MaxEntries
-      else if CurrentWrapped + MaxEntries < InsertCount:
-         # Decoder wrapped around 1 extra time
-         CurrentWrapped += 2 * MaxEntries
+      # MaxWrapped is the largest possible value of
+      # ReqInsertCount that is 0 mod 2*MaxEntries
+      MaxWrapped = floor(MaxValue / FullRange) * FullRange
+      ReqInsertCount = MaxWrapped + EncodedInsertCount - 1
 
-      ReqInsertCount += TotalNumberOfInserts - CurrentWrapped
+      # If ReqInsertCount exceeds MaxValue, the Encoder's value
+      # must have wrapped one fewer time
+      if ReqInsertCount > MaxValue:
+         if ReqInsertCount < FullRange:
+            Error
+         ReqInsertCount -= FullRange
 ~~~
-
-This encoding limits the length of the prefix on long-lived connections.
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
@@ -1117,8 +1136,8 @@ The entries in the following table are registered by this document.
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
 | ---------------------------- | :----: | ------------------------- | ------ |
-| QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
-| QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
+| QPACK Encoder Stream         | 0x02   | {{wire-format}}           | Both   |
+| QPACK Decoder Stream         | 0x03   | {{wire-format}}           | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
 
 ## Error Code Registration

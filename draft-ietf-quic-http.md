@@ -303,15 +303,16 @@ specify a value of zero for the QUIC transport parameter
 ## Unidirectional Streams
 
 Unidirectional streams, in either direction, are used for a range of purposes.
-The purpose is indicated by a stream type, which is sent as a single byte header
-at the start of the stream. The format and structure of data that follows this
-header is determined by the stream type.
+The purpose is indicated by a stream type, which is sent as a variable-length
+integer at the start of the stream. The format and structure of data that
+follows this integer is determined by the stream type.
 
 ~~~~~~~~~~ drawing
- 0 1 2 3 4 5 6 7
-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|
-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Type (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
@@ -334,10 +335,14 @@ them.  However, stream types which could modify the state or semantics of
 existing protocol components, including QPACK or other extensions, MUST NOT be
 sent until the peer is known to support them.
 
+A sender can close or reset a unidirectional stream unless otherwise specified.
+A receiver MUST tolerate unidirectional streams being closed or reset prior to
+the reception of the unidirectional stream header.
+
 ###  Control Streams
 
-A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
-this stream consists of HTTP/3 frames, as defined in {{frames}}.
+A control stream is indicated by a stream type of `0x00`.  Data on this stream
+consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  If
@@ -345,8 +350,9 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  If the control stream is closed at any point, this
-MUST be treated as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream.  If the
+control stream is closed at any point, this MUST be treated as a connection
+error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon they are able.  Depending
@@ -355,11 +361,11 @@ able to send stream data first after the cryptographic handshake completes.
 
 ### Push Streams
 
-A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
-the Push ID of the promise that it fulfills, encoded as a variable-length
-integer. The remaining data on this stream consists of HTTP/3 frames, as defined
-in {{frames}}, and fulfills a promised server push.  Server push and Push IDs
-are described in {{server-push}}.
+A push stream is indicated by a stream type of `0x01`, followed by the Push ID
+of the promise that it fulfills, encoded as a variable-length integer. The
+remaining data on this stream consists of HTTP/3 frames, as defined in
+{{frames}}, and fulfills a promised server push.  Server push and Push IDs are
+described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -368,7 +374,9 @@ MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|                  Push ID (i)                ...
+|                           0x01 (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
@@ -379,11 +387,12 @@ client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
 ### Reserved Stream Types {#stream-grease}
 
-Stream types of the format `0x1f * N` are reserved to exercise the requirement
-that unknown types be ignored. These streams have no semantic meaning, and can
-be sent when application-layer padding is desired.  They MAY also be sent on
-connections where no request data is currently being transferred. Endpoints MUST
-NOT consider these streams to have any meaning upon receipt.
+Stream types of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown types be ignored. These
+streams have no semantics, and can be sent when application-layer padding is
+desired. They MAY also be sent on connections where no data is currently being
+transferred. Endpoints MUST NOT consider these streams to have any meaning upon
+receipt.
 
 The payload and length of the stream are selected in any manner the
 implementation chooses.
@@ -391,9 +400,28 @@ implementation chooses.
 
 # HTTP Framing Layer {#http-framing-layer}
 
-As discussed above, frames are carried on QUIC streams and used on control
-streams, request streams, and push streams.  This section describes HTTP framing
-in QUIC.  For a comparison with HTTP/2 frames, see {{h2-frames}}.
+HTTP frames are carried on QUIC streams, as described in {{stream-mapping}}.
+HTTP/3 defines three stream types: control stream, request stream, and push
+stream. This section describes HTTP/3 frame formats and the streams types on
+which they are permitted; see {{stream-frame-mapping}} for an overiew.  A
+comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
+
+| Frame          | Control Stream | Request Stream | Push Stream | Section                  |
+| -------------- | -------------- | -------------- | ----------- | ------------------------ |
+| DATA           | No             | Yes            | Yes         | {{frame-data}}           |
+| HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
+| PRIORITY       | Yes            | Yes (1)        | No          | {{frame-priority}}       |
+| CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
+| SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
+| PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
+| GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
+| MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
+| DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
+{: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
+
+Certain frames can only occur as the first frame of a particular stream type;
+these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
+is provided in the relevant section.
 
 ## Frame Layout
 
@@ -403,21 +431,22 @@ All frames have the following format:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
+|                           Type (i)                          ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Type (8)   |               Frame Payload (*)             ...
+|                          Length (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Frame Payload (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/3 frame format"}
 
 A frame includes the following fields:
 
+  Type:
+  : A variable-length integer that identifies the frame type.
+
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
-    This length does not include the Type field.
-
-  Type:
-  : An 8-bit type for the frame.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
@@ -536,20 +565,20 @@ The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
 of the associated Element ID fields.
 
-| PT Bits   | Type Description | Prioritized Element ID Contents |
-| --------- | ---------------- | ------------------------------- |
-| 00        | Request stream   | Stream ID                       |
-| 01        | Push stream      | Push ID                         |
-| 10        | Placeholder      | Placeholder ID                  |
-| 11        | Current stream   | Absent                          |
+| PT Bits | Type Description | Prioritized Element ID Contents |
+| ------- | ---------------- | ------------------------------- |
+| 00      | Request stream   | Stream ID                       |
+| 01      | Push stream      | Push ID                         |
+| 10      | Placeholder      | Placeholder ID                  |
+| 11      | Current stream   | Absent                          |
 {: #prioritized-element-types title="Prioritized Element Types"}
 
-| DT Bits   | Type Description | Element Dependency ID Contents |
-| --------- | ---------------- | ------------------------------ |
-| 00        | Request stream   | Stream ID                      |
-| 01        | Push stream      | Push ID                        |
-| 10        | Placeholder      | Placeholder ID                 |
-| 11        | Root of the tree | Absent                         |
+| DT Bits | Type Description | Element Dependency ID Contents |
+| ------- | ---------------- | ------------------------------ |
+| 00      | Request stream   | Stream ID                      |
+| 01      | Push stream      | Push ID                        |
+| 10      | Placeholder      | Placeholder ID                 |
+| 11      | Root of the tree | Absent                         |
 {: #element-dependency-types title="Element Dependency Types"}
 
 Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
@@ -649,15 +678,17 @@ Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
 treat the presence of the same parameter more than once as a connection error of
 type HTTP_MALFORMED_FRAME.
 
-The payload of a SETTINGS frame consists of zero or more parameters, each
-consisting of an unsigned 16-bit setting identifier and a value which uses the
-QUIC variable-length integer encoding.
+The payload of a SETTINGS frame consists of zero or more parameters.  Each
+parameter consists of a setting identifier and a value, both encoded as QUIC
+variable-length integers.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identifier (16)       |           Value (i)         ...
+|                        Identifier (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Value (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS parameter format"}
@@ -677,11 +708,11 @@ The following settings are defined in HTTP/3:
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
-Setting identifiers of the format `0x?a?a` are reserved to exercise the
-requirement that unknown identifiers be ignored.  Such settings have no defined
-meaning. Endpoints SHOULD include at least one such setting in their SETTINGS
-frame. Endpoints MUST NOT consider such settings to have any meaning upon
-receipt.
+Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown identifiers be ignored.  Such
+settings have no defined meaning. Endpoints SHOULD include at least one such
+setting in their SETTINGS frame. Endpoints MUST NOT consider such settings to
+have any meaning upon receipt.
 
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
@@ -717,7 +748,7 @@ with its 0-RTT data.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
-set from server to client, as in HTTP/2.
+set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -748,6 +779,9 @@ multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
 that contains a larger Push ID than the client has advertised or a Push ID which
 has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
 
+If a PUSH_PROMISE frame is received on either control stream, the recipient MUST
+respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+
 See {{server-push}} for a description of the overall server push mechanism.
 
 ### GOAWAY {#frame-goaway}
@@ -770,7 +804,7 @@ close a connection.
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_MALFORMED_FRAME.
+of any other type as a connection error of type HTTP_WRONG_STREAM.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -857,12 +891,12 @@ the DUPLICATE_PUSH.
 
 ### Reserved Frame Types {#frame-grease}
 
-Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
-requirement that unknown types be ignored ({{extensions}}). These frames have no
-semantic value, and can be sent when application-layer padding is desired. They
-MAY also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
+Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
+to exercise the requirement that unknown types be ignored ({{extensions}}).
+These frames have no semantics, and can be sent when application-layer padding
+is desired. They MAY also be sent on connections where no data is currently
+being transferred. Endpoints MUST NOT consider these frames to have any meaning
+upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
@@ -965,22 +999,30 @@ header list is calculated based on the uncompressed size of header fields,
 including the length of the name and value in bytes plus an overhead of 32 bytes
 for each header field.
 
-### Request Cancellation
+### Request Cancellation and Rejection {#request-cancellation}
 
-Either client or server can cancel requests by aborting the stream (QUIC
-RESET_STREAM and/or STOP_SENDING frames, as appropriate) with an error code of
+Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
+STOP_SENDING frames, as appropriate) with an error code of
 HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
 response, it indicates that this response is no longer of interest.
 Implementations SHOULD cancel requests by aborting both directions of a stream.
 
-When the server aborts its response stream using HTTP_REQUEST_CANCELLED, it
-indicates that no application processing was performed.  In this context,
-"processed" means that some data from the stream was passed to some higher layer
-of software that might have taken some action as a result.  The client can treat
-requests cancelled by the server as though they had never been sent at all,
-thereby allowing them to be retried later on a new connection.  Servers MUST NOT
-use the HTTP_REQUEST_CANCELLED status for requests which were partially or fully
-processed.
+When the server rejects a request without performing any application processing,
+it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
+In this context, "processed" means that some data from the stream was passed to
+some higher layer of software that might have taken some action as a result. The
+client can treat requests rejected by the server as though they had never been
+sent at all, thereby allowing them to be retried later on a new connection.
+Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
+were partially or fully processed.  When a server abandons a response after
+partial processing, it SHOULD abort its response stream with the error code
+HTTP_REQUEST_CANCELLED.
+
+When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
+send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
+if no processing was performed.  Clients MUST NOT reset streams with the
+HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
+frame that contains the same code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1058,7 +1100,7 @@ of 16 and a default dependency. Requests and placeholders are dependent on the
 root of the priority tree; pushes are dependent on the client request on which
 the PUSH_PROMISE frame was sent.
 
-Requests may override the default intial values by including a PRIORTIY frame
+Requests may override the default initial values by including a PRIORTIY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
 can be updated by sending a PRIORITY frame on the control stream.
 
@@ -1210,23 +1252,24 @@ function by communicating with clients.
 Servers initiate the shutdown of a connection by sending a GOAWAY frame
 ({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
 on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were not accepted. This enables
+requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
 connection shutdown.  This identifier MAY be lower than the stream limit
 identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Once GOAWAY is sent, the server MUST cancel requests sent on streams with an
-identifier higher than the indicated last Stream ID.  Clients MUST NOT send new
-requests on the connection after receiving GOAWAY, although requests might
-already be in transit. A new connection can be established for new requests.
+Once GOAWAY is sent, the server MUST reject requests sent on streams with an
+identifier greater than or equal to the indicated last Stream ID.  Clients MUST
+NOT send new requests on the connection after receiving GOAWAY, although
+requests might already be in transit. A new connection can be established for
+new requests.
 
-If the client has sent requests on streams with a higher Stream ID than
-indicated in the GOAWAY frame, those requests are considered cancelled
-({{request-cancellation}}).  Clients SHOULD reset any streams above this ID with
-the error code HTTP_REQUEST_CANCELLED.  Servers MAY also cancel requests on
-streams below the indicated ID if these requests were not processed.
+If the client has sent requests on streams with a Stream ID greater than or
+equal to that indicated in the GOAWAY frame, those requests are considered
+rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
+streams above this ID.  Servers MAY also reject requests on streams below the
+indicated ID if these requests were not processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until they are completed
@@ -1234,7 +1277,7 @@ successfully, reset individually, or the connection terminates.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
-know whether a stream has been partially processed or not.  For example, if an
+know whether a request has been partially processed or not.  For example, if an
 HTTP client sends a POST at the same time that a server closes a QUIC
 connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
@@ -1353,7 +1396,7 @@ HTTP_PUSH_ALREADY_IN_CACHE (0x04):
 : The server has attempted to push content which the client has cached.
 
 HTTP_REQUEST_CANCELLED (0x05):
-: The client no longer needs the requested data.
+: The request or its response is cancelled.
 
 HTTP_INCOMPLETE_REQUEST (0x06):
 : The client's stream terminated without containing a fully-formed request.
@@ -1404,14 +1447,18 @@ HTTP_MISSING_SETTINGS (0x0012):
 HTTP_UNEXPECTED_FRAME (0x0013):
 : A frame was received which was not permitted in the current state.
 
+HTTP_REQUEST_REJECTED (0x0014):
+: A server rejected a request without performing any application processing.
+
 HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
 
 HTTP_MALFORMED_FRAME (0x01XX):
-: An error in a specific frame type.  The frame type is included as the last
-  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
-  indicated with the code (0x10D).
+: An error in a specific frame type.  If the frame type is `0xfe` or less, the
+  type is included as the last byte of the error code.  For example, an error in
+  a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
+  `0xff` is used to indicate any frame type greater than `0xfe`.
 
 
 # Security Considerations
@@ -1430,6 +1477,13 @@ of frames with an explicit length containing variable-length integers.  This
 could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
+
+Certain HTTP implementations use the client address for logging or
+access-control purposes.  Since a QUIC client's address might change during a
+connection (and future versions might support simultaneous use of multiple
+addresses), such implementations will need to either actively retrieve the
+client's current address or addresses when they are relevant or explicitly
+accept that the original address might change.
 
 
 # IANA Considerations
@@ -1466,15 +1520,18 @@ This document creates a new registration for version-negotiation hints in the
 ## Frame Types {#iana-frames}
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
-Frame Type" registry manages an 8-bit space.  The "HTTP/3 Frame Type" registry
-operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+Frame Type" registry governs a 62-bit space. This space is split into three
+spaces that are governed by different policies. Values between `0x00` and `0x3f`
+(in hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
-entry is present in only one registry, every effort SHOULD be made to avoid
-assigning the corresponding value to an unrelated operation.
+{{RFC7540}}, it is preferable that the assignments parallel each other where the
+code spaces overlap.  If an entry is present in only one registry, every effort
+SHOULD be made to avoid assigning the corresponding value to an unrelated
+operation.
 
 New entries in this registry require the following information:
 
@@ -1482,7 +1539,7 @@ Frame Type:
 : A name or label for the frame type.
 
 Code:
-: The 8-bit code assigned to the frame type.
+: The 62-bit code assigned to the frame type.
 
 Specification:
 : A reference to a specification that includes a description of the frame layout
@@ -1492,39 +1549,35 @@ Specification:
 The entries in the following table are registered by this document.
 
 | ---------------- | ------ | -------------------------- |
-| Frame Type       | Code   | Specification              |
+| Frame Type       |  Code  | Specification              |
 | ---------------- | :----: | -------------------------- |
-| DATA             | 0x0    | {{frame-data}}             |
-| HEADERS          | 0x1    | {{frame-headers}}          |
-| PRIORITY         | 0x2    | {{frame-priority}}         |
-| CANCEL_PUSH      | 0x3    | {{frame-cancel-push}}      |
-| SETTINGS         | 0x4    | {{frame-settings}}         |
-| PUSH_PROMISE     | 0x5    | {{frame-push-promise}}     |
-| Reserved         | 0x6    | N/A                        |
-| GOAWAY           | 0x7    | {{frame-goaway}}           |
-| Reserved         | 0x8    | N/A                        |
-| Reserved         | 0x9    | N/A                        |
-| MAX_PUSH_ID      | 0xD    | {{frame-max-push-id}}      |
-| DUPLICATE_PUSH   | 0xE    | {{frame-duplicate-push}}   |
+| DATA             |  0x0   | {{frame-data}}             |
+| HEADERS          |  0x1   | {{frame-headers}}          |
+| PRIORITY         |  0x2   | {{frame-priority}}         |
+| CANCEL_PUSH      |  0x3   | {{frame-cancel-push}}      |
+| SETTINGS         |  0x4   | {{frame-settings}}         |
+| PUSH_PROMISE     |  0x5   | {{frame-push-promise}}     |
+| Reserved         |  0x6   | N/A                        |
+| GOAWAY           |  0x7   | {{frame-goaway}}           |
+| Reserved         |  0x8   | N/A                        |
+| Reserved         |  0x9   | N/A                        |
+| MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
+| DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
-Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
-range (0..7) (that is, `0xb`, `0x2a`, `0x49`, `0x68`, `0x87`, `0xa6`, `0xc5`,
-and `0xe4`), the following values should be registered:
-
-Frame Type:
-: Reserved - GREASE
-
-Specification:
-: {{frame-grease}}
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
-registry manages a 16-bit space.  The "HTTP/3 Settings" registry operates under
-the "Expert Review" policy {{?RFC8126}} for values in the range from 0x0000 to
-0xefff, with values between and 0xf000 and 0xffff being reserved for
-Experimental Use.  The designated experts are the same as those for the "HTTP/2
+registry governs a 62-bit space. This space is split into three spaces that are
+governed by different policies. Values between `0x00` and `0x3f` (in
+hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.  The designated experts are the same as those for the "HTTP/2
 Settings" registry defined in {{RFC7540}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
@@ -1538,7 +1591,7 @@ Name:
 : A symbolic name for the setting.  Specifying a setting name is optional.
 
 Code:
-: The 16-bit code assigned to the setting.
+: The 62-bit code assigned to the setting.
 
 Specification:
 : An optional reference to a specification that describes the use of the
@@ -1547,25 +1600,19 @@ Specification:
 The entries in the following table are registered by this document.
 
 | ---------------------------- | ------ | ------------------------- |
-| Setting Name                 | Code   | Specification             |
+| Setting Name                 |  Code  | Specification             |
 | ---------------------------- | :----: | ------------------------- |
-| Reserved                     | 0x2    | N/A                       |
-| Reserved                     | 0x3    | N/A                       |
-| Reserved                     | 0x4    | N/A                       |
-| Reserved                     | 0x5    | N/A                       |
-| MAX_HEADER_LIST_SIZE         | 0x6    | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             | 0x8    | {{settings-parameters}}   |
+| Reserved                     |  0x2   | N/A                       |
+| Reserved                     |  0x3   | N/A                       |
+| Reserved                     |  0x4   | N/A                       |
+| Reserved                     |  0x5   | N/A                       |
+| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
-Additionally, each code of the format `0x?a?a` where each `?` is any four bits
-(that is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values
-should be registered:
-
-Name:
-: Reserved - GREASE
-
-Specification:
-: {{settings-parameters}}
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 ## Error Codes {#iana-error-codes}
 
@@ -1618,16 +1665,19 @@ The entries in the following table are registered by this document.
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
-"HTTP/3 Stream Type" registry manages an 8-bit space.  The "HTTP/3 Stream Type"
-registry operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+"HTTP/3 Stream Type" registry governs a 62-bit space. This space is split into
+three spaces that are governed by different policies. Values between `0x00` and
+0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
+policies {{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the
+Specification Required policy {{!RFC8126}}. All other values are assigned to
+Private Use {{!RFC8126}}.
 
 New entries in this registry require the following information:
 
@@ -1635,7 +1685,7 @@ Stream Type:
 : A name or label for the stream type.
 
 Code:
-: The 8-bit code assigned to the stream type.
+: The 62-bit code assigned to the stream type.
 
 Specification:
 : A reference to a specification that includes a description of the stream type,
@@ -1648,24 +1698,15 @@ Sender:
 The entries in the following table are registered by this document.
 
 | ---------------- | ------ | -------------------------- | ------ |
-| Stream Type      | Code   | Specification              | Sender |
+| Stream Type      |  Code  | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
-| Control Stream   | 0x43   | {{control-streams}}        | Both   |
-| Push Stream      | 0x50   | {{server-push}}            | Server |
+| Control Stream   |  0x00  | {{control-streams}}        | Both   |
+| Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, for each code of the format `0x1f * N` for values of N in the
-range (0..8) (that is, `0x00`, `0x1f`, `0x3e`, `0x5d`, `0x7c`, `0x9b`, `0xba`,
-`0xd9`, `0xf8`), the following values should be registered:
-
-Stream Type:
-: Reserved - GREASE
-
-Specification:
-: {{stream-grease}}
-
-Sender:
-: Both
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 --- back
 
@@ -1791,7 +1832,9 @@ CONTINUATION (0x9):
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/3 if still applicable.  The IDs of frames defined in {{!RFC7540}} have been
-reserved for simplicity.  See {{iana-frames}}.
+reserved for simplicity.  Note that the frame type space in HTTP/3 is
+substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
+equivalent HTTP/2 code points.   See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
@@ -1835,7 +1878,9 @@ use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
 the format of their settings to avoid using the 62-bit encoding.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity. See
+settings defined in {{!RFC7540}} have been reserved for simplicity.  Note that
+the settings identifier space in HTTP/3 is substantially larger (62 bits versus
+16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
 
@@ -1872,8 +1917,10 @@ FRAME_SIZE_ERROR (0x6):
 : HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  STREAM_ID_ERROR from the QUIC layer.
+: HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
+  request was not processed. Otherwise, not applicable because QUIC handles
+  stream management.  A STREAM_ID_ERROR at the QUIC layer is used for streams
+  that are improperly opened.
 
 CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
@@ -1901,6 +1948,13 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-17
+
+- HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
+  #2325)
+- Changed error code for GOAWAY on the wrong stream (#2231, #2343)
+
 
 ## Since draft-ietf-quic-http-16
 
