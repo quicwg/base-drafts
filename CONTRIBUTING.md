@@ -67,7 +67,7 @@ Issues will be labeled by the Chairs as either `editorial` or `design`:
 
 * **Editorial** issues can be dealt with by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
 
-The open design issues in the issues list are those that we are currently discussing, or plan to discuss. They can be discussed on the mailing list or the issues list.
+The open design issues in the issues list are those that we are currently discussing, or plan to discuss. They can be discussed on the mailing list or the issue itself.
 
 We're currently using two different processes for issue resolution, depending on draft maturity.
 
