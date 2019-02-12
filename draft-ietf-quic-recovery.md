@@ -679,8 +679,9 @@ illustrate persistent congestion:
 The first three packets are determined to be lost when the ACK of packet 4 is
 received at t=8.  The congestion period is calculated as the time between the
 oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
-congestion is equal to: (1 * ((2 ^ 2) - 1)) = 3.  Because the threshold was
-reached, the network is considered to have experienced persistent congestion.
+congestion is equal to: (1 * ((2 ^ kPersistentCongestionThreshold) - 1)) = 3.
+Because the threshold was reached, the network is considered to have experienced
+persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
