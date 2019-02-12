@@ -16,7 +16,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
   -
     ins: S. Turner
@@ -216,7 +216,7 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
+- Initial Keys
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
@@ -244,7 +244,7 @@ shown below.
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
-|              |              | | (h2q, etc.) |
+|              |              | |  (h3, etc.) |
 +--------------+--------------+-+-------------+
 |                                             |
 |                QUIC Transport               |
@@ -743,14 +743,14 @@ based on the client's initial Destination Connection ID, as described in
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used QUIC.
+be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The header protection key uses the "quic hp" label, see
-{{header-protect}}).  Using these labels provides key separation between QUIC
+{{header-protect}}.  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
@@ -788,7 +788,7 @@ The value of initial_salt is a 20 byte sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of handshake packets from future versions.
+modifying the contents of packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
@@ -818,8 +818,8 @@ packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
-are protected with AEAD_AES_128_GCM and a key derived from the destination
-connection ID in the client's first Initial packet (see {{initial-secrets}}).
+are protected with AEAD_AES_128_GCM and a key derived from the Destination
+Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
@@ -864,7 +864,7 @@ the Packet Number field.  The four least-significant bits of the first byte are
 protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Update
-bits are also protected for packets with a short header.
+bit is also protected for packets with a short header.
 
 The same header protection key is used for the duration of the connection, with
 the value not changing after a key update (see {{key-update}}).  This allows
@@ -1100,31 +1100,17 @@ anticipation of receiving a ClientHello.
 
 # Key Update {#key-update}
 
-Once the 1-RTT keys are established and the short header is in use, it is
-possible to update the keys used to protect packets. The Key Update field in the
-short header is used to indicate when key updates are permitted and when they
-have occurred.
+Once the 1-RTT keys are established and confirmed through the use of the
+KEYS_READY frame, it is possible to update the keys used to protect packets.
 
-The low bit of the Key Update field (0x04) is the Key Phase bit.  The key phase
-is used to indicate which packet protection keys are used to protect the packet.
-The Key Phase bit is initially set to 0 for the first set of 1-RTT packets.  The
-key phase is toggled to signal each key update.
+The Key Phase bit is used to indicate which packet protection keys are used to
+protect the packet.  The Key Phase bit is initially set to 0 for the first set
+of 1-RTT packets.  The Key Phase bit is toggled to signal each key update.
 
-The key phase allows a recipient to detect a change in keying material without
-needing to receive the first packet that triggered the change.  An endpoint that
-notices a changed key phase updates keys and decrypts the packet that contains
-the changed value.
-
-The high bit of the Key Update field (0x08) is the Key Update Permitted bit.  An
-endpoint MUST NOT initiate a key update unless they have received a packet with
-the current Key Phase and the Key Update Permitted bit set to 1.  An endpoint
-MAY keep this value set to 0, forbidding key updates.  An endpoint MUST NOT set
-this value to 1 until it successfully processes a packet with keys from the same
-key phase. Once this bit is set it MUST NOT be cleared for packets in the same
-key phase.
-
-Only packets that increase the largest received packet number are used to
-trigger key updates or changes in the Key Update Permitted bit.
+The Key Phase bit allows a recipient to detect a change in keying material
+without needing to receive the first packet that triggered the change.  An
+endpoint that notices a changed Key Phase bit updates keys and decrypts the
+packet that contains the changed value.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
@@ -1132,23 +1118,27 @@ message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
 {{ex-key-update}} shows a key update process, with keys used identified with @M
-and @N.  Values in brackets \[] indicate the value of Key Update bits.
+and @N.  Values in brackets \[] indicate the value of Key Phase bits.
 
 ~~~
    Initiating Peer                    Responding Peer
 
-@M [10] QUIC Packets
+@M [0] QUIC Packets
+       KEYS_READY
                       -------->
-                                     QUIC Packets [10] @M
+                                      QUIC Packets [0] @M
+                                        KEYS_READY
                       <--------
 ... Update to @N
-@N [01] QUIC Packets
+@N [1] QUIC Packets
                       -------->
                                          Update to @N ...
-                                     QUIC Packets [11] @N
+                                      QUIC Packets [1] @N
+                                        KEYS_READY
                       <--------
+@N [1] QUIC Packets
+       KEYS_READY
 ... Key Update Permitted
-@N [11] QUIC Packets
                       -------->
                                  Key Update Permitted ...
 ~~~
@@ -1332,8 +1322,8 @@ protection for these values.
 
 The `extension_data` field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters when the
-version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+quic_transport_parameters extension carries a TransportParameters struct when
+the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.
@@ -1692,6 +1682,13 @@ cb54df7884
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-17
+
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Use of ALPN or equivalent is mandatory (#2263, #2284)
 
 
 ## Since draft-ietf-quic-tls-14
