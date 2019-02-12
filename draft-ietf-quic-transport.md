@@ -1352,7 +1352,10 @@ handshake, a client SHOULD select an initial Destination Connection ID length
 long enough to fulfill the minimum size for every QUIC version it supports.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the SCIL field to match.
+and sets the SCIL field to indicate the length.
+
+The first flight of 0-RTT packets use the same Destination and Source Connection
+ID values as the client's first Initial.
 
 The Destination Connection ID field in the server's Initial packet contains a
 connection ID that is chosen by the recipient of the packet (i.e., the client);
@@ -1362,11 +1365,12 @@ Source Connection IDs during the handshake.
 
 On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets.  That means that a client might change the Destination
-Connection ID twice during connection establishment, once in response to a
-Retry and once in response to the first Initial packet from the server. Once a
-client has received an Initial packet from the server, it MUST discard any
-packet it receives with a different Source Connection ID.
+for subsequent packets, including any subsequent 0-RTT packets.  That means that
+a client might change the Destination Connection ID twice during connection
+establishment, once in response to a Retry and once in response to the first
+Initial packet from the server. Once a client has received an Initial packet
+from the server, it MUST discard any packet it receives with a different Source
+Connection ID.
 
 A client MUST only change the value it sends in the Destination Connection ID in
 response to the first packet of each type it receives from the server (Retry or
