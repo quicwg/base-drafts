@@ -334,9 +334,8 @@ encryption levels:
 
 - All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
-Note that it is not possible to send some frames in 0-RTT for various reasons.
-In addition to ACK, this includes CRYPTO, NEW_TOKEN, PATH_RESPONSE, and
-RETIRE_CONNECTION_ID.
+Note that it is not possible to send the following frames in 0-RTT for various
+reasons: ACK, CRYPTO, NEW_TOKEN, PATH_RESPONSE, and RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
