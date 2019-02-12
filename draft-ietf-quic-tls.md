@@ -1322,8 +1322,8 @@ would need to assess whether those uses were vulnerable to replay attack.
 Extensions to QUIC might create an additional exposure to replay attack if they
 are used by application protocols.  QUIC extensions SHOULD describe how replay
 attacks affects their operation.  Application protocols MUST either prohibit the
-use of extensions in 0-RTT or provide replay mitigation strategies for those
-extensions that can be used.
+use of any extensions that carry application semantics in 0-RTT or provide
+replay mitigation strategies.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
