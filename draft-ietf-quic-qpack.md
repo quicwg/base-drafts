@@ -362,8 +362,8 @@ addressed.
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
 
-All entries in the static table have a name and a value.  However values can be
-empty, that is, have a length of 0.
+All entries in the static table have a name and a value.  However, values can be
+empty (that is, have a length of 0).
 
 Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
