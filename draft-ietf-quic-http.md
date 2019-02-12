@@ -303,15 +303,16 @@ specify a value of zero for the QUIC transport parameter
 ## Unidirectional Streams
 
 Unidirectional streams, in either direction, are used for a range of purposes.
-The purpose is indicated by a stream type, which is sent as a single byte header
-at the start of the stream. The format and structure of data that follows this
-header is determined by the stream type.
+The purpose is indicated by a stream type, which is sent as a variable-length
+integer at the start of the stream. The format and structure of data that
+follows this integer is determined by the stream type.
 
 ~~~~~~~~~~ drawing
- 0 1 2 3 4 5 6 7
-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|
-+-+-+-+-+-+-+-+-+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Stream Type (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
@@ -340,8 +341,8 @@ the reception of the unidirectional stream header.
 
 ###  Control Streams
 
-A control stream is indicated by a stream type of `0x43` (ASCII 'C').  Data on
-this stream consists of HTTP/3 frames, as defined in {{frames}}.
+A control stream is indicated by a stream type of `0x00`.  Data on this stream
+consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
 connection and send its SETTINGS frame as the first frame on this stream.  If
@@ -360,11 +361,11 @@ able to send stream data first after the cryptographic handshake completes.
 
 ### Push Streams
 
-A push stream is indicated by a stream type of `0x50` (ASCII 'P'), followed by
-the Push ID of the promise that it fulfills, encoded as a variable-length
-integer. The remaining data on this stream consists of HTTP/3 frames, as defined
-in {{frames}}, and fulfills a promised server push.  Server push and Push IDs
-are described in {{server-push}}.
+A push stream is indicated by a stream type of `0x01`, followed by the Push ID
+of the promise that it fulfills, encoded as a variable-length integer. The
+remaining data on this stream consists of HTTP/3 frames, as defined in
+{{frames}}, and fulfills a promised server push.  Server push and Push IDs are
+described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
@@ -373,7 +374,9 @@ MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|Stream Type (8)|                  Push ID (i)                ...
+|                           0x01 (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
@@ -384,11 +387,12 @@ client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
 
 ### Reserved Stream Types {#stream-grease}
 
-Stream types of the format `0x1f * N` are reserved to exercise the requirement
-that unknown types be ignored. These streams have no semantic meaning, and can
-be sent when application-layer padding is desired.  They MAY also be sent on
-connections where no request data is currently being transferred. Endpoints MUST
-NOT consider these streams to have any meaning upon receipt.
+Stream types of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown types be ignored. These
+streams have no semantics, and can be sent when application-layer padding is
+desired. They MAY also be sent on connections where no data is currently being
+transferred. Endpoints MUST NOT consider these streams to have any meaning upon
+receipt.
 
 The payload and length of the stream are selected in any manner the
 implementation chooses.
@@ -427,7 +431,9 @@ All frames have the following format:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|    Type (8)   |                  Length (i)                 ...
+|                           Type (i)                          ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Length (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Frame Payload (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -437,12 +443,10 @@ All frames have the following format:
 A frame includes the following fields:
 
   Type:
-  : An 8-bit type for the frame.
-
+  : A variable-length integer that identifies the frame type.
 
   Length:
   : A variable-length integer that describes the length of the Frame Payload.
-    This length does not include the Type field.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
@@ -674,15 +678,17 @@ Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
 treat the presence of the same parameter more than once as a connection error of
 type HTTP_MALFORMED_FRAME.
 
-The payload of a SETTINGS frame consists of zero or more parameters, each
-consisting of an unsigned 16-bit setting identifier and a value which uses the
-QUIC variable-length integer encoding.
+The payload of a SETTINGS frame consists of zero or more parameters.  Each
+parameter consists of a setting identifier and a value, both encoded as QUIC
+variable-length integers.
 
 ~~~~~~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|         Identifier (16)       |           Value (i)         ...
+|                        Identifier (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Value (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS parameter format"}
@@ -702,11 +708,11 @@ The following settings are defined in HTTP/3:
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
-Setting identifiers of the format `0x?a?a` are reserved to exercise the
-requirement that unknown identifiers be ignored.  Such settings have no defined
-meaning. Endpoints SHOULD include at least one such setting in their SETTINGS
-frame. Endpoints MUST NOT consider such settings to have any meaning upon
-receipt.
+Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown identifiers be ignored.  Such
+settings have no defined meaning. Endpoints SHOULD include at least one such
+setting in their SETTINGS frame. Endpoints MUST NOT consider such settings to
+have any meaning upon receipt.
 
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
@@ -885,12 +891,12 @@ the DUPLICATE_PUSH.
 
 ### Reserved Frame Types {#frame-grease}
 
-Frame types of the format `0xb + (0x1f * N)` are reserved to exercise the
-requirement that unknown types be ignored ({{extensions}}). These frames have no
-semantic value, and can be sent when application-layer padding is desired. They
-MAY also be sent on connections where no request data is currently being
-transferred. Endpoints MUST NOT consider these frames to have any meaning upon
-receipt.
+Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
+to exercise the requirement that unknown types be ignored ({{extensions}}).
+These frames have no semantics, and can be sent when application-layer padding
+is desired. They MAY also be sent on connections where no data is currently
+being transferred. Endpoints MUST NOT consider these frames to have any meaning
+upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
@@ -1449,9 +1455,10 @@ HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
   specific error code, or endpoint declines to use the more specific error code.
 
 HTTP_MALFORMED_FRAME (0x01XX):
-: An error in a specific frame type.  The frame type is included as the last
-  byte of the error code.  For example, an error in a MAX_PUSH_ID frame would be
-  indicated with the code (0x10D).
+: An error in a specific frame type.  If the frame type is `0xfe` or less, the
+  type is included as the last byte of the error code.  For example, an error in
+  a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
+  `0xff` is used to indicate any frame type greater than `0xfe`.
 
 
 # Security Considerations
@@ -1513,15 +1520,18 @@ This document creates a new registration for version-negotiation hints in the
 ## Frame Types {#iana-frames}
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
-Frame Type" registry manages an 8-bit space.  The "HTTP/3 Frame Type" registry
-operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+Frame Type" registry governs a 62-bit space. This space is split into three
+spaces that are governed by different policies. Values between `0x00` and `0x3f`
+(in hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
-entry is present in only one registry, every effort SHOULD be made to avoid
-assigning the corresponding value to an unrelated operation.
+{{RFC7540}}, it is preferable that the assignments parallel each other where the
+code spaces overlap.  If an entry is present in only one registry, every effort
+SHOULD be made to avoid assigning the corresponding value to an unrelated
+operation.
 
 New entries in this registry require the following information:
 
@@ -1529,7 +1539,7 @@ Frame Type:
 : A name or label for the frame type.
 
 Code:
-: The 8-bit code assigned to the frame type.
+: The 62-bit code assigned to the frame type.
 
 Specification:
 : A reference to a specification that includes a description of the frame layout
@@ -1555,23 +1565,19 @@ The entries in the following table are registered by this document.
 | DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 
-Additionally, each code of the format `0xb + (0x1f * N)` for values of N in the
-range (0..7) (that is, `0xb`, `0x2a`, `0x49`, `0x68`, `0x87`, `0xa6`, `0xc5`,
-and `0xe4`), the following values should be registered:
-
-Frame Type:
-: Reserved - GREASE
-
-Specification:
-: {{frame-grease}}
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
-registry manages a 16-bit space.  The "HTTP/3 Settings" registry operates under
-the "Expert Review" policy {{?RFC8126}} for values in the range from 0x0000 to
-0xefff, with values between and 0xf000 and 0xffff being reserved for
-Experimental Use.  The designated experts are the same as those for the "HTTP/2
+registry governs a 62-bit space. This space is split into three spaces that are
+governed by different policies. Values between `0x00` and `0x3f` (in
+hexadecimal) are assigned via the Standards Action or IESG Review policies
+{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
+Required policy {{!RFC8126}}. All other values are assigned to Private Use
+{{!RFC8126}}.  The designated experts are the same as those for the "HTTP/2
 Settings" registry defined in {{RFC7540}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
@@ -1585,7 +1591,7 @@ Name:
 : A symbolic name for the setting.  Specifying a setting name is optional.
 
 Code:
-: The 16-bit code assigned to the setting.
+: The 62-bit code assigned to the setting.
 
 Specification:
 : An optional reference to a specification that describes the use of the
@@ -1604,15 +1610,9 @@ The entries in the following table are registered by this document.
 | NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
-Additionally, each code of the format `0x?a?a` where each `?` is any four bits
-(that is, `0x0a0a`, `0x0a1a`, etc. through `0xfafa`), the following values
-should be registered:
-
-Name:
-: Reserved - GREASE
-
-Specification:
-: {{settings-parameters}}
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 ## Error Codes {#iana-error-codes}
 
@@ -1672,10 +1672,12 @@ The entries in the following table are registered by this document.
 ## Stream Types {#iana-stream-types}
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
-"HTTP/3 Stream Type" registry manages an 8-bit space.  The "HTTP/3 Stream Type"
-registry operates under either of the "IETF Review" or "IESG Approval" policies
-{{?RFC8126}} for values from 0x00 up to and including 0xef, with values from
-0xf0 up to and including 0xff being reserved for Experimental Use.
+"HTTP/3 Stream Type" registry governs a 62-bit space. This space is split into
+three spaces that are governed by different policies. Values between `0x00` and
+0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
+policies {{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the
+Specification Required policy {{!RFC8126}}. All other values are assigned to
+Private Use {{!RFC8126}}.
 
 New entries in this registry require the following information:
 
@@ -1683,7 +1685,7 @@ Stream Type:
 : A name or label for the stream type.
 
 Code:
-: The 8-bit code assigned to the stream type.
+: The 62-bit code assigned to the stream type.
 
 Specification:
 : A reference to a specification that includes a description of the stream type,
@@ -1698,22 +1700,13 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 | Stream Type      |  Code  | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
-| Control Stream   |  0x43  | {{control-streams}}        | Both   |
-| Push Stream      |  0x50  | {{server-push}}            | Server |
+| Control Stream   |  0x00  | {{control-streams}}        | Both   |
+| Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, for each code of the format `0x1f * N` for values of N in the
-range (0..8) (that is, `0x00`, `0x1f`, `0x3e`, `0x5d`, `0x7c`, `0x9b`, `0xba`,
-`0xd9`, `0xf8`), the following values should be registered:
-
-Stream Type:
-: Reserved - GREASE
-
-Specification:
-: {{stream-grease}}
-
-Sender:
-: Both
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+assigned by IANA.
 
 --- back
 
@@ -1839,7 +1832,9 @@ CONTINUATION (0x9):
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/3 if still applicable.  The IDs of frames defined in {{!RFC7540}} have been
-reserved for simplicity.  See {{iana-frames}}.
+reserved for simplicity.  Note that the frame type space in HTTP/3 is
+substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
+equivalent HTTP/2 code points.   See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
@@ -1883,7 +1878,9 @@ use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
 the format of their settings to avoid using the 62-bit encoding.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity. See
+settings defined in {{!RFC7540}} have been reserved for simplicity.  Note that
+the settings identifier space in HTTP/3 is substantially larger (62 bits versus
+16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
 
