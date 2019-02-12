@@ -599,11 +599,11 @@ described in {{HTTP3}}.
 
 QPACK defines two unidirectional stream types:
 
- - An encoder stream is a unidirectional stream of type `0x48` (ASCII 'H').
+ - An encoder stream is a unidirectional stream of type `0x02`.
    It carries an unframed sequence of encoder instructions from encoder
    to decoder.
 
- - A decoder stream is a unidirectional stream of type `0x68` (ASCII 'h').
+ - A decoder stream is a unidirectional stream of type `0x03`.
    It carries an unframed sequence of decoder instructions from decoder
    to encoder.
 
@@ -1146,8 +1146,8 @@ registered in the "HTTP/3 Stream Type" registry established in {{HTTP3}}.
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
 | ---------------------------- | :----: | ------------------------- | ------ |
-| QPACK Encoder Stream         | 0x48   | {{wire-format}}           | Both   |
-| QPACK Decoder Stream         | 0x68   | {{wire-format}}           | Both   |
+| QPACK Encoder Stream         | 0x02   | {{wire-format}}           | Both   |
+| QPACK Decoder Stream         | 0x03   | {{wire-format}}           | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
 
 ## Error Code Registration

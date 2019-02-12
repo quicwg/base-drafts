@@ -254,9 +254,8 @@ can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
 Streams can be created by either endpoint, can concurrently send data
-interleaved with other streams, and can be cancelled.  Any stream can be
-initiated by either endpoint.  QUIC does not provide any means of ensuring
-ordering between bytes on different streams.
+interleaved with other streams, and can be cancelled. QUIC does not provide any
+means of ensuring ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
@@ -1010,8 +1009,11 @@ Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
 to more quickly identify when a connection becomes unusable.
 
-Packets that are matched to an existing connection, but for which the endpoint
-cannot remove packet protection, are discarded.
+Packets that are matched to an existing connection are discarded if the packets
+are inconsistent with the state of that connection.  For example, packets are
+discarded if they indicate a different protocol version than that of the
+connection, or if the removal of packet protection is unsuccessful once the
+expected keys are available.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
 Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
