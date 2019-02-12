@@ -318,10 +318,10 @@ long as they are associated with the same encryption level. For instance, an
 implementation might bundle a Handshake message and an ACK for some Handshake
 data into the same packet.
 
-Each encryption level has a specific list of frames which may appear in it. The
-rules here generalize those of TLS, in that frames associated with establishing
-the connection can usually appear at any encryption level, whereas those
-associated with transferring data can only appear in the 0-RTT and 1-RTT
+Some frames are prohibited in different encryption levels, others cannot be
+sent. The rules here generalize those of TLS, in that frames associated with
+establishing the connection can usually appear at any encryption level, whereas
+those associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
 - PADDING frames MAY appear in packets of any encryption level.
@@ -333,6 +333,10 @@ encryption levels:
   can only acknowledge packets which appeared in that packet number space.
 
 - All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
+
+Note that it is not possible to send some frames in 0-RTT for various reasons.
+In addition to ACK, this includes CRYPTO, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -1318,9 +1322,9 @@ would need to assess whether those uses were vulnerable to replay attack.
 
 Extensions to QUIC might create an additional exposure to replay attack if they
 are used by application protocols.  QUIC extensions SHOULD describe how replay
-attacks affects their operation.  Application protocols MUST either disable
-extensions in 0-RTT or provide replay mitigation strategies for any use of the
-extension.
+attacks affects their operation.  Application protocols MUST either prohibit the
+use of extensions in 0-RTT or provide replay mitigation strategies for those
+extensions that can be used.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
