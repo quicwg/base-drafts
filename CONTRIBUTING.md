@@ -67,7 +67,7 @@ Issues will be labeled by the Chairs as either `editorial` or `design`:
 
 * **Editorial** issues can be dealt with by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
 
-The `open` design issues in the issues list are those that we are currently or plan to discuss. When a design issue is `closed`, it implies that the issue has a proposed resolution that is reflected in the drafts; if a `closed` design issue is labeled with `has-consensus`, it means that the incorporated resolution has Working Group consensus.
+The `open` design issues in the issues list are those that we are currently discussing, or plan to discuss. When a design issue is `closed`, it implies that the issue has a proposed resolution that is reflected in the drafts; if a `closed` design issue is labeled with `has-consensus`, it means that the incorporated resolution has Working Group consensus.
 
 Design issues can be discussed on the mailing list or the issues list. The editors can also propose resolutions to design issues for the group's consideration by incorporating them into the draft(s).
 

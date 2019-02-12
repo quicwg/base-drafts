@@ -16,7 +16,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
   -
     ins: S. Turner
@@ -216,7 +216,7 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
+- Initial Keys
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
@@ -244,7 +244,7 @@ shown below.
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
-|              |              | | (h2q, etc.) |
+|              |              | |  (h3, etc.) |
 +--------------+--------------+-+-------------+
 |                                             |
 |                QUIC Transport               |
@@ -739,14 +739,14 @@ based on the client's initial Destination Connection ID, as described in
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used QUIC.
+be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The header protection key uses the "quic hp" label, see
-{{header-protect}}).  Using these labels provides key separation between QUIC
+{{header-protect}}.  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
@@ -784,7 +784,7 @@ The value of initial_salt is a 20 byte sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of handshake packets from future versions.
+modifying the contents of packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
@@ -814,8 +814,8 @@ packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
-are protected with AEAD_AES_128_GCM and a key derived from the destination
-connection ID in the client's first Initial packet (see {{initial-secrets}}).
+are protected with AEAD_AES_128_GCM and a key derived from the Destination
+Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
@@ -1238,8 +1238,8 @@ protection for these values.
 
 The `extension_data` field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters when the
-version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+quic_transport_parameters extension carries a TransportParameters struct when
+the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.
@@ -1641,6 +1641,13 @@ cb54df7884
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-17
+
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Use of ALPN or equivalent is mandatory (#2263, #2284)
 
 
 ## Since draft-ietf-quic-tls-14
