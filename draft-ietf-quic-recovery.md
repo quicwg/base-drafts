@@ -135,6 +135,12 @@ Crypto Packets:
 : Packets containing CRYPTO data sent in Initial or Handshake
   packets.
 
+Out-of-order Packets:
+
+: Packets that do not increase the largest received packet number for its
+  packet number space by exactly one. Packets arrive out of order
+  when earlier packets are lost or delayed.
+
 # Design of the QUIC Transmission Machinery
 
 All transmissions in QUIC are sent with a packet-level header, which indicates
@@ -244,11 +250,10 @@ ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
 In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send an immediate ACK when it receives a new packet which is not one greater
-than the largest received packet number. A receiver MAY send immediate ACKs
-for the next few ack-eliciting packets that are received, but SHOULD NOT
-send an immediate ACK for more than 1/8 RTT after receiving an out-of-order
-packet.
+send an immediate ACK after it receives an out-of-order packet. It could send
+immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
+1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
+order, then an immediate ACK SHOULD be sent for every received packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
