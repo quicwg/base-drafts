@@ -1368,21 +1368,20 @@ In using TLS, the central key schedule of TLS is used.  As a result of the TLS
 handshake messages being integrated into the calculation of secrets, the
 inclusion of the QUIC transport parameters extension ensures that handshake and
 1-RTT keys are not the same as those that might be produced by a server running
-TLS over TCP.  However, 0-RTT keys only include the ClientHello message and
-might therefore use the same secrets.  To avoid the possibility of
-cross-protocol key synchronization, additional measures are provided to improve
-key separation.
+TLS over TCP.  To avoid the possibility of cross-protocol key synchronization,
+additional measures are provided to improve key separation.
 
 The QUIC packet protection keys and IVs are derived using a different label than
 the equivalent keys in TLS.
 
 To preserve this separation, a new version of QUIC SHOULD define new labels for
-key derivation for packet protection key and IV, plus the header
-protection keys.
+key derivation for packet protection key and IV, plus the header protection
+keys.  This version of QUIC uses the string "quic".  Other versions can use a
+version-specific label in place of that string.
 
-The initial secrets also use a key that is specific to the negotiated QUIC
-version.  New QUIC versions SHOULD define a new salt value used in calculating
-initial secrets.
+The initial secrets use a key that is specific to the negotiated QUIC version.
+New QUIC versions SHOULD define a new salt value used in calculating initial
+secrets.
 
 
 # IANA Considerations
