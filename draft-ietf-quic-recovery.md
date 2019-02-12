@@ -1030,7 +1030,7 @@ GetEarliestLossTime():
     if loss_time[pn_space] != 0 &&
        (time == 0 || loss_time[pn_space] < time):
       time = loss_time[pn_space];
-      space = Initial
+      space = pn_space
   return [time, space]
 
 SetLossDetectionTimer():
