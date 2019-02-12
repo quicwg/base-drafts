@@ -507,7 +507,7 @@ The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
 When a PTO timer expires, the sender sends a probe packet as described in the
-next section. The PTO period MUST be set to twice its current value. This
+next section. The PTO period then MUST be set to twice its current value. This
 exponential reduction in the sender's rate is important because the PTOs might
 be caused by loss of packets or acknowledgements due to severe congestion.
 
