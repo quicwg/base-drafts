@@ -587,7 +587,8 @@ There are three separate QPACK instruction spaces. Encoder instructions
 ({{encoder-instructions}}) carry table updates, decoder instructions
 ({{decoder-instructions}}) carry acknowledgments of table modifications and
 header processing, and header block instructions ({{header-block-instructions}})
-compress a header list by referring to the QPACK table state.
+convey an encoded representation of a header list by referring to the QPACK
+table state.
 
 Encoder and decoder instructions appear on the unidirectional stream types
 described in this section. Header block instructions are contained in HEADERS
@@ -1127,10 +1128,8 @@ TBD.
 
 ## Settings Registration
 
-This document creates two new settings in the "HTTP/3 Settings" registry
-established in {{HTTP3}}.
-
-The entries in the following table are registered by this document.
+This document specifies two settings. The entries in the following table are
+registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 
 |------------------------------|--------|---------------------------|
 | Setting Name                 | Code   | Specification             |
@@ -1141,10 +1140,8 @@ The entries in the following table are registered by this document.
 
 ## Stream Type Registration
 
-This document creates two new streams in the "HTTP/3 Stream Type" registry
-established in {{HTTP3}}.
-
-The entries in the following table are registered by this document.
+This document specifies two stream types. The entries in the following table are
+registered in the "HTTP/3 Stream Type" registry established in {{HTTP3}}.
 
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
@@ -1155,8 +1152,8 @@ The entries in the following table are registered by this document.
 
 ## Error Code Registration
 
-This document establishes the following new error codes in the "HTTP/3 Error
-Code" registry established in {{HTTP3}}.
+This document specifies three error codes. The entries in the following table
+are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
