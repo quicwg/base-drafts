@@ -1131,17 +1131,23 @@ expectation that it will eventually receive an Initial packet.
 
 ## Handling Version Negotiation Packets {#handle-vn}
 
-How a client reacts to receiving a Version Negotiation packet is left as future
-work defined by future versions of QUIC.  Future versions of QUIC that define
-version negotiation with QUIC version 1 MUST define a mechanism that prevents
-version downgrade attacks.
+When a client receives a Version Negotiation packet, it MUST abandon the
+current connection attempt.  Version Negotiation packets are designed to allow
+future versions of QUIC to negotiate the version in use between endpoints.
+It is therefore expected for future versions of QUIC to change how
+implementations of this version of QUIC react to Version Negotiation packets.
+How to perform version negotiation is left as future work defined by future
+versions of QUIC.  In particular, that future work will need to ensure
+robustness against version downgrade attacks {{version-downgrade}}.
+
 
 ### Version Negotiation Between Draft Versions
 
 \[\[RFC editor: please remove this section before publication.]]
 
 When a draft implementation receives a Version Negotiation packet, it MAY use
-it to attempt a new connection with one of the supported versions.
+it to attempt a new connection with one of the versions listed in the packet,
+instead of abandoning the current connection attempt {{handle-vn}}.
 
 The client MUST check that the Destination and Source Connection ID fields
 match the Source and Destination Connection ID fields in a packet that the
@@ -1310,11 +1316,6 @@ with an unpredictable value.  This MUST be at least 8 bytes in length. Until a
 packet is received from the server, the client MUST use the same value unless it
 abandons the connection attempt and starts a new one. The initial Destination
 Connection ID is used to determine packet protection keys for Initial packets.
-
-The final version used for a connection might be different from the version of
-the first Initial from the client.  To enable consistent routing through the
-handshake, a client SHOULD select an initial Destination Connection ID length
-long enough to fulfill the minimum size for every QUIC version it supports.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to match.
@@ -3920,8 +3921,6 @@ The format of the transport parameters is the TransportParameters struct from
 language from Section 3 of {{!TLS13=RFC8446}}.
 
 ~~~
-   uint32 QuicVersion;
-
    enum {
       original_connection_id(0),
       idle_timeout(1),
@@ -3945,9 +3944,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       opaque value<0..2^16-1>;
    } TransportParameter;
 
-   struct {
-      TransportParameter parameters<0..2^16-1>;
-   } TransportParameters;
+   TransportParameter TransportParameters<0..2^16-1>;
 ~~~
 {: #figure-transport-parameters title="Definition of TransportParameters"}
 
@@ -5282,6 +5279,17 @@ being terminated.  If there is no chance in the packet being routed to the
 correct instance, it is better to send a stateless reset than wait for
 connections to time out.  However, this is acceptable only if the routing cannot
 be influenced by an attacker.
+
+## Version Downgrade {#version-downgrade}
+
+This document defines QUIC Version Negotiation packets {{version-negotiation}},
+which can be used to negotiate the QUIC version used between two endpoints.
+However, this document does not specify how this negotiation will be performed
+between this version and subsequent future versions.  In particular, Version
+Negotiation packets do not contain any mechanism to prevent version downgrade
+attacks.  Future version of QUIC that wish to use Version Negotiation packets
+to negotiate the use of that version MUST define a mechanism that is robust
+against version downgrade attacks.
 
 
 # IANA Considerations
