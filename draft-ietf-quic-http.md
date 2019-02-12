@@ -1259,8 +1259,8 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Clients MUST NOT send new requests on the connection after receiving GOAWAY,
-although a new connection MAY be established to send additional requests.
+Clients MUST NOT send new requests on the connection after receiving GOAWAY;
+a new connection MAY be established to send additional requests.
 
 Some requests might already be in transit. If the client has already sent
 requests on streams with a Stream ID greater than or equal to that indicated in
