@@ -1270,10 +1270,10 @@ client.  It is RECOMMENDED that the server explicitly reject such requests (see
 streams.  The client MAY also cancel requests which will not be processed.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.  Servers MAY
-reject individual requests on streams below the indicated ID if these requests
-were not processed.
+been processed; their status cannot be known until a response is received, the
+stream is reset individually, or the connection terminates.  Servers MAY reject
+individual requests on streams below the indicated ID if these requests were not
+processed.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
