@@ -2821,6 +2821,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x1e        | KEYS_READY           | {{frame-keys-ready}}           |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
@@ -3034,6 +3035,9 @@ containing that information is acknowledged.
 
 * PING and PADDING frames contain no information, so lost PING or PADDING frames
   do not require repair.
+
+* KEYS_READY frames are sent until acknowledged or until newer keys are used for
+  sending packets.
 
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
@@ -3700,18 +3704,19 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
+
 #### Abandoning Initial Packets {#discard-initial}
 
-A client stops both sending and processing Initial packets when it sends its
-first Handshake packet.  A server stops sending and processing Initial packets
-when it receives its first Handshake packet.  Though packets might still be in
-flight or awaiting acknowledgment, no further Initial packets need to be
+Endpoints cease both sending and processing Initial packets when it receives a
+Handshake packet containing a KEYS_READY frame.  Though packets might still be
+in flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
+
 
 ### 0-RTT {#packet-0rtt}
 
@@ -3821,8 +3826,10 @@ ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
 MUST treat receipt of Handshake packets with other frames as a connection error.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
-Handshake encryption level is discarded - and no longer retransmitted - when
-Handshake protection keys are discarded.
+Handshake encryption level and the corresponding keys are discarded - and data
+is no longer retransmitted - when a KEYS_READY frame is received in a 1-RTT
+packet.
+
 
 ### Retry Packet {#packet-retry}
 
@@ -3935,6 +3942,7 @@ failed validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
+
 
 ## Short Header Packets {#short-header}
 
@@ -5126,7 +5134,43 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 
-## KEYS_READY Frame {#frame-
+## KEYS_READY Frame {#frame-keys-ready}
+
+An endpoint sends a KEYS_READY frame (type=0x1e) to signal that it has installed
+keys for reading and writing packets.  Receipt of this frame in a packet
+indicates that all earlier keys can be safely discarded.
+
+The KEYS_READY frame contains no additional fields.
+
+The packet that carries a KEYS_READY frame determines which keys are ready.  The
+keys with the same key phase as those used in the packet that carries the
+KEYS_READY frame are present.
+
+An endpoint MUST send a KEYS_READY packet in the first packet it sends using
+keys, but only after having successfully processed a packet using the
+corresponding keys.
+
+KEYS_READY frames are retransmitted when declared lost, however implementations
+need to take care not to retransmit lost KEYS_READY frames if they initiate a
+subsequent key update.  This can happen if an acknowledgment for a packet
+containing a KEYS_READY frame is lost.
+
+Endpoints MUST NOT send KEYS_READY frames in Initial or 0-RTT packets.
+
+A KEYS_READY frame used during the handshake can be used to indicate the
+availability of Handshake keys by including it in a Handshake packet.  An
+endpoint sends this frame in its first Handshake packet.  Once received, an
+endpoint can discard Initial keys.
+
+A KEYS_READY frame used after the completion of the handshake in 1-RTT packets
+indicates that Handshake keys are no longer needed.  A client sends this frame
+in its first 1-RTT packet, and a server sends this frame in the first packet it
+sends after completing the handshake.  Note that a server might send 1-RTT keys
+prior to this.
+
+An endpoint uses the KEYS_READY frame in 1-RTT packets to indicate that it is
+able to receive a key update (see Section 6 of {{QUIC-TLS}}).
+
 
 ## Extension Frames
 

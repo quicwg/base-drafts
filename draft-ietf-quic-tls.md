@@ -1118,7 +1118,7 @@ message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
 {{ex-key-update}} shows a key update process, with keys used identified with @M
-and @N.  Values in brackets \[] indicate the value of Key Phase bits.
+and @N.  Values in brackets \[] indicate the value of Key Phase bit.
 
 ~~~
    Initiating Peer                    Responding Peer
@@ -1155,87 +1155,75 @@ uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
-The endpoint clears the Key Update Permitted bit, and toggles the value of the
-Key Phase bit, and uses the updated key and IV to protect all subsequent
-packets.
+The endpoint toggles the value of the Key Phase bit, and uses the updated key
+and IV to protect all subsequent packets.
 
-An endpoint MUST NOT initiate more than one key update at a time.  A subsequent
-key update can only be performed after the endpoint has successfully processed a
-packet with a matching key phase and the Key Update Permitted bit set.
-Together, these indicate that the key update was received and acted on.
+An endpoint MUST NOT initiate a key update prior to having received a KEYS_READY
+frame in a packet from the current key phase.  A subsequent key update can only
+be performed after the endpoint has successfully processed a KEYS_READY frame
+from a packet with a matching key phase.  This ensures that keys are available
+to both peers before another can be initiated.
 
-Once an endpoint has received and successfully processed packets with the same
-key phase, this indicates that the peer has also updated keys.  The
-endpoint can then set the Key Update Permitted bit to 1 on packets it
-subsequently sends.  An endpoint MUST NOT set Key Update Permitted to 1 on
-packets it sends unless it has successfully processed packets with a matching
-key phase.  An endpoint MAY defer setting Key Update Permitted to 1 until it has
-discarded old keys, see {{key-update-old-keys}}.
-
-Using Key Update Permitted in this manner guarantees at least one round trip
-between updates, preventing multiple updates that could result in endpoints
-being unable to process any packets.
-
-An endpoint that receives a packet protected with old keys that includes an
-acknowledgement for a packet protected with newer keys MAY treat that as a
-connection error of type KEY_UDPATE_ERROR.
+Once an endpoint has successfully processed a packet with the same key phase, it
+can send a KEYS_READY frame.  Endpoints MAY defer sending a KEYS_READY frame
+after a key update (see {{key-update-old-keys}}).
 
 
 ## Responding to a Key Update
 
-An endpoint that sets Key Update Permitted to 1 on packets it sends is willing
-to accept key updates.  If a packet is received with a key phase that differs
-from the value the endpoint expects, the endpoint creates a new packet
-protection secret for reading and the corresponding key and IV.  The endpoint
-uses the same key derivation process as its peer uses to generate keys for
-receiving.
+An endpoint that sends a KEYS_READY frame can accept further key updates.  A key
+update can happen even without seeing a KEYS_READY frame from the peer.  If a
+packet is received with a key phase that differs from the value the endpoint
+used to protect the packet containing its last KEYS_READY frame, the endpoint
+creates a new packet protection secret for reading and the corresponding key and
+IV.  An endpoint uses the same key derivation process as its peer uses to
+generate keys for receiving.
 
 If the packet protection is successfully removed using the updated key and IV,
 then the keys the endpoint initiates a key update in response, as described in
-{{key-update-initiate}}.  However, as packets with a matching key phase have
-been received, the Key Update Permitted bit can be set to 1 on the next packet
-it sends.
+{{key-update-initiate}}.  An endpoint that responds to a key update MUST send a
+KEYS_READY frame to indicate that it is both sending and receiving with updated
+keys, though it MAY defer sending the frame (see {{key-update-old-keys}}).
 
 An endpoint does not always need to send packets when it detects that its peer
-has updated keys.  The next packet that it sends will simply use the new keys.
-If an endpoint detects a second update before it has sent any packets with
-updated keys, it indicates that its peer has updated keys twice without awaiting
-a reciprocal update.  An endpoint MUST treat consecutive key updates as a
-connection error of type KEY_UDPATE_ERROR.
+has updated keys.  The next packet that it sends use the new keys and include
+the KEYS_READY frame.  If an endpoint detects a second update before it has sent
+any packets with updated keys or a KEYS_READY frame, it indicates that its peer
+has updated keys twice without awaiting a reciprocal update.  An endpoint MUST
+treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
+
+Endpoints responding to an apparent key update MUST NOT generate a timing
+side-channel signal that might indicate that the Key Phase bit was invalid (see
+{{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
+place of discarded keys when key updates are not permitted.
 
 
 ## Using Old Keys {#key-update-old-keys}
 
-If the most recent packet sent by the endpoint contained a Key Update Permitted
-bit set to 0, a key phase other than the value expected indicates that the
-packet was protected with old keys.  If those old keys are available, then they
-can be used to remove packet protection.
+During a key update, packets protected with older keys might arrive if they were
+delayed by the network.  If those old keys are available, then they can be used
+to remove packet protection.
 
-Old keys might be used to remove protection from packets that were are reordered
-in the network.  However, it is never valid for old keys to be used to protect
-packets with packets that have higher packet numbers than packets that were
-protected with newer keys.  An endpoint that successfully removes protection
-with old keys when newer keys were used for packets with lower packet numbers
-MUST treat this as a connection error of type KEY_UPDATE_ERROR.
+After a key update, an endpoint MAY delay sending the KEYS_READY frame by up to
+three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}) to minimize the
+number of active keys it maintains.  During this time, an endpoint can use old
+keys to process delayed packets rather than enabling a new key update.  This
+only applies to key updates that use the Key Phase bit; endpoints MUST NOT defer
+sending of KEYS_READY during and immediately after the handshake.
+
+Even if old keys are available, those keys MUST NOT be used to protect packets
+with packets that have higher packet numbers than packets that were protected
+with newer keys.  An endpoint that successfully removes protection with old keys
+when newer keys were used for packets with lower packet numbers MUST treat this
+as a connection error of type KEY_UPDATE_ERROR.
 
 An endpoint SHOULD retain old read keys for a period of no more than three times
-the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old read
-keys and their corresponding secrets SHOULD be discarded.
+the current PTO.  After this period, old read keys and their corresponding
+secrets SHOULD be discarded.
 
-An endpoint MAY keep the Key Update Permitted bit set to 0 until it discards old
-read keys to limit the number of keys it maintains.  An endpoint MAY also
-prevent key update until it discards keys from the handshake, including any
-0-RTT keys.  An endpoint SHOULD set the Key Update Permitted bit when possible.
-
-Once set, the Key Update Permitted bit MUST NOT be cleared for packets with the
-same key phase.  An endpoint MAY treat receipt of a packet with the Key Update
-Permitted bit cleared as a connection error of type KEY_UPDATE_ERROR if the bit
-was previously set on packets protected with the same keys.
-
-Endpoints MUST NOT generate a timing side-channel signal that might indicate
-that the Key Update field was invalid (see {{header-protect-analysis}}).
-Endpoints can use dummy packet protection keys in place of discarded keys when
-key updates are not permitted.
+An endpoint that receives a packet protected with old keys that includes an
+acknowledgement for a packet protected with newer keys MAY treat that as a
+connection error of type KEY_UPDATE_ERROR.
 
 
 ## Key Update Frequency
