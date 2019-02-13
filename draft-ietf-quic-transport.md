@@ -5287,8 +5287,8 @@ which can be used to negotiate the QUIC version used between two endpoints.
 However, this document does not specify how this negotiation will be performed
 between this version and subsequent future versions.  In particular, Version
 Negotiation packets do not contain any mechanism to prevent version downgrade
-attacks.  Future version of QUIC that wish to use Version Negotiation packets
-to negotiate the use of that version MUST define a mechanism that is robust
+attacks.  Future versions of QUIC that use Version Negotiation packets
+MUST define a mechanism that is robust
 against version downgrade attacks.
 
 
