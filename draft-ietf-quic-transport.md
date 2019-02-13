@@ -1398,8 +1398,8 @@ transport parameters for use in the new connection.  If 0-RTT data is accepted
 by the server, the server MUST NOT reduce any limits or alter any values that
 might be violated by the client with its 0-RTT data.  In particular, a server
 that accepts 0-RTT data MUST NOT set values for the following parameters
-({{transport-parameter-definitions}}) that are smaller
-than the remembered value of those parameters.
+({{transport-parameter-definitions}}) that are smaller than the remembered value
+of those parameters.
 
 * initial_max_data
 * initial_max_stream_data_bidi_local
@@ -1421,6 +1421,15 @@ server's new preferred_address value in the handshake.
 
 A server MUST either reject 0-RTT data or abort a handshake if the implied
 values for transport parameters cannot be supported.
+
+A client MUST NOT use updated values it learns either from the server's updated
+transport parameters or frames carried in 1-RTT when sending frames in 0-RTT
+packets.  Updated values of transport parameters from the handshake only apply
+to 1-RTT packets.  For instance, flow control limits from remembered transport
+parameters apply to all 0-RTT packets even if those values are increased by the
+handshake; increased limits from frames cannot be applied, because the client
+will send frames that use any increased limits in 1-RTT packets (see
+{{packet-0rtt}}).
 
 
 ### New Transport Parameters
@@ -3652,26 +3661,30 @@ resend data in 0-RTT packets after it sends a new Initial packet.
 
 A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
 used to protect 0-RTT packets will not change as a result of responding to a
-Retry packet unless the client also regenerates the
-cryptographic handshake message.  Sending packets with the same packet number in
-that case is likely to compromise the packet protection for all 0-RTT packets
-because the same key and nonce could be used to protect different content.
+Retry packet unless the client also regenerates the cryptographic handshake
+message.  Sending packets with the same packet number in that case is likely to
+compromise the packet protection for all 0-RTT packets because the same key and
+nonce could be used to protect different content.
 
-Receiving a Retry packet, especially a Retry that changes
-the connection ID used for subsequent packets, indicates a strong possibility
-that 0-RTT packets could be lost.  A client only receives acknowledgments for
-its 0-RTT packets once the handshake is complete.  Consequently, a server might
-expect 0-RTT packets to start with a packet number of 0.  Therefore, in
-determining the length of the packet number encoding for 0-RTT packets, a client
-MUST assume that all packets up to the current packet number are in flight,
-starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
-longer packet number encoding.
+Receiving a Retry packet, especially a Retry that changes the connection ID used
+for subsequent packets, indicates a strong possibility that 0-RTT packets could
+be lost.  A client only receives acknowledgments for its 0-RTT packets once the
+handshake is complete.  Consequently, a server might expect 0-RTT packets to
+start with a packet number of 0.  Therefore, in determining the length of the
+packet number encoding for 0-RTT packets, a client MUST assume that all packets
+up to the current packet number are in flight, starting from a packet number of
+0.  Thus, 0-RTT packets could need to use a longer packet number encoding.
 
 A client SHOULD instead generate a fresh cryptographic handshake message and
 start packet numbers from 0.  This ensures that new 0-RTT packets will not use
 the same keys, avoiding any risk of key and nonce reuse; this also prevents
 0-RTT packets from previous handshake attempts from being accepted as part of
 the connection.
+
+A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
+from the server.  This means that 0-RTT packets can't contain any response to
+packets a server sends.  For instance, a client cannot send an ACK frame in a
+0-RTT packet, because that can only acknowledge a 1-RTT packet.
 
 
 ### Handshake Packet {#packet-handshake}
