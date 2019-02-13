@@ -1266,7 +1266,7 @@ Initial[1]: ACK[0]
 Handshake[0]: CRYPTO[FIN], ACK[0]
 1-RTT[0]: STREAM[0, "..."], ACK[0] ->
 
-                           1-RTT[1]: STREAM[55, "..."], ACK[0]
+                            1-RTT[1]: STREAM[3, "..."], ACK[0]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
@@ -1288,9 +1288,9 @@ Initial[0]: CRYPTO[CH]
 
 Initial[1]: ACK[0]
 Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[2]: STREAM[0, "..."] ACK[0] ->
+1-RTT[1]: STREAM[0, "..."] ACK[0] ->
 
-                         1-RTT[1]: STREAM[55, "..."], ACK[1,2]
+                          1-RTT[1]: STREAM[3, "..."], ACK[0,1]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-0rtt-handshake title="Example 0-RTT Handshake"}
