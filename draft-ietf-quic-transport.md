@@ -1259,15 +1259,13 @@ Client                                                  Server
 Initial[0]: CRYPTO[CH] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-           Handshake[0]: KEYS_READY, CRYPTO[EE, CERT, CV, FIN]
+           Handshake[0]: KEYS_ACTIVE, CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 
-Initial[1]: ACK[0]
-Handshake[0]: KEYS_READY, CRYPTO[FIN], ACK[0]
-1-RTT[0]: KEYS_READY, STREAM[0, "..."], ACK[0] ->
+Handshake[0]: KEYS_ACTIVE, CRYPTO[FIN], ACK[0]
+1-RTT[0]: KEYS_ACTIVE, STREAM[0, "..."], ACK[0] ->
 
-               1-RTT[1]: KEYS_READY, STREAM[55, "..."], ACK[0]
-                                       <- Handshake[1]: ACK[0]
+               1-RTT[1]: KEYS_ACTIVE, STREAM[55, "..."], ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
@@ -1283,15 +1281,13 @@ Initial[0]: CRYPTO[CH]
 0-RTT[0]: STREAM[0, "..."] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-           Handshake[0]: KEYS_READY, CRYPTO[EE, CERT, CV, FIN]
+           Handshake[0]: KEYS_ACTIVE, CRYPTO[EE, CERT, CV, FIN]
                           <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
-Initial[1]: ACK[0]
-Handshake[0]: KEYS_READY, CRYPTO[FIN], ACK[0]
-1-RTT[2]: KEYS_READY, STREAM[0, "..."] ACK[0] ->
+Handshake[0]: KEYS_ACTIVE, CRYPTO[FIN], ACK[0]
+1-RTT[2]: KEYS_ACTIVE, STREAM[0, "..."] ACK[0] ->
 
-             1-RTT[1]: KEYS_READY, STREAM[55, "..."], ACK[1,2]
-                                       <- Handshake[1]: ACK[0]
+             1-RTT[1]: KEYS_ACTIVE, STREAM[55, "..."], ACK[1,2]
 ~~~~
 {: #tls-0rtt-handshake title="Example 0-RTT Handshake"}
 
@@ -2720,7 +2716,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
-| 0x1e        | KEYS_READY           | {{frame-keys-ready}}           |
+| 0x1e        | KEYS_ACTIVE          | {{frame-keys-active}}          |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
@@ -2935,8 +2931,8 @@ containing that information is acknowledged.
 * PING and PADDING frames contain no information, so lost PING or PADDING frames
   do not require repair.
 
-* KEYS_READY frames are sent until acknowledged or until newer keys are used for
-  sending packets.
+* KEYS_ACTIVE frames are sent until acknowledged or until newer keys are used
+  for sending packets.
 
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
@@ -3605,12 +3601,12 @@ subsequent to the first do not need to fit within a single UDP datagram.
 
 #### Abandoning Initial Packets {#discard-initial}
 
-Endpoints cease both sending and processing Initial packets when it receives a
-Handshake packet containing a KEYS_READY frame.  Though packets might still be
-in flight or awaiting acknowledgment, no further Initial packets need to be
-exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+Endpoints cease both sending and processing Initial packets when it both sends
+and receives a Handshake packet containing a KEYS_ACTIVE frame.  Though packets
+might still be in flight or awaiting acknowledgment, no further Initial packets
+need to be exchanged beyond this point.  Initial packet protection keys are
+discarded (see Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and
+congestion control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
@@ -3725,8 +3721,8 @@ MUST treat receipt of Handshake packets with other frames as a connection error.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
 Handshake encryption level and the corresponding keys are discarded - and data
-is no longer retransmitted - when a KEYS_READY frame is received in a 1-RTT
-packet.
+is no longer retransmitted - when a KEYS_ACTIVE frame is both sent and received
+in a 1-RTT packet.
 
 
 ### Retry Packet {#packet-retry}
@@ -5020,41 +5016,41 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 
-## KEYS_READY Frame {#frame-keys-ready}
+## KEYS_ACTIVE Frame {#frame-keys-active}
 
-An endpoint sends a KEYS_READY frame (type=0x1e) to signal that it has installed
-keys for reading and writing packets.  Receipt of this frame in a packet
-indicates that all earlier keys can be safely discarded.
+An endpoint sends a KEYS_ACTIVE frame (type=0x1e) to signal that it has
+installed keys for both sending and receiving packets.  Once this frame has been
+both sent and received, older keys can be safely discarded.
 
-The KEYS_READY frame contains no additional fields.
+The KEYS_ACTIVE frame contains no additional fields.
 
-The packet that carries a KEYS_READY frame determines which keys are ready.  The
-keys with the same key phase as those used in the packet that carries the
-KEYS_READY frame are present.
+The packet that carries a KEYS_ACTIVE frame determines which keys are ready.
+The keys with the same key phase as those used in the packet that carries the
+KEYS_ACTIVE frame are present.
 
-An endpoint MUST send a KEYS_READY packet in the first packet it sends using
+An endpoint MUST send a KEYS_ACTIVE packet in the first packet it sends using
 keys, but only after having successfully processed a packet using the
 corresponding keys.
 
-KEYS_READY frames are retransmitted when declared lost, however implementations
-need to take care not to retransmit lost KEYS_READY frames if they initiate a
+KEYS_ACTIVE frames are retransmitted when declared lost, however implementations
+need to take care not to retransmit lost KEYS_ACTIVE frames if they initiate a
 subsequent key update.  This can happen if an acknowledgment for a packet
-containing a KEYS_READY frame is lost.
+containing a KEYS_ACTIVE frame is lost.
 
-Endpoints MUST NOT send KEYS_READY frames in Initial or 0-RTT packets.
+Endpoints MUST NOT send KEYS_ACTIVE frames in Initial or 0-RTT packets.
 
-A KEYS_READY frame used during the handshake can be used to indicate the
+A KEYS_ACTIVE frame used during the handshake can be used to indicate the
 availability of Handshake keys by including it in a Handshake packet.  An
 endpoint sends this frame in its first Handshake packet.  Once received, an
 endpoint can discard Initial keys.
 
-A KEYS_READY frame used after the completion of the handshake in 1-RTT packets
+A KEYS_ACTIVE frame used after the completion of the handshake in 1-RTT packets
 indicates that Handshake keys are no longer needed.  A client sends this frame
 in its first 1-RTT packet, and a server sends this frame in the first packet it
 sends after completing the handshake.  Note that a server might send 1-RTT keys
 prior to this.
 
-An endpoint uses the KEYS_READY frame in 1-RTT packets to indicate that it is
+An endpoint uses the KEYS_ACTIVE frame in 1-RTT packets to indicate that it is
 able to receive a key update (see Section 6 of {{QUIC-TLS}}).
 
 

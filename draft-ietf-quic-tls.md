@@ -1101,7 +1101,7 @@ anticipation of receiving a ClientHello.
 # Key Update {#key-update}
 
 Once the 1-RTT keys are established and confirmed through the use of the
-KEYS_READY frame, it is possible to update the keys used to protect packets.
+KEYS_ACTIVE frame, it is possible to update the keys used to protect packets.
 
 The Key Phase bit is used to indicate which packet protection keys are used to
 protect the packet.  The Key Phase bit is initially set to 0 for the first set
@@ -1124,20 +1124,20 @@ and @N.  Values in brackets \[] indicate the value of Key Phase bit.
    Initiating Peer                    Responding Peer
 
 @M [0] QUIC Packets
-       KEYS_READY
+       KEYS_ACTIVE
                       -------->
                                       QUIC Packets [0] @M
-                                        KEYS_READY
+                                       KEYS_ACTIVE
                       <--------
 ... Update to @N
 @N [1] QUIC Packets
                       -------->
                                          Update to @N ...
                                       QUIC Packets [1] @N
-                                        KEYS_READY
+                                       KEYS_ACTIVE
                       <--------
 @N [1] QUIC Packets
-       KEYS_READY
+       KEYS_ACTIVE
 ... Key Update Permitted
                       -------->
                                  Key Update Permitted ...
@@ -1158,23 +1158,23 @@ corresponding key and IV are created from that secret as defined in
 The endpoint toggles the value of the Key Phase bit, and uses the updated key
 and IV to protect all subsequent packets.
 
-An endpoint MUST NOT initiate a key update prior to having received a KEYS_READY
-frame in a packet from the current key phase.  A subsequent key update can only
-be performed after the endpoint has successfully processed a KEYS_READY frame
-from a packet with a matching key phase.  This ensures that keys are available
-to both peers before another can be initiated.
+An endpoint MUST NOT initiate a key update prior to having received a
+KEYS_ACTIVE frame in a packet from the current key phase.  A subsequent key
+update can only be performed after the endpoint has successfully processed a
+KEYS_ACTIVE frame from a packet with a matching key phase.  This ensures that
+keys are available to both peers before another can be initiated.
 
 Once an endpoint has successfully processed a packet with the same key phase, it
-can send a KEYS_READY frame.  Endpoints MAY defer sending a KEYS_READY frame
+can send a KEYS_ACTIVE frame.  Endpoints MAY defer sending a KEYS_ACTIVE frame
 after a key update (see {{key-update-old-keys}}).
 
 
 ## Responding to a Key Update
 
-An endpoint that sends a KEYS_READY frame can accept further key updates.  A key
-update can happen even without seeing a KEYS_READY frame from the peer.  If a
-packet is received with a key phase that differs from the value the endpoint
-used to protect the packet containing its last KEYS_READY frame, the endpoint
+An endpoint that sends a KEYS_ACTIVE frame can accept further key updates.  A
+key update can happen even without seeing a KEYS_ACTIVE frame from the peer.  If
+a packet is received with a key phase that differs from the value the endpoint
+used to protect the packet containing its last KEYS_ACTIVE frame, the endpoint
 creates a new packet protection secret for reading and the corresponding key and
 IV.  An endpoint uses the same key derivation process as its peer uses to
 generate keys for receiving.
@@ -1182,15 +1182,16 @@ generate keys for receiving.
 If the packet protection is successfully removed using the updated key and IV,
 then the keys the endpoint initiates a key update in response, as described in
 {{key-update-initiate}}.  An endpoint that responds to a key update MUST send a
-KEYS_READY frame to indicate that it is both sending and receiving with updated
+KEYS_ACTIVE frame to indicate that it is both sending and receiving with updated
 keys, though it MAY defer sending the frame (see {{key-update-old-keys}}).
 
 An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends use the new keys and include
-the KEYS_READY frame.  If an endpoint detects a second update before it has sent
-any packets with updated keys or a KEYS_READY frame, it indicates that its peer
-has updated keys twice without awaiting a reciprocal update.  An endpoint MUST
-treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
+the KEYS_ACTIVE frame.  If an endpoint detects a second update before it has
+sent any packets with updated keys or a KEYS_ACTIVE frame, it indicates that its
+peer has updated keys twice without awaiting a reciprocal update.  An endpoint
+MUST treat consecutive key updates as a connection error of type
+KEY_UPDATE_ERROR.
 
 Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
@@ -1204,12 +1205,12 @@ During a key update, packets protected with older keys might arrive if they were
 delayed by the network.  If those old keys are available, then they can be used
 to remove packet protection.
 
-After a key update, an endpoint MAY delay sending the KEYS_READY frame by up to
+After a key update, an endpoint MAY delay sending the KEYS_ACTIVE frame by up to
 three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}) to minimize the
 number of active keys it maintains.  During this time, an endpoint can use old
 keys to process delayed packets rather than enabling a new key update.  This
 only applies to key updates that use the Key Phase bit; endpoints MUST NOT defer
-sending of KEYS_READY during and immediately after the handshake.
+sending of KEYS_ACTIVE during and immediately after the handshake.
 
 Even if old keys are available, those keys MUST NOT be used to protect packets
 with packets that have higher packet numbers than packets that were protected
