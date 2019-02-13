@@ -1853,9 +1853,9 @@ An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
 has sent this transport parameter, but detects that a peer has nonetheless
 migrated to a different network MAY treat this as a connection error of type
-INVALID_MIGRATION.  Similarly, an endpoint MUST NOT migrate if its peer supplies
-a zero-length connection ID as packets without a Destination Connection ID
-cannot be attributed to a connection based on address tuple.
+INVALID_MIGRATION.  Similarly, an endpoint MUST NOT initiate migration if its
+peer supplies a zero-length connection ID as packets without a Destination
+Connection ID cannot be attributed to a connection based on address tuple.
 
 Not all changes of peer address are intentional migrations. The peer could
 experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
