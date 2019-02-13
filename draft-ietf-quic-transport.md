@@ -1135,7 +1135,8 @@ When a client receives a Version Negotiation packet, it MUST abandon the
 current connection attempt.  Version Negotiation packets are designed to allow
 future versions of QUIC to negotiate the version in use between endpoints.
 It is therefore expected for future versions of QUIC to change how
-implementations of this version of QUIC react to Version Negotiation packets.
+implementations which support multiple versions of QUIC react to Version
+Negotiation packets when attempting to establish a connection of this version.
 How to perform version negotiation is left as future work defined by future
 versions of QUIC.  In particular, that future work will need to ensure
 robustness against version downgrade attacks {{version-downgrade}}.
