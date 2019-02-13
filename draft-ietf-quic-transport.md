@@ -1259,14 +1259,14 @@ Client                                                  Server
 Initial[0]: CRYPTO[CH] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
+           Handshake[0]: KEYS_READY, CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 
 Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[0]: STREAM[0, "..."], ACK[0] ->
+Handshake[0]: KEYS_READY, CRYPTO[FIN], ACK[0]
+1-RTT[0]: KEYS_READY, STREAM[0, "..."], ACK[0] ->
 
-                           1-RTT[1]: STREAM[55, "..."], ACK[0]
+               1-RTT[1]: KEYS_READY, STREAM[55, "..."], ACK[0]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
@@ -1283,14 +1283,14 @@ Initial[0]: CRYPTO[CH]
 0-RTT[0]: STREAM[0, "..."] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-                        Handshake[0] CRYPTO[EE, CERT, CV, FIN]
+           Handshake[0]: KEYS_READY, CRYPTO[EE, CERT, CV, FIN]
                           <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
 Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
-1-RTT[2]: STREAM[0, "..."] ACK[0] ->
+Handshake[0]: KEYS_READY, CRYPTO[FIN], ACK[0]
+1-RTT[2]: KEYS_READY, STREAM[0, "..."] ACK[0] ->
 
-                         1-RTT[1]: STREAM[55, "..."], ACK[1,2]
+             1-RTT[1]: KEYS_READY, STREAM[55, "..."], ACK[1,2]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-0rtt-handshake title="Example 0-RTT Handshake"}
