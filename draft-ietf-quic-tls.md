@@ -1316,7 +1316,7 @@ In the core protocol, particular attention needs to be paid to STREAM frames,
 which carry application data.  If another frame type carries, or could carry,
 application semantics, then the risk from replay attack needs to be considered.
 For instance, though this is likely to be inadvisable, an application that
-attached semantics to increases in flow control credit or stream cancellation
+attaches semantics to increases in flow control credit or stream cancellation
 would need to assess whether those uses were vulnerable to replay attack.
 
 Extensions to QUIC might create an additional exposure to replay attack if they
