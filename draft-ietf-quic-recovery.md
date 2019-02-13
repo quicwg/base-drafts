@@ -1031,7 +1031,7 @@ GetEarliestLossTime():
        (time == 0 || loss_time[pn_space] < time):
       time = loss_time[pn_space];
       space = pn_space
-  return [time, space]
+  return time, space
 
 SetLossDetectionTimer():
   // Don't arm timer if there are no ack-eliciting packets
