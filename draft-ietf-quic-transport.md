@@ -856,6 +856,11 @@ limits are set in the transport parameters (see
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
 
+Limits advertised by the server using the MAX_STREAMS frame do not apply to
+streams used in 0-RTT. Until the server has received a 1-RTT packet from the
+client, it SHOULD continue to enforce the limits from the remembered transport
+parameters (see {{zerortt-parameters}}).
+
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
 treat this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
