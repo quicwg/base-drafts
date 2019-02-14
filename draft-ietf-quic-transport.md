@@ -3683,7 +3683,7 @@ the same keys, avoiding any risk of key and nonce reuse; this also prevents
 the connection.
 
 A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
-from the server.  This means that 0-RTT packets can't contain any response to
+from the server.  This means that 0-RTT packets cannot contain any response to
 frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
 0-RTT packet, because that can only acknowledge a 1-RTT packet.  An
 acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.
