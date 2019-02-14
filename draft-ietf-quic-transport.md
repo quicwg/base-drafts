@@ -1394,7 +1394,7 @@ server's new values in the handshake.
 The client MAY store the server's original max_ack_delay and max_packet_size
 transport parameters. The server MAY accept 0-RTT and subsequently provide
 different values for these transport parameters for use in the new connection.
-The client MUST use these values after acknowledging them. If the server does
+The client MUST use these values after the handshake completes. If the server does
 not provide a new value, the client MUST use the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
