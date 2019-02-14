@@ -3686,7 +3686,10 @@ A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
 frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
 0-RTT packet, because that can only acknowledge a 1-RTT packet.  An
-acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.
+acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.  A server
+MAY treat a violation of remembered limits as a connection error of an
+appropriate type (for instance, a FLOW_CONTROL_ERROR for exceeding stream data
+limits).
 
 
 ### Handshake Packet {#packet-handshake}
