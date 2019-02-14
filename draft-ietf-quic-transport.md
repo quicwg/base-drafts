@@ -3414,7 +3414,7 @@ packet type.  While type-specific semantics for this version are described in
 the following sections, several long-header packets in this version of QUIC
 contain these additional fields:
 
-Reserved Bit (R):
+Reserved Bits (R):
 
 : Two bits (those with a mask of 0x0c) of byte 0 are reserved across multiple
   packet types.  These bits are protected using header protection (see Section
@@ -5029,10 +5029,6 @@ The packet that carries a KEYS_ACTIVE frame determines which keys are active and
 usable.  The keys with the same key phase as those used in the packet that
 carries the KEYS_ACTIVE frame are active.
 
-An endpoint MUST send a KEYS_ACTIVE packet in the first packet it sends using
-keys, but only if it is also able to receive packets that are protected using
-the corresponding keys.
-
 KEYS_ACTIVE frames are retransmitted when declared lost, however implementations
 need to take care not to retransmit lost KEYS_ACTIVE frames if they initiate a
 subsequent key update.  This can happen if an acknowledgment for a packet
@@ -5040,17 +5036,17 @@ containing a KEYS_ACTIVE frame is lost.
 
 Endpoints MUST NOT send KEYS_ACTIVE frames in Initial or 0-RTT packets.
 
-A KEYS_ACTIVE frame used during the handshake can be used to indicate the
+A KEYS_ACTIVE frame sent during the handshake can be used to indicate the
 availability of Handshake keys by including it in a Handshake packet.  An
-endpoint sends this frame in its first Handshake packet.  Once received, an
-endpoint can discard Initial keys.
+endpoint MUST send this frame in its first Handshake packet.  Once received, an
+endpoint can discard Initial keys.  An endpoint SHOULD send a KEYS_ACTIVE frame
+in every Handshake packet it sends.
 
-A KEYS_ACTIVE frame used after the completion of the handshake in 1-RTT packets
-indicates that Handshake keys are no longer needed.  A client sends this frame
-in its first 1-RTT packet, and a server sends this frame in the first packet it
-sends after completing the handshake.  A server might send 1-RTT keys prior to
-this; a server MUST NOT use 1-RTT keys for removing packet protection until the
-cryptographic handshake is complete.
+A KEYS_ACTIVE frame sent in 1-RTT packets indicates that Handshake keys are no
+longer needed.  A client MUST send this frame in its first 1-RTT packet, and a
+server MUST send this frame in the first packet it sends after completing the
+handshake.  A server might send 1-RTT packets prior to this; a server MUST NOT
+process 1-RTT packets until the cryptographic handshake is complete.
 
 An endpoint uses the KEYS_ACTIVE frame in 1-RTT packets to indicate that it is
 able to receive a key update (see Section 6 of {{QUIC-TLS}}).

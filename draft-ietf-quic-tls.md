@@ -1103,9 +1103,9 @@ anticipation of receiving a ClientHello.
 Once the 1-RTT keys are established and confirmed through the use of the
 KEYS_ACTIVE frame, it is possible to update the keys used to protect packets.
 
-The Key Phase bit is used to indicate which packet protection keys are used to
-protect the packet.  The Key Phase bit is initially set to 0 for the first set
-of 1-RTT packets.  The Key Phase bit is toggled to signal each key update.
+The Key Phase bit indicates which packet protection keys are used to protect the
+packet.  The Key Phase bit is initially set to 0 for the first set of 1-RTT
+packets and toggled to signal each subsequent key update.
 
 The Key Phase bit allows a recipient to detect a change in keying material
 without needing to receive the first packet that triggered the change.  An
@@ -1155,8 +1155,8 @@ uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
-The endpoint toggles the value of the Key Phase bit, and uses the updated key
-and IV to protect all subsequent packets.
+The endpoint toggles the value of the Key Phase bit and uses the updated key and
+IV to protect all subsequent packets.
 
 An endpoint MUST NOT initiate a key update prior to having received and
 successfully processed a KEYS_ACTIVE frame contained in a packet from the
@@ -1186,10 +1186,10 @@ KEYS_ACTIVE frame, though endpoints MAY defer sending the frame (see
 An endpoint that sends a KEYS_ACTIVE frame can accept further key updates.  A
 key update can happen even without seeing a KEYS_ACTIVE frame from the peer.  If
 a packet is received with a key phase that differs from the value the endpoint
-used to protect the packet containing its last KEYS_ACTIVE frame, the endpoint
-creates a new packet protection secret for reading and the corresponding key and
-IV.  An endpoint uses the same key derivation process as its peer uses to
-generate keys for receiving.
+used to protect the last packet it sent, the endpoint creates a new packet
+protection secret for reading and the corresponding key and IV.  An endpoint
+uses the same key derivation process as its peer uses to generate keys for
+receiving.
 
 If the packet is successfully processed using the updated key and IV, then the
 keys the endpoint initiates a key update in response, as described in
@@ -1213,6 +1213,9 @@ will generate no variation in the timing signal produced by attempting to remove
 packet protection, but all packets with an invalid Key Phase bit will be
 rejected.
 
+An endpoint might not receive an acknowledgment for the packet that contains a
+KEYS_ACTIVE before receiving another key update.
+
 
 ## Using Old Keys {#key-update-old-keys}
 
@@ -1232,18 +1235,18 @@ only applies to key updates; endpoints MUST NOT defer sending of KEYS_ACTIVE
 during and immediately after the handshake.
 
 Even if old keys are available, those keys MUST NOT be used to protect packets
-with packets that have higher packet numbers than packets that were protected
-with newer keys.  An endpoint that successfully removes protection with old keys
-when newer keys were used for packets with lower packet numbers MUST treat this
-as a connection error of type KEY_UPDATE_ERROR.
+that have higher packet numbers than packets that were protected with newer
+keys.  An endpoint that successfully removes protection with old keys when newer
+keys were used for packets with lower packet numbers MUST treat this as a
+connection error of type KEY_UPDATE_ERROR.
 
 An endpoint SHOULD retain old read keys for a period of no more than three times
 the current PTO.  After this period, old read keys and their corresponding
 secrets SHOULD be discarded.
 
-An endpoint that receives a packet protected with old keys that includes an
-acknowledgement for a packet protected with newer keys MAY treat that as a
-connection error of type KEY_UPDATE_ERROR.
+An endpoint that receives an acknowledgement for a packet protected with new
+keys in a packet protected with older keys MAY treat that as a connection error
+of type KEY_UPDATE_ERROR.
 
 
 ## Key Update Frequency
