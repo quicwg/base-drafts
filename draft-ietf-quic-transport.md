@@ -1394,16 +1394,18 @@ server's new values in the handshake.
 The client MAY store the server's original max_ack_delay and max_packet_size
 transport parameters. The server MAY accept 0-RTT and subsequently provide
 different values for these transport parameters for use in the new connection.
-The client MUST use these values after the handshake completes. If the server does
-not provide a new value, the client MUST use the default value.
+The client MUST use these values after the handshake completes. If the server
+does not provide a new value, the client MUST use the default value.
+
+The definition of new transport parameters ({{new-transport-parameters}}) MUST
+specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
+not store a transport parameter it cannot process.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
-parameters used by the server, including new transport parameters
-({{new-transport-parameters}}) that it is able to process. The server can
-remember these transport parameters, or store an integrity-protected copy of
-the values in the ticket and recover the information when accepting 0-RTT
-data. A server uses the transport parameters in determining whether to accept
-0-RTT data.
+parameters used by the server. The server can remember these transport
+parameters, or store an integrity-protected copy of the values in the ticket
+and recover the information when accepting 0-RTT data. A server uses the
+transport parameters in determining whether to accept 0-RTT data.
 
 If 0-RTT data is accepted by the server, the server MUST NOT reduce any
 limits or alter any values that might be violated by the client with its
