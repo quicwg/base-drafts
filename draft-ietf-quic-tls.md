@@ -863,7 +863,7 @@ This protection applies to the least-significant bits of the first byte, plus
 the Packet Number field.  The four least-significant bits of the first byte are
 protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
-this covers the reserved bits and the Packet Number Length field; the Key Update
+this covers the reserved bits and the Packet Number Length field; the Key Phase
 bit is also protected for packets with a short header.
 
 The same header protection key is used for the duration of the connection, with
@@ -1158,11 +1158,12 @@ corresponding key and IV are created from that secret as defined in
 The endpoint toggles the value of the Key Phase bit, and uses the updated key
 and IV to protect all subsequent packets.
 
-An endpoint MUST NOT initiate a key update prior to having received a
-KEYS_ACTIVE frame in a packet from the current key phase.  A subsequent key
-update can only be performed after the endpoint has successfully processed a
-KEYS_ACTIVE frame from a packet with a matching key phase.  This ensures that
-keys are available to both peers before another can be initiated.
+An endpoint MUST NOT initiate a key update prior to having received and
+processed a KEYS_ACTIVE frame in a packet from the current key phase.  A
+subsequent key update can only be performed after the endpoint has successfully
+received and processed a KEYS_ACTIVE frame from a packet with a matching key
+phase.  This ensures that keys are available to both peers before another can be
+initiated.
 
 Once an endpoint has successfully processed a packet with the same key phase, it
 can send a KEYS_ACTIVE frame.  Endpoints MAY defer sending a KEYS_ACTIVE frame
