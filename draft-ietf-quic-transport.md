@@ -717,6 +717,11 @@ during the handshake ({{transport-parameters}}).  A receiver sends
 MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise additional credit.
 
+Additional credit advertised by the server does not apply to data sent in 0-RTT.
+Until the server has received a 1-RTT packet from the client, it SHOULD continue
+to enforce the flow control limits from the remembered transport parameters (see
+{{zerortt-parameters}}).
+
 A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
 with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame indicates
 the maximum absolute byte offset of a stream.  A receiver could use the current
@@ -2631,7 +2636,10 @@ number 0.  Subsequent packets sent in the same packet number space MUST increase
 the packet number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
-algorithms easier to implement between the two packet types.
+algorithms easier to implement between the two packet types.  However, a client
+MUST NOT continue sending 0-RTT packets after beginning to use 1-RTT packets.
+Servers MUST drop 0-RTT packets with greater packet numbers than the lowest
+packet number they have received in a 1-RTT packet.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same packet number
 space in one connection (that is, under the same cryptographic keys).  If the
