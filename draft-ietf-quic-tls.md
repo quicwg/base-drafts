@@ -1172,8 +1172,12 @@ Note:
   to be discarded when they are no longer needed and - in the case of the first
   1-RTT key phase - to enable the first key update.
 
-Once an endpoint has successfully processed a packet with the same key phase, it
-MUST send a KEYS_ACTIVE frame, though endpoints MAY defer sending the frame (see
+The endpoint that initiates a key update also updates the keys that it uses for
+receiving packets.  These keys will be needed to process packets the peer sends
+after updating.  An endpoint needs to retain old keys so that packets sent by
+the peer prior to receiving the key update can be processed.  Once an endpoint
+has successfully processed a packet using the new keys, it MUST send a
+KEYS_ACTIVE frame, though endpoints MAY defer sending the frame (see
 {{key-update-old-keys}}).
 
 
