@@ -104,7 +104,7 @@ Only after that will the change be merged and the issue be closed.
 The drafts currently in the late stage are:
 
 * Invariants
-* Transporrt
+* Transporr
 * TLS
 
 
