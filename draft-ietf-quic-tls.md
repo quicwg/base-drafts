@@ -1159,15 +1159,22 @@ The endpoint toggles the value of the Key Phase bit, and uses the updated key
 and IV to protect all subsequent packets.
 
 An endpoint MUST NOT initiate a key update prior to having received and
-processed a KEYS_ACTIVE frame in a packet from the current key phase.  A
-subsequent key update can only be performed after the endpoint has successfully
-received and processed a KEYS_ACTIVE frame from a packet with a matching key
-phase.  This ensures that keys are available to both peers before another can be
-initiated.
+successfully processed a KEYS_ACTIVE frame contained in a packet from the
+current key phase.  This ensures that keys are available to both peers before
+another can be initiated.
+
+Note:
+
+: Changes in keys from Initial to Handshake and from Handshake to 1-RTT don't
+  use this key update process. Key changes during the handshake do not need to
+  wait for a KEYS_ACTIVE frame, they are driven solely by changes in the TLS
+  handshake.  The KEYS_ACTIVE frame is used to allow Initial and Handshake keys
+  to be discarded when they are no longer needed and - in the case of the first
+  1-RTT key phase - to enable the first key update.
 
 Once an endpoint has successfully processed a packet with the same key phase, it
-can send a KEYS_ACTIVE frame.  Endpoints MAY defer sending a KEYS_ACTIVE frame
-after a key update (see {{key-update-old-keys}}).
+MUST send a KEYS_ACTIVE frame, though endpoints MAY defer sending the frame (see
+{{key-update-old-keys}}).
 
 
 ## Responding to a Key Update
@@ -1180,8 +1187,8 @@ creates a new packet protection secret for reading and the corresponding key and
 IV.  An endpoint uses the same key derivation process as its peer uses to
 generate keys for receiving.
 
-If the packet protection is successfully removed using the updated key and IV,
-then the keys the endpoint initiates a key update in response, as described in
+If the packet is successfully processed using the updated key and IV, then the
+keys the endpoint initiates a key update in response, as described in
 {{key-update-initiate}}.  An endpoint that responds to a key update MUST send a
 KEYS_ACTIVE frame to indicate that it is both sending and receiving with updated
 keys, though it MAY defer sending the frame (see {{key-update-old-keys}}).
@@ -1197,7 +1204,10 @@ KEY_UPDATE_ERROR.
 Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
 {{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
-place of discarded keys when key updates are not permitted.
+place of discarded keys when key updates are not permitted; using dummy keys
+will generate no variation in the timing signal produced by attempting to remove
+packet protection, but all packets with an invalid Key Phase bit will be
+rejected.
 
 
 ## Using Old Keys {#key-update-old-keys}
@@ -1206,12 +1216,16 @@ During a key update, packets protected with older keys might arrive if they were
 delayed by the network.  If those old keys are available, then they can be used
 to remove packet protection.
 
+An endpoint always sends packets that are protected with the newest keys.  Keys
+used for protecting packets that an endpoint sends can be discarded immediately
+after newer keys are available.
+
 After a key update, an endpoint MAY delay sending the KEYS_ACTIVE frame by up to
 three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}) to minimize the
 number of active keys it maintains.  During this time, an endpoint can use old
 keys to process delayed packets rather than enabling a new key update.  This
-only applies to key updates that use the Key Phase bit; endpoints MUST NOT defer
-sending of KEYS_ACTIVE during and immediately after the handshake.
+only applies to key updates; endpoints MUST NOT defer sending of KEYS_ACTIVE
+during and immediately after the handshake.
 
 Even if old keys are available, those keys MUST NOT be used to protect packets
 with packets that have higher packet numbers than packets that were protected
