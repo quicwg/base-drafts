@@ -1586,8 +1586,9 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server SHOULD encode tokens provided with NEW_TOKEN
-  frames and Retry packets differently, and validate the latter more strictly.
+  the packet is discarded.  A server SHOULD encode tokens provided with
+  NEW_TOKEN frames and Retry packets differently, and validate the latter more
+  strictly.
 
 In a stateless design, a server can use encrypted and authenticated tokens to
 pass information to clients that the server can later recover and use to
