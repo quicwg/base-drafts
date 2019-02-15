@@ -2594,7 +2594,7 @@ MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
-contain a Length field and so cannot be followed by other packets in the same
+contain a Length field and so MUST NOT be followed by other packets in the same
 UDP datagram.
 
 
@@ -2607,17 +2607,18 @@ maintains a separate packet number for sending and receiving.
 Packet numbers are limited to this range because they need to be representable
 in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
 When present in a long or short header however, packet numbers are reduced and
-encoded in 1 to 4 bytes, see {{packet-encoding}}).
+encoded in 1 to 4 bytes (see {{packet-encoding}}).
 
-Version Negotiation ({{packet-version}}) and Retry {{packet-retry}} packets do
-not include a packet number.
+Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
+do not include a packet number.
 
 Packet numbers are divided into 3 spaces in QUIC:
 
-- Initial space: All Initial packets {{packet-initial}} are in this space.
-- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
+- Initial space: All Initial packets ({{packet-initial}}) are in this space.
+- Handshake space: All Handshake packets ({{packet-handshake}}) are in this
+space.
 - Application data space: All 0-RTT and 1-RTT encrypted packets
-  {{packet-protected}} are in this space.
+  ({{packet-protected}}) are in this space.
 
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
@@ -2636,11 +2637,10 @@ the packet number by at least one.
 algorithms easier to implement between the two packet types.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection (that is, under the same cryptographic keys).  If the
-packet number for sending reaches 2^62 - 1, the sender MUST close the connection
-without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
-send a Stateless Reset ({{stateless-reset}}) in response to further packets that
-it receives.
+space in one connection.  If the packet number for sending reaches 2^62 - 1, the
+sender MUST close the connection without sending a CONNECTION_CLOSE frame or any
+further packets; an endpoint MAY send a Stateless Reset ({{stateless-reset}}) in
+response to further packets that it receives.
 
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
