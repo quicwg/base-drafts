@@ -595,7 +595,7 @@ described in this section. Header block instructions are contained in HEADERS
 and PUSH_PROMISE frames, which are conveyed on request or push streams as
 described in {{HTTP3}}.
 
-### Encoder and Decoder Streams
+### Encoder and Decoder Streams {#enc-dec-stream-def}
 
 QPACK defines two unidirectional stream types:
 
@@ -1146,8 +1146,8 @@ registered in the "HTTP/3 Stream Type" registry established in {{HTTP3}}.
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
 | ---------------------------- | :----: | ------------------------- | ------ |
-| QPACK Encoder Stream         | 0x02   | {{wire-format}}           | Both   |
-| QPACK Decoder Stream         | 0x03   | {{wire-format}}           | Both   |
+| QPACK Encoder Stream         | 0x02   | {{enc-dec-stream-def}}    | Both   |
+| QPACK Decoder Stream         | 0x03   | {{enc-dec-stream-def}}    | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
 
 ## Error Code Registration
