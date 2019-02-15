@@ -1472,11 +1472,11 @@ is not overly constrained by the amplification restriction.
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
 and the anti-amplification limit is reached. In order to avoid this causing a
-handshake deadlock, clients SHOULD send a packet upon a handshake timeout, as
-described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
-not have Handshake keys, it SHOULD send an Initial packet in a UDP datagram of
-at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
-Handshake packet.
+handshake deadlock, clients SHOULD send a packet upon a crypto retransmission
+timeout, as described in {{QUIC-RECOVERY}}. If the client has no data to
+retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
+a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
+SHOULD send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -1494,9 +1494,10 @@ controller.  Clients are only constrained by the congestion controller.
 
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
-token MUST be repeated by the client in all Initial packets it sends after it
-receives the Retry packet.  In response to processing an Initial containing a
-token, a server can either abort the connection or permit it to proceed.
+token MUST be repeated by the client in all Initial packets it sends for that
+connection after it receives the Retry packet.  In response to processing an
+Initial containing a token, a server can either abort the connection or permit
+it to proceed.
 
 As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
@@ -1516,9 +1517,9 @@ Initial[0]: CRYPTO[CH] ->
 
                                                 <- Retry+Token
 
-Initial+Token[0]: CRYPTO[CH] ->
+Initial+Token[1]: CRYPTO[CH] ->
 
-                                 Initial[0]: CRYPTO[SH] ACK[0]
+                                 Initial[0]: CRYPTO[SH] ACK[1]
                        Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 ~~~~
@@ -1536,10 +1537,10 @@ The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
 with an address validation token that can be used to validate future
 connections.  The client includes this token in Initial packets to provide
 address validation in a future connection.  The client MUST include the token in
-all Initial packets it sends, unless a Retry replaces the token with a newer
-token. The client MUST NOT use the token provided in a Retry for future
-connections. Servers MAY discard any Initial packet that does not carry the
-expected token.
+all Initial packets it sends, unless a Retry or NEW_TOKEN frame replaces the
+token with a newer one. The client MUST NOT use the token provided in a Retry
+for future connections. Servers MAY discard any Initial packet that does not
+carry the expected token.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
@@ -1549,8 +1550,8 @@ expiration time.  It is also unlikely that the client port number is the same on
 two different connections; validating the port is therefore unlikely to be
 successful.
 
-A token SHOULD be constructed to be easily distinguishable from tokens that are
-sent in Retry packets as they are carried in the same field.
+A token SHOULD be constructed for the server to easily distinguish it from
+tokens that are sent in Retry packets as they are carried in the same field.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it SHOULD include that value in the
@@ -1585,8 +1586,9 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server MAY encode tokens provided with NEW_TOKEN
-  frames and Retry packets differently, and validate the latter more strictly.
+  the packet is discarded.  A server SHOULD encode tokens provided with
+  NEW_TOKEN frames and Retry packets differently, and validate the latter more
+  strictly.
 
 In a stateless design, a server can use encrypted and authenticated tokens to
 pass information to clients that the server can later recover and use to
