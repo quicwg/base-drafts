@@ -500,28 +500,27 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Rekey tx to 0-RTT Keys
+Install tx 0-RTT Keys
                      0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
                      <------------- Initial
-                                          Rekey rx to 0-RTT keys
-                                      Rekey tx to Handshake keys
+                                           Install rx 0-RTT keys
+                                          Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-                                      Rekey rx to Handshake keys
-                                          Rekey tx to 1-RTT keys
+                                           Install tx 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey tx and rx to Handshake keys
+Install tx Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx and rx to 1-RTT keys
+Install 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
-                                          Rekey rx to 1-RTT keys
+                                           Install rx 1-RTT keys
                                               Handshake Complete
                                                    Get Handshake
                      <--------------- 1-RTT
