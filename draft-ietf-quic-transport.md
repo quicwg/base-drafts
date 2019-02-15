@@ -2485,10 +2485,10 @@ specific to the transport, including all those described in this document, are
 carried the QUIC-specific variant of the CONNECTION_CLOSE frame.
 
 A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
-SHOULD be prepared to retransmit a packet containing containing a
-CONNECTION_CLOSE frame if it receives more packets on a terminated connection.
-Limiting the number of retransmissions and the time over which this final packet
-is sent limits the effort expended on terminated connections.
+SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
+it receives more packets on a terminated connection. Limiting the number of
+retransmissions and the time over which this final packet is sent limits the
+effort expended on terminated connections.
 
 An endpoint that chooses not to retransmit packets containing a CONNECTION_CLOSE
 frame risks a peer missing the first such packet.  The only mechanism available
@@ -2497,7 +2497,6 @@ use the stateless reset process ({{stateless-reset}}).
 
 An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
 existence of the error to its peer.
-
 
 ## Stream Errors
 
