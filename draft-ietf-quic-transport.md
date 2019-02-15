@@ -1380,22 +1380,21 @@ validation of the Retry, as described in {{packet-retry}}.
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-The transport parameters that the server advertises during connection
-establishment generally apply to all connections that are resumed using
-the keying material established during that handshake.  Remembered transport
-parameters apply to the new connection until the handshake completes and new
-transport parameters from the server can be provided.
+Clients remember the value of transport parameters from a server and apply
+them to any 0-RTT packets that are sent in subsequent connections, except
+for transport parameters that are explicitly excluded. Remembered transport
+parameters apply to the new connection until the handshake completes and the
+client starts sending 1-RTT packets. Once the handshake completes, the client
+uses the transport parameters established in thehandshake.
 
 The value of the server's previous original_connection_id, preferred_address,
 stateless_reset_token, and ack_delay_exponent MUST NOT be used when
 establishing a new connection; rather, the client should wait to observe the
-server's new values in the handshake.
+server's new values in the handshake. If the server does not provide a new
+value, the client MUST use the default value.
 
-The client MAY store the server's original max_ack_delay and max_packet_size
-transport parameters. The server MAY accept 0-RTT and subsequently provide
-different values for these transport parameters for use in the new connection.
-The client MUST use these values after the handshake completes. If the server
-does not provide a new value, the client MUST use the default value.
+The client MAY store the server's original max_packet_size transport
+parameter.
 
 The definition of new transport parameters ({{new-transport-parameters}}) MUST
 specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
