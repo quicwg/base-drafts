@@ -495,7 +495,7 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the client-advised priority of a
+The PRIORITY (type=0x2) frame specifies the client-advised priority of a
 request, server push or placeholder.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
@@ -747,7 +747,7 @@ with its 0-RTT data.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
-The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
+The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
 set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
