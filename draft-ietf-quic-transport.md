@@ -2498,6 +2498,7 @@ use the stateless reset process ({{stateless-reset}}).
 An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
 existence of the error to its peer.
 
+
 ## Stream Errors
 
 If an application-level error affects a single stream, but otherwise leaves the
