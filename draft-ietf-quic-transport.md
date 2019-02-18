@@ -2317,7 +2317,7 @@ of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bits field needs to
+header.  For the packet to appear as valid, the Unpredictable Bits field needs to
 include at least 182 bits of data (or 23 bytes, less the two fixed bits). This
 is intended to allow for a Destination Connection ID of the maximum length
 permitted, with a minimal packet number, and payload.  The Stateless Reset Token
