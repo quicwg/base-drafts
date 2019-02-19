@@ -496,7 +496,7 @@ When an ack-eliciting packet is transmitted, the sender schedules a timer for
 the PTO period as follows:
 
 ~~~
-PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, kGranularity)
+PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 ~~~
 
 kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
