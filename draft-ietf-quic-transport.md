@@ -5500,6 +5500,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Set a maximum value for max_ack_delay transport parameter (#2282, #2301)
 - Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
 - Corrected requirements for migration to a preferred address (#2146, #2349)
+- ACK of non-existent packet is illegal (#2298, #2302)
 
 ## Since draft-ietf-quic-transport-16
 
