@@ -417,9 +417,10 @@ is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
-When crypto packets are sent, the sender MUST set a timer for the crypto
-timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data if possible.
+When a crypto packet is sent, the sender MUST set a timer for the crypto
+timeout period.  This timer MUST be updated when a new crypto packet is sent.
+Upon timeout, the sender MUST retransmit all unacknowledged CRYPTO data if
+possible.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in {{QUIC-TRANSPORT}}.  If not all
