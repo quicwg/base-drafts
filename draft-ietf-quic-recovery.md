@@ -680,8 +680,9 @@ The first three packets are determined to be lost when the ACK of packet 4 is
 received at t=8.  The congestion period is calculated as the time between the
 oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
 congestion is equal to: (1 * ((2 ^ kPersistentCongestionThreshold) - 1)) = 3.
-Because the threshold was reached, the network is considered to have experienced
-persistent congestion.
+Because the threshold was reached and because none of the packets between the
+oldest and the newest packets are acknowledged, the network is considered to
+have experienced persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -1314,16 +1315,19 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
-   InPersistentCongestion(congestion_period):
+   InPersistentCongestion(newest_lost_packet):
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
-     return congestion_period >
+     congestion_period =
        pto * (2 ^ kPersistentCongestionThreshold - 1)
+     // Determine if all packets in the window before the
+     // newest lost packet, including the edges, are marked
+     // lost
+     return IsWindowLost(newest_lost_packet, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     oldest_lost_packet = lost_packets.first()
      newest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
@@ -1331,9 +1335,7 @@ are detected lost.
      CongestionEvent(newest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(
-           newest_lost_packet.time_sent -
-             oldest_lost_packet.time_sent)):
+     if (InPersistentCongestion(newest_lost_packet)):
        congestion_window = kMinimumWindow
 ~~~
 
