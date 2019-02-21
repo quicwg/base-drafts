@@ -944,8 +944,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
-  largest_acked_packet[pn_space] = max(largest_acked_packet,
-                              ack.largest_acked)
+  largest_acked_packet[pn_space] =
+      max(largest_acked_packet[pn_space], ack.largest_acked)
 
   // If the largest acknowledged is newly acked and
   // ack-eliciting, update the RTT.
@@ -1123,10 +1123,10 @@ DetectLostPackets(pn_space):
   lost_send_time = now() - loss_delay
 
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked_packet - kPacketThreshold
+  lost_pn = largest_acked_packet[pn_space] - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if (unacked.packet_number > largest_acked_packet):
+    if (unacked.packet_number > largest_acked_packet[pn_space]):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
