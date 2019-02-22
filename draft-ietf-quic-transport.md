@@ -963,13 +963,13 @@ unused connection IDs.  While each endpoint independently chooses how many
 connection IDs to issue, endpoints SHOULD provide and maintain at least eight
 connection IDs.  The endpoint SHOULD do this by supplying a new connection ID
 when a connection ID is retired by its peer or when the endpoint receives a
-packet with a previously unused connection ID.  However, it MAY limit the frequency
-or the total number of connection IDs issued for each connection to avoid the
-risk of running out of connection IDs (see {{reset-token}}).
+packet with a previously unused connection ID.  However, it MAY limit the
+frequency or the total number of connection IDs issued for each connection to
+avoid the risk of running out of connection IDs (see {{reset-token}}).
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
-SHOULD ensure that the pool of connection IDs available to its peer allows
-the peer to use a new connection ID on migration, as the peer will close the
+SHOULD ensure that the pool of connection IDs available to its peer allows the
+peer to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
 
 
