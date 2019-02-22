@@ -1765,10 +1765,9 @@ NAT rebinding is not connection migration as defined in this section, though an
 endpoint SHOULD perform path validation ({{migrate-validate}}) if it detects a
 change in the IP address of its peer.
 
-When a client finds the server unreachable over any path, the client might close
-its connection to the server (see {{termination}}).  A client capable of
-connection migration MAY wait for new paths to become available before declaring
-the server unreachable.
+When an endpoint has no validated path on which to send packets, it MAY discard
+connection state.  An endpoint capable of connection migration MAY wait for a
+new path to become available before discarding connection state.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
@@ -2136,8 +2135,8 @@ An established QUIC connection can be terminated in one of three ways:
 * immediate close ({{immediate-close}})
 * stateless reset ({{stateless-reset}})
 
-In addition, an endpoint MAY drop a connection and discard all connection state
-without informing the peer if it is unable to reach the peer.
+An endpoint MAY discard connection state if it does not have a validated path on
+which it can send packets (see {{migrate-validate}}).
 
 
 ## Closing and Draining Connection States {#draining}
