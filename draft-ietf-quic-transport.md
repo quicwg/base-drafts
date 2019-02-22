@@ -968,7 +968,7 @@ or the total number of connection IDs issued for each connection to avoid the
 risk of running out of connection IDs (see {{reset-token}}).
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
-SHOULD ensure that the pool of connection IDs available to their peers allows
+SHOULD ensure that the pool of connection IDs available to its peer allows
 them to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
 
