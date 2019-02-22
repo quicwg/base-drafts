@@ -963,7 +963,7 @@ unused connection IDs.  While each endpoint independently chooses how many
 connection IDs to issue, endpoints SHOULD provide and maintain at least eight
 connection IDs.  The endpoint SHOULD do this by supplying a new connection ID
 when a connection ID is retired by its peer or when the endpoint receives a
-packet with a previously unused connection ID, though it MAY limit the frequency
+packet with a previously unused connection ID.  However, it MAY limit the frequency
 or the total number of connection IDs issued for each connection to avoid the
 risk of running out of connection IDs (see {{reset-token}}).
 
