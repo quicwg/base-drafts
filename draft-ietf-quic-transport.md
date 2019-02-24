@@ -1765,6 +1765,10 @@ NAT rebinding is not connection migration as defined in this section, though an
 endpoint SHOULD perform path validation ({{migrate-validate}}) if it detects a
 change in the IP address of its peer.
 
+When an endpoint has no validated path on which to send packets, it MAY discard
+connection state.  An endpoint capable of connection migration MAY wait for a
+new path to become available before discarding connection state.
+
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
 migrations.  Servers do not send non-probing packets (see {{probing}}) toward a
@@ -2125,13 +2129,14 @@ UDP ports, destination CID, and a local secret.
 
 # Connection Termination {#termination}
 
-Connections should remain open until they become idle for a pre-negotiated
-period of time.  A QUIC connection, once established, can be terminated in one
-of three ways:
+An established QUIC connection can be terminated in one of three ways:
 
 * idle timeout ({{idle-timeout}})
 * immediate close ({{immediate-close}})
 * stateless reset ({{stateless-reset}})
+
+An endpoint MAY discard connection state if it does not have a validated path on
+which it can send packets (see {{migrate-validate}}).
 
 
 ## Closing and Draining Connection States {#draining}
