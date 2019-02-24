@@ -2212,7 +2212,7 @@ period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an
 Probe Timeout (PTO, see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
 test for liveness before sending any data that cannot be retried safely.  Note
-that it is likely that only application protocols or using applications will
+that it is likely that only applications or application protocols will
 know what information can be retried.
 
 
