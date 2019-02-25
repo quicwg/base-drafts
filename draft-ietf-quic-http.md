@@ -123,10 +123,65 @@ each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
 implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
-{{!RFC7540}}.
+{{!HTTP2=RFC7540}}.
 
+# HTTP/3 Protocol Overview
 
-## Notational Conventions
+HTTP/3 provides a transport for HTTP semantics using the QUIC transport protocol
+and an internal framing layer similar to HTTP/2.
+
+An HTTP/3 endpoint is discovered using HTTP Alternative Services.  Once a client
+knows that an HTTP/3 server exists at a certain endpoint, it opens a QUIC
+connection. QUIC provides protocol negotiation, stream-based multiplexing, and
+flow control.
+
+Within each stream, the basic unit of HTTP/3 communication is a frame
+({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
+and DATA frames form the frames form the basis of HTTP requests and responses
+({{request-response}}).  Other frame types like SETTINGS, PRIORITY, and GOAWAY
+are used to managed the overall connection.
+
+Multiplexing of requests is performed using the QUIC stream abstraction, with
+each request and response consuming a single QUIC stream.  Streams are largely
+independent of each other, so one stream that is blocked or suffers packet loss
+does not prevent progress on other streams.
+
+Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
+a server to push a request-response exchange to a client in anticipation of the
+client making the indicated request.  This trades off network usage against a
+potential latency gain.  Several HTTP/3 frames are used to manage server push,
+such as PUSH_PROMISE, DUPLICATE_PUSH, and CANCEL_PUSH.
+
+As in HTTP/2, request and response headers are compressed for transmission.
+Because HPACK {{?HPACK=RFC7231}} relies on in-order transmission of compressed
+header blocks (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
+QPACK [QPACK].  QPACK uses separate unidirectional streams to modify and track
+header table state, while header blocks refer to the state of the table without
+modifying it.
+
+## Document Organization
+
+The HTTP/3 specification is split into seven parts:
+
+- Connection Setup and Management ({{connection-setup}}) covers how an HTTP/3
+  endpoint is discovered and a connection is established.
+- Stream Mapping and Usage ({{stream-mapping}}) describes the way QUIC streams
+  are used.
+- HTTP Framing Layer ({{http-framing-layer}}) describes the frames used on
+  most streams.
+- HTTP Request Lifecycle ({{http-request-lifecycle}}) describes how HTTP
+  semantics are expressed using frames.
+- Connection Closure ({{connection-closure}}) describes how connections are
+  terminated, either gracefully or abruptly.
+- Extensions to HTTP/3 ({{extensions}}) describes how new capabilities can be
+  added in future documents.
+- Error Handling ({{errors}}) describes how error conditions are handled and
+  expressed, either on a particular stream or for the connection as a whole.
+
+Readers familiar with HTTP/2 will find a more detailed comparison with that
+protocol in {{h2-considerations}}.
+
+## Conventions and Terminology
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -139,13 +194,61 @@ Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
 This document uses the variable-length integer encoding from
 {{QUIC-TRANSPORT}}.
 
-Protocol elements called "frames" exist in both this document and
-{{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
-frame name will be prefaced with "QUIC."  For example, "QUIC CONNECTION_CLOSE
-frames."  References without this preface refer to frames defined in {{frames}}.
+The following terms are used:
+
+client:
+: The endpoint that initiates an HTTP/3 connection.  Clients send HTTP requests
+  and receive HTTP responses.
+
+connection:
+: A transport-layer connection between two endpoints, using QUIC as the
+  transport protocol.
+
+connection error:
+: An error that affects the entire HTTP/3 connection.
+
+endpoint:
+: Either the client or server of the connection.
+
+frame:
+: The smallest unit of communication within an HTTP/3 connection, consisting of
+  a header and a variable-length sequence of octets structured according to the
+  frame type.
+
+  Protocol elements called "frames" exist in both this document and
+  {{QUIC-TRANSPORT}}. Where frames from {{QUIC-TRANSPORT}} are referenced, the
+  frame name will be prefaced with "QUIC."  For example, "QUIC CONNECTION_CLOSE
+  frames."  References without this preface refer to frames defined in
+  {{frames}}.
+
+peer:
+: An endpoint.  When discussing a particular endpoint, "peer" refers to the
+  endpoint that is remote to the primary subject of discussion.
+
+receiver:
+: An endpoint that is receiving frames.
+
+sender:
+: An endpoint that is transmitting frames.
+
+server:
+: The endpoint that accepts an HTTP/3 connection.  Servers receive HTTP requests
+  and send HTTP responses.
+
+stream:
+: A bidirectional or unidirectional bytestream provided by the QUIC transport.
+
+stream error:
+: An error on the individual HTTP/3 stream.
+
+Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
+in Section 2.3 of {{!RFC7230}}.  Intermediaries act as both client and server at
+different times.
+
+The term "payload body" is defined in Section 3.3 of {{!RFC7230}}.
 
 
-# Connection Setup and Management
+# Connection Setup and Management {#connection-setup}
 
 ## Draft Version Identification
 
@@ -166,7 +269,7 @@ the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 3.2.6 of [RFC7230]. Experimenters are encouraged to
+syntax defined in Section 3.2.6 of {{!RFC7230}}. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
 ## Discovering an HTTP/3 Endpoint
@@ -268,9 +371,9 @@ explicit signal.
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
-of {{!RFC7540}}).
+of {{!HTTP2}}).
 
-The considerations discussed in Section 9.1 of {{?RFC7540}} also apply to the
+The considerations discussed in Section 9.1 of {{!HTTP2}} also apply to the
 management of HTTP/3 connections.
 
 # Stream Mapping and Usage {#stream-mapping}
@@ -581,11 +684,11 @@ The PRIORITY frame payload has the following fields:
     is being expressed. Depending on the value of Dependency Type, this contains
     the Stream ID of a request stream, the Push ID of a promised resource, the
     Placeholder ID of a placeholder, or is absent.  For details of
-    dependencies, see {{priority}} and {{!RFC7540}}, Section 5.3.
+    dependencies, see {{priority}} and {{!HTTP2}}, Section 5.3.
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the prioritized
-    element (see {{!RFC7540}}, Section 5.3). Add one to the value to obtain a
+    element (see {{!HTTP2}}, Section 5.3). Add one to the value to obtain a
     weight between 1 and 256.
 
 The values for the Prioritized Element Type ({{prioritized-element-types}}) and
@@ -608,7 +711,7 @@ of the associated Element ID fields.
 | 11      | Root of the tree | Absent                         |
 {: #element-dependency-types title="Element Dependency Types"}
 
-Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
+Note that unlike in {{!HTTP2}}, the root of the tree cannot be referenced
 using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
 root of the tree cannot be reprioritized.
 
@@ -1014,10 +1117,10 @@ malformed.
 As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
 the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!RFC7540}}. Pseudo-header fields are not HTTP
+Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
 header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!RFC7540}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2.1 of {{!RFC7540}} also apply to HTTP/3.
+those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
+fields in Section 8.1.2.1 of {{!HTTP2}} also apply to HTTP/3.
 
 HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
@@ -1074,7 +1177,7 @@ method is used to establish a tunnel over a single HTTP/2 stream to a remote
 host for similar purposes.
 
 A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!RFC7540}}, Section 8.3. A CONNECT
+request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
 request that does not conform to these restrictions is malformed. The request
 stream MUST NOT be closed at the end of the request.
 
@@ -1106,7 +1209,7 @@ the RST bit set if it detects an error with the stream or the QUIC connection.
 
 ## Prioritization {#priority}
 
-HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
+HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
 5.3. In this priority scheme, a given element can be designated as dependent
 upon another element. This information is expressed in the PRIORITY frame
 {{frame-priority}} which identifies the element and the dependency. The elements
@@ -1202,7 +1305,7 @@ NOT declare a dependency on a stream it knows to have been closed.
 
 ## Server Push
 
-HTTP/3 server push is similar to what is described in HTTP/2 {{!RFC7540}}, but
+HTTP/3 server push is similar to what is described in HTTP/2 {{!HTTP2}}, but
 uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in a
@@ -1223,8 +1326,8 @@ The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
 allows the server push to be associated with a client request. Ordering of a
 PUSH_PROMISE in relation to certain parts of the response is important (see
-Section 8.2.1 of {{!RFC7540}}).  Promised requests MUST conform to the
-requirements in Section 8.2 of {{!RFC7540}}.
+Section 8.2.1 of {{!HTTP2}}).  Promised requests MUST conform to the
+requirements in Section 8.2 of {{!HTTP2}}.
 
 The same server push can be associated with additional client requests using a
 DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
@@ -1577,7 +1680,7 @@ Required policy {{!RFC8126}}. All other values are assigned to Private Use
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{RFC7540}}, it is preferable that the assignments parallel each other where the
+{{!HTTP2}}, it is preferable that the assignments parallel each other where the
 code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
 operation.
@@ -1627,10 +1730,10 @@ hexadecimal) are assigned via the Standards Action or IESG Review policies
 {{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
 Required policy {{!RFC8126}}. All other values are assigned to Private Use
 {{!RFC8126}}.  The designated experts are the same as those for the "HTTP/2
-Settings" registry defined in {{RFC7540}}.
+Settings" registry defined in {{!HTTP2}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
-{{RFC7540}}, it is preferable that the assignments parallel each other.  If an
+{{!HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
 assigning the corresponding value to an unrelated operation.
 
@@ -1759,7 +1862,7 @@ assigned by IANA.
 
 --- back
 
-# Considerations for Transitioning from HTTP/2
+# Considerations for Transitioning from HTTP/2 {#h2-considerations}
 
 HTTP/3 is strongly informed by HTTP/2, and bears many similarities.  This
 section describes the approach taken to design HTTP/3, points out important
@@ -1791,7 +1894,7 @@ removed. Because stream termination is handled by QUIC, an END_STREAM flag is
 not required.  This permits the removal of the Flags field from the generic
 frame layout.
 
-Frame payloads are largely drawn from {{!RFC7540}}. However, QUIC includes many
+Frame payloads are largely drawn from {{!HTTP2}}. However, QUIC includes many
 features (e.g., flow control) which are also present in HTTP/2. In these cases,
 the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
 types are not required in HTTP/3. Where an HTTP/2-defined frame is no longer
@@ -1884,7 +1987,7 @@ CONTINUATION (0x9):
   frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/3 if still applicable.  The IDs of frames defined in {{!RFC7540}} have been
+HTTP/3 if still applicable.  The IDs of frames defined in {{!HTTP2}} have been
 reserved for simplicity.  Note that the frame type space in HTTP/3 is
 substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
 equivalent HTTP/2 code points.   See {{iana-frames}}.
@@ -1931,7 +2034,7 @@ use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
 the format of their settings to avoid using the 62-bit encoding.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!RFC7540}} have been reserved for simplicity.  Note that
+settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
@@ -1942,7 +2045,7 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, there is no direct portability of HTTP/2 error codes.
 
-The HTTP/2 error codes defined in Section 7 of {{!RFC7540}} map to the HTTP/3
+The HTTP/2 error codes defined in Section 7 of {{!HTTP2}} map to the HTTP/3
 error codes as follows:
 
 NO_ERROR (0x0):
