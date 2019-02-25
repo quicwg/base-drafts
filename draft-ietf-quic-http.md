@@ -1264,10 +1264,11 @@ a new connection MAY be established to send additional requests.
 
 Some requests might already be in transit. If the client has already sent
 requests on streams with a Stream ID greater than or equal to that indicated in
-the GOAWAY frame, those requests will not be processed and can be retried by the
-client.  It is RECOMMENDED that the server explicitly reject such requests (see
+the GOAWAY frame, those requests will not be processed and MAY be retried by the
+client on a different connection.  The client MAY cancel these requests.  It is
+RECOMMENDED that the server explicitly reject such requests (see
 {{request-cancellation}}) in order to clean up transport state for the affected
-streams.  The client MAY also cancel requests which will not be processed.
+streams.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
 been processed; their status cannot be known until a response is received, the
