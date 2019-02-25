@@ -652,14 +652,50 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
+## Persistent Congestion
+
 When an ACK frame is received that establishes loss of all in-flight packets
-sent prior to a threshold number of consecutive PTOs (pto_count is more than
-kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
-considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
-response of collapsing the congestion window on persistent congestion is
-functionally similar to a sender's response on a Retransmission Timeout (RTO) in
-TCP {{RFC5681}}.
+sent over a long enough period of time, the network is considered to be
+experiencing persistent congestion.  Commonly, this can be established by
+consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
+packet is sent, an explicit duration must be used to account for those cases
+where PTOs do not occur or are substantially delayed.  This duration is the
+equivalent of kPersistentCongestionThreshold consecutive PTOs, and is computed
+as follows:
+~~~
+(smoothed_rtt + 4 * rttvar + max_ack_delay) *
+    ((2 ^ kPersistentCongestionThreshold) - 1)
+~~~
+
+For example, assume:
+
+  smoothed_rtt = 1
+  rttvar = 0
+  max_ack_delay = 0
+  kPersistentCongestionThreshold = 2
+
+If an eck-eliciting packet is sent at time = 0, the following scenario would
+illustrate persistent congestion:
+
+  t=0 | Send Pkt #1 (App Data)
+  t=1 | Send Pkt #2 (PTO 1)
+  t=3 | Send Pkt #3 (PTO 2)
+  t=7 | Send Pkt #4 (PTO 3)
+  t=8 | Recv ACK of Pkt #4
+
+The first three packets are determined to be lost when the ACK of packet 4 is
+received at t=8.  The congestion period is calculated as the time between the
+oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
+congestion is equal to: (1 * ((2 ^ kPersistentCongestionThreshold) - 1)) = 3.
+Because the threshold was reached and because none of the packets between the
+oldest and the newest packets are acknowledged, the network is considered to
+have experienced persistent congestion.
+
+When persistent congestion is established, the sender's congestion window MUST
+be reduced to the minimum congestion window (kMinimumWindow).  This response of
+collapsing the congestion window on persistent congestion is functionally
+similar to a sender's response on a Retransmission Timeout (RTO) in TCP
+{{RFC5681}} after Tail Loss Probes (TLP) {{TLP}}.
 
 ## Pacing {#pacing}
 
@@ -1288,9 +1324,6 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
-       // Collapse congestion window if persistent congestion
-       if (pto_count > kPersistentCongestionThreshold):
-         congestion_window = kMinimumWindow
 ~~~
 
 
@@ -1317,6 +1350,15 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
+   InPersistentCongestion(largest_lost_packet):
+     pto = smoothed_rtt + 4 * rttvar + max_ack_delay
+     congestion_period =
+       pto * (2 ^ kPersistentCongestionThreshold - 1)
+     // Determine if all packets in the window before the
+     // newest lost packet, including the edges, are marked
+     // lost
+     return IsWindowLost(largest_lost_packet, congestion_period)
+
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
@@ -1326,6 +1368,10 @@ are detected lost.
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
      CongestionEvent(largest_lost_packet.time_sent)
+
+     // Collapse congestion window if persistent congestion
+     if (InPersistentCongestion(largest_lost_packet)):
+       congestion_window = kMinimumWindow
 ~~~
 
 
