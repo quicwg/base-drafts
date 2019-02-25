@@ -1315,27 +1315,27 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
-   InPersistentCongestion(newest_lost_packet):
+   InPersistentCongestion(largest_lost_packet):
      pto = smoothed_rtt + 4 * rttvar + max_ack_delay
      congestion_period =
        pto * (2 ^ kPersistentCongestionThreshold - 1)
      // Determine if all packets in the window before the
      // newest lost packet, including the edges, are marked
      // lost
-     return IsWindowLost(newest_lost_packet, congestion_period)
+     return IsWindowLost(largest_lost_packet, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     newest_lost_packet = lost_packets.last()
+     largest_lost_packet = lost_packets.last()
 
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
-     CongestionEvent(newest_lost_packet.time_sent)
+     CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(newest_lost_packet)):
+     if (InPersistentCongestion(largest_lost_packet)):
        congestion_window = kMinimumWindow
 ~~~
 
