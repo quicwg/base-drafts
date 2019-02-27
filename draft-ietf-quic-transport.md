@@ -850,8 +850,8 @@ limits are set in the transport parameters (see
 {{transport-parameter-definitions}}) and subsequently limits are advertised
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.  When a MAX_STREAMS frame permits
-more streams than can be expressed by the stream ID (i.e. greater than 2^60 - 1),
-all valid Stream IDs of that type can be used.
+more streams than can be expressed by the stream ID
+(i.e. greater than 2^60 - 1), all valid Stream IDs of that type can be used.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
