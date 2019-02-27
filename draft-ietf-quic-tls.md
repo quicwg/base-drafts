@@ -1216,8 +1216,9 @@ negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!RFC7301}} to select an application protocol.  Unless another mechanism is
 used for agreeing on an application protocol, endpoints MUST use ALPN for this
 purpose.  When using ALPN, endpoints MUST abort a connection if an application
-protocol is not negotiated with a no_application_protocol alert (as per
-{{!RFC7301}}).
+protocol is not negotiated with a no_application_protocol alert. While
+{{!RFC7301}} only specifies that servers use this alert, QUIC clients MUST also
+use it to terminate a connection when ALPN negotiation fails.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
