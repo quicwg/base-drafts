@@ -1950,12 +1950,22 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-18
+
+- Resetting streams following a GOAWAY is recommended, but not required
+  (#2256,#2457)
+- Use variable-length integers throughout (#2437,#2233,#2253,#2275)
+  - Variable-length frame types, stream types, and settings identifiers
+  - Renumbered stream type assignments
+  - Modified associated reserved values
+- Frame layout switched from Length-Type-Value to Type-Length-Value
+  (#2395,#2235)
+
 ## Since draft-ietf-quic-http-17
 
 - HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
   #2325)
 - Changed error code for GOAWAY on the wrong stream (#2231, #2343)
-
 
 ## Since draft-ietf-quic-http-16
 
@@ -1971,7 +1981,6 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 - Removed reservation of error code 0 and moved HTTP_NO_ERROR to this value
   (#1922)
 - Removed prohibition of zero-length DATA frames (#2098)
-
 
 ## Since draft-ietf-quic-http-15
 
