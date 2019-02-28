@@ -2672,7 +2672,8 @@ removed.
 
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
-cryptographic handshake and start sending data.  Receivers MUST be able to
+cryptographic handshake and start sending data.  This can also be used to
+construct PMTU probes (see {{pmtu-probes-src-cid}}).  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
@@ -2689,10 +2690,9 @@ complete.  Though the values of some fields in the packet header might be
 redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
 individually process each QUIC packet and separately acknowledge them, as if
 they were received as the payload of different UDP datagrams.  For example, if
-decryption fails (because the keys are not available, the UDP datagram is a PMTU
-probe (see {{pmtu-probes-src-cid}}), or any other reason), the receiver MAY
-either discard or buffer the packet for later processing and MUST attempt to
-process the remaining packets.
+decryption fails (because the keys are not available or any other reason),
+the receiver MAY either discard or buffer the packet for later processing and
+MUST attempt to process the remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
