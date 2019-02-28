@@ -1103,8 +1103,7 @@ SetLossDetectionTimer():
 
   // Calculate PTO duration
   timeout =
-    smoothed_rtt + 4 * rttvar + max_ack_delay
-  timeout = max(timeout, kGranularity)
+    smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   loss_detection_timer.update(
