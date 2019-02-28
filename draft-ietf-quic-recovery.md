@@ -1350,7 +1350,7 @@ are detected lost.
 
 ~~~
    InPersistentCongestion(largest_lost_packet):
-     pto = smoothed_rtt + 4 * rttvar + max_ack_delay
+     pto = smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
      congestion_period =
        pto * (2 ^ kPersistentCongestionThreshold - 1)
      // Determine if all packets in the window before the
