@@ -654,8 +654,7 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).  Initial
-packet protection keys are treated specially, see {{discard-initial}}.
+handshake, as well as when keys are updated (see {{key-update}}).
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -672,25 +671,24 @@ However, this does not guarantee that no further packets will need to be
 received or sent at that encryption level because a peer might not have received
 all the acknowledgements necessary to reach the same state.
 
-After all CRYPTO frames for a given encryption level have been sent and all
-expected CRYPTO frames received, and all the corresponding acknowledgments have
-been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
-carry CRYPTO frames, this timer starts when the first packets protected with
-1-RTT are sent or received.  To limit the effect of packet loss around a change
-in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Probe Timeout (PTO) interval as defined in
-{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
-CRYPTO or ACK frames at that encryption level to be sent if packets are
-determined to be lost or new packets require acknowledgment.
-
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
 data in CRYPTO frames are sent at a previous encryption level.  These packets
 MAY also include PADDING frames.
 
-Once this timer expires, an endpoint MUST NOT either accept or generate new
-packets using those packet protection keys.  An endpoint can discard packet
-protection keys for that encryption level.
+Endpoints coordinate on when to discard unused keys using the RETIRE_KEYS
+frame. At a high level, each endpoint sends a RETIRE_KEYS frame when they
+are done sending using those keys; when an endpoint has both sent and received
+a RETIRE_KEYS frame for a given encryption level, it discards the corresponding
+keys. More specifically, an endpoint is done sending using a given set of keys
+when it knows it will not need to send or retransmit any data with the old
+keys. For example, the client is done sending with the hansdhake keys when its
+CRYPTO frame containing its final handshake message (ClientFinished) has been
+acknowledged. As one exception to this rule, the server's RETIRE_KEYS frame
+concerning initial keys MAY be sent in the server's first handshake packet,
+as it allows discarding initial keys earlier and the client is guaranteed to
+not be able to decrypt it unless it has received all of the server's initial
+CRYPTO frames.
 
 Key updates (see {{key-update}}) can be used to update 1-RTT keys before keys
 from other encryption levels are discarded.  In that case, packets protected
@@ -703,24 +701,6 @@ only be performed once per round trip time, only packets that are delayed by
 more than a round trip will be lost as a result of changing keys; such packets
 will be marked as lost before this, as they leave a gap in the sequence of
 packet numbers.
-
-
-## Discarding Initial Keys {#discard-initial}
-
-Packets protected with Initial secrets ({{initial-secrets}}) are not
-authenticated, meaning that an attacker could spoof packets with the intent to
-disrupt a connection.  To limit these attacks, Initial packet protection keys
-can be discarded more aggressively than other keys.
-
-The successful use of Handshake packets indicates that no more Initial packets
-need to be exchanged, as these keys can only be produced after receiving all
-CRYPTO frames from Initial packets.  Thus, a client MUST discard Initial keys
-when it first sends a Handshake packet and a server MUST discard Initial keys
-when it first successfully processes a Handshake packet.  Endpoints MUST NOT
-send Initial packets after this point.
-
-This results in abandoning loss recovery state for the Initial encryption level
-and ignoring any outstanding Initial packets.
 
 
 # Packet Protection {#packet-protection}

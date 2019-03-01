@@ -1263,14 +1263,14 @@ Client                                                  Server
 Initial[0]: CRYPTO[CH] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-                       Handshake[0]: CRYPTO[EE, CERT, CV, FIN]
+          Handshake[0]: RETIRE_KEYS, CRYPTO[EE, CERT, CV, FIN]
                                  <- 1-RTT[0]: STREAM[1, "..."]
 
 Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
+Handshake[0]: RETIRE_KEYS, CRYPTO[FIN], ACK[0]
 1-RTT[0]: STREAM[0, "..."], ACK[0] ->
 
-                            1-RTT[1]: STREAM[3, "..."], ACK[0]
+               1-RTT[1]: RETIRE_KEYS, STREAM[3, "..."], ACK[0]
                                        <- Handshake[1]: ACK[0]
 ~~~~
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
@@ -1287,15 +1287,15 @@ Initial[0]: CRYPTO[CH]
 0-RTT[0]: STREAM[0, "..."] ->
 
                                  Initial[0]: CRYPTO[SH] ACK[0]
-                        Handshake[0] CRYPTO[EE, CERT, CV, FIN]
+          Handshake[0]: RETIRE_KEYS, CRYPTO[EE, CERT, CV, FIN]
                           <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
 Initial[1]: ACK[0]
-Handshake[0]: CRYPTO[FIN], ACK[0]
+Handshake[0]: RETIRE_KEYS, CRYPTO[FIN], ACK[0]
 1-RTT[1]: STREAM[0, "..."] ACK[0] ->
 
-                            1-RTT[1]: STREAM[3, "..."], ACK[1]
-                                       <- Handshake[1]: ACK[0]
+               1-RTT[1]: RETIRE_KEYS, STREAM[3, "..."], ACK[1]
+                          <- Handshake[1]: RETIRE_KEYS, ACK[0]
 ~~~~
 {: #tls-0rtt-handshake title="Example 0-RTT Handshake"}
 
@@ -2732,6 +2732,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x1e        | RETIRE_KEYS          | {{frame-retire-keys}}          |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
@@ -3610,19 +3611,6 @@ and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
 frame sent in the first Initial packet.  Cryptographic handshake messages
 subsequent to the first do not need to fit within a single UDP datagram.
 
-#### Abandoning Initial Packets {#discard-initial}
-
-A client stops both sending and processing Initial packets when it sends its
-first Handshake packet.  A server stops sending and processing Initial packets
-when it receives its first Handshake packet.  Though packets might still be in
-flight or awaiting acknowledgment, no further Initial packets need to be
-exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
-
-Any data in CRYPTO frames is discarded - and no longer retransmitted - when
-Initial keys are discarded.
-
 ### 0-RTT {#packet-0rtt}
 
 A 0-RTT packet uses long headers with a type value of 0x1, followed by the
@@ -3729,10 +3717,6 @@ Handshake packet sent by a server contains a packet number of 0.
 The payload of this packet contains CRYPTO frames and could contain PADDING, or
 ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
 MUST treat receipt of Handshake packets with other frames as a connection error.
-
-Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
-Handshake encryption level is discarded - and no longer retransmitted - when
-Handshake protection keys are discarded.
 
 ### Retry Packet {#packet-retry}
 
@@ -5022,6 +5006,20 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+
+## RETIRE_KEYS Frame {#frame-retire-keys}
+
+Endpoints use RETIRE_KEYS frames (type=0x1e) to coordinate on when to discard
+unused keys. A RETIRE_KEYS frame sent protected at a given encryption level
+indicates that the endpoint is done sending with the keys of the previous
+encryption level (Handshake means Initial, 1-RTT means Handshake, and 1-RTT
+after a key update means the previous 1-RTT keys). See the "Discarding
+Unused Keys" section of {{QUIC-TLS}}.
+
+The RETIRE_KEYS frame contains no additional fields.
+
+Endpoints MUST NOT send RETIRE_KEYS frames in Initial or 0-RTT packets.
 
 
 ## Extension Frames
