@@ -861,7 +861,7 @@ DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
 of type HTTP_WRONG_STREAM.
 
 A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type HTTP_MALFORMED_FRAME.
+of a DUPLICATE_PUSH frame as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
