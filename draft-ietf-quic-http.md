@@ -589,7 +589,8 @@ which expresses a dependency on a request with a greater Stream ID than the
 current stream MUST be treated as a stream error of type HTTP_MALFORMED_FRAME.
 Likewise, a PRIORITY frame sent on a control stream with the Prioritized Element
 Type set to `11` MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+HTTP_MALFORMED_FRAME. A PRIORITY frame with Empty bits not set to zero MUST be
+treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
