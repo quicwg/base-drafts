@@ -849,7 +849,7 @@ initial_stream_id_for_type) can be opened (see {{long-packet-types}}).  Initial
 limits are set in the transport parameters (see
 {{transport-parameter-definitions}}) and subsequently limits are advertised
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
-unidirectional and bidirectional streams. 
+unidirectional and bidirectional streams.
 
 If a max_streams transport parameter or MAX_STREAMS frame carries a value
 greater than 2^60, which implies a maximum stream ID that cannot be expressed,
