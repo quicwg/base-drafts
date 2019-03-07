@@ -849,10 +849,12 @@ initial_stream_id_for_type) can be opened (see {{long-packet-types}}).  Initial
 limits are set in the transport parameters (see
 {{transport-parameter-definitions}}) and subsequently limits are advertised
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
-unidirectional and bidirectional streams. When a MAX_STREAMS frame is received
-that permits more streams than can be expressed by the stream ID
-(i.e. greater than 2^60 - 1), the connection MUST be immediately closed with a
-connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
+unidirectional and bidirectional streams. 
+
+If a max_streams transport parameter or MAX_STREAMS frame carries a value
+greater than 2^60, which implies a maximum stream ID that cannot be expressed,
+then the connection MUST be immediately closed with a connection error of
+type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
