@@ -340,13 +340,14 @@ latest_rtt = ack_time - send_time_of_largest_acked
 
 First RTT sample:
 ~~~
-min_rtt = min(min_rtt, latest_rtt)
+min_rtt = latest_rtt
 smoothed_rtt = latest_rtt
 rttvar = rtt / 2
 ~~~
 
 Subsequent RTT samples:
 ~~~
+min_rtt = min(min_rtt, latest_rtt)
 ack_delay = min(ack_delay, max_ack_delay)
 if (ack_delay + min_rtt < latest_rtt):
   latest_rtt = raw_rtt - ack_delay
