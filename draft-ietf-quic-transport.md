@@ -269,9 +269,10 @@ data in one direction: from the initiator of the stream to its peer.
 Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
-the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
-reuse a stream ID within a connection.  Stream IDs are encoded as
-variable-length integers (see {{integer-encoding}}).
+the stream ID.  A stream ID is a 62-bit integer (0 to 2^62-1) that is unique for
+all streams on a connection. A QUIC endpoint MUST NOT reuse a stream ID within a
+connection.  Stream IDs are encoded as variable-length integers (see
+{{integer-encoding}}).
 
 The least significant bit (0x1) of the stream ID identifies the initiator of the
 stream.  Client-initiated streams have even-numbered stream IDs (with the bit
@@ -851,11 +852,10 @@ limits are set in the transport parameters (see
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
 
-If a max_streams transport parameter or MAX_STREAMS frame is received with a
-value greater than 2^60, this allows a maximum stream ID that cannot be
-expressed as a variable-length integer (see {{integer-encoding}}).
-If either is received, the connection MUST be immediately closed with a
-connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
+A max_streams transport parameter or MAX_STREAMS frame is invalid if it has a
+value greater than 2^60, which would allow for an invalid maximum stream ID.
+If an invalid value is received, the connection MUST be immediately closed with
+a connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
