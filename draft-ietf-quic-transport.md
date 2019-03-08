@@ -2732,6 +2732,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x1e        | MAX_KEY_UPDATES      | {{frame-max-key-updates}}      |
 {: #frame-types title="Frame Types"}
 
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
@@ -5022,6 +5023,38 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+
+## MAX_KEY_UPDATES Frame {#frame-max-key-updates}
+
+The MAX_KEY_UPDATES frame (type=0x1e) informs the peer of the cumulative count
+of key updates it is ready to handle.  Once this frame is both sent and
+received, the Handshake keys and the 1-RTT keys that are more than one
+generation older than the maximum carried by the frame can be safely discarded.
+
+The MAX_KEY_UPDATES frame is as follows:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                   Maximum Key Updates (i)                   ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+
+MAX_KEY_UPDATES frames contain the following fields:
+
+Maximum Key Updates:
+: A variable-length integer indicating the number of key updates that can be
+  performed on the entire connection.
+
+To avoid 1-RTT keys becoming out-of-sync, an endpoint MUST NOT send a
+MAX_KEY_UPDATES frame with a maximum that exceeds the number of key updates
+already being performed, added by one.
+
+Loss or reordering can cause a MAX_KEY_UPDATES frame to be received which states
+a lower maximum than an endpoint has previously received.  MAX_KEY_UPDATES
+frames which do not increase the maximum MUST be ignored.
 
 
 ## Extension Frames

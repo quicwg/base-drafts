@@ -654,55 +654,34 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).  Initial
-packet protection keys are treated specially, see {{discard-initial}}.
+handshake, as well as when keys are updated (see {{key-update}}).  Disposal of
+0-RTT, Handshake, and 1-RTT packet protection keys are negotiated using
+MAX_KEY_UPDATES frames (see {{key-update}}).  Initial packet protection keys are
+treated specially, see {{discard-initial}}.
 
-Packet protection keys are not discarded immediately when new keys are
-available.  If packets from a lower encryption level contain CRYPTO frames,
-frames that retransmit that data MUST be sent at the same encryption level.
-Similarly, an endpoint generates acknowledgements for packets at the same
-encryption level as the packet being acknowledged.  Thus, it is possible that
-keys for a lower encryption level are needed for a short time after keys for a
-newer encryption level are available.
+Endpoints send MAX_KEY_UPDATE frames when they are ready to carry out a key
+update.  The frame also signals the fact the endpoints are ready to discard the
+old keys.
 
-An endpoint cannot discard keys for a given encryption level unless it has both
-received and acknowledged all CRYPTO frames for that encryption level and when
-all CRYPTO frames for that encryption level have been acknowledged by its peer.
-However, this does not guarantee that no further packets will need to be
-received or sent at that encryption level because a peer might not have received
-all the acknowledgements necessary to reach the same state.
+An endpoint sends it's first MAX_KEY_UPDATES frame when all the messages using
+Handshake packets have been sent and acknowledged.  The endpoint discards the
+0-RTT and the Handshake packet protection keys when it sends and receives the
+first MAX_KEY_UPDATES frames on the connection.
 
-After all CRYPTO frames for a given encryption level have been sent and all
-expected CRYPTO frames received, and all the corresponding acknowledgments have
-been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
-carry CRYPTO frames, this timer starts when the first packets protected with
-1-RTT are sent or received.  To limit the effect of packet loss around a change
-in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Probe Timeout (PTO) interval as defined in
-{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
-CRYPTO or ACK frames at that encryption level to be sent if packets are
-determined to be lost or new packets require acknowledgment.
+Similarly, after a key update, endpoints exchange the MAX_KEY_UPDATES frames to
+indicate their peers that they are ready to execute another key update.  The
+endpoints discard the previous generation of 1-RTT keys when it sends and
+receives a MAX_KEY_UPDATES frame that allows the peer to migrate to the next
+generation of 1-RTT keys.
+
+Endpoints MAY send a MAX_KEY_UPDATES frame carrying a maximum value of zero to
+indicate that the 0-RTT and Handshake keys can be dropped, while refusing the
+peer to initiate a key update.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
 data in CRYPTO frames are sent at a previous encryption level.  These packets
 MAY also include PADDING frames.
-
-Once this timer expires, an endpoint MUST NOT either accept or generate new
-packets using those packet protection keys.  An endpoint can discard packet
-protection keys for that encryption level.
-
-Key updates (see {{key-update}}) can be used to update 1-RTT keys before keys
-from other encryption levels are discarded.  In that case, packets protected
-with the newest packet protection keys and packets sent two updates prior will
-appear to use the same keys.  After the handshake is complete, endpoints only
-need to maintain the two latest sets of packet protection keys and MAY discard
-older keys.  Updating keys multiple times rapidly can cause packets to be
-effectively lost if packets are significantly delayed.  Because key updates can
-only be performed once per round trip time, only packets that are delayed by
-more than a round trip will be lost as a result of changing keys; such packets
-will be marked as lost before this, as they leave a gap in the sequence of
-packet numbers.
 
 
 ## Discarding Initial Keys {#discard-initial}
@@ -1115,9 +1094,8 @@ TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-An endpoint MUST NOT initiate more than one key update at a time.  A new key
-cannot be used until the endpoint has received and successfully decrypted a
-packet with a matching KEY_PHASE.
+An endpoint MUST NOT initiate more key updates than permitted by the peer by
+using the MAX_KEY_UPDATES frame.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
@@ -1135,28 +1113,41 @@ updated keys, it indicates that its peer has updated keys twice without awaiting
 a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
-An endpoint SHOULD retain old keys for a period of no more than three times the
-Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
-their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
-to process packets that were sent with old keys and delayed in the network.
-Packets with higher packet numbers always use the updated keys and MUST NOT be
-decrypted with old keys.
+Once an endpoint sends and successfully receives a packet protected by the new
+key, the endpoint SHOULD discard the old keys and send a MAX_KEY_UPDATES frame
+to indicate the peer that it is ready for another key update.  Discarding the
+old keys and the emitting the MAX_KEY_UPDATES frame MAY be delayed for no more
+than three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  Retaining keys
+allow endpoints to process packets that were sent with old keys and delayed in
+the network.  Packets with higher packet numbers always use the updated keys and
+MUST NOT be decrypted with old keys.
 
-This ensures that once the handshake is complete, packets with the same
-KEY_PHASE will have the same packet protection keys, unless there are multiple
-key updates in a short time frame succession and significant packet reordering.
+{{ex-key-update}} shows a key update process, with keys used identified by @M
+and @N.  Values in square brackets \[] indicate the value of Key Phase bit.
+Values in round brackets \() indicate the maximum value carried by the
+MAX_KEY_UPDATES frames.
 
 ~~~
    Initiating Peer                    Responding Peer
 
-@M QUIC Frames
-               New Keys -> @N
-@N QUIC Frames
+@M [0] QUIC Packets
+       MAX_KEY_UPDATES(1)
                       -------->
-                                          QUIC Frames @M
-                          New Keys -> @N
-                                          QUIC Frames @N
+                                      QUIC Packets [0] @M
+                                      MAX_KEY_UPDATES(1)
                       <--------
+... Update to @N
+@N [1] QUIC Packets
+                      -------->
+                                         Update to @N ...
+                                      QUIC Packets [1] @N
+                                      MAX_KEY_UPDATES(2)
+                      <--------
+@N [1] QUIC Packets
+       MAX_KEY_UPDATES(2)
+... Key Update Permitted
+                      -------->
+                                 Key Update Permitted ...
 ~~~
 {: #ex-key-update title="Key Update"}
 
