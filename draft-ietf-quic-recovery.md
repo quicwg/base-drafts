@@ -309,15 +309,15 @@ acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
 is not newly acknowledged or not ack-eliciting.
 
 When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
-to the max_ack_delay specified by the peer.  Limiting ack_delay to max_ack_delay
-ensures a peer specifying an extremely small max_ack_delay doesn't cause more
-spurious timeouts than a peer that correctly specifies max_ack_delay. It SHOULD
-be subtracted from the RTT as long as the result is larger than the min_rtt.
-If the result is smaller than the min_rtt, the RTT should be used, but the
-ack delay field should be ignored.
-
-A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
-to those specified in {{?RFC6298}}, see {{on-ack-received}}.
+to the max_ack_delay specified by the peer by using a minimum of the two values.
+Limiting ack_delay to max_ack_delay ensures a peer specifying an extremely small
+max_ack_delay doesn't cause more spurious timeouts than a peer that correctly
+specifies max_ack_delay. It SHOULD be subtracted from the RTT as long as the
+result is larger than the min_rtt. If the result is smaller than the min_rtt,
+the RTT should be used, but the ack delay field should be ignored.  Ignoring
+ack_delay when it would cause an RTT sample smaller than the current min_rtt
+prevents a peer from manipulating RTT samples below min_rtt at the cost of slightly
+increasing RTT samples in the presence of persistent delayed acks.
 
 A sender takes an RTT sample when an ACK frame is received that acknowledges a
 larger packet number than before (see {{on-ack-received}}).  A sender will take
@@ -330,6 +330,30 @@ min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
+A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
+to those specified in {{?RFC6298}}, see {{on-ack-received}}.
+
+On every newly acknowledged ack-eliciting largest acked:
+~~~
+latest_rtt = ack_time - send_time_of_largest_acked
+~~~
+
+First RTT sample:
+~~~
+min_rtt = min(min_rtt, latest_rtt)
+smoothed_rtt = latest_rtt
+rttvar = rtt / 2
+~~~
+
+Subsequent RTT samples:
+~~~
+ack_delay = min(ack_delay, max_ack_delay)
+if (ack_delay + min_rtt < latest_rtt):
+  latest_rtt = raw_rtt - ack_delay
+smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt
+rttvar_sample = abs(smoothed_rtt - rtt)
+rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
+~~~
 
 # Loss Detection {#loss-detection}
 
