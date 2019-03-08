@@ -603,8 +603,8 @@ to open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
 
-PRIORITY frames received by a client MUST be treated as a stream error of type
-HTTP_UNEXPECTED_FRAME.
+PRIORITY frames received by a client MUST be treated as a connection error of
+type HTTP_UNEXPECTED_FRAME.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
