@@ -328,7 +328,7 @@ If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
 frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
-streams to be an error of any kind.
+streams to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -368,7 +368,7 @@ remaining data on this stream consists of HTTP/3 frames, as defined in
 described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
-MUST be treated as a stream error of type HTTP_WRONG_STREAM_DIRECTION.
+MUST be treated as a connection error of type HTTP_WRONG_STREAM_DIRECTION.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -509,7 +509,7 @@ frame of the stream, creating a dependency on an existing element.  In order to
 ensure that prioritization is processed in a consistent order, any subsequent
 PRIORITY frames for that request MUST be sent on the control stream.  A
 PRIORITY frame received after other frames on a request stream MUST be treated
-as a stream error of type HTTP_UNEXPECTED_FRAME.
+as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 If, by the time a new request stream is opened, its priority information
 has already been received via the control stream, the PRIORITY frame
@@ -598,7 +598,7 @@ of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
+to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
@@ -627,7 +627,7 @@ stream.  A QUIC RESET_STREAM frame SHOULD be used instead to abort transmission
 of the server push response.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
-frame on a stream other than the control stream MUST be treated as a stream
+frame on a stream other than the control stream MUST be treated as a connection
 error of type HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~  drawing
