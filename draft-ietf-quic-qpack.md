@@ -258,10 +258,10 @@ entries. For a header block with no references to the dynamic table, the
 Required Insert Count is zero.
 
 If the decoder encounters a header block with a Required Insert Count value
-larger than defined above, it MAY treat this as a stream error of type
+larger than defined above, it MAY treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
 a Required Insert Count value smaller than defined above, it MUST treat this as
-a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
+a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
 {{invalid-references}}.
 
 When the Required Insert Count is zero, the frame contains no references to the
@@ -280,7 +280,7 @@ the number of streams which could become blocked to the value of
 SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder might not
 actually become blocked on every stream which risks becoming blocked.  If the
 decoder encounters more blocked streams than it promised to support, it MUST
-treat this as a stream error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -366,7 +366,7 @@ Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
 
 When the decoder encounters an invalid static table index in a header block
-instruction it MUST treat this as a stream error of type
+instruction it MUST treat this as a connection error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
@@ -545,7 +545,7 @@ d = count of entries dropped
 If the decoder encounters a reference in a header block instruction to a dynamic
 table entry which has already been evicted or which has an absolute index
 greater than or equal to the declared Required Insert Count (see
-{{header-prefix}}), it MUST treat this as a stream error of type
+{{header-prefix}}), it MUST treat this as a connection error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 If the decoder encounters a reference in an encoder instruction to a dynamic
@@ -883,7 +883,7 @@ This encoding limits the length of the prefix on long-lived connections.
 The decoder can reconstruct the Required Insert Count using an algorithm such as
 the following.  If the decoder encounters a value of EncodedInsertCount that
 could not have been produced by a conformant encoder, it MUST treat this as a
-stream error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+connection error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
 TotalNumberOfInserts is the total number of inserts into the decoder's dynamic
 table.
@@ -1101,7 +1101,7 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 # Error Handling {#error-handling}
 
 The following error codes are defined for HTTP/3 to indicate failures of
-QPACK which prevent the stream or connection from continuing:
+QPACK which prevent the connection from continuing:
 
 HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
 : The decoder failed to interpret a header block instruction and is not
@@ -1114,10 +1114,6 @@ HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
 HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
 : The encoder failed to interpret a decoder instruction received on the
   decoder stream.
-
-Upon encountering an error, an implementation MAY elect to treat it as a
-connection error even if this document prescribes that it MUST be treated as a
-stream error.
 
 
 # Security Considerations
