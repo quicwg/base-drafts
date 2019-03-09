@@ -854,7 +854,7 @@ unidirectional and bidirectional streams.
 If a max_streams transport parameter or MAX_STREAMS frame is received with a
 value greater than 2^60, this allows a maximum stream ID that cannot be
 expressed as a variable-length integer (see {{integer-encoding}}).
-If either is received, the connection MUST be immediately closed with a
+If either is received, the connection MUST be closed immediately with a
 connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
