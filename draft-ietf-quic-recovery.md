@@ -316,8 +316,8 @@ specifies max_ack_delay. It SHOULD be subtracted from the RTT as long as the
 result is larger than the min_rtt. If the result is smaller than the min_rtt,
 the RTT should be used, but the ack delay field should be ignored.  Ignoring
 ack_delay when it would cause an RTT sample smaller than the current min_rtt
-prevents a peer from manipulating RTT samples below min_rtt at the cost of slightly
-increasing RTT samples in the presence of persistent delayed acks.
+prevents a peer from manipulating RTT samples below min_rtt at the cost of
+inflated RTT samples in the presence of persistent delayed acks.
 
 A sender takes an RTT sample when an ACK frame is received that acknowledges a
 larger packet number than before (see {{on-ack-received}}).  A sender will take
