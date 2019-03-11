@@ -1383,6 +1383,18 @@ are detected lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-18
+
+- Change IW byte limit to 14720 from 14600 (#2494)
+- Update PTO calculation to match RFC6298 (#2480, #2489, #2490)
+- Improve loss detection's description of multiple packet number spaces and
+  pseudocode (#2485, #2451, #2417)
+- Declare persistent congestion even if non-probe packets are sent and don't
+  make persistent congestion more aggressive than RTO verified was (#2365,
+  #2244)
+- Move pseudocode to the appendices (#2408)
+- What to send on multiple PTOs (#2380)
+
 ## Since draft-ietf-quic-recovery-17
 
 - After Probe Timeout discard in-flight packets or send another (#2212, #1965)
