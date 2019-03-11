@@ -5127,8 +5127,8 @@ See {{iana-error-codes}} for details of registering new error codes.
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
-({{frame-reset-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
-({{frame-connection-close}}).
+({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
+the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 
 # Security Considerations
