@@ -5500,9 +5500,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Endpoints are required to use new connnection IDs when they use new network
   paths (#2413, #2414)
 - Increased the set of permissible frames in 0-RTT (#2344, #2355)
-- Prohibit the use of MAX_STREAM_ID/max_stream_id of greater than 2^60 (#2487,
-  #2499)
-- Failing to negotiate ALPN is a fatal error (#2495, #2483)
 
 ## Since draft-ietf-quic-transport-17
 
