@@ -1960,6 +1960,8 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
   - Modified associated reserved values
 - Frame layout switched from Length-Type-Value to Type-Length-Value
   (#2395,#2235)
+- Specified error code for servers receiving DUPLICATE_PUSH (#2497)
+- Use connection error for invalid PRIORITY (#2507, #2508)
 
 ## Since draft-ietf-quic-http-17
 

@@ -1600,6 +1600,11 @@ cb54df7884
 Issue and pull request numbers are listed with a leading octothorp.
 
 
+## Since draft-ietf-quic-tls-18
+
+- Increased the set of permissible frames in 0-RTT (#2344, #2355)
+
+
 ## Since draft-ietf-quic-tls-17
 
 - Endpoints discard initial keys as soon as handshake keys are available (#1951,

@@ -5494,6 +5494,22 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-18
+
+- Removed version negotation; version negotiation, including authentication of
+  the result, will be addressed in the next version of QUIC (#1773, #2313)
+- Added discussion of the use of IPv6 flow labels (#2348, #2399)
+- A connection ID can't be retired in a packet that uses that connection ID
+  (#2101, #2420)
+- Idle timeout transport parameter is in milliseconds (from seconds) (#2453,
+  #2454)
+- Endpoints are required to use new connnection IDs when they use new network
+  paths (#2413, #2414)
+- Increased the set of permissible frames in 0-RTT (#2344, #2355)
+- Prohibit the use of MAX_STREAM_ID/max_stream_id of greater than 2^60 (#2487,
+  #2499)
+- Failing to negotiate ALPN is a fatal error (#2495, #2483)
+
 ## Since draft-ietf-quic-transport-17
 
 - Stream-related errors now use STREAM_STATE_ERROR (#2305)
