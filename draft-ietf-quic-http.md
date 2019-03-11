@@ -1479,6 +1479,10 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
+anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
+HTTP/3 with 0-RTT.
+
 Certain HTTP implementations use the client address for logging or
 access-control purposes.  Since a QUIC client's address might change during a
 connection (and future versions might support simultaneous use of multiple
