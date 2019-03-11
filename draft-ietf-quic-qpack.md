@@ -1328,6 +1328,10 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-06
+
+- Clarify initial dynamic table capacity maximums (#2276, #2330, #2330)
+
 ## Since draft-ietf-quic-qpack-05
 
 - Introduced the terms dynamic table capacity and maximum dynamic table
