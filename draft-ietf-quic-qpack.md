@@ -362,6 +362,9 @@ addressed.
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
 
+All entries in the static table have a name and a value.  However, values can be
+empty (that is, have a length of 0).
+
 Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
 
@@ -1004,6 +1007,9 @@ index less than the Base, this representation starts with the '01' two-bit
 pattern.  If the entry is in the dynamic table with an absolute index greater
 than or equal to the Base, the representation starts with the '0000' four-bit
 pattern.
+
+Only the header field name stored in the static or dynamic table is used. Any
+header field value MUST be ignored.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
