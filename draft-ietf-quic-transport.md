@@ -852,7 +852,7 @@ using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
 
 If a max_streams transport parameter or MAX_STREAMS frame is received with a
-value greater than 2^60, this allows a maximum stream ID that cannot be
+value greater than 2^60, this would allow a maximum stream ID that cannot be
 expressed as a variable-length integer (see {{integer-encoding}}).
 If either is received, the connection MUST be closed immediately with a
 connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
