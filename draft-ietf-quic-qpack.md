@@ -1,5 +1,5 @@
 ---
-title: "QPACK: Header Compression for HTTP over QUIC"
+title: "QPACK: Header Compression for HTTP/3"
 abbrev: QPACK
 docname: draft-ietf-quic-qpack-latest
 date: {DATE}
