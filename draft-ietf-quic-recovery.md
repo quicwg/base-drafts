@@ -423,10 +423,11 @@ Upon timeout, the sender MUST retransmit all unacknowledged CRYPTO data if
 possible.
 
 Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in {{QUIC-TRANSPORT}}.  If not all
-unacknowledged CRYPTO data can be sent, then all unacknowledged CRYPTO data sent
-in Initial packets should be retransmitted.  If no data can be sent, then no
-alarm should be armed until data has been received from the client.
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
+sent, then no alarm should be armed until data has been received from the
+client.
 
 Because the server could be blocked until more packets are received, the client
 MUST start the crypto retransmission timer even if there is no unacknowledged
