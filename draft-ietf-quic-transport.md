@@ -1469,10 +1469,10 @@ addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
 Clients MUST ensure that UDP datagrams containing Initial packets are sized to
-at least 1200 bytes, adding padding to packets in the datagram as necessary.  Once a
-client has received an acknowledgment for a Handshake packet it MAY send smaller
-datagrams.  Sending padded datagrams ensures that the server is not overly
-constrained by the amplification restriction.
+at least 1200 bytes, adding padding to packets in the datagram as necessary.
+Once a client has received an acknowledgment for a Handshake packet it MAY send
+smaller datagrams.  Sending padded datagrams ensures that the server is not
+overly constrained by the amplification restriction.
 
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
