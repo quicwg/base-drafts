@@ -1448,6 +1448,31 @@ New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
 
 
+## Cryptographic Message Buffering
+
+Implementations need to maintain a buffer of CRYPTO data received out of order.
+Because there is no flow control of CRYPTO frames, an endpoint could
+potentially force its peer to buffer an unbounded amount of data.
+
+Implementations MUST support buffering at least 4096 bytes of data received in
+CRYPTO frames out of order. Endpoints MAY choose to allow more data to be
+buffered during the handshake. A larger limit during the handshake could allow
+for larger keys or credentials to be exchanged. An endpoint's buffer size does
+not need to remain constant during the life of the connection.
+
+Being unable to buffer CRYPTO frames during the handshake leads to a connection
+failure. If an endpoint's buffer is exceeded during the handshake, it can expand
+its buffer temporarily to complete the handshake. If an endpoint cannot expand
+its buffer, it MAY close the connection with a CRYPTO_BUFFER_EXCEEDED error
+code.
+
+Once the handshake completes, if an endpoint is unable to buffer all data in a
+CRYPTO frame, it MAY discard all subsequent CRYPTO frames, or it MAY close the
+connection with an CRYPTO_BUFFER_EXCEEDED error code. If an endpoint chooses to
+discard all subsequent CRYPTO frames, the packets containing these CRYPTO frames
+are still acknowledged.
+
+
 # Address Validation
 
 Address validation is used by QUIC to avoid being used for a traffic
@@ -5182,6 +5207,10 @@ INVALID_MIGRATION (0xC):
 
 : A peer has migrated to a different network when the endpoint had disabled
   migration.
+
+CRYPTO_BUFFER_EXCEEDED (0xD):
+
+: An endpoint has received more data in CRYPTO frames than it can buffer.
 
 CRYPTO_ERROR (0x1XX):
 
