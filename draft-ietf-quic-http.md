@@ -1207,7 +1207,14 @@ the requests if the requested resource is already being pushed.
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
-using the same format described for responses in {{request-response}}.
+using the same format described for responses in {{request-response}}. Due to
+reordering, data on a push stream can arrive before the corresponding
+PUSH_PROMISE, in which case both the associated client request and the pushed
+request headers are unknown. Clients which receive a new push stream with an
+as-yet-unknown Push ID can buffer the stream data in expectation of the matching
+PUSH_PROMISE. A client can use stream flow control (see section 4.1 of
+{{QUIC-TRANSPORT}}) to limit the amount of data a server may commit to the
+pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
