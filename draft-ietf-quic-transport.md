@@ -1463,14 +1463,14 @@ not need to remain constant during the life of the connection.
 Being unable to buffer CRYPTO frames during the handshake leads to a connection
 failure. If an endpoint's buffer is exceeded during the handshake, it can expand
 its buffer temporarily to complete the handshake. If an endpoint cannot expand
-its buffer, it MAY close the connection with a CRYPTO_BUFFER_EXCEEDED error
+its buffer, it MUST close the connection with a CRYPTO_BUFFER_EXCEEDED error
 code.
 
 Once the handshake completes, if an endpoint is unable to buffer all data in a
 CRYPTO frame, it MAY discard all subsequent CRYPTO frames, or it MAY close the
 connection with an CRYPTO_BUFFER_EXCEEDED error code. If an endpoint chooses to
 discard all subsequent CRYPTO frames, the packets containing these CRYPTO frames
-are still acknowledged.
+MUST be acknowledged.
 
 
 # Address Validation
