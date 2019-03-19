@@ -619,13 +619,21 @@ QPACK defines two unidirectional stream types:
    It carries an unframed sequence of decoder instructions from decoder
    to encoder.
 
-<!-- s/exactly/no more than/  ? -->
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
-initiate a single encoder stream and decoder stream. Receipt of a second
-instance of either stream type be MUST treated as a connection error of type
+initiate at most one encoder stream and one decoder stream. Receipt of a second
+instance of either stream type MUST be treated as a connection error of type
 HTTP_WRONG_STREAM_COUNT. These streams MUST NOT be closed. Closure of either
 unidirectional stream type MUST be treated as a connection error of type
 HTTP_CLOSED_CRITICAL_STREAM.
+
+An endpoint MAY avoid creating its own encoder stream if the maximum size of
+the dynamic table permitted by the peer is zero.
+
+An endpoint MAY avoid creating its own decoder stream if the maximum size of
+its own dynamic table is zero.
+
+An endpoint MUST allow its peer to create both encoder and decoder streams
+even if the connection's settings prevent their use.
 
 ## Encoder Instructions {#encoder-instructions}
 
