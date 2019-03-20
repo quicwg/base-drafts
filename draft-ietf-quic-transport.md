@@ -1380,25 +1380,22 @@ validation of the Retry, as described in {{packet-retry}}.
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-Clients remember the value of transport parameters from a server and apply
-them to any 0-RTT packets that are sent in subsequent connections, except
-for transport parameters that are explicitly excluded. Remembered transport
-parameters apply to the new connection until the handshake completes and the
-client starts sending 1-RTT packets. Once the handshake completes, the client
-uses the transport parameters established in thehandshake.
-
-The value of the server's previous original_connection_id, preferred_address,
-stateless_reset_token, and ack_delay_exponent MUST NOT be used when
-establishing a new connection; rather, the client should wait to observe the
-server's new values in the handshake. If the server does not provide a new
-value, the client MUST use the default value.
-
-The client MAY store the server's original max_packet_size transport
-parameter.
+Both endpoints store the value of the server transport parameters from
+a connection and apply them to any 0-RTT packets that are sent in
+subsequent connections to that peer, except for transport parameters that
+are explicitly excluded. Remembered transport parameters apply to the new
+connection until the handshake completes and the client starts sending
+1-RTT packets. Once the handshake completes, the client uses the transport
+parameters established in the handshake.
 
 The definition of new transport parameters ({{new-transport-parameters}}) MUST
 specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
+
+A client MUST NOT use remembered values for the following parameters:
+original_connection_id, preferred_address, stateless_reset_token, and
+ack_delay_exponent. The client MUST use the server's new values in the
+handshake instead, and absent new values from the server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1410,7 +1407,7 @@ If 0-RTT data is accepted by the server, the server MUST NOT reduce any
 limits or alter any values that might be violated by the client with its
 0-RTT data.  In particular, a server that accepts 0-RTT data MUST NOT set
 values for the following parameters ({{transport-parameter-definitions}})
-that are smaller than the remembered value of those parameters.
+that are smaller than the remembered value of the parameters.
 
 * initial_max_data
 * initial_max_stream_data_bidi_local
