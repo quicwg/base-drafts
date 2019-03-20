@@ -269,7 +269,7 @@ At a high level, there are two main interactions between the TLS and QUIC
 components:
 
 * The TLS component sends and receives messages via the QUIC component, with
-  QUIC providing a reliable stream and record abstraction to TLS.
+  QUIC providing a reliable stream abstraction to TLS.
 
 * The TLS component provides a series of updates to the QUIC component,
   including (a) new packet protection keys to install (b) state changes such as
