@@ -704,7 +704,7 @@ The following settings are defined in HTTP/3:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
-  SETTINGS_NUM_PLACEHOLDERS (0x8):
+  SETTINGS_NUM_PLACEHOLDERS (0x9):
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
@@ -1612,7 +1612,7 @@ The entries in the following table are registered by this document.
 | Reserved                     |  0x4   | N/A                       |
 | Reserved                     |  0x5   | N/A                       |
 | MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             |  0x9   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
