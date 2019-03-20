@@ -2708,8 +2708,9 @@ additional type-dependent fields:
 {: #frame-layout title="Generic Frame Layout"}
 
 The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in STREAM frames is used to carry other frame-specific flags.
-For all other frames, the Frame Type field simply identifies the frame.  These
+The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
+CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
+other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
 | Type Value  | Frame Type Name      | Definition                     |
