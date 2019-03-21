@@ -4365,16 +4365,16 @@ counts, as follows:
 The three ECN Counts are:
 
 ECT(0) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(0) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(0) codepoint.
 
 ECT(1) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(1) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(1) codepoint.
 
 CE Count:
-: A variable-length integer representing the total number packets received with
-  the CE codepoint.
+: A variable-length integer representing the total number of packets received
+  with the CE codepoint.
 
 ECN counts are maintained separately for each packet number space.
 
