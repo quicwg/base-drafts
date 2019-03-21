@@ -5259,7 +5259,7 @@ stream 2000001 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the initial_max_streams_bidi and
 initial_max_streams_uni transport parameters, as explained in
-{{controlling-concurrency}}.  If chosen judiciously, this limit mitigates the
+{{controlling-concurrency}}.  If chosen judiciously, these limits mitigates the
 effect of the stream commitment attack.  However, setting the limit too low
 could affect performance when applications expect to open large number of
 streams.
