@@ -343,13 +343,14 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type         | Encryption Level | PN Space  |
+|:--------------------|:-----------------|:----------|
+| Initial             | Initial secrets  | Initial   |
+| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
+| Handshake           | Handshake        | Handshake |
+| Retry               | N/A              | N/A       |
+| Version Negotiation | N/A              | N/A       |
+| Short Header        | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -498,30 +499,29 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Rekey tx to 0-RTT Keys
+Install tx 0-RTT Keys
                      0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
                      <------------- Initial
-                                          Rekey rx to 0-RTT keys
-                                              Handshake Received
-                                      Rekey rx to Handshake keys
+                                           Install rx 0-RTT keys
+                                          Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-                                          Rekey tx to 1-RTT keys
+                                           Install tx 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey rx to Handshake keys
+Install tx Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx to 1-RTT keys
+Install 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
-                                          Rekey rx to 1-RTT keys
-                                                   Get Handshake
+                                           Install rx 1-RTT keys
                                               Handshake Complete
+                                                   Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
