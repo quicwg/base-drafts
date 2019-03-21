@@ -4381,8 +4381,8 @@ ECN counts are maintained separately for each packet number space.
 
 ## RESET_STREAM Frame {#frame-reset-stream}
 
-An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate a
-stream.
+An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate the
+sending part of a stream.
 
 After sending a RESET_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
