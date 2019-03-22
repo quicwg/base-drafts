@@ -3276,7 +3276,7 @@ decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
 single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
-Error codes ({{error-codes}}) and versions {{versions}} are described using
+Error codes ({{error-codes}}) and versions ({{versions}}) are described using
 integers, but do not use this encoding.
 
 
@@ -4224,15 +4224,15 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer including the time in microseconds that the largest
-  acknowledged packet, as indicated in the Largest Acknowledged field, was
-  received by this peer to when this ACK was sent.  The value of the ACK Delay
-  field is scaled by multiplying the encoded value by 2 to the power of the
-  value of the `ack_delay_exponent` transport parameter set by the sender of the
-  ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
-  {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
-  larger range of values with a shorter encoding at the cost of lower
-  resolution.
+: A variable-length integer representing the time delta in microseconds between
+  when this ACK was sent and when the largest acknowledged packet, as indicated
+  in the Largest Acknowledged field, was received by this peer.  The value of
+  the ACK Delay field is scaled by multiplying the encoded value by 2 to the
+  power of the value of the `ack_delay_exponent` transport parameter set by the
+  sender of the ACK frame.  The `ack_delay_exponent` defaults to 3, or a
+  multiplier of 8 (see {{transport-parameter-definitions}}).  Scaling in this
+  fashion allows for a larger range of values with a shorter encoding at the
+  cost of lower resolution.
 
 ACK Range Count:
 
