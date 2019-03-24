@@ -2293,7 +2293,7 @@ connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
 to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
-the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
+the NEW_CONNECTION_ID frame sent by either peer, and servers MAY specify the
 stateless_reset_token transport parameter during the handshake (clients cannot
 because their transport parameters don't have confidentiality protection).  This
 value is protected by encryption, so only client and server know this value.
@@ -4003,7 +4003,7 @@ stateless_reset_token (0x0002):
 
 : A stateless reset token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
-  transport parameter is only sent by a server.
+  transport parameter is only sent by a server (but it's not mandatory).
 
 max_packet_size (0x0003):
 
