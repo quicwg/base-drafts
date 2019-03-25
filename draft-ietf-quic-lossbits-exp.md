@@ -124,9 +124,7 @@ This mechanism thus delineates slots of N packets with the same marking. Observa
 ### Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
 Each endpoint, client and server, independently maintains a not-yet-disclosed-lost-packets counter and sets the Retransmit bit of short header packets to 0 or 1 accordingly.
-The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery, the content of which is pending for retransmission. When a packet is declared lost by the QUIC retransmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set to 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1.
-
-Observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by observing the number of packets in this direction with a retransmit bit set to 1.
+The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery, the content of which is pending for retransmission. When a packet is declared lost by the QUIC retransmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set to 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1. Thus, the retransmit bit performs unary encoding of the amount of loss: observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by counting packets in this direction with a retransmit bit equal to 1.
 
 
 ### Resetting sQuare Value 
@@ -164,6 +162,7 @@ The slot size N should be carefully chosen : too short, it becomes very sensitiv
 
  The Q and R bits sent by one endpoint cover loss of packets sent by the same endpoint, allowing a midpoint observer to estimate loss in that direction; no specific cooperation is needed between the endpoints beyond negotiating a QUIC version that supports this proposal. Hence, the server will be enabling troubleshooting of the download path, and the client will work for the upload path.  This allows to be confident about getting a useful signal in asymmetric situations:  clients may for example implement Q and R improperly, the download path will still be debuggable as long as servers do it right.
  
+ It should also be noted that the method does not suffer from the natural asymmetry in packet rate of a typical download or upload scenario. Indeed, although there are often fewer acknowledgements than payload-bearing packets, the unary encoding by R is borne by the payload stream. This allows to report loss in the important direction in both a timely and accurate fashion without sampling or quantization.
 
 # Security and Privacy Considerations
 
