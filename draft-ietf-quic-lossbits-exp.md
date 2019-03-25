@@ -162,7 +162,7 @@ The slot size N should be carefully chosen : too short, it becomes very sensitiv
 
  The Q and R bits sent by one endpoint cover loss of packets sent by the same endpoint, allowing a midpoint observer to estimate loss in that direction; no specific cooperation is needed between the endpoints beyond negotiating a QUIC version that supports this proposal. Hence, the server will be enabling troubleshooting of the download path, and the client will work for the upload path.  This allows to be confident about getting a useful signal in asymmetric situations:  clients may for example implement Q and R improperly, the download path will still be debuggable as long as servers do it right.
  
- It should also be noted that the method does not suffer from the natural asymmetry in packet rate of a typical download or upload scenario. Indeed, although there are often fewer acknowledgements than payload-bearing packets, the unary encoding by R is borne by the payload stream. This allows to report loss in the important direction in both a timely and accurate fashion without sampling or quantization.
+ It should also be noted that the method does not suffer from the natural asymmetry in packet rate of a typical download or upload scenario. Indeed, although there are often fewer acknowledgements than payload-bearing packets, the unary encoding by R of payload loss is borne by the payload stream itself. This allows to report loss in the important direction in both a timely and accurate fashion without sampling or quantization.
 
 # Security and Privacy Considerations
 
