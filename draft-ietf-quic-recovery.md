@@ -664,7 +664,8 @@ where PTOs do not occur or are substantially delayed.  This duration is computed
 as follows:
 
 ~~~
-(smoothed_rtt + 4 * rttvar + max_ack_delay) * kPersistentCongestionThreshold
+(smoothed_rtt + 4 * rttvar + max_ack_delay) *
+    kPersistentCongestionThreshold
 ~~~
 
 For example, assume:
