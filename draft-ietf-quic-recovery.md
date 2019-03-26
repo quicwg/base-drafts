@@ -660,12 +660,11 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed.  This duration is the
-equivalent of kPersistentCongestionThreshold consecutive PTOs, and is computed
+where PTOs do not occur or are substantially delayed.  This duration is computed
 as follows:
+
 ~~~
-(smoothed_rtt + 4 * rttvar + max_ack_delay) *
-    ((2 ^ kPersistentCongestionThreshold) - 1)
+(smoothed_rtt + 4 * rttvar + max_ack_delay) * kPersistentCongestionThreshold
 ~~~
 
 For example, assume:
@@ -673,7 +672,7 @@ For example, assume:
   smoothed_rtt = 1
   rttvar = 0
   max_ack_delay = 0
-  kPersistentCongestionThreshold = 2
+  kPersistentCongestionThreshold = 3
 
 If an eck-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
@@ -687,10 +686,10 @@ illustrate persistent congestion:
 The first three packets are determined to be lost when the ACK of packet 4 is
 received at t=8.  The congestion period is calculated as the time between the
 oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
-congestion is equal to: (1 * ((2 ^ kPersistentCongestionThreshold) - 1)) = 3.
-Because the threshold was reached and because none of the packets between the
-oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion.
+congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.  Because the
+threshold was reached and because none of the packets between the oldest and the
+newest packets are acknowledged, the network is considered to have experienced
+persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -1216,13 +1215,14 @@ kLossReductionFactor:
   The RECOMMENDED value is 0.5.
 
 kPersistentCongestionThreshold:
-: Number of consecutive PTOs required for persistent congestion to be
-  established.  The rationale for this threshold is to enable a sender to use
+
+: Period of time for persistent congestion to be established, specified as a PTO
+  multiplier.  The rationale for this threshold is to enable a sender to use
   initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
   {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
   a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
-  kPersistentCongestionThreshold is 2, which is equivalent to having two TLPs
-  before an RTO in TCP.
+  kPersistentCongestionThreshold is 3, which is approximately equivalent to
+  having two TLPs before an RTO in TCP.
 
 
 ## Variables of interest {#vars-of-interest}
@@ -1354,8 +1354,7 @@ are detected lost.
    InPersistentCongestion(largest_lost_packet):
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
-     congestion_period =
-       pto * (2 ^ kPersistentCongestionThreshold - 1)
+     congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the window before the
      // newest lost packet, including the edges, are marked
      // lost
