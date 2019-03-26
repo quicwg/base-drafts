@@ -851,6 +851,12 @@ limits are set in the transport parameters (see
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
 
+If a max_streams transport parameter or MAX_STREAMS frame is received with a
+value greater than 2^60, this would allow a maximum stream ID that cannot be
+expressed as a variable-length integer (see {{integer-encoding}}).
+If either is received, the connection MUST be closed immediately with a
+connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
+
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
 treat this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
@@ -960,12 +966,16 @@ cannot expect its peer to store and use all issued connection IDs.
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  While each endpoint independently chooses how many
 connection IDs to issue, endpoints SHOULD provide and maintain at least eight
-connection IDs.  The endpoint SHOULD do this by always supplying a new
-connection ID when a connection ID is retired by its peer or when the endpoint
-receives a packet with a previously unused connection ID.  Endpoints that
-initiate migration and require non-zero-length connection IDs SHOULD provide
-their peers with new connection IDs before migration, or risk the peer closing
-the connection.
+connection IDs.  The endpoint SHOULD do this by supplying a new connection ID
+when a connection ID is retired by its peer or when the endpoint receives a
+packet with a previously unused connection ID.  However, it MAY limit the
+frequency or the total number of connection IDs issued for each connection to
+avoid the risk of running out of connection IDs (see {{reset-token}}).
+
+An endpoint that initiates migration and requires non-zero-length connection IDs
+SHOULD ensure that the pool of connection IDs available to its peer allows the
+peer to use a new connection ID on migration, as the peer will close the
+connection if the pool is exhausted.
 
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
@@ -1281,7 +1291,7 @@ Initial[0]: CRYPTO[CH]
 0-RTT[0]: STREAM[0, "..."] ->
 
                                   Initial[0]: CRYPTO[SH] ACK[0]
-           Handshake[0]: KEYS_ACTIVE, CRYPTO[EE, CERT, CV, FIN]
+                     Handshake[0]: KEYS_ACTIVE, CRYPTO[EE, FIN]
                            <- 1-RTT[0]: STREAM[1, "..."] ACK[0]
 
 Handshake[0]: KEYS_ACTIVE, CRYPTO[FIN], ACK[0]
@@ -1460,10 +1470,11 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST pad UDP datagrams that contain only Initial packets to at least
-1200 bytes.  Once a client has received an acknowledgment for a Handshake packet
-it MAY send smaller datagrams.  Sending padded datagrams ensures that the server
-is not overly constrained by the amplification restriction.
+Clients MUST ensure that UDP datagrams containing Initial packets are sized to
+at least 1200 bytes, adding padding to packets in the datagram as necessary.
+Once a client has received an acknowledgment for a Handshake packet it MAY send
+smaller datagrams.  Sending padded datagrams ensures that the server is not
+overly constrained by the amplification restriction.
 
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
@@ -1752,7 +1763,9 @@ An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
 has sent this transport parameter, but detects that a peer has nonetheless
 migrated to a different network MAY treat this as a connection error of type
-INVALID_MIGRATION.
+INVALID_MIGRATION.  Similarly, an endpoint MUST NOT initiate migration if its
+peer supplies a zero-length connection ID as packets without a Destination
+Connection ID cannot be attributed to a connection based on address tuple.
 
 Not all changes of peer address are intentional migrations. The peer could
 experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
@@ -1760,6 +1773,10 @@ allocating a new outgoing port or even a new outgoing IP address for a flow.
 NAT rebinding is not connection migration as defined in this section, though an
 endpoint SHOULD perform path validation ({{migrate-validate}}) if it detects a
 change in the IP address of its peer.
+
+When an endpoint has no validated path on which to send packets, it MAY discard
+connection state.  An endpoint capable of connection migration MAY wait for a
+new path to become available before discarding connection state.
 
 This document limits migration of connections to new client addresses, except as
 described in {{preferred-address}}. Clients are responsible for initiating all
@@ -1988,15 +2005,19 @@ different local addresses, as discussed in {{connection-id}}.  For this to be
 effective endpoints need to ensure that connections IDs they provide cannot be
 linked by any other entity.
 
-This eliminates the use of the connection ID for linking activity from
-the same connection on different networks.  Header protection ensures
-that packet numbers cannot be used to correlate activity.  This does not prevent
-other properties of packets, such as timing and size, from being used to
+At any time, endpoints MAY change the Destination Connection ID they send to a
+value that has not been used on another path.
+
+An endpoint MUST use a new connection ID if it initiates connection migration.
+Using a new connection ID eliminates the use of the connection ID for linking
+activity from the same connection on different networks.  Header protection
+ensures that packet numbers cannot be used to correlate activity.  This does not
+prevent other properties of packets, such as timing and size, from being used to
 correlate activity.
 
-Clients MAY move to a new connection ID at any time based on
-implementation-specific concerns.  For example, after a period of network
-inactivity NAT rebinding might occur when the client begins sending data again.
+Unintentional changes in path without a change in connection ID are possible.
+For example, after a period of network inactivity, NAT rebinding might cause
+packets to be sent on a new path when the client resumes sending.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -2007,21 +2028,9 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-Endpoints that use connection IDs with length greater than zero could have their
-activity correlated if their peers keep using the same destination connection ID
-after migration. Endpoints that receive packets with a previously unused
-Destination Connection ID SHOULD change to sending packets with a connection ID
-that has not been used on any other network path.  The goal here is to ensure
-that packets sent on different paths cannot be correlated. To fulfill this
-privacy requirement, endpoints that initiate migration and use connection IDs
-with length greater than zero SHOULD provide their peers with new connection IDs
-before migration.
-
-Caution:
-
-: If both endpoints change connection ID in response to seeing a change in
-  connection ID from their peer, then this can trigger an infinite sequence of
-  changes.
+An endpoint that exhausts available connection IDs cannot migrate.  To ensure
+that migration is possible and packets sent on different paths cannot be
+correlated, endpoints SHOULD provide new connection IDs before peers migrate.
 
 
 ## Server's Preferred Address {#preferred-address}
@@ -2121,13 +2130,14 @@ UDP ports, destination CID, and a local secret.
 
 # Connection Termination {#termination}
 
-Connections should remain open until they become idle for a pre-negotiated
-period of time.  A QUIC connection, once established, can be terminated in one
-of three ways:
+An established QUIC connection can be terminated in one of three ways:
 
 * idle timeout ({{idle-timeout}})
 * immediate close ({{immediate-close}})
 * stateless reset ({{stateless-reset}})
+
+An endpoint MAY discard connection state if it does not have a validated path on
+which it can send packets (see {{migrate-validate}}).
 
 
 ## Closing and Draining Connection States {#draining}
@@ -2208,7 +2218,9 @@ endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an
 Probe Timeout (PTO, see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
-test for liveness before sending any data that cannot be retried safely.
+test for liveness before sending any data that cannot be retried safely.  Note
+that it is likely that only applications or application protocols will
+know what information can be retried.
 
 
 ## Immediate Close
@@ -2313,9 +2325,9 @@ of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
 A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Random Bits field needs to
-include at least 182 bits of data (or 23 bytes, less the two fixed bits). This
-is intended to allow for a Destination Connection ID of the maximum length
+header.  For the packet to appear as valid, the Unpredictable Bits field needs
+to include at least 182 bits of data (or 23 bytes, less the two fixed bits).
+This is intended to allow for a Destination Connection ID of the maximum length
 permitted, with a minimal packet number, and payload.  The Stateless Reset Token
 corresponds to the minimum expansion of the packet protection AEAD.  More
 unpredictable bytes might be necessary if the endpoint could have negotiated a
@@ -2481,10 +2493,10 @@ specific to the transport, including all those described in this document, are
 carried the QUIC-specific variant of the CONNECTION_CLOSE frame.
 
 A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
-SHOULD be prepared to retransmit a packet containing containing a
-CONNECTION_CLOSE frame if it receives more packets on a terminated connection.
-Limiting the number of retransmissions and the time over which this final packet
-is sent limits the effort expended on terminated connections.
+SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
+it receives more packets on a terminated connection. Limiting the number of
+retransmissions and the time over which this final packet is sent limits the
+effort expended on terminated connections.
 
 An endpoint that chooses not to retransmit packets containing a CONNECTION_CLOSE
 frame risks a peer missing the first such packet.  The only mechanism available
@@ -2603,17 +2615,18 @@ maintains a separate packet number for sending and receiving.
 Packet numbers are limited to this range because they need to be representable
 in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
 When present in a long or short header however, packet numbers are reduced and
-encoded in 1 to 4 bytes, see {{packet-encoding}}).
+encoded in 1 to 4 bytes (see {{packet-encoding}}).
 
-Version Negotiation ({{packet-version}}) and Retry {{packet-retry}} packets do
-not include a packet number.
+Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
+do not include a packet number.
 
 Packet numbers are divided into 3 spaces in QUIC:
 
-- Initial space: All Initial packets {{packet-initial}} are in this space.
-- Handshake space: All Handshake packets {{packet-handshake}} are in this space.
+- Initial space: All Initial packets ({{packet-initial}}) are in this space.
+- Handshake space: All Handshake packets ({{packet-handshake}}) are in this
+space.
 - Application data space: All 0-RTT and 1-RTT encrypted packets
-  {{packet-protected}} are in this space.
+  ({{packet-protected}}) are in this space.
 
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
@@ -2632,11 +2645,10 @@ the packet number by at least one.
 algorithms easier to implement between the two packet types.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection (that is, under the same cryptographic keys).  If the
-packet number for sending reaches 2^62 - 1, the sender MUST close the connection
-without sending a CONNECTION_CLOSE frame or any further packets; an endpoint MAY
-send a Stateless Reset ({{stateless-reset}}) in response to further packets that
-it receives.
+space in one connection.  If the packet number for sending reaches 2^62 - 1, the
+sender MUST close the connection without sending a CONNECTION_CLOSE frame or any
+further packets; an endpoint MAY send a Stateless Reset ({{stateless-reset}}) in
+response to further packets that it receives.
 
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
@@ -2692,8 +2704,9 @@ additional type-dependent fields:
 {: #frame-layout title="Generic Frame Layout"}
 
 The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in STREAM frames is used to carry other frame-specific flags.
-For all other frames, the Frame Type field simply identifies the frame.  These
+The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
+CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
+other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
 | Type Value  | Frame Type Name      | Definition                     |
@@ -3263,7 +3276,7 @@ decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
 single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
-Error codes ({{error-codes}}) and versions {{versions}} are described using
+Error codes ({{error-codes}}) and versions ({{versions}}) are described using
 integers, but do not use this encoding.
 
 
@@ -4083,8 +4096,8 @@ disable_migration (0x000c):
 : The disable migration transport parameter is included if the endpoint does not
   support connection migration ({{migration}}). Peers of an endpoint that sets
   this transport parameter MUST NOT send any packets, including probing packets
-  ({{probing}}), from a local address other than that used to perform the
-  handshake.  This parameter is a zero-length value.
+  ({{probing}}), from a local address or port other than that used to perform
+  the handshake.  This parameter is a zero-length value.
 
 preferred_address (0x000d):
 
@@ -4216,15 +4229,15 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer including the time in microseconds that the largest
-  acknowledged packet, as indicated in the Largest Acknowledged field, was
-  received by this peer to when this ACK was sent.  The value of the ACK Delay
-  field is scaled by multiplying the encoded value by 2 to the power of the
-  value of the `ack_delay_exponent` transport parameter set by the sender of the
-  ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
-  {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
-  larger range of values with a shorter encoding at the cost of lower
-  resolution.
+: A variable-length integer representing the time delta in microseconds between
+  when this ACK was sent and when the largest acknowledged packet, as indicated
+  in the Largest Acknowledged field, was received by this peer.  The value of
+  the ACK Delay field is scaled by multiplying the encoded value by 2 to the
+  power of the value of the `ack_delay_exponent` transport parameter set by the
+  sender of the ACK frame.  The `ack_delay_exponent` defaults to 3, or a
+  multiplier of 8 (see {{transport-parameter-definitions}}).  Scaling in this
+  fashion allows for a larger range of values with a shorter encoding at the
+  cost of lower resolution.
 
 ACK Range Count:
 
@@ -4357,24 +4370,24 @@ counts, as follows:
 The three ECN Counts are:
 
 ECT(0) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(0) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(0) codepoint.
 
 ECT(1) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(1) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(1) codepoint.
 
 CE Count:
-: A variable-length integer representing the total number packets received with
-  the CE codepoint.
+: A variable-length integer representing the total number of packets received
+  with the CE codepoint.
 
 ECN counts are maintained separately for each packet number space.
 
 
 ## RESET_STREAM Frame {#frame-reset-stream}
 
-An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate a
-stream.
+An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate the
+sending part of a stream.
 
 After sending a RESET_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
@@ -5156,8 +5169,8 @@ See {{iana-error-codes}} for details of registering new error codes.
 Application protocol error codes are 16-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
-({{frame-reset-stream}}) and the CONNECTION_CLOSE frame with a type of 0x1d
-({{frame-connection-close}}).
+({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
+the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 
 # Security Considerations
@@ -5523,6 +5536,19 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-18
+
+- Removed version negotation; version negotiation, including authentication of
+  the result, will be addressed in the next version of QUIC (#1773, #2313)
+- Added discussion of the use of IPv6 flow labels (#2348, #2399)
+- A connection ID can't be retired in a packet that uses that connection ID
+  (#2101, #2420)
+- Idle timeout transport parameter is in milliseconds (from seconds) (#2453,
+  #2454)
+- Endpoints are required to use new connnection IDs when they use new network
+  paths (#2413, #2414)
+- Increased the set of permissible frames in 0-RTT (#2344, #2355)
+
 ## Since draft-ietf-quic-transport-17
 
 - Stream-related errors now use STREAM_STATE_ERROR (#2305)
@@ -5540,6 +5566,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Set a maximum value for max_ack_delay transport parameter (#2282, #2301)
 - Allow server preferred address for both IPv4 and IPv6 (#2122, #2296)
 - Corrected requirements for migration to a preferred address (#2146, #2349)
+- ACK of non-existent packet is illegal (#2298, #2302)
 
 ## Since draft-ietf-quic-transport-16
 

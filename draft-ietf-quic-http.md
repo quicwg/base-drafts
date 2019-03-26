@@ -495,7 +495,7 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the client-advised priority of a
+The PRIORITY (type=0x2) frame specifies the client-advised priority of a
 request, server push or placeholder.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
@@ -603,8 +603,8 @@ to open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
 
-PRIORITY frames received by a client MUST be treated as a stream error of type
-HTTP_UNEXPECTED_FRAME.
+PRIORITY frames received by a client MUST be treated as a connection error of
+type HTTP_UNEXPECTED_FRAME.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
@@ -704,7 +704,7 @@ The following settings are defined in HTTP/3:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
-  SETTINGS_NUM_PLACEHOLDERS (0x8):
+  SETTINGS_NUM_PLACEHOLDERS (0x9):
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
@@ -747,7 +747,7 @@ with its 0-RTT data.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
-The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
+The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
 set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
@@ -861,7 +861,7 @@ DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
 of type HTTP_WRONG_STREAM.
 
 A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type HTTP_MALFORMED_FRAME.
+of a DUPLICATE_PUSH frame as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1259,21 +1259,22 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Once GOAWAY is sent, the server MUST reject requests sent on streams with an
-identifier greater than or equal to the indicated last Stream ID.  Clients MUST
-NOT send new requests on the connection after receiving GOAWAY, although
-requests might already be in transit. A new connection can be established for
-new requests.
+Clients MUST NOT send new requests on the connection after receiving GOAWAY;
+a new connection MAY be established to send additional requests.
 
-If the client has sent requests on streams with a Stream ID greater than or
-equal to that indicated in the GOAWAY frame, those requests are considered
-rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
-streams above this ID.  Servers MAY also reject requests on streams below the
-indicated ID if these requests were not processed.
+Some requests might already be in transit. If the client has already sent
+requests on streams with a Stream ID greater than or equal to that indicated in
+the GOAWAY frame, those requests will not be processed and MAY be retried by the
+client on a different connection.  The client MAY cancel these requests.  It is
+RECOMMENDED that the server explicitly reject such requests (see
+{{request-cancellation}}) in order to clean up transport state for the affected
+streams.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.
+been processed; their status cannot be known until a response is received, the
+stream is reset individually, or the connection terminates.  Servers MAY reject
+individual requests on streams below the indicated ID if these requests were not
+processed.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -1478,6 +1479,10 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
+anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
+HTTP/3 with 0-RTT.
+
 Certain HTTP implementations use the client address for logging or
 access-control purposes.  Since a QUIC client's address might change during a
 connection (and future versions might support simultaneous use of multiple
@@ -1607,7 +1612,7 @@ The entries in the following table are registered by this document.
 | Reserved                     |  0x4   | N/A                       |
 | Reserved                     |  0x5   | N/A                       |
 | MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             |  0x9   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
@@ -1949,12 +1954,24 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-18
+
+- Resetting streams following a GOAWAY is recommended, but not required
+  (#2256,#2457)
+- Use variable-length integers throughout (#2437,#2233,#2253,#2275)
+  - Variable-length frame types, stream types, and settings identifiers
+  - Renumbered stream type assignments
+  - Modified associated reserved values
+- Frame layout switched from Length-Type-Value to Type-Length-Value
+  (#2395,#2235)
+- Specified error code for servers receiving DUPLICATE_PUSH (#2497)
+- Use connection error for invalid PRIORITY (#2507, #2508)
+
 ## Since draft-ietf-quic-http-17
 
 - HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
   #2325)
 - Changed error code for GOAWAY on the wrong stream (#2231, #2343)
-
 
 ## Since draft-ietf-quic-http-16
 
@@ -1970,7 +1987,6 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 - Removed reservation of error code 0 and moved HTTP_NO_ERROR to this value
   (#1922)
 - Removed prohibition of zero-length DATA frames (#2098)
-
 
 ## Since draft-ietf-quic-http-15
 

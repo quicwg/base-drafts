@@ -417,15 +417,17 @@ is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
-When crypto packets are sent, the sender MUST set a timer for the crypto
-timeout period.  Upon timeout, the sender MUST retransmit all unacknowledged
-CRYPTO data if possible.
+When a crypto packet is sent, the sender MUST set a timer for the crypto
+timeout period.  This timer MUST be updated when a new crypto packet is sent.
+Upon timeout, the sender MUST retransmit all unacknowledged CRYPTO data if
+possible.
 
 Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in {{QUIC-TRANSPORT}}.  If not all
-unacknowledged CRYPTO data can be sent, then all unacknowledged CRYPTO data sent
-in Initial packets should be retransmitted.  If no data can be sent, then no
-alarm should be armed until data has been received from the client.
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
+sent, then no alarm should be armed until data has been received from the
+client.
 
 Because the server could be blocked until more packets are received, the client
 MUST start the crypto retransmission timer even if there is no unacknowledged
@@ -496,7 +498,7 @@ When an ack-eliciting packet is transmitted, the sender schedules a timer for
 the PTO period as follows:
 
 ~~~
-PTO = max(smoothed_rtt + 4*rttvar + max_ack_delay, kGranularity)
+PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 ~~~
 
 kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
@@ -651,14 +653,50 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
+## Persistent Congestion
+
 When an ACK frame is received that establishes loss of all in-flight packets
-sent prior to a threshold number of consecutive PTOs (pto_count is more than
-kPersistentCongestionThreshold, see {{cc-consts-of-interest}}), the network is
-considered to be experiencing persistent congestion, and the sender's congestion
-window MUST be reduced to the minimum congestion window (kMinimumWindow).  This
-response of collapsing the congestion window on persistent congestion is
-functionally similar to a sender's response on a Retransmission Timeout (RTO) in
-TCP {{RFC5681}}.
+sent over a long enough period of time, the network is considered to be
+experiencing persistent congestion.  Commonly, this can be established by
+consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
+packet is sent, an explicit duration must be used to account for those cases
+where PTOs do not occur or are substantially delayed.  This duration is the
+equivalent of kPersistentCongestionThreshold consecutive PTOs, and is computed
+as follows:
+~~~
+(smoothed_rtt + 4 * rttvar + max_ack_delay) *
+    ((2 ^ kPersistentCongestionThreshold) - 1)
+~~~
+
+For example, assume:
+
+  smoothed_rtt = 1
+  rttvar = 0
+  max_ack_delay = 0
+  kPersistentCongestionThreshold = 2
+
+If an eck-eliciting packet is sent at time = 0, the following scenario would
+illustrate persistent congestion:
+
+  t=0 | Send Pkt #1 (App Data)
+  t=1 | Send Pkt #2 (PTO 1)
+  t=3 | Send Pkt #3 (PTO 2)
+  t=7 | Send Pkt #4 (PTO 3)
+  t=8 | Recv ACK of Pkt #4
+
+The first three packets are determined to be lost when the ACK of packet 4 is
+received at t=8.  The congestion period is calculated as the time between the
+oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
+congestion is equal to: (1 * ((2 ^ kPersistentCongestionThreshold) - 1)) = 3.
+Because the threshold was reached and because none of the packets between the
+oldest and the newest packets are acknowledged, the network is considered to
+have experienced persistent congestion.
+
+When persistent congestion is established, the sender's congestion window MUST
+be reduced to the minimum congestion window (kMinimumWindow).  This response of
+collapsing the congestion window on persistent congestion is functionally
+similar to a sender's response on a Retransmission Timeout (RTO) in TCP
+{{RFC5681}} after Tail Loss Probes (TLP) {{TLP}}.
 
 ## Pacing {#pacing}
 
@@ -856,7 +894,7 @@ time_of_last_sent_ack_eliciting_packet:
 time_of_last_sent_crypto_packet:
 : The time the most recent crypto packet was sent.
 
-largest_acked_packet[kPacketNumberSpace]:
+largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
 
 latest_rtt:
@@ -879,12 +917,11 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-loss_time:
-: The time at which the next packet will be considered lost based on
-  exceeding the reordering window in time. Only applies to the ApplicationData
-  packet number space.
+loss_time\[kPacketNumberSpace]:
+: The time at which the next packet in that packet number space will be
+  considered lost based on exceeding the reordering window in time.
 
-sent_packets[kPacketNumberSpace]:
+sent_packets\[kPacketNumberSpace]:
 : An association of packet numbers in a packet number space to information
   about them.  Described in detail above in {{tracking-sent-packets}}.
 
@@ -898,7 +935,6 @@ follows:
    loss_detection_timer.reset()
    crypto_count = 0
    pto_count = 0
-   loss_time = 0
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = infinite
@@ -906,6 +942,7 @@ follows:
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicatonData ]:
      largest_acked_packet[pn_space] = 0
+     loss_time[pn_space] = 0
 ~~~
 
 
@@ -944,8 +981,8 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
-  largest_acked_packet[pn_space] = max(largest_acked_packet,
-                              ack.largest_acked)
+  largest_acked_packet[pn_space] =
+      max(largest_acked_packet[pn_space], ack.largest_acked)
 
   // If the largest acknowledged is newly acked and
   // ack-eliciting, update the RTT.
@@ -1028,11 +1065,29 @@ timers wake up late. Timers set in the past SHOULD fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
+// Returns the earliest loss_time and the packet number
+// space it's from.  Returns 0 if all times are 0.
+GetEarliestLossTime():
+  time = loss_time[Initial]
+  space = Initial
+  for pn_space in [ Handshake, ApplicatonData ]:
+    if loss_time[pn_space] != 0 &&
+       (time == 0 || loss_time[pn_space] < time):
+      time = loss_time[pn_space];
+      space = pn_space
+  return time, space
+
 SetLossDetectionTimer():
   // Don't arm timer if there are no ack-eliciting packets
   // in flight.
   if (no ack-eliciting packets in flight):
     loss_detection_timer.cancel()
+    return
+
+  loss_time, _ = GetEarliestLossTime()
+  if (loss_time != 0):
+    // Time threshold loss detection.
+    loss_detection_timer.update(loss_time)
     return
 
   if (crypto packets are in flight):
@@ -1047,16 +1102,9 @@ SetLossDetectionTimer():
       time_of_last_sent_crypto_packet + timeout)
     return
 
-  if (loss_time != 0):
-    // Time threshold loss detection.
-    // Only applies to the ApplicationData packet number space.
-    loss_detection_timer.update(loss_time)
-    return
-
   // Calculate PTO duration
   timeout =
-    smoothed_rtt + 4 * rttvar + max_ack_delay
-  timeout = max(timeout, kGranularity)
+    smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   loss_detection_timer.update(
@@ -1073,14 +1121,16 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  if (crypto packets are in flight):
+  loss_time, pn_space = GetEarliestLossTime()
+  if (loss_time != 0):
+    // Time threshold loss Detection
+    DetectLostPackets(pn_space)
+  // Retransmit crypto data if no packets were lost
+  // and there are still crypto packets in flight.
+  else if (crypto packets are in flight):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
-  else if (loss_time != 0):
-    // Time threshold loss Detection
-    // Only applies to the ApplicationData packet number space.
-    DetectLostPackets(ApplicationData)
   else:
     // PTO
     SendOneOrTwoPackets()
@@ -1101,8 +1151,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  if (pn_space == ApplicationData):
-    loss_time = 0
+  loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
@@ -1110,10 +1159,10 @@ DetectLostPackets(pn_space):
   lost_send_time = now() - loss_delay
 
   // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked_packet - kPacketThreshold
+  lost_pn = largest_acked_packet[pn_space] - kPacketThreshold
 
   foreach unacked in sent_packets:
-    if (unacked.packet_number > largest_acked_packet):
+    if (unacked.packet_number > largest_acked_packet[pn_space]):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
@@ -1122,12 +1171,12 @@ DetectLostPackets(pn_space):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else if (pn_space == ApplicationData):
-      if (loss_time == 0):
-        loss_time = unacked.time_sent + loss_delay
+    else:
+      if (loss_time[pn_space] == 0):
+        loss_time[pn_space] = unacked.time_sent + loss_delay
       else:
-        loss_time = min(loss_time, unacked.time_sent +
-                                              loss_delay)
+        loss_time[pn_space] = min(loss_time[pn_space],
+                                  unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
@@ -1154,8 +1203,9 @@ kMaxDatagramSize:
 
 kInitialWindow:
 : Default limit on the initial amount of data in flight, in bytes.  Taken from
-  {{?RFC6928}}.  The RECOMMENDED value is the minimum of 10 * kMaxDatagramSize
-  and max(2* kMaxDatagramSize, 14600)).
+  {{?RFC6928}}, but increased slightly to account for the smaller 8 byte
+  overhead of UDP vs 20 bytes for TCP.  The RECOMMENDED value is the minimum
+  of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)).
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
@@ -1275,9 +1325,6 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
-       // Collapse congestion window if persistent congestion
-       if (pto_count > kPersistentCongestionThreshold):
-         congestion_window = kMinimumWindow
 ~~~
 
 
@@ -1304,6 +1351,16 @@ Invoked by loss detection from DetectLostPackets when new packets
 are detected lost.
 
 ~~~
+   InPersistentCongestion(largest_lost_packet):
+     pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
+       max_ack_delay
+     congestion_period =
+       pto * (2 ^ kPersistentCongestionThreshold - 1)
+     // Determine if all packets in the window before the
+     // newest lost packet, including the edges, are marked
+     // lost
+     return IsWindowLost(largest_lost_packet, congestion_period)
+
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
@@ -1313,6 +1370,10 @@ are detected lost.
      // Start a new congestion epoch if the last lost packet
      // is past the end of the previous recovery epoch.
      CongestionEvent(largest_lost_packet.time_sent)
+
+     // Collapse congestion window if persistent congestion
+     if (InPersistentCongestion(largest_lost_packet)):
+       congestion_window = kMinimumWindow
 ~~~
 
 
@@ -1322,6 +1383,18 @@ are detected lost.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-18
+
+- Change IW byte limit to 14720 from 14600 (#2494)
+- Update PTO calculation to match RFC6298 (#2480, #2489, #2490)
+- Improve loss detection's description of multiple packet number spaces and
+  pseudocode (#2485, #2451, #2417)
+- Declare persistent congestion even if non-probe packets are sent and don't
+  make persistent congestion more aggressive than RTO verified was (#2365,
+  #2244)
+- Move pseudocode to the appendices (#2408)
+- What to send on multiple PTOs (#2380)
 
 ## Since draft-ietf-quic-recovery-17
 
