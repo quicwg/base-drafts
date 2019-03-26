@@ -1215,7 +1215,6 @@ kLossReductionFactor:
   The RECOMMENDED value is 0.5.
 
 kPersistentCongestionThreshold:
-
 : Period of time for persistent congestion to be established, specified as a PTO
   multiplier.  The rationale for this threshold is to enable a sender to use
   initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
