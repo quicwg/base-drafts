@@ -724,13 +724,11 @@ in Linux (3.11 onwards).
 A sender becomes idle if it ceases to send data and has no bytes in flight.  A
 sender's congestion window MUST NOT increase while it is idle.
 
-When sending data after becoming idle, a sender MUST reset its congestion window
-to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
-paces the sending of packets. A sender MAY retain its congestion window if it
-paces the sending of any packets in excess of the initial congestion window.
-
-A sender MAY implement alternate mechanisms to update its congestion window
-after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+When sending data after becoming idle and a sender does not pace the sending
+of pacjets, it MUST reset its congestion window to the initial congestion
+window (see Section 4.1 of {{?RFC5681}}). A sender MAY implement alternate
+mechanisms to update its congestion window after idle periods, such as those
+proposed for TCP in {{?RFC7661}}, if sending of packets is paced.
 
 ## Application Limited Sending
 
