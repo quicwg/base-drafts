@@ -1249,7 +1249,10 @@ quic_transport_parameters extension carries a TransportParameters struct when
 the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
-EncryptedExtensions messages during the handshake.
+EncryptedExtensions messages during the handshake. Endpoints MUST send the
+quic_transport_parameters extension; endpoints which receive ClientHello
+or EncryptedExtensions messages without the transport_parameters extension MUST
+terminate the TLS handshake with a fatal missing_extension alert.
 
 While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
