@@ -3253,9 +3253,10 @@ servers announce a list of version numbers that they interpret as an alias for
 the version number used in this draft. Alias versions MUST NOT be a reserved
 version. Servers SHOULD send at least one version alias, and SHOULD frequently
 change the value that they announce. Each version alias contains a lifetime,
-which indicates how long the server will accept this version alias. The list
-of version aliases is sent in the server's Transport Parameters (see
-{{transport-parameter-definitions}}).
+which indicates how long the server will accept this version alias. It also
+contains an initial salt, which is used instead of the initial salt as defined
+in section 5.2 of {{QUIC-TLS}}. The list of version aliases is sent in the
+server's Transport Parameters (see {{transport-parameter-definitions}}).
 
 Clients SHOULD remember the aliases and use it for subsequent connections to the
 same server in the future. This applies to both 0-RTT connection as well as
@@ -4140,6 +4141,7 @@ version_aliases (0x000e):
    struct {
      uint32 VersionNumber;
      uint32 Lifetime;
+     opaque InitialSecret<20>;
    } VersionAlias;
 
    VersionAliases VersionAlias<0..2^16-1>;
