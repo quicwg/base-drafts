@@ -1578,7 +1578,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
@@ -1623,7 +1623,7 @@ The entries in the following table are registered by this document.
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 ## Error Codes {#iana-error-codes}
@@ -1717,7 +1717,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 --- back
