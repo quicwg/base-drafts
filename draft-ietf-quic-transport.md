@@ -2758,45 +2758,6 @@ encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
 
-## Latency Spin Bit {#spin-bit}
-
-The latency spin bit enables passive latency monitoring from observation points
-on the network path throughout the duration of a connection. The spin bit is
-only present in the short packet header, since it is possible to measure the
-initial RTT of a connection by observing the handshake. Therefore, the spin bit
-will appear after version negotiation and connection establishment are
-completed. On-path measurement and use of the Latency Spin Bit is further
-discussed in {{QUIC-MANAGEABILITY}}.
-
-The spin bit uses a single bit in the first byte of the short header. The
-location of the bit and procedures for how to set it by clients and servers are
-defined in {{short-header}}.
-
-Implementations MAY select to not implement the full spin bit functionality. In
-that case they are only REQUIRED to implement what is defined for the spin bit
-when it is disabled.
-
-Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
-connection. Implementations SHOULD allow administrators of clients and servers
-to disable the spin bit either globally or on a per-connection basis. Even when
-the spin bit is not disabled by the administrator implementations SHOULD disable
-the spin bit on a randomly chosen fraction of connections. However, connections
-could be configured to explicitly enable spinning, for example in the case of
-explicit customer support and debugging.
-The random selection process SHOULD be designed such that on average the spin
-bit is disabled for at least one eighth of network paths. The selection process
-should be externally unpredictable but consistent for any given combination of
-source and destination address and port. For instance, the implementation might
-have a static key which it uses to key a pseudorandom function over these values
-and use the output to determine whether to send the spin bit. The selection
-process performed at the beginning of the connection SHOULD be applied for all
-paths used by the connection.
-
-In case multiple connections share the same five-tuple, i.e. same source and
-destination IP address and UDP port the setting of the spin bit needs to be
-coordinated across all connections to ensure a clear signal to any on path
-measurement point, however that might not be feasible.
-
 # Packetization and Reliability {#packetization}
 
 A sender bundles one or more frames in a QUIC packet (see {{frames}}).
@@ -3927,33 +3888,8 @@ Fixed Bit:
 
 Spin Bit (S):
 
-: The third most significant bit (0x20) of byte 0 is the Latency Spin Bit.
-
-: When the spin bit is disabled, endpoints MAY set the spin bit to any value,
-and MUST accept any incoming value. It is RECOMMENDED that they
-set the spin bit to a random value either chosen independently for each packet,
-or chosen independently for each path and kept constant for that path.
-
-: If the spin bit is enabled for the connection, the endpoint maintains a spin
-value and sets the spin bit in the short header to the currently stored
-value when a packet with a short header is sent out. The spin value is
-initialized to 0 in the endpoint at connection start.  Each endpoint also
-remembers the highest packet number seen from its peer on the connection.
-
-: When a server receives a packet from a client, if that packet has a short
-header and if it increments the highest packet number seen by the server from
-the client, the server sets the spin value to the value observed in the spin bit
-in the received packet.
-
-: When a client receives a packet from a server, if the packet has a short
-header and if it increments the highest packet number seen by the client from
-the server, it sets the spin value to the opposite of the spin bit in the
-received packet.
-
-: The endpoint resets it spin value to zero when sending the first packet of a
-given connection with a new connection ID. This reduces the risk that transient
-spin bit state can be used to link flows across connection migration or ID
-change.
+: The third most significant bit (0x20) of byte 0 is the Latency Spin Bit, set
+as described in {{spin-bit}}.
 
 Reserved Bits (R):
 
@@ -4002,7 +3938,68 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+### Latency Spin Bit {#spin-bit}
 
+The latency spin bit enables passive latency monitoring from observation points
+on the network path throughout the duration of a connection. The spin bit is
+only present in the short packet header, since it is possible to measure the
+initial RTT of a connection by observing the handshake. Therefore, the spin bit
+will appear after version negotiation and connection establishment are
+completed. On-path measurement and use of the Latency Spin Bit is further
+discussed in {{QUIC-MANAGEABILITY}}.
+
+The spin bit uses a single bit in the first byte of the short header. The
+location of the bit and procedures for how to set it by clients and servers are
+defined in {{short-header}}.
+
+Implementations MAY select to not implement the full spin bit functionality. In
+that case they are only REQUIRED to implement what is defined for the spin bit
+when it is disabled.
+
+Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
+connection. Implementations SHOULD allow administrators of clients and servers
+to disable the spin bit either globally or on a per-connection basis. Even when
+the spin bit is not disabled by the administrator implementations MUST disable
+the spin bit on a randomly chosen fraction of connections. However, connections
+could be configured to explicitly enable spinning, for example in the case of
+explicit customer support and debugging.
+The random selection process SHOULD be designed such that on average the spin
+bit is disabled for at least one eighth of network paths. The selection process
+should be externally unpredictable but consistent for any given combination of
+source and destination address and port. The selection process performed at the
+beginning of the connection SHOULD be applied for all paths used by the
+connection.
+
+In case multiple connections share the same five-tuple, i.e. same source and
+destination IP address and UDP port the setting of the spin bit needs to be
+coordinated across all connections to ensure a clear signal to any on path
+measurement point, however that might not be feasible.
+
+When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
+MUST accept any incoming value. It is RECOMMENDED that they set the spin bit to
+a random value either chosen independently for each packet, or chosen
+independently for each path and kept constant for that path.
+
+If the spin bit is enabled for the connection, the endpoint maintains a spin
+value and sets the spin bit in the short header to the currently stored
+value when a packet with a short header is sent out. The spin value is
+initialized to 0 in the endpoint at connection start.  Each endpoint also
+remembers the highest packet number seen from its peer on the connection.
+
+When a server receives a packet from a client, if that packet has a short header
+and if it increments the highest packet number seen by the server from the
+client, the server sets the spin value to the value observed in the spin bit in
+the received packet.
+
+When a client receives a packet from a server, if the packet has a short header
+and if it increments the highest packet number seen by the client from the
+server, it sets the spin value to the opposite of the spin bit in the received
+packet.
+
+An endpoint resets its spin value to zero when sending the first packet of a
+given connection with a new connection ID. This reduces the risk that transient
+spin bit state can be used to link flows across connection migration or ID
+change.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
