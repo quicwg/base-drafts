@@ -2768,7 +2768,7 @@ will appear after version negotiation and connection establishment are
 completed. On-path measurement and use of the Latency Spin Bit is further
 discussed in {{QUIC-MANAGEABILITY}}.
 
-The spin bit utilizes a single bit in the first byte of the short header. The
+The spin bit uses a single bit in the first byte of the short header. The
 location of the bit and procedures for how to set it by clients and servers are
 defined in {{short-header}}.
 
@@ -2781,7 +2781,7 @@ connection. Implementations SHOULD allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator implementations SHOULD disable
 the spin bit on a randomly chosen fraction of connections. However, connections
-may be configured to explicitly enable spinning, for example in the case of
+could be configured to explicitly enable spinning, for example in the case of
 explicit customer support and debugging.
 The random selection process SHOULD be designed such that on average the spin
 bit is disabled for at least one eighth of network paths. The selection process
@@ -3934,8 +3934,8 @@ and MUST accept any incoming value. It is RECOMMENDED that they
 set the spin bit to a random value either chosen independently for each packet,
 or chosen independently for each path and kept constant for that path.
 
-: If the spin bit is enabled for the connection the endpoint maintains a spin
-value, 0 or 1, and sets the spin bit in the short header to the currently stored
+: If the spin bit is enabled for the connection, the endpoint maintains a spin
+value and sets the spin bit in the short header to the currently stored
 value when a packet with a short header is sent out. The spin value is
 initialized to 0 in the endpoint at connection start.  Each endpoint also
 remembers the highest packet number seen from its peer on the connection.
