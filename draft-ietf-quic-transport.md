@@ -2848,7 +2848,7 @@ connection. Implementations SHOULD allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator implementations SHOULD disable
 the spin bit on a randomly chosen fraction of connections. However, connections
-may be configured to explicitly enable spinning, for example in the case of
+could be configured to explicitly enable spinning, for example in the case of
 explicit customer support and debugging.
 The random selection process SHOULD be designed such that on average the spin
 bit is disabled for at least one eighth of network paths. The selection process
