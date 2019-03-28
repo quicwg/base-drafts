@@ -1707,12 +1707,6 @@ meets the following criteria:
   acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
   validation, since the acknowledgment can be spoofed by a malicious peer.
 
-- It was sent from the same remote address to which the corresponding
-  PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is received from a different
-  remote address than the one to which the PATH_CHALLENGE was sent, path
-  validation is considered to have failed, even if the data matches that sent in
-  the PATH_CHALLENGE.
-
 - It was received on the same local address from which the corresponding
   PATH_CHALLENGE was sent.
 
@@ -1755,9 +1749,9 @@ initiated while a path validation on the old path is in progress.
 # Connection Migration {#migration}
 
 The use of a connection ID allows connections to survive changes to endpoint
-addresses (that is, IP address and/or port), such as those caused by an endpoint
-migrating to a new network.  This section describes the process by which an
-endpoint migrates to a new address.
+addresses (the two-tuple of IP address and port), such as those caused by an
+endpoint migrating to a new network.  This section describes the process by
+which an endpoint migrates to a new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
 finished and the endpoint has 1-RTT keys.  The design of QUIC relies on
@@ -1773,10 +1767,9 @@ Connection ID cannot be attributed to a connection based on address tuple.
 
 Not all changes of peer address are intentional migrations. The peer could
 experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
-allocating a new outgoing port or even a new outgoing IP address for a flow.
-NAT rebinding is not connection migration as defined in this section, though an
-endpoint SHOULD perform path validation ({{migrate-validate}}) if it detects a
-change in the IP address of its peer.
+allocating a new outgoing port or even a new outgoing IP address for a flow.  An
+endpoint MUST perform path validation ({{migrate-validate}}) if it detects any
+change to a peer's address, unless it has previously validated that address.
 
 When an endpoint has no validated path on which to send packets, it MAY discard
 connection state.  An endpoint capable of connection migration MAY wait for a
