@@ -3888,7 +3888,7 @@ Fixed Bit:
 
 Spin Bit (S):
 
-: The third most significant bit (0x20) of byte 0 is the Latency Spin Bit, set
+: The third most significant bit (0x20) of byte 0 is the latency spin bit, set
 as described in {{spin-bit}}.
 
 Reserved Bits (R):
@@ -3944,31 +3944,24 @@ The latency spin bit enables passive latency monitoring from observation points
 on the network path throughout the duration of a connection. The spin bit is
 only present in the short packet header, since it is possible to measure the
 initial RTT of a connection by observing the handshake. Therefore, the spin bit
-will appear after version negotiation and connection establishment are
-completed. On-path measurement and use of the Latency Spin Bit is further
+is available after version negotiation and connection establishment are
+completed. On-path measurement and use of the latency spin bit is further
 discussed in {{QUIC-MANAGEABILITY}}.
-
-The spin bit uses a single bit in the first byte of the short header. The
-location of the bit and procedures for how to set it by clients and servers are
-defined in {{short-header}}.
 
 Implementations MAY select to not implement the full spin bit functionality. In
 that case they are only REQUIRED to implement what is defined for the spin bit
 when it is disabled.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
-connection. Implementations SHOULD allow administrators of clients and servers
+connection. Implementations MUST allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator implementations MUST disable
-the spin bit on a randomly chosen fraction of connections. However, connections
-could be configured to explicitly enable spinning, for example in the case of
-explicit customer support and debugging.
-The random selection process SHOULD be designed such that on average the spin
-bit is disabled for at least one eighth of network paths. The selection process
-should be externally unpredictable but consistent for any given combination of
-source and destination address and port. The selection process performed at the
-beginning of the connection SHOULD be applied for all paths used by the
-connection.
+the spin bit on a randomly chosen fraction of connections. The random selection
+process SHOULD be designed such that on average the spin bit is disabled for at
+least one eighth of network paths. The selection process should be externally
+unpredictable but consistent for any given combination of source and destination
+address and port. The selection process performed at the beginning of the
+connection SHOULD be applied for all paths used by the connection.
 
 In case multiple connections share the same five-tuple, i.e. same source and
 destination IP address and UDP port the setting of the spin bit needs to be
@@ -3986,15 +3979,13 @@ value when a packet with a short header is sent out. The spin value is
 initialized to 0 in the endpoint at connection start.  Each endpoint also
 remembers the highest packet number seen from its peer on the connection.
 
-When a server receives a packet from a client, if that packet has a short header
-and if it increments the highest packet number seen by the server from the
-client, the server sets the spin value to the value observed in the spin bit in
-the received packet.
+When a server receives a short header packet that increments the highest
+packet number seen by the server from the client, it sets the spin value to be
+equal to the spin bit in the received packet.
 
-When a client receives a packet from a server, if the packet has a short header
-and if it increments the highest packet number seen by the client from the
-server, it sets the spin value to the opposite of the spin bit in the received
-packet.
+When a client receives a short header packet that increments the highest
+packet number seen by the client from the server, it sets the spin value to the
+inverse of the spin bit in the received packet.
 
 An endpoint resets its spin value to zero when sending the first packet of a
 given connection with a new connection ID. This reduces the risk that transient
