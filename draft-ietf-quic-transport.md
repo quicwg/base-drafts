@@ -4000,7 +4000,7 @@ and MUST accept any incoming value. It is RECOMMENDED that they
 set the spin bit to a random value either chosen independently for each packet,
 or chosen independently for each path and kept constant for that path.
 
-: If the spin bit is enabled for the connection the endpoint maintains a spin
+: If the spin bit is enabled for the connection, the endpoint maintains a spin
 value, 0 or 1, and sets the spin bit in the short header to the currently stored
 value when a packet with a short header is sent out. The spin value is
 initialized to 0 in the endpoint at connection start.  Each endpoint also
