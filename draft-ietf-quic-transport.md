@@ -2835,7 +2835,7 @@ will appear after version negotiation and connection establishment are
 completed. On-path measurement and use of the Latency Spin Bit is further
 discussed in {{QUIC-MANAGEABILITY}}.
 
-The spin bit utilizes a single bit in the first byte of the short header. The
+The spin bit uses a single bit in the first byte of the short header. The
 location of the bit and procedures for how to set it by clients and servers are
 defined in {{short-header}}.
 
