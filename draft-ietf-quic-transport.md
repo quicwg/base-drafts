@@ -3948,9 +3948,8 @@ is available after version negotiation and connection establishment are
 completed. On-path measurement and use of the latency spin bit is further
 discussed in {{QUIC-MANAGEABILITY}}.
 
-Implementations MAY select to not implement the full spin bit functionality. In
-that case they are only REQUIRED to implement what is defined for the spin bit
-when it is disabled.
+The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
+support the spin bit MUST implement it as specified in this document.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
