@@ -2328,14 +2328,21 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
-A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Unpredictable Bits field needs
-to include at least 182 bits of data (or 23 bytes, less the two fixed bits).
-This is intended to allow for a Destination Connection ID of the maximum length
-permitted, with a minimal packet number, and payload.  The Stateless Reset Token
-corresponds to the minimum expansion of the packet protection AEAD.  More
-unpredictable bytes might be necessary if the endpoint could have negotiated a
-packet protection scheme with a larger minimum AEAD expansion.
+An endpoint that receives a packet where removal of packet protection fails MUST
+check the last 16 bytes of that packet.  If the last 16 bytes of the packet are
+identical to a stateless reset token corresponding to a packet that was recently
+sent, the endpoint MUST NOT send any further packets; all state for the
+connection can then be discarded.
+
+To entities other than its intended recipient, a stateless reset will be appear
+to be a packet with a short header.  For the packet to appear as valid, the
+Unpredictable Bits field needs to include at least 182 bits of data (or 23
+bytes, less the two fixed bits).  This is intended to allow for a Destination
+Connection ID of the maximum length permitted, with a minimal packet number, and
+payload.  The Stateless Reset Token corresponds to the minimum expansion of the
+packet protection AEAD.  More unpredictable bytes might be necessary if the
+endpoint could have negotiated a packet protection scheme with a larger minimum
+AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
