@@ -1176,15 +1176,17 @@ MUST NOT be used outside of draft implementations.
 
 ## Using Reserved Versions
 
-For a server to use a new version in the future, clients must correctly handle
-unsupported versions. To help ensure this, a server SHOULD include a reserved
-version (see {{versions}}) while generating a Version Negotiation packet.
+For a server to use a new version in the future, clients need to correctly
+handle unsupported versions. To help ensure this, a server SHOULD include a
+version that is reserved for forcing version negotiation (0x?a?a?a?a as defined
+in {{versions}}) when generating a Version Negotiation packet.
 
 The design of version negotiation permits a server to avoid maintaining state
 for packets that it rejects in this fashion.
 
-A client MAY send a packet using a reserved version number.  This can be used to
-solicit a list of supported versions from a server.
+A client MAY send a packet using a version that is reserved for forcing version
+negotiation.  This can be used to solicit a list of supported versions from a
+server.
 
 
 # Cryptographic and Transport Handshake {#handshake}
