@@ -819,7 +819,8 @@ endpoints sends CONNECTION_CLOSE.
 The final size is the amount of flow control credit that is consumed by a
 stream.  Assuming that every contiguous byte on the stream was sent once, the
 final size is the number of bytes sent.  More generally, this is one higher
-than the largest byte offset sent on the stream.
+than the offset of the byte with the largest offset sent on the stream, or zero
+if no bytes were sent.
 
 For a stream that is reset, the final size is carried explicitly in a
 RESET_STREAM frame.  Otherwise, the final size is the offset plus the length of
