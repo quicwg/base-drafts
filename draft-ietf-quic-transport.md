@@ -4140,7 +4140,7 @@ version_aliases (0x000e):
 ~~~
    struct {
      uint32 VersionNumber;
-     uint32 Lifetime;
+     varint Lifetime;
      opaque InitialSecret<20>;
    } VersionAlias;
 
