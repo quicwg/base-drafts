@@ -2350,11 +2350,13 @@ valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
 packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
-header.  This would not be effective if the stateless reset token was not yet
-available to a peer.  In this QUIC version, packets with a long header are only
-used during connection establishment.   Because the stateless reset token is not
-available until connection establishment is complete or near completion,
-ignoring an unknown packet with a long header might be more effective.
+header and MAY send a stateless reset that is formatted to appear as a packet
+with a long header.  Sending a stateless reset is not effective prior to the
+stateless reset token being available to a peer.  In this QUIC version, packets
+with a long header are only used during connection establishment.   Because the
+stateless reset token is not available until connection establishment is
+complete or near completion, ignoring an unknown packet with a long header might
+be more effective.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
