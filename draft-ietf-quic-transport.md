@@ -2328,6 +2328,12 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
+An endpoint that receives a packet where removal of packet protection fails MUST
+check the last 16 bytes of that packet.  If the last 16 bytes of the packet are
+identical to a stateless reset token corresponding to a packet that was recently
+sent, the endpoint MUST NOT send any further packets; all state for the
+connection can then be discarded.
+
 To entities other than its intended recipient, a stateless reset will be appear
 to be a packet with a short header.  For the packet to appear as valid, the
 Unpredictable Bits field needs to include at least 182 bits of data (or 23
@@ -2344,13 +2350,11 @@ valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
 packets that are smaller than 21 bytes are never valid.
 
 An endpoint MAY send a stateless reset in response to a packet with a long
-header and MAY send a stateless reset that is formatted to appear as a packet
-with a long header.  Sending a stateless reset is not effective prior to the
-stateless reset token being available to a peer.  In this QUIC version, packets
-with a long header are only used during connection establishment.   Because the
-stateless reset token is not available until connection establishment is
-complete or near completion, ignoring an unknown packet with a long header might
-be more effective.
+header.  This would not be effective if the stateless reset token was not yet
+available to a peer.  In this QUIC version, packets with a long header are only
+used during connection establishment.   Because the stateless reset token is not
+available until connection establishment is complete or near completion,
+ignoring an unknown packet with a long header might be more effective.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
@@ -2387,16 +2391,13 @@ the packet other than the last 16 bytes for carrying data.
 
 ### Detecting a Stateless Reset
 
-An endpoint detects a potential stateless reset when a incoming packet with a
-short header either cannot be associated with a connection, cannot be decrypted,
-or is marked as a duplicate packet.  The endpoint MUST then compare the last 16
-bytes of the packet with all Stateless Reset Tokens provided by its peer, either
-in a NEW_CONNECTION_ID frame or the server's transport parameters.  An endpoint
-MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
-has not used.
-
-If the last 16 bytes of the packet values are identical to a Stateless Reset
-Token, the endpoint MUST enter the draining period and not send any further
+An endpoint detects a potential stateless reset when a incoming packet
+with a short header either cannot be associated with a connection,
+cannot be decrypted, or is marked as a duplicate packet.  The endpoint
+then compares the last 16 bytes of the packet with the Stateless Reset
+Token provided by its peer, either in a NEW_CONNECTION_ID frame or
+the server's transport parameters.  If these values are identical,
+the endpoint MUST enter the draining period and not send any further
 packets on this connection.  If the comparison fails, the packet can be
 discarded.
 
@@ -2427,17 +2428,17 @@ This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
 connection.  An endpoint that uses this design MUST either use the same
 connection ID length for all connections or encode the length of the connection
-ID such that it can be recovered without state.  In addition, it cannot provide
-a zero-length connection ID.
+ID such that it can be recovered without state.  In addition, it cannot
+provide a zero-length connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
 Stateless Reset Token means that the combination of connection ID and static key
-MUST NOT be used for another connection.  A denial of service attack is possible
-if the same connection ID is used by instances that share a static key, or if an
+cannot occur for another connection.  A denial of service attack is possible if
+the same connection ID is used by instances that share a static key, or if an
 attacker can cause a packet to be routed to an instance that has no state but
 the same static key (see {{reset-oracle}}).  A connection ID from a connection
-that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
+that is reset by revealing the Stateless Reset Token cannot be reused for new
 connections at nodes that share a static key.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
