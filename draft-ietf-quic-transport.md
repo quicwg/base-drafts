@@ -2427,17 +2427,17 @@ This design relies on the peer always sending a connection ID in its packets so
 that the endpoint can use the connection ID from a packet to reset the
 connection.  An endpoint that uses this design MUST either use the same
 connection ID length for all connections or encode the length of the connection
-ID such that it can be recovered without state.  In addition, it cannot
-provide a zero-length connection ID.
+ID such that it can be recovered without state.  In addition, it cannot provide
+a zero-length connection ID.
 
 Revealing the Stateless Reset Token allows any entity to terminate the
 connection, so a value can only be used once.  This method for choosing the
 Stateless Reset Token means that the combination of connection ID and static key
-cannot occur for another connection.  A denial of service attack is possible if
-the same connection ID is used by instances that share a static key, or if an
+MUST NOT be used for another connection.  A denial of service attack is possible
+if the same connection ID is used by instances that share a static key, or if an
 attacker can cause a packet to be routed to an instance that has no state but
 the same static key (see {{reset-oracle}}).  A connection ID from a connection
-that is reset by revealing the Stateless Reset Token cannot be reused for new
+that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
 connections at nodes that share a static key.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
