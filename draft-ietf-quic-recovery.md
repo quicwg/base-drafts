@@ -940,7 +940,7 @@ follows:
    min_rtt = infinite
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
-   for pn_space in [ Initial, Handshake, ApplicatonData ]:
+   for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = 0
      loss_time[pn_space] = 0
 ~~~
@@ -1070,7 +1070,7 @@ Pseudocode for SetLossDetectionTimer follows:
 GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
-  for pn_space in [ Handshake, ApplicatonData ]:
+  for pn_space in [ Handshake, ApplicationData ]:
     if loss_time[pn_space] != 0 &&
        (time == 0 || loss_time[pn_space] < time):
       time = loss_time[pn_space];
