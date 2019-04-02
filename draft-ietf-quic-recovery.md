@@ -1318,8 +1318,8 @@ window.
 
 ~~~
    CongestionEvent(sent_time):
-     // Start a new congestion event if the sent time is larger
-     // than the start time of the previous congestion event.
+     // Start a new congestion event if packet was sent after the
+     // start of the previous congestion event.
      if (!InRecovery(sent_time)):
        recovery_start_time = Now()
        congestion_window *= kLossReductionFactor
