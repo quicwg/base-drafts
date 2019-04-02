@@ -331,8 +331,8 @@ ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
-to those specified in {{?RFC6298}}.  Note that smoothed_rtt does for the first
-RTT sample does not use ack_delay, because doing so would result in a
+to those specified in {{?RFC6298}}.  Note that computing smoothed_rtt does not
+use ack_delay for the first RTT sample, because doing so would result in a
 smoothed_rtt that is smaller than the min_rtt.
 
 On every newly acknowledged ack-eliciting largest acked:
