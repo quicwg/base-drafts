@@ -413,7 +413,8 @@ RTT.
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
 smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
-is available, or if the network changes, the initial RTT SHOULD be set to 100ms.
+is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
+resulting in a 1 second initial handshake timeout as recommended in {{?RFC6298}}.
 When an acknowledgement is received, a new RTT is computed and the timer
 SHOULD be set for twice the newly computed smoothed RTT.
 
@@ -576,10 +577,6 @@ A shorter delayed ack time of 25ms was chosen because longer delayed acks can
 delay loss recovery and for the small number of connections where less than
 packet per 25ms is delivered, acking every packet is beneficial to congestion
 control and loss recovery.
-
-The default initial RTT of 100ms was chosen because it is slightly higher than
-both the median and mean min_rtt typically observed on the public internet.
-
 
 # Congestion Control {#congestion-control}
 
@@ -861,7 +858,7 @@ kGranularity:
   SHOULD use a value no smaller than 1ms.
 
 kInitialRtt:
-: The RTT used before an RTT sample is taken. The RECOMMENDED value is 100ms.
+: The RTT used before an RTT sample is taken. The RECOMMENDED value is 500ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1383,6 +1380,9 @@ are detected lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-19
+- Change initial RTT to 500ms to align with RFC6298 (#2184)
+
 ## Since draft-ietf-quic-recovery-18
 
 - Change IW byte limit to 14720 from 14600 (#2494)
@@ -1411,7 +1411,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Congestion and loss recovery state are discarded when keys are discarded
   (#2327)
 
-
 ## Since draft-ietf-quic-recovery-16
 
 - Unify TLP and RTO into a single PTO; eliminate min RTO, min TLP and min crypto
@@ -1431,7 +1430,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Only cancel loss detection timer if ack-eliciting packets are in flight
   (#2093, #2117)
 
-
 ## Since draft-ietf-quic-recovery-14
 
 - Used max_ack_delay from transport params (#1796, #1782)
@@ -1446,14 +1444,12 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Reduce early retransmission timer to RTT/8 (#945, #1581)
 - Packets are declared lost after an RTO is verified (#935, #1582)
 
-
 ## Since draft-ietf-quic-recovery-12
 
 - Changes to manage separate packet number spaces and encryption levels (#1190,
   #1242, #1413, #1450)
 - Added ECN feedback mechanisms and handling; new ACK_ECN frame (#804, #805,
   #1372)
-
 
 ## Since draft-ietf-quic-recovery-11
 
