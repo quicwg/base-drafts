@@ -1046,7 +1046,7 @@ Pseudocode for OnPacketAcked follows:
 
 ~~~
    OnPacketAcked(acked_packet, pn_space):
-     if (acked_packet.ack_eliciting):
+     if (acked_packet.in_flight):
        OnPacketAckedCC(acked_packet)
      sent_packets[pn_space].remove(acked_packet.packet_number)
 ~~~
