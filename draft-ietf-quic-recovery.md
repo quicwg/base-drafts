@@ -1315,8 +1315,8 @@ window.
 
 ~~~
    CongestionEvent(sent_time):
-     // Start a new congestion event if the sent time is larger
-     // than the start time of the previous recovery epoch.
+     // Start a new congestion event if packet was sent after the
+     // start of the previous congestion event.
      if (!InRecovery(sent_time)):
        recovery_start_time = Now()
        congestion_window *= kLossReductionFactor
@@ -1337,7 +1337,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
        ecn_ce_counter = ack.ce_counter
        // Start a new congestion event if the last acknowledged
        // packet was sent after the start of the previous
-       // recovery epoch.
+       // congestion event.
        CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 
@@ -1363,8 +1363,8 @@ are detected lost.
        bytes_in_flight -= lost_packet.size
      largest_lost_packet = lost_packets.last()
 
-     // Start a new congestion epoch if the last lost packet
-     // is past the end of the previous recovery epoch.
+     // Start a new congestion event if the last lost packet
+     // is past the end of the previous congestion event.
      CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
