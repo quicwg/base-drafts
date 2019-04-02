@@ -320,18 +320,20 @@ prevents a peer from manipulating RTT samples below min_rtt at the cost of
 inflated RTT samples in the presence of persistent delayed acks.
 
 A sender takes an RTT sample when an ACK frame is received that acknowledges a
-larger packet number than before (see {{on-ack-received}}).  A sender will take
-multiple RTT samples per RTT when multiple such ACK frames are received within
-an RTT.  When multiple samples are generated within an RTT, the smoothed RTT and
-RTT variance could retain inadequate history, as suggested in {{?RFC6298}}.
-Changing these computations is currently an open research question.
+larger packet number than before.  A sender will take multiple RTT samples per
+RTT when multiple such ACK frames are received within an RTT.  When multiple
+samples are generated within an RTT, the smoothed RTT and RTT variance could
+retain inadequate history, as suggested in {{?RFC6298}}. Changing these
+computations is currently an open research question.
 
 min_rtt is the minimum RTT measured over the connection, prior to adjusting by
 ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
 underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
 
 A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
-to those specified in {{?RFC6298}}, see {{on-ack-received}}.
+to those specified in {{?RFC6298}}.  Note that smoothed_rtt does for the first
+RTT sample does not use ack_delay, because doing so would result in a
+smoothed_rtt that is smaller than the min_rtt.
 
 On every newly acknowledged ack-eliciting largest acked:
 ~~~
@@ -342,7 +344,7 @@ First RTT sample:
 ~~~
 min_rtt = latest_rtt
 smoothed_rtt = latest_rtt
-rttvar = rtt / 2
+rttvar = latest_rtt / 2
 ~~~
 
 Subsequent RTT samples:
@@ -350,9 +352,9 @@ Subsequent RTT samples:
 min_rtt = min(min_rtt, latest_rtt)
 ack_delay = min(ack_delay, max_ack_delay)
 if (ack_delay + min_rtt < latest_rtt):
-  latest_rtt = raw_rtt - ack_delay
+  latest_rtt = latest_rtt - ack_delay
 smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt
-rttvar_sample = abs(smoothed_rtt - rtt)
+rttvar_sample = abs(smoothed_rtt - latest_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 ~~~
 
@@ -997,7 +999,7 @@ Pseudocode for OnPacketSent follows:
 ~~~
 
 
-## On Receiving an Acknowledgment {#on-ack-received}
+## On Receiving an Acknowledgment
 
 When an ACK frame is received, it may newly acknowledge any number of packets.
 
