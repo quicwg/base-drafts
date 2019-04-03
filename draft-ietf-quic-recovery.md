@@ -1365,7 +1365,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
        ecn_ce_counter = ack.ce_counter
        // Start a new congestion event if the last acknowledged
        // packet was sent after the start of the previous
-       // congestion event.
+       // congestion recovery period.
        CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 
