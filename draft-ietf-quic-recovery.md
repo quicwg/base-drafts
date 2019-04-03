@@ -1363,9 +1363,6 @@ Invoked when an ACK frame with an ECN section is received from the peer.
      // this could be a new congestion event.
      if (ack.ce_counter > ecn_ce_counter):
        ecn_ce_counter = ack.ce_counter
-       // Start a new congestion event if the last acknowledged
-       // packet was sent after the start of the previous
-       // congestion recovery period.
        CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 
@@ -1390,9 +1387,6 @@ are detected lost.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
      largest_lost_packet = lost_packets.last()
-
-     // Start a new congestion event if the last lost packet is
-     // after the end of the previous congestion recovery period.
      CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
