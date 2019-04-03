@@ -1270,9 +1270,10 @@ bytes_in_flight:
 congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
-recovery_start_time:
-: The time when QUIC first detects a loss, causing it to enter recovery.
-  When a packet sent after this time is acknowledged, QUIC exits recovery.
+congestion_recovery_start_time:
+: The time when QUIC first detects congestion due to loss or ECN, causing
+  it to enter congestion recovery. When a packet sent after this time is
+  acknowledged, QUIC exits congestion recovery.
 
 ssthresh:
 : Slow start threshold in bytes.  When the congestion window is below ssthresh,
@@ -1288,7 +1289,7 @@ variables as follows:
 ~~~
    congestion_window = kInitialWindow
    bytes_in_flight = 0
-   recovery_start_time = 0
+   congestion_recovery_start_time = 0
    ssthresh = infinite
    ecn_ce_counter = 0
 ~~~
@@ -1311,13 +1312,13 @@ Invoked from loss detection's OnPacketAcked and is supplied with the
 acked_packet from sent_packets.
 
 ~~~
-   InRecovery(sent_time):
-     return sent_time <= recovery_start_time
+   InCongestionRecovery(sent_time):
+     return sent_time <= congestion_recovery_start_time
 
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (InRecovery(acked_packet.time_sent)):
+     if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
      if (IsAppLimited())
@@ -1343,9 +1344,9 @@ window.
 ~~~
    CongestionEvent(sent_time):
      // Start a new congestion event if packet was sent after the
-     // start of the previous congestion event.
-     if (!InRecovery(sent_time)):
-       recovery_start_time = Now()
+     // start of the previous congestion recovery period.
+     if (!InCongestionRecovery(sent_time)):
+       congestion_recovery_start_time = Now()
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
@@ -1390,8 +1391,8 @@ are detected lost.
        bytes_in_flight -= lost_packet.size
      largest_lost_packet = lost_packets.last()
 
-     // Start a new congestion event if the last lost packet
-     // is past the end of the previous congestion event.
+     // Start a new congestion event if the last lost packet is
+     // after the end of the previous congestion recovery period.
      CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
