@@ -469,8 +469,9 @@ not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
 at least 1200 bytes.  If the client has Handshake keys, it MUST send a
 Handshake packet.
 
-When the crypto retransmission timer is active, the probe timer ({{pto}})
-is not active.
+The crypto retransmission timer is not set if the time threshold
+{{time-threshold}} loss detection timer is set.  When the crypto
+retransmission timer is active, the probe timer ({{pto}}) is not active.
 
 
 ### Retry and Version Negotiation
