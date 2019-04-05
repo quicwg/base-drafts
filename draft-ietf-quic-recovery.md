@@ -443,7 +443,7 @@ smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
 is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
 {{?RFC6298}}. When the first acknowledgement is received, an RTT is computed and
-the timer SHOULD be set for twice the newly computed smoothed RTT.
+the timer SHOULD be set for twice the newly computed RTT.
 
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
 RTT.  This timer MUST be updated when a new crypto packet is sent and when
