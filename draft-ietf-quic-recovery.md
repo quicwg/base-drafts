@@ -434,8 +434,12 @@ and larger thresholds increase loss detection delay.
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
 
+MUST start the crypto retransmission timer if there is outstanding CRYPTO data. It MUST also start the crypto retransmission timer until it has 1-RTT keys,
+
 The initial crypto retransmission timeout SHOULD be set to twice the initial
-RTT.
+RTT.  On each consecutive expiration of the crypto timer without receiving an
+acknowledgement for a new packet, the sender SHOULD double the crypto
+retransmission timeout and set a timer for this period.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
@@ -458,17 +462,15 @@ sent, then no alarm should be armed until data has been received from the
 client.
 
 Because the server could be blocked until more packets are received, the client
-MUST start the crypto retransmission timer until it has 1RTT keys, even if there
-is no unacknowledged CRYPTO data.  If the timer expires and the client has no
-CRYPTO data to retransmit and does not have Handshake keys, it MUST send an
-Initial packet in a UDP datagram of at least 1200 bytes.  If the client has
-Handshake keys, it MUST send a Handshake packet.
+MUST ensure the crypto retransmission timer is set if there is unacknowledged
+crypto data and MUST ensure the the timer is set until it has 1RTT keys.
+If the timer expires and the client has no  CRYPTO data to retransmit and does
+not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
+at least 1200 bytes.  If the client has Handshake keys, it MUST send a
+Handshake packet.
 
-On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender SHOULD double the crypto
-retransmission timeout and set a timer for this period.
-
-When crypto packets are in flight, the probe timer ({{pto}}) is not active.
+When the crypto retransmission timer is active, the probe timer ({{pto}})
+is not active.
 
 
 ### Retry and Version Negotiation
