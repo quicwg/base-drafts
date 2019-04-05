@@ -460,9 +460,9 @@ client.
 Because the server could be blocked until more packets are received, the client
 MUST start the crypto retransmission timer until it has 1RTT keys, even if there
 is no unacknowledged CRYPTO data.  If the timer expires and the client has no
-CRYPTO data to retransmit and does not have Handshake keys, it SHOULD send an
+CRYPTO data to retransmit and does not have Handshake keys, it MUST send an
 Initial packet in a UDP datagram of at least 1200 bytes.  If the client has
-Handshake keys, it SHOULD send a Handshake packet.
+Handshake keys, it MUST send a Handshake packet.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
