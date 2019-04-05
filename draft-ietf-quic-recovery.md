@@ -458,11 +458,11 @@ sent, then no alarm should be armed until data has been received from the
 client.
 
 Because the server could be blocked until more packets are received, the client
-MUST start the crypto retransmission timer even if there is no unacknowledged
-CRYPTO data.  If the timer expires and the client has no CRYPTO data to
-retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
-a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
-SHOULD send a Handshake packet.
+MUST start the crypto retransmission timer until it has 1RTT keys, even if there
+is no unacknowledged CRYPTO data.  If the timer expires and the client has no
+CRYPTO data to retransmit and does not have Handshake keys, it SHOULD send an
+Initial packet in a UDP datagram of at least 1200 bytes.  If the client has
+Handshake keys, it SHOULD send a Handshake packet.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
@@ -1114,7 +1114,8 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (crypto packets are in flight):
+  if (crypto packets are in flight &&
+      crypto data to send):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
       timeout = 2 * kInitialRtt
@@ -1151,7 +1152,8 @@ OnLossDetectionTimeout():
     DetectLostPackets(pn_space)
   // Retransmit crypto data if no packets were lost
   // and there are still crypto packets in flight.
-  else if (crypto packets are in flight):
+  else if (crypto packets are in flight &&
+           crypto data to send):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
