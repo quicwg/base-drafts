@@ -435,22 +435,24 @@ Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
 
 The initial crypto retransmission timeout SHOULD be set to twice the initial
-RTT.  On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender SHOULD double the crypto
-retransmission timeout and set a timer for this period.
+RTT.
 
 At the beginning, there are no prior RTT samples within a connection.  Resumed
 connections over the same network SHOULD use the previous connection's final
 smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
 is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}. When an acknowledgement is received, a new RTT is computed and the
-timer SHOULD be set for twice the newly computed smoothed RTT.
+{{?RFC6298}}. When the first acknowledgement is received, an RTT is computed and
+the timer SHOULD be set for twice the newly computed smoothed RTT.
 
-When a crypto packet is sent, the sender MUST set a timer for the crypto
-timeout period.  This timer MUST be updated when a new crypto packet is sent.
-Upon timeout, the sender MUST retransmit all unacknowledged CRYPTO data if
-possible.
+When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
+RTT.  This timer MUST be updated when a new crypto packet is sent and when
+an acknowledgement is received which computes a new RTT sample. Upon timeout,
+the sender MUST retransmit all unacknowledged CRYPTO data if possible.
+
+On each consecutive expiration of the crypto timer without receiving an
+acknowledgement for a new packet, the sender SHOULD double the crypto
+retransmission timeout and set a timer for this period.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
@@ -461,7 +463,7 @@ client.
 
 Because the server could be blocked until more packets are received, the client
 MUST ensure the crypto retransmission timer is set if there is unacknowledged
-crypto data and MUST ensure  the timer is set until it has 1RTT keys.
+crypto data and MUST ensure the timer is set until it has 1RTT keys.
 If the timer expires and the client has no CRYPTO data to retransmit and does
 not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
 at least 1200 bytes.  If the client has Handshake keys, it MUST send a
