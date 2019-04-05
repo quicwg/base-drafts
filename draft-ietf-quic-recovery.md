@@ -461,8 +461,8 @@ client.
 
 Because the server could be blocked until more packets are received, the client
 MUST ensure the crypto retransmission timer is set if there is unacknowledged
-crypto data and MUST ensure the the timer is set until it has 1RTT keys.
-If the timer expires and the client has no  CRYPTO data to retransmit and does
+crypto data and MUST ensure  the timer is set until it has 1RTT keys.
+If the timer expires and the client has no CRYPTO data to retransmit and does
 not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
 at least 1200 bytes.  If the client has Handshake keys, it MUST send a
 Handshake packet.
