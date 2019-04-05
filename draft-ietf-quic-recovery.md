@@ -434,8 +434,6 @@ and larger thresholds increase loss detection delay.
 Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
 more aggressive timeout is used to retransmit it.
 
-MUST start the crypto retransmission timer if there is outstanding CRYPTO data. It MUST also start the crypto retransmission timer until it has 1-RTT keys,
-
 The initial crypto retransmission timeout SHOULD be set to twice the initial
 RTT.  On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender SHOULD double the crypto
