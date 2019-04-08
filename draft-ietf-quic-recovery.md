@@ -229,7 +229,7 @@ forward progress without relying on timeouts.
 ### Explicit Correction For Delayed Acknowledgements {#ack-delay}
 
 An endpoint measures the delay incurred between when a packet is received and
-when the corresponding ACK is sent.  The endpoint encodes this host delay for
+when the corresponding acknowledgment is sent.  The endpoint encodes this host delay for
 the largest acknowledged packet in the Ack Delay field of an ACK frame (see
 Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK to
 adjust for any host delays - importantly, for delayed acknowledgements - when
