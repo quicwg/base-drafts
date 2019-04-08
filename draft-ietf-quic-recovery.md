@@ -1063,10 +1063,15 @@ OnAckReceived(ack, pn_space):
   largest_acked_packet[pn_space] =
       max(largest_acked_packet[pn_space], ack.largest_acked)
 
+  // Nothing to do if there are no newly acked packets.
+  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
+  if (newly_acked_packets.empty()):
+    return
+
   // If the largest acknowledged is newly acked and
-  // ack-eliciting, update the RTT.
+  // at least one ack-eliciting was newly acked, update the RTT.
   if (sent_packets[pn_space][ack.largest_acked] &&
-      sent_packets[pn_space][ack.largest_acked].ack_eliciting):
+      IncludesAckEliciting(newly_acked_packets))
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     UpdateRtt(latest_rtt, ack.ack_delay)
@@ -1074,11 +1079,6 @@ OnAckReceived(ack, pn_space):
   // Process ECN information if present.
   if (ACK frame contains ECN information):
       ProcessECN(ack)
-
-  // Find all newly acked packets in this ACK frame
-  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
-  if (newly_acked_packets.empty()):
-    return
 
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
