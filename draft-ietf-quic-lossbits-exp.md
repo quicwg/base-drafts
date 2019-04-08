@@ -93,7 +93,7 @@ passive observer around.
 In the QUIC context, the equivalent transport headers being encrypted,
 such observation is not possible. To restore network operators' ability
 to maintain QUIC clients experience, this document  adds two explicit loss bits to the QUIC  short header,
-named "Q" and "R". Together, these bits allow the observer to estimate
+named "Q" (sQuare signal) and "R" (Retransmit). Together, these bits allow the observer to estimate
 upstream and downstream  loss, enabling the same  dichotomic search as
 with TCP.
 
@@ -126,14 +126,9 @@ This mechanism thus delineates slots of N packets with the same marking. Observa
 Each endpoint, client and server, independently maintains a not-yet-disclosed-lost-packets counter and sets the Retransmit bit of short header packets to 0 or 1 accordingly.
 The not-yet-disclosed-lost-packets counter is initialized to 0 at each endpoint, client and server, at connection start, and reflects packets considered lost by the QUIC machinery, the content of which is pending for retransmission. When a packet is declared lost by the QUIC retransmission machinery (see {{QUIC-RECOVERY}}) the not-yet-disclosed-lost-packets counter is incremented by 1. When a packet with a short header is sent out by an end-point, its retransmit bit is set to 0 when the not-yet-disclosed-lost-packets counter is equal to 0. Otherwise, the packet is sent out with a retransmit bit set to 1 and the not-yet-disclosed-lost-packets counter is decremented by 1. Thus, the retransmit bit performs unary encoding of the amount of loss: observation points can estimate the number of packets considered lost by the QUIC transmission machinery in a given direction by counting packets in this direction with a retransmit bit equal to 1.
 
+### Resetting state on CID change
 
-### Resetting sQuare Value 
-Each endpoint resets its sQuare value to zero and initiates a new slot of N packets when sending the first
-packet of a given connection with a new connection ID. This reduces the risk that transient sQuare bit state can be used to link flows across connection migration or ID change.
-
-
-### Resetting Retransmit Value 
-The not-yet-disclosed-lost-packets counter is reset at each endpoint when sending the first packet of a given connection with a new connection ID. This reduces the risk that transient Retransmit bit state can be used to link flows across connection migration or ID change.
+When sending the first packet of a given connection with a new connection ID, each endpoint resets its sQuare value and not-yet-disclosed-lost-packets counter to zero. This eliminates the possibility for transient sQuare or Retransmit bit state to be used to link flows across connection migration or ID change.
 
 # Using the loss bits for Passive Loss Measurement {#usage}
 
@@ -166,7 +161,7 @@ The slot size N should be carefully chosen : too short, it becomes very sensitiv
 
 # Security and Privacy Considerations
 
-The loss bits are intended to expose loss to observers along the path, so the privacy considerations for the loss bits are essentially the same as those for passive loss measurement in general. Loss gives no hint on customer geolocalisation; moreover, reset of the loss counting at connection Id change prevent for linkability.
+The loss bits are intended to expose loss to observers along the path, so the privacy considerations for the loss bits are essentially the same as those for passive loss measurement in general. Loss gives no hint on customer geolocalisation; moreover, reset of loss accounting state on CID changes prevents linkability.
 
 # IANA Considerations
 
