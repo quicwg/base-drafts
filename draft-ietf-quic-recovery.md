@@ -303,7 +303,7 @@ loss recovery algorithm may cause spurious retransmits, but the sender will
 continue making forward progress.
 
 
-# Computing the round-trip time (RTT) estimate {#compute-rtt}
+# Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
