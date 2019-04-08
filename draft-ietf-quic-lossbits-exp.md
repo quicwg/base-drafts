@@ -86,14 +86,12 @@ observation point)  is unambiguous;  this is crucial  as it  gives the
 ability to  quickly home in  on the  offending segment, by  moving the
 passive observer around.
 
-
 In the QUIC context, the equivalent transport headers being encrypted,
 such observation is not possible. To restore network operators' ability
 to maintain QUIC clients experience, this document  adds two explicit loss bits to the QUIC  short header,
 named "Q" (sQuare signal) and "R" (Retransmit). Together, these bits allow the observer to estimate
 upstream and downstream  loss, enabling the same  dichotomic search as
 with TCP.
-
 
 # Passive Loss measurement
 
@@ -116,7 +114,6 @@ counter, as explained below in {{retransmitbit}}.
 
 Each endpoint independently maintains  a sQuare value, 0 or 1, during a block of N outgoing packets (e.g. N=64), and sets the sQuare  bit in the short header to the currently stored value when a packet with a short header is sent out. The sQuare value is initiated to 0 at each endpoint, client and server, at connection start.
 This mechanism thus delineates slots of N packets with the same marking. Observation points can estimate the  upstream losses  by simply counting the number of packets during a half period of the square signal, as described in {{usage}}.
-
 
 ### Setting the Retransmit Bit on Outgoing Packets {#retransmitbit}
 
@@ -145,9 +142,8 @@ The slot size N should be carefully chosen : too short, it becomes very sensitiv
  The sQuare bit mechanism allows for observers to compute loss measurement at the end of every half sQuare signal period (level 0 or level 1).
  The Retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack.
  
- On path observers can estimate upstream and downstream loss at various scales, from the square slot level to the connection lifetime level.
- 
- 
+ On-path observers can estimate upstream and downstream loss at various scales, from the square slot level to the connection lifetime level.
+
  Note that observers should perform a loose synchronisation between the sQuare and the Retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought, so as to compare the same portion of the packet stream.
  
 ## Bidirectional flows
@@ -169,12 +165,7 @@ An IANA registry has been suggested for QUIC versions. In support of the fully n
 > **RFC Editor's Note:**  Please remove this section prior to
 > publication of a final version of this document.
 
-
-
 # Acknowledgments
 {:numbered="false"}
  
 The sQuare Bit was originally specified by Kazuho Oku in early proposals for loss measurement.
-
-
-
