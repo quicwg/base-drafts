@@ -126,7 +126,7 @@ When sending the first packet of a given connection with a new connection ID, ea
 
 # Using the loss bits for Passive Loss Measurement {#usage}
 
-## End-to-end loss 
+## End-to-end loss
 The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the one way delay in the reverse direction. It is larger otherwise (eg RTO). The retransmit mechanism alone suffices to estimate the end-to-end losses; similar to TCP passive loss measurement, its accuracy depends on the loss affecting the retransmit-bit-marked packets, which are in themselves proof of previous loss.
 
 ## Upstream loss
@@ -141,7 +141,7 @@ The slot size N should be carefully chosen : too short, it becomes very sensitiv
  The Retransmit bit mechanism can be coupled with the sQuare bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses.
  The sQuare bit mechanism allows for observers to compute loss measurement at the end of every half sQuare signal period (level 0 or level 1).
  The Retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack.
- 
+
  On-path observers can estimate upstream and downstream loss at various scales, from the square slot level to the connection lifetime level.
 
  Note that observers should perform a loose synchronisation between the sQuare and the Retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought, so as to compare the same portion of the packet stream.
