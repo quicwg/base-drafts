@@ -307,11 +307,11 @@ continue making forward progress.
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays ({{ack-delay}}, {{generating-acks}}) to
-generate a statistical description of the connection's RTT.  An endpoint
-computes the following three values: the minimum value observed over the
-lifetime of the connection (min_rtt), an exponentially-weighted moving average
-(smoothed_rtt), and the variance in the observed RTT samples (rttvar).
+RTT samples and peer-reported host delays ({{ack-delay}}) to generate a
+statistical description of the connection's RTT.  An endpoint computes the
+following three values: the minimum value observed over the lifetime of the
+connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
+and the variance in the observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
