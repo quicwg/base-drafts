@@ -226,7 +226,7 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed ACKs {#ack-delay}
+### Explicit Correction For Delayed Acknowledgements {#ack-delay}
 
 An endpoint measures the delay incurred between when a packet is received and
 when the corresponding ACK is sent.  The endpoint encodes this host delay for
