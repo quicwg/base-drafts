@@ -46,9 +46,9 @@ normative:
 
   QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
-    abbrev: QUIC Loss Detection 
-    docname: draft-ietf-quic-recovery-latest 
-    date: {DATE} 
+    abbrev: QUIC Loss Detection
+    docname: draft-ietf-quic-recovery-latest
+    date: {DATE}
     author:
       -
         ins: J. Iyengar
@@ -68,7 +68,7 @@ transport protocol and describes how to use them to measure and locate packet lo
 
 --- note_Note_to_Readers
 
-This document specifies an experimental delta to the QUIC transport protocol. 
+This document specifies an experimental delta to the QUIC transport protocol.
 
 --- middle
 
@@ -129,27 +129,27 @@ When sending the first packet of a given connection with a new connection ID, ea
 ## End-to-end loss 
 The Retransmit bit mechanism merely reflects the number of packets considered lost by the sender QUIC stack with a slight delay. In case of fast retransmit due to repeted acknowlegments of a packet, this delay is at least equal to the one way delay in the reverse direction. It is larger otherwise (eg RTO). The retransmit mechanism alone suffices to estimate the end-to-end losses; similar to TCP passive loss measurement, its accuracy depends on the loss affecting the retransmit-bit-marked packets, which are in themselves proof of previous loss.
 
-## Upstream loss 
+## Upstream loss
 During a QUIC connection lifetime, the sQuare bit mechanism delineates slots of N packets with the same marking. When focusing on the sQuare bit of consecutive packets in a direction, this mechanism sketches a periodic sQuare signal which toggles every N packets. On-path observers can then estimate the  upstream losses by simply counting the number of packets during a half period (level 0 or level 1) of the square signal.
-Packets with a long header are not marked, but yet taken into account by the sender when counting the N outgoing packets before its next toggle. Observers should assign long header packets to the pending slot if possible (i.e. up to N packets counted in this slot), to the next one otherwise. Thus, slots with less than N packets, whatever their header length, generally denote upstream loss. 
-As with TCP passive detection based on missing sequence numbers, this estimation may become inaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter out this noise in the observation points. 
+Packets with a long header are not marked, but yet taken into account by the sender when counting the N outgoing packets before its next toggle. Observers should assign long header packets to the pending slot if possible (i.e. up to N packets counted in this slot), to the next one otherwise. Thus, slots with less than N packets, whatever their header length, generally denote upstream loss.
+As with TCP passive detection based on missing sequence numbers, this estimation may become inaccurate in case of packet reordering which blurs the edges of the square signal ; heuristics may be proposed to filter out this noise in the observation points.
 
 The slot size N should be carefully chosen : too short, it becomes very sensitive to packet reordering and loss. Too large, short connections may end before completion of the first square slot, ruining any loss estimation. Slots of 64 packets are suggested as a reasonable trade-off.
 
-## Downstream loss 
+## Downstream loss
 
- The Retransmit bit mechanism can be coupled with the sQuare bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses. 
+ The Retransmit bit mechanism can be coupled with the sQuare bit mechanism to estimate downstream losses. Indeed, passive observers can infer downstream losses by difference between end-to-end and upstream losses.
  The sQuare bit mechanism allows for observers to compute loss measurement at the end of every half sQuare signal period (level 0 or level 1).
  The Retransmit bit mechanism provides for the end-to-end loss after reaction of the sender stack.
  
  On-path observers can estimate upstream and downstream loss at various scales, from the square slot level to the connection lifetime level.
 
  Note that observers should perform a loose synchronisation between the sQuare and the Retransmit measurements when accurate evolution of segmental loss over connection lifetime is sought, so as to compare the same portion of the packet stream.
- 
+
 ## Bidirectional flows
 
  The Q and R bits sent by one endpoint cover loss of packets sent by the same endpoint, allowing a midpoint observer to estimate loss in that direction; no specific cooperation is needed between the endpoints beyond negotiating a QUIC version that supports this proposal. Hence, the server will be enabling troubleshooting of the download path, and the client will work for the upload path.  This allows to be confident about getting a useful signal in asymmetric situations:  clients may for example implement Q and R improperly, the download path will still be debuggable as long as servers do it right.
- 
+
  It should also be noted that the method does not suffer from the natural asymmetry in packet rate of a typical download or upload scenario. Indeed, although there are often fewer acknowledgements than payload-bearing packets, the unary encoding by R of payload loss is borne by the payload stream itself. This allows to report loss in the important direction in both a timely and accurate fashion without sampling or quantization.
 
 # Security and Privacy Considerations
@@ -167,5 +167,5 @@ An IANA registry has been suggested for QUIC versions. In support of the fully n
 
 # Acknowledgments
 {:numbered="false"}
- 
+
 The sQuare Bit was originally specified by Kazuho Oku in early proposals for loss measurement.
