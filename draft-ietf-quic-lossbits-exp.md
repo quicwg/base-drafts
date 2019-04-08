@@ -44,25 +44,22 @@ normative:
         org: Mozilla
         role: editor
 
-normative:
- QUIC-RECOVERY:
-title: "QUIC Loss Detection and Congestion Control"
-abbrev: QUIC Loss Detection 
-docname: draft-ietf-quic-recovery-latest 
-date: {DATE} 
-category: std ipr: trust200902 area: Transport workgroup: QUIC
-stand_alone: yes pi: [toc, sortrefs, symrefs, docmapping]
-author:
-ins: J. Iyengar
-name: Jana Iyengar
-org: Fastly
-email: jri.ietf@gmail.com
-role: editor
-ins: I. Swett name: Ian Swett org: Google email: ianswett@google.com role: editor
-
-
-
-
+  QUIC-RECOVERY:
+    title: "QUIC Loss Detection and Congestion Control"
+    abbrev: QUIC Loss Detection 
+    docname: draft-ietf-quic-recovery-latest 
+    date: {DATE} 
+    author:
+      -
+        ins: J. Iyengar
+        name: Jana Iyengar
+        org: Fastly
+        role: editor
+      -
+        ins: I. Swett
+        name: Ian Swett
+        org: Google
+        role: editor
 
 --- abstract
 
