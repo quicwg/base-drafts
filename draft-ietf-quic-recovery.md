@@ -889,6 +889,7 @@ kInitialRtt:
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
+
 ~~~
   enum kPacketNumberSpace {
     Initial,
