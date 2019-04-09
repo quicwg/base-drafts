@@ -3963,12 +3963,10 @@ address and port. The selection process performed at the beginning of the
 connection SHOULD be applied for all paths used by the connection.
 
 In case multiple connections share the same five-tuple, i.e. same source and
-destination IP address and UDP port the setting of the spin bit needs to be
-coordinated across all connections to ensure a clear signal to any on path
-measurement point, however that might not be feasible.
+destination IP address and UDP ports, endpoints should try to co-ordinate across all connections to ensure a clear signal to any on-path measurement points.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
-MUST accept any incoming value. It is RECOMMENDED that they set the spin bit to
+MUST accept any incoming value. It is RECOMMENDED that endpoints set the spin bit to
 a random value either chosen independently for each packet, or chosen
 independently for each path and kept constant for that path.
 
