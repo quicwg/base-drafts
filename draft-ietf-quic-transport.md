@@ -558,14 +558,15 @@ It is possible that all stream data is received when a RESET_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
 stream data to arrive after receiving a RESET_STREAM frame (the "Reset Recvd"
 state).  An implementation is free to manage this situation as it chooses.
+
 Sending RESET_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
 RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
-RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
-suppressed or withheld if stream data is completely received and is buffered to
-be read by the application.  In the latter case, the receiving part of the
-stream transitions from "Reset Recvd" to "Data Recvd".
+RESET_STREAM.  A RESET_STREAM signal might be suppressed or withheld if stream
+data is completely received and is buffered to be read by the application.  If
+the RESET_STREAM is suppressed, the receiving part of the stream remains in
+"Data Recvd".
 
 Once the application has been delivered the signal indicating that the stream
 was reset, the receiving part of the stream transitions to the "Reset Read"
