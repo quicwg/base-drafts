@@ -226,7 +226,7 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed Acknowledgements {#ack-delay}
+### Encoding Host Delay {#host-delay}
 
 An endpoint measures the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent.  The endpoint encodes this host
@@ -310,7 +310,7 @@ continue making forward progress.
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays ({{ack-delay}}) to generate a
+RTT samples and peer-reported host delays ({{host-delay}}) to generate a
 statistical description of the connection's RTT.  An endpoint computes the
 following three values: the minimum value observed over the lifetime of the
 connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
@@ -333,11 +333,11 @@ latest_rtt = ack_time - send_time_of_largest_acked
 ~~~
 
 An endpoint uses only locally observed times in generating RTT samples and does
-not correct for any host delays reported by the peer ({{ack-delay}}).
+not adjust for any host delays reported by the peer ({{host-delay}}).
 
 A peer reports host delays for only the largest acknowledged packet in an ACK
 frame, which is assumed by subsequent computations of smoothed_rtt and rttvar in
-correcting for host delays.  As a result, an RTT sample is only generated using
+adjusting for host delays.  As a result, an RTT sample is only generated using
 the largest acknowledged packet in the received ACK frame.
 
 To avoid generating multiple RTT samples using the same packet, an ACK frame
@@ -356,26 +356,25 @@ are received within an RTT.  As suggested in {{?RFC6298}}, doing so might result
 in inadequate history in smoothed_rtt and rttvar.  Ensuring that RTT estimates
 retain sufficient history is an open research question.
 
-## Computing min_rtt {#min-rtt}
+## Estimating min_rtt {#min-rtt}
 
 min_rtt is the minimum RTT observed over the lifetime of the connection.
 min_rtt is set to the latest_rtt on the first sample in a connection, and to the
 lesser of min_rtt and latest_rtt on subsequent samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not correct for host delays reported by the peer ({{ack-delay}}).  Doing so
+not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
 allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
 what it observes (see {{smoothed-rtt}}), and limits potential underestimation
 due to erroneously-reported delays by the peer.
 
-## Computing smoothed_rtt and rttvar {#smoothed-rtt}
+## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
-smoothed_rtt is an exponentially-weighted moving average of an endpoint's
-RTT samples, and rttvar is the endpoint's estimated variance in
-the RTT samples.
+smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
+samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
-smoothed_rtt estimates path latency by correcting RTT samples for peer-reported
-host delays ({{ack-delay}}).  A peer limits any delay in sending an
+smoothed_rtt uses path latency after adjusting RTT samples for peer-reported
+host delays ({{host-delay}}).  A peer limits any delay in sending an
 acknowledgement for an ack-eliciting packet to no greater than the advertised
 max_ack_delay transport parameter.  Consequently, when a peer reports an Ack
 Delay that is greater than its max_ack_delay, the delay is attributed to reasons
@@ -384,13 +383,13 @@ previous ACK frames.  Any delays beyond the peer's max_ack_delay are therefore
 considered effectively part of path delay and incorporated into the smoothed_rtt
 estimate.
 
-When correcting an RTT sample using peer-reported acknowledgement delays, an
+When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
 - MUST use the lesser of the value reported in Ack Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter ({{ack-delay}}).
+  and the peer's max_ack_delay transport parameter ({{host-delay}}).
 
-- MUST NOT apply the correction if the resulting RTT sample is smaller than the
+- MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
   min_rtt.  This limits the underestimation that a misreporting peer can cause
   to the smoothed_rtt.
 
