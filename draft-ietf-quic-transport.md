@@ -5268,11 +5268,12 @@ sequence.  A receiver is obligated to open intervening streams if a
 higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
-The number of active streams is limited by the concurrent stream limit transport
-parameter, as explained in {{controlling-concurrency}}.  If chosen judiciously,
-this limit mitigates the effect of the stream commitment attack.  However,
-setting the limit too low could affect performance when applications expect to
-open large number of streams.
+The number of active streams is limited by the initial_max_streams_bidi and
+initial_max_streams_uni transport parameters, as explained in
+{{controlling-concurrency}}.  If chosen judiciously, these limits mitigate the
+effect of the stream commitment attack.  However, setting the limit too low
+could affect performance when applications expect to open large number of
+streams.
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
