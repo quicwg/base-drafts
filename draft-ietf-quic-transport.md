@@ -558,14 +558,15 @@ It is possible that all stream data is received when a RESET_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
 stream data to arrive after receiving a RESET_STREAM frame (the "Reset Recvd"
 state).  An implementation is free to manage this situation as it chooses.
+
 Sending RESET_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
 RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
-RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
-suppressed or withheld if stream data is completely received and is buffered to
-be read by the application.  In the latter case, the receiving part of the
-stream transitions from "Reset Recvd" to "Data Recvd".
+RESET_STREAM.  A RESET_STREAM signal might be suppressed or withheld if stream
+data is completely received and is buffered to be read by the application.  If
+the RESET_STREAM is suppressed, the receiving part of the stream remains in
+"Data Recvd".
 
 Once the application has been delivered the signal indicating that the stream
 was reset, the receiving part of the stream transitions to the "Reset Read"
@@ -819,7 +820,8 @@ endpoints sends CONNECTION_CLOSE.
 The final size is the amount of flow control credit that is consumed by a
 stream.  Assuming that every contiguous byte on the stream was sent once, the
 final size is the number of bytes sent.  More generally, this is one higher
-than the largest byte offset sent on the stream.
+than the offset of the byte with the largest offset sent on the stream, or zero
+if no bytes were sent.
 
 For a stream that is reset, the final size is carried explicitly in a
 RESET_STREAM frame.  Otherwise, the final size is the offset plus the length of
@@ -850,6 +852,12 @@ limits are set in the transport parameters (see
 {{transport-parameter-definitions}}) and subsequently limits are advertised
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
+
+If a max_streams transport parameter or MAX_STREAMS frame is received with a
+value greater than 2^60, this would allow a maximum stream ID that cannot be
+expressed as a variable-length integer (see {{integer-encoding}}).
+If either is received, the connection MUST be closed immediately with a
+connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
@@ -1170,15 +1178,17 @@ MUST NOT be used outside of draft implementations.
 
 ## Using Reserved Versions
 
-For a server to use a new version in the future, clients must correctly handle
-unsupported versions. To help ensure this, a server SHOULD include a reserved
-version (see {{versions}}) while generating a Version Negotiation packet.
+For a server to use a new version in the future, clients need to correctly
+handle unsupported versions. To help ensure this, a server SHOULD include a
+version that is reserved for forcing version negotiation (0x?a?a?a?a as defined
+in {{versions}}) when generating a Version Negotiation packet.
 
 The design of version negotiation permits a server to avoid maintaining state
 for packets that it rejects in this fashion.
 
-A client MAY send a packet using a reserved version number.  This can be used to
-solicit a list of supported versions from a server.
+A client MAY send a packet using a version that is reserved for forcing version
+negotiation.  This can be used to solicit a list of supported versions from a
+server.
 
 
 # Cryptographic and Transport Handshake {#handshake}
@@ -1468,10 +1478,10 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST ensure that UDP datagrams containing Initial packets are sized to
-at least 1200 bytes, padding packets in the datagram if necessary.  Sending
-padded datagrams ensures that the server is not overly constrained by the
-amplification restriction.
+Clients MUST ensure that UDP datagrams containing only Initial packets are sized
+to at least 1200 bytes, adding padding to packets in the datagram as necessary.
+Sending padded datagrams ensures that the server is not overly constrained by
+the amplification restriction.
 
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
@@ -2321,14 +2331,21 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
-A stateless reset will be interpreted by a recipient as a packet with a short
-header.  For the packet to appear as valid, the Unpredictable Bits field needs
-to include at least 182 bits of data (or 23 bytes, less the two fixed bits).
-This is intended to allow for a Destination Connection ID of the maximum length
-permitted, with a minimal packet number, and payload.  The Stateless Reset Token
-corresponds to the minimum expansion of the packet protection AEAD.  More
-unpredictable bytes might be necessary if the endpoint could have negotiated a
-packet protection scheme with a larger minimum AEAD expansion.
+An endpoint that receives a packet where removal of packet protection fails MUST
+check the last 16 bytes of that packet.  If the last 16 bytes of the packet are
+identical to a stateless reset token corresponding to a packet that was recently
+sent, the endpoint MUST NOT send any further packets; all state for the
+connection can then be discarded.
+
+To entities other than its intended recipient, a stateless reset will be appear
+to be a packet with a short header.  For the packet to appear as valid, the
+Unpredictable Bits field needs to include at least 182 bits of data (or 23
+bytes, less the two fixed bits).  This is intended to allow for a Destination
+Connection ID of the maximum length permitted, with a minimal packet number, and
+payload.  The Stateless Reset Token corresponds to the minimum expansion of the
+packet protection AEAD.  More unpredictable bytes might be necessary if the
+endpoint could have negotiated a packet protection scheme with a larger minimum
+AEAD expansion.
 
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
@@ -2701,8 +2718,9 @@ additional type-dependent fields:
 {: #frame-layout title="Generic Frame Layout"}
 
 The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in STREAM frames is used to carry other frame-specific flags.
-For all other frames, the Frame Type field simply identifies the frame.  These
+The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
+CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
+other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
 | Type Value  | Frame Type Name      | Definition                     |
@@ -3268,7 +3286,7 @@ decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
 single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
-Error codes ({{error-codes}}) and versions {{versions}} are described using
+Error codes ({{error-codes}}) and versions ({{versions}}) are described using
 integers, but do not use this encoding.
 
 
@@ -4083,8 +4101,8 @@ disable_migration (0x000c):
 : The disable migration transport parameter is included if the endpoint does not
   support connection migration ({{migration}}). Peers of an endpoint that sets
   this transport parameter MUST NOT send any packets, including probing packets
-  ({{probing}}), from a local address other than that used to perform the
-  handshake.  This parameter is a zero-length value.
+  ({{probing}}), from a local address or port other than that used to perform
+  the handshake.  This parameter is a zero-length value.
 
 preferred_address (0x000d):
 
@@ -4216,15 +4234,15 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer including the time in microseconds that the largest
-  acknowledged packet, as indicated in the Largest Acknowledged field, was
-  received by this peer to when this ACK was sent.  The value of the ACK Delay
-  field is scaled by multiplying the encoded value by 2 to the power of the
-  value of the `ack_delay_exponent` transport parameter set by the sender of the
-  ACK frame.  The `ack_delay_exponent` defaults to 3, or a multiplier of 8 (see
-  {{transport-parameter-definitions}}).  Scaling in this fashion allows for a
-  larger range of values with a shorter encoding at the cost of lower
-  resolution.
+: A variable-length integer representing the time delta in microseconds between
+  when this ACK was sent and when the largest acknowledged packet, as indicated
+  in the Largest Acknowledged field, was received by this peer.  The value of
+  the ACK Delay field is scaled by multiplying the encoded value by 2 to the
+  power of the value of the `ack_delay_exponent` transport parameter set by the
+  sender of the ACK frame.  The `ack_delay_exponent` defaults to 3, or a
+  multiplier of 8 (see {{transport-parameter-definitions}}).  Scaling in this
+  fashion allows for a larger range of values with a shorter encoding at the
+  cost of lower resolution.
 
 ACK Range Count:
 
@@ -4357,24 +4375,24 @@ counts, as follows:
 The three ECN Counts are:
 
 ECT(0) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(0) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(0) codepoint.
 
 ECT(1) Count:
-: A variable-length integer representing the total number packets received with
-  the ECT(1) codepoint.
+: A variable-length integer representing the total number of packets received
+  with the ECT(1) codepoint.
 
 CE Count:
-: A variable-length integer representing the total number packets received with
-  the CE codepoint.
+: A variable-length integer representing the total number of packets received
+  with the CE codepoint.
 
 ECN counts are maintained separately for each packet number space.
 
 
 ## RESET_STREAM Frame {#frame-reset-stream}
 
-An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate a
-stream.
+An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate the
+sending part of a stream.
 
 After sending a RESET_STREAM, an endpoint ceases transmission and retransmission
 of STREAM frames on the identified stream.  A receiver of RESET_STREAM can
@@ -5500,9 +5518,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Endpoints are required to use new connnection IDs when they use new network
   paths (#2413, #2414)
 - Increased the set of permissible frames in 0-RTT (#2344, #2355)
-- Prohibit the use of MAX_STREAM_ID/max_stream_id of greater than 2^60 (#2487,
-  #2499)
-- Failing to negotiate ALPN is a fatal error (#2495, #2483)
 
 ## Since draft-ietf-quic-transport-17
 

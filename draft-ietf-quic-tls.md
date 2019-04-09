@@ -343,13 +343,14 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type         | Encryption Level | PN Space  |
+|:--------------------|:-----------------|:----------|
+| Initial             | Initial secrets  | Initial   |
+| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
+| Handshake           | Handshake        | Handshake |
+| Retry               | N/A              | N/A       |
+| Version Negotiation | N/A              | N/A       |
+| Short Header        | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -436,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
@@ -498,30 +501,29 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Rekey tx to 0-RTT Keys
+Install tx 0-RTT Keys
                      0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
                      <------------- Initial
-                                          Rekey rx to 0-RTT keys
-                                              Handshake Received
-                                      Rekey rx to Handshake keys
+                                           Install rx 0-RTT keys
+                                          Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-                                          Rekey tx to 1-RTT keys
+                                           Install tx 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey rx to Handshake keys
+Install tx Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx to 1-RTT keys
+Install 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
-                                          Rekey rx to 1-RTT keys
-                                                   Get Handshake
+                                           Install rx 1-RTT keys
                                               Handshake Complete
+                                                   Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
@@ -1214,8 +1216,12 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!RFC7301}} to select an application protocol.  Unless another mechanism is
 used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  When using ALPN, endpoints MUST abort a connection if an application
-protocol is not negotiated.
+purpose.  When using ALPN, endpoints MUST immediately close a connection (see
+Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
+see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
+alert, QUIC clients MUST also use it to terminate a connection when ALPN
+negotiation fails.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
