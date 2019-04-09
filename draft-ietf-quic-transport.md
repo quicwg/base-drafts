@@ -3967,7 +3967,7 @@ co-ordinate across all connections to ensure a clear signal to any on-path
 measurement points.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
-MUST accept any incoming value. It is RECOMMENDED that endpoints set the spin
+MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
 independently for each connection.
 
