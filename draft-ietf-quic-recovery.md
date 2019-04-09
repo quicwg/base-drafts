@@ -1135,10 +1135,10 @@ OnLossDetectionTimeout():
   else if (endpoint is client without 1-RTT keys):
     // Send anti-deadlock packet: padded to earn more anti-
     // amplification credit, unpadded to prove address ownership.
-    if (will send Initial packet):
-       SendOnePaddedPacket()
+    if (has Handshake keys):
+       SendOneHandshakePacket()
      else:
-       SendOnePacket()
+       SendOnePaddedInitialPacket()
     crypto_count++
   else:
     // PTO
