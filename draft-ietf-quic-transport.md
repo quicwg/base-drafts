@@ -4134,7 +4134,7 @@ version_aliases (0x000e):
 
 : A list of version numbers that the server accepts as an alias for the
   currently used versions. This transport parameter is only sent by the server.
-  Every version alias contains a lifetime in seconds. The alias is only valid
+  Every version alias contains a lifetime in milliseconds. The alias is only valid
   for that lifetime, clients MUST NOT use it after expiry.
 
 ~~~
