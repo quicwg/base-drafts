@@ -2350,7 +2350,7 @@ stateless reset token being available to a peer.  In this QUIC version, packets
 with a long header are only used during connection establishment.   Because the
 stateless reset token is not available until connection establishment is
 complete or near completion, ignoring an unknown packet with a long header might
-be more effective.
+be more effective than sending a stateless reset.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
@@ -2387,14 +2387,14 @@ the packet other than the last 16 bytes for carrying data.
 
 ### Detecting a Stateless Reset
 
-An endpoint detects a potential stateless reset when an incoming packet with a
-short header either cannot be associated with a connection, cannot be decrypted,
-or is marked as a duplicate packet.  The endpoint MUST then compare the last 16
-bytes of the packet with all Stateless Reset Tokens that are associated with
-connection IDs that are currently in use.  This includes Stateless Reset Tokens
-from NEW_CONNECTION_ID frames and the server's transport parameters.  An
-endpoint MUST NOT check for any Stateless Reset Tokens associated with
-connection IDs it has not used or for connection IDs that have been retired.
+An endpoint detects a potential stateless reset when an incoming packet either
+cannot be associated with a connection, cannot be decrypted, or is marked as a
+duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
+packet with all Stateless Reset Tokens that are associated with connection IDs
+that are currently in use.  This includes Stateless Reset Tokens from
+NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
+MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
+has not used or for connection IDs that have been retired.
 
 If the last 16 bytes of the packet values are identical to a Stateless Reset
 Token, the endpoint MUST enter the draining period and not send any further
