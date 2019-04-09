@@ -1103,19 +1103,14 @@ GetEarliestLossTime():
   return time, space
 
 SetLossDetectionTimer():
-  // Don't arm timer if there are no ack-eliciting packets
-  // in flight.
-  if (no ack-eliciting packets in flight):
-    loss_detection_timer.cancel()
-    return
-
   loss_time, _ = GetEarliestLossTime()
   if (loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
     return
 
-  if (crypto packets are in flight):
+  if (crypto packets are in flight
+      || endpoint is client without 1-RTT keys):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
       timeout = 2 * kInitialRtt
@@ -1125,6 +1120,12 @@ SetLossDetectionTimer():
     timeout = timeout * (2 ^ crypto_count)
     loss_detection_timer.update(
       time_of_last_sent_crypto_packet + timeout)
+    return
+
+  // Don't arm timer if there are no ack-eliciting packets
+  // in flight.
+  if (no ack-eliciting packets in flight):
+    loss_detection_timer.cancel()
     return
 
   // Calculate PTO duration
@@ -1155,6 +1156,14 @@ OnLossDetectionTimeout():
   else if (crypto packets are in flight):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
+    crypto_count++
+  else if (endpoint is client without 1-RTT keys):
+    // Send anti-deadlock packet: padded to earn more anti-
+    // amplification credit, unpadded to prove address ownership.
+    if (has Handshake keys):
+       SendOneHandshakePacket()
+     else:
+       SendOnePaddedInitialPacket()
     crypto_count++
   else:
     // PTO
