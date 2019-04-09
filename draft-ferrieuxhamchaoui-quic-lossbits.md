@@ -1,7 +1,7 @@
 ---
 title: The QUIC Loss Bits
 abbrev: QUIC Loss Bits
-docname: draft-ietf-quic-lossbits-00
+docname: draft-ferrieuxhamchaoui-quic-lossbits-00
 date: {DATE}
 category: exp
 
