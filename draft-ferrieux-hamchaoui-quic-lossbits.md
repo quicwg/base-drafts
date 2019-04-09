@@ -260,11 +260,6 @@ An IANA registry  has been suggested for QUIC versions.  In support of
 the fully negotiated  status of the proposed extension,  a natural way
 of deploying this feature would be through such a registered version.
 
-# Change Log
-
-> **RFC Editor's Note:**  Please remove this section prior to
-> publication of a final version of this document.
-
 # Acknowledgments
 
 The  sQuare  Bit was  originally  specified  by  Kazuho Oku  in  early
