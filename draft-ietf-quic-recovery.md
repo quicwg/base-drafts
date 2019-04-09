@@ -300,8 +300,8 @@ delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
 to adjust for any host delays - importantly, for delayed acknowledgements - when
 estimating the path RTT.  In certain deployments, a packet might be held in the
 OS kernel or elsewhere on the host before being processed by the QUIC
-stack. Where possible, an endpoint SHOULD include these delays when populating
-the Ack Delay field in an ACK frame.
+stack. Where possible, an endpoint MAY include these delays when populating the
+Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
@@ -327,7 +327,7 @@ and the variance in the observed RTT samples (rttvar).
 An endpoint generates an RTT sample on receiving an ACK frame that meets the
 following two conditions:
 
-- the largest acknowledged packet number is higher than any previously seen, and
+- the largest acknowledged packet number is newly acknowledged, and
 
 - at least one of the newly acknowledged packets was ack-eliciting.
 
@@ -1110,9 +1110,9 @@ UpdateRtt(latest_rtt, ack_delay):
   adjusted_rtt = latest_rtt
   if (latest_rtt - min_rtt > ack_delay):
     adjusted_rtt = latest_rtt - ack_delay
-  // Based on {{?RFC6298}}.
+  // First RTT sample.
   if (smoothed_rtt == 0):
-    smoothed_rtt = adjusted_rtt
+    smoothed_rtt = latest_rtt
     rttvar = latest_rtt / 2
   else:
     rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
