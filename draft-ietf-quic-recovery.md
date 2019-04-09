@@ -228,7 +228,7 @@ forward progress without relying on timeouts.
 
 ### Explicit Correction For Delayed Acknowledgements
 
-An endpoint measures the delay incurred between when a packet is received and
+QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate (see {{host-delay}}).
 
