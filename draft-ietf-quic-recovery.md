@@ -442,8 +442,7 @@ connections over the same network SHOULD use the previous connection's final
 smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
 is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}. When the first acknowledgement is received, an RTT is computed and
-the timer SHOULD be set for twice the newly computed RTT.
+{{?RFC6298}}.
 
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
 RTT.  This timer MUST be updated when a new crypto packet is sent and when
@@ -451,7 +450,7 @@ an acknowledgement is received which computes a new RTT sample. Upon timeout,
 the sender MUST retransmit all unacknowledged CRYPTO data if possible.
 
 On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender SHOULD double the crypto
+acknowledgement for a new packet, the sender MUST double the crypto
 retransmission timeout and set a timer for this period.
 
 Until the server has validated the client's address on the path, the amount of
@@ -462,12 +461,14 @@ sent, then no alarm should be armed until data has been received from the
 client.
 
 Because the server could be blocked until more packets are received, the client
-MUST ensure the crypto retransmission timer is set if there is unacknowledged
-crypto data and MUST ensure the timer is set until it has 1-RTT keys.
-If the timer expires and the client has no CRYPTO data to retransmit and does
-not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
-at least 1200 bytes.  If the client has Handshake keys, it MUST send a
-Handshake packet.
+MUST ensure that the crypto retransmission timer is set if there is
+unacknowledged crypto data or if the client does not yet have 1-RTT keys.
+If the crypto retransmission timer expires before the client has 1-RTT keys,
+it is possible that the client may not have any crypto data to retransmit.
+The client MUST send a new packet to allow the server to continue sending
+data. If Handshake keys are available to the client, it MUST send a
+Handshake packet, and otherwise it MUST send an Initial packet in a UDP
+datagram of at least 1200 bytes.
 
 The crypto retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  When the crypto
