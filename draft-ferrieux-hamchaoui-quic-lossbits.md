@@ -1,7 +1,7 @@
 ---
 title: The QUIC Loss Bits
 abbrev: QUIC Loss Bits
-docname: draft-ferrieux-hamchaoui-quic-lossbits
+docname: draft-ferrieux-hamchaoui-quic-lossbits-00
 date: {DATE}
 category: exp
 
