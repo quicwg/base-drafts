@@ -437,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
