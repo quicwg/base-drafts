@@ -2701,8 +2701,8 @@ frames. -->
 {: #packet-frames title="QUIC Payload"}
 
 QUIC payloads MUST contain at least one frame, and MAY contain multiple frames
-and multiple frame types.  Frames MUST fit within a single QUIC packet and MUST
-NOT span a QUIC packet boundary.
+and multiple frame types.  Frames always fit within a single QUIC packet and
+cannot span multiple packets.
 
 Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
