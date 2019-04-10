@@ -1422,15 +1422,14 @@ server's new preferred_address value in the handshake.
 A server MUST either reject 0-RTT data or abort a handshake if the implied
 values for transport parameters cannot be supported.
 
-A client MUST NOT use updated values it learns either from the server's updated
-transport parameters or frames carried in 1-RTT when sending frames in 0-RTT
-packets.  Updated values of transport parameters from the handshake only apply
+When sending frames in 0-RTT packets, a client MUST only use remembered
+transport parameters; importantly, it MUST NOT use updated values that it learns
+from the server's updated transport parameters or from frames received in 1-RTT
+packets.  Updated values of transport parameters from the handshake apply only
 to 1-RTT packets.  For instance, flow control limits from remembered transport
 parameters apply to all 0-RTT packets even if those values are increased by the
-handshake; increased limits from frames cannot be applied, because the client
-will send frames that use any increased limits in 1-RTT packets (see
-{{packet-0rtt}}).  A server MAY treat use of updated transport parameters in
-0-RTT as a connection error of type PROTOCOL_VIOLATION.
+handshake or by frames send in 1-RTT packets.  A server MAY treat use of updated
+transport parameters in 0-RTT as a connection error of type PROTOCOL_VIOLATION.
 
 
 ### New Transport Parameters
@@ -3686,8 +3685,9 @@ A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
 frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
 0-RTT packet, because that can only acknowledge a 1-RTT packet.  An
-acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.  A server
-MAY treat a violation of remembered limits as a connection error of an
+acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.
+
+A server MAY treat a violation of remembered limits as a connection error of an
 appropriate type (for instance, a FLOW_CONTROL_ERROR for exceeding stream data
 limits).
 
