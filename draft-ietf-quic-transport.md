@@ -3954,7 +3954,7 @@ support the spin bit MUST implement it as specified in this section.
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
-the spin bit is not disabled by the administrator implementations MUST disable
+the spin bit is not disabled by the administrator, implementations MUST disable
 the spin bit for a given connection with a certain likelihood. The random
 selection process SHOULD be designed such that on average the spin bit is
 disabled for at least one eighth of connections. The selection process performed
@@ -3969,7 +3969,7 @@ measurement points.
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
-independently for each connection.
+independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
 value and sets the spin bit in the short header to the currently stored
