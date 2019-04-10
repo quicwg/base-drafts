@@ -338,13 +338,11 @@ acknowledged packet was sent:
 latest_rtt = ack_time - send_time_of_largest_acked
 ~~~
 
-An endpoint uses only locally observed times in generating RTT samples and does
-not adjust for any host delays reported by the peer ({{host-delay}}).
-
-A peer reports host delays for only the largest acknowledged packet in an ACK
-frame, which is assumed by subsequent computations of smoothed_rtt and rttvar in
-adjusting for host delays.  As a result, an RTT sample is only generated using
-the largest acknowledged packet in the received ACK frame.
+An RTT sample is generated using only the largest acknowledged packet in the
+received ACK frame.  This is because a peer reports host delays for only the
+largest acknowledged packet in an ACK frame.  While the reported host delay is
+not used by the RTT sample measurement, it is used to adjust the RTT sample in
+subsequent computations of smoothed_rtt and rttvar {{smoothed-rtt}}.
 
 To avoid generating multiple RTT samples using the same packet, an ACK frame
 SHOULD NOT be used to update RTT estimates if it does not newly acknowledge the
