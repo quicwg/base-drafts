@@ -759,8 +759,11 @@ after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 ## Application Limited Sending
 
 The congestion window should not be increased in slow start or congestion
-avoidance when it is not fully utilized.  The congestion window could be
-under-utilized due to insufficient application data or flow control credit.
+avoidance when it is not sufficiently utilized.  The congestion window could
+be under-utilized due to insufficient application data or flow control credit.
+
+A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
+to determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
