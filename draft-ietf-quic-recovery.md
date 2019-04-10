@@ -447,7 +447,9 @@ resulting in a 1 second initial handshake timeout as recommended in
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
 RTT.  This timer MUST be updated when a new crypto packet is sent and when
 an acknowledgement is received which computes a new RTT sample. Upon timeout,
-the sender MUST retransmit all unacknowledged CRYPTO data if possible.
+the sender MUST retransmit all unacknowledged CRYPTO data if possible.  The
+sender MUST NOT declare in flight crypto packets as lost when the crypto timer
+expires.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender MUST double the crypto
