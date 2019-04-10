@@ -2701,10 +2701,10 @@ frames. -->
 {: #packet-frames title="QUIC Payload"}
 
 QUIC payloads MUST contain at least one frame, and MAY contain multiple frames
-and multiple frame types.
+and multiple frame types.  Frames MUST fit within a single QUIC packet and MUST
+NOT span a QUIC packet boundary.
 
-Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
-boundary. Each frame begins with a Frame Type, indicating its type, followed by
+Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
 
 ~~~
@@ -2746,6 +2746,9 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
+
+An endpoint MUST treat the receipt of a frame of unknown type as a connection
+error of type FRAME_ENCODING_ERROR.
 
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
 frame does not cause undesirable side effects or errors when received more
