@@ -1118,8 +1118,8 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (crypto packets are in flight &&
-      crypto data to send):
+  if (crypto packets are in flight
+      || endpoint is client without 1-RTT keys):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
       timeout = 2 * kInitialRtt
