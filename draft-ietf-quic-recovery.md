@@ -742,25 +742,13 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-
-## Sending data after an idle period
-
-A sender becomes idle if it ceases to send data and has no bytes in flight.  A
-sender's congestion window MUST NOT increase while it is idle.
-
-When sending data after becoming idle, a sender MUST reset its congestion window
-to the initial congestion window (see Section 4.1 of {{?RFC5681}}), unless it
-paces the sending of packets. A sender MAY retain its congestion window if it
-paces the sending of any packets in excess of the initial congestion window.
-
-A sender MAY implement alternate mechanisms to update its congestion window
-after idle periods, such as those proposed for TCP in {{?RFC7661}}.
-
 ## Application Limited Sending
 
-The congestion window should not be increased in slow start or congestion
-avoidance when it is not sufficiently utilized.  The congestion window could
-be under-utilized due to insufficient application data or flow control credit.
+A sender's congestion window MUST NOT increase when no packets are newly
+acknowledged, such as when the connection is idle. The congestion window
+SHOULD NOT be increased in slow start or congestion avoidance when it is not
+sufficiently utilized.  The congestion window could be under-utilized due to
+insufficient application data or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
@@ -770,6 +758,12 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
+Sending more than intial window into the network at once may cause losses.
+Implemementations SHOULD use pacing, ACK-clocking, a reduction in CWND and/or
+timers to minimize bursts.
+
+A sender MAY implement alternate mechanisms to update its congestion window
+after idle periods, such as those proposed for TCP in {{?RFC7661}}.
 
 
 # Security Considerations
