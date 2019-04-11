@@ -1260,8 +1260,8 @@ parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
-unsupported_extension alert MUST be sent if this extension is received when the
-transport is not QUIC.
+unsupported_extension alert MUST be sent by an implementation that supports this
+extension if the extension is received when the transport is not QUIC.
 
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
