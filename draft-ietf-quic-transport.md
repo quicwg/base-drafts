@@ -2678,12 +2678,9 @@ Packet number encoding at a sender and decoding at a receiver are described in
 
 ## Frames and Frame Types {#frames}
 
-The payload of QUIC packets, after removing packet protection, commonly consists
-of a sequence of frames, as shown in {{packet-frames}}.  Version Negotiation,
-Stateless Reset, and Retry packets do not contain frames.
-
-<!-- TODO: Editorial work needed in this section. Not all packets contain
-frames. -->
+The payload of QUIC packets, after removing packet protection, commonly consist
+of a sequence of complete frames, as shown in {{packet-frames}}.  Version
+Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
  0                   1                   2                   3
@@ -2700,9 +2697,9 @@ frames. -->
 ~~~
 {: #packet-frames title="QUIC Payload"}
 
-QUIC payloads MUST contain at least one frame, and MAY contain multiple frames
-and multiple frame types.  Frames always fit within a single QUIC packet and
-cannot span multiple packets.
+The payload of a packet that contains frames MUST contain at least one frame,
+and MAY contain multiple frames and multiple frame types.  Frames always fit
+within a single QUIC packet and cannot span multiple packets.
 
 Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
