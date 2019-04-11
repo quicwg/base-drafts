@@ -89,13 +89,6 @@ informative:
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
-  QUIC-MANAGEABILITY:
-    title: "Manageability of the QUIC Transport Protocol"
-    author:
-      - ins: M. Kuehlewind
-    date: 2018-10-22
-    target:
-      "https://datatracker.ietf.org/doc/draft-ietf-quic-manageability/"
 
 --- abstract
 
@@ -3957,7 +3950,7 @@ only present in the short packet header, since it is possible to measure the
 initial RTT of a connection by observing the handshake. Therefore, the spin bit
 is available after version negotiation and connection establishment are
 completed. On-path measurement and use of the latency spin bit is further
-discussed in {{QUIC-MANAGEABILITY}}.
+discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
 The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
 support the spin bit MUST implement it as specified in this section.
