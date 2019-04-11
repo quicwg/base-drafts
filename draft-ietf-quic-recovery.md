@@ -350,7 +350,7 @@ largest acknowledged packet.
 
 An RTT sample MUST NOT be generated on receiving an ACK frame that does not
 newly acknowledge at least one ack-eliciting packet.  A peer does not send an
-ACK frame on receiving only non-ack-eliciting packets, and an ACK frame that is
+ACK frame on receiving only non-ack-eliciting packets, so an ACK frame that is
 subsequently sent can include an arbitrarily large Ack Delay field.  Ignoring
 such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
 computations.
