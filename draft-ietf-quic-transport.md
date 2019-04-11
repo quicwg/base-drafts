@@ -91,11 +91,10 @@ informative:
 
   QUIC-MANAGEABILITY:
     title: "Manageability of the QUIC Transport Protocol"
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-manageability-latest
     author:
       - ins: M. Kuehlewind
-    date: 2018-10-22
-    target:
-      "https://datatracker.ietf.org/doc/draft-ietf-quic-manageability/"
 
 --- abstract
 
