@@ -226,24 +226,14 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed ACKs
+### Explicit Correction For Delayed Acknowledgements
 
-QUIC ACKs explicitly encode the delay incurred at the receiver between when a
-packet is received and when the corresponding ACK is sent.  This allows the
-receiver of the ACK to adjust for receiver delays, specifically the delayed ack
-timer, when estimating the path RTT.  This mechanism also allows a receiver to
-measure and report the delay from when a packet was received by the OS kernel,
-which is useful in receivers which may incur delays such as context-switch
-latency before a userspace QUIC receiver processes a received packet.
+QUIC endpoints measure the delay incurred between when a packet is received and
+when the corresponding acknowledgment is sent, allowing a peer to maintain a
+more accurate round-trip time estimate (see {{host-delay}}).
 
 
-# Generating Acknowledgements
-
-QUIC SHOULD delay sending acknowledgements in response to packets, but MUST NOT
-excessively delay acknowledgements of ack-eliciting packets. Specifically,
-implementations MUST attempt to enforce a maximum ack delay to avoid causing
-the peer spurious timeouts.  The maximum ack delay is communicated in the
-`max_ack_delay` transport parameter and the default value is 25ms.
+# Generating Acknowledgements {#generating-acks}
 
 An acknowledgement SHOULD be sent immediately upon receipt of a second
 ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
@@ -301,62 +291,135 @@ all subsequent ACK frames containing them could be lost. In this case, the
 loss recovery algorithm may cause spurious retransmits, but the sender will
 continue making forward progress.
 
-# Computing the RTT estimate
+## Measuring and Reporting Host Delay {#host-delay}
 
-Round-trip time (RTT) is calculated when an ACK frame arrives by
-computing the difference between the current time and the time the largest
-acked packet was sent.  An RTT sample MUST NOT be taken for a packet that
-is not newly acknowledged or not ack-eliciting.
+An endpoint measures the delay incurred between when a packet is received and
+when the corresponding acknowledgment is sent.  The endpoint encodes this host
+delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
+(see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
+to adjust for any host delays, which is important for delayed acknowledgements,
+when estimating the path RTT.  In certain deployments, a packet might be held in
+the OS kernel or elsewhere on the host before being processed by the QUIC
+stack. Where possible, an endpoint MAY include these delays when populating the
+Ack Delay field in an ACK frame.
 
-When RTT is calculated, the ack delay field from the ACK frame SHOULD be limited
-to the max_ack_delay specified by the peer by using a minimum of the two values.
-Limiting ack_delay to max_ack_delay ensures a peer specifying an extremely small
-max_ack_delay doesn't cause more spurious timeouts than a peer that correctly
-specifies max_ack_delay. It SHOULD be subtracted from the RTT as long as the
-result is larger than the min_rtt. If the result is smaller than the min_rtt,
-the RTT should be used, but the ack delay field should be ignored.  Ignoring
-ack_delay when it would cause an RTT sample smaller than the current min_rtt
-prevents a peer from manipulating RTT samples below min_rtt at the cost of
-inflated RTT samples in the presence of persistent delayed acks.
+An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
+packets.  The maximum ack delay is communicated in the max_ack_delay transport
+parameter, see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
+explicit contract: an endpoint promises to never delay acknowledgments of an
+ack-eliciting packet by more than the indicated value. If it does, any excess
+accrues to the RTT estimate and could result in spurious retransmissions from
+the peer.
 
-A sender takes an RTT sample when an ACK frame is received that acknowledges a
-larger packet number than before.  A sender will take multiple RTT samples per
-RTT when multiple such ACK frames are received within an RTT.  When multiple
-samples are generated within an RTT, the smoothed RTT and RTT variance could
-retain inadequate history, as suggested in {{?RFC6298}}. Changing these
-computations is currently an open research question.
 
-min_rtt is the minimum RTT measured over the connection, prior to adjusting by
-ack delay.  Ignoring ack delay for min RTT prevents intentional or unintentional
-underestimation of min RTT, which in turn prevents underestimating smoothed RTT.
+# Estimating the Round-Trip Time {#compute-rtt}
 
-A sender calculates both smoothed RTT (SRTT) and RTT variance (RTTVAR) similar
-to those specified in {{?RFC6298}}.  Note that computing smoothed_rtt does not
-use ack_delay for the first RTT sample, because doing so would result in a
-smoothed_rtt that is smaller than the min_rtt.
+At a high level, an endpoint measures the time from when a packet was sent to
+when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
+RTT samples and peer-reported host delays ({{host-delay}}) to generate a
+statistical description of the connection's RTT.  An endpoint computes the
+following three values: the minimum value observed over the lifetime of the
+connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
+and the variance in the observed RTT samples (rttvar).
 
-On every newly acknowledged ack-eliciting largest acked:
+## Generating RTT samples {#latest-rtt}
+
+An endpoint generates an RTT sample on receiving an ACK frame that meets the
+following two conditions:
+
+- the largest acknowledged packet number is newly acknowledged, and
+
+- at least one of the newly acknowledged packets was ack-eliciting.
+
+The RTT sample, latest_rtt, is generated as the time elapsed since the largest
+acknowledged packet was sent:
+
 ~~~
 latest_rtt = ack_time - send_time_of_largest_acked
 ~~~
 
-First RTT sample:
+An RTT sample is generated using only the largest acknowledged packet in the
+received ACK frame.  This is because a peer reports host delays for only the
+largest acknowledged packet in an ACK frame.  While the reported host delay is
+not used by the RTT sample measurement, it is used to adjust the RTT sample in
+subsequent computations of smoothed_rtt and rttvar {{smoothed-rtt}}.
+
+To avoid generating multiple RTT samples using the same packet, an ACK frame
+SHOULD NOT be used to update RTT estimates if it does not newly acknowledge the
+largest acknowledged packet.
+
+An RTT sample MUST NOT be generated on receiving an ACK frame that does not
+newly acknowledge at least one ack-eliciting packet.  A peer does not send an
+ACK frame on receiving only non-ack-eliciting packets, so an ACK frame that is
+subsequently sent can include an arbitrarily large Ack Delay field.  Ignoring
+such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
+computations.
+
+A sender might generate multiple RTT samples per RTT when multiple ACK frames
+are received within an RTT.  As suggested in {{?RFC6298}}, doing so might result
+in inadequate history in smoothed_rtt and rttvar.  Ensuring that RTT estimates
+retain sufficient history is an open research question.
+
+## Estimating min_rtt {#min-rtt}
+
+min_rtt is the minimum RTT observed over the lifetime of the connection.
+min_rtt is set to the latest_rtt on the first sample in a connection, and to the
+lesser of min_rtt and latest_rtt on subsequent samples.
+
+An endpoint uses only locally observed times in computing the min_rtt and does
+not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
+allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
+what it observes (see {{smoothed-rtt}}), and limits potential underestimation
+due to erroneously-reported delays by the peer.
+
+## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
+
+smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
+samples, and rttvar is the endpoint's estimated variance in the RTT samples.
+
+smoothed_rtt uses path latency after adjusting RTT samples for peer-reported
+host delays ({{host-delay}}).  A peer limits any delay in sending an
+acknowledgement for an ack-eliciting packet to no greater than the advertised
+max_ack_delay transport parameter.  Consequently, when a peer reports an Ack
+Delay that is greater than its max_ack_delay, the delay is attributed to reasons
+out of the peer's control, such as scheduler latency at the peer or loss of
+previous ACK frames.  Any delays beyond the peer's max_ack_delay are therefore
+considered effectively part of path delay and incorporated into the smoothed_rtt
+estimate.
+
+When adjusting an RTT sample using peer-reported acknowledgement delays, an
+endpoint:
+
+- MUST use the lesser of the value reported in Ack Delay field of the ACK frame
+  and the peer's max_ack_delay transport parameter ({{host-delay}}).
+
+- MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
+  min_rtt.  This limits the underestimation that a misreporting peer can cause
+  to the smoothed_rtt.
+
+On the first RTT sample in a connection, the smoothed_rtt is set to the
+latest_rtt.
+
+smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
+the first RTT sample in a connection:
+
 ~~~
-min_rtt = latest_rtt
 smoothed_rtt = latest_rtt
 rttvar = latest_rtt / 2
 ~~~
 
-Subsequent RTT samples:
+On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
+
 ~~~
-min_rtt = min(min_rtt, latest_rtt)
-ack_delay = min(ack_delay, max_ack_delay)
-if (ack_delay + min_rtt < latest_rtt):
-  latest_rtt = latest_rtt - ack_delay
-smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * rtt
-rttvar_sample = abs(smoothed_rtt - latest_rtt)
+ack_delay = min(Ack Delay in ACK Frame, max_ack_delay)
+adjusted_rtt = latest_rtt
+if (min_rtt + ack_delay < latest_rtt):
+  adjusted_rtt = latest_rtt - ack_delay
+smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
+rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 ~~~
+
 
 # Loss Detection {#loss-detection}
 
@@ -896,6 +959,7 @@ kInitialRtt:
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
+
 ~~~
   enum kPacketNumberSpace {
     Initial,
@@ -1015,10 +1079,15 @@ OnAckReceived(ack, pn_space):
   largest_acked_packet[pn_space] =
       max(largest_acked_packet[pn_space], ack.largest_acked)
 
+  // Nothing to do if there are no newly acked packets.
+  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
+  if (newly_acked_packets.empty()):
+    return
+
   // If the largest acknowledged is newly acked and
-  // ack-eliciting, update the RTT.
+  // at least one ack-eliciting was newly acked, update the RTT.
   if (sent_packets[pn_space][ack.largest_acked] &&
-      sent_packets[pn_space][ack.largest_acked].ack_eliciting):
+      IncludesAckEliciting(newly_acked_packets))
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     UpdateRtt(latest_rtt, ack.ack_delay)
@@ -1026,11 +1095,6 @@ OnAckReceived(ack, pn_space):
   // Process ECN information if present.
   if (ACK frame contains ECN information):
       ProcessECN(ack)
-
-  // Find all newly acked packets in this ACK frame
-  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
-  if (newly_acked_packets.empty()):
-    return
 
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
@@ -1049,16 +1113,17 @@ UpdateRtt(latest_rtt, ack_delay):
   // Limit ack_delay by max_ack_delay
   ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for ack delay if it's plausible.
+  adjusted_rtt = latest_rtt
   if (latest_rtt - min_rtt > ack_delay):
-    latest_rtt -= ack_delay
-  // Based on {{?RFC6298}}.
+    adjusted_rtt = latest_rtt - ack_delay
+  // First RTT sample.
   if (smoothed_rtt == 0):
     smoothed_rtt = latest_rtt
     rttvar = latest_rtt / 2
   else:
-    rttvar_sample = abs(smoothed_rtt - latest_rtt)
+    rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
     rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
-    smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * latest_rtt
+    smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 ~~~
 
 
@@ -1109,12 +1174,6 @@ GetEarliestLossTime():
   return time, space
 
 SetLossDetectionTimer():
-  // Don't arm timer if there are no ack-eliciting packets
-  // in flight.
-  if (no ack-eliciting packets in flight):
-    loss_detection_timer.cancel()
-    return
-
   loss_time, _ = GetEarliestLossTime()
   if (loss_time != 0):
     // Time threshold loss detection.
@@ -1132,6 +1191,12 @@ SetLossDetectionTimer():
     timeout = timeout * (2 ^ crypto_count)
     loss_detection_timer.update(
       time_of_last_sent_crypto_packet + timeout)
+    return
+
+  // Don't arm timer if there are no ack-eliciting packets
+  // in flight.
+  if (no ack-eliciting packets in flight):
+    loss_detection_timer.cancel()
     return
 
   // Calculate PTO duration
@@ -1162,6 +1227,14 @@ OnLossDetectionTimeout():
   else if (has unacknowledged crypto data):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
+    crypto_count++
+  else if (endpoint is client without 1-RTT keys):
+    // Send anti-deadlock packet: Initial is padded to earn more
+    // anti-amplification credit, Handshake proves address ownership.
+    if (has Handshake keys):
+       SendOneHandshakePacket()
+     else:
+       SendOnePaddedInitialPacket()
     crypto_count++
   else:
     // PTO

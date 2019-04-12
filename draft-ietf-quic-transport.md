@@ -558,14 +558,15 @@ It is possible that all stream data is received when a RESET_STREAM is received
 (that is, from the "Data Recvd" state).  Similarly, it is possible for remaining
 stream data to arrive after receiving a RESET_STREAM frame (the "Reset Recvd"
 state).  An implementation is free to manage this situation as it chooses.
+
 Sending RESET_STREAM means that an endpoint cannot guarantee delivery of stream
 data; however there is no requirement that stream data not be delivered if a
 RESET_STREAM is received.  An implementation MAY interrupt delivery of stream
 data, discard any data that was not consumed, and signal the receipt of the
-RESET_STREAM immediately.  Alternatively, the RESET_STREAM signal might be
-suppressed or withheld if stream data is completely received and is buffered to
-be read by the application.  In the latter case, the receiving part of the
-stream transitions from "Reset Recvd" to "Data Recvd".
+RESET_STREAM.  A RESET_STREAM signal might be suppressed or withheld if stream
+data is completely received and is buffered to be read by the application.  If
+the RESET_STREAM is suppressed, the receiving part of the stream remains in
+"Data Recvd".
 
 Once the application has been delivered the signal indicating that the stream
 was reset, the receiving part of the stream transitions to the "Reset Read"
@@ -2677,12 +2678,9 @@ Packet number encoding at a sender and decoding at a receiver are described in
 
 ## Frames and Frame Types {#frames}
 
-The payload of QUIC packets, after removing packet protection, commonly consists
-of a sequence of frames, as shown in {{packet-frames}}.  Version Negotiation,
-Stateless Reset, and Retry packets do not contain frames.
-
-<!-- TODO: Editorial work needed in this section. Not all packets contain
-frames. -->
+The payload of QUIC packets, after removing packet protection, consists of a
+sequence of complete frames, as shown in {{packet-frames}}.  Version
+Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
  0                   1                   2                   3
@@ -2699,11 +2697,11 @@ frames. -->
 ~~~
 {: #packet-frames title="QUIC Payload"}
 
-QUIC payloads MUST contain at least one frame, and MAY contain multiple frames
-and multiple frame types.
+The payload of a packet that contains frames MUST contain at least one frame,
+and MAY contain multiple frames and multiple frame types.  Frames always fit
+within a single QUIC packet and cannot span multiple packets.
 
-Frames MUST fit within a single QUIC packet and MUST NOT span a QUIC packet
-boundary. Each frame begins with a Frame Type, indicating its type, followed by
+Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
 
 ~~~
@@ -2746,6 +2744,9 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
+An endpoint MUST treat the receipt of a frame of unknown type as a connection
+error of type FRAME_ENCODING_ERROR.
+
 All QUIC frames are idempotent in this version of QUIC.  That is, a valid
 frame does not cause undesirable side effects or errors when received more
 than once.
@@ -2760,7 +2761,6 @@ encoding for a variable-length integer with a value of 1, PING frames are always
 encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
 of a frame type that uses a longer encoding than necessary as a connection error
 of type PROTOCOL_VIOLATION.
-
 
 # Packetization and Reliability {#packetization}
 
@@ -3892,8 +3892,8 @@ Fixed Bit:
 
 Spin Bit (S):
 
-: The sixth bit (0x20) of byte 0 is the Latency Spin Bit, set as described in
-  {{!SPIN=I-D.ietf-quic-spin-exp}}.
+: The third most significant bit (0x20) of byte 0 is the latency spin bit, set
+as described in {{spin-bit}}.
 
 Reserved Bits (R):
 
@@ -3942,6 +3942,62 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+### Latency Spin Bit {#spin-bit}
+
+The latency spin bit enables passive latency monitoring from observation points
+on the network path throughout the duration of a connection. The spin bit is
+only present in the short packet header, since it is possible to measure the
+initial RTT of a connection by observing the handshake. Therefore, the spin bit
+is available after version negotiation and connection establishment are
+completed. On-path measurement and use of the latency spin bit is further
+discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
+
+The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
+support the spin bit MUST implement it as specified in this section.
+
+Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
+connection. Implementations MUST allow administrators of clients and servers
+to disable the spin bit either globally or on a per-connection basis. Even when
+the spin bit is not disabled by the administrator, implementations MUST disable
+the spin bit for a given connection with a certain likelihood. The random
+selection process SHOULD be designed such that on average the spin bit is
+disabled for at least one eighth of connections. The selection process performed
+at the beginning of the connection SHOULD be applied for all paths used by the
+connection.
+
+In case multiple connections share the same five-tuple, that is, have the same
+source and destination IP address and UDP ports, endpoints should try to
+co-ordinate across all connections to ensure a clear signal to any on-path
+measurement points.
+
+When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
+MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
+bit to a random value either chosen independently for each packet or chosen
+independently for each connection ID.
+
+If the spin bit is enabled for the connection, the endpoint maintains a spin
+value and sets the spin bit in the short header to the currently stored
+value when a packet with a short header is sent out. The spin value is
+initialized to 0 in the endpoint at connection start.  Each endpoint also
+remembers the highest packet number seen from its peer on the connection.
+
+When a server receives a short header packet that increments the highest
+packet number seen by the server from the client, it sets the spin value to be
+equal to the spin bit in the received packet.
+
+When a client receives a short header packet that increments the highest
+packet number seen by the client from the server, it sets the spin value to the
+inverse of the spin bit in the received packet.
+
+An endpoint resets its spin value to zero when sending the first packet of a
+given connection with a new connection ID. This reduces the risk that transient
+spin bit state can be used to link flows across connection migration or ID
+change.
+
+With this mechanism, the server reflects the spin value received, while the
+client 'spins' it after one RTT. On-path observers can measure the time
+between two spin bit toggle events to estimate the end-to-end RTT of a
+connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
@@ -5267,11 +5323,12 @@ sequence.  A receiver is obligated to open intervening streams if a
 higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 2000001 opens 1 million streams, as required by the specification.
 
-The number of active streams is limited by the concurrent stream limit transport
-parameter, as explained in {{controlling-concurrency}}.  If chosen judiciously,
-this limit mitigates the effect of the stream commitment attack.  However,
-setting the limit too low could affect performance when applications expect to
-open large number of streams.
+The number of active streams is limited by the initial_max_streams_bidi and
+initial_max_streams_uni transport parameters, as explained in
+{{controlling-concurrency}}.  If chosen judiciously, these limits mitigate the
+effect of the stream commitment attack.  However, setting the limit too low
+could affect performance when applications expect to open large number of
+streams.
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
