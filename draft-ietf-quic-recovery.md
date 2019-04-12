@@ -467,10 +467,11 @@ MUST ensure that the crypto retransmission timer is set if there is
 unacknowledged crypto data or if the client does not yet have 1-RTT keys.
 If the crypto retransmission timer expires before the client has 1-RTT keys,
 it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PING or PADDDING frames if necessary, to allow the server to continue sending
-data. If Handshake keys are available to the client, it MUST send a
-Handshake packet, and otherwise it MUST send an Initial packet in a UDP
-datagram of at least 1200 bytes.
+However, the client MUST send a new packet, containing only PING or PADDDING
+frames if necessary, to allow the server to continue sending data. If
+Handshake keys are available to the client, it MUST send a Handshake packet,
+and otherwise it MUST send an Initial packet in a UDP datagram of at least
+1200 bytes.
 
 The crypto retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  When the crypto
@@ -1158,8 +1159,7 @@ OnLossDetectionTimeout():
     DetectLostPackets(pn_space)
   // Retransmit crypto data if no packets were lost
   // and there is crypto data to retransmit.
-  else if (crypto packets are in flight &&
-           crypto data to send):
+  else if (has unacked crypto data):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
