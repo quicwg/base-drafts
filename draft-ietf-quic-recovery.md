@@ -1121,7 +1121,7 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (crypto packets are in flight
+  if (has unacknowledged crypto data
       || endpoint is client without 1-RTT keys):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
@@ -1159,7 +1159,7 @@ OnLossDetectionTimeout():
     DetectLostPackets(pn_space)
   // Retransmit crypto data if no packets were lost
   // and there is crypto data to retransmit.
-  else if (has unacked crypto data):
+  else if (has unacknowledged crypto data):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
