@@ -297,7 +297,7 @@ An endpoint measures the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent.  The endpoint encodes this host
 delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
 (see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
-to adjust for any host delays - importantly, for delayed acknowledgements - when
+to adjust for any host delays, which is important for delayed acknowledgements, when
 estimating the path RTT.  In certain deployments, a packet might be held in the
 OS kernel or elsewhere on the host before being processed by the QUIC
 stack. Where possible, an endpoint MAY include these delays when populating the
