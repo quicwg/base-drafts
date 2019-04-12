@@ -1101,22 +1101,24 @@ OnAckReceived(ack, pn_space):
 
 
 UpdateRtt(latest_rtt, ack_delay):
+  if (smoothed_rtt == 0):
+    // First RTT sample.
+    min_rtt = latest_rtt
+    smoothed_rtt = latest_rtt
+    rttvar = latest_rtt / 2
+    return
+
   // min_rtt ignores ack delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay
   ack_delay = min(ack_delay, max_ack_delay)
-  // Adjust for ack delay if it's plausible.
+  // Adjust for ack delay if plausible.
   adjusted_rtt = latest_rtt
-  if (latest_rtt - min_rtt > ack_delay):
+  if (latest_rtt > min_rtt + ack_delay):
     adjusted_rtt = latest_rtt - ack_delay
-  // First RTT sample.
-  if (smoothed_rtt == 0):
-    smoothed_rtt = latest_rtt
-    rttvar = latest_rtt / 2
-  else:
-    rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
-    rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
-    smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
+
+  rttvar = 3/4 * rttvar + 1/4 * abs(smoothed_rtt - adjusted_rtt)
+  smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 ~~~
 
 
