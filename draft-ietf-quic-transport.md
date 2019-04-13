@@ -1428,7 +1428,7 @@ from the server's updated transport parameters or from frames received in 1-RTT
 packets.  Updated values of transport parameters from the handshake apply only
 to 1-RTT packets.  For instance, flow control limits from remembered transport
 parameters apply to all 0-RTT packets even if those values are increased by the
-handshake or by frames send in 1-RTT packets.  A server MAY treat use of updated
+handshake or by frames sent in 1-RTT packets.  A server MAY treat use of updated
 transport parameters in 0-RTT as a connection error of type PROTOCOL_VIOLATION.
 
 
