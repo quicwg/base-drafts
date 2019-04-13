@@ -1030,9 +1030,10 @@ follows:
    loss_detection_timer.reset()
    crypto_count = 0
    pto_count = 0
+   latest_rtt = 0
    smoothed_rtt = 0
    rttvar = 0
-   min_rtt = infinite
+   min_rtt = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1090,7 +1091,7 @@ OnAckReceived(ack, pn_space):
       IncludesAckEliciting(newly_acked_packets))
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
-    UpdateRtt(latest_rtt, ack.ack_delay)
+    UpdateRtt(ack.ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
@@ -1107,7 +1108,8 @@ OnAckReceived(ack, pn_space):
   SetLossDetectionTimer()
 
 
-UpdateRtt(latest_rtt, ack_delay):
+UpdateRtt(ack_delay):
+  assert(latest_rtt != 0)
   if (smoothed_rtt == 0):
     // First RTT sample.
     min_rtt = latest_rtt
@@ -1259,6 +1261,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
+  assert(latest_rtt != 0)
   loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
