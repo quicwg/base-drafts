@@ -1109,9 +1109,8 @@ OnAckReceived(ack, pn_space):
 
 
 UpdateRtt(ack_delay):
-  assert(latest_rtt != 0)
+  // First RTT sample.
   if (smoothed_rtt == 0):
-    // First RTT sample.
     min_rtt = latest_rtt
     smoothed_rtt = latest_rtt
     rttvar = latest_rtt / 2
@@ -1261,7 +1260,6 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  assert(latest_rtt != 0)
   loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
