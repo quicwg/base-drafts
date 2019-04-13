@@ -505,13 +505,18 @@ connections over the same network SHOULD use the previous connection's final
 smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
 is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}. When an acknowledgement is received, a new RTT is computed and the
-timer SHOULD be set for twice the newly computed smoothed RTT.
+{{?RFC6298}}.
 
-When a crypto packet is sent, the sender MUST set a timer for the crypto
-timeout period.  This timer MUST be updated when a new crypto packet is sent.
-Upon timeout, the sender MUST retransmit all unacknowledged CRYPTO data if
-possible.
+When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
+RTT.  This timer MUST be updated when a new crypto packet is sent and when
+an acknowledgement is received which computes a new RTT sample. Upon timeout,
+the sender MUST retransmit all unacknowledged CRYPTO data if possible.  The
+sender MUST NOT declare in-flight crypto packets as lost when the crypto timer
+expires.
+
+On each consecutive expiration of the crypto timer without receiving an
+acknowledgement for a new packet, the sender MUST double the crypto
+retransmission timeout and set a timer for this period.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
@@ -521,17 +526,19 @@ sent, then no alarm should be armed until data has been received from the
 client.
 
 Because the server could be blocked until more packets are received, the client
-MUST start the crypto retransmission timer even if there is no unacknowledged
-CRYPTO data.  If the timer expires and the client has no CRYPTO data to
-retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
-a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
-SHOULD send a Handshake packet.
+MUST ensure that the crypto retransmission timer is set if there is
+unacknowledged crypto data or if the client does not yet have 1-RTT keys.
+If the crypto retransmission timer expires before the client has 1-RTT keys,
+it is possible that the client may not have any crypto data to retransmit.
+However, the client MUST send a new packet, containing only PING or PADDDING
+frames if necessary, to allow the server to continue sending data. If
+Handshake keys are available to the client, it MUST send a Handshake packet,
+and otherwise it MUST send an Initial packet in a UDP datagram of at least
+1200 bytes.
 
-On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender SHOULD double the crypto
-retransmission timeout and set a timer for this period.
-
-When crypto packets are in flight, the probe timer ({{pto}}) is not active.
+The crypto retransmission timer is not set if the time threshold
+{{time-threshold}} loss detection timer is set.  When the crypto
+retransmission timer is active, the probe timer ({{pto}}) is not active.
 
 
 ### Retry and Version Negotiation
@@ -1173,7 +1180,7 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (crypto packets are in flight
+  if (has unacknowledged crypto data
       || endpoint is client without 1-RTT keys):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
@@ -1216,14 +1223,15 @@ OnLossDetectionTimeout():
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
   // Retransmit crypto data if no packets were lost
-  // and there are still crypto packets in flight.
-  else if (crypto packets are in flight):
+  // and there is crypto data to retransmit.
+  else if (has unacknowledged crypto data):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
   else if (endpoint is client without 1-RTT keys):
-    // Send anti-deadlock packet: padded to earn more anti-
-    // amplification credit, unpadded to prove address ownership.
+    // Client sends an anti-deadlock packet: Initial is padded
+    // to earn more anti-amplification credit,
+    // a Handshake packet proves address ownership.
     if (has Handshake keys):
        SendOneHandshakePacket()
      else:
