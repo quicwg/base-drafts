@@ -258,7 +258,7 @@ incoming packets.
 
 In order to quickly complete the handshake and avoid spurious retransmissions
 due to crypto retransmission timeouts, crypto packets SHOULD use a very short
-ack delay, such as the local timer granularity.  ACK frames MAY be sent
+ack delay, such as the local timer granularity.  ACK frames SHOULD be sent
 immediately when the crypto stack indicates all data for that packet number
 space has been received.
 
