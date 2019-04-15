@@ -763,7 +763,7 @@ Implemementations SHOULD either use pacing or reduce their congestion window to 
 timers to minimize bursts.
 
 A sender MAY implement alternate mechanisms to update its congestion window
-after idle periods, such as those proposed for TCP in {{?RFC7661}}.
+after periods of under-utilization, such as those proposed for TCP in {{?RFC7661}}.
 
 
 # Security Considerations
