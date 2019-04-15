@@ -759,7 +759,7 @@ should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
 Bursting more than an intial window's worth of data into the network might cause short-term congestion and losses.
-Implemementations SHOULD use pacing, ACK-clocking, a reduction in CWND and/or
+Implemementations SHOULD either use pacing or reduce their congestion window to limit such bursts.
 timers to minimize bursts.
 
 A sender MAY implement alternate mechanisms to update its congestion window
