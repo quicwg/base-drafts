@@ -1076,8 +1076,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
-  largest_acked_packet[pn_space] =
-      max(largest_acked_packet[pn_space], ack.largest_acked)
+  if (largest_acked_packet[pn_space] == infinite):
+    largest_acked_packet[pn_space] = ack.largest_acked
+  else:
+    largest_acked_packet[pn_space] =
+        max(largest_acked_packet[pn_space], ack.largest_acked)
 
   // Nothing to do if there are no newly acked packets.
   newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
