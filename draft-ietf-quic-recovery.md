@@ -538,7 +538,7 @@ and otherwise it MUST send an Initial packet in a UDP datagram of at least
 
 The crypto retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  The time threshold loss
-detection timer is both expected to expire earlier than the crypto
+detection timer is expected to both expire earlier than the crypto
 retransmission timeout and be much less likely to spuriously retransmit data.
 The Initial and Handshake packet number spaces are typically going to have a
 small number of packets in them, so it's expected packet threshold loss
