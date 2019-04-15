@@ -1036,7 +1036,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
-     largest_acked_packet[pn_space] = 0
+     largest_acked_packet[pn_space] = infinite
      loss_time[pn_space] = 0
 ~~~
 
@@ -1273,7 +1273,8 @@ DetectLostPackets(pn_space):
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
-        unacked.packet_number <= lost_pn):
+        (largest_acked_packet[pn_space] != infinite &&
+         unacked.packet_number <= lost_pn)):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
