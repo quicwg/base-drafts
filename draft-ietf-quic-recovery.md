@@ -742,13 +742,11 @@ As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
-## Application Limited Sending
+## Under-utilizing the Congestion Window
 
-A sender's congestion window MUST NOT increase when no packets are newly
-acknowledged, such as when the connection is idle. The congestion window
-SHOULD NOT be increased in slow start or congestion avoidance when it is not
-sufficiently utilized.  The congestion window could be under-utilized due to
-insufficient application data or flow control credit.
+A congestion window that is under-utilized SHOULD NOT be increased in either
+slow start or congestion avoidance. This can happen due to insufficient
+application data or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
