@@ -624,8 +624,9 @@ time.
 ### Sending Probe Packets
 
 When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
-probe. A sender MAY send up to two ack-eliciting packets, to avoid an expensive
-consecutive PTO expiration due to a single packet loss.
+probe, unless there is nothing to send. A sender MAY send up to two
+ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
+to a single packet loss.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
