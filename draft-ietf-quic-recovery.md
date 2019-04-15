@@ -537,8 +537,13 @@ and otherwise it MUST send an Initial packet in a UDP datagram of at least
 1200 bytes.
 
 The crypto retransmission timer is not set if the time threshold
-{{time-threshold}} loss detection timer is set.  When the crypto
-retransmission timer is active, the probe timer ({{pto}}) is not active.
+{{time-threshold}} loss detection timer is set.  The time threshold loss
+detection timer is both expected to expire earlier than the crypto
+retransmission timeout and be much less likely to spuriously retransmit data.
+The Initial and Handshake packet number spaces are typically going to have a
+small number of packets in them, so it's expected packet threshold loss
+detection will rarely declare packets lost before time threshold. When the
+crypto retransmission timer is active, the probe timer ({{pto}}) is not active.
 
 
 ### Retry and Version Negotiation
