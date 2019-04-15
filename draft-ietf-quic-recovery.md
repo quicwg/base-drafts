@@ -909,6 +909,9 @@ processing only applies to a single space.
 packet_number:
 : The packet number of the sent packet.
 
+pn_space:
+: The packet number space of the sent packet.
+
 ack_eliciting:
 : A boolean that indicates whether a packet is ack-eliciting.
   If true, it is expected that an acknowledgement will be received,
@@ -1012,8 +1015,8 @@ max_ack_delay:
   received ACK frame may be larger due to late timers, reordering,
   or lost ACKs.
 
-loss_time\[kPacketNumberSpace]:
-: The time at which the next packet in that packet number space will be
+loss_time:
+: The time at which the next ApplicationData packet space will be
   considered lost based on exceeding the reordering window in time.
 
 sent_packets\[kPacketNumberSpace]:
@@ -1037,7 +1040,7 @@ follows:
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = 0
-     loss_time[pn_space] = 0
+   loss_time = 0
 ~~~
 
 
@@ -1053,6 +1056,8 @@ Pseudocode for OnPacketSent follows:
               in_flight, is_crypto_packet, sent_bytes):
    sent_packets[pn_space][packet_number].packet_number =
                                             packet_number
+   sent_packets[pn_space][packet_number].pn_space =
+                                            pn_space
    sent_packets[pn_space][packet_number].time_sent = now
    sent_packets[pn_space][packet_number].ack_eliciting =
                                             ack_eliciting
@@ -1163,26 +1168,8 @@ timers wake up late. Timers set in the past SHOULD fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
-// Returns the earliest loss_time and the packet number
-// space it's from.  Returns 0 if all times are 0.
-GetEarliestLossTime():
-  time = loss_time[Initial]
-  space = Initial
-  for pn_space in [ Handshake, ApplicationData ]:
-    if loss_time[pn_space] != 0 &&
-       (time == 0 || loss_time[pn_space] < time):
-      time = loss_time[pn_space];
-      space = pn_space
-  return time, space
-
 SetLossDetectionTimer():
-  loss_time, _ = GetEarliestLossTime()
-  if (loss_time != 0):
-    // Time threshold loss detection.
-    loss_detection_timer.update(loss_time)
-    return
-
-  if (has unacknowledged crypto data
+  if (crypto packets are in flight
       || endpoint is client without 1-RTT keys):
     // Crypto retransmission timer.
     if (smoothed_rtt == 0):
@@ -1193,6 +1180,11 @@ SetLossDetectionTimer():
     timeout = timeout * (2 ^ crypto_count)
     loss_detection_timer.update(
       time_of_last_sent_crypto_packet + timeout)
+    return
+
+  if (loss_time != 0):
+    // Time threshold loss detection.
+    loss_detection_timer.update(loss_time)
     return
 
   // Don't arm timer if there are no ack-eliciting packets
@@ -1220,16 +1212,15 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  loss_time, pn_space = GetEarliestLossTime()
-  if (loss_time != 0):
-    // Time threshold loss Detection
-    DetectLostPackets(pn_space)
-  // Retransmit crypto data if no packets were lost
-  // and there is crypto data to retransmit.
-  else if (has unacknowledged crypto data):
+  // Retransmit all crypto data if there is crypto data
+  // in flight.
+  if (crypto packets are in flight):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
     crypto_count++
+  else if (loss_time != 0):
+    // Time threshold loss Detection
+    DetectLostPackets(ApplicationData)
   else if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
@@ -1259,7 +1250,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
-  loss_time[pn_space] = 0
+  loss_time = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
@@ -1279,12 +1270,12 @@ DetectLostPackets(pn_space):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
-    else:
-      if (loss_time[pn_space] == 0):
-        loss_time[pn_space] = unacked.time_sent + loss_delay
+    else if (unacked.pn_space == ApplicationData):
+      if (loss_time == 0):
+        loss_time = unacked.time_sent + loss_delay
       else:
-        loss_time[pn_space] = min(loss_time[pn_space],
-                                  unacked.time_sent + loss_delay)
+        loss_time = min(loss_time,
+                        unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
   // let it decide whether to retransmit immediately.
