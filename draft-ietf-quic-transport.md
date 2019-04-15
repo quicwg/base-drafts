@@ -4674,7 +4674,10 @@ When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
 The first byte in the stream has an offset of 0.  The largest offset delivered
-on a stream - the sum of the offset and data length - MUST be less than 2^62.
+on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
+it is not possible to provide flow control credit for that data.  Receipt of a
+frame that exceeds this limit will be treated as a connection error of type
+FLOW_CONTROL_ERROR.
 
 
 ## MAX_DATA Frame {#frame-max-data}
