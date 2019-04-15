@@ -1246,7 +1246,7 @@ OnLossDetectionTimeout():
   else:
     // PTO
     pto_count++
-    if (new data, old data, or other ack-eliciting frames available):
+    if (any ack-eliciting frames available to send):
       SendOneOrTwoPackets()
     else:
       // Mark all packets in flight as lost
