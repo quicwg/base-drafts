@@ -758,7 +758,7 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Sending more than intial window into the network at once may cause losses.
+Bursting more than an intial window's worth of data into the network might cause short-term congestion and losses.
 Implemementations SHOULD use pacing, ACK-clocking, a reduction in CWND and/or
 timers to minimize bursts.
 
