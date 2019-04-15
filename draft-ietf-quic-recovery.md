@@ -592,7 +592,7 @@ TCP's retransmission timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
-When an ack-eliciting packet is transmitted, the sender schedules a timer for
+When an ack-eliciting packet is transmitted, the endpoint schedules a timer for
 the PTO period as follows:
 
 ~~~
@@ -602,7 +602,7 @@ PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
 {{ld-consts-of-interest}} and {{ld-vars-of-interest}}.
 
-The PTO period is the amount of time that a sender ought to wait for an
+The PTO period is the amount of time that an endpoint ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
 network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
@@ -611,22 +611,31 @@ delay sending an acknowledgement.
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
-When a PTO timer expires, the sender probes the network as described in the next
-section. The PTO period MUST be set to twice its current value. This exponential
-reduction in the sender's rate is important because the PTOs might be caused by
-loss of packets or acknowledgements due to severe congestion.
+When a PTO timer expires, the endpoint probes the network as described in the
+next section. The PTO period MUST be set to twice its current value. This
+exponential reduction in the endpoint's sending rate is important because the
+PTOs might be caused by loss of packets or acknowledgements due to severe
+congestion.
 
-A sender computes its PTO timer every time an ack-eliciting packet is sent. A
-sender might choose to optimize this by setting the timer fewer times if it
-knows that more ack-eliciting packets will be sent within a short period of
-time.
+An endpoint computes its PTO timer every time an ack-eliciting packet is
+sent. An endpoint might choose to optimize this by setting the timer fewer times
+if it knows that more ack-eliciting packets will be sent within a short period
+of time.
 
 ### Sending Probe Packets
 
-When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
-probe, unless there is nothing to send. A sender MAY send up to two
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single packet loss.
+When a PTO timer expires, an endpoint MUST send at least one ack-eliciting
+packet as a probe, unless there are no ack-eliciting frames to send.  An
+endpoint MAY send up to two ack-eliciting packets, to avoid an expensive
+consecutive PTO expiration due to a single packet loss.
+
+It is possible that the endpoint has no new or previously-sent data or other
+ack-eliciting frames to send.  This can happen for example when there is no new
+application data to send and all streams with data in flight are reset (see
+Section 13.2 of {{QUIC-TRANSPORT}}).  Under these conditions, the endpoint
+SHOULD mark any packets still in flight as lost.  The endpoint MAY send an
+ack-eliciting packet and re-arm the PTO timer instead, to avoid aggressively
+marking packets as lost (with the resulting congestion controller reaction).
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
@@ -646,13 +655,6 @@ implementations must choose between sending the same payload every time
 or sending different payloads.  Sending the same payload may be simpler
 and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
-
-When a PTO timer expires, new or previously-sent data may not be available to
-send and packets may still be in flight.  A sender can be blocked from sending
-new data in the future if packets are left in flight.  Under these conditions, a
-sender SHOULD mark any packets still in flight as lost.  If a sender wishes to
-establish delivery of packets still in flight, it MAY send an ack-eliciting
-packet and re-arm the PTO timer instead.
 
 
 ### Loss Detection {#pto-loss}
@@ -1243,8 +1245,18 @@ OnLossDetectionTimeout():
     crypto_count++
   else:
     // PTO
-    SendOneOrTwoPackets()
     pto_count++
+    if (new data, old data, or other ack-eliciting frames available):
+      SendOneOrTwoPackets()
+    else:
+      // Mark all packets in flight as lost
+      foreach unacked in sent_packets:
+        sent_packets.remove(unacked.packet_number)
+        if (unacked.in_flight):
+          lost_packets.insert(unacked)
+      // Inform the congestion controller
+      if (!lost_packets.empty()):
+        OnPacketsLost(lost_packets)
 
   SetLossDetectionTimer()
 ~~~
@@ -1455,8 +1467,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked by loss detection from DetectLostPackets when new packets
-are detected lost.
+Invoked when packets are deemed lost.
 
 ~~~
    InPersistentCongestion(largest_lost_packet):
