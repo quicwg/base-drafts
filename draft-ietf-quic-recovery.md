@@ -991,6 +991,8 @@ time_of_last_sent_crypto_packet:
 
 largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
+  Initialized to -1 to indicate no packets in the space have been
+  acknowledged.
 
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
@@ -1036,7 +1038,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
-     largest_acked_packet[pn_space] = 0
+     largest_acked_packet[pn_space] = -1
      loss_time[pn_space] = 0
 ~~~
 
