@@ -1246,11 +1246,10 @@ OnLossDetectionTimeout():
        SendOnePaddedInitialPacket()
     crypto_count++
   else:
-    // PTO
-    pto_count++
-    // Send data if new data is available, else retransmit old data.
+    // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send PING frames.
     SendOneOrTwoPackets()
+    pto_count++
 
   SetLossDetectionTimer()
 ~~~
