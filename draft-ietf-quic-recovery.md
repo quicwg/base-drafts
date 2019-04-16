@@ -540,9 +540,9 @@ The crypto retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  The time threshold loss
 detection timer is expected to both expire earlier than the crypto
 retransmission timeout and be less likely to spuriously retransmit data.
-The Initial and Handshake packet number spaces typically have a small number
-of packets in them, so time threshold loss detection will typically declare
-packets lost before packet threshold.
+The Initial and Handshake packet number spaces will typically contain a small
+number of packets, so losses are less likely to be detected using
+packet-threshold loss detection.
 
 When the crypto retransmission timer is active, the probe timer ({{pto}})
 is not active.
