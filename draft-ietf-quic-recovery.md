@@ -631,7 +631,7 @@ due to a single packet loss.
 It is possible that the sender has no new or previously-sent data to send.  For
 example, this can happen when there is no new application data to send and all
 streams with data in flight are reset (see Section 13.2 of {{QUIC-TRANSPORT}}).
-Under these conditions, the sender SHOULD send PING or other ack-eliciting
+Under these conditions, the sender SHOULD send a PING or other ack-eliciting
 frames in up to two packets, re-arming the PTO timer.
 
 When there is no data to send, the sender MAY mark any packets still in flight
