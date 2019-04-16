@@ -624,17 +624,20 @@ time.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-as a probe, unless there are no ack-eliciting frames to send.  An endpoint MAY
-send up to two ack-eliciting packets, to avoid an expensive consecutive PTO
-expiration due to a single packet loss.
+as a probe, unless there is no data available to send.  An endpoint MAY send up
+to two ack-eliciting packets, to avoid an expensive consecutive PTO expiration
+due to a single packet loss.
 
-It is possible that the sender has no new or previously-sent data or other
-ack-eliciting frames to send.  For example, this can happen when there is no new
-application data to send and all streams with data in flight are reset (see
-Section 13.2 of {{QUIC-TRANSPORT}}).  Under these conditions, the sender SHOULD
-mark any packets still in flight as lost.  The sender MAY send an ack-eliciting
-packet and re-arm the PTO timer instead, to avoid aggressively marking packets
-as lost (with the resulting congestion controller reaction).
+It is possible that the sender has no new or previously-sent data to send.  For
+example, this can happen when there is no new application data to send and all
+streams with data in flight are reset (see Section 13.2 of {{QUIC-TRANSPORT}}).
+Under these conditions, the sender SHOULD send a PING or another ack-eliciting
+frame, and re-arm the PTO timer.
+
+When there is no data to send, the sender MAY mark any packets still in flight
+as lost instead of sending an additional ack-eliciting packet.  Doing so might
+cause packets currently in flight to be aggressively marked as lost, with the
+resulting congestion controller reaction.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
@@ -1245,17 +1248,9 @@ OnLossDetectionTimeout():
   else:
     // PTO
     pto_count++
-    if (any ack-eliciting frames available to send):
-      SendOneOrTwoPackets()
-    else:
-      // Mark all packets in flight as lost
-      foreach unacked in sent_packets:
-        sent_packets.remove(unacked.packet_number)
-        if (unacked.in_flight):
-          lost_packets.insert(unacked)
-      // Inform the congestion controller
-      if (!lost_packets.empty()):
-        OnPacketsLost(lost_packets)
+    // Send data if new data is available, else retransmit old data.
+    // If neither is available, send PING frames.
+    SendOneOrTwoPackets()
 
   SetLossDetectionTimer()
 ~~~
