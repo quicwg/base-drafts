@@ -1196,25 +1196,25 @@ requirements in Section 8.2 of {{!RFC7540}}.
 The same server push can be associated with additional client requests using a
 DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
 DUPLICATE_PUSH in relation to certain parts of the response is similarly
-important.  Due to reordering, DUPLICATE_PUSH frames can arrive before the
-corresponding PUSH_PROMISE frame, in which case the request headers of the push
-would not be immediately available.  Clients that receive a DUPLICATE_PUSH
-frame for an as-yet-unknown Push ID can either delay generating new requests for
-content referenced following the DUPLICATE_PUSH frame until the request headers
-become available, or can initiate requests for discovered resources and cancel
-the requests if the requested resource is already being pushed.
+important.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
-using the same format described for responses in {{request-response}}. Due to
-reordering, data on a push stream can arrive before the corresponding
-PUSH_PROMISE, in which case both the associated client request and the pushed
-request headers are unknown. Clients that receive a new push stream with an
-as-yet-unknown Push ID can buffer the stream data in expectation of the matching
-PUSH_PROMISE. A client can use stream flow control (see section 4.1 of
-{{QUIC-TRANSPORT}}) to limit the amount of data a server may commit to the
-pushed stream.
+using the same format described for responses in {{request-response}}.
+
+Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
+the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
+frame for an as-yet-unknown Push ID, the request headers of the push are not
+immediately available.  The client can either delay generating new requests for
+content referenced following the DUPLICATE_PUSH frame until the request headers
+become available, or can initiate requests for discovered resources and cancel
+the requests if the requested resource is already being pushed. When a client
+receives a new push stream with an as-yet-unknown Push ID, both the associated
+client request and the pushed request headers are unknown.  The client can
+buffer the stream data in expectation of the matching PUSH_PROMISE. The client
+can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
+amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
