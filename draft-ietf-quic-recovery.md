@@ -305,7 +305,7 @@ Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter, see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
+parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
 explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
@@ -671,7 +671,7 @@ received that newly acknowledges one or more packets.
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
-dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
+dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
 
 ## Discussion
