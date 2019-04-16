@@ -507,7 +507,7 @@ identifies which dynamic table entries can be referenced using relative
 indexing, starting with 0 at the last entry added.
 
 Post-Base references are used for entries inserted after base, starting at 0 for
-the first entry added after the Base, see {{post-base}}.
+the first entry added after the Base; see {{post-base}}.
 
 ~~~~~ drawing
  Required
