@@ -545,8 +545,15 @@ and otherwise it MUST send an Initial packet in a UDP datagram of at least
 1200 bytes.
 
 The crypto retransmission timer is not set if the time threshold
-{{time-threshold}} loss detection timer is set.  When the crypto
-retransmission timer is active, the probe timer ({{pto}}) is not active.
+{{time-threshold}} loss detection timer is set.  The time threshold loss
+detection timer is expected to both expire earlier than the crypto
+retransmission timeout and be less likely to spuriously retransmit data.
+The Initial and Handshake packet number spaces will typically contain a small
+number of packets, so losses are less likely to be detected using
+packet-threshold loss detection.
+
+When the crypto retransmission timer is active, the probe timer ({{pto}})
+is not active.
 
 
 ### Retry and Version Negotiation
@@ -1282,14 +1289,14 @@ DetectLostPackets(pn_space):
   // Packets with packet numbers before this are deemed lost.
   lost_pn = largest_acked_packet[pn_space] - kPacketThreshold
 
-  foreach unacked in sent_packets:
+  foreach unacked in sent_packets[pn_space]:
     if (unacked.packet_number > largest_acked_packet[pn_space]):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
         unacked.packet_number <= lost_pn):
-      sent_packets.remove(unacked.packet_number)
+      sent_packets[pn_space].remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
     else:
