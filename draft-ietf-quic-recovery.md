@@ -486,6 +486,14 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
+An endpoint might consistently record RTT samples as 0 in extremely low latency
+networks, leading to a smoothed_rtt of 0.  Consequently, the endpoint could
+declare all earlier packets as lost immediately upon receiving an
+acknowledgement for a later packet.  That is, the endpoint would not provide any
+reordering tolerance.  To avoid declaring packets as lost too early, the time
+threshold MUST be set to at least kGranularity (defined in
+{{ld-consts-of-interest}}).
+
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variance.  Smaller
 thresholds reduce reordering resilience and increase spurious retransmissions,
@@ -1264,6 +1272,9 @@ DetectLostPackets(pn_space):
   loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
+
+  // Minimum time of kGranularity before packets are deemed lost.
+  loss_delay = max(loss_delay, kGranularity)
 
   // Packets sent before this time are deemed lost.
   lost_send_time = now() - loss_delay
