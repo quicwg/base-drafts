@@ -488,10 +488,11 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 
 An endpoint might consistently record RTT samples as 0 in extremely low latency
 networks, leading to a smoothed_rtt of 0.  Consequently, the endpoint could
-declare all packets as lost immediately upon receiving an acknowledgement for a
-later packet.  That is, the endpoint would not provide any reordering tolerance.
-To avoid declaring packets as lost too early, the time threshold MUST be set to
-at least kGranularity (defined in {{ld-consts-of-interest}}).
+declare all earlier packets as lost immediately upon receiving an
+acknowledgement for a later packet.  That is, the endpoint would not provide any
+reordering tolerance.  To avoid declaring packets as lost too early, the time
+threshold MUST be set to at least kGranularity (defined in
+{{ld-consts-of-interest}}).
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variance.  Smaller
