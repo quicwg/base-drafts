@@ -3975,8 +3975,7 @@ measurement points.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
-bit to a random value either chosen independently for each packet or chosen
-independently for each connection ID.
+bit to a random value chosen independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
 value and sets the spin bit in the short header to the currently stored
