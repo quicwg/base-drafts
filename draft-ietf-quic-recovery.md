@@ -1267,17 +1267,14 @@ DetectLostPackets(pn_space):
   // Packets sent before this time are deemed lost.
   lost_send_time = now() - loss_delay
 
-  // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked_packet[pn_space] - kPacketThreshold
-
   foreach unacked in sent_packets:
     if (unacked.packet_number > largest_acked_packet[pn_space]):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
-        (largest_acked_packet[pn_space] != infinite &&
-         unacked.packet_number <= lost_pn)):
+        largest_acked_packet[pn_space] >
+          unacked.packet_number + kPacketThreshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)
