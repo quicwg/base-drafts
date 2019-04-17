@@ -1273,7 +1273,7 @@ DetectLostPackets(pn_space):
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
-        largest_acked_packet[pn_space] >
+        largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
       sent_packets.remove(unacked.packet_number)
       if (unacked.in_flight):
