@@ -1507,7 +1507,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   burst size instead of requiring resetting CWND to initial CWND after
   idle (#2605)
 - Rewrite RTT estimation, allow RTT samples where a newly acked packet is
-  ack-eliciting, but the largest_acked is not (#2592)
+  ack-eliciting but the largest_acked is not (#2592)
 - No longer arm the handshake timer if there is no handshake data (#2590)
 - Clarify that the time threshold loss alarm takes precedence over the
   crypto handshake timer (#2590, #2620)
