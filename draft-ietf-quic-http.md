@@ -831,7 +831,7 @@ The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
-to the limit set by the QUIC MAX_STREAM_ID frame.
+to the limit set by the QUIC MAX_STREAMS frame.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
