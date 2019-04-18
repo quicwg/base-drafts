@@ -1809,14 +1809,14 @@ DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.
 
 HEADERS (0x1):
-: The PRIORITY region of HEADERS is not defined in HTTP/3 frames.
-A separate PRIORITY frame is used in all cases. Padding is not defined in HTTP/3
-frames. See {{frame-headers}}.
+: The PRIORITY region of HEADERS is not defined in HTTP/3 frames. A separate
+  PRIORITY frame is used in all cases. Padding is not defined in HTTP/3 frames.
+  See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame references a variety of identifiers.
-It is sent as the first frame on a request streams or on the control stream.
-See {{frame-priority}}.
+: As described above, the PRIORITY frame references a variety of identifiers. It
+  is sent as the first frame on a request streams or on the control stream. See
+  {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
