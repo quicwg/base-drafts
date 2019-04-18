@@ -638,10 +638,25 @@ time.
 
 ### Sending Probe Packets
 
-When a PTO timer expires, the sender MUST send one ack-eliciting packet as a
-probe, unless there is nothing to send. A sender MAY send up to two
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single packet loss.
+When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
+as a probe, unless there is no data available to send.  An endpoint MAY send up
+to two ack-eliciting packets, to avoid an expensive consecutive PTO expiration
+due to a single packet loss.
+
+It is possible that the sender has no new or previously-sent data to send.  As
+an example, consider the following sequence of events: new application data is
+sent in a STREAM frame, deemed lost, then retransmitted in a new packet, and
+then the original transmission is acknowledged.  In the absence of any new
+application data, a PTO timer expiration now would find the sender with no new
+or previously-sent data to send.
+
+When there is no data to send, the sender SHOULD send a PING or other
+ack-eliciting frame in a single packet, re-arming the PTO timer.
+
+Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
+any packets still in flight as lost.  Doing so avoids sending an additional
+packet, but increases the risk that loss is declared too aggressively, resulting
+in an unnecessary rate reduction by the congestion controller.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
@@ -661,13 +676,6 @@ implementations must choose between sending the same payload every time
 or sending different payloads.  Sending the same payload may be simpler
 and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
-
-When a PTO timer expires, new or previously-sent data may not be available to
-send and packets may still be in flight.  A sender can be blocked from sending
-new data in the future if packets are left in flight.  Under these conditions, a
-sender SHOULD mark any packets still in flight as lost.  If a sender wishes to
-establish delivery of packets still in flight, it MAY send an ack-eliciting
-packet and re-arm the PTO timer instead.
 
 
 ### Loss Detection {#pto-loss}
@@ -1253,7 +1261,8 @@ OnLossDetectionTimeout():
        SendOnePaddedInitialPacket()
     crypto_count++
   else:
-    // PTO
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
     SendOneOrTwoPackets()
     pto_count++
 
@@ -1469,8 +1478,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked by loss detection from DetectLostPackets when new packets
-are detected lost.
+Invoked from DetectLostPackets when packets are deemed lost.
 
 ~~~
    InPersistentCongestion(largest_lost_packet):
