@@ -16,7 +16,7 @@ author:
     ins: M. Thomson
     name: Martin Thomson
     org: Mozilla
-    email: martin.thomson@gmail.com
+    email: mt@lowentropy.net
     role: editor
   -
     ins: S. Turner
@@ -216,7 +216,7 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
 Data is protected using a number of encryption levels:
 
-- Plaintext
+- Initial Keys
 - Early Data (0-RTT) Keys
 - Handshake Keys
 - Application Data (1-RTT) Keys
@@ -244,7 +244,7 @@ shown below.
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
-|              |              | | (h2q, etc.) |
+|              |              | |  (h3, etc.) |
 +--------------+--------------+-+-------------+
 |                                             |
 |                QUIC Transport               |
@@ -318,25 +318,24 @@ long as they are associated with the same encryption level. For instance, an
 implementation might bundle a Handshake message and an ACK for some Handshake
 data into the same packet.
 
-Each encryption level has a specific list of frames which may appear in it. The
-rules here generalize those of TLS, in that frames associated with establishing
-the connection can usually appear at any encryption level, whereas those
-associated with transferring data can only appear in the 0-RTT and 1-RTT
+Some frames are prohibited in different encryption levels, others cannot be
+sent. The rules here generalize those of TLS, in that frames associated with
+establishing the connection can usually appear at any encryption level, whereas
+those associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
-- CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
-
-- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
-  0-RTT.
-
 - PADDING frames MAY appear in packets of any encryption level.
+
+- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
+  level except 0-RTT.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
+- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
-- All other frame types MUST only appear at the 1-RTT levels.
+Note that it is not possible to send the following frames in 0-RTT for various
+reasons: ACK, CRYPTO, NEW_TOKEN, PATH_RESPONSE, and RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -344,13 +343,14 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type         | Encryption Level | PN Space  |
+|:--------------------|:-----------------|:----------|
+| Initial             | Initial secrets  | Initial   |
+| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
+| Handshake           | Handshake        | Handshake |
+| Retry               | N/A              | N/A       |
+| Version Negotiation | N/A              | N/A       |
+| Short Header        | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -437,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
@@ -499,30 +501,29 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Rekey tx to 0-RTT Keys
+Install tx 0-RTT Keys
                      0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
                      <------------- Initial
-                                          Rekey rx to 0-RTT keys
-                                              Handshake Received
-                                      Rekey rx to Handshake keys
+                                           Install rx 0-RTT keys
+                                          Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-                                          Rekey tx to 1-RTT keys
+                                           Install tx 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey rx to Handshake keys
+Install tx Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx to 1-RTT keys
+Install 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
-                                          Rekey rx to 1-RTT keys
-                                                   Get Handshake
+                                           Install rx 1-RTT keys
                                               Handshake Complete
+                                                   Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
@@ -599,10 +600,10 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 ## Enabling 0-RTT {#enable-0rtt}
 
 In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "max_early_data" extension with the value 0xffffffff; the
-amount of data which the client can send in 0-RTT is controlled by the
-"initial_max_data" transport parameter supplied by the server.  A client MUST
-treat receipt of a NewSessionTicket that contains a "max_early_data" extension
+that contains the "early_data" extension with a max_early_data_size of
+0xffffffff; the amount of data which the client can send in 0-RTT is controlled
+by the "initial_max_data" transport parameter supplied by the server.  A client
+MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 Early data within the TLS connection MUST NOT be used.  As it is for other TLS
@@ -678,10 +679,10 @@ been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
 carry CRYPTO frames, this timer starts when the first packets protected with
 1-RTT are sent or received.  To limit the effect of packet loss around a change
 in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Retransmission Timeout (RTO) interval as
-defined in {{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets
-containing CRYPTO or ACK frames at that encryption level to be sent if packets
-are determined to be lost or new packets require acknowledgment.
+for at least three times the current Probe Timeout (PTO) interval as defined in
+{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
+CRYPTO or ACK frames at that encryption level to be sent if packets are
+determined to be lost or new packets require acknowledgment.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -743,14 +744,14 @@ based on the client's initial Destination Connection ID, as described in
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}}) is used, using the hash function from the negotiated
+Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
 cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used QUIC.
+be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
 {{aead}}.  The header protection key uses the "quic hp" label, see
-{{header-protect}}).  Using these labels provides key separation between QUIC
+{{header-protect}}.  Using these labels provides key separation between QUIC
 and TLS, see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
@@ -788,10 +789,13 @@ The value of initial_salt is a 20 byte sequence shown in the figure in
 hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
 thus ensuring that the keys are different for each version of QUIC. This
 prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of handshake packets from future versions.
+modifying the contents of packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
+
+{{test-vectors-initial}} contains test vectors for the initial packet
+encryption.
 
 Note:
 
@@ -815,8 +819,8 @@ packet protection, an endpoint first removes the header protection.
 
 All QUIC packets other than Version Negotiation and Retry packets are protected
 with an AEAD algorithm {{!AEAD}}. Prior to establishing a shared secret, packets
-are protected with AEAD_AES_128_GCM and a key derived from the destination
-connection ID in the client's first Initial packet (see {{initial-secrets}}).
+are protected with AEAD_AES_128_GCM and a key derived from the Destination
+Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
@@ -829,7 +833,7 @@ an output 16 bytes larger than their input.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
-number.  The 64 bits of the reconstructed QUIC packet number in network byte
+number.  The 62 bits of the reconstructed QUIC packet number in network byte
 order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 
@@ -1003,10 +1007,10 @@ electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the counter input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode:
 
 ~~~
-mask = AES-ECB(pn_key, sample)
+mask = AES-ECB(hp_key, sample)
 ~~~
 
 
@@ -1027,7 +1031,7 @@ pseudocode:
 ~~~
 counter = DecodeLE(sample[0..3])
 nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
-mask = ChaCha20(pn_key, counter, nonce, {0,0,0,0,0})
+mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
 
 
@@ -1208,15 +1212,23 @@ protection for the QUIC negotiation.  This does not prevent version downgrade
 prior to the completion of the handshake, though it means that a downgrade
 causes a handshake failure.
 
-TLS uses Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} to select an
-application protocol.  The application-layer protocol MAY restrict the QUIC
-versions that it can operate over.  Servers MUST select an application protocol
-compatible with the QUIC version that the client has selected.
+QUIC requires that the cryptographic handshake provide authenticated protocol
+negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
+{{!RFC7301}} to select an application protocol.  Unless another mechanism is
+used for agreeing on an application protocol, endpoints MUST use ALPN for this
+purpose.  When using ALPN, endpoints MUST immediately close a connection (see
+Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
+see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
+alert, QUIC clients MUST also use it to terminate a connection when ALPN
+negotiation fails.
 
-If the server cannot select a compatible combination of application protocol and
-QUIC version, it MUST abort the connection. A client MUST abort a connection if
-the server picks an incompatible combination of QUIC version and ALPN
-identifier.
+An application-layer protocol MAY restrict the QUIC versions that it can operate
+over.  Servers MUST select an application protocol compatible with the QUIC
+version that the client has selected.  If the server cannot select a compatible
+combination of application protocol and QUIC version, it MUST abort the
+connection. A client MUST abort a connection if the server picks an incompatible
+combination of QUIC version and ALPN identifier.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1235,8 +1247,8 @@ protection for these values.
 
 The `extension_data` field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters when the
-version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+quic_transport_parameters extension carries a TransportParameters struct when
+the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake.
@@ -1248,8 +1260,8 @@ parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
-unsupported_extension alert MUST be sent if this extension is received when the
-transport is not QUIC.
+unsupported_extension alert MUST be sent by an implementation that supports this
+extension if the extension is received when the transport is not QUIC.
 
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
@@ -1272,6 +1284,50 @@ of issues is well captured in the relevant sections of the main text.
 
 Never assume that because it isn't in the security considerations section it
 doesn't affect security.  Most of this document does.
+
+
+## Replay Attacks with 0-RTT
+
+As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
+exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
+replay attack.
+
+Endpoints MUST implement and use the replay protections described in {{!TLS13}},
+however it is recognized that these protections are imperfect.  Therefore,
+additional consideration of the risk of replay is needed.
+
+QUIC is not vulnerable to replay attack, except via the application protocol
+information it might carry.  The management of QUIC protocol state based on the
+frame types defined in {{QUIC-TRANSPORT}} is not vulnerable to replay.
+Processing of QUIC frames is idempotent and cannot result in invalid connection
+states if frames are replayed, reordered or lost.  QUIC connections do not
+produce effects that last beyond the lifetime of the connection, except for
+those produced by the application protocol that QUIC serves.
+
+Note:
+
+: TLS session tickets and address validation tokens are used to carry QUIC
+  configuration information between connections.  These MUST NOT be used to
+  carry application semantics.  The potential for reuse of these tokens means
+  that they require stronger protections against replay.
+
+A server that accepts 0-RTT on a connection incurs a higher cost than accepting
+a connection without 0-RTT.  This includes higher processing and computation
+costs.  Servers need to consider the probability of replay and all associated
+costs when accepting 0-RTT.
+
+Ultimately, the responsibility for managing the risks of replay attacks with
+0-RTT lies with an application protocol.  An application protocol that uses QUIC
+MUST describe how the protocol uses 0-RTT and the measures that are employed to
+protect against replay attack.  An analysis of replay risk needs to consider
+all QUIC protocol features that carry application semantics.
+
+Disabling 0-RTT entirely is the most effective defense against replay attack.
+
+QUIC extensions MUST describe how replay attacks affects their operation, or
+prohibit their use in 0-RTT.  Application protocols MUST either prohibit the use
+of extensions that carry application semantics in 0-RTT or provide replay
+mitigation strategies.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
@@ -1318,7 +1374,7 @@ this document are assumed to be PRFs.
 The header protection algorithms defined in this document take the form:
 
 ~~~
-protected_field = field XOR PRF(pn_key, sample)
+protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
@@ -1361,21 +1417,20 @@ In using TLS, the central key schedule of TLS is used.  As a result of the TLS
 handshake messages being integrated into the calculation of secrets, the
 inclusion of the QUIC transport parameters extension ensures that handshake and
 1-RTT keys are not the same as those that might be produced by a server running
-TLS over TCP.  However, 0-RTT keys only include the ClientHello message and
-might therefore use the same secrets.  To avoid the possibility of
-cross-protocol key synchronization, additional measures are provided to improve
-key separation.
+TLS over TCP.  To avoid the possibility of cross-protocol key synchronization,
+additional measures are provided to improve key separation.
 
 The QUIC packet protection keys and IVs are derived using a different label than
 the equivalent keys in TLS.
 
 To preserve this separation, a new version of QUIC SHOULD define new labels for
-key derivation for packet protection key and IV, plus the packet number
-protection keys.
+key derivation for packet protection key and IV, plus the header protection
+keys.  This version of QUIC uses the string "quic".  Other versions can use a
+version-specific label in place of that string.
 
-The initial secrets also use a key that is specific to the negotiated QUIC
-version.  New QUIC versions SHOULD define a new salt value used in calculating
-initial secrets.
+The initial secrets use a key that is specific to the negotiated QUIC version.
+New QUIC versions SHOULD define a new salt value used in calculating initial
+secrets.
 
 
 # IANA Considerations
@@ -1391,12 +1446,219 @@ values in the following registries:
 
 --- back
 
+# Sample Initial Packet Protection {#test-vectors-initial}
+
+This section shows examples of packet protection for Initial packets so that
+implementations can be verified incrementally.  These packets use an 8-byte
+client-chosen Destination Connection ID of 0x8394c8f03e515708.  Values for both
+server and client packet protection are shown together with values in
+hexadecimal.
+
+
+## Keys
+
+The labels generated by the HKDF-Expand-Label function are:
+
+client in:
+: 00200f746c73313320636c69656e7420696e00
+
+server in:
+: 00200f746c7331332073657276657220696e00
+
+quic key:
+: 00100e746c7331332071756963206b657900
+
+quic iv:
+: 000c0d746c733133207175696320697600
+
+quic hp:
+: 00100d746c733133207175696320687000
+
+The initial secret is common:
+
+~~~
+initial_secret = HKDF-Extract(initial_salt, cid)
+    = 4496d3903d3f97cc5e45ac5790ddc686
+      683c7c0067012bb09d900cc21832d596
+~~~
+
+The secrets for protecting client packets are:
+
+~~~
+client_initial_secret
+    = HKDF-Expand-Label(initial_secret, "client in", _, 32)
+    = 8a3515a14ae3c31b9c2d6d5bc58538ca
+      5cd2baa119087143e60887428dcb52f6
+
+key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
+    = 98b0d7e5e7a402c67c33f350fa65ea54
+
+iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
+    = 19e94387805eb0b46c03a788
+
+hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
+    = 0edd982a6ac527f2eddcbb7348dea5d7
+~~~
+
+The secrets for protecting server packets are:
+
+~~~
+server_initial_secret
+    = HKDF-Expand-Label(initial_secret, "server in", _, 32)
+    = 47b2eaea6c266e32c0697a9e2a898bdf
+      5c4fb3e5ac34f0e549bf2c58581a3811
+
+key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
+    = 9a8be902a9bdd91d16064ca118045fb4
+
+iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
+    = 0a82086d32205ba22241d8dc
+
+hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
+    = 94b9452d2b3c7c7f6da7fdd8593537fd
+~~~
+
+
+## Client Initial
+
+The client sends an Initial packet.  The unprotected payload of this packet
+contains the following CRYPTO frame, plus enough PADDING frames to make an 1163
+byte payload:
+
+~~~
+060040c4010000c003036660261ff947 cea49cce6cfad687f457cf1b14531ba1
+4131a0e8f309a1d0b9c4000006130113 031302010000910000000b0009000006
+736572766572ff01000100000a001400 12001d00170018001901000101010201
+03010400230000003300260024001d00 204cfdfcd178b784bf328cae793b136f
+2aedce005ff183d7bb14952072366470 37002b0003020304000d0020001e0403
+05030603020308040805080604010501 060102010402050206020202002d0002
+0101001c00024001
+~~~
+
+The unprotected header includes the connection ID and a 4 byte packet number
+encoding for a packet number of 2:
+
+~~~
+c3ff000012508394c8f03e51570800449f00000002
+~~~
+
+Protecting the payload produces output that is sampled for header protection.
+Because the header uses a 4 byte packet number encoding, the first 16 bytes of
+the protected payload is sampled, then applied to the header:
+
+~~~
+sample = 0000f3a694c75775b4e546172ce9e047
+
+mask = AES-ECB(hp, sample)[0..4]
+     = 020dbc1958
+
+header[0] ^= mask[0] & 0x0f
+     = c1
+header[17..20] ^= mask[1..4]
+     = 0dbc195a
+header = c1ff000012508394c8f03e51570800449f0dbc195a
+~~~
+
+The resulting protected packet is:
+
+~~~
+c1ff000012508394c8f03e5157080044 9f0dbc195a0000f3a694c75775b4e546
+172ce9e047cd0b5bee5181648c727adc 87f7eae54473ec6cba6bdad4f5982317
+4b769f12358abd292d4f3286934484fb 8b239c38732e1f3bbbc6a003056487eb
+8b5c88b9fd9279ffff3b0f4ecf95c462 4db6d65d4113329ee9b0bf8cdd7c8a8d
+72806d55df25ecb66488bc119d7c9a29 abaf99bb33c56b08ad8c26995f838bb3
+b7a3d5c1858b8ec06b839db2dcf918d5 ea9317f1acd6b663cc8925868e2f6a1b
+da546695f3c3f33175944db4a11a346a fb07e78489e509b02add51b7b203eda5
+c330b03641179a31fbba9b56ce00f3d5 b5e3d7d9c5429aebb9576f2f7eacbe27
+bc1b8082aaf68fb69c921aa5d33ec0c8 510410865a178d86d7e54122d55ef2c2
+bbc040be46d7fece73fe8a1b24495ec1 60df2da9b20a7ba2f26dfa2a44366dbc
+63de5cd7d7c94c57172fe6d79c901f02 5c0010b02c89b395402c009f62dc053b
+8067a1e0ed0a1e0cf5087d7f78cbd94a fe0c3dd55d2d4b1a5cfe2b68b86264e3
+51d1dcd858783a240f893f008ceed743 d969b8f735a1677ead960b1fb1ecc5ac
+83c273b49288d02d7286207e663c45e1 a7baf50640c91e762941cf380ce8d79f
+3e86767fbbcd25b42ef70ec334835a3a 6d792e170a432ce0cb7bde9aaa1e7563
+7c1c34ae5fef4338f53db8b13a4d2df5 94efbfa08784543815c9c0d487bddfa1
+539bc252cf43ec3686e9802d651cfd2a 829a06a9f332a733a4a8aed80efe3478
+093fbc69c8608146b3f16f1a5c4eac93 20da49f1afa5f538ddecbbe7888f4355
+12d0dd74fd9b8c99e3145ba84410d8ca 9a36dd884109e76e5fb8222a52e1473d
+a168519ce7a8a3c32e9149671b16724c 6c5c51bb5cd64fb591e567fb78b10f9f
+6fee62c276f282a7df6bcf7c17747bc9 a81e6c9c3b032fdd0e1c3ac9eaa5077d
+e3ded18b2ed4faf328f49875af2e36ad 5ce5f6cc99ef4b60e57b3b5b9c9fcbcd
+4cfb3975e70ce4c2506bcd71fef0e535 92461504e3d42c885caab21b782e2629
+4c6a9d61118cc40a26f378441ceb48f3 1a362bf8502a723a36c63502229a462c
+c2a3796279a5e3a7f81a68c7f81312c3 81cc16a4ab03513a51ad5b54306ec1d7
+8a5e47e2b15e5b7a1438e5b8b2882dbd ad13d6a4a8c3558cae043501b68eb3b0
+40067152337c051c40b5af809aca2856 986fd1c86a4ade17d254b6262ac1bc07
+7343b52bf89fa27d73e3c6f3118c9961 f0bebe68a5c323c2d84b8c29a2807df6
+63635223242a2ce9828d4429ac270aab 5f1841e8e49cf433b1547989f419caa3
+c758fff96ded40cf3427f0761b678daa 1a9e5554465d46b7a917493fc70f9ec5
+e4e5d786ca501730898aaa1151dcd318 29641e29428d90e6065511c24d3109f7
+cba32225d4accfc54fec42b733f95852 52ee36fa5ea0c656934385b468eee245
+315146b8c047ed27c519b2c0a52d33ef e72c186ffe0a230f505676c5324baa6a
+e006a73e13aa8c39ab173ad2b2778eea 0b34c46f2b3beae2c62a2c8db238bf58
+fc7c27bdceb96c56d29deec87c12351b fd5962497418716a4b915d334ffb5b92
+ca94ffe1e4f78967042638639a9de325 357f5f08f6435061e5a274703936c06f
+c56af92c420797499ca431a7abaa4618 63bca656facfad564e6274d4a741033a
+ca1e31bf63200df41cdf41c10b912bec
+~~~
+
+## Server Initial
+
+The server sends the following payload in response, including an ACK frame, a
+CRYPTO frame, and no PADDING frames:
+
+~~~
+0d0000000018410a020000560303eefc e7f7b37ba1d1632e96677825ddf73988
+cfc79825df566dc5430b9a045a120013 0100002e00330024001d00209d3c940d
+89690b84d08a60993c144eca684d1081 287c834d5311bcf32bb9da1a002b0002
+0304
+~~~
+
+The header from the server includes a new connection ID and a 2-byte packet
+number encoding for a packet number of 1:
+
+~~~
+c1ff00001205f067a5502a4262b50040740001
+~~~
+
+As a result, after protection, the header protection sample is taken starting
+from the third protected octet:
+
+~~~
+sample = c4c2a2303d297e3c519bf6b22386e3d0
+mask   = 75f7ec8b62
+header = c4ff00001205f067a5502a4262b5004074f7ed
+~~~
+
+The final protected packet is then:
+
+~~~
+c4ff00001205f067a5502a4262b50040 74f7ed5f01c4c2a2303d297e3c519bf6
+b22386e3d0bd6dfc6612167729803104 1bb9a79c9f0f9d4c5877270a660f5da3
+6207d98b73839b2fdf2ef8e7df5a51b1 7b8c68d864fd3e708c6c1b71a98a3318
+15599ef5014ea38c44bdfd387c03b527 5c35e009b6238f831420047c7271281c
+cb54df7884
+~~~
+
+
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-18
+
+- Increased the set of permissible frames in 0-RTT (#2344, #2355)
+
+
+## Since draft-ietf-quic-tls-17
+
+- Endpoints discard initial keys as soon as handshake keys are available (#1951,
+  #2045)
+- Use of ALPN or equivalent is mandatory (#2263, #2284)
 
 
 ## Since draft-ietf-quic-tls-14
