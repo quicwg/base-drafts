@@ -967,7 +967,7 @@ it can store for future use. An endpoint SHOULD NOT provide more connection IDs
 than this limit. If an endpoint has provided its peer with the maximum number of
 connection IDs, it SHOULD only provide a new connection ID when the peer retires
 one. An endpoint MAY limit the frequency or the total number of connection IDs
-issued for each connection to avoid the risk of running out of connection IDs 
+issued for each connection to avoid the risk of running out of connection IDs
 (see {{reset-token}}).
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
