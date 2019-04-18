@@ -549,8 +549,8 @@ The PRIORITY frame payload has the following fields:
     {{element-dependency-types}}).
 
   Empty:
-  : A four-bit field which MUST be zero when sent and MUST be ignored
-    on receipt.
+  : A four-bit field which MUST be zero when sent and has no semantic value on
+    receipt.
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
