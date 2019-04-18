@@ -1464,7 +1464,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked when packets are deemed lost in DetectLostPackets.
+Invoked from DetectLostPackets when packets are deemed lost.
 
 ~~~
    InPersistentCongestion(largest_lost_packet):
