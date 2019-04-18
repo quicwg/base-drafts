@@ -638,7 +638,7 @@ or previously-sent data to send.
 When there is no data to send, the sender SHOULD send a PING or other
 ack-eliciting frame in a single packet, re-arming the PTO timer.
 
-Alternatively, instead of sending the ack-eliciting packet, the sender MAY mark
+Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
 packet, but increases the risk that loss is declared too aggressively, resulting
 in an unnecessary rate reduction by the congestion controller.
