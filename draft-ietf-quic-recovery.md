@@ -628,16 +628,20 @@ as a probe, unless there is no data available to send.  An endpoint MAY send up
 to two ack-eliciting packets, to avoid an expensive consecutive PTO expiration
 due to a single packet loss.
 
-It is possible that the sender has no new or previously-sent data to send.  For
-example, this can happen when there is no new application data to send and all
-streams with data in flight are reset (see Section 13.2 of {{QUIC-TRANSPORT}}).
-Under these conditions, the sender SHOULD send PING or other ack-eliciting
-frames in up to two packets, re-arming the PTO timer.
+It is possible that the sender has no new or previously-sent data to send.  As
+an example, consider the following sequence of events: new application data is
+sent in a STREAM frame, deemed lost, then retransmitted in a new packet, and
+then the original transmission is acknowledged.  In the absence of any new
+application data, a PTO timer expiration now would find the sender with no new
+or previously-sent data to send.
 
-When there is no data to send, the sender MAY mark any packets still in flight
-as lost instead of sending an additional ack-eliciting packet.  Doing so might
-cause packets currently in flight to be aggressively marked as lost, with the
-resulting congestion controller reaction.
+When there is no data to send, the sender SHOULD send PING or other
+ack-eliciting frames in a single packet, re-arming the PTO timer.
+
+Alternatively, the sender MAY avoid sending an additional packet by marking any
+packets still in flight as lost. Doing so however increases the risk of the
+sender declaring a packet as lost when it might not be, resulting in unnecessary
+rate reduction by the congestion controller.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
