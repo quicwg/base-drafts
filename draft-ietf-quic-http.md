@@ -321,8 +321,17 @@ defined in this document: control streams ({{control-streams}}) and push streams
 ({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
 see {{extensions}} for more details.
 
-Both clients and servers SHOULD send a value of three or greater for the QUIC
-transport parameter `initial_max_uni_streams`.
+The performance of HTTP/3 connections in the early phase of their lifetime is
+sensitive to the creation and exchange of data on unidirectional streams.
+Endpoints that set low values for the QUIC transport parameters
+`initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
+chance that the remote peer reaches the limit early and becomes blocked. In
+particular, the value chosen for `initial_max_uni_streams` should consider that
+remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
+To reduce the likelihood of blocking, both clients and servers SHOULD send a
+value of three or greater for the QUIC transport parameter
+`initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
+transport parameter `initial_max_stream_data_uni`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
