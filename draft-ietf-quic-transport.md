@@ -5569,6 +5569,14 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-19
+
+- Refine discussion of 0-RTT transport parameters  (#2467, #2464)
+- Spinbit text incorporated (#2564)
+- Close the connection when maximum stream ID in MAX_STREAMS exceeds 2^62 - 1
+  (#2499, #2487)
+- New connection ID required for intentional migration (#2414, #2413)
+
 ## Since draft-ietf-quic-transport-18
 
 - Removed version negotation; version negotiation, including authentication of
