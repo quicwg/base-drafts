@@ -1251,7 +1251,7 @@ OnLossDetectionTimeout():
     crypto_count++
   else:
     // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a PING frame.
+    // If neither is available, send a single PING frame.
     SendOneOrTwoPackets()
     pto_count++
 
@@ -1464,7 +1464,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked when packets are deemed lost.
+Invoked when packets are deemed lost in DetectLostPackets.
 
 ~~~
    InPersistentCongestion(largest_lost_packet):
