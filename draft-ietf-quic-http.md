@@ -331,7 +331,7 @@ remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
 To reduce the likelihood of blocking, both clients and servers SHOULD send a
 value of three or greater for the QUIC transport parameter
 `initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
-transport `initial_max_stream_data_uni`.
+transport parameter `initial_max_stream_data_uni`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
