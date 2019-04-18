@@ -635,13 +635,13 @@ then the original transmission is acknowledged.  In the absence of any new
 application data, a PTO timer expiration now would find the sender with no new
 or previously-sent data to send.
 
-When there is no data to send, the sender SHOULD send PING or other
-ack-eliciting frames in a single packet, re-arming the PTO timer.
+When there is no data to send, the sender SHOULD send a PING or other
+ack-eliciting frame in a single packet, re-arming the PTO timer.
 
-Alternatively, the sender MAY avoid sending an additional packet by marking any
-packets still in flight as lost. Doing so however increases the risk of the
-sender declaring a packet as lost when it might not be, resulting in unnecessary
-rate reduction by the congestion controller.
+Alternatively, instead of sending the ack-eliciting packet, the sender MAY mark
+any packets still in flight as lost.  Doing so avoids sending an additional
+packet, but increases the risk that loss is declared too aggressively, resulting
+in an unnecessary rate reduction by the congestion controller.
 
 Consecutive PTO periods increase exponentially, and as a result, connection
 recovery latency increases exponentially as packets continue to be dropped in
