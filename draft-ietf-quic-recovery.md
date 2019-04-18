@@ -1251,7 +1251,7 @@ OnLossDetectionTimeout():
     crypto_count++
   else:
     // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send PING frames.
+    // If neither is available, send a PING frame.
     SendOneOrTwoPackets()
     pto_count++
 
