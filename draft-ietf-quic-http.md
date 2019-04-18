@@ -1964,6 +1964,8 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 ## Since draft-ietf-quic-http-19
 
 - SETTINGS_NUM_PLACEHOLDERS is 0x9 (#2443,#2530)
+- Non-zero bits in the Empty field of the PRIORITY frame MAY be treated as an
+  error (#2501)
 
 ## Since draft-ietf-quic-http-18
 
