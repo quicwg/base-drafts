@@ -1511,6 +1511,17 @@ Invoked from DetectLostPackets when packets are deemed lost.
 Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-recovery-19
+
+- Send a PING if the PTO timer fires and there's nothing to send (#2624)
+- Set loss delay to at least kGranularity (#2617)
+- Merge application limited and sending after idle sections. Always limit
+  burst size instead of requiring resetting CWND to initial CWND after
+  idle (#2605)
+- Rewrite RTT estimation, allow RTT samples where a newly acked packet is
+  ack-eliciting but the largest_acked is not (#2592)
+- Don't arm the handshake timer if there is no handshake data (#2590)
+- Clarify that the time threshold loss alarm takes precedence over the
+  crypto handshake timer (#2590, #2620)
 - Change initial RTT to 500ms to align with RFC6298 (#2184)
 
 ## Since draft-ietf-quic-recovery-18
