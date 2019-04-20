@@ -964,11 +964,11 @@ An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs. Endpoints store received connection IDs for future use.
 An endpoint uses a transport parameter to advertise the number of connection IDs
 it can store for future use. An endpoint SHOULD NOT provide more connection IDs
-than this limit. If an endpoint has provided its peer with the maximum number of
-connection IDs, it SHOULD only provide a new connection ID when the peer retires
-one. An endpoint MAY limit the frequency or the total number of connection IDs
-issued for each connection to avoid the risk of running out of connection IDs
-(see {{reset-token}}).
+than the peer's limit. If an endpoint has provided its peer with the maximum
+number of connection IDs, it SHOULD only provide a new connection ID when the
+peer retires one. An endpoint MAY limit the frequency or the total number of
+connection IDs issued for each connection to avoid the risk of running out of
+connection IDs (see {{reset-token}}).
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
 SHOULD ensure that the pool of connection IDs available to its peer allows the
@@ -4194,9 +4194,9 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 max_connection_ids (0x000e):
 
-: The maximum number of connection IDs that the peer is willing to store.
-  This value includes only connection IDs sent in NEW_CONNECTION_ID frames.
-  If this parameter is absent, a default of 0 is assumed.
+: The maximum number of connection IDs from the peer that an endpoint is willing
+  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
+  frames. If this parameter is absent, a default of 0 is assumed.
 
 
 # Frame Types and Formats {#frame-formats}
