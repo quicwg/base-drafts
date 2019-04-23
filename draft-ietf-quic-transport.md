@@ -5605,6 +5605,22 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-19
+
+- Refine discussion of 0-RTT transport parameters (#2467, #2464)
+- Fewer transport parameters need to be remembered for 0-RTT (#2624, #2467)
+- Spin bit text incorporated (#2564)
+- Close the connection when maximum stream ID in MAX_STREAMS exceeds 2^62 - 1
+  (#2499, #2487)
+- New connection ID required for intentional migration (#2414, #2413)
+- Connection ID issuance can be rate-limited (#2436, #2428)
+- The "QUIC bit" is ignored in Version Negotiation (#2400, #2561)
+- Initial packets from clients need to be padded to 1200 unless a Handshake
+  packet is sent as well (#2522, #2523)
+- CRYPTO frames can be discarded if too much data is buffered (#1834, #2524)
+- Stateless reset uses a short header packet (#2599, #2600)
+
+
 ## Since draft-ietf-quic-transport-18
 
 - Removed version negotation; version negotiation, including authentication of

@@ -1979,6 +1979,12 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-19
+
+- SETTINGS_NUM_PLACEHOLDERS is 0x9 (#2443,#2530)
+- Non-zero bits in the Empty field of the PRIORITY frame MAY be treated as an
+  error (#2501)
+
 ## Since draft-ietf-quic-http-18
 
 - Resetting streams following a GOAWAY is recommended, but not required
