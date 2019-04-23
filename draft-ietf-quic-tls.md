@@ -437,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
@@ -1262,8 +1264,8 @@ parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
-unsupported_extension alert (an error of 0x16e) MUST be sent if this extension
-is received when the transport is not QUIC.
+unsupported_extension alert MUST be sent by an implementation that supports this
+extension if the extension is received when the transport is not QUIC.
 
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}

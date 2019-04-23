@@ -1118,15 +1118,15 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the stream or connection from continuing:
 
-HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
+HTTP_QPACK_DECOMPRESSION_FAILED (0x200):
 : The decoder failed to interpret a header block instruction and is not
   able to continue decoding that header block.
 
-HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
+HTTP_QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
   encoder stream.
 
-HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
+HTTP_QPACK_DECODER_STREAM_ERROR (0x202):
 : The encoder failed to interpret a decoder instruction received on the
   decoder stream.
 
@@ -1173,9 +1173,9 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| HTTP_QPACK_DECOMPRESSION_FAILED   | TBD   | Decompression of a header block failed   | {{error-handling}}     |
-| HTTP_QPACK_ENCODER_STREAM_ERROR   | TBD   | Error on the encoder stream              | {{error-handling}}     |
-| HTTP_QPACK_DECODER_STREAM_ERROR   | TBD   | Error on the decoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECOMPRESSION_FAILED   | 0x200 | Decompression of a header block failed   | {{error-handling}}     |
+| HTTP_QPACK_ENCODER_STREAM_ERROR   | 0x201 | Error on the encoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECODER_STREAM_ERROR   | 0x202 | Error on the decoder stream              | {{error-handling}}     |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 
 
