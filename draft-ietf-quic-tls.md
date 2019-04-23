@@ -1254,8 +1254,8 @@ The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake. Endpoints MUST send the
 quic_transport_parameters extension; endpoints that receive ClientHello or
 EncryptedExtensions messages without the quic_transport_parameters extension
-MUST terminate the TLS handshake with a fatal missing_extension alert (an error
-of 0x16d).
+MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
+missing_extension alert, see {{tls-errors}}).
 
 While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
