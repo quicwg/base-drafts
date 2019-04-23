@@ -832,7 +832,7 @@ The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
-to the limit set by the QUIC MAX_STREAM_ID frame.
+to the limit set by the QUIC MAX_STREAMS frame.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
@@ -1318,6 +1318,10 @@ Once all accepted requests have been processed, the server can permit the
 connection to become idle, or MAY initiate an immediate closure of the
 connection.  An endpoint that completes a graceful shutdown SHOULD use the
 HTTP_NO_ERROR code when closing the connection.
+
+If a client has consumed all available bidirectional stream IDs with requests,
+the server need not send a GOAWAY frame, since the client is unable to make further
+requests.
 
 ## Immediate Application Closure
 
