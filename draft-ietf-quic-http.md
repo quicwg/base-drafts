@@ -321,8 +321,17 @@ defined in this document: control streams ({{control-streams}}) and push streams
 ({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
 see {{extensions}} for more details.
 
-Both clients and servers SHOULD send a value of three or greater for the QUIC
-transport parameter `initial_max_uni_streams`.
+The performance of HTTP/3 connections in the early phase of their lifetime is
+sensitive to the creation and exchange of data on unidirectional streams.
+Endpoints that set low values for the QUIC transport parameters
+`initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
+chance that the remote peer reaches the limit early and becomes blocked. In
+particular, the value chosen for `initial_max_uni_streams` should consider that
+remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
+To reduce the likelihood of blocking, both clients and servers SHOULD send a
+value of three or greater for the QUIC transport parameter
+`initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
+transport parameter `initial_max_stream_data_uni`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
@@ -495,7 +504,7 @@ HEADERS frames can only be sent on request / push streams.
 
 ### PRIORITY {#frame-priority}
 
-The PRIORITY (type=0x02) frame specifies the client-advised priority of a
+The PRIORITY (type=0x2) frame specifies the client-advised priority of a
 request, server push or placeholder.
 
 A PRIORITY frame identifies an element to prioritize, and an element upon which
@@ -540,8 +549,8 @@ The PRIORITY frame payload has the following fields:
     {{element-dependency-types}}).
 
   Empty:
-  : A four-bit field which MUST be zero when sent and MUST be ignored
-    on receipt.
+  : A four-bit field which MUST be zero when sent and has no semantic value on
+    receipt.
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
@@ -589,7 +598,8 @@ which expresses a dependency on a request with a greater Stream ID than the
 current stream MUST be treated as a stream error of type HTTP_MALFORMED_FRAME.
 Likewise, a PRIORITY frame sent on a control stream with the Prioritized Element
 Type set to `11` MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+HTTP_MALFORMED_FRAME. A PRIORITY frame with Empty bits not set to zero MAY be
+treated as a connection error of type HTTP_MALFORMED_FRAME.
 
 When a PRIORITY frame claims to reference a request, the associated ID MUST
 identify a client-initiated bidirectional stream.  A server MUST treat receipt
@@ -603,8 +613,8 @@ to open MUST be treated as an HTTP_LIMIT_EXCEEDED error.
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
 
-PRIORITY frames received by a client MUST be treated as a stream error of type
-HTTP_UNEXPECTED_FRAME.
+PRIORITY frames received by a client MUST be treated as a connection error of
+type HTTP_UNEXPECTED_FRAME.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
@@ -704,7 +714,7 @@ The following settings are defined in HTTP/3:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
-  SETTINGS_NUM_PLACEHOLDERS (0x8):
+  SETTINGS_NUM_PLACEHOLDERS (0x9):
   : The default value is 0.  However, this value SHOULD be set to a non-zero
     value by servers.  See {{placeholders}} for usage.
 
@@ -747,7 +757,7 @@ with its 0-RTT data.
 
 ### PUSH_PROMISE {#frame-push-promise}
 
-The PUSH_PROMISE frame (type=0x05) is used to carry a promised request header
+The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
 set from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
@@ -861,7 +871,7 @@ DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
 of type HTTP_WRONG_STREAM.
 
 A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type HTTP_MALFORMED_FRAME.
+of a DUPLICATE_PUSH frame as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1196,18 +1206,25 @@ requirements in Section 8.2 of {{!RFC7540}}.
 The same server push can be associated with additional client requests using a
 DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
 DUPLICATE_PUSH in relation to certain parts of the response is similarly
-important.  Due to reordering, DUPLICATE_PUSH frames can arrive before the
-corresponding PUSH_PROMISE frame, in which case the request headers of the push
-would not be immediately available.  Clients which receive a DUPLICATE_PUSH
-frame for an as-yet-unknown Push ID can either delay generating new requests for
-content referenced following the DUPLICATE_PUSH frame until the request headers
-become available, or can initiate requests for discovered resources and cancel
-the requests if the requested resource is already being pushed.
+important.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
 using the same format described for responses in {{request-response}}.
+
+Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
+the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
+frame for an as-yet-unknown Push ID, the request headers of the push are not
+immediately available.  The client can either delay generating new requests for
+content referenced following the DUPLICATE_PUSH frame until the request headers
+become available, or can initiate requests for discovered resources and cancel
+the requests if the requested resource is already being pushed. When a client
+receives a new push stream with an as-yet-unknown Push ID, both the associated
+client request and the pushed request headers are unknown.  The client can
+buffer the stream data in expectation of the matching PUSH_PROMISE. The client
+can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
+amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
@@ -1259,21 +1276,22 @@ identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
 processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
 sending a GOAWAY frame.
 
-Once GOAWAY is sent, the server MUST reject requests sent on streams with an
-identifier greater than or equal to the indicated last Stream ID.  Clients MUST
-NOT send new requests on the connection after receiving GOAWAY, although
-requests might already be in transit. A new connection can be established for
-new requests.
+Clients MUST NOT send new requests on the connection after receiving GOAWAY;
+a new connection MAY be established to send additional requests.
 
-If the client has sent requests on streams with a Stream ID greater than or
-equal to that indicated in the GOAWAY frame, those requests are considered
-rejected ({{request-cancellation}}).  Clients SHOULD cancel any requests on
-streams above this ID.  Servers MAY also reject requests on streams below the
-indicated ID if these requests were not processed.
+Some requests might already be in transit. If the client has already sent
+requests on streams with a Stream ID greater than or equal to that indicated in
+the GOAWAY frame, those requests will not be processed and MAY be retried by the
+client on a different connection.  The client MAY cancel these requests.  It is
+RECOMMENDED that the server explicitly reject such requests (see
+{{request-cancellation}}) in order to clean up transport state for the affected
+streams.
 
 Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until they are completed
-successfully, reset individually, or the connection terminates.
+been processed; their status cannot be known until a response is received, the
+stream is reset individually, or the connection terminates.  Servers MAY reject
+individual requests on streams below the indicated ID if these requests were not
+processed.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -1478,6 +1496,10 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
+anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
+HTTP/3 with 0-RTT.
+
 Certain HTTP implementations use the client address for logging or
 access-control purposes.  Since a QUIC client's address might change during a
 connection (and future versions might support simultaneous use of multiple
@@ -1566,7 +1588,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 ## Settings Parameters {#iana-settings}
@@ -1607,11 +1629,11 @@ The entries in the following table are registered by this document.
 | Reserved                     |  0x4   | N/A                       |
 | Reserved                     |  0x5   | N/A                       |
 | MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             |  0x8   | {{settings-parameters}}   |
+| NUM_PLACEHOLDERS             |  0x9   | {{settings-parameters}}   |
 | ---------------------------- | ------ | ------------------------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 ## Error Codes {#iana-error-codes}
@@ -1705,7 +1727,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x‭3FFFFFFFFFFFFFFE‬`) MUST NOT be
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
 --- back
@@ -1763,8 +1785,11 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent on the control stream and exclusive prioritization
-has been removed.
+PRIORITY frames are sent as the first frame on a request stream or on the
+control stream and exclusive prioritization has been removed. HTTP/3 permits the
+prioritisation of requests, pushes and placeholders that each exist in separate
+identifier spaces. The HTTP/3 PRIORITY frame replaces the stream dependency
+field with fields that can identify the element of interest and its dependency.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
@@ -1794,13 +1819,14 @@ DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.
 
 HEADERS (0x1):
-: As described above, the PRIORITY region of HEADERS is not supported. A
-  separate PRIORITY frame MUST be used. Padding is not defined in HTTP/3 frames.
+: The PRIORITY region of HEADERS is not defined in HTTP/3 frames. A separate
+  PRIORITY frame is used in all cases. Padding is not defined in HTTP/3 frames.
   See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame is sent on the control stream and can
-  reference a variety of identifiers.  See {{frame-priority}}.
+: As described above, the PRIORITY frame references a variety of identifiers. It
+  is sent as the first frame on a request streams or on the control stream. See
+  {{frame-priority}}.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
@@ -1949,12 +1975,24 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-18
+
+- Resetting streams following a GOAWAY is recommended, but not required
+  (#2256,#2457)
+- Use variable-length integers throughout (#2437,#2233,#2253,#2275)
+  - Variable-length frame types, stream types, and settings identifiers
+  - Renumbered stream type assignments
+  - Modified associated reserved values
+- Frame layout switched from Length-Type-Value to Type-Length-Value
+  (#2395,#2235)
+- Specified error code for servers receiving DUPLICATE_PUSH (#2497)
+- Use connection error for invalid PRIORITY (#2507, #2508)
+
 ## Since draft-ietf-quic-http-17
 
 - HTTP_REQUEST_REJECTED is used to indicate a request can be retried (#2106,
   #2325)
 - Changed error code for GOAWAY on the wrong stream (#2231, #2343)
-
 
 ## Since draft-ietf-quic-http-16
 
@@ -1970,7 +2008,6 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 - Removed reservation of error code 0 and moved HTTP_NO_ERROR to this value
   (#1922)
 - Removed prohibition of zero-length DATA frames (#2098)
-
 
 ## Since draft-ietf-quic-http-15
 

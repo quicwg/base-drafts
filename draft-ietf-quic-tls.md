@@ -318,25 +318,24 @@ long as they are associated with the same encryption level. For instance, an
 implementation might bundle a Handshake message and an ACK for some Handshake
 data into the same packet.
 
-Each encryption level has a specific list of frames which may appear in it. The
-rules here generalize those of TLS, in that frames associated with establishing
-the connection can usually appear at any encryption level, whereas those
-associated with transferring data can only appear in the 0-RTT and 1-RTT
+Some frames are prohibited in different encryption levels, others cannot be
+sent. The rules here generalize those of TLS, in that frames associated with
+establishing the connection can usually appear at any encryption level, whereas
+those associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
-- CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
-
-- CONNECTION_CLOSE MAY appear in packets of any encryption level other than
-  0-RTT.
-
 - PADDING frames MAY appear in packets of any encryption level.
+
+- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
+  level except 0-RTT.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- STREAM frames MUST ONLY appear in the 0-RTT and 1-RTT levels.
+- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
-- All other frame types MUST only appear at the 1-RTT levels.
+Note that it is not possible to send the following frames in 0-RTT for various
+reasons: ACK, CRYPTO, NEW_TOKEN, PATH_RESPONSE, and RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -344,13 +343,14 @@ indicate which level a given packet was encrypted under, as shown in
 need to be sent, endpoints SHOULD use coalesced packets to send them in the same
 UDP datagram.
 
-| Packet Type     | Encryption Level | PN Space  |
-|:----------------|:-----------------|:----------|
-| Initial         | Initial secrets  | Initial   |
-| 0-RTT Protected | 0-RTT            | 0/1-RTT   |
-| Handshake       | Handshake        | Handshake |
-| Retry           | N/A              | N/A       |
-| Short Header    | 1-RTT            | 0/1-RTT   |
+| Packet Type         | Encryption Level | PN Space  |
+|:--------------------|:-----------------|:----------|
+| Initial             | Initial secrets  | Initial   |
+| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
+| Handshake           | Handshake        | Handshake |
+| Retry               | N/A              | N/A       |
+| Version Negotiation | N/A              | N/A       |
+| Short Header        | 1-RTT            | 0/1-RTT   |
 {: #packet-types-levels title="Encryption Levels by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
@@ -437,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
@@ -499,30 +501,29 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Rekey tx to 0-RTT Keys
+Install tx 0-RTT Keys
                      0-RTT --------------->
                                               Handshake Received
                                                    Get Handshake
                      <------------- Initial
-                                          Rekey rx to 0-RTT keys
-                                              Handshake Received
-                                      Rekey rx to Handshake keys
+                                           Install rx 0-RTT keys
+                                          Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-                                          Rekey tx to 1-RTT keys
+                                           Install tx 1-RTT keys
                      <--------------- 1-RTT
 Handshake Received
-Rekey rx to Handshake keys
+Install tx Handshake keys
 Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Rekey tx to 1-RTT keys
+Install 1-RTT keys
                      1-RTT --------------->
                                               Handshake Received
-                                          Rekey rx to 1-RTT keys
-                                                   Get Handshake
+                                           Install rx 1-RTT keys
                                               Handshake Complete
+                                                   Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
@@ -1215,8 +1216,12 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!RFC7301}} to select an application protocol.  Unless another mechanism is
 used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  When using ALPN, endpoints MUST abort a connection if an application
-protocol is not negotiated.
+purpose.  When using ALPN, endpoints MUST immediately close a connection (see
+Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
+see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
+alert, QUIC clients MUST also use it to terminate a connection when ALPN
+negotiation fails.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
@@ -1255,8 +1260,8 @@ parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
-unsupported_extension alert MUST be sent if this extension is received when the
-transport is not QUIC.
+unsupported_extension alert MUST be sent by an implementation that supports this
+extension if the extension is received when the transport is not QUIC.
 
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
@@ -1279,6 +1284,50 @@ of issues is well captured in the relevant sections of the main text.
 
 Never assume that because it isn't in the security considerations section it
 doesn't affect security.  Most of this document does.
+
+
+## Replay Attacks with 0-RTT
+
+As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
+exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
+replay attack.
+
+Endpoints MUST implement and use the replay protections described in {{!TLS13}},
+however it is recognized that these protections are imperfect.  Therefore,
+additional consideration of the risk of replay is needed.
+
+QUIC is not vulnerable to replay attack, except via the application protocol
+information it might carry.  The management of QUIC protocol state based on the
+frame types defined in {{QUIC-TRANSPORT}} is not vulnerable to replay.
+Processing of QUIC frames is idempotent and cannot result in invalid connection
+states if frames are replayed, reordered or lost.  QUIC connections do not
+produce effects that last beyond the lifetime of the connection, except for
+those produced by the application protocol that QUIC serves.
+
+Note:
+
+: TLS session tickets and address validation tokens are used to carry QUIC
+  configuration information between connections.  These MUST NOT be used to
+  carry application semantics.  The potential for reuse of these tokens means
+  that they require stronger protections against replay.
+
+A server that accepts 0-RTT on a connection incurs a higher cost than accepting
+a connection without 0-RTT.  This includes higher processing and computation
+costs.  Servers need to consider the probability of replay and all associated
+costs when accepting 0-RTT.
+
+Ultimately, the responsibility for managing the risks of replay attacks with
+0-RTT lies with an application protocol.  An application protocol that uses QUIC
+MUST describe how the protocol uses 0-RTT and the measures that are employed to
+protect against replay attack.  An analysis of replay risk needs to consider
+all QUIC protocol features that carry application semantics.
+
+Disabling 0-RTT entirely is the most effective defense against replay attack.
+
+QUIC extensions MUST describe how replay attacks affects their operation, or
+prohibit their use in 0-RTT.  Application protocols MUST either prohibit the use
+of extensions that carry application semantics in 0-RTT or provide replay
+mitigation strategies.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
@@ -1598,6 +1647,11 @@ cb54df7884
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-18
+
+- Increased the set of permissible frames in 0-RTT (#2344, #2355)
 
 
 ## Since draft-ietf-quic-tls-17
