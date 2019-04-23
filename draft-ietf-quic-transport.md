@@ -3687,7 +3687,7 @@ frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
 0-RTT packet, because that can only acknowledge a 1-RTT packet.  An
 acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.
 
-A server MAY treat a violation of remembered limits as a connection error of an
+A server SHOULD treat a violation of remembered limits as a connection error of an
 appropriate type (for instance, a FLOW_CONTROL_ERROR for exceeding stream data
 limits).
 
