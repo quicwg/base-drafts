@@ -5571,8 +5571,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-19
 
-- Refine discussion of 0-RTT transport parameters  (#2467, #2464)
-- Spinbit text incorporated (#2564)
+- Refine discussion of 0-RTT transport parameters (#2467, #2464)
+- Spin bit text incorporated (#2564)
 - Close the connection when maximum stream ID in MAX_STREAMS exceeds 2^62 - 1
   (#2499, #2487)
 - New connection ID required for intentional migration (#2414, #2413)
