@@ -1319,7 +1319,7 @@ connection.  An endpoint that completes a graceful shutdown SHOULD use the
 HTTP_NO_ERROR code when closing the connection.
 
 If a client has consumed all available bidirectional stream IDs with requests,
-the server need not send a GOAWAY frame; the client is unable to make further
+the server need not send a GOAWAY frame, since the client is unable to make further
 requests.
 
 ## Immediate Application Closure
