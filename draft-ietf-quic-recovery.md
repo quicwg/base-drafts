@@ -309,7 +309,8 @@ parameter, see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
 explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
-the peer.
+the peer.  Before receiving the transport parameters, endpoints use a value of 0
+for the max_ack_delay.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
@@ -1028,9 +1029,9 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments, in milliseconds.  The actual ack_delay in a
-  received ACK frame may be larger due to late timers, reordering,
-  or lost ACKs.
+  acknowledgments. The value is initialized to 0, and updated when the peer's
+  transport parameters are received. The actual ACK Delay in a received ACK
+  frame may be larger due to late timers, reordering, or lost ACKs.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
@@ -1054,6 +1055,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = 0
+   max_ack_delay = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1139,6 +1141,8 @@ UpdateRtt(ack_delay):
   // min_rtt ignores ack delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay
+  // Before receiving the peer's transport parameters,
+  // max_ack_delay is 0.
   ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for ack delay if plausible.
   adjusted_rtt = latest_rtt
