@@ -570,31 +570,6 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-### Discarding Keys and Packet State {#discarding-packets}
-
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
-packets that were sent with those keys can no longer be acknowledged because
-their acknowledgements cannot be processed anymore. The sender MUST discard
-all recovery state associated with those packets and MUST remove them from
-the count of bytes in flight.
-
-Endpoints stop sending and receiving Initial packets once they start exchanging
-Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
-recovery state for all in-flight Initial packets is discarded.
-
-When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
-discarded.
-
-If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
-before Initial packets, early 0-RTT packets will be declared lost, but that
-is expected to be infrequent.
-
-It is expected that keys are discarded after packets encrypted with them would
-be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
-{{QUIC-TLS}}).
-
-
 ## Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
@@ -688,6 +663,29 @@ prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
 
+## Discarding Keys and Packet State {#discarding-packets}
+
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
+packets that were sent with those keys can no longer be acknowledged because
+their acknowledgements cannot be processed anymore. The sender MUST discard
+all recovery state associated with those packets and MUST remove them from
+the count of bytes in flight.
+
+Endpoints stop sending and receiving Initial packets once they start exchanging
+Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+recovery state for all in-flight Initial packets is discarded.
+
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  Initial secrets however might be destroyed
+sooner, as soon as handshake keys are available (see Section 4.10 of
+{{QUIC-TLS}}).
 
 ## Discussion
 
