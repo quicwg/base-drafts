@@ -500,102 +500,7 @@ thresholds reduce reordering resilience and increase spurious retransmissions,
 and larger thresholds increase loss detection delay.
 
 
-## Crypto Retransmission Timeout
-
-Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.
-
-The initial crypto retransmission timeout SHOULD be set to twice the initial
-RTT.
-
-At the beginning, there are no prior RTT samples within a connection.  Resumed
-connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
-is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
-resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}.
-
-When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
-RTT.  This timer MUST be updated when a new crypto packet is sent and when
-an acknowledgement is received which computes a new RTT sample. Upon timeout,
-the sender MUST retransmit all unacknowledged CRYPTO data if possible.  The
-sender MUST NOT declare in-flight crypto packets as lost when the crypto timer
-expires.
-
-On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender MUST double the crypto
-retransmission timeout and set a timer for this period.
-
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
-CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
-sent, then no alarm should be armed until data has been received from the
-client.
-
-Because the server could be blocked until more packets are received, the client
-MUST ensure that the crypto retransmission timer is set if there is
-unacknowledged crypto data or if the client does not yet have 1-RTT keys.
-If the crypto retransmission timer expires before the client has 1-RTT keys,
-it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PING or PADDING
-frames if necessary, to allow the server to continue sending data. If
-Handshake keys are available to the client, it MUST send a Handshake packet,
-and otherwise it MUST send an Initial packet in a UDP datagram of at least
-1200 bytes.
-
-The crypto retransmission timer is not set if the time threshold
-{{time-threshold}} loss detection timer is set.  The time threshold loss
-detection timer is expected to both expire earlier than the crypto
-retransmission timeout and be less likely to spuriously retransmit data.
-The Initial and Handshake packet number spaces will typically contain a small
-number of packets, so losses are less likely to be detected using
-packet-threshold loss detection.
-
-When the crypto retransmission timer is active, the probe timer ({{pto}})
-is not active.
-
-
-### Retry and Version Negotiation
-
-A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process and resetting congestion
-control and loss recovery state, including resetting any pending timers.  Either
-packet indicates that the Initial was received but not processed.  Neither
-packet can be treated as an acknowledgment for the Initial.
-
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
-
-
-### Discarding Keys and Packet State {#discarding-packets}
-
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
-packets that were sent with those keys can no longer be acknowledged because
-their acknowledgements cannot be processed anymore. The sender MUST discard
-all recovery state associated with those packets and MUST remove them from
-the count of bytes in flight.
-
-Endpoints stop sending and receiving Initial packets once they start exchanging
-Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
-recovery state for all in-flight Initial packets is discarded.
-
-When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
-discarded.
-
-If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
-before Initial packets, early 0-RTT packets will be declared lost, but that
-is expected to be infrequent.
-
-It is expected that keys are discarded after packets encrypted with them would
-be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
-{{QUIC-TLS}}).
-
-
-## Probe Timeout {#pto}
+# Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
 flight but an acknowledgement is not received within the expected period of
@@ -605,7 +510,10 @@ Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
 
-### Computing PTO
+The PTO timer is not set if the time threshold {{time-threshold}} loss
+detection timer is set.
+
+## Computing PTO
 
 When an ack-eliciting packet is transmitted, the sender schedules a timer for
 the PTO period as follows:
@@ -636,7 +544,7 @@ sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
 
-### Sending Probe Packets
+## Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
 as a probe, unless there is no data available to send.  An endpoint MAY send up
@@ -678,7 +586,7 @@ and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
 
 
-### Loss Detection {#pto-loss}
+## Interaction with Loss Detection {#pto-loss}
 
 Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
@@ -687,6 +595,69 @@ A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
+
+
+## PTO for Crypto Packets
+
+The initial PTO SHOULD be set to twice the initial RTT or 1 second if no
+initial RTT is available as recommended in {{?RFC6298}}.
+
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
+sent, then no alarm should be armed until data has been received from the
+client.
+
+Because the server could be blocked until more packets are received, the client
+MUST ensure that the crypto retransmission timer is set if there is
+unacknowledged crypto data or if the client does not yet have 1-RTT keys.
+If the crypto retransmission timer expires before the client has 1-RTT keys,
+it is possible that the client may not have any crypto data to retransmit.
+However, the client MUST send a new packet, containing only PING or PADDING
+frames if necessary, to allow the server to continue sending data. If
+Handshake keys are available to the client, it MUST send a Handshake packet,
+and otherwise it MUST send an Initial packet in a UDP datagram of at least
+1200 bytes.
+
+## Retry and Version Negotiation
+
+A Retry or Version Negotiation packet causes a client to send another Initial
+packet, effectively restarting the connection process and resetting congestion
+control and loss recovery state, including resetting any pending timers.  Either
+packet indicates that the Initial was received but not processed.  Neither
+packet can be treated as an acknowledgment for the Initial.
+
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
+
+
+## Discarding Keys and Packet State {#discarding-packets}
+
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
+packets that were sent with those keys can no longer be acknowledged because
+their acknowledgements cannot be processed anymore. The sender MUST discard
+all recovery state associated with those packets and MUST remove them from
+the count of bytes in flight.
+
+Endpoints stop sending and receiving Initial packets once they start exchanging
+Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+recovery state for all in-flight Initial packets is discarded.
+
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  Initial secrets however might be destroyed
+sooner, as soon as handshake keys are available (see Section 4.10 of
+{{QUIC-TLS}}).
+
 
 
 ## Discussion
