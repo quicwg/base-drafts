@@ -1173,10 +1173,10 @@ SetLossDetectionTimer():
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
     return
-
+    
   if (has unacknowledged crypto data
       || endpoint is client without 1-RTT keys):
-    // Crypto retransmission timer.
+      // Crypto retransmission deadlock timer.
     if (smoothed_rtt == 0):
       timeout = 2 * kInitialRtt
     else:
@@ -1185,12 +1185,6 @@ SetLossDetectionTimer():
     timeout = timeout * (2 ^ crypto_count)
     loss_detection_timer.update(
       time_of_last_sent_crypto_packet + timeout)
-    return
-
-  // Don't arm timer if there are no ack-eliciting packets
-  // in flight.
-  if (no ack-eliciting packets in flight):
-    loss_detection_timer.cancel()
     return
 
   // Calculate PTO duration
