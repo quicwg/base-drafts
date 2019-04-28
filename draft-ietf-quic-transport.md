@@ -1403,9 +1403,9 @@ not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
 original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and max_connection_ids. The client MUST use the server's new
-values in the handshake instead, and absent new values from the server, the
-default value.
+ack_delay_exponent and active_connection_id_limit. The client MUST use the
+server's new values in the handshake instead, and absent new values from the
+server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -4020,7 +4020,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       max_ack_delay(11),
       disable_migration(12),
       preferred_address(13),
-      max_connection_ids(14),
+      active_connection_id_limit(14),
       (65535)
    } TransportParameterId;
 
@@ -4192,7 +4192,7 @@ A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
-max_connection_ids (0x000e):
+active_connection_id_limit (0x000e):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
@@ -5437,7 +5437,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
 | 0x000c | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
-| 0x000e | max_connection_ids          | {{transport-parameter-definitions}} |
+| 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 ## QUIC Frame Type Registry {#iana-frames}
