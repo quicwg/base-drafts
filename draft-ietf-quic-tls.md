@@ -419,12 +419,9 @@ received are incomplete or it has no data to send.
 
 In this document, the TLS handshake is considered complete from an endpoint's
 perspective when its TLS stack has reported that the handshake is complete.
-On the client, the handshake is complete when the TLS stack has verified the
-server Finished message.  On the server, this happens when the TLS stack has
-verified either the client Finished message or - in the case that the server
-has chosen to use a pre-shared key - the pre-shared key binder (see
-Section 4.2.11 of {{!TLS13}}).  Verifying these values provides endpoints with
-an assurance that previous handshake messages have not been modified.
+This happens when the TLS stack has verified the peer's Finished message.
+Verifying the peer's Finished provides endpoints with an assurance that
+previous handshake messages have not been modified.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake bytes that TLS needs to send.  TLS also provides QUIC with the
@@ -695,12 +692,9 @@ In this document, the TLS handshake is considered confirmed from an endpoint's
 perspective when both of the following two conditions are met: the handshake is
 complete from this endpoint’s perspective and the endpoint has received an
 ACK for a packet sent with 1-RTT keys.  This second condition can be
-implemented as checking whether largest_recvd_ack_1rtt >= first_1rtt_pn, where
-largest_recvd_ack_1rtt represents the highest value of the Largest Acknowledged
-field in any received 1-RTT ACK frame, and where first_1rtt_pn represents the
-lowest packet number that this endpoint has sent encrypted with 1-RTT keys
-(first_1rtt_pn is always 0 on the server since servers cannot send 0-RTT
-packets).
+implemented by tracking the lowest packet number sent with 1-RTT keys, and the
+highest value of the Largest Acknowledged field in any received 1-RTT ACK
+frame: once the latter is higher than the former, the handshake is confirmed.
 
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
 confirmed from its perspective.  An endpoint MAY discard its handshake keys
@@ -1085,20 +1079,22 @@ before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
 decrypt 1-RTT packets from the client.
 
-Until the handshake is considered complete, the connection and key exchange
-are not properly authenticated at the server.  Even though 1-RTT keys are
-available to a server after receiving the first handshake messages from a
-client, the server cannot consider the client to be authenticated until its
-TLS stack has indicated the handshake to be complete.  Therefore, a server
-MUST NOT process data from incoming 1-RTT protected packets before the TLS
-handshake is complete from its perspective.  In particular, it MUST NOT send
-acknowledgments for 1-RTT packets until the TLS handshake is complete.
-Packets protected with 1-RTT keys MAY be stored and later decrypted and used
-once the handshake is complete.
+In this document we consider the server to have verified the identity of the
+client when either the handshake is complete from the server's perspective,
+or - in the case that the server has chosen to use a pre-shared key - when it
+has validated the pre-shared key binder (see Section 4.2.11 of [TLS13]).
+
+The server has access to 1-RTT keys after receiving the first handshake
+messages from a client, which can happen before it has verified the identity of
+the client.  Therefore, a server MUST NOT process data from incoming 1-RTT
+protected packets before it has verified the client's identity.  In particular,
+it MUST NOT send acknowledgments for 1-RTT packets until then.  Packets
+protected with 1-RTT keys MAY be stored and later decrypted and used once the
+client's identity is verified.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
-potential for head-of-line blocking that this implies by sending their 1-RTT
+potential for head-of-line blocking that this implies by sending its 1-RTT
 packets coalesced with a handshake packet containing a copy of the CRYPTO frame
 that carries the Finished message, until one of the handshake packets is
 acknowledged.  This enables immediate server processing for those packets.
@@ -1128,19 +1124,17 @@ unexpected_message (see {{tls-errors}}).
 An endpoint MUST NOT initiate the first key update until the handshake is
 confirmed from its perspective. An endpoint MUST NOT initiate a subsequent
 key update until it has received an ACK for a packet sent at the previous
-KEY_PHASE.  This can be implemented as checking whether
-largest_recvd_ack_1rtt >= last_key_update_pn, where largest_recvd_ack_1rtt
-represents the highest value of the Largest Acknowledged field in any received
-1-RTT ACK frame, and where last_key_update_pn represents the lowest packet
-number that this endpoint sent using keys from the previous KEY_PHASE.
+KEY_PHASE.  This can be implemented by tracking the lowest packet number sent
+with the previous KEY_PHASE, and the highest value of the Largest Acknowledged
+field in any received 1-RTT ACK frame: once the latter is higher than the
+former, another key update can be initiated.
 
 Endpoints only need to maintain the two latest sets of packet protection keys
 and MAY discard older keys.  Updating keys multiple times rapidly can cause
 packets to be effectively lost if packets are significantly delayed.
 Therefore, an endpoint SHOULD NOT initiate a key update until three times the
 PTO after it has last updated keys. This avoids valid reordered packets being
-dropped by the peer because the peer may have discarded older keys, and reduces
-the computational overhead of key updates over the entire connection.
+dropped by the peer because the peer could have discarded older keys.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
@@ -1151,7 +1145,7 @@ If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
 next packet sent by the endpoint MUST then use the new keys.  Once an endpoint
 has sent a packet encrypted with a given key phase, it MUST NOT send a packet
-encrypted with a strictly older key phase.
+encrypted with an older key phase.
 
 An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
