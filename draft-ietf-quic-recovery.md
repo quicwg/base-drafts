@@ -7,7 +7,7 @@ category: std
 ipr: trust200902
 area: Transport
 workgroup: QUIC
- 
+
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
 
