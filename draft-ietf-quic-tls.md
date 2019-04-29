@@ -369,6 +369,29 @@ primary functions:
 Additional functions might be needed to configure TLS.
 
 
+### Handshake Complete {#handshake-complete}
+
+In this document, the TLS handshake is considered complete when the TLS stack
+has reported that the handshake is complete.  This happens when the TLS stack
+has verified the peer's Finished message.  Verifying the peer's Finished
+provides endpoints with an assurance that previous handshake messages have not
+been modified.  Note that the handshake does not complete on both endpoints
+simultaneously, therefore any requirements placed on endpoints based on the
+completion of the handshake are specific to the handshake being complete from
+the perspective of the endpoint in question.
+
+
+### Handshake Confirmed {#handshake-confirmed}
+
+In this document, the TLS handshake is considered confirmed when both of the
+following two conditions are met: the handshake is complete and the endpoint
+has received an ACK for a packet sent with 1-RTT keys.  This second condition
+can be implemented by tracking the lowest packet number sent with 1-RTT keys,
+and the highest value of the Largest Acknowledged field in any received 1-RTT
+ACK frame: once the latter is higher than the former, the handshake is
+confirmed.
+
+
 ### Sending and Receiving Handshake Messages
 
 In order to drive the handshake, TLS depends on being able to send and receive
@@ -416,12 +439,6 @@ network, it proceeds as follows:
 Each time that TLS is provided with new data, new handshake bytes are requested
 from TLS.  TLS might not provide any bytes if the handshake messages it has
 received are incomplete or it has no data to send.
-
-In this document, the TLS handshake is considered complete from an endpoint's
-perspective when its TLS stack has reported that the handshake is complete.
-This happens when the TLS stack has verified the peer's Finished message.
-Verifying the peer's Finished provides endpoints with an assurance that
-previous handshake messages have not been modified.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake bytes that TLS needs to send.  TLS also provides QUIC with the
@@ -688,30 +705,23 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys
 
-In this document, the TLS handshake is considered confirmed from an endpoint's
-perspective when both of the following two conditions are met: the handshake is
-complete from this endpoint’s perspective and the endpoint has received an
-ACK for a packet sent with 1-RTT keys.  This second condition can be
-implemented by tracking the lowest packet number sent with 1-RTT keys, and the
-highest value of the Largest Acknowledged field in any received 1-RTT ACK
-frame: once the latter is higher than the former, the handshake is confirmed.
-
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed from its perspective.  An endpoint SHOULD discard its handshake keys
-as soon as it has confirmed the handshake.  Endpoints SHOULD repeatedly send
-ACK-eliciting frames encrypted with 1-RTT keys as soon as they have installed
-those send keys and until they receive an acknowledgment for one of them.
+confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
+keys as soon as it has confirmed the handshake.  Endpoints SHOULD repeatedly
+send ACK-eliciting frames encrypted with 1-RTT keys as soon as they have
+installed those send keys and until they receive an acknowledgment for one of
+them.
 
 
 ### Discarding 0-RTT Keys
 
-Clients can discard 0-RTT keys as soon as they install 1-RTT keys, since they
-have no use after that moment.
+Clients SHOULD discard 0-RTT keys as soon as they install 1-RTT keys, since
+they have no use after that moment.
 
-Servers SHOULD discard 0-RTT keys as soon as they no longer expect to receive
+Servers MUST discard 0-RTT keys as soon as they no longer expect to receive
 0-RTT packets.  This can been established by receiving a 1-RTT packet when all
 previous packet numbers have been received, or by receiving a 1-RTT packet and
-then waiting until three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).
+then waiting up to three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).
 
 
 # Packet Protection {#packet-protection}
@@ -1079,18 +1089,19 @@ before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
 decrypt 1-RTT packets from the client.
 
-In this document we consider the server to have verified the identity of the
-client when either the handshake is complete from the server's perspective,
-or - in the case that the server has chosen to use a pre-shared key - when it
-has validated the pre-shared key binder (see Section 4.2.11 of [TLS13]).
-
-The server has access to 1-RTT keys after receiving the first handshake
-messages from a client, which can happen before it has verified the identity of
-the client.  Therefore, a server MUST NOT process data from incoming 1-RTT
-protected packets before it has verified the client's identity.  In particular,
-it MUST NOT send acknowledgments for 1-RTT packets until then.  Packets
-protected with 1-RTT keys MAY be stored and later decrypted and used once the
-client's identity is verified.
+Until the handshake is complete, the connection and key exchange are not
+properly authenticated at the server.  In the case that the server has chosen
+to use a pre-shared key, validating the client's pre-shared key binder (see
+Section 4.2.11 of [TLS13]) provides assurances on the identity of the client
+but does not guarantee that previous handshake messages have not been tampered
+with.  Even though 1-RTT keys are available to a server after receiving the
+first handshake messages from a client, the server cannot consider the client
+to be fully authenticated until its TLS stack has indicated the handshake to be
+complete.  Therefore, a server MUST NOT process data from incoming 1-RTT
+protected packets before the TLS handshake is complete.  In particular, it
+MUST NOT send acknowledgments for 1-RTT packets until the TLS handshake is
+complete.  Packets protected with 1-RTT keys MAY be stored and later decrypted
+and used once the handshake is complete.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1122,7 +1133,7 @@ message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
 An endpoint MUST NOT initiate the first key update until the handshake is
-confirmed from its perspective. An endpoint MUST NOT initiate a subsequent
+confirmed ({{handshake-confirmed}}). An endpoint MUST NOT initiate a subsequent
 key update until it has received an ACK for a packet sent at the previous
 KEY_PHASE.  This can be implemented by tracking the lowest packet number sent
 with the previous KEY_PHASE, and the highest value of the Largest Acknowledged
