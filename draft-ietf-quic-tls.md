@@ -697,7 +697,7 @@ highest value of the Largest Acknowledged field in any received 1-RTT ACK
 frame: once the latter is higher than the former, the handshake is confirmed.
 
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed from its perspective.  An endpoint MAY discard its handshake keys
+confirmed from its perspective.  An endpoint SHOULD discard its handshake keys
 as soon as it has confirmed the handshake.  Endpoints SHOULD repeatedly send
 ACK-eliciting frames encrypted with 1-RTT keys as soon as they have installed
 those send keys and until they receive an acknowledgment for one of them.
