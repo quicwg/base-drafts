@@ -2360,7 +2360,7 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
-To entities other than its intended recipient, a stateless reset will be appear
+To entities other than its intended recipient, a stateless reset will appear
 to be a packet with a short header.  For the packet to appear as valid, the
 Unpredictable Bits field needs to include at least 182 bits of data (or 23
 bytes, less the two fixed bits).  This is intended to allow for a Destination
