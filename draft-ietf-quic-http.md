@@ -1120,12 +1120,12 @@ Each frame's payload MUST contain exactly the fields identified in its
 description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+HTTP_FRAME_ERROR.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error ({{errors}}) of type
-HTTP_MALFORMED_FRAME. Streams which terminate abruptly may be reset at any point
-in a frame.
+HTTP_FRAME_ERROR. Streams which terminate abruptly may be reset at any point in
+a frame.
 
 ## Frame Definitions {#frames}
 
@@ -1246,7 +1246,7 @@ root of the tree cannot be reprioritized.
 
 The PRIORITY frame can express relationships which might not be permitted based
 on the stream on which it is sent or its position in the stream. These
-situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+situations MUST be treated as a connection error of type HTTP_INVALID_PRIORITY.
 The following situations are examples of invalid PRIORITY frames:
 
 - A PRIORITY frame with the Prioritized Element Type set to `11`.
@@ -1254,7 +1254,7 @@ The following situations are examples of invalid PRIORITY frames:
   does not identify a client-initiated bidirectional stream
 
 A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
-error of type HTTP_MALFORMED_FRAME.
+error of type HTTP_INVALID_PRIORITY.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
@@ -1475,7 +1475,7 @@ close a connection.
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_MALFORMED_FRAME.
+of any other type as a connection error of type HTTP_ID_ERROR.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -1601,78 +1601,64 @@ HTTP_GENERAL_PROTOCOL_ERROR (0x01):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
 
-Reserved (0x02):
-: This code is reserved and has no meaning.
-
-HTTP_INTERNAL_ERROR (0x03):
+HTTP_INTERNAL_ERROR (0x02):
 : An internal error has occurred in the HTTP stack.
 
-Reserved (0x04):
-: This code is reserved and has no meaning.
-
-HTTP_REQUEST_CANCELLED (0x05):
-: The request or its response (including pushed response) is cancelled.
-
-HTTP_INCOMPLETE_REQUEST (0x06):
-: The client's stream terminated without containing a fully-formed request.
-
-HTTP_CONNECT_ERROR (0x07):
-: The connection established in response to a CONNECT request was reset or
-  abnormally closed.
-
-HTTP_EXCESSIVE_LOAD (0x08):
-: The endpoint detected that its peer is exhibiting a behavior that might be
-  generating excessive load.
-
-HTTP_VERSION_FALLBACK (0x09):
-: The requested operation cannot be served over HTTP/3.  The
-  peer should retry over HTTP/1.1.
-
-HTTP_WRONG_STREAM (0x0A):
-: A frame was received on a stream where it is not permitted.
-
-HTTP_ID_ERROR (0x0B):
-: A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
-  exceeding a limit, reducing a limit, or being reused.
-
-Reserved (0x0C):
-: N/A
-
-HTTP_STREAM_CREATION_ERROR (0x0D):
+HTTP_STREAM_CREATION_ERROR (0x03):
 : The endpoint detected that its peer created a stream that it will not accept.
 
-Reserved (0x0E):
-: N/A
-
-HTTP_CLOSED_CRITICAL_STREAM (0x0F):
+HTTP_CLOSED_CRITICAL_STREAM (0x04):
 : A stream required by the connection was closed or reset.
 
-Reserved (0x0010):
-: N/A
+HTTP_UNEXPECTED_FRAME (0x05):
+: A frame was received which was not permitted in the current state.
 
-HTTP_EARLY_RESPONSE (0x0011):
+HTTP_FRAME_ERROR (0x06):
+: A frame that fails to satisfy layout requirements or with an invalid size
+  was received.
+
+HTTP_REQUEST_REJECTED (0x07):
+: A server rejected a request without performing any application processing.
+
+HTTP_REQUEST_CANCELLED (0x08):
+: The request or its response (including pushed response) is cancelled.
+
+HTTP_EARLY_RESPONSE (0x09):
 : The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
 
-HTTP_MISSING_SETTINGS (0x0012):
-: No SETTINGS frame was received at the beginning of the control stream.
+HTTP_CONNECT_ERROR (0x0A):
+: The connection established in response to a CONNECT request was reset or
+  abnormally closed.
 
-HTTP_UNEXPECTED_FRAME (0x0013):
-: A frame was received which was not permitted in the current state.
+HTTP_EXCESSIVE_LOAD (0x0B):
+: The endpoint detected that its peer is exhibiting a behavior that might be
+  generating excessive load.
 
-HTTP_REQUEST_REJECTED (0x0014):
-: A server rejected a request without performing any application processing.
+HTTP_WRONG_STREAM (0x0C):
+: A frame was received on a stream where it is not permitted.
 
-HTTP_SETTINGS_ERROR (0x00FF):
+HTTP_VERSION_FALLBACK (0x0D):
+: The requested operation cannot be served over HTTP/3.  The
+  peer should retry over HTTP/1.1.
+
+HTTP_ID_ERROR (0x0E):
+: A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
+  exceeding a limit, reducing a limit, or being reused.
+
+HTTP_INCOMPLETE_REQUEST (0x0F):
+: The client's stream terminated without containing a fully-formed request.
+
+HTTP_INVALID_PRIORITY (0x010):
+: An invalid prioritization instruction was received by the server.
+
+HTTP_SETTINGS_ERROR (0x011):
 : An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
   setting was detected, a client-only setting was sent by a server, or a
   server-only setting by a client.
 
-HTTP_MALFORMED_FRAME (0x01XX):
-: An error in a specific frame type.  If the frame type is `0xfe` or less, the
-  type is included as the last byte of the error code.  For example, an error in
-  a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
-  `0xff` is used to indicate any frame type greater than `0xfe`.
+HTTP_MISSING_SETTINGS (0x0012):
+: No SETTINGS frame was received at the beginning of the control stream.
 
 
 # Extensions to HTTP/3 {#extensions}
@@ -1903,27 +1889,23 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
 | HTTP_GENERAL_PROTOCOL_ERROR         | 0x0001     | General protocol error                   | {{http-error-codes}}   |
-| Reserved                            | 0x0002     | N/A                                      | N/A                    |
-| HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
-| Reserved                            | 0x0004     | N/A                                      | N/A                    |
-| HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
-| HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
-| Reserved                            | 0x000C     | N/A                                      | N/A                    |
-| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Stream creation error                    | {{http-error-codes}}   |
-| Reserved                            | 0x000E     | N/A                                      | N/A                    |
-| HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
-| Reserved                            | 0x000E     | N/A                                      | N/A                    |
-| HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_INTERNAL_ERROR                 | 0x0002     | Internal error                           | {{http-error-codes}}   |
+| HTTP_STREAM_CREATION_ERROR          | 0x0003     | Stream creation error                    | {{http-error-codes}}   |
+| HTTP_CLOSED_CRITICAL_STREAM         | 0x0004     | Critical stream was closed               | {{http-error-codes}}   |
+| HTTP_UNEXPECTED_FRAME               | 0x0005     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_FRAME_ERROR                    | 0x0006     | Frame violated layout or size rules      | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x0007     | Request not processed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_CANCELLED              | 0x0008     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_EARLY_RESPONSE                 | 0x0009     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_CONNECT_ERROR                  | 0x000A     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| HTTP_EXCESSIVE_LOAD                 | 0x000B     | Peer generating excessive load           | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM                   | 0x000C     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x000D     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x000E     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| HTTP_INCOMPLETE_REQUEST             | 0x000F     | Stream terminated early                  | {{http-error-codes}}   |
+| HTTP_INVALID_PRIORITY               | 0x0010     | Server received invalid prioritization   | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x0011     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
-| HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
-| HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
-| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x00FF     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
@@ -2176,9 +2158,9 @@ NO_ERROR (0x0):
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to HTTP_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. This includes HTTP_MALFORMED_FRAME,
-  HTTP_WRONG_STREAM, HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM
-  defined in {{http-error-codes}}.
+  specific error codes have been defined. This includes HTTP_WRONG_STREAM,
+  HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM defined in
+  {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
@@ -2195,7 +2177,7 @@ STREAM_CLOSED (0x5):
   QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
 
 FRAME_SIZE_ERROR (0x6):
-: HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
+: HTTP_FRAME_ERROR error code defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
 : HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
