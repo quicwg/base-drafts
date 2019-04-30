@@ -852,10 +852,11 @@ limits are set in the transport parameters (see
 using MAX_STREAMS frames ({{frame-max-streams}}). Separate limits apply to
 unidirectional and bidirectional streams.
 
-A max_streams transport parameter or MAX_STREAMS frame is invalid if it has a
-value greater than 2^60, which would allow for an invalid maximum stream ID.
-If an invalid value is received, the connection MUST be immediately closed with
-a connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
+If a max_streams transport parameter or MAX_STREAMS frame is received with a
+value greater than 2^60, this would allow a maximum stream ID that cannot be
+expressed as a variable-length integer (see {{integer-encoding}}).
+If either is received, the connection MUST be closed immediately with a
+connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
