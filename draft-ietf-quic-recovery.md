@@ -1028,8 +1028,9 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments for 1-RTT packets.  The actual ack_delay in a received ACK
-  frame may be larger due to late timers, reordering, or lost ACKs.
+  acknowledgments for packets in the ApplicationData packet number space. The
+  actual ack_delay in a received ACK frame may be larger due to late timers,
+  reordering, or lost ACKs.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
