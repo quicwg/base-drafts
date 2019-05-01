@@ -592,19 +592,24 @@ of the associated Element ID fields.
 
 Note that unlike in {{!RFC7540}}, the root of the tree cannot be referenced
 using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
-root of the tree cannot be reprioritized.  A PRIORITY frame sent on a request
-stream with the Prioritized Element Type set to any value other than `11` or
-which expresses a dependency on a request with a greater Stream ID than the
-current stream MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME. Likewise, a PRIORITY frame sent on a control stream with
-the Prioritized Element Type set to `11` MUST be treated as a connection error
-of type HTTP_MALFORMED_FRAME. A PRIORITY frame with Empty bits not set to zero
-MAY be treated as a connection error of type HTTP_MALFORMED_FRAME.
+root of the tree cannot be reprioritized.
 
-When a PRIORITY frame claims to reference a request, the associated ID MUST
-identify a client-initiated bidirectional stream.  A server MUST treat receipt
-of a PRIORITY frame identifying a stream of any other type as a connection error
-of type HTTP_MALFORMED_FRAME.
+The PRIORITY frame can express relationships which might not be permitted based
+on the stream on which it is sent or its position in the stream. These
+situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+The following situations are examples of invalid PRIORITY frames:
+
+- A PRIORITY frame sent on a request stream with the Prioritized Element Type
+  set to any value other than `11`
+- A PRIORITY frame sent on a request stream which expresses a dependency on a
+  request with a greater Stream ID than the current stream
+- A PRIORITY frame sent on a control stream with the Prioritized Element Type
+  set to `11`
+- A PRIORITY frame which claims to reference a request, but the associated ID
+  does not identify a client-initiated bidirectional stream
+
+A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
+error of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
