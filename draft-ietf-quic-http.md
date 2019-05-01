@@ -613,7 +613,7 @@ error of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as a connection error of HTTP_LIMIT_EXCEEDED.
+to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
