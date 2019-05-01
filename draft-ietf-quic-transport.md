@@ -269,9 +269,10 @@ data in one direction: from the initiator of the stream to its peer.
 Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
-the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
-reuse a stream ID within a connection.  Stream IDs are encoded as
-variable-length integers (see {{integer-encoding}}).
+the stream ID.  A stream ID is a 62-bit integer (0 to 2^62-1) that is unique for
+all streams on a connection.  Stream IDs are encoded as variable-length integers
+(see {{integer-encoding}}).  A QUIC endpoint MUST NOT reuse a stream ID within a
+connection.
 
 The least significant bit (0x1) of the stream ID identifies the initiator of the
 stream.  Client-initiated streams have even-numbered stream IDs (with the bit
