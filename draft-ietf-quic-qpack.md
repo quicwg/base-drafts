@@ -1,5 +1,5 @@
 ---
-title: "QPACK: Header Compression for HTTP over QUIC"
+title: "QPACK: Header Compression for HTTP/3"
 abbrev: QPACK
 docname: draft-ietf-quic-qpack-latest
 date: {DATE}
@@ -210,10 +210,20 @@ acknowledged by the decoder.
 
 ### Blocked Dynamic Table Insertions {#blocked-insertion}
 
+A dynamic table entry is considered blocking and cannot be evicted until its
+insertion has been acknowledged and there are no outstanding unacknowledged
+references to the entry.  In particular, a dynamic table entry that has never
+been referenced can still be blocking.
+
+Note:
+: A blocking entry is unrelated to a blocked stream, which is a stream that a
+  decoder cannot decode as a result of references to entries that are not yet
+  available.  Any encoder that uses the dynamic table has to keep track of
+  blocked entries, whereas blocked streams are optional.
+
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict an entry with unacknowledged references.
-For header blocks that might rely on the newly added entry, the encoder can use
-a literal representation.
+existing entry) if doing so would evict a blocking entry.  In this case, the
+encoder can send literal representations of header fields.
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -223,7 +233,7 @@ reference such an entry, the encoder can emit a Duplicate instruction (see
 Determining which entries are too close to eviction to reference is an encoder
 preference.  One heuristic is to target a fixed amount of available space in the
 dynamic table: either unused space or space that can be reclaimed by evicting
-unreferenced entries.  To achieve this, the encoder can maintain a draining
+non-blocking entries.  To achieve this, the encoder can maintain a draining
 index, which is the smallest absolute index in the dynamic table that it will
 emit a reference for.  As new entries are inserted, the encoder increases the
 draining index to maintain the section of the table that it will not reference.
@@ -329,10 +339,9 @@ decoder that permit the encoder to track the decoder's state.  These events are:
 
 Knowledge that a header block with references to the dynamic table has been
 processed permits the encoder to evict entries to which no unacknowledged
-references remain, regardless of whether those references were potentially
-blocking (see {{blocked-insertion}}).  When a stream is reset or abandoned, the
-indication that these header blocks will never be processed serves a similar
-function; see {{stream-cancellation}}.
+references remain (see {{blocked-insertion}}).  When a stream is reset or
+abandoned, the indication that these header blocks will never be processed
+serves a similar function (see {{stream-cancellation}}).
 
 The decoder chooses when to emit Insert Count Increment instructions (see
 {{insert-count-increment}}). Emitting an instruction after adding each new
@@ -361,6 +370,9 @@ addressed.
 
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
+
+All entries in the static table have a name and a value.  However, values can be
+empty (that is, have a length of 0).
 
 Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
@@ -402,8 +414,8 @@ limit on its size.  The initial capcity of the dynamic table is zero.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (table capacity - size of new entry) or until the table is empty. The
-encoder MUST NOT evict a dynamic table entry unless it has first been
-acknowledged by the decoder.
+encoder MUST NOT evict a blocking dynamic table entry (see
+{{blocked-insertion}}).
 
 If the size of the new entry is less than or equal to the dynamic table
 capacity, then that entry is added to the table.  It is an error if the encoder
@@ -595,7 +607,7 @@ described in this section. Header block instructions are contained in HEADERS
 and PUSH_PROMISE frames, which are conveyed on request or push streams as
 described in {{HTTP3}}.
 
-### Encoder and Decoder Streams
+### Encoder and Decoder Streams {#enc-dec-stream-def}
 
 QPACK defines two unidirectional stream types:
 
@@ -718,9 +730,9 @@ that exceeds this limit as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of entries with outstanding
-references (see {{reference-tracking}}).  Changing the capacity of the dynamic
-table is not acknowledged as this instruction does not insert an entry.
+{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
+{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
+acknowledged as this instruction does not insert an entry.
 
 
 ## Decoder Instructions {#decoder-instructions}
@@ -1005,6 +1017,9 @@ pattern.  If the entry is in the dynamic table with an absolute index greater
 than or equal to the Base, the representation starts with the '0000' four-bit
 pattern.
 
+Only the header field name stored in the static or dynamic table is used. Any
+header field value MUST be ignored.
+
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
 set, the encoded header MUST always be encoded with a literal representation. In
@@ -1103,15 +1118,15 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the connection from continuing:
 
-HTTP_QPACK_DECOMPRESSION_FAILED (TBD):
+HTTP_QPACK_DECOMPRESSION_FAILED (0x200):
 : The decoder failed to interpret a header block instruction and is not
   able to continue decoding that header block.
 
-HTTP_QPACK_ENCODER_STREAM_ERROR (TBD):
+HTTP_QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
   encoder stream.
 
-HTTP_QPACK_DECODER_STREAM_ERROR (TBD):
+HTTP_QPACK_DECODER_STREAM_ERROR (0x202):
 : The encoder failed to interpret a decoder instruction received on the
   decoder stream.
 
@@ -1142,8 +1157,8 @@ registered in the "HTTP/3 Stream Type" registry established in {{HTTP3}}.
 | ---------------------------- | ------ | ------------------------- | ------ |
 | Stream Type                  | Code   | Specification             | Sender |
 | ---------------------------- | :----: | ------------------------- | ------ |
-| QPACK Encoder Stream         | 0x02   | {{wire-format}}           | Both   |
-| QPACK Decoder Stream         | 0x03   | {{wire-format}}           | Both   |
+| QPACK Encoder Stream         | 0x02   | {{enc-dec-stream-def}}    | Both   |
+| QPACK Decoder Stream         | 0x03   | {{enc-dec-stream-def}}    | Both   |
 | ---------------------------- | ------ | ------------------------- | ------ |
 
 ## Error Code Registration
@@ -1154,9 +1169,9 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| HTTP_QPACK_DECOMPRESSION_FAILED   | TBD   | Decompression of a header block failed   | {{error-handling}}     |
-| HTTP_QPACK_ENCODER_STREAM_ERROR   | TBD   | Error on the encoder stream              | {{error-handling}}     |
-| HTTP_QPACK_DECODER_STREAM_ERROR   | TBD   | Error on the decoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECOMPRESSION_FAILED   | 0x200 | Decompression of a header block failed   | {{error-handling}}     |
+| HTTP_QPACK_ENCODER_STREAM_ERROR   | 0x201 | Error on the encoder stream              | {{error-handling}}     |
+| HTTP_QPACK_DECODER_STREAM_ERROR   | 0x202 | Error on the decoder stream              | {{error-handling}}     |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 
 
@@ -1323,6 +1338,10 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-06
+
+- Clarify initial dynamic table capacity maximums (#2276, #2330, #2330)
 
 ## Since draft-ietf-quic-qpack-05
 
