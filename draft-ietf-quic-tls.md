@@ -373,12 +373,12 @@ Additional functions might be needed to configure TLS.
 
 In this document, the TLS handshake is considered complete when the TLS stack
 has reported that the handshake is complete.  This happens when the TLS stack
-has verified the peer's Finished message.  Verifying the peer's Finished
-provides endpoints with an assurance that previous handshake messages have not
-been modified.  Note that the handshake does not complete on both endpoints
-simultaneously, therefore any requirements placed on endpoints based on the
-completion of the handshake are specific to the handshake being complete from
-the perspective of the endpoint in question.
+has both sent a Finished message and verified the peer's Finished message.
+Verifying the peer's Finished provides endpoints with an assurance that
+previous handshake messages have not been modified.  Note that the handshake
+does not complete on both endpoints simultaneously, therefore any requirements
+placed on endpoints based on the completion of the handshake are specific to
+the handshake being complete from the perspective of the endpoint in question.
 
 
 ### Handshake Confirmed {#handshake-confirmed}
@@ -707,10 +707,12 @@ and ignoring any outstanding Initial packets.
 
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
 confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Endpoints SHOULD repeatedly
-send ACK-eliciting frames encrypted with 1-RTT keys as soon as they have
-installed those send keys and until they receive an acknowledgment for one of
-them.
+keys as soon as it has confirmed the handshake.  Most applications protocols
+will send data after the handshake, ensuring the peer can discard their
+handshake keys promptly.  Applications protocols that do not MAY send
+ACK-eliciting frames encrypted with 1-RTT keys as soon as they have installed
+those send keys and until they receive an acknowledgment for one of them,
+ensuring the peer can discard their handshake keys.
 
 
 ### Discarding 0-RTT Keys
