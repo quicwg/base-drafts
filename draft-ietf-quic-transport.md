@@ -1756,7 +1756,7 @@ initiated while a path validation on the old path is in progress.
 # Connection Migration {#migration}
 
 The use of a connection ID allows connections to survive changes to endpoint
-addresses (the two-tuple of IP address and port), such as those caused by an
+addresses (IP address and port), such as those caused by an
 endpoint migrating to a new network.  This section describes the process by
 which an endpoint migrates to a new address.
 
