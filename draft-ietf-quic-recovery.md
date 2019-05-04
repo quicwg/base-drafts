@@ -214,6 +214,13 @@ Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
 
+### Clearer end to a loss epoch
+
+QUIC may reduce cwnd several times on successive losses whereas TCP will keep
+cwnd constant until (longer) recovery exit or an RTO occurs, because QUIC uses
+packet numbers to determine when a loss epoch has ended and TCP uses packet
+sequence numbers.
+
 ### No Reneging
 
 QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
