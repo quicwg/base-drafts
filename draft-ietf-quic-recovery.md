@@ -217,9 +217,9 @@ not available.
 ### Clearer end to a loss epoch
 
 QUIC may reduce cwnd several times on successive losses whereas TCP will keep
-cwnd constant until (longer) recovery exit or an RTO occurs, because QUIC uses
-packet numbers to determine when a loss epoch has ended and TCP uses packet
-sequence numbers.
+cwnd constant until forward progress is made or an RTO occurs. This difference
+is because QUIC uses packet numbers to determine when a loss epoch has ended
+and TCP uses packet sequence numbers.
 
 ### No Reneging
 
