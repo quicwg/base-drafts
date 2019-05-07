@@ -1708,14 +1708,9 @@ to the same remote address from which the PATH_CHALLENGE was received.
 ## Successful Path Validation
 
 A new address is considered valid when a PATH_RESPONSE frame is received that
-meets the following criteria:
-
-- It contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
-  acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-  validation, since the acknowledgment can be spoofed by a malicious peer.
-
-- It was received on the same local address from which the corresponding
-  PATH_CHALLENGE was sent.
+contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
+acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
+validation, since the acknowledgment can be spoofed by a malicious peer.
 
 Note that receipt on a different local address does not result in path
 validation failure, as it might be a result of a forwarded packet (see
