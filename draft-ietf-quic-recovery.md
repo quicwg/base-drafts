@@ -218,7 +218,7 @@ not available.
 
 QUIC ends a loss epoch when a packet sent after loss is declared is
 acknowledged. TCP waits for the gap in the sequence number space to be filled,
-and so if a segment is lost multiple times in a row, the loss epoch does not
+and so if a segment is lost multiple times in a row, the loss epoch may not
 end. Because both reduce CWND only once per epoch,  QUIC may reduce
 congestion window multiple times in the same circumstances TCP only reduces
 the congestion window once.
