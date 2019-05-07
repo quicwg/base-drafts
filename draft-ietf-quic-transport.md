@@ -5422,6 +5422,14 @@ Negotiation packets do not contain any mechanism to prevent version downgrade
 attacks.  Future versions of QUIC that use Version Negotiation packets MUST
 define a mechanism that is robust against version downgrade attacks.
 
+## Targeted Attacks by Routing
+
+Deployments should limit the ability of an attacker to target a new connection
+to a particular server instance.  This means that client-controlled fields, such
+as the initial Destination Connection ID used on Initial and 0-RTT packets
+SHOULD NOT be used by themselves to make routing decisions.  Ideally, routing
+decisions are made independently of client-selected values; a Source Connection
+ID can be selected to route later packets to the same server.
 
 # IANA Considerations
 
