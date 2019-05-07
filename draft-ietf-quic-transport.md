@@ -4171,9 +4171,8 @@ ack_delay_exponent (0x000a):
 
 : The ACK delay exponent is an integer value indicating an
   exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  If this value is absent, a default value of 3 is assumed
-  (indicating a multiplier of 8).  The default value is also used for ACK frames
-  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
+  If this value is absent, a default value of 3 is assumed (indicating a
+  multiplier of 8). Values above 20 are invalid.
 
 max_ack_delay (0x000b):
 
@@ -4334,10 +4333,10 @@ ACK Delay:
   in the Largest Acknowledged field, was received by this peer.  The value of
   the ACK Delay field is scaled by multiplying the encoded value by 2 to the
   power of the value of the `ack_delay_exponent` transport parameter set by the
-  sender of the ACK frame.  The `ack_delay_exponent` defaults to 3, or a
-  multiplier of 8 (see {{transport-parameter-definitions}}).  Scaling in this
-  fashion allows for a larger range of values with a shorter encoding at the
-  cost of lower resolution.
+  sender of the ACK frame (see {{transport-parameter-definitions}}).  Scaling in
+  this fashion allows for a larger range of values with a shorter encoding at
+  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
+  for Initial and Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
 

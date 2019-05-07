@@ -309,7 +309,7 @@ parameter, see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
 explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
-the peer.
+the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
@@ -1026,9 +1026,9 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments, in milliseconds.  The actual ack_delay in a
-  received ACK frame may be larger due to late timers, reordering,
-  or lost ACKs.
+  acknowledgments for packets in the ApplicationData packet number space. The
+  actual ack_delay in a received ACK frame may be larger due to late timers,
+  reordering, or lost ACKs.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
@@ -1052,6 +1052,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = 0
+   max_ack_delay = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1112,7 +1113,10 @@ OnAckReceived(ack, pn_space):
       IncludesAckEliciting(newly_acked_packets))
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
-    UpdateRtt(ack.ack_delay)
+    ack_delay = 0
+    if pn_space == ApplicationData:
+      ack_delay = ack.ack_delay
+    UpdateRtt(ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
