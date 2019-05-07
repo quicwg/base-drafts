@@ -359,7 +359,8 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream.  If the
+HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream, and the
+receiver MUST NOT request that the sender close the control stream.  If either
 control stream is closed at any point, this MUST be treated as a connection
 error of type HTTP_CLOSED_CRITICAL_STREAM.
 
