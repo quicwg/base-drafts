@@ -570,31 +570,6 @@ packet is received.  The client MAY use this value to seed the RTT estimator for
 a subsequent connection attempt to the server.
 
 
-### Discarding Keys and Packet State {#discarding-packets}
-
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
-packets that were sent with those keys can no longer be acknowledged because
-their acknowledgements cannot be processed anymore. The sender MUST discard
-all recovery state associated with those packets and MUST remove them from
-the count of bytes in flight.
-
-Endpoints stop sending and receiving Initial packets once they start exchanging
-Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
-recovery state for all in-flight Initial packets is discarded.
-
-When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
-discarded.
-
-If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
-before Initial packets, early 0-RTT packets will be declared lost, but that
-is expected to be infrequent.
-
-It is expected that keys are discarded after packets encrypted with them would
-be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
-{{QUIC-TLS}}).
-
-
 ## Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
@@ -688,6 +663,29 @@ prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
 
+## Discarding Keys and Packet State {#discarding-packets}
+
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
+packets that were sent with those keys can no longer be acknowledged because
+their acknowledgements cannot be processed anymore. The sender MUST discard
+all recovery state associated with those packets and MUST remove them from
+the count of bytes in flight.
+
+Endpoints stop sending and receiving Initial packets once they start exchanging
+Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+recovery state for all in-flight Initial packets is discarded.
+
+When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
+discarded.
+
+If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
+before Initial packets, early 0-RTT packets will be declared lost, but that
+is expected to be infrequent.
+
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  Initial secrets however might be destroyed
+sooner, as soon as handshake keys are available (see Section 4.10 of
+{{QUIC-TLS}}).
 
 ## Discussion
 
@@ -1057,7 +1055,7 @@ follows:
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
-     largest_acked_packet[pn_space] = 0
+     largest_acked_packet[pn_space] = infinite
      loss_time[pn_space] = 0
 ~~~
 
@@ -1097,8 +1095,11 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
-  largest_acked_packet[pn_space] =
-      max(largest_acked_packet[pn_space], ack.largest_acked)
+  if (largest_acked_packet[pn_space] == infinite):
+    largest_acked_packet[pn_space] = ack.largest_acked
+  else:
+    largest_acked_packet[pn_space] =
+        max(largest_acked_packet[pn_space], ack.largest_acked)
 
   // Nothing to do if there are no newly acked packets.
   newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
@@ -1279,6 +1280,7 @@ Pseudocode for DetectLostPackets follows:
 
 ~~~
 DetectLostPackets(pn_space):
+  assert(largest_acked_packet[pn_space] != infinite)
   loss_time[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
@@ -1289,16 +1291,14 @@ DetectLostPackets(pn_space):
   // Packets sent before this time are deemed lost.
   lost_send_time = now() - loss_delay
 
-  // Packets with packet numbers before this are deemed lost.
-  lost_pn = largest_acked_packet[pn_space] - kPacketThreshold
-
   foreach unacked in sent_packets[pn_space]:
     if (unacked.packet_number > largest_acked_packet[pn_space]):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
     if (unacked.time_sent <= lost_send_time ||
-        unacked.packet_number <= lost_pn):
+        largest_acked_packet[pn_space] >=
+          unacked.packet_number + kPacketThreshold):
       sent_packets[pn_space].remove(unacked.packet_number)
       if (unacked.in_flight):
         lost_packets.insert(unacked)

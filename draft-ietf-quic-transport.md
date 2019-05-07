@@ -269,9 +269,10 @@ data in one direction: from the initiator of the stream to its peer.
 Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
-the stream ID.  Stream IDs are unique to a stream. A QUIC endpoint MUST NOT
-reuse a stream ID within a connection.  Stream IDs are encoded as
-variable-length integers (see {{integer-encoding}}).
+the stream ID.  A stream ID is a 62-bit integer (0 to 2^62-1) that is unique for
+all streams on a connection.  Stream IDs are encoded as variable-length integers
+(see {{integer-encoding}}).  A QUIC endpoint MUST NOT reuse a stream ID within a
+connection.
 
 The least significant bit (0x1) of the stream ID identifies the initiator of the
 stream.  Client-initiated streams have even-numbered stream IDs (with the bit
@@ -960,25 +961,20 @@ connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
-Endpoints store received connection IDs for future use.  An endpoint that
-receives excessive connection IDs MAY discard those it cannot store without
-sending a RETIRE_CONNECTION_ID frame.  An endpoint that issues connection IDs
-cannot expect its peer to store and use all issued connection IDs.
-
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
-unused connection IDs.  While each endpoint independently chooses how many
-connection IDs to issue, endpoints SHOULD provide and maintain at least eight
-connection IDs.  The endpoint SHOULD do this by supplying a new connection ID
-when a connection ID is retired by its peer or when the endpoint receives a
-packet with a previously unused connection ID.  However, it MAY limit the
-frequency or the total number of connection IDs issued for each connection to
-avoid the risk of running out of connection IDs (see {{reset-token}}).
+unused connection IDs. Endpoints store received connection IDs for future use.
+An endpoint uses the active_connection_id_limit transport parameter to advertise
+the number of connection IDs it can store for future use. An endpoint SHOULD NOT
+provide more connection IDs than the peer's limit. If an endpoint has provided
+its peer with the maximum number of connection IDs, it SHOULD only provide a new
+connection ID when the peer retires one. An endpoint MAY limit the frequency or
+the total number of connection IDs issued for each connection to avoid the risk
+of running out of connection IDs (see {{reset-token}}).
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
 SHOULD ensure that the pool of connection IDs available to its peer allows the
 peer to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
-
 
 ### Consuming and Retiring Connection IDs {#retiring-cids}
 
@@ -1407,9 +1403,10 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token, and
-ack_delay_exponent. The client MUST use the server's new values in the
-handshake instead, and absent new values from the server, the default value.
+original_connection_id, preferred_address, stateless_reset_token,
+ack_delay_exponent and active_connection_id_limit. The client MUST use the
+server's new values in the handshake instead, and absent new values from the
+server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -2360,7 +2357,7 @@ of the packet header.  The remainder of the first byte and an arbitrary number
 of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
-To entities other than its intended recipient, a stateless reset will be appear
+To entities other than its intended recipient, a stateless reset will appear
 to be a packet with a short header.  For the packet to appear as valid, the
 Unpredictable Bits field needs to include at least 182 bits of data (or 23
 bytes, less the two fixed bits).  This is intended to allow for a Destination
@@ -4056,6 +4053,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       max_ack_delay(11),
       disable_migration(12),
       preferred_address(13),
+      active_connection_id_limit(14),
       (65535)
    } TransportParameterId;
 
@@ -4226,6 +4224,12 @@ that type start with a flow control limit of 0.
 A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
+
+active_connection_id_limit (0x000e):
+
+: The maximum number of connection IDs from the peer that an endpoint is willing
+  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
+  frames. If this parameter is absent, a default of 0 is assumed.
 
 
 # Frame Types and Formats {#frame-formats}
@@ -5418,6 +5422,14 @@ Negotiation packets do not contain any mechanism to prevent version downgrade
 attacks.  Future versions of QUIC that use Version Negotiation packets MUST
 define a mechanism that is robust against version downgrade attacks.
 
+## Targeted Attacks by Routing
+
+Deployments should limit the ability of an attacker to target a new connection
+to a particular server instance.  This means that client-controlled fields, such
+as the initial Destination Connection ID used on Initial and 0-RTT packets
+SHOULD NOT be used by themselves to make routing decisions.  Ideally, routing
+decisions are made independently of client-selected values; a Source Connection
+ID can be selected to route later packets to the same server.
 
 # IANA Considerations
 
@@ -5470,6 +5482,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
 | 0x000c | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
+| 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 ## QUIC Frame Type Registry {#iana-frames}
@@ -5623,14 +5636,14 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-18
 
-- Removed version negotation; version negotiation, including authentication of
+- Removed version negotiation; version negotiation, including authentication of
   the result, will be addressed in the next version of QUIC (#1773, #2313)
 - Added discussion of the use of IPv6 flow labels (#2348, #2399)
 - A connection ID can't be retired in a packet that uses that connection ID
   (#2101, #2420)
 - Idle timeout transport parameter is in milliseconds (from seconds) (#2453,
   #2454)
-- Endpoints are required to use new connnection IDs when they use new network
+- Endpoints are required to use new connection IDs when they use new network
   paths (#2413, #2414)
 - Increased the set of permissible frames in 0-RTT (#2344, #2355)
 
