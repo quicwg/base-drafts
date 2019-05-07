@@ -1101,6 +1101,7 @@ decrypt 1-RTT packets from the client.
 Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the state of the
 client:
+
 - The client is not authenticated (unless the server has chosen to use a
 pre-shared key and validated the client's pre-shared key binder (see
 Section 4.2.11 of [TLS13]).
