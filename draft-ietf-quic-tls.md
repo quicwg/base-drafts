@@ -656,7 +656,7 @@ alerts at the "warning" level.
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
 handshake, as well as when keys are updated (see {{key-update}}).  Initial
-packet protection keys are treated specially, see {{discard-initial}}.
+packet protection keys are treated specially; see {{discard-initial}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -749,10 +749,10 @@ cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
-KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
-{{aead}}.  The header protection key uses the "quic hp" label, see
+KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
+{{aead}}.  The header protection key uses the "quic hp" label; see
 {{header-protect}}.  Using these labels provides key separation between QUIC
-and TLS, see {{key-diversity}}.
+and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
 TLS 1.3 (see {{initial-secrets}}).
@@ -1137,7 +1137,7 @@ a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
 An endpoint SHOULD retain old keys for a period of no more than three times the
-Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
+Probe Timeout (PTO; see {{QUIC-RECOVERY}}).  After this period, old keys and
 their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
 to process packets that were sent with old keys and delayed in the network.
 Packets with higher packet numbers always use the updated keys and MUST NOT be
