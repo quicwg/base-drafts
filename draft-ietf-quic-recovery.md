@@ -214,7 +214,7 @@ Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
 
-### Clearer end to a loss epoch
+### Clearer Loss Epoch
 
 QUIC may reduce cwnd several times on successive losses whereas TCP will keep
 cwnd constant until forward progress is made or an RTO occurs. This difference
