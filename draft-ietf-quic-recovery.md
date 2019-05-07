@@ -117,9 +117,9 @@ ACK-only:
 
 In-flight:
 
-: Packets are considered in-flight when they have been sent
-  and neither acknowledged nor declared lost nor abandoned due
-  to keys being discarded, and they are not ACK-only.
+: Packets are considered in-flight when they have been sent and
+  are not ACK-only, and they are not acknowledged, declared lost,
+  or abandoned along with old keys.
 
 Ack-eliciting Frames:
 
@@ -216,10 +216,12 @@ not available.
 
 ### Clearer Loss Epoch
 
-QUIC may reduce cwnd several times on successive losses whereas TCP will keep
-cwnd constant until forward progress is made or an RTO occurs. This difference
-is because QUIC uses packet numbers to determine when a loss epoch has ended
-and TCP uses packet sequence numbers.
+QUIC defines the end of a loss epoch as when a packet sent after loss is
+declared is acknowledged. TCP waits for the gap in the sequence number space
+to be filled, and so if a segment is lost multiple times in a row, the loss
+epoch does not end. Because both reduce CWND only once per epoch,  QUIC may
+reduce congestion window multiple times in the same circumstances TCP only
+reduces the window once.
 
 ### No Reneging
 
@@ -476,10 +478,11 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Once a later packet has been acknowledged in the same packet number space, an
-endpoint SHOULD declare an earlier packet lost if it was sent a threshold amount
-of time in the past. To avoid declaring packets as lost too early, the time
-threshold MUST be set to at least kGranularity.  The time threshold is:
+Once a later packet packet within the same packet number space has been
+acknowledged, an endpoint SHOULD declare an earlier packet lost if it was sent
+a threshold amount of time in the past. To avoid declaring packets as lost too
+early, this time threshold MUST be set to at least kGranularity.  The time
+threshold is:
 ~~~
 kTimeThreshold * max(SRTT, latest_RTT, kGranularity)
 ~~~
@@ -919,9 +922,9 @@ It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
-After a packet is declared lost, the endpoint can track it for an amount of time
-comparable to the maximum expected packet reordering, such as 1 RTT.  This
-allows for detection of spurious retransmissions.
+After a packet is declared lost, the endpoint can track it for an amount of
+time comparable to the maximum expected packet reordering, such as 1 RTT.
+This allows for detection of spurious retransmissions.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
