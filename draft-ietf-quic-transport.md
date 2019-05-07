@@ -1130,6 +1130,8 @@ This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the Version Negotiation
 packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
+As a result, the client discards all state for the connection and does not send
+any more packets.
 
 A server MAY limit the number of Version Negotiation packets it sends.  For
 instance, a server that is able to recognize packets as 0-RTT might choose not
