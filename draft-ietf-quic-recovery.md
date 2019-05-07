@@ -919,7 +919,7 @@ It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
-After a packet is declared lost, it could be tracked for an amount of time
+After a packet is declared lost, the endpoint can track it for an amount of time
 comparable to the maximum expected packet reordering, such as 1 RTT.  This
 allows for detection of spurious retransmissions.
 
