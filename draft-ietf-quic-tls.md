@@ -720,10 +720,17 @@ ensuring the peer can discard their handshake keys.
 Clients SHOULD discard 0-RTT keys as soon as they install 1-RTT keys, since
 they have no use after that moment.
 
-Servers MUST discard 0-RTT keys as soon as they no longer expect to receive
-0-RTT packets.  This can been established by receiving a 1-RTT packet when all
-previous packet numbers have been received, or by receiving a 1-RTT packet and
-then waiting up to three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}).
+Clients do not send 0-RTT packets after sending a 1-RTT
+packet ({{using-early-data}}).  Therefore a server MAY discard 0-RTT keys as
+soon as it receives a 1-RTT packet.  However, due to packet reordering, a
+client's valid 0-RTT packet could arrive after a 1-RTT packet.  Servers MAY
+temporarily retain 0-RTT keys to allow decrypting reordered packets without
+requiring their contents to be retransmitted with 1-RTT keys.  There is a bound
+on how long these keys can be temporarily retained: servers MUST have discarded
+0-RTT keys once three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}) has
+elapsed after receiving a 1-RTT packet.  Servers MAY also keep track of
+received 0-RTT packet numbers as an indication that all of them have been
+received which allows them to discard 0-RTT keys earlier.
 
 
 # Packet Protection {#packet-protection}
@@ -1091,19 +1098,24 @@ before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
 decrypt 1-RTT packets from the client.
 
-Until the handshake is complete, the connection and key exchange are not
-properly authenticated at the server.  In the case that the server has chosen
-to use a pre-shared key, validating the client's pre-shared key binder (see
-Section 4.2.11 of [TLS13]) provides assurances on the identity of the client
-but does not guarantee that previous handshake messages have not been tampered
-with.  Even though 1-RTT keys are available to a server after receiving the
-first handshake messages from a client, the server cannot consider the client
-to be fully authenticated until its TLS stack has indicated the handshake to be
-complete.  Therefore, a server MUST NOT process data from incoming 1-RTT
-protected packets before the TLS handshake is complete.  In particular, it
-MUST NOT send acknowledgments for 1-RTT packets until the TLS handshake is
-complete.  Packets protected with 1-RTT keys MAY be stored and later decrypted
-and used once the handshake is complete.
+Even though 1-RTT keys are available to a server after receiving the first
+handshake messages from a client, it is missing assurances on the state of the
+client:
+- The client is not authenticated (unless the server has chosen to use a
+pre-shared key and validated the client's pre-shared key binder (see
+Section 4.2.11 of [TLS13]).
+- The client has not demonstrated liveness.
+- Any received 0-RTT data that the server responds to might be due to a replay
+attack.
+
+Therefore, the server's use of 1-RTT keys is limited before the handshake is
+complete.  A server MUST NOT process data from incoming 1-RTT
+protected packets before the TLS handshake is complete.  Note that, since
+sending acknowledgments indicates that all frames in a packet have been
+processed, this means that a server cannot send acknowledgments for 1-RTT
+packets until the TLS handshake is complete.  Received packets protected with
+1-RTT keys MAY be stored and later decrypted and used once the handshake is
+complete.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
