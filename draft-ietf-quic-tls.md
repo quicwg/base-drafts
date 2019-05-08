@@ -388,8 +388,8 @@ following two conditions are met: the handshake is complete and the endpoint
 has received an acknowledgment for a packet sent with 1-RTT keys.  This second
 condition can be implemented by tracking the lowest packet number sent with
 1-RTT keys, and the highest value of the Largest Acknowledged field in any
-received 1-RTT ACK frame: once the latter is higher than the former, the
-handshake is confirmed.
+received 1-RTT ACK frame: once the latter is higher than or equal to the
+former, the handshake is confirmed.
 
 
 ### Sending and Receiving Handshake Messages
@@ -707,7 +707,7 @@ and ignoring any outstanding Initial packets.
 
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
 confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Most applications protocols
+keys as soon as it has confirmed the handshake.  Most application protocols
 will send data after the handshake, generating acknowledgements and ensuring
 that both endpoints can discard their handshake keys promptly.  Endpoints that
 do not have reason to send immediately after completing the handshake MAY send
@@ -720,16 +720,16 @@ confirmed when they are acknowledged.
 Clients SHOULD discard 0-RTT keys as soon as they install 1-RTT keys, since
 they have no use after that moment.
 
-Clients do not send 0-RTT packets after sending a 1-RTT
-packet ({{using-early-data}}).  Therefore a server MAY discard 0-RTT keys as
-soon as it receives a 1-RTT packet.  However, due to packet reordering, a
-0-RTT packet could arrive after a 1-RTT packet.  Servers MAY temporarily retain
-0-RTT keys to allow decrypting reordered packets without requiring their
-contents to be retransmitted with 1-RTT keys.  Servers MUST discard 0-RTT keys
-within three times the Probe Timeout (PTO, see {{QUIC-RECOVERY}}) after
-receiving a 1-RTT packet.  A server MAY discard 0-RTT keys earlier if it
-determines that it has received all 0-RTT packets, which can be done by
-keeping track of packet numbers.
+0-RTT and 1-RTT packets share the same packet number space, and clients do not
+send 0-RTT packets after sending a 1-RTT packet ({{using-early-data}}).
+Therefore a server MAY discard 0-RTT keys as soon as it receives a 1-RTT
+packet.  However, due to packet reordering, a 0-RTT packet could arrive after
+a 1-RTT packet.  Servers MAY temporarily retain 0-RTT keys to allow decrypting
+reordered packets without requiring their contents to be retransmitted with
+1-RTT keys.  Servers MUST discard 0-RTT keys within three times the Probe
+Timeout (PTO, see {{QUIC-RECOVERY}}) after receiving a 1-RTT packet.  A server
+MAY discard 0-RTT keys earlier if it determines that it has received all 0-RTT
+packets, which can be done by keeping track of packet numbers.
 
 
 # Packet Protection {#packet-protection}
@@ -1098,8 +1098,7 @@ to decrypt 1-RTT packets from the server, whereas a server will be able to
 decrypt 1-RTT packets from the client.
 
 Even though 1-RTT keys are available to a server after receiving the first
-handshake messages from a client, it is missing assurances on the state of the
-client:
+handshake messages from a client, it is missing assurances on the client state:
 
 - The client is not authenticated, unless the server has chosen to use a
 pre-shared key and validated the client's pre-shared key binder; see
@@ -1151,11 +1150,12 @@ confirmed ({{handshake-confirmed}}). An endpoint MUST NOT initiate a subsequent
 key update until it has received an acknowledgment for a packet sent at the
 current KEY_PHASE.  This can be implemented by tracking the lowest packet
 number sent with each KEY_PHASE, and the highest acknowledged packet number
-in the 1-RTT space: once the latter is higher than the former, another key
-update can be initiated.
+in the 1-RTT space: once the latter is higher than or equal to the former,
+another key update can be initiated.
 
-Endpoints only need to maintain the two latest sets of packet protection keys
-and MAY discard older keys.  Updating keys multiple times rapidly can cause
+Endpoints MAY limit the number of sets of keys they retain to two sets for
+removing packet protection and one set for protecting packets.  Older keys
+can be discarded.  Updating keys multiple times rapidly can cause
 packets to be effectively lost if packets are significantly delayed.
 Therefore, an endpoint SHOULD NOT initiate a key update until three times the
 PTO after it has last updated keys. This avoids valid reordered packets being
