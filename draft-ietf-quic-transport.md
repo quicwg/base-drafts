@@ -2625,7 +2625,8 @@ removed.
 
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
-cryptographic handshake and starting sending data.  Receivers MUST be able to
+cryptographic handshake and start sending data.  This can also be used to
+construct PMTU probes (see {{pmtu-probes-src-cid}}).  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
@@ -3244,6 +3245,22 @@ acknowledged.
 
 The considerations for processing ICMP messages in the previous section also
 apply if these messages are used by DPLPMTUD.
+
+
+### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
+
+Endpoints that rely on the destination connection ID for routing QUIC packets
+are likely to require that the connection ID be included in PMTU probe packets
+to route any resulting ICMP messages ({{icmp-pmtud}}) back to the correct
+endpoint.  However, only long header packets ({{long-header}}) contain source
+connection IDs, and long header packets are not decrypted or acknowledged by
+the peer once the handshake is complete.  One way to construct a PMTU probe is
+to coalesce (see {{packet-coalesce}}) a Handshake packet ({{packet-handshake}})
+with a short header packet in a single UDP datagram.  If the UDP datagram
+reaches the endpoint, the Handshake packet will be ignored, but the short header
+packet will be acknowledged.  If the UDP datagram elicits an ICMP message, that
+message will likely contain the source connection ID within the quoted portion
+of the UDP datagram.
 
 
 # Versions {#versions}
