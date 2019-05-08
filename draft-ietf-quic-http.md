@@ -449,7 +449,7 @@ HTTP_INCOMPLETE_REQUEST.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by send a QUIC
+client abort transmission of a request without error by sending a QUIC
 STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
 response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
