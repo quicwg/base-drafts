@@ -951,7 +951,7 @@ body. Senders MUST send only one HEADERS frame in the trailers section;
 receivers MUST discard any subsequent HEADERS frames.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx, see {{!RFC7231}}, Section 6.2) precede a final
+informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
