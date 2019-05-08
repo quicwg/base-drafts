@@ -836,9 +836,11 @@ in Linux (3.11 onwards).
 
 ## Under-utilizing the Congestion Window
 
-A congestion window that is under-utilized SHOULD NOT be increased in either
-slow start or congestion avoidance. This can happen due to insufficient
-application data or flow control credit.
+When bytes in flight is smaller than the congestion window and sending is not
+pacing limited, the congestion window is under-utilized.  When this occurs,
+the congestion window SHOULD NOT be increased in either slow start or 
+congestion avoidance. This can happen due to insufficient application data
+or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
