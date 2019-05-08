@@ -3297,18 +3297,17 @@ apply if these messages are used by DPLPMTUD.
 ### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
 Endpoints that rely on the destination connection ID for routing QUIC packets
-are likely to require that connection ID included in PMTU probe packets in order
-to route resulting ICMP messages ({{icmp-pmtud}}) back to the correct endpoints.
-
-Only long header packets ({{long-header}}) contain source connection IDs, but
-long header packets will not be decrypted or acknowledged by the peer once the
-handshake is complete.  One way to construct a PMTU probe is to coalesce (see
-{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
-header packet in a single UDP datagram.  If the UDP datagram reaches the
-endpoint, the Handshake packet will be ignored, but the short header packet will
-be acknowledged.  If the UDP datagram elicits an ICMP message, that message will
-likely contain the source connection ID within the quoted portion of the UDP
-datagram.
+are likely to require that the connection ID be included in PMTU probe packets
+to route any resulting ICMP messages ({{icmp-pmtud}}) back to the correct
+endpoint.  However, only long header packets ({{long-header}}) contain source
+connection IDs, and long header packets are not decrypted or acknowledged by
+the peer once the handshake is complete.  One way to construct a PMTU probe is
+to coalesce (see {{packet-coalesce}}) a Handshake packet ({{packet-handshake}})
+with a short header packet in a single UDP datagram.  If the UDP datagram
+reaches the endpoint, the Handshake packet will be ignored, but the short header
+packet will be acknowledged.  If the UDP datagram elicits an ICMP message, that
+message will likely contain the source connection ID within the quoted portion
+of the UDP datagram.
 
 
 # Versions {#versions}
