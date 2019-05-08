@@ -117,9 +117,9 @@ ACK-only:
 
 In-flight:
 
-: Packets are considered in-flight when they have been sent
-  and neither acknowledged nor declared lost, and they are not
-  ACK-only.
+: Packets are considered in-flight when they have been sent and
+  are not ACK-only, and they are not acknowledged, declared lost,
+  or abandoned along with old keys.
 
 Ack-eliciting Frames:
 
@@ -213,6 +213,15 @@ This design point significantly simplifies loss detection mechanisms for QUIC.
 Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
+
+### Clearer Loss Epoch
+
+QUIC ends a loss epoch when a packet sent after loss is declared is
+acknowledged. TCP waits for the gap in the sequence number space to be filled,
+and so if a segment is lost multiple times in a row, the loss epoch may not
+end for several round trips. Because both should reduce their congestion windows
+only once per epoch, QUIC will do it correctly once for every round trip that
+experiences loss, while TCP may only do it once across multiple round trips.
 
 ### No Reneging
 
@@ -469,14 +478,16 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Once a later packet has been acknowledged, an endpoint SHOULD declare an earlier
-packet lost if it was sent a threshold amount of time in the past. The time
-threshold is computed as kTimeThreshold * max(SRTT, latest_RTT).
+Once a later packet packet within the same packet number space has been
+acknowledged, an endpoint SHOULD declare an earlier packet lost if it was sent
+a threshold amount of time in the past. To avoid declaring packets as lost too
+early, this time threshold MUST be set to at least kGranularity.  The time
+threshold is:
+~~~
+kTimeThreshold * max(SRTT, latest_RTT, kGranularity)
+~~~
 If packets sent prior to the largest acknowledged packet cannot yet be declared
 lost, then a timer SHOULD be set for the remaining time.
-
-The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -486,13 +497,8 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-An endpoint might consistently record RTT samples as 0 in extremely low latency
-networks, leading to a smoothed_rtt of 0.  Consequently, the endpoint could
-declare all earlier packets as lost immediately upon receiving an
-acknowledgement for a later packet.  That is, the endpoint would not provide any
-reordering tolerance.  To avoid declaring packets as lost too early, the time
-threshold MUST be set to at least kGranularity (defined in
-{{ld-consts-of-interest}}).
+The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
+multiplier, is 9/8.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variance.  Smaller
@@ -726,9 +732,10 @@ experiment with other response functions.
 
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
-congestion window is less than ssthresh, which typically only occurs after an
-PTO. While in slow start, QUIC increases the congestion window by the number of
-bytes acknowledged when each acknowledgment is processed.
+congestion window is less than ssthresh, which only occurs after persistent
+congestion is declared. While in slow start, QUIC increases the congestion
+window by the number of bytes acknowledged when each acknowledgment is
+processed.
 
 ## Congestion Avoidance
 
@@ -915,9 +922,9 @@ It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
-After a packet is declared lost, it SHOULD be tracked for an amount of time
-comparable to the maximum expected packet reordering, such as 1 RTT.  This
-allows for detection of spurious retransmissions.
+After a packet is declared lost, the endpoint can track it for an amount of
+time comparable to the maximum expected packet reordering, such as 1 RTT.
+This allows for detection of spurious retransmissions.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
