@@ -449,7 +449,7 @@ HTTP_INCOMPLETE_REQUEST.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by triggering a QUIC
+client abort transmission of a request without error by send a QUIC
 STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
 response, and cleanly closing its stream. Clients MUST NOT discard complete
 responses as a result of having their request terminated abruptly, though
@@ -908,7 +908,7 @@ transport parameter `initial_max_stream_data_uni`.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
+unknown. Recipients of unknown stream types MAY send a QUIC STOP_SENDING
 frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
 streams to be a connection error of any kind.
 
