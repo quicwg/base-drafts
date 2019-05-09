@@ -824,13 +824,7 @@ Connection ID in the client's first Initial packet (see {{initial-secrets}}).
 This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
-QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
-TLS_AES_128_CCM_8_SHA256.  The AEAD for that ciphersuite, AEAD_AES_128_CCM_8
-{{?CCM=RFC6655}}, does not produce a large enough authentication tag for use
-with the header protection designs provided (see {{header-protect}}).  All other
-ciphersuites defined in {{!TLS13}} have a 16-byte authentication tag and produce
-an output 16 bytes larger than their input.
-
+QUIC can use any of the ciphersuites defined in {{!TLS13}}.
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
 number.  The 62 bits of the reconstructed QUIC packet number in network byte
@@ -941,11 +935,11 @@ Common Fields:
 
 Before a TLS ciphersuite can be used with QUIC, a header protection algorithm
 MUST be specified for the AEAD used with that ciphersuite.  This document
-defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
-AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
-AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.  Prior to TLS selecting a
-ciphersuite, AES header protection is used ({{hp-aes}}), matching the
-AEAD_AES_128_GCM packet protection.
+defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_128_CCM_8
+and AEAD_AES_256_GCM (AEADs are defined in {{!AEAD=RFC5116}}, {{!CCM=RFC6655}}
+and {{!CHACHA=RFC8439}}).  Prior to TLS selecting a ciphersuite, AES header
+protection is used ({{hp-aes}}), matching the AEAD_AES_128_GCM packet
+protection.
 
 
 ### Header Protection Sample {#hp-sample}
@@ -963,11 +957,15 @@ sample.
 
 To ensure that sufficient data is available for sampling, packets are padded so
 that the combined lengths of the encoded packet number and protected payload is
-at least 4 bytes longer than the sample required for header protection.  For the
-AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
-header protection samples, this results in needing at least 3 bytes of frames in
-the unprotected payload if the packet number is encoded on a single byte, or 2
-bytes of frames for a 2-byte packet number encoding.
+at least 4 bytes longer than the sample required for header protection.  All of
+the AEAD functions defined in {{?TLS13}} with the exception of
+AEAD_AES_128_CCM_8 have 16-byte expansions and 16-byte header protection
+samples, this results in needing at least 3 bytes of frames in the unprotected
+payload if the packet number is encoded on a single byte, or 2 bytes of frames
+for a 2-byte packet number encoding.  AEAD_AES_128_CCM_8 has an 8-byte
+expansion and 16-byte header protection sample, which results in needing at
+least 11 bytes of frames in the unprotected payload if the packet number is
+encoded on a single byte.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
@@ -1001,10 +999,10 @@ sample = packet[sample_offset..sample_offset+sample_length]
 ### AES-Based Header Protection {#hp-aes}
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
-AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
-AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
-electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
-256-bit AES in ECB mode.
+AEAD_AES_128_CCM, AEAD_AES_128_CCM_8 and AEAD_AES_256_GCM.  AEAD_AES_128_GCM,
+AEAD_AES_128_CCM and AEAD_AES_128_CCM_8 use 128-bit AES
+{{!AES=DOI.10.6028/NIST.FIPS.197}} in electronic code-book (ECB) mode.
+AEAD_AES_256_GCM uses 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
 as the input to AES-ECB.  In pseudocode:
