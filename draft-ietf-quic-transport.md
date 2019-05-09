@@ -4522,7 +4522,7 @@ The RESET_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
+|                  Application Error Code (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Final Size (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4537,8 +4537,9 @@ Stream ID:
 
 Application Protocol Error Code:
 
-: A 16-bit application protocol error code (see {{app-error-codes}}) which
-  indicates why the stream is being closed.
+: A variable-length integer indicating the application protocol error
+  code (see {{app-error-codes}}) which indicates why the stream is being
+  closed.
 
 Final Size:
 
@@ -4567,8 +4568,8 @@ The STOP_SENDING frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Application Error Code (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 STOP_SENDING frames contain the following fields:
@@ -4579,8 +4580,8 @@ Stream ID:
 
 Application Error Code:
 
-: A 16-bit, application-specified reason the sender is ignoring the stream (see
-  {{app-error-codes}}).
+: A variable-length integer carrying the application-specified reason the
+  sender is ignoring the stream (see {{app-error-codes}}).
 
 
 ## CRYPTO Frame {#frame-crypto}
@@ -4644,7 +4645,7 @@ The NEW_TOKEN frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Token Length (i)  ...
+|                        Token Length (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -5115,7 +5116,9 @@ The CONNECTION_CLOSE frames are as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |      [ Frame Type (i) ]     ...
+|                         Error Code (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                       [ Frame Type (i) ]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Reason Phrase Length (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -5127,10 +5130,11 @@ CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
-: A 16-bit error code which indicates the reason for closing this connection.  A
-  CONNECTION_CLOSE frame of type 0x1c uses codes from the space defined in
-  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d uses codes from the
-  application protocol error code space; see {{app-error-codes}}
+: A variable length integer error code which indicates the reason for
+  closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
+  from the space defined in {{error-codes}}.  A CONNECTION_CLOSE frame of
+  type 0x1d uses codes from the application protocol error code space;
+  see {{app-error-codes}}
 
 Frame Type:
 
@@ -5175,7 +5179,7 @@ An IANA registry is used to manage the assignment of frame types; see
 
 # Transport Error Codes {#error-codes}
 
-QUIC error codes are 16-bit unsigned integers.
+QUIC error codes are 62-bit unsigned integers.
 
 This section lists the defined QUIC transport error codes that may be used in a
 CONNECTION_CLOSE frame.  These errors apply to the entire connection.
@@ -5256,7 +5260,7 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 16-bit unsigned integers, but the
+Application protocol error codes are 62-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
 ({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
@@ -5456,7 +5460,7 @@ ID can be selected to route later packets to the same server.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
+The "QUIC Transport Parameters" registry governs a 62-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
 Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
@@ -5550,7 +5554,7 @@ The initial contents of this registry are tabulated in {{frame-types}}.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Error Codes" registry governs a 16-bit space.  This space is
+The "QUIC Transport Error Codes" registry governs a 62-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
 Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
