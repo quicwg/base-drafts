@@ -1406,7 +1406,7 @@ not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
 original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and active_connection_id_limit. The client MUST use the
+ack_delay_multiplier and active_connection_id_limit. The client MUST use the
 server's new values in the handshake instead, and absent new values from the
 server, the default value.
 
@@ -4068,7 +4068,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       initial_max_stream_data_uni(7),
       initial_max_streams_bidi(8),
       initial_max_streams_uni(9),
-      ack_delay_exponent(10),
+      ack_delay_multiplier(10),
       max_ack_delay(11),
       disable_migration(12),
       preferred_address(13),
@@ -4186,12 +4186,13 @@ initial_max_streams_uni (0x0009):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-ack_delay_exponent (0x000a):
+ack_delay_multiplier (0x000a):
 
-: The ACK delay exponent is an integer value indicating an
-  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  If this value is absent, a default value of 3 is assumed (indicating a
-  multiplier of 8). Values above 20 are invalid.
+: The ACK delay multiplier is an integer value indicating a multiplier used to
+  decode the ACK Delay field in the ACK frame ({{frame-ack}}). If this value is
+  absent, a default value of 10 (corresponding to a resolution of 10
+  microseconds)is assumed. Values above 1,000,000 (corresponding to a resolution
+  of 1 second) are invalid.
 
 max_ack_delay (0x000b):
 
@@ -4350,12 +4351,12 @@ ACK Delay:
 : A variable-length integer representing the time delta in microseconds between
   when this ACK was sent and when the largest acknowledged packet, as indicated
   in the Largest Acknowledged field, was received by this peer.  The value of
-  the ACK Delay field is scaled by multiplying the encoded value by 2 to the
-  power of the value of the `ack_delay_exponent` transport parameter set by the
-  sender of the ACK frame (see {{transport-parameter-definitions}}).  Scaling in
-  this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
-  for Initial and Handshake packets, a sender SHOULD send a value of 0.
+  the ACK Delay field is scaled by multiplying the encoded value by the
+  `ack_delay_multiplier` transport parameter set by the sender of the ACK frame
+  (see {{transport-parameter-definitions}}).  Scaling in this fashion allows for
+  a larger range of values with a shorter encoding at the cost of lower
+  resolution.  Because the receiver doesn't use the ACK Delay for Initial and
+  Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
 
@@ -5496,7 +5497,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0007 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
 | 0x0008 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
 | 0x0009 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
-| 0x000a | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x000a | ack_delay_multiplier        | {{transport-parameter-definitions}} |
 | 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
 | 0x000c | disable_migration           | {{transport-parameter-definitions}} |
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
