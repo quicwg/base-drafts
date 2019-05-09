@@ -543,6 +543,10 @@ necessary, to allow the server to continue sending data. If Handshake keys
 are available to the client, it MUST send a Handshake packet, and otherwise
 it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
 
+Because packets only containing PADDING do not elicit an acknowledgement,
+they may never be acknowledged, but they are removed from bytes in flight
+when the client gets Handshake keys and the Initial keys are discarded.
+
 The crypto retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  The time threshold loss
 detection timer is expected to both expire earlier than the crypto
