@@ -4190,9 +4190,9 @@ ack_delay_multiplier (0x000a):
 
 : The ACK delay multiplier is an integer value indicating a multiplier used to
   decode the ACK Delay field in the ACK frame ({{frame-ack}}). If this value is
-  absent, a default value of 10 (corresponding to a resolution of 10
-  microseconds)is assumed. Values above 1,000,000 (corresponding to a resolution
-  of 1 second) are invalid.
+  absent, a default value of 1 (corresponding to a resolution of 1 microsecond)
+  is assumed. A value of 0 and values above 1,000,000 (corresponding to a
+  resolution of 1 second) are invalid.
 
 max_ack_delay (0x000b):
 
