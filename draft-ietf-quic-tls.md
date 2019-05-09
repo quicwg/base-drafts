@@ -729,7 +729,7 @@ reordered packets without requiring their contents to be retransmitted with
 1-RTT keys.  Servers MUST discard 0-RTT keys within three times the Probe
 Timeout (PTO, see {{QUIC-RECOVERY}}) after receiving a 1-RTT packet.  A server
 MAY discard 0-RTT keys earlier if it determines that it has received all 0-RTT
-packets, which can be done by keeping track of packet numbers.
+packets, which can be done by keeping track of missing packet numbers.
 
 
 # Packet Protection {#packet-protection}
@@ -1103,7 +1103,7 @@ handshake messages from a client, it is missing assurances on the client state:
 - The client is not authenticated, unless the server has chosen to use a
 pre-shared key and validated the client's pre-shared key binder; see
 Section 4.2.11 of {{!TLS13}}.
-- The client has not demonstrated liveness.
+- The client has not demonstrated liveness, unless a RETRY packet was used.
 - Any received 0-RTT data that the server responds to might be due to a replay
 attack.
 
@@ -1111,10 +1111,9 @@ Therefore, the server's use of 1-RTT keys is limited before the handshake is
 complete.  A server MUST NOT process data from incoming 1-RTT
 protected packets before the TLS handshake is complete.  Because
 sending acknowledgments indicates that all frames in a packet have been
-processed, this means that a server cannot send acknowledgments for 1-RTT
-packets until the TLS handshake is complete.  Received packets protected with
-1-RTT keys MAY be stored and later decrypted and used once the handshake is
-complete.
+processed, a server cannot send acknowledgments for 1-RTT packets until the
+TLS handshake is complete.  Received packets protected with 1-RTT keys MAY be
+stored and later decrypted and used once the handshake is complete.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1156,7 +1155,7 @@ another key update can be initiated.
 Endpoints MAY limit the number of sets of keys they retain to two sets for
 removing packet protection and one set for protecting packets.  Older keys
 can be discarded.  Updating keys multiple times rapidly can cause
-packets to be effectively lost if packets are significantly delayed.
+packets to be effectively lost if packets are significantly reordered.
 Therefore, an endpoint SHOULD NOT initiate a key update until three times the
 PTO after it has last updated keys. This avoids valid reordered packets being
 dropped by the peer as a result of the peer discarding older keys.
