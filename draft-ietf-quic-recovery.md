@@ -838,7 +838,7 @@ in Linux (3.11 onwards).
 
 When bytes in flight is smaller than the congestion window and sending is not
 pacing limited, the congestion window is under-utilized.  When this occurs,
-the congestion window SHOULD NOT be increased in either slow start or 
+the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
 or flow control credit.
 
