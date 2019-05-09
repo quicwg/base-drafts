@@ -694,7 +694,7 @@ described in {{controlling-concurrency}}.
 
 Data sent in CRYPTO frames is not flow controlled in the same way as stream
 data.  QUIC relies on the cryptographic protocol implementation to avoid
-excessive buffering of data, see {{QUIC-TLS}}.  The implementation SHOULD
+excessive buffering of data; see {{QUIC-TLS}}.  The implementation SHOULD
 provide an interface to QUIC to tell it about its buffering limits so that there
 is not excessive buffering at multiple layers.
 
@@ -913,7 +913,7 @@ than once on the same connection.
 
 Packets with long headers include Source Connection ID and Destination
 Connection ID fields.  These fields are used to set the connection IDs for new
-connections, see {{negotiating-connection-ids}} for details.
+connections; see {{negotiating-connection-ids}} for details.
 
 Packets with short headers ({{short-header}}) only include the Destination
 Connection ID and omit the explicit length.  The length of the Destination
@@ -980,7 +980,7 @@ connection if the pool is exhausted.
 
 An endpoint can change the connection ID it uses for a peer to another available
 one at any time during the connection.  An endpoint consumes connection IDs in
-response to a migrating peer, see {{migration-linkability}} for more.
+response to a migrating peer; see {{migration-linkability}} for more.
 
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
@@ -1108,7 +1108,7 @@ suggested structure:
 
 Version negotiation ensures that client and server agree to a QUIC version
 that is mutually supported. A server sends a Version Negotiation packet in
-response to each packet that might initiate a new connection, see
+response to each packet that might initiate a new connection; see
 {{packet-handling}} for details.
 
 The size of the first packet sent by a client will determine whether a server
@@ -1130,6 +1130,8 @@ This system allows a server to process packets with unsupported versions without
 retaining state.  Though either the Initial packet or the Version Negotiation
 packet that is sent in response could be lost, the client will send new packets
 until it successfully receives a response or it abandons the connection attempt.
+As a result, the client discards all state for the connection and does not send
+any more packets on the connection.
 
 A server MAY limit the number of Version Negotiation packets it sends.  For
 instance, a server that is able to recognize packets as 0-RTT might choose not
@@ -1358,7 +1360,7 @@ problems that might arise from stateless processing of multiple Initial packets
 producing different connection IDs.
 
 The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}), see {{issue-cid}} for details.
+response to connection migration ({{migration}}); see {{issue-cid}} for details.
 
 
 ## Transport Parameters {#transport-parameters}
@@ -2240,7 +2242,7 @@ current Probe Timeout (PTO).
 Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
 processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ACK-eliciting packet, see
+containing frames other than ACK or PADDING (an ACK-eliciting packet; see
 {{QUIC-RECOVERY}}), but only if no other ACK-eliciting packets have been sent
 since last receiving a packet.  Restarting when sending packets ensures that
 connections do not prematurely time out when initiating new activity.
@@ -2250,7 +2252,7 @@ endpoint is only used to determine whether the connection is live at that
 endpoint.  An endpoint that sends packets near the end of the idle timeout
 period of a peer risks having those packets discarded if its peer enters the
 draining state before the packets arrive.  If a peer could timeout within an
-Probe Timeout (PTO, see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
+Probe Timeout (PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
 test for liveness before sending any data that cannot be retried safely.  Note
 that it is likely that only applications or application protocols will
 know what information can be retried.
@@ -2396,7 +2398,7 @@ Using a randomized connection ID results in two problems:
 
 * The packet might not reach the peer.  If the Destination Connection ID is
   critical for routing toward the peer, then this packet could be incorrectly
-  routed.  This might also trigger another Stateless Reset in response, see
+  routed.  This might also trigger another Stateless Reset in response; see
   {{reset-looping}}.  A Stateless Reset that is not correctly routed is
   an ineffective error detection and recovery mechanism.  In this
   case, endpoints will need to rely on other methods - such as timers - to
@@ -2608,7 +2610,7 @@ corresponding keys.
 The packet number field contains a packet number, which has additional
 confidentiality protection that is applied after packet protection is applied
 (see {{QUIC-TLS}} for details).  The underlying packet number increases with
-each packet sent in a given packet number space, see {{packet-numbers}} for
+each packet sent in a given packet number space; see {{packet-numbers}} for
 details.
 
 
@@ -2623,7 +2625,8 @@ removed.
 
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
-cryptographic handshake and starting sending data.  Receivers MUST be able to
+cryptographic handshake and start sending data.  This can also be used to
+construct PMTU probes (see {{pmtu-probes-src-cid}}).  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
@@ -2935,7 +2938,7 @@ containing that information is acknowledged.
 
 * Similarly, a request to cancel stream transmission, as encoded in a
   STOP_SENDING frame, is sent until the receiving part of the stream enters
-  either a "Data Recvd" or "Reset Recvd" state, see
+  either a "Data Recvd" or "Reset Recvd" state; see
   {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
@@ -3128,7 +3131,7 @@ combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
 Sending a UDP datagram of this size ensures that the network path supports a
 reasonable Maximum Transmission Unit (MTU), and helps reduce the amplitude of
 amplification attacks caused by server responses toward an unverified client
-address, see {{address-validation}}.
+address; see {{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
@@ -3141,7 +3144,7 @@ response, or otherwise behave as if any part of the offending packet was
 processed as valid.
 
 The server MUST also limit the number of bytes it sends before validating the
-address of the client, see {{address-validation}}.
+address of the client; see {{address-validation}}.
 
 
 ## Path Maximum Transmission Unit (PMTU)
@@ -3242,6 +3245,22 @@ acknowledged.
 
 The considerations for processing ICMP messages in the previous section also
 apply if these messages are used by DPLPMTUD.
+
+
+### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
+
+Endpoints that rely on the destination connection ID for routing QUIC packets
+are likely to require that the connection ID be included in PMTU probe packets
+to route any resulting ICMP messages ({{icmp-pmtud}}) back to the correct
+endpoint.  However, only long header packets ({{long-header}}) contain source
+connection IDs, and long header packets are not decrypted or acknowledged by
+the peer once the handshake is complete.  One way to construct a PMTU probe is
+to coalesce (see {{packet-coalesce}}) a Handshake packet ({{packet-handshake}})
+with a short header packet in a single UDP datagram.  If the UDP datagram
+reaches the endpoint, the Handshake packet will be ignored, but the short header
+packet will be acknowledged.  If the UDP datagram elicits an ICMP message, that
+message will likely contain the source connection ID within the quoted portion
+of the UDP datagram.
 
 
 # Versions {#versions}
@@ -3872,7 +3891,7 @@ message or construct a new one at its discretion.
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client that sends
 additional 0-RTT packets without constructing a new cryptographic handshake
-message MUST NOT reset the packet number to 0 after a Retry packet, see
+message MUST NOT reset the packet number to 0 after a Retry packet; see
 {{packet-0rtt}}.
 
 A server acknowledges the use of a Retry packet for a connection using the
@@ -4094,13 +4113,13 @@ original_connection_id (0x0000):
 
 idle_timeout (0x0001):
 
-: The idle timeout is a value in milliseconds that is encoded as an integer, see
+: The idle timeout is a value in milliseconds that is encoded as an integer; see
   ({{idle-timeout}}).  If this parameter is absent or zero then the idle
   timeout is disabled.
 
 stateless_reset_token (0x0002):
 
-: A stateless reset token is used in verifying a stateless reset, see
+: A stateless reset token is used in verifying a stateless reset; see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
   transport parameter is only sent by a server.
 
@@ -4171,9 +4190,8 @@ ack_delay_exponent (0x000a):
 
 : The ACK delay exponent is an integer value indicating an
   exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  If this value is absent, a default value of 3 is assumed
-  (indicating a multiplier of 8).  The default value is also used for ACK frames
-  that are sent in Initial and Handshake packets.  Values above 20 are invalid.
+  If this value is absent, a default value of 3 is assumed (indicating a
+  multiplier of 8). Values above 20 are invalid.
 
 max_ack_delay (0x000b):
 
@@ -4334,10 +4352,10 @@ ACK Delay:
   in the Largest Acknowledged field, was received by this peer.  The value of
   the ACK Delay field is scaled by multiplying the encoded value by 2 to the
   power of the value of the `ack_delay_exponent` transport parameter set by the
-  sender of the ACK frame.  The `ack_delay_exponent` defaults to 3, or a
-  multiplier of 8 (see {{transport-parameter-definitions}}).  Scaling in this
-  fashion allows for a larger range of values with a shorter encoding at the
-  cost of lower resolution.
+  sender of the ACK frame (see {{transport-parameter-definitions}}).  Scaling in
+  this fashion allows for a larger range of values with a shorter encoding at
+  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
+  for Initial and Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
 
@@ -4356,11 +4374,11 @@ First ACK Range:
 ACK Ranges:
 
 : Contains additional ranges of packets which are alternately not
-  acknowledged (Gap) and acknowledged (ACK Range), see {{ack-ranges}}.
+  acknowledged (Gap) and acknowledged (ACK Range); see {{ack-ranges}}.
 
 ECN Counts:
 
-: The three ECN Counts, see {{ack-ecn-counts}}.
+: The three ECN Counts; see {{ack-ecn-counts}}.
 
 
 ### ACK Ranges {#ack-ranges}
@@ -5112,7 +5130,7 @@ Error Code:
 : A 16-bit error code which indicates the reason for closing this connection.  A
   CONNECTION_CLOSE frame of type 0x1c uses codes from the space defined in
   {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d uses codes from the
-  application protocol error code space, see {{app-error-codes}}
+  application protocol error code space; see {{app-error-codes}}
 
 Frame Type:
 
@@ -5151,7 +5169,7 @@ be sent.  The exception is extension frames that replace or supplement the ACK
 frame.  Extension frames are not included in flow control unless specified
 in the extension.
 
-An IANA registry is used to manage the assignment of frame types, see
+An IANA registry is used to manage the assignment of frame types; see
 {{iana-frames}}.
 
 

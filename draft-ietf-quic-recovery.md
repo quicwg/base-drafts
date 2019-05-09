@@ -117,9 +117,9 @@ ACK-only:
 
 In-flight:
 
-: Packets are considered in-flight when they have been sent
-  and neither acknowledged nor declared lost, and they are not
-  ACK-only.
+: Packets are considered in-flight when they have been sent and
+  are not ACK-only, and they are not acknowledged, declared lost,
+  or abandoned along with old keys.
 
 Ack-eliciting Frames:
 
@@ -214,6 +214,15 @@ Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
 
+### Clearer Loss Epoch
+
+QUIC ends a loss epoch when a packet sent after loss is declared is
+acknowledged. TCP waits for the gap in the sequence number space to be filled,
+and so if a segment is lost multiple times in a row, the loss epoch may not
+end for several round trips. Because both should reduce their congestion windows
+only once per epoch, QUIC will do it correctly once for every round trip that
+experiences loss, while TCP may only do it once across multiple round trips.
+
 ### No Reneging
 
 QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
@@ -305,11 +314,11 @@ Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter, see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
+parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
 explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
-the peer.
+the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
@@ -469,14 +478,16 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Once a later packet has been acknowledged, an endpoint SHOULD declare an earlier
-packet lost if it was sent a threshold amount of time in the past. The time
-threshold is computed as kTimeThreshold * max(SRTT, latest_RTT).
+Once a later packet packet within the same packet number space has been
+acknowledged, an endpoint SHOULD declare an earlier packet lost if it was sent
+a threshold amount of time in the past. To avoid declaring packets as lost too
+early, this time threshold MUST be set to at least kGranularity.  The time
+threshold is:
+~~~
+kTimeThreshold * max(SRTT, latest_RTT, kGranularity)
+~~~
 If packets sent prior to the largest acknowledged packet cannot yet be declared
 lost, then a timer SHOULD be set for the remaining time.
-
-The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8.
 
 Using max(SRTT, latest_RTT) protects from the two following cases:
 
@@ -486,13 +497,8 @@ Using max(SRTT, latest_RTT) protects from the two following cases:
 * the latest RTT sample is higher than the SRTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed SRTT has not yet caught up.
 
-An endpoint might consistently record RTT samples as 0 in extremely low latency
-networks, leading to a smoothed_rtt of 0.  Consequently, the endpoint could
-declare all earlier packets as lost immediately upon receiving an
-acknowledgement for a later packet.  That is, the endpoint would not provide any
-reordering tolerance.  To avoid declaring packets as lost too early, the time
-threshold MUST be set to at least kGranularity (defined in
-{{ld-consts-of-interest}}).
+The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
+multiplier, is 9/8.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variance.  Smaller
@@ -661,7 +667,7 @@ received that newly acknowledges one or more packets.
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
-dictated by packet and time threshold mechanisms, see {{ack-loss-detection}}.
+dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
@@ -726,9 +732,10 @@ experiment with other response functions.
 
 QUIC begins every connection in slow start and exits slow start upon loss or
 upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
-congestion window is less than ssthresh, which typically only occurs after an
-PTO. While in slow start, QUIC increases the congestion window by the number of
-bytes acknowledged when each acknowledgment is processed.
+congestion window is less than ssthresh, which only occurs after persistent
+congestion is declared. While in slow start, QUIC increases the congestion
+window by the number of bytes acknowledged when each acknowledgment is
+processed.
 
 ## Congestion Avoidance
 
@@ -915,9 +922,9 @@ It is expected that implementations will be able to access this information by
 packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
-After a packet is declared lost, it SHOULD be tracked for an amount of time
-comparable to the maximum expected packet reordering, such as 1 RTT.  This
-allows for detection of spurious retransmissions.
+After a packet is declared lost, the endpoint can track it for an amount of
+time comparable to the maximum expected packet reordering, such as 1 RTT.
+This allows for detection of spurious retransmissions.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
@@ -1026,9 +1033,9 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments, in milliseconds.  The actual ack_delay in a
-  received ACK frame may be larger due to late timers, reordering,
-  or lost ACKs.
+  acknowledgments for packets in the ApplicationData packet number space. The
+  actual ack_delay in a received ACK frame may be larger due to late timers,
+  reordering, or lost ACKs.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
@@ -1052,6 +1059,7 @@ follows:
    smoothed_rtt = 0
    rttvar = 0
    min_rtt = 0
+   max_ack_delay = 0
    time_of_last_sent_ack_eliciting_packet = 0
    time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1112,7 +1120,10 @@ OnAckReceived(ack, pn_space):
       IncludesAckEliciting(newly_acked_packets))
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
-    UpdateRtt(ack.ack_delay)
+    ack_delay = 0
+    if pn_space == ApplicationData:
+      ack_delay = ack.ack_delay
+    UpdateRtt(ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
