@@ -196,6 +196,10 @@ This document uses the variable-length integer encoding from
 
 The following terms are used:
 
+abort:
+: An abrupt termination of a connection or stream, possibly due to an error
+  condition.
+
 client:
 : The endpoint that initiates an HTTP/3 connection.  Clients send HTTP requests
   and receive HTTP responses.
@@ -241,11 +245,11 @@ stream:
 stream error:
 : An error on the individual HTTP/3 stream.
 
+The term "payload body" is defined in Section 3.3 of {{!RFC7230}}.
+
 Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
 in Section 2.3 of {{!RFC7230}}.  Intermediaries act as both client and server at
 different times.
-
-The term "payload body" is defined in Section 3.3 of {{!RFC7230}}.
 
 
 # Connection Setup and Management {#connection-setup}
