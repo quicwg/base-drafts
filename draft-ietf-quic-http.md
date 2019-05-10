@@ -566,11 +566,18 @@ the RST bit set if it detects an error with the stream or the QUIC connection.
 
 ## Prioritization {#priority}
 
-HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
+The purpose of prioritization is to allow a client to express how it would
+prefer the server to allocate resources when managing concurrent streams.  Most
+importantly, priority can be used to select streams for transmitting frames when
+there is limited capacity for sending.
+
+HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 5.3. In this priority scheme, a given element can be designated as dependent
-upon another element. This information is expressed in the PRIORITY frame
-{{frame-priority}} which identifies the element and the dependency. The elements
-that can be prioritized are:
+upon another element.  Each dependency is assigned a relative weight, a number
+that is used to determine the relative proportion of available resources that
+are assigned to streams dependent on the same stream. This information is
+expressed in the PRIORITY frame {{frame-priority}} which identifies the element
+and the dependency. The elements that can be prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
@@ -579,18 +586,31 @@ that can be prioritized are:
 
 Taken together, the dependencies across all prioritized elements in a connection
 form a dependency tree. An element can depend on another element or on the root
-of the tree. A reference to an element which is no longer in the tree is treated
-as a reference to the root of the tree. The structure of the dependency tree
-changes as PRIORITY frames modify the dependency links between prioritized
-elements.
+of the tree.  The tree also contains a dedicated placeholder with index "-1"
+which depends on the root of the tree with a weight of zero.  This placeholder
+cannot be reprioritized.  The structure of the dependency tree changes as
+PRIORITY frames modify the dependency links between other prioritized elements.
 
-Due to reordering between streams, an element can also be prioritized which is
-not yet in the tree. Such elements are added to the tree with the requested
-priority.
+All dependent streams are allocated an integer weight between 0 and 255
+(inclusive).
+
+Streams with the same parent SHOULD be allocated resources proportionally based
+on their weight.  Thus, if stream B depends on stream A with weight 4, stream C
+depends on stream A with weight 12, and no progress can be made on stream A,
+stream B ideally receives one-third of the resources allocated to stream C.
+
+A weight of zero indicates that no resources should be allocated to the
+indicated stream if progress can be made on other streams dependent on the same
+parent.
+
+A reference to an element which is no longer in the tree is treated as a
+reference to placeholder "-1". Due to reordering between streams, an element can
+also be prioritized which is not yet in the tree. Such elements are added to the
+tree with the requested priority.
 
 When a prioritized element is first created, it has a default initial weight
 of 16 and a default dependency. Requests and placeholders are dependent on the
-root of the priority tree; pushes are dependent on the client request on which
+placeholder with index "-1"; pushes are dependent on the client request on which
 the PUSH_PROMISE frame was sent.
 
 Requests may override the default initial values by including a PRIORITY frame
@@ -614,10 +634,12 @@ NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
 server MUST be treated as a connection error of type
 `HTTP_WRONG_SETTING_DIRECTION`.
 
-Placeholders are identified by an ID between zero and one less than the number
-of placeholders the server has permitted.
+Client-controlled placeholders are identified by an ID between zero and one
+less than the number of placeholders the server has permitted.  The placeholder
+with index "-1" cannot be prioritized or referenced by the client.
 
-Like streams, placeholders have priority information associated with them.
+Like streams, client-controlled placeholders have priority information
+associated with them.
 
 ### Priority Tree Maintenance
 
