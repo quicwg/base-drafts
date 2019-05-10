@@ -5460,7 +5460,7 @@ ID can be selected to route later packets to the same server.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Parameters" registry governs a 62-bit space.  This space is
+The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
 split into two spaces that are governed by different policies.  Values with the
 first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
 Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
@@ -5555,17 +5555,18 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
 "QUIC Protocol" heading.
 
 The "QUIC Transport Error Codes" registry governs a 62-bit space.  This space is
-split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC8126}}.
+split into three spaces that are governed by different policies.  Values between
+0x00 and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG
+Review policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the
+Specification Required policy {{!RFC8126}}.  All other values are assigned to
+Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
 Value:
 
 : The numeric value of the assignment (registrations will be between 0x0000 and
-  0xfeff).
+  0x3fff).
 
 Code:
 
@@ -5580,8 +5581,12 @@ Specification:
 
 : A reference to a publicly available specification for the value.
 
-The initial contents of this registry are shown in {{iana-error-table}}.  Values
-from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
+The nominated expert(s) verify that a specification exists and is readily
+accessible.  Expert(s) are encouraged to be biased towards approving
+registrations unless they are abusive, frivolous, or actively harmful (not
+merely aesthetically displeasing, or architecturally dubious).
+
+The initial contents of this registry are shown in {{iana-error-table}}.
 
 | Value | Error                     | Description                   | Specification   |
 |:------|:--------------------------|:------------------------------|:----------------|
