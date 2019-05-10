@@ -2307,7 +2307,7 @@ signal closure.
 If the connection has been successfully established, endpoints MUST send any
 CONNECTION_CLOSE frames in a 1-RTT packet.  Prior to connection establishment a
 peer might not have 1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames
-in a Handshake packet.If the endpoint does not have Handshake keys, it MAY
+in a Handshake packet.  If the endpoint does not have Handshake keys, it MAY
 send CONNECTION_CLOSE frames in an Initial packet.
 
 The server can have Handshake keys but not know that the client has Handshake
