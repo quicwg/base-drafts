@@ -1649,7 +1649,7 @@ assigned by IANA.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/3 error codes. The "HTTP/3 Error
-Code" registry manages a 16-bit space.  The "HTTP/3 Error Code" registry
+Code" registry manages a 62-bit space.  The "HTTP/3 Error Code" registry
 operates under the "Expert Review" policy {{?RFC8126}}.
 
 Registrations for error codes are required to include a description
@@ -1663,7 +1663,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 16-bit error code value.
+: The 62-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
