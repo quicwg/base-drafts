@@ -4537,7 +4537,7 @@ Stream ID:
 
 Application Protocol Error Code:
 
-: A variable-length integer indicating the application protocol error
+: A variable-length integer containing the application protocol error
   code (see {{app-error-codes}}) which indicates why the stream is being
   closed.
 
