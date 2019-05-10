@@ -606,7 +606,9 @@ parent.
 A reference to an element which is no longer in the tree is treated as a
 reference to placeholder "-1". Due to reordering between streams, an element can
 also be prioritized which is not yet in the tree. Such elements are added to the
-tree with the requested priority.
+tree with the requested priority.  If a prioritized element depends on another
+element which is not yet in the tree, the requested parent is first added to the
+tree with the default priority.
 
 When a prioritized element is first created, it has a default initial weight
 of 16 and a default dependency. Requests and placeholders are dependent on the
