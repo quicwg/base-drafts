@@ -4580,7 +4580,7 @@ Stream ID:
 
 Application Error Code:
 
-: A variable-length integer carrying the application-specified reason the
+: A variable-length integer containing the application-specified reason the
   sender is ignoring the stream (see {{app-error-codes}}).
 
 
