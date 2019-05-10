@@ -850,9 +850,10 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Bursting more than an intial window's worth of data into the network might
-cause short-term congestion and losses. Implemementations SHOULD either use
-pacing or reduce their congestion window to limit such bursts.
+Sending multiple packets into the network without any delay between them
+creates a burst of load that might cause short-term congestion and losses.
+Implemementations SHOULD either use pacing or reduce their congestion window
+to limit such bursts to the size of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
