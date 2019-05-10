@@ -137,12 +137,12 @@ flow control.
 
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
-and DATA frames form the frames form the basis of HTTP requests and responses
+and DATA frames form the basis of HTTP requests and responses
 ({{request-response}}).  Other frame types like SETTINGS, PRIORITY, and GOAWAY
 are used to managed the overall connection.
 
 Multiplexing of requests is performed using the QUIC stream abstraction, with
-each request and response consuming a single QUIC stream.  Streams are largely
+each request and response consuming a single QUIC stream.  Streams are
 independent of each other, so one stream that is blocked or suffers packet loss
 does not prevent progress on other streams.
 
@@ -150,7 +150,7 @@ Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
 client making the indicated request.  This trades off network usage against a
 potential latency gain.  Several HTTP/3 frames are used to manage server push,
-such as PUSH_PROMISE, DUPLICATE_PUSH, and CANCEL_PUSH.
+such as PUSH_PROMISE, DUPLICATE_PUSH, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response headers are compressed for transmission.
 Because HPACK {{?HPACK=RFC7231}} relies on in-order transmission of compressed
