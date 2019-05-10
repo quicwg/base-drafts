@@ -1116,7 +1116,7 @@ of 16 and a default dependency. Requests and placeholders are dependent on the
 root of the priority tree; pushes are dependent on the client request on which
 the PUSH_PROMISE frame was sent.
 
-Requests may override the default initial values by including a PRIORTIY frame
+Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
 can be updated by sending a PRIORITY frame on the control stream.
 
