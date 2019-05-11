@@ -374,21 +374,21 @@ Additional functions might be needed to configure TLS.
 In this document, the TLS handshake is considered complete when the TLS stack
 has reported that the handshake is complete.  This happens when the TLS stack
 has both sent a Finished message and verified the peer's Finished message.
-Verifying the peer's Finished provides endpoints with an assurance that
+Verifying the peer's Finished provides the endpoints with an assurance that
 previous handshake messages have not been modified.  Note that the handshake
-does not complete on both endpoints simultaneously, therefore any requirements
-placed on endpoints based on the completion of the handshake are specific to
-the handshake being complete from the perspective of the endpoint in question.
+does not complete at both endpoints simultaneously.  Consequently, any
+requirement that is based on the completion of the handshake depends on the
+perspective of the endpoint in question.
 
 
 ### Handshake Confirmed {#handshake-confirmed}
 
-In this document, the TLS handshake is considered confirmed when both of the
-following two conditions are met: the handshake is complete and the endpoint
-has received an acknowledgment for a packet sent with 1-RTT keys.  This second
-condition can be implemented by tracking the lowest packet number sent with
-1-RTT keys, and the highest value of the Largest Acknowledged field in any
-received 1-RTT ACK frame: once the latter is higher than or equal to the
+In this document, the TLS handshake is considered confirmed at an endpoint when
+the following two conditions are met: the handshake is complete, and the
+endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
+This second condition can be implemented by tracking the lowest packet number
+sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
+in any received 1-RTT ACK frame: once the latter is higher than or equal to the
 former, the handshake is confirmed.
 
 
@@ -708,28 +708,30 @@ and ignoring any outstanding Initial packets.
 An endpoint MUST NOT discard its handshake keys until the TLS handshake is
 confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
 keys as soon as it has confirmed the handshake.  Most application protocols
-will send data after the handshake, generating acknowledgements and ensuring
-that both endpoints can discard their handshake keys promptly.  Endpoints that
-do not have reason to send immediately after completing the handshake MAY send
+will send data after the handshake, resulting in acknowledgements that allow
+both endpoints to discard their handshake keys promptly.  Endpoints that do
+not have reason to send immediately after completing the handshake MAY send
 ack-eliciting frames, such as PING, which will cause the handshake to be
 confirmed when they are acknowledged.
 
 
 ### Discarding 0-RTT Keys
 
-Clients SHOULD discard 0-RTT keys as soon as they install 1-RTT keys, since
-they have no use after that moment.
-
 0-RTT and 1-RTT packets share the same packet number space, and clients do not
 send 0-RTT packets after sending a 1-RTT packet ({{using-early-data}}).
-Therefore a server MAY discard 0-RTT keys as soon as it receives a 1-RTT
+
+Therefore, a client SHOULD discard 0-RTT keys as soon as it installs 1-RTT
+keys, since they have no use after that moment.
+
+Additionally, a server MAY discard 0-RTT keys as soon as it receives a 1-RTT
 packet.  However, due to packet reordering, a 0-RTT packet could arrive after
 a 1-RTT packet.  Servers MAY temporarily retain 0-RTT keys to allow decrypting
 reordered packets without requiring their contents to be retransmitted with
-1-RTT keys.  Servers MUST discard 0-RTT keys within three times the Probe
-Timeout (PTO, see {{QUIC-RECOVERY}}) after receiving a 1-RTT packet.  A server
-MAY discard 0-RTT keys earlier if it determines that it has received all 0-RTT
-packets, which can be done by keeping track of missing packet numbers.
+1-RTT keys.  After receiving a 1-RTT packet, servers MUST discard 0-RTT keys
+within a short time; the RECOMMENDED time period is three times the Probe
+Timeout (PTO, see {{QUIC-RECOVERY}}).  A server MAY discard 0-RTT keys earlier
+if it determines that it has received all 0-RTT packets, which can be done by
+keeping track of missing packet numbers.
 
 
 # Packet Protection {#packet-protection}
@@ -1152,13 +1154,14 @@ number sent with each KEY_PHASE, and the highest acknowledged packet number
 in the 1-RTT space: once the latter is higher than or equal to the former,
 another key update can be initiated.
 
-Endpoints MAY limit the number of sets of keys they retain to two sets for
-removing packet protection and one set for protecting packets.  Older keys
-can be discarded.  Updating keys multiple times rapidly can cause
-packets to be effectively lost if packets are significantly reordered.
-Therefore, an endpoint SHOULD NOT initiate a key update until three times the
-PTO after it has last updated keys. This avoids valid reordered packets being
-dropped by the peer as a result of the peer discarding older keys.
+Endpoints MAY limit the number of keys they retain to two sets for removing
+packet protection and one set for protecting packets.  Older keys can be
+discarded.  Updating keys multiple times rapidly can cause packets to be
+effectively lost if packets are significantly reordered.  Therefore, an
+endpoint SHOULD NOT initiate a key update for some time after it has last
+updated keys; the RECOMMENDED time period is three times the PTO. This avoids
+valid reordered packets being dropped by the peer as a result of the peer
+discarding older keys.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
