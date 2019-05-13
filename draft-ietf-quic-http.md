@@ -118,7 +118,7 @@ latency of TCP Fast Open {{?RFC7413}}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
-management and flow control issues to QUIC, a similar binary framing is used on
+lifetime and flow control issues to QUIC, a similar binary framing is used on
 each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
 implemented atop QUIC.
 
@@ -130,21 +130,22 @@ QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 HTTP/3 provides a transport for HTTP semantics using the QUIC transport protocol
 and an internal framing layer similar to HTTP/2.
 
-An HTTP/3 endpoint is discovered using HTTP Alternative Services.  Once a client
-knows that an HTTP/3 server exists at a certain endpoint, it opens a QUIC
-connection. QUIC provides protocol negotiation, stream-based multiplexing, and
-flow control.
+An HTTP/3 endpoint can be discovered using HTTP Alternative Services; this
+process is described in greater detail in {{discovery}}.  Once a client knows
+that an HTTP/3 server exists at a certain endpoint, it opens a QUIC connection.
+QUIC provides protocol negotiation, stream-based multiplexing, and flow control.
 
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
 and DATA frames form the basis of HTTP requests and responses
 ({{request-response}}).  Other frame types like SETTINGS, PRIORITY, and GOAWAY
-are used to managed the overall connection.
+are used to manage the overall connection and relationships between streams.
 
-Multiplexing of requests is performed using the QUIC stream abstraction, with
-each request and response consuming a single QUIC stream.  Streams are
-independent of each other, so one stream that is blocked or suffers packet loss
-does not prevent progress on other streams.
+Multiplexing of requests is performed using the QUIC stream abstraction,
+described in Section 2 of {{QUIC-TRANSPORT}}.  Each request and response
+consumes a single QUIC stream.  Streams are independent of each other, so one
+stream that is blocked or suffers packet loss does not prevent progress on other
+streams.
 
 Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
@@ -178,8 +179,8 @@ The HTTP/3 specification is split into seven parts:
 - Error Handling ({{errors}}) describes how error conditions are handled and
   expressed, either on a particular stream or for the connection as a whole.
 
-Readers familiar with HTTP/2 will find a more detailed comparison with that
-protocol in {{h2-considerations}}.
+A more detailed comparison between HTTP/2 and HTTP/3 can be found in
+{{h2-considerations}}.
 
 ## Conventions and Terminology
 
@@ -215,8 +216,8 @@ endpoint:
 : Either the client or server of the connection.
 
 frame:
-: The smallest unit of communication within an HTTP/3 connection, consisting of
-  a header and a variable-length sequence of octets structured according to the
+: The smallest unit of communication on a stream in HTTP/3, consisting of a
+  header and a variable-length sequence of octets structured according to the
   frame type.
 
   Protocol elements called "frames" exist in both this document and
@@ -276,7 +277,7 @@ itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 3.2.6 of {{!RFC7230}}. Experimenters are encouraged to
 coordinate their experiments on the quic@ietf.org mailing list.
 
-## Discovering an HTTP/3 Endpoint
+## Discovering an HTTP/3 Endpoint {#discovery}
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
 the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
@@ -1873,11 +1874,11 @@ section describes the approach taken to design HTTP/3, points out important
 differences from HTTP/2, and describes how to map HTTP/2 extensions into HTTP/3.
 
 HTTP/3 begins from the premise that similarity to HTTP/2 is preferable, but not
-a hard requirement.  HTTP/3 departs from HTTP/2 primarily where necessary to
-accommodate the differences in behavior between QUIC and TCP (lack of ordering,
-support for streams).  We intend to avoid gratuitous changes which make it
-difficult or impossible to build extensions with the same semantics applicable
-to both protocols at once.
+a hard requirement.  HTTP/3 departs from HTTP/2 where QUIC's behavior
+differences from TCP (lack of ordering, support for streams) are either
+beneficial or need to be accommodated.  HTTP/3 attempts to avoid gratuitous
+changes which make it difficult or impossible to build extensions with the same
+semantics applicable to both protocols at once.
 
 These departures are noted in this section.
 
