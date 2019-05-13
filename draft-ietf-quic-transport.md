@@ -2304,6 +2304,13 @@ the application requests that the connection be closed.  The application
 protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
+When sending CONNECTION_CLOSE, the goal is to ensure that a peer will process
+the frame.  Generally, this means sending the frame in a packet with the highest
+level of packet protection to avoid the packet being discarded.  However, during
+the handshake, it is possible that more advanced packet protection keys are not
+available to a peer, so the frame MAY be replicated in a packet that uses a
+lower packet protection level.
+
 If the connection has been successfully established, endpoints MUST send any
 CONNECTION_CLOSE frames in a 1-RTT packet.  Prior to connection establishment a
 peer might not have 1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames
