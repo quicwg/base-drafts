@@ -1497,7 +1497,7 @@ Invoked from DetectLostPackets when packets are deemed lost.
      // Determine if all packets in the period before the
      // newest lost packet, including the edges, are marked
      // lost
-     return AreAllPacketsInPeriodLost(largest_lost_packet,
+     return AreAllPacketsLost(largest_lost_packet,
                                       congestion_period)
 
    OnPacketsLost(lost_packets):
