@@ -586,34 +586,32 @@ and the dependency. The elements that can be prioritized are:
 
 Taken together, the dependencies across all prioritized elements in a connection
 form a dependency tree. An element can depend on another element or on the root
-of the tree.  The tree also contains a dedicated placeholder with index "-1"
-which depends on the root of the tree with a weight of zero.  This placeholder
-cannot be reprioritized.  The structure of the dependency tree changes as
-PRIORITY frames modify the dependency links between other prioritized elements.
+of the tree.  The tree also contains an orphan placeholder.  This placeholder
+cannot be reprioritized, and no resources should be allocated to descendants of
+the orphan placeholder if progress can be made on descendants of the root.  The
+structure of the dependency tree changes as PRIORITY frames modify the
+dependency links between other prioritized elements.
 
-All dependent streams are allocated an integer weight between 0 and 255
-(inclusive).
+All dependent streams are allocated an integer weight between 1 and 256
+(inclusive), derived by adding one to the weight expressed in the PRIORITY
+frame.
 
 Streams with the same parent SHOULD be allocated resources proportionally based
 on their weight.  Thus, if stream B depends on stream A with weight 4, stream C
 depends on stream A with weight 12, and no progress can be made on stream A,
 stream B ideally receives one-third of the resources allocated to stream C.
 
-A weight of zero indicates that no resources should be allocated to the
-indicated stream if progress can be made on other streams dependent on the same
-parent.
-
 A reference to an element which is no longer in the tree is treated as a
-reference to placeholder "-1". Due to reordering between streams, an element can
-also be prioritized which is not yet in the tree. Such elements are added to the
-tree with the requested priority.  If a prioritized element depends on another
-element which is not yet in the tree, the requested parent is first added to the
-tree with the default priority.
+reference to the orphan placeholder. Due to reordering between streams, an
+element can also be prioritized which is not yet in the tree. Such elements are
+added to the tree with the requested priority.  If a prioritized element depends
+on another element which is not yet in the tree, the requested parent is first
+added to the tree with the default priority.
 
-When a prioritized element is first created, it has a default initial weight
-of 16 and a default dependency. Requests and placeholders are dependent on the
-placeholder with index "-1"; pushes are dependent on the client request on which
-the PUSH_PROMISE frame was sent.
+When a prioritized element is first created, it has a default initial weight of
+16 and a default dependency. Requests and placeholders are dependent on the
+orphan placeholder; pushes are dependent on the client request on which the
+PUSH_PROMISE frame was sent.
 
 Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
@@ -636,9 +634,9 @@ NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
 server MUST be treated as a connection error of type
 `HTTP_WRONG_SETTING_DIRECTION`.
 
-Client-controlled placeholders are identified by an ID between zero and one
-less than the number of placeholders the server has permitted.  The placeholder
-with index "-1" cannot be prioritized or referenced by the client.
+Client-controlled placeholders are identified by an ID between zero and one less
+than the number of placeholders the server has permitted.  The orphan
+placeholder cannot be prioritized or referenced by the client.
 
 Like streams, client-controlled placeholders have priority information
 associated with them.
