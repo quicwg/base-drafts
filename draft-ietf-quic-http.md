@@ -92,18 +92,18 @@ HTTP/2.  HTTP/3 supports the same semantics over a new transport protocol, QUIC.
 
 ## Prior versions of HTTP
 
-HTTP/1.1 was a TCP mapping which used whitespace-delimited text fields to convey
-HTTP messages.  While these exchanges were human-readable, the whitespace led to
-parsing difficulties and workarounds to be tolerant of variant behavior.
-Because each connection could be used only for a single HTTP request and
-response at a time, multiple parallel TCP connections were used, reducing the
+HTTP/1.1 is a TCP mapping which uses whitespace-delimited text fields to convey
+HTTP messages.  While these exchanges are human-readable, the whitespace leads
+to parsing difficulties and workarounds to be tolerant of variant behavior.
+Because each connection can transfer only a single HTTP request or response at a
+time in each direction, multiple parallel TCP connections are used, reducing the
 ability of the congestion controller to accurately manage traffic between
 endpoints.
 
 HTTP/2 introduced a binary framing and multiplexing layer to improve latency
-without modifying the transport layer.  However, because the parallel nature
-of HTTP/2's multiplexing was not visible to TCP's loss recovery mechanisms,
-a lost or reordered packet caused all active transactions to experience a stall
+without modifying the transport layer.  However, because the parallel nature of
+HTTP/2's multiplexing is not visible to TCP's loss recovery mechanisms, a lost
+or reordered packet causes all active transactions to experience a stall
 regardless of whether that transaction was impacted by the lost packet.
 
 ## Delegation to QUIC
