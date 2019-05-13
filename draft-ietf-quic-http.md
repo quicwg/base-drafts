@@ -942,9 +942,9 @@ A server MAY interleave one or more PUSH_PROMISE frames (see
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
-The HEADERS and PUSH_PROMISE frames might reference concurrent updates to the
-QPACK table.  While these updates are not directly part of the message exchange,
-they must be received and processed before the message can be consumed.  See
+The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK table.
+While these updates are not directly part of the message exchange, they must be
+received and processed before the message can be consumed.  See
 {{header-formatting}} for more details.
 
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
