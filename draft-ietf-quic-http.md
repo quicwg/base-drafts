@@ -890,7 +890,11 @@ of a DUPLICATE_PUSH frame as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 The DUPLICATE_PUSH frame carries a single variable-length integer that
 identifies the Push ID of a resource that the server has previously promised
-(see {{frame-push-promise}}).
+(see {{frame-push-promise}}), though that promise might not be received before
+this frame.  A server MUST NOT use a Push ID that is larger than the client has
+provided in a MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat
+receipt of a PUSH_PROMISE that contains a larger Push ID than the client has
+advertised as a connection error of type HTTP_MALFORMED_FRAME.
 
 This frame allows the server to use the same server push in response to multiple
 concurrent requests.  Referencing the same server push ensures that a promise
