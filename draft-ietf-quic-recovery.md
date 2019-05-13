@@ -1494,10 +1494,11 @@ Invoked from DetectLostPackets when packets are deemed lost.
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
-     // Determine if all packets in the window before the
+     // Determine if all packets in the period before the
      // newest lost packet, including the edges, are marked
      // lost
-     return IsWindowLost(largest_lost_packet, congestion_period)
+     return AreAllPacketsInPeriodLost(largest_lost_packet,
+                                      congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
