@@ -558,6 +558,8 @@ Certain frames can only occur as the first frame of a particular stream type;
 these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
 is provided in the relevant section.
 
+Note that, unlike QUIC frames, HTTP/3 frames can span multiple packets.
+
 ## Frame Layout
 
 All frames have the following format:
