@@ -1926,7 +1926,7 @@ HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
 PRIORITY frames are sent as the first frame on a request stream or on the
 control stream and exclusive prioritization has been removed. HTTP/3 permits the
-prioritisation of requests, pushes and placeholders that each exist in separate
+prioritization of requests, pushes and placeholders that each exist in separate
 identifier spaces. The HTTP/3 PRIORITY frame replaces the stream dependency
 field with fields that can identify the element of interest and its dependency.
 
