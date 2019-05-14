@@ -2317,7 +2317,7 @@ in a 1-RTT packet.  Prior to handshake confirmation, a peer might not have
 packet.  If the endpoint does not have Handshake keys, it SHOULD send
 CONNECTION_CLOSE frames in an Initial packet.
 
-The server may not know whether the client has Handshake keys.  In order to
+A client will always know whether the server has Handshake keys (see {{discard-initial}}), but it is possible that a server does not know whether the client has Handshake keys.
 guarantee a CONNECTION_CLOSE is processed, it SHOULD send a CONNECTION_CLOSE
 in both Handshake and Initial, because the client discards Initial keys as soon
 as it has Handshake keys. If multiple packets are sent, they can be coalesced
