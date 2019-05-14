@@ -852,7 +852,7 @@ utilized the congestion window without pacing delay.
 
 Sending multiple packets into the network without any delay between them
 creates a burst of load that might cause short-term congestion and losses.
-Implemementations SHOULD either use pacing or reduce their congestion window
+Implementations SHOULD either use pacing or reduce their congestion window
 to limit such bursts to the size of the initial congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
