@@ -93,12 +93,12 @@ HTTP/2.  HTTP/3 supports the same semantics over a new transport protocol, QUIC.
 ## Prior versions of HTTP
 
 HTTP/1.1 is a TCP mapping which uses whitespace-delimited text fields to convey
-HTTP messages.  While these exchanges are human-readable, the whitespace leads
-to parsing difficulties and workarounds to be tolerant of variant behavior.
-Because each connection can transfer only a single HTTP request or response at a
-time in each direction, multiple parallel TCP connections are used, reducing the
-ability of the congestion controller to accurately manage traffic between
-endpoints.
+HTTP messages.  While these exchanges are human-readable, using whitespace for
+message formatting leads to parsing difficulties and workarounds to be tolerant
+of variant behavior. Because each connection can transfer only a single HTTP
+request or response at a time in each direction, multiple parallel TCP
+connections are often used, reducing the ability of the congestion controller to
+accurately manage traffic between endpoints.
 
 HTTP/2 introduced a binary framing and multiplexing layer to improve latency
 without modifying the transport layer.  However, because the parallel nature of
@@ -130,10 +130,11 @@ QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 HTTP/3 provides a transport for HTTP semantics using the QUIC transport protocol
 and an internal framing layer similar to HTTP/2.
 
-An HTTP/3 endpoint can be discovered using HTTP Alternative Services; this
-process is described in greater detail in {{discovery}}.  Once a client knows
-that an HTTP/3 server exists at a certain endpoint, it opens a QUIC connection.
-QUIC provides protocol negotiation, stream-based multiplexing, and flow control.
+Once a client knows that an HTTP/3 server exists at a certain endpoint, it opens
+a QUIC connection. QUIC provides protocol negotiation, stream-based
+multiplexing, and flow control. An HTTP/3 endpoint can be discovered using HTTP
+Alternative Services; this process is described in greater detail in
+{{discovery}}.
 
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
@@ -1876,11 +1877,12 @@ section describes the approach taken to design HTTP/3, points out important
 differences from HTTP/2, and describes how to map HTTP/2 extensions into HTTP/3.
 
 HTTP/3 begins from the premise that similarity to HTTP/2 is preferable, but not
-a hard requirement.  HTTP/3 departs from HTTP/2 where QUIC's behavior
-differences from TCP (lack of ordering, support for streams) are either
-beneficial or need to be accommodated.  HTTP/3 attempts to avoid gratuitous
-changes which make it difficult or impossible to build extensions with the same
-semantics applicable to both protocols at once.
+a hard requirement.  HTTP/3 departs from HTTP/2 where QUIC differs from TCP,
+either to take advantage of QUIC features (like streams) or to accommodate
+important shortcomings (such as a lack of total ordering). These differences
+make HTTP/3 similar to HTTP/2 in key aspects, such as the relationship of
+requests and responses to streams. However, the details of the HTTP/3 design are
+substantially different than HTTP/2.
 
 These departures are noted in this section.
 
