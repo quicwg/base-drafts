@@ -570,13 +570,13 @@ The PRIORITY frame payload has the following fields:
     prioritized element (see {{!RFC7540}}, Section 5.3). Add one to the value
     to obtain a weight between 1 and 256.  When absent, indicates the resource
     should be delivered all at once or not at all.
-  
+
   Priority:
   : An optional unsigned 8-bit integer representing a strict priority for the
     prioritized element (see {{!RFC7540}}, Section 5.3).  When absent, this
     value is 16.  An element with a higher priority should be delivered before
     an element of lower priority.
-  
+
 
 The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
