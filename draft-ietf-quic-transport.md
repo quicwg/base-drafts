@@ -2321,8 +2321,8 @@ A client will always know whether the server has Handshake keys
 (see {{discard-initial}}), but it is possible that a server does not know
 whether the client has Handshake keys.  Under these circumstances, a server
 SHOULD send a CONNECTION_CLOSE frame in both Handshake and Initial packets
-to ensure that at least one of them is processable by the client. These packets
-can be coalesced into a single UDP datagram (see {{packet-coalesce}}).
+to ensure that at least one of them is processable by the client.  These
+packets can be coalesced into a single UDP datagram (see {{packet-coalesce}}).
 
 
 ## Stateless Reset {#stateless-reset}
