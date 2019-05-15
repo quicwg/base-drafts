@@ -561,8 +561,10 @@ data from the target of the CONNECT.
 A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
 any error in the TCP connection, which includes receiving a TCP segment with the
 RST bit set, as a stream error of type HTTP_CONNECT_ERROR
-({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
-the RST bit set if it detects an error with the stream or the QUIC connection.
+({{http-error-codes}}).  Correspondingly, if a proxy detects an error with the
+stream or the QUIC connection, it MUST close the TCP connection.  If the
+underlying TCP implementation permits it, the proxy SHOULD send a TCP segment
+with the RST bit set.
 
 ## Prioritization {#priority}
 
