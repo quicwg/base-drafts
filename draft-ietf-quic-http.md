@@ -542,7 +542,7 @@ The PRIORITY frame payload has the following fields:
     set to `0`.
 
   D (Dependent On Placeholder):
-  : A one-bit field indicating whether a element depends upon a placeholder
+  : A one-bit field indicating whether an element depends upon a placeholder
     or the root of the tree (see {{element-dependency-types}}).
 
   W (Weight Indication):
@@ -1100,7 +1100,8 @@ HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 placeholders.  In the HTTP/3 priority scheme, a stream can be given a strict
 priority or can be designated as dependent upon a placeholder or the root.
 This information is expressed in the PRIORITY frame {{frame-priority}} which
-identifies the element and the dependency. The elements that can be prioritized are:
+identifies the element and the dependency. The elements that can be prioritized
+are:
 
 - Requests, identified by the stream of the PRIORITY frame
 - Pushes, identified by the Push ID of the promised resource
@@ -1108,12 +1109,10 @@ identifies the element and the dependency. The elements that can be prioritized 
 - Placeholders, identified by a Placeholder ID
 
 In HTTP/3, stream dependencies that were implicitly encoded by dependencies in
-HTTP/2 are explicitly encoded with strict prioritization.  This simplifies priority
-tree management, eliminates potential new race conditions introduced by HTTP/3's
-multiple streams, and improves framing efficiency with more than 64 requests.
-
-When a placeholder is reparented or given a new weight or strict priority, all
-dependent placeholders and streams are also re-prioritized.
+HTTP/2 are explicitly encoded with strict prioritization.  This simplifies
+priority tree management, eliminates potential new race conditions introduced
+by HTTP/3's multiple streams, and improves framing efficiency with more than
+64 requests.
 
 When a prioritized element is first created, it has a default initial weight
 of 16, priority of 16, and a default dependency. Requests and placeholders are
@@ -1123,6 +1122,14 @@ request on which the PUSH_PROMISE frame was sent.
 Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
 can be updated by sending a PRIORITY frame on the control stream.
+
+Higher priority elements have all available data sent before elements of lower
+priority.  When multiple elements have the same priority, if a weight is
+specified, elements with weights are interleaved.  If a weight is not
+specified, then elements are delivered sequentially and all available data
+from one element is sent before any data from the next.  If a given priority
+level has some elements with weights and some without, the two groups share
+the available bandwidth equally.
 
 ### Placeholders
 
@@ -1145,6 +1152,9 @@ Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
 
 Like streams, placeholders have priority information associated with them.
+
+When a placeholder is reparented, given a new weight or given a new strict
+priority, all dependent placeholders and streams are also re-prioritized.
 
 ## Server Push
 
