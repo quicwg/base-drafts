@@ -386,7 +386,7 @@ perspective of the endpoint in question.
 In this document, the TLS handshake is considered confirmed at an endpoint when
 the following two conditions are met: the handshake is complete, and the
 endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
-This second condition can be implemented by tracking the lowest packet number
+This second condition can be implemented by recording the lowest packet number
 sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
 in any received 1-RTT ACK frame: once the latter is higher than or equal to the
 former, the handshake is confirmed.
