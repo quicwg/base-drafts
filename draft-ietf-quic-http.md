@@ -1097,27 +1097,23 @@ the RST bit set if it detects an error with the stream or the QUIC connection.
 
 HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 5.3, but replaces streams depending upon streams with strict priorities and
-placeholders.  In the HTTP/3 priority scheme, a given element can be designated
-as dependent upon a placeholder or the root. This information is expressed in
-the PRIORITY frame {{frame-priority}} which identifies the element and the
-dependency. The elements that can be prioritized are:
+placeholders.  In the HTTP/3 priority scheme, a stream can be given a strict
+priority or can be designated as dependent upon a placeholder or the root.
+This information is expressed in the PRIORITY frame {{frame-priority}} which
+identifies the element and the dependency. The elements that can be prioritized are:
 
 - Requests, identified by the stream of the PRIORITY frame
 - Pushes, identified by the Push ID of the promised resource
   ({{frame-push-promise}})
 - Placeholders, identified by a Placeholder ID
 
-In HTTP/3 stream dependencies which implicitly encode strict priorities by
-explicit strict prioritization.  This simplifies priority tree management,
-eliminates race conditions introduced by HTTP/3's multiple streams, and improves
-framing efficiency in the case of a large number of streams.
+In HTTP/3, stream dependencies implicitly encoded by dependencies in HTTP/2 are
+explicitly encoded with strict prioritization.  This simplifies priority tree
+management, eliminates potential new race conditions introduced by HTTP/3's
+multiple streams, and improves framing efficiency with more than 64 requests.
 
-Taken together, the dependencies across all prioritized elements in a connection
-form a dependency tree. An element can only depend on a placeholder or on the root
-of the tree. Because the root and placeholders never disappear, it is impoossible
-to reference an element which is no longer in the tree. The structure of the
-dependency tree changes as PRIORITY frames modify the dependency links between
-prioritized elements.
+When a placeholder is reparented or given a new weight or strict priority, all
+dependent placeholders and streams are also re-prioritized.
 
 When a prioritized element is first created, it has a default initial weight
 of 16, priority of 16, and a default dependency. Requests and placeholders are
