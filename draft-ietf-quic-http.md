@@ -568,12 +568,14 @@ The PRIORITY frame payload has the following fields:
   Weight:
   : An optional unsigned 8-bit integer representing a priority weight for the
     prioritized element (see {{!RFC7540}}, Section 5.3). Add one to the value
-    to obtain a weight between 1 and 256.  When absent, this value is 16.
+    to obtain a weight between 1 and 256.  When absent, indicates the resource
+    should be delivered all at once or not at all.
   
   Priority:
   : An optional unsigned 8-bit integer representing a strict priority for the
     prioritized element (see {{!RFC7540}}, Section 5.3).  When absent, this
-    value is 16.
+    value is 16.  An element with a higher priority should be delivered before
+    an element of lower priority.
   
 
 The values for the Prioritized Element Type ({{prioritized-element-types}}) and
@@ -1094,16 +1096,21 @@ the RST bit set if it detects an error with the stream or the QUIC connection.
 ## Prioritization {#priority}
 
 HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
-5.3, but replaces streams depending upon streams with placeholders and strict
-priorities. In this priority scheme, a given element can be designated as dependent
-upon a placeholder or the root. This information is expressed in the PRIORITY
-frame {{frame-priority}} which identifies the element and the dependency. The
-elements that can be prioritized are:
+5.3, but replaces streams depending upon streams with strict priorities and
+placeholders.  In the HTTP/3 priority scheme, a given element can be designated
+as dependent upon a placeholder or the root. This information is expressed in
+the PRIORITY frame {{frame-priority}} which identifies the element and the
+dependency. The elements that can be prioritized are:
 
 - Requests, identified by the stream of the PRIORITY frame
 - Pushes, identified by the Push ID of the promised resource
   ({{frame-push-promise}})
 - Placeholders, identified by a Placeholder ID
+
+In HTTP/3 stream dependencies which implicitly encode strict priorities by
+explicit strict prioritization.  This simplifies priority tree management,
+eliminates race conditions introduced by HTTP/3's multiple streams, and improves
+framing efficiency in the case of a large number of streams.
 
 Taken together, the dependencies across all prioritized elements in a connection
 form a dependency tree. An element can only depend on a placeholder or on the root
