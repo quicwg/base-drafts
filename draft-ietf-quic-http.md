@@ -1107,9 +1107,9 @@ identifies the element and the dependency. The elements that can be prioritized 
   ({{frame-push-promise}})
 - Placeholders, identified by a Placeholder ID
 
-In HTTP/3, stream dependencies implicitly encoded by dependencies in HTTP/2 are
-explicitly encoded with strict prioritization.  This simplifies priority tree
-management, eliminates potential new race conditions introduced by HTTP/3's
+In HTTP/3, stream dependencies that were implicitly encoded by dependencies in
+HTTP/2 are explicitly encoded with strict prioritization.  This simplifies priority
+tree management, eliminates potential new race conditions introduced by HTTP/3's
 multiple streams, and improves framing efficiency with more than 64 requests.
 
 When a placeholder is reparented or given a new weight or strict priority, all
