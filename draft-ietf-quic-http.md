@@ -163,25 +163,32 @@ modifying it.
 
 ## Document Organization
 
-The HTTP/3 specification is split into seven parts:
+The HTTP/3 specification is split into seven parts.  The document begins
+with a detailed overview of the connection lifecycle and key concepts:
 
 - Connection Setup and Management ({{connection-setup}}) covers how an HTTP/3
   endpoint is discovered and a connection is established.
-- Stream Mapping and Usage ({{stream-mapping}}) describes the way QUIC streams
-  are used.
-- HTTP Framing Layer ({{http-framing-layer}}) describes the frames used on
-  most streams.
 - HTTP Request Lifecycle ({{http-request-lifecycle}}) describes how HTTP
   semantics are expressed using frames.
 - Connection Closure ({{connection-closure}}) describes how connections are
   terminated, either gracefully or abruptly.
-- Extensions to HTTP/3 ({{extensions}}) describes how new capabilities can be
-  added in future documents.
+
+The details of the wire protocol and interactions with the transport are
+described in subsequent sections:
+
+- Stream Mapping and Usage ({{stream-mapping}}) describes the way QUIC streams
+  are used.
+- HTTP Framing Layer ({{http-framing-layer}}) describes the frames used on
+  most streams.
 - Error Handling ({{errors}}) describes how error conditions are handled and
   expressed, either on a particular stream or for the connection as a whole.
 
-A more detailed comparison between HTTP/2 and HTTP/3 can be found in
-{{h2-considerations}}.
+Additional resources are provided in the final sections:
+
+- Extensions to HTTP/3 ({{extensions}}) describes how new capabilities can be
+  added in future documents.
+- A more detailed comparison between HTTP/2 and HTTP/3 can be found in
+  {{h2-considerations}}.
 
 ## Conventions and Terminology
 
@@ -381,6 +388,446 @@ of {{!HTTP2}}).
 
 The considerations discussed in Section 9.1 of {{!HTTP2}} also apply to the
 management of HTTP/3 connections.
+
+
+# HTTP Request Lifecycle
+
+## HTTP Message Exchanges {#request-response}
+
+A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
+A client MUST send only a single request on a given stream. A server sends zero
+or more non-final HTTP responses on the same stream as the request, followed by
+a single final HTTP response, as detailed below.
+
+An HTTP message (request or response) consists of:
+
+1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
+   frame (see {{frame-headers}}),
+
+2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
+   frames (see {{frame-data}}),
+
+3. optionally, one HEADERS frame containing the trailer-part, if present (see
+   {{!RFC7230}}, Section 4.1.2).
+
+A server MAY interleave one or more PUSH_PROMISE frames (see
+{{frame-push-promise}}) with the frames of a response message. These
+PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
+details.
+
+The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
+table. While these updates are not directly part of the message exchange, they
+must be received and processed before the message can be consumed.  See
+{{header-formatting}} for more details.
+
+The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
+be used.
+
+Trailing header fields are carried in an additional HEADERS frame following the
+body. Senders MUST send only one HEADERS frame in the trailers section;
+receivers MUST discard any subsequent HEADERS frames.
+
+A response MAY consist of multiple messages when and only when one or more
+informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
+response to the same request.  Non-final responses do not contain a payload body
+or trailers.
+
+An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
+After sending a request, a client MUST close the stream for sending.  Unless
+using the CONNECT method (see {{the-connect-method}}), clients MUST NOT make
+stream closure dependent on receiving a response to their request. After sending
+a final response, the server MUST close the stream for sending. At this point,
+the QUIC stream is fully closed.
+
+When a stream is closed, this indicates the end of an HTTP message. Because some
+messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
+messages once enough of the message has been received to make progress.  If a
+client stream terminates without enough of the HTTP message to provide a
+complete response, the server SHOULD abort its response with the error code
+HTTP_INCOMPLETE_REQUEST.
+
+A server can send a complete response prior to the client sending an entire
+request if the response does not depend on any portion of the request that has
+not been sent and received. When this is true, a server MAY request that the
+client abort transmission of a request without error by triggering a QUIC
+STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
+response, and cleanly closing its stream. Clients MUST NOT discard complete
+responses as a result of having their request terminated abruptly, though
+clients can always discard responses at their discretion for other reasons.
+
+
+### Header Formatting and Compression {#header-formatting}
+
+HTTP message headers carry information as a series of key-value pairs, called
+header fields. For a listing of registered HTTP header fields, see the "Message
+Header Field" registry maintained at
+<https://www.iana.org/assignments/message-headers>.
+
+Just as in previous versions of HTTP, header field names are strings of ASCII
+characters that are compared in a case-insensitive fashion.  Properties of HTTP
+header field names and values are discussed in more detail in Section 3.2 of
+{{!RFC7230}}, though the wire rendering in HTTP/3 differs.  As in HTTP/2, header
+field names MUST be converted to lowercase prior to their encoding.  A request
+or response containing uppercase header field names MUST be treated as
+malformed.
+
+As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
+character (ASCII 0x3a) to convey the target URI, the method of the request, and
+the status code for the response.  These pseudo-header fields are defined in
+Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
+header fields.  Endpoints MUST NOT generate pseudo-header fields other than
+those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
+fields in Section 8.1.2.1 of {{!HTTP2}} also apply to HTTP/3.
+
+HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
+HPACK which allows the flexibility to avoid header-compression-induced
+head-of-line blocking.  See that document for additional details.
+
+An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
+will accept on an individual HTTP message; encountering a larger message header
+SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  If an
+implementation wishes to advise its peer of this limit, it can be conveyed as a
+number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a
+header list is calculated based on the uncompressed size of header fields,
+including the length of the name and value in bytes plus an overhead of 32 bytes
+for each header field.
+
+### Request Cancellation and Rejection {#request-cancellation}
+
+Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
+STOP_SENDING frames, as appropriate) with an error code of
+HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
+response, it indicates that this response is no longer of interest.
+Implementations SHOULD cancel requests by aborting both directions of a stream.
+
+When the server rejects a request without performing any application processing,
+it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
+In this context, "processed" means that some data from the stream was passed to
+some higher layer of software that might have taken some action as a result. The
+client can treat requests rejected by the server as though they had never been
+sent at all, thereby allowing them to be retried later on a new connection.
+Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
+were partially or fully processed.  When a server abandons a response after
+partial processing, it SHOULD abort its response stream with the error code
+HTTP_REQUEST_CANCELLED.
+
+When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
+send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
+if no processing was performed.  Clients MUST NOT reset streams with the
+HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
+frame that contains the same code.
+
+If a stream is cancelled after receiving a complete response, the client MAY
+ignore the cancellation and use the response.  However, if a stream is cancelled
+after receiving a partial response, the response SHOULD NOT be used.
+Automatically retrying such requests is not possible, unless this is otherwise
+permitted (e.g., idempotent actions like GET, PUT, or DELETE).
+
+
+## The CONNECT Method
+
+The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
+HTTP proxies to establish a TLS session with an origin server for the purposes
+of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
+an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
+method is used to establish a tunnel over a single HTTP/2 stream to a remote
+host for similar purposes.
+
+A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
+request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
+request that does not conform to these restrictions is malformed. The request
+stream MUST NOT be closed at the end of the request.
+
+A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
+server identified in the ":authority" pseudo-header field. Once this connection
+is successfully established, the proxy sends a HEADERS frame containing a 2xx
+series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
+
+All DATA frames on the stream correspond to data sent or received on the TCP
+connection. Any DATA frame sent by the client is transmitted by the proxy to the
+TCP server; data received from the TCP server is packaged into DATA frames by
+the proxy. Note that the size and number of TCP segments is not guaranteed to
+map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
+
+The TCP connection can be closed by either peer. When the client ends the
+request stream (that is, the receive stream at the proxy enters the "Data Recvd"
+state), the proxy will set the FIN bit on its connection to the TCP server. When
+the proxy receives a packet with the FIN bit set, it will terminate the send
+stream that it sends to the client. TCP connections which remain half-closed in
+a single direction are not invalid, but are often handled poorly by servers, so
+clients SHOULD NOT close a stream for sending while they still expect to receive
+data from the target of the CONNECT.
+
+A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
+any error in the TCP connection, which includes receiving a TCP segment with the
+RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
+the RST bit set if it detects an error with the stream or the QUIC connection.
+
+## Prioritization {#priority}
+
+HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
+5.3. In this priority scheme, a given element can be designated as dependent
+upon another element. This information is expressed in the PRIORITY frame
+{{frame-priority}} which identifies the element and the dependency. The elements
+that can be prioritized are:
+
+- Requests, identified by the ID of the request stream
+- Pushes, identified by the Push ID of the promised resource
+  ({{frame-push-promise}})
+- Placeholders, identified by a Placeholder ID
+
+Taken together, the dependencies across all prioritized elements in a connection
+form a dependency tree. An element can depend on another element or on the root
+of the tree. A reference to an element which is no longer in the tree is treated
+as a reference to the root of the tree. The structure of the dependency tree
+changes as PRIORITY frames modify the dependency links between prioritized
+elements.
+
+Due to reordering between streams, an element can also be prioritized which is
+not yet in the tree. Such elements are added to the tree with the requested
+priority.
+
+When a prioritized element is first created, it has a default initial weight
+of 16 and a default dependency. Requests and placeholders are dependent on the
+root of the priority tree; pushes are dependent on the client request on which
+the PUSH_PROMISE frame was sent.
+
+Requests may override the default initial values by including a PRIORITY frame
+(see {{frame-priority}}) at the beginning of the stream. These priorities
+can be updated by sending a PRIORITY frame on the control stream.
+
+### Placeholders
+
+In HTTP/2, certain implementations used closed or unused streams as placeholders
+in describing the relative priority of requests.  This created
+confusion as servers could not reliably identify which elements of the priority
+tree could be discarded safely. Clients could potentially reference closed
+streams long after the server had discarded state, leading to disparate views of
+the prioritization the client had attempted to express.
+
+In HTTP/3, a number of placeholders are explicitly permitted by the server using
+the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
+maintaining these placeholders in the prioritization tree, clients can use them
+with confidence that the server will not have discarded the state. Clients MUST
+NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
+server MUST be treated as a connection error of type
+`HTTP_WRONG_SETTING_DIRECTION`.
+
+Placeholders are identified by an ID between zero and one less than the number
+of placeholders the server has permitted.
+
+Like streams, placeholders have priority information associated with them.
+
+### Priority Tree Maintenance
+
+Because placeholders will be used to "root" any persistent structure of the tree
+which the client cares about retaining, servers can aggressively prune inactive
+regions from the priority tree. For prioritization purposes, a node in the tree
+is considered "inactive" when the corresponding stream has been closed for at
+least two round-trip times (using any reasonable estimate available on the
+server).  This delay helps mitigate race conditions where the server has pruned
+a node the client believed was still active and used as a Stream Dependency.
+
+Specifically, the server MAY at any time:
+
+- Identify and discard branches of the tree containing only inactive nodes
+  (i.e. a node with only other inactive nodes as descendants, along with those
+  descendants)
+- Identify and condense interior regions of the tree containing only inactive
+  nodes, allocating weight appropriately
+
+~~~~~~~~~~  drawing
+    x                x                 x
+    |                |                 |
+    P                P                 P
+   / \               |                 |
+  I   I     ==>      I      ==>        A
+     / \             |                 |
+    A   I            A                 A
+    |                |
+    A                A
+~~~~~~~~~~
+{: #fig-pruning title="Example of Priority Tree Pruning"}
+
+In the example in {{fig-pruning}}, `P` represents a Placeholder, `A` represents
+an active node, and `I` represents an inactive node.  In the first step, the
+server discards two inactive branches (each a single node).  In the second step,
+the server condenses an interior inactive node.  Note that these transformations
+will result in no change in the resources allocated to a particular active
+stream.
+
+Clients SHOULD assume the server is actively performing such pruning and SHOULD
+NOT declare a dependency on a stream it knows to have been closed.
+
+## Server Push
+
+HTTP/3 server push is similar to what is described in HTTP/2 {{!HTTP2}}, but
+uses different mechanisms.
+
+Each server push is identified by a unique Push ID. This Push ID is used in a
+single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
+headers, possibly included in one or more DUPLICATE_PUSH frames (see
+{{frame-duplicate-push}}), then included with the push stream which ultimately
+fulfills those promises.
+
+Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
+frame (see {{frame-max-push-id}}). A server cannot use server push until it
+receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
+control the number of pushes that a server can promise. A server SHOULD use Push
+IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
+with a Push ID that is greater than the maximum Push ID as a connection error of
+type HTTP_LIMIT_EXCEEDED.
+
+The header of the request message is carried by a PUSH_PROMISE frame (see
+{{frame-push-promise}}) on the request stream which generated the push. This
+allows the server push to be associated with a client request. Ordering of a
+PUSH_PROMISE in relation to certain parts of the response is important (see
+Section 8.2.1 of {{!HTTP2}}).  Promised requests MUST conform to the
+requirements in Section 8.2 of {{!HTTP2}}.
+
+The same server push can be associated with additional client requests using a
+DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
+DUPLICATE_PUSH in relation to certain parts of the response is similarly
+important.
+
+When a server later fulfills a promise, the server push response is conveyed on
+a push stream (see {{push-streams}}). The push stream identifies the Push ID of
+the promise that it fulfills, then contains a response to the promised request
+using the same format described for responses in {{request-response}}.
+
+Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
+the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
+frame for an as-yet-unknown Push ID, the request headers of the push are not
+immediately available.  The client can either delay generating new requests for
+content referenced following the DUPLICATE_PUSH frame until the request headers
+become available, or can initiate requests for discovered resources and cancel
+the requests if the requested resource is already being pushed. When a client
+receives a new push stream with an as-yet-unknown Push ID, both the associated
+client request and the pushed request headers are unknown.  The client can
+buffer the stream data in expectation of the matching PUSH_PROMISE. The client
+can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
+amount of data a server may commit to the pushed stream.
+
+If a promised server push is not needed by the client, the client SHOULD send a
+CANCEL_PUSH frame. If the push stream is already open or opens after sending the
+CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
+also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
+{{errors}}). This asks the server not to transfer additional data and indicates
+that it will be discarded upon receipt.
+
+# Connection Closure
+
+Once established, an HTTP/3 connection can be used for many requests and
+responses over time until the connection is closed.  Connection closure can
+happen in any of several different ways.
+
+## Idle Connections
+
+Each QUIC endpoint declares an idle timeout during the handshake.  If the
+connection remains idle (no packets received) for longer than this duration, the
+peer will assume that the connection has been closed.  HTTP/3 implementations
+will need to open a new connection for new requests if the existing connection
+has been idle for longer than the server's advertised idle timeout, and SHOULD
+do so if approaching the idle timeout.
+
+HTTP clients are expected to request that the transport keep connections open
+while there are responses outstanding for requests or server pushes, as
+described in Section 19.2 of {{QUIC-TRANSPORT}}. If the client is not expecting
+a response from the server, allowing an idle connection to time out is preferred
+over expending effort maintaining a connection that might not be needed.  A
+gateway MAY maintain connections in anticipation of need rather than incur the
+latency cost of connection establishment to servers. Servers SHOULD NOT actively
+keep connections open.
+
+## Connection Shutdown
+
+Even when a connection is not idle, either endpoint can decide to stop using the
+connection and let the connection close gracefully.  Since clients drive request
+generation, clients perform a connection shutdown by not sending additional
+requests on the connection; responses and pushed responses associated to
+previous requests will continue to completion.  Servers perform the same
+function by communicating with clients.
+
+Servers initiate the shutdown of a connection by sending a GOAWAY frame
+({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
+on lower stream IDs were or might be processed in this connection, while
+requests on the indicated stream ID and greater were rejected. This enables
+client and server to agree on which requests were accepted prior to the
+connection shutdown.  This identifier MAY be lower than the stream limit
+identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
+processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
+sending a GOAWAY frame.
+
+Clients MUST NOT send new requests on the connection after receiving GOAWAY;
+a new connection MAY be established to send additional requests.
+
+Some requests might already be in transit. If the client has already sent
+requests on streams with a Stream ID greater than or equal to that indicated in
+the GOAWAY frame, those requests will not be processed and MAY be retried by the
+client on a different connection.  The client MAY cancel these requests.  It is
+RECOMMENDED that the server explicitly reject such requests (see
+{{request-cancellation}}) in order to clean up transport state for the affected
+streams.
+
+Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
+been processed; their status cannot be known until a response is received, the
+stream is reset individually, or the connection terminates.  Servers MAY reject
+individual requests on streams below the indicated ID if these requests were not
+processed.
+
+Servers SHOULD send a GOAWAY frame when the closing of a connection is known
+in advance, even if the advance notice is small, so that the remote peer can
+know whether a request has been partially processed or not.  For example, if an
+HTTP client sends a POST at the same time that a server closes a QUIC
+connection, the client cannot know if the server started to process that POST
+request if the server does not send a GOAWAY frame to indicate what streams it
+might have acted on.
+
+A client that is unable to retry requests loses all requests that are in flight
+when the server closes the connection.  A server MAY send multiple GOAWAY frames
+indicating different stream IDs, but MUST NOT increase the value they send in
+the last Stream ID, since clients might already have retried unprocessed
+requests on another connection.  A server that is attempting to gracefully shut
+down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
+set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT increase the
+MAX_STREAM_ID thereafter.  This signals to the client that a shutdown is
+imminent and that initiating further requests is prohibited.  After allowing
+time for any in-flight requests (at least one round-trip time), the server MAY
+send another GOAWAY frame with an updated last Stream ID.  This ensures that a
+connection can be cleanly shut down without losing requests.
+
+Once all accepted requests have been processed, the server can permit the
+connection to become idle, or MAY initiate an immediate closure of the
+connection.  An endpoint that completes a graceful shutdown SHOULD use the
+HTTP_NO_ERROR code when closing the connection.
+
+If a client has consumed all available bidirectional stream IDs with requests,
+the server need not send a GOAWAY frame, since the client is unable to make
+further requests.
+
+## Immediate Application Closure
+
+An HTTP/3 implementation can immediately close the QUIC connection at any time.
+This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
+code in this frame indicates to the peer why the connection is being closed.
+See {{errors}} for error codes which can be used when closing a connection.
+
+Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
+some requests.  Including the GOAWAY frame in the same packet as the QUIC
+CONNECTION_CLOSE frame improves the chances of the frame being received by
+clients.
+
+## Transport Closure
+
+For various reasons, the QUIC transport could indicate to the application layer
+that the connection has terminated.  This might be due to an explicit closure
+by the peer, a transport-level error, or a change in network topology which
+interrupts connectivity.
+
+If a connection terminates without a GOAWAY frame, clients MUST assume that any
+request which was sent, whether in whole or in part, might have been processed.
+
 
 # Stream Mapping and Usage {#stream-mapping}
 
@@ -1050,482 +1497,6 @@ The payload and length of the frames are selected in any manner the
 implementation chooses.
 
 
-# HTTP Request Lifecycle
-
-## HTTP Message Exchanges {#request-response}
-
-A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
-A client MUST send only a single request on a given stream. A server sends zero
-or more non-final HTTP responses on the same stream as the request, followed by
-a single final HTTP response, as detailed below.
-
-An HTTP message (request or response) consists of:
-
-1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
-   frame (see {{frame-headers}}),
-
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
-   frames (see {{frame-data}}),
-
-3. optionally, one HEADERS frame containing the trailer-part, if present (see
-   {{!RFC7230}}, Section 4.1.2).
-
-A server MAY interleave one or more PUSH_PROMISE frames (see
-{{frame-push-promise}}) with the frames of a response message. These
-PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.
-
-The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
-table. While these updates are not directly part of the message exchange, they
-must be received and processed before the message can be consumed.  See
-{{header-formatting}} for more details.
-
-The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
-be used.
-
-Trailing header fields are carried in an additional HEADERS frame following the
-body. Senders MUST send only one HEADERS frame in the trailers section;
-receivers MUST discard any subsequent HEADERS frames.
-
-A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
-response to the same request.  Non-final responses do not contain a payload body
-or trailers.
-
-An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client MUST close the stream for sending.  Unless
-using the CONNECT method (see {{the-connect-method}}), clients MUST NOT make
-stream closure dependent on receiving a response to their request. After sending
-a final response, the server MUST close the stream for sending. At this point,
-the QUIC stream is fully closed.
-
-When a stream is closed, this indicates the end of an HTTP message. Because some
-messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
-messages once enough of the message has been received to make progress.  If a
-client stream terminates without enough of the HTTP message to provide a
-complete response, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
-
-A server can send a complete response prior to the client sending an entire
-request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
-response, and cleanly closing its stream. Clients MUST NOT discard complete
-responses as a result of having their request terminated abruptly, though
-clients can always discard responses at their discretion for other reasons.
-
-
-### Header Formatting and Compression {#header-formatting}
-
-HTTP message headers carry information as a series of key-value pairs, called
-header fields. For a listing of registered HTTP header fields, see the "Message
-Header Field" registry maintained at
-<https://www.iana.org/assignments/message-headers>.
-
-Just as in previous versions of HTTP, header field names are strings of ASCII
-characters that are compared in a case-insensitive fashion.  Properties of HTTP
-header field names and values are discussed in more detail in Section 3.2 of
-{{!RFC7230}}, though the wire rendering in HTTP/3 differs.  As in HTTP/2, header
-field names MUST be converted to lowercase prior to their encoding.  A request
-or response containing uppercase header field names MUST be treated as
-malformed.
-
-As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
-character (ASCII 0x3a) to convey the target URI, the method of the request, and
-the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
-header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2.1 of {{!HTTP2}} also apply to HTTP/3.
-
-HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
-HPACK which allows the flexibility to avoid header-compression-induced
-head-of-line blocking.  See that document for additional details.
-
-An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
-will accept on an individual HTTP message; encountering a larger message header
-SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  If an
-implementation wishes to advise its peer of this limit, it can be conveyed as a
-number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a
-header list is calculated based on the uncompressed size of header fields,
-including the length of the name and value in bytes plus an overhead of 32 bytes
-for each header field.
-
-### Request Cancellation and Rejection {#request-cancellation}
-
-Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
-STOP_SENDING frames, as appropriate) with an error code of
-HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-response, it indicates that this response is no longer of interest.
-Implementations SHOULD cancel requests by aborting both directions of a stream.
-
-When the server rejects a request without performing any application processing,
-it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
-In this context, "processed" means that some data from the stream was passed to
-some higher layer of software that might have taken some action as a result. The
-client can treat requests rejected by the server as though they had never been
-sent at all, thereby allowing them to be retried later on a new connection.
-Servers MUST NOT use the HTTP_REQUEST_REJECTED error code for requests which
-were partially or fully processed.  When a server abandons a response after
-partial processing, it SHOULD abort its response stream with the error code
-HTTP_REQUEST_CANCELLED.
-
-When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
-send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
-if no processing was performed.  Clients MUST NOT reset streams with the
-HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
-frame that contains the same code.
-
-If a stream is cancelled after receiving a complete response, the client MAY
-ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).
-
-
-## The CONNECT Method
-
-The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
-HTTP proxies to establish a TLS session with an origin server for the purposes
-of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
-an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
-method is used to establish a tunnel over a single HTTP/2 stream to a remote
-host for similar purposes.
-
-A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be closed at the end of the request.
-
-A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
-server identified in the ":authority" pseudo-header field. Once this connection
-is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
-
-All DATA frames on the stream correspond to data sent or received on the TCP
-connection. Any DATA frame sent by the client is transmitted by the proxy to the
-TCP server; data received from the TCP server is packaged into DATA frames by
-the proxy. Note that the size and number of TCP segments is not guaranteed to
-map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
-
-The TCP connection can be closed by either peer. When the client ends the
-request stream (that is, the receive stream at the proxy enters the "Data Recvd"
-state), the proxy will set the FIN bit on its connection to the TCP server. When
-the proxy receives a packet with the FIN bit set, it will terminate the send
-stream that it sends to the client. TCP connections which remain half-closed in
-a single direction are not invalid, but are often handled poorly by servers, so
-clients SHOULD NOT close a stream for sending while they still expect to receive
-data from the target of the CONNECT.
-
-A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
-any error in the TCP connection, which includes receiving a TCP segment with the
-RST bit set, as a stream error of type HTTP_CONNECT_ERROR
-({{http-error-codes}}).  Correspondingly, a proxy MUST send a TCP segment with
-the RST bit set if it detects an error with the stream or the QUIC connection.
-
-## Prioritization {#priority}
-
-HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
-5.3. In this priority scheme, a given element can be designated as dependent
-upon another element. This information is expressed in the PRIORITY frame
-{{frame-priority}} which identifies the element and the dependency. The elements
-that can be prioritized are:
-
-- Requests, identified by the ID of the request stream
-- Pushes, identified by the Push ID of the promised resource
-  ({{frame-push-promise}})
-- Placeholders, identified by a Placeholder ID
-
-Taken together, the dependencies across all prioritized elements in a connection
-form a dependency tree. An element can depend on another element or on the root
-of the tree. A reference to an element which is no longer in the tree is treated
-as a reference to the root of the tree. The structure of the dependency tree
-changes as PRIORITY frames modify the dependency links between prioritized
-elements.
-
-Due to reordering between streams, an element can also be prioritized which is
-not yet in the tree. Such elements are added to the tree with the requested
-priority.
-
-When a prioritized element is first created, it has a default initial weight
-of 16 and a default dependency. Requests and placeholders are dependent on the
-root of the priority tree; pushes are dependent on the client request on which
-the PUSH_PROMISE frame was sent.
-
-Requests may override the default initial values by including a PRIORITY frame
-(see {{frame-priority}}) at the beginning of the stream. These priorities
-can be updated by sending a PRIORITY frame on the control stream.
-
-### Placeholders
-
-In HTTP/2, certain implementations used closed or unused streams as placeholders
-in describing the relative priority of requests.  This created
-confusion as servers could not reliably identify which elements of the priority
-tree could be discarded safely. Clients could potentially reference closed
-streams long after the server had discarded state, leading to disparate views of
-the prioritization the client had attempted to express.
-
-In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintaining these placeholders in the prioritization tree, clients can use them
-with confidence that the server will not have discarded the state. Clients MUST
-NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
-server MUST be treated as a connection error of type
-`HTTP_WRONG_SETTING_DIRECTION`.
-
-Placeholders are identified by an ID between zero and one less than the number
-of placeholders the server has permitted.
-
-Like streams, placeholders have priority information associated with them.
-
-### Priority Tree Maintenance
-
-Because placeholders will be used to "root" any persistent structure of the tree
-which the client cares about retaining, servers can aggressively prune inactive
-regions from the priority tree. For prioritization purposes, a node in the tree
-is considered "inactive" when the corresponding stream has been closed for at
-least two round-trip times (using any reasonable estimate available on the
-server).  This delay helps mitigate race conditions where the server has pruned
-a node the client believed was still active and used as a Stream Dependency.
-
-Specifically, the server MAY at any time:
-
-- Identify and discard branches of the tree containing only inactive nodes
-  (i.e. a node with only other inactive nodes as descendants, along with those
-  descendants)
-- Identify and condense interior regions of the tree containing only inactive
-  nodes, allocating weight appropriately
-
-~~~~~~~~~~  drawing
-    x                x                 x
-    |                |                 |
-    P                P                 P
-   / \               |                 |
-  I   I     ==>      I      ==>        A
-     / \             |                 |
-    A   I            A                 A
-    |                |
-    A                A
-~~~~~~~~~~
-{: #fig-pruning title="Example of Priority Tree Pruning"}
-
-In the example in {{fig-pruning}}, `P` represents a Placeholder, `A` represents
-an active node, and `I` represents an inactive node.  In the first step, the
-server discards two inactive branches (each a single node).  In the second step,
-the server condenses an interior inactive node.  Note that these transformations
-will result in no change in the resources allocated to a particular active
-stream.
-
-Clients SHOULD assume the server is actively performing such pruning and SHOULD
-NOT declare a dependency on a stream it knows to have been closed.
-
-## Server Push
-
-HTTP/3 server push is similar to what is described in HTTP/2 {{!HTTP2}}, but
-uses different mechanisms.
-
-Each server push is identified by a unique Push ID. This Push ID is used in a
-single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
-headers, possibly included in one or more DUPLICATE_PUSH frames (see
-{{frame-duplicate-push}}), then included with the push stream which ultimately
-fulfills those promises.
-
-Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
-frame (see {{frame-max-push-id}}). A server cannot use server push until it
-receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
-control the number of pushes that a server can promise. A server SHOULD use Push
-IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
-with a Push ID that is greater than the maximum Push ID as a connection error of
-type HTTP_LIMIT_EXCEEDED.
-
-The header of the request message is carried by a PUSH_PROMISE frame (see
-{{frame-push-promise}}) on the request stream which generated the push. This
-allows the server push to be associated with a client request. Ordering of a
-PUSH_PROMISE in relation to certain parts of the response is important (see
-Section 8.2.1 of {{!HTTP2}}).  Promised requests MUST conform to the
-requirements in Section 8.2 of {{!HTTP2}}.
-
-The same server push can be associated with additional client requests using a
-DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
-DUPLICATE_PUSH in relation to certain parts of the response is similarly
-important.
-
-When a server later fulfills a promise, the server push response is conveyed on
-a push stream (see {{push-streams}}). The push stream identifies the Push ID of
-the promise that it fulfills, then contains a response to the promised request
-using the same format described for responses in {{request-response}}.
-
-Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
-the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
-frame for an as-yet-unknown Push ID, the request headers of the push are not
-immediately available.  The client can either delay generating new requests for
-content referenced following the DUPLICATE_PUSH frame until the request headers
-become available, or can initiate requests for discovered resources and cancel
-the requests if the requested resource is already being pushed. When a client
-receives a new push stream with an as-yet-unknown Push ID, both the associated
-client request and the pushed request headers are unknown.  The client can
-buffer the stream data in expectation of the matching PUSH_PROMISE. The client
-can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
-amount of data a server may commit to the pushed stream.
-
-If a promised server push is not needed by the client, the client SHOULD send a
-CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
-also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
-{{errors}}). This asks the server not to transfer additional data and indicates
-that it will be discarded upon receipt.
-
-# Connection Closure
-
-Once established, an HTTP/3 connection can be used for many requests and
-responses over time until the connection is closed.  Connection closure can
-happen in any of several different ways.
-
-## Idle Connections
-
-Each QUIC endpoint declares an idle timeout during the handshake.  If the
-connection remains idle (no packets received) for longer than this duration, the
-peer will assume that the connection has been closed.  HTTP/3 implementations
-will need to open a new connection for new requests if the existing connection
-has been idle for longer than the server's advertised idle timeout, and SHOULD
-do so if approaching the idle timeout.
-
-HTTP clients are expected to request that the transport keep connections open
-while there are responses outstanding for requests or server pushes, as
-described in Section 19.2 of {{QUIC-TRANSPORT}}. If the client is not expecting
-a response from the server, allowing an idle connection to time out is preferred
-over expending effort maintaining a connection that might not be needed.  A
-gateway MAY maintain connections in anticipation of need rather than incur the
-latency cost of connection establishment to servers. Servers SHOULD NOT actively
-keep connections open.
-
-## Connection Shutdown
-
-Even when a connection is not idle, either endpoint can decide to stop using the
-connection and let the connection close gracefully.  Since clients drive request
-generation, clients perform a connection shutdown by not sending additional
-requests on the connection; responses and pushed responses associated to
-previous requests will continue to completion.  Servers perform the same
-function by communicating with clients.
-
-Servers initiate the shutdown of a connection by sending a GOAWAY frame
-({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
-on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were rejected. This enables
-client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be lower than the stream limit
-identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
-sending a GOAWAY frame.
-
-Clients MUST NOT send new requests on the connection after receiving GOAWAY;
-a new connection MAY be established to send additional requests.
-
-Some requests might already be in transit. If the client has already sent
-requests on streams with a Stream ID greater than or equal to that indicated in
-the GOAWAY frame, those requests will not be processed and MAY be retried by the
-client on a different connection.  The client MAY cancel these requests.  It is
-RECOMMENDED that the server explicitly reject such requests (see
-{{request-cancellation}}) in order to clean up transport state for the affected
-streams.
-
-Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until a response is received, the
-stream is reset individually, or the connection terminates.  Servers MAY reject
-individual requests on streams below the indicated ID if these requests were not
-processed.
-
-Servers SHOULD send a GOAWAY frame when the closing of a connection is known
-in advance, even if the advance notice is small, so that the remote peer can
-know whether a request has been partially processed or not.  For example, if an
-HTTP client sends a POST at the same time that a server closes a QUIC
-connection, the client cannot know if the server started to process that POST
-request if the server does not send a GOAWAY frame to indicate what streams it
-might have acted on.
-
-A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server MAY send multiple GOAWAY frames
-indicating different stream IDs, but MUST NOT increase the value they send in
-the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.  A server that is attempting to gracefully shut
-down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT increase the
-MAX_STREAM_ID thereafter.  This signals to the client that a shutdown is
-imminent and that initiating further requests is prohibited.  After allowing
-time for any in-flight requests (at least one round-trip time), the server MAY
-send another GOAWAY frame with an updated last Stream ID.  This ensures that a
-connection can be cleanly shut down without losing requests.
-
-Once all accepted requests have been processed, the server can permit the
-connection to become idle, or MAY initiate an immediate closure of the
-connection.  An endpoint that completes a graceful shutdown SHOULD use the
-HTTP_NO_ERROR code when closing the connection.
-
-If a client has consumed all available bidirectional stream IDs with requests,
-the server need not send a GOAWAY frame, since the client is unable to make
-further requests.
-
-## Immediate Application Closure
-
-An HTTP/3 implementation can immediately close the QUIC connection at any time.
-This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
-code in this frame indicates to the peer why the connection is being closed.
-See {{errors}} for error codes which can be used when closing a connection.
-
-Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
-some requests.  Including the GOAWAY frame in the same packet as the QUIC
-CONNECTION_CLOSE frame improves the chances of the frame being received by
-clients.
-
-## Transport Closure
-
-For various reasons, the QUIC transport could indicate to the application layer
-that the connection has terminated.  This might be due to an explicit closure
-by the peer, a transport-level error, or a change in network topology which
-interrupts connectivity.
-
-If a connection terminates without a GOAWAY frame, clients MUST assume that any
-request which was sent, whether in whole or in part, might have been processed.
-
-# Extensions to HTTP/3 {#extensions}
-
-HTTP/3 permits extension of the protocol.  Within the limitations described in
-this section, protocol extensions can be used to provide additional services or
-alter any aspect of the protocol.  Extensions are effective only within the
-scope of a single HTTP/3 connection.
-
-This applies to the protocol elements defined in this document.  This does not
-affect the existing options for extending HTTP, such as defining new methods,
-status codes, or header fields.
-
-Extensions are permitted to use new frame types ({{frames}}), new settings
-({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
-stream types ({{unidirectional-streams}}).  Registries are established for
-managing these extension points: frame types ({{iana-frames}}), settings
-({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
-({{iana-stream-types}}).
-
-Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and unidirectional
-streams that have unknown or unsupported types.  This means that any of these
-extension points can be safely used by extensions without prior arrangement or
-negotiation.
-
-Extensions that could change the semantics of existing protocol components MUST
-be negotiated before being used.  For example, an extension that changes the
-layout of the HEADERS frame cannot be used until the peer has given a positive
-signal that this is acceptable. In this case, it could also be necessary to
-coordinate when the revised layout comes into effect.
-
-This document doesn't mandate a specific method for negotiating the use of an
-extension but notes that a setting ({{settings-parameters}}) could be used for
-that purpose.  If both peers set a value that indicates willingness to use the
-extension, then the extension can be used.  If a setting is used for extension
-negotiation, the default value MUST be defined in such a fashion that the
-extension is disabled if the setting is omitted.
-
-
 # Error Handling {#errors}
 
 QUIC allows the application to abruptly terminate (reset) individual streams or
@@ -1624,6 +1595,44 @@ HTTP_MALFORMED_FRAME (0x01XX):
   type is included as the last byte of the error code.  For example, an error in
   a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
   `0xff` is used to indicate any frame type greater than `0xfe`.
+
+
+# Extensions to HTTP/3 {#extensions}
+
+HTTP/3 permits extension of the protocol.  Within the limitations described in
+this section, protocol extensions can be used to provide additional services or
+alter any aspect of the protocol.  Extensions are effective only within the
+scope of a single HTTP/3 connection.
+
+This applies to the protocol elements defined in this document.  This does not
+affect the existing options for extending HTTP, such as defining new methods,
+status codes, or header fields.
+
+Extensions are permitted to use new frame types ({{frames}}), new settings
+({{settings-parameters}}), new error codes ({{errors}}), or new unidirectional
+stream types ({{unidirectional-streams}}).  Registries are established for
+managing these extension points: frame types ({{iana-frames}}), settings
+({{iana-settings}}), error codes ({{iana-error-codes}}), and stream types
+({{iana-stream-types}}).
+
+Implementations MUST ignore unknown or unsupported values in all extensible
+protocol elements.  Implementations MUST discard frames and unidirectional
+streams that have unknown or unsupported types.  This means that any of these
+extension points can be safely used by extensions without prior arrangement or
+negotiation.
+
+Extensions that could change the semantics of existing protocol components MUST
+be negotiated before being used.  For example, an extension that changes the
+layout of the HEADERS frame cannot be used until the peer has given a positive
+signal that this is acceptable. In this case, it could also be necessary to
+coordinate when the revised layout comes into effect.
+
+This document doesn't mandate a specific method for negotiating the use of an
+extension but notes that a setting ({{settings-parameters}}) could be used for
+that purpose.  If both peers set a value that indicates willingness to use the
+extension, then the extension can be used.  If a setting is used for extension
+negotiation, the default value MUST be defined in such a fashion that the
+extension is disabled if the setting is omitted.
 
 
 # Security Considerations
