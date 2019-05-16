@@ -1053,6 +1053,10 @@ DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on either control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
+If a DATA frame is received before a HEADERS frame on a request stream, the
+recipient must respond with a connection error ({{errors}}) of type
+HTTP_UNEXPECTED_FRAME.
+
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
