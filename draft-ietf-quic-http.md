@@ -754,9 +754,8 @@ Servers initiate the shutdown of a connection by sending a GOAWAY frame
 on lower stream IDs were or might be processed in this connection, while
 requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be lower than the stream limit
-identified by a QUIC MAX_STREAM_ID frame, and MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the QUIC MAX_STREAM_ID limit after
+connection shutdown.  This identifier MAY be zero if no requests were
+processed.  Servers SHOULD NOT increase the QUIC MAX_STREAMS limit after
 sending a GOAWAY frame.
 
 Clients MUST NOT send new requests on the connection after receiving GOAWAY;
@@ -790,8 +789,8 @@ indicating different stream IDs, but MUST NOT increase the value they send in
 the last Stream ID, since clients might already have retried unprocessed
 requests on another connection.  A server that is attempting to gracefully shut
 down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the current value of QUIC's MAX_STREAM_ID and SHOULD NOT increase the
-MAX_STREAM_ID thereafter.  This signals to the client that a shutdown is
+set to the maximum value allowed by QUIC's MAX_STREAMS and SHOULD NOT increase
+the MAX_STREAMS limit thereafter.  This signals to the client that a shutdown is
 imminent and that initiating further requests is prohibited.  After allowing
 time for any in-flight requests (at least one round-trip time), the server MAY
 send another GOAWAY frame with an updated last Stream ID.  This ensures that a
