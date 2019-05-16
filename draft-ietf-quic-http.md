@@ -1112,7 +1112,9 @@ QPACK. See [QPACK] for more details.
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS frame payload"}
 
-HEADERS frames can only be sent on request / push streams.
+HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
+is received on a control stream, the recipient MUST respond with a connection
+error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 ### PRIORITY {#frame-priority}
 
