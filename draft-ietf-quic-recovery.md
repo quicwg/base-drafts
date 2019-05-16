@@ -487,9 +487,11 @@ acknowledged, an endpoint SHOULD declare an earlier packet lost if it was sent
 a threshold amount of time in the past. To avoid declaring packets as lost too
 early, this time threshold MUST be set to at least kGranularity.  The time
 threshold is:
+
 ~~~
 kTimeThreshold * max(SRTT, latest_RTT, kGranularity)
 ~~~
+
 If packets sent prior to the largest acknowledged packet cannot yet be declared
 lost, then a timer SHOULD be set for the remaining time.
 
