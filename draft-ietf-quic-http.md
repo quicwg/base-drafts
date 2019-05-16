@@ -690,8 +690,8 @@ DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).
 Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
 response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
 frames prior to sending any frames that reference the promised responses.  This
-avoids a race where clients issue requests prior to receiving any PUSH_PROMISE
-frames.
+reduces the chance that a client requests a resource that will be pushed by the
+server.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
