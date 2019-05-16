@@ -1395,7 +1395,7 @@ close a connection.
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_WRONG_STREAM.
+of any other type as a connection error of type HTTP_MALFORMED_FRAME.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -1403,7 +1403,7 @@ stream as a connection error ({{errors}}) of type HTTP_UNEXPECTED_FRAME.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
-connection error ({{errors}}) of type HTTP_UNEXPECTED_FRAME.
+connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
