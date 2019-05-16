@@ -662,8 +662,11 @@ NOT declare a dependency on a stream it knows to have been closed.
 
 ## Server Push
 
-HTTP/3 server push is similar to what is described in HTTP/2 {{!HTTP2}}, but
-uses different mechanisms.
+Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
+a server to push a request-response exchange to a client in anticipation of the
+client making the indicated request.  This trades off network usage against a
+potential latency gain.  HTTP/3 server push is similar to what is described in
+HTTP/2 {{!HTTP2}}, but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in a
 single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
