@@ -1384,9 +1384,9 @@ Definitions for each of the defined transport parameters are included in
 An endpoint MUST treat receipt of a transport parameter with an invalid value as
 a connection error of type TRANSPORT_PARAMETER_ERROR.
 
-A parameter MUST NOT appear more than once in a given transport parameters
-extension.  An endpoint MAY treat receipt of duplicate transport parameters as a
-connection error of type TRANSPORT_PARAMETER_ERROR.
+An endpoint MUST NOT send a parameter more than once in a given transport
+parameters extension.  An endpoint SHOULD treat receipt of duplicate transport
+parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
 ({{transport-parameter-definitions}}) if it sent a Retry packet to enable
