@@ -550,8 +550,8 @@ the proxy. Note that the size and number of TCP segments is not guaranteed to
 map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 
 Once the CONNECT method has completed, only DATA frames are permitted
-to be sent on the stream.  (Extension frames MAY be used, if specifically
-permitted by the extensions definition.)  Receipt of any other frame type
+to be sent on the stream.  Extension frames MAY be used if specifically
+permitted by the definition of the extension.  Receipt of any other frame type
 MUST be treated as a connection error of type HTTP_UNEXPECTED_FRAME.
 
 The TCP connection can be closed by either peer. When the client ends the
