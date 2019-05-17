@@ -517,7 +517,9 @@ using a Placeholder ID (see {{placeholders}}).
 When a client initiates a request, a PRIORITY frame MAY be sent as the first
 frame of the stream, creating a dependency on an existing element.  In order to
 ensure that prioritization is processed in a consistent order, any subsequent
-PRIORITY frames for that request MUST be sent on the request stream.
+PRIORITY frames for that request MUST be sent on the control stream.  A PRIORITY
+frame received after other frames on a request stream MUST be treated	as a
+connection error of type HTTP_UNEXPECTED_FRAME.
 
 Placeholder and server push streams can only be prioritized on the control
 stream.
