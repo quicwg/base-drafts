@@ -525,7 +525,7 @@ stream.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|P|D|W|P| Empty |         [Prioritized Element ID (i)]        ...
+|PT |D|W|P| Empty |       [Prioritized Element ID (i)]        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                     [Placeholder ID (i)]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -536,10 +536,10 @@ stream.
 
 The PRIORITY frame payload has the following fields:
 
-  P (Prioritized Element Type):
+  PT (Prioritized Element Type):
   : A one-bit field indicating the type of element being prioritized (see
     {{prioritized-element-types}}). When sent on a request stream, this MUST be
-    set to `0`.
+    set to `11`.
 
   D (Dependent On Placeholder):
   : A one-bit field indicating whether an element depends upon a placeholder
@@ -557,8 +557,9 @@ The PRIORITY frame payload has the following fields:
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
-    The Push ID of a promised resource, a Placeholder ID of a placeholder,
-    or is absent if sent on the request stream.
+    Depending on the value of Prioritized Type, this contains the Stream ID of a
+    request stream, the Push ID of a promised resource, a Placeholder ID of a
+    placeholder, or is absent.
 
   Element Dependency ID:
   : A variable-length integer that identifies the Placeholder ID on which a
@@ -582,11 +583,12 @@ The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
 of the associated Element ID fields.
 
-| P Bit | Type Description | Prioritized Element ID Contents |
-| ----- | ---------------- | ------------------------------- |
-| 0     | Current stream   | Absent                          |
-| 0     | Push stream      | Push ID                         |
-| 1     | Placeholder      | Placeholder ID                  |
+| PT Bits | Type Description | Prioritized Element ID Contents |
+| ------- | ---------------- | ------------------------------- |
+| 00      | Request stream   | Stream ID                       |
+| 01      | Push stream      | Push ID                         |
+| 10      | Placeholder      | Placeholder ID                  |
+| 11      | Current stream   | Absent                          |
 {: #prioritized-element-types title="Prioritized Element Types"}
 
 | D  Bit | Type Description | Placeholder ID Contents |
@@ -604,7 +606,9 @@ situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 The following situations are examples of invalid PRIORITY frames:
 
 - A PRIORITY frame sent on a request stream with the Prioritized Element Type
-  set to any value other than `0`
+  set to any value other than `11`
+- A PRIORITY frame sent on a control stream with the Prioritized Element Type	
+  set to `11`
 
 A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
 error of type HTTP_MALFORMED_FRAME.
