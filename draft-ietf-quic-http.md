@@ -948,8 +948,8 @@ able to send stream data first after the cryptographic handshake completes.
 ### Push Streams
 
 Server push is an optional feature introduced in HTTP/2 that allows a server to
-initiate a response before a request has been made.  See Section 8.2 of
-{{!RFC7540}} for more details.
+initiate a response before a request has been made.  See {{server-push}} for
+more details.
 
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
