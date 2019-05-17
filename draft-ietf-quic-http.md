@@ -1106,10 +1106,10 @@ the RST bit set if it detects an error with the stream or the QUIC connection.
 HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 5.3, but replaces streams depending upon streams with strict priorities and
 placeholders.  In the HTTP/3 priority scheme, a stream can be given a strict
-priority or can be designated as dependent upon a placeholder or the root.
-This information is expressed in the PRIORITY frame {{frame-priority}} which
-identifies the element and the dependency. The elements that can be prioritized
-are:
+priority with weights for equal priority elements, or can be designated as
+dependent upon a placeholder or the root.  This information is expressed in the
+PRIORITY frame {{frame-priority}} which identifies the element and the
+dependency. The elements that can be prioritized are:
 
 - Requests, identified by the stream of the PRIORITY frame
 - Pushes, identified by the Push ID of the promised resource
@@ -1117,15 +1117,13 @@ are:
 - Placeholders, identified by a Placeholder ID
 
 In HTTP/3, stream dependencies that were implicitly encoded by dependencies in
-HTTP/2 are explicitly encoded with strict prioritization.  This simplifies
-priority tree management, eliminates potential new race conditions introduced
-by HTTP/3's multiple streams, and improves framing efficiency with more than
-64 requests.
+HTTP/2 are explicitly encoded with strict prioritization.
 
 When a prioritized element is first created, it has a default initial weight
-of 16, priority of 16, and a default dependency. Requests and placeholders are
-dependent on the root of the priority tree; pushes are dependent on the client
-request on which the PUSH_PROMISE frame was sent.
+of 0, priority of 16, and a default dependency. Requests and placeholders are
+dependent on the root of the priority tree; pushes are dependent on the same
+parent as the client request on which the PUSH_PROMISE frame was sent and given
+a priority value one smaller than the request stream.
 
 Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
@@ -1133,11 +1131,11 @@ can be updated by sending a PRIORITY frame on the control stream.
 
 Higher priority elements have all available data sent before elements of lower
 priority.  When multiple elements have the same priority, if a weight is
-specified, elements with weights are interleaved.  If a weight is not
-specified, then elements are delivered sequentially and all available data
-from one element is sent before any data from the next.  If a given priority
-level has some elements with weights and some without, the two groups share
-the available bandwidth equally.
+specified, elements with weights are interleaved.  If a weight is 0, either
+because it is the default weight or it was not specified, then elements are
+delivered sequentially and all available data from one element is sent before
+any data from the next.  If a given priority level has some elements with
+weights and some without, the two groups share the available bandwidth equally.
 
 ### Placeholders
 
