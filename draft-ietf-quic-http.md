@@ -540,9 +540,9 @@ stream.
 The PRIORITY frame payload has the following fields:
 
   PT (Prioritized Element Type):
-  : A one-bit field indicating the type of element being prioritized (see
+  : A two-bit field indicating the type of element being prioritized (see
     {{prioritized-element-types}}). When sent on a request stream, this MUST be
-    set to `11`.
+    set to `11`.  When sent on the control stream, this MUST NOT be set to `11`.
 
   D (Dependent On Placeholder):
   : A one-bit field indicating whether an element depends upon a placeholder
