@@ -1160,7 +1160,8 @@ of placeholders the server has permitted.
 Like streams, placeholders have priority information associated with them.
 
 When a placeholder is reparented, given a new weight or given a new strict
-priority, the effective priority of all dependent placeholders and streams is impacted.
+priority, the effective priority of all dependent placeholders and streams
+is impacted.
 
 ## Server Push
 
