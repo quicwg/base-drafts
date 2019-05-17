@@ -410,8 +410,8 @@ An HTTP message (request or response) consists of:
 3. optionally, one HEADERS frame containing the trailer-part, if present (see
    {{!RFC7230}}, Section 4.1.2).
 
-A server MAY interleave one or more PUSH_PROMISE frames (see
-{{frame-push-promise}}) with the frames of a response message. These
+A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
+before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
@@ -681,15 +681,17 @@ type HTTP_LIMIT_EXCEEDED.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
-allows the server push to be associated with a client request. Ordering of a
-PUSH_PROMISE in relation to certain parts of the response is important (see
-Section 8.2.1 of {{!HTTP2}}).  Promised requests MUST conform to the
-requirements in Section 8.2 of {{!HTTP2}}.
+allows the server push to be associated with a client request.  Promised
+requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 
 The same server push can be associated with additional client requests using a
-DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  Ordering of a
-DUPLICATE_PUSH in relation to certain parts of the response is similarly
-important.
+DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).
+
+Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
+response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
+frames prior to sending HEADERS or DATA frames that reference the promised
+responses.  This reduces the chance that a client requests a resource that will
+be pushed by the server.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
