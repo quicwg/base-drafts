@@ -662,8 +662,11 @@ NOT declare a dependency on a stream it knows to have been closed.
 
 ## Server Push
 
-HTTP/3 server push is similar to what is described in HTTP/2 {{!HTTP2}}, but
-uses different mechanisms.
+Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
+a server to push a request-response exchange to a client in anticipation of the
+client making the indicated request.  This trades off network usage against a
+potential latency gain.  HTTP/3 server push is similar to what is described in
+HTTP/2 {{!HTTP2}}, but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in a
 single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
@@ -944,6 +947,10 @@ on whether 0-RTT is enabled on the connection, either client or server might be
 able to send stream data first after the cryptographic handshake completes.
 
 ### Push Streams
+
+Server push is an optional feature introduced in HTTP/2 that allows a server to
+initiate a response before a request has been made.  See {{server-push}} for
+more details.
 
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
