@@ -573,7 +573,8 @@ The PRIORITY frame payload has the following fields:
   : An optional unsigned 8-bit integer representing a priority weight for the
     prioritized element (see {{!RFC7540}}, Section 5.3). Add one to the value
     to obtain a weight between 1 and 256.  When absent, indicates the resource
-    should be delivered all at once or not at all.
+    should be allocated the full available resources from its parent, as long
+    as it is able to make progress.
 
   Priority:
   : An optional unsigned 8-bit integer representing a strict priority for the
