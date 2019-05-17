@@ -510,8 +510,9 @@ request, server push or placeholder.
 
 A PRIORITY frame identifies an element to prioritize and a placeholder upon
 which it depends, or the root if no placeholder is specified.  A Prioritized
-ID identifies a server push using a Push ID (see {{frame-push-promise}}),
-or a placeholder using a Placeholder ID (see {{placeholders}}).
+ID identifies a client-initiated request using the corresponding stream ID,
+a server push using a Push ID (see {{frame-push-promise}}), or a placeholder
+using a Placeholder ID (see {{placeholders}}).
 
 When a client initiates a request, a PRIORITY frame MAY be sent as the first
 frame of the stream, creating a dependency on an existing element.  In order to
