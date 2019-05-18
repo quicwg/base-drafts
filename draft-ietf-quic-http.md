@@ -596,13 +596,24 @@ not yet in the tree. Such elements are added to the tree with the requested
 priority.
 
 When a prioritized element is first created, it has a default initial weight
-of 16 and a default dependency. Requests and placeholders are dependent on the
+of 0 and a default dependency. Requests and placeholders are dependent on the
 root of the priority tree; pushes are dependent on the client request on which
 the PUSH_PROMISE frame was sent.
 
 Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
 can be updated by sending a PRIORITY frame on the control stream.
+
+HTTP/3 changes {{!HTTP2}}'s prioritization behaviour by allowing elements with a
+weight of value 0. Elements with a weight of value 0 are delivered sequentially,
+with all available bandwidth being allocated to the zero-weighted sibling with
+the lowest ID that is able to make progress. Elements with weights larger than 0
+still follow the original behaviour and are interleaved by sharing the available
+bandwidth according to their respective weights as described in
+{{!HTTP2}}, Section 5.3.2 When an element has both children with weights of value
+0 and larger than 0, the elements with a positive weight are first allocated all
+the available bandwidth. Only when there are no children with a positive weight
+left that can make progress, are the children with weight 0 assigned bandwidth.
 
 ### Placeholders
 
@@ -625,6 +636,8 @@ Placeholders are identified by an ID between zero and one less than the number
 of placeholders the server has permitted.
 
 Like streams, placeholders have priority information associated with them.
+Placeholders can also have a weight of value 0 and follow the same logic as
+described in {#priority}.
 
 ### Priority Tree Maintenance
 
@@ -1158,8 +1171,7 @@ The PRIORITY frame payload has the following fields:
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the prioritized
-    element (see {{!HTTP2}}, Section 5.3). Add one to the value to obtain a
-    weight between 1 and 256.
+    element (see {{!HTTP2}}, Section 5.3). 
 
 The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
