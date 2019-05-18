@@ -1171,7 +1171,7 @@ The PRIORITY frame payload has the following fields:
 
   Weight:
   : An unsigned 8-bit integer representing a priority weight for the prioritized
-    element (see {{!HTTP2}}, Section 5.3). 
+    element (see {{!HTTP2}}, Section 5.3).
 
 The values for the Prioritized Element Type ({{prioritized-element-types}}) and
 Element Dependency Type ({{element-dependency-types}}) imply the interpretation
