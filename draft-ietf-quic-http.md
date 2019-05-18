@@ -610,10 +610,11 @@ with all available bandwidth being allocated to the zero-weighted sibling with
 the lowest ID that is able to make progress. Elements with weights larger than 0
 still follow the original behaviour and are interleaved by sharing the available
 bandwidth according to their respective weights as described in
-{{!HTTP2}}, Section 5.3.2 When an element has both children with weights of value
-0 and larger than 0, the elements with a positive weight are first allocated all
-the available bandwidth. Only when there are no children with a positive weight
-left that can make progress, are the children with weight 0 assigned bandwidth.
+{{!HTTP2}}, Section 5.3.2 When an element has both children with weights of
+value 0 and larger than 0, the elements with a positive weight are first
+allocated all the available bandwidth. Only when there are no children with a
+positive weight left that can make progress, are the children with weight 0
+assigned bandwidth.
 
 ### Placeholders
 
