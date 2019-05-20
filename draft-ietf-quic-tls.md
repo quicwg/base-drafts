@@ -765,7 +765,7 @@ Connection ID field from the client's first Initial packet of the
 connection. Specifically:
 
 ~~~
-initial_salt = 0xef4fb0abb47470c41befcf8031334fae485e09a0
+initial_salt = 0x7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a
 initial_secret = HKDF-Extract(initial_salt,
                               client_dst_connection_id)
 
