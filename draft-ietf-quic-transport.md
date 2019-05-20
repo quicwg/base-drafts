@@ -1052,15 +1052,7 @@ server, it SHOULD send a Version Negotiation packet as described in
 {{send-vn}}. Servers MAY rate control these packets to avoid storms of Version
 Negotiation packets.
 
-The first packet for an unsupported version can use different semantics and
-encodings for any version-specific field.  In particular, different packet
-protection keys might be used for different versions.  Servers that do not
-support a particular version are unlikely to be able to decrypt the payload of
-the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
-unknown version, but instead send a Version Negotiation packet, provided that
-the packet is sufficiently long.
-
-Servers MUST drop other packets that contain unsupported versions.
+Servers MUST drop packets that specify unsupported versions.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
@@ -1336,11 +1328,7 @@ and sets the SCIL field to indicate the length.
 The first flight of 0-RTT packets use the same Destination and Source Connection
 ID values as the client's first Initial.
 
-The Destination Connection ID field in the server's Initial packet contains a
-connection ID that is chosen by the recipient of the packet (i.e., the client);
-the Source Connection ID includes the connection ID that the sender of the
-packet wishes to use (see {{connection-id}}). The server MUST use consistent
-Source Connection IDs during the handshake.
+The server MUST use consistent Source Connection IDs during the handshake.
 
 On first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
