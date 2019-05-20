@@ -423,8 +423,8 @@ must be received and processed before the message can be consumed.  See
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
-If a DATA frame is received before a HEADERS frame on a request stream, the
-recipient must respond with a connection error ({{errors}}) of type
+If a DATA frame is received before a HEADERS frame on a either a request or push
+stream, the recipient must respond with a connection error ({{errors}}) of type
 HTTP_UNEXPECTED_FRAME.
 
 Trailing header fields are carried in an additional HEADERS frame following the
