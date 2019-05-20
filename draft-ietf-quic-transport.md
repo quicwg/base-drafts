@@ -1722,6 +1722,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+An endpoint MUST NOT store or retransmit a PATH_RESPONSE frame, as a new
+PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is needed.  An
+endpoint MAY choose to limit the number of pending PATH_RESPONSE frames
+buffered, for example when congestion limited, to limit memory consumption.
 
 To ensure that packets can be both sent to and received from the peer, the
 PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
