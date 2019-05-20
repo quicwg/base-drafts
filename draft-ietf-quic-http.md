@@ -895,12 +895,6 @@ HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
 
-These streams carry frames related to the request/response (see
-{{request-response}}). When a stream terminates cleanly, if the last frame on
-the stream was truncated, this MUST be treated as a connection error (see
-HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
-may be reset at any point in the frame.
-
 HTTP/3 does not use server-initiated bidirectional streams; clients MUST omit or
 specify a value of zero for the QUIC transport parameter
 `initial_max_bidi_streams`.
@@ -1078,6 +1072,11 @@ description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
 HTTP_MALFORMED_FRAME.
+
+When a stream terminates cleanly, if the last frame on the stream was truncated,
+this MUST be treated as a connection error ({{errors}}) of type
+HTTP_MALFORMED_FRAME. Streams which terminate abruptly may be reset at any point
+in a frame.
 
 ## Frame Definitions {#frames}
 
