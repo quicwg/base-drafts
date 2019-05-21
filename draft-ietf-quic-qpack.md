@@ -409,7 +409,7 @@ without Huffman encoding applied.
 ### Dynamic Table Capacity and Eviction {#eviction}
 
 The encoder sets the capacity of the dynamic table, which serves as the upper
-limit on its size.  The initial capcity of the dynamic table is zero.
+limit on its size.  The initial capacity of the dynamic table is zero.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
