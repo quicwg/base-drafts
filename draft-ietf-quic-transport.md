@@ -3740,7 +3740,7 @@ Handshake protection keys are discarded.
 
 A Retry packet uses a long packet header with a type value of 0x3. It carries
 an address validation token created by the server. It is used by a server that
-wishes to perform a stateless retry (see {{validate-handshake}}).
+wishes to perform a retry (see {{validate-handshake}}).
 
 ~~~
  0                   1                   2                   3
