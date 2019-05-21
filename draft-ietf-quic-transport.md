@@ -2476,6 +2476,14 @@ the same static key (see {{reset-oracle}}).  A connection ID from a connection
 that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
 connections at nodes that share a static key.
 
+The same Stateless Reset Token MAY be used for multiple connection IDs on the
+same connection.  An endpoint that reuses a Stateless Reset Token MUST ensure
+that any connection ID used on the connection is matched to the active
+connection, including any routing performed at load balancers, even when a
+connection ID has been retired.  Otherwise, an attacker might be able to send a
+packet with a retired connection ID and cause the endpoint to produce a
+Stateless Reset.
+
 Note that Stateless Reset packets do not have any cryptographic protection.
 
 
