@@ -437,7 +437,9 @@ Important:
   are not properly authenticated at the server.  Even though 1-RTT keys are
   available to a server after receiving the first handshake messages from a
   client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.
+  receives and validates the client's Finished message.  A server MUST NOT
+  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
+  discard 1-RTT packets that it cannot read.
 
 : The requirement for the server to wait for the client Finished message creates
   a dependency on that message being delivered.  A client can avoid the
@@ -654,7 +656,7 @@ alerts at the "warning" level.
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
 handshake, as well as when keys are updated (see {{key-update}}).  Initial
-packet protection keys are treated specially, see {{discard-initial}}.
+packet protection keys are treated specially; see {{discard-initial}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -747,10 +749,10 @@ cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
-KDF to produce the AEAD key; the label "quic iv" is used to derive the IV, see
-{{aead}}.  The header protection key uses the "quic hp" label, see
+KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
+{{aead}}.  The header protection key uses the "quic hp" label; see
 {{header-protect}}.  Using these labels provides key separation between QUIC
-and TLS, see {{key-diversity}}.
+and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
 TLS 1.3 (see {{initial-secrets}}).
@@ -763,7 +765,7 @@ Connection ID field from the client's first Initial packet of the
 connection. Specifically:
 
 ~~~
-initial_salt = 0xef4fb0abb47470c41befcf8031334fae485e09a0
+initial_salt = 0x7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a
 initial_secret = HKDF-Extract(initial_salt,
                               client_dst_connection_id)
 
@@ -1135,7 +1137,7 @@ a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
 An endpoint SHOULD retain old keys for a period of no more than three times the
-Probe Timeout (PTO, see {{QUIC-RECOVERY}}).  After this period, old keys and
+Probe Timeout (PTO; see {{QUIC-RECOVERY}}).  After this period, old keys and
 their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
 to process packets that were sent with old keys and delayed in the network.
 Packets with higher packet numbers always use the updated keys and MUST NOT be
@@ -1249,7 +1251,11 @@ quic_transport_parameters extension carries a TransportParameters struct when
 the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
-EncryptedExtensions messages during the handshake.
+EncryptedExtensions messages during the handshake. Endpoints MUST send the
+quic_transport_parameters extension; endpoints that receive ClientHello or
+EncryptedExtensions messages without the quic_transport_parameters extension
+MUST terminate the TLS handshake with a fatal missing_extension alert (an error
+of 0x16d).
 
 While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
@@ -1258,8 +1264,8 @@ parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
-unsupported_extension alert MUST be sent if this extension is received when the
-transport is not QUIC.
+unsupported_extension alert MUST be sent by an implementation that supports this
+extension if the extension is received when the transport is not QUIC.
 
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
@@ -1537,7 +1543,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000012508394c8f03e51570800449f00000002
+c3ff000015508394c8f03e51570800449f00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1545,59 +1551,59 @@ Because the header uses a 4 byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = 0000f3a694c75775b4e546172ce9e047
+sample = 65f354ebb400418b614f73765009c016
 
 mask = AES-ECB(hp, sample)[0..4]
-     = 020dbc1958
+     = 519bd343ff
 
 header[0] ^= mask[0] & 0x0f
-     = c1
+     = c2
 header[17..20] ^= mask[1..4]
-     = 0dbc195a
-header = c1ff000012508394c8f03e51570800449f0dbc195a
+     = 9bd343fd
+header = c2ff000015508394c8f03e51570800449f9bd343fd
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c1ff000012508394c8f03e5157080044 9f0dbc195a0000f3a694c75775b4e546
-172ce9e047cd0b5bee5181648c727adc 87f7eae54473ec6cba6bdad4f5982317
-4b769f12358abd292d4f3286934484fb 8b239c38732e1f3bbbc6a003056487eb
-8b5c88b9fd9279ffff3b0f4ecf95c462 4db6d65d4113329ee9b0bf8cdd7c8a8d
-72806d55df25ecb66488bc119d7c9a29 abaf99bb33c56b08ad8c26995f838bb3
-b7a3d5c1858b8ec06b839db2dcf918d5 ea9317f1acd6b663cc8925868e2f6a1b
-da546695f3c3f33175944db4a11a346a fb07e78489e509b02add51b7b203eda5
-c330b03641179a31fbba9b56ce00f3d5 b5e3d7d9c5429aebb9576f2f7eacbe27
-bc1b8082aaf68fb69c921aa5d33ec0c8 510410865a178d86d7e54122d55ef2c2
-bbc040be46d7fece73fe8a1b24495ec1 60df2da9b20a7ba2f26dfa2a44366dbc
-63de5cd7d7c94c57172fe6d79c901f02 5c0010b02c89b395402c009f62dc053b
-8067a1e0ed0a1e0cf5087d7f78cbd94a fe0c3dd55d2d4b1a5cfe2b68b86264e3
-51d1dcd858783a240f893f008ceed743 d969b8f735a1677ead960b1fb1ecc5ac
-83c273b49288d02d7286207e663c45e1 a7baf50640c91e762941cf380ce8d79f
-3e86767fbbcd25b42ef70ec334835a3a 6d792e170a432ce0cb7bde9aaa1e7563
-7c1c34ae5fef4338f53db8b13a4d2df5 94efbfa08784543815c9c0d487bddfa1
-539bc252cf43ec3686e9802d651cfd2a 829a06a9f332a733a4a8aed80efe3478
-093fbc69c8608146b3f16f1a5c4eac93 20da49f1afa5f538ddecbbe7888f4355
-12d0dd74fd9b8c99e3145ba84410d8ca 9a36dd884109e76e5fb8222a52e1473d
-a168519ce7a8a3c32e9149671b16724c 6c5c51bb5cd64fb591e567fb78b10f9f
-6fee62c276f282a7df6bcf7c17747bc9 a81e6c9c3b032fdd0e1c3ac9eaa5077d
-e3ded18b2ed4faf328f49875af2e36ad 5ce5f6cc99ef4b60e57b3b5b9c9fcbcd
-4cfb3975e70ce4c2506bcd71fef0e535 92461504e3d42c885caab21b782e2629
-4c6a9d61118cc40a26f378441ceb48f3 1a362bf8502a723a36c63502229a462c
-c2a3796279a5e3a7f81a68c7f81312c3 81cc16a4ab03513a51ad5b54306ec1d7
-8a5e47e2b15e5b7a1438e5b8b2882dbd ad13d6a4a8c3558cae043501b68eb3b0
-40067152337c051c40b5af809aca2856 986fd1c86a4ade17d254b6262ac1bc07
-7343b52bf89fa27d73e3c6f3118c9961 f0bebe68a5c323c2d84b8c29a2807df6
-63635223242a2ce9828d4429ac270aab 5f1841e8e49cf433b1547989f419caa3
-c758fff96ded40cf3427f0761b678daa 1a9e5554465d46b7a917493fc70f9ec5
-e4e5d786ca501730898aaa1151dcd318 29641e29428d90e6065511c24d3109f7
-cba32225d4accfc54fec42b733f95852 52ee36fa5ea0c656934385b468eee245
-315146b8c047ed27c519b2c0a52d33ef e72c186ffe0a230f505676c5324baa6a
-e006a73e13aa8c39ab173ad2b2778eea 0b34c46f2b3beae2c62a2c8db238bf58
-fc7c27bdceb96c56d29deec87c12351b fd5962497418716a4b915d334ffb5b92
-ca94ffe1e4f78967042638639a9de325 357f5f08f6435061e5a274703936c06f
-c56af92c420797499ca431a7abaa4618 63bca656facfad564e6274d4a741033a
-ca1e31bf63200df41cdf41c10b912bec
+c2ff000015508394c8f03e5157080044 9f9bd343fd65f354ebb400418b614f73
+765009c0162d594777f9e6ddeb32fba3 865cffd7e26e3724d4997cdde8df34f8
+868772fed2412d43046f44dc7c6adf5e e10da456d56c892c8f69594594e8dcab
+edb10d591130ca464588f2834eab931b 10feb963c1947a05f57062692c242248
+ad0133b31f6dcc585ba344ca5beb382f b619272e65dfccae59c08eb00b7d2a5b
+bccd888582df1d1aee040aea76ab4dfd cae126791e71561b1f58312edb31c164
+ff1341fd2820e2399946bad901e425da e58a9859ef1825e7d757a6291d9ba6ee
+1a8c836dc0027cd705bd2bc67f56bad0 024efaa3819cbb5d46cefdb7e0df3ad9
+2b0689650e2b49ac29e6398bedc75554 1a3f3865bc4759bec74d721a28a0452c
+1260189e8e92f844c91b27a00fc5ed6d 14d8fceb5a848bea0a3208162c7a9578
+2fcf9a045b20b76710a2565372f25411 81030e4350e199e62fa4e2e0bba19ff6
+6662ab8cc6815eeaa20b80d5f31c41e5 51f558d2c836a215ccff4e8afd2fec4b
+fcb9ea9d051d12162f1b14842489b69d 72a307d9144fced64fc4aa21ebd310f8
+97cf00062e90dad5dbf04186622e6c12 96d388176585fdb395358ecfec4d95db
+4429f4473a76210866fd180eaeb60da4 33500c74c00aef24d77eae81755faa03
+e71a8879937b32d31be2ba51d41b5d7a 1fbb4d952b10dd2d6ec171a3187cf3f6
+4d520afad796e4188bc32d153241c083 f225b6e6b845ce9911bd3fe1eb4737b7
+1c8d55e3962871b73657b1e2cce368c7 400658d47cfd9290ed16cdc2a6e3e7dc
+ea77fb5c6459303a32d58f62969d8f46 70ce27f591c7a59cc3e7556eda4c58a3
+2e9f53fd7f9d60a9c05cd6238c71e3c8 2d2efabd3b5177670b8d595151d7eb44
+aa401fe3b5b87bdb88dffb2bfb6d1d0d 8868a41ba96265ca7a68d06fc0b74bcc
+ac55b038f8362b84d47f52744323d08b 46bfec8c421f991e1394938a546a7482
+a17c72be109ea4b0c71abc7d9c0ac096 0327754e1043f18a32b9fb402fc33fdc
+b6a0b4fdbbddbdf0d85779879e98ef21 1d104a5271f22823f16942cfa8ace68d
+0c9e5b52297da9702d8f1de24bcd0628 4ac8aa1068fa21a82abbca7e7454b848
+d7de8c3d43560541a362ff4f6be06c01 15e3a733bff44417da11ae668857bba2
+c53ba17db8c100f1b5c7c9ea960d3f3d 3b9e77c16c31a222b498a7384e286b9b
+7c45167d5703de715f9b06708403562d cff77fdf2793f94e294888cebe8da4ee
+88a53e38f2430addc161e8b2e2f2d405 41d10cda9a7aa518ac14d0195d8c2012
+0b4f1d47d6d0909e69c4a0e641b83c1a d4fff85af4751035bc5698b6141ecc3f
+bffcf2f55036880071ba118927400796 7f64468172854d140d229320d689f576
+60f6c445e629d15ff2dcdff4b71a41ec 0c24bd2fd8f5ad13b2c3688e0fdb8dbc
+ce42e6cf49cf60d022ccd5b19b4fd5d9 8dc10d9ce3a626851b1fdd23e1fa3a96
+1f9b0333ab8d632e48c944b82bdd9e80 0fa2b2b9e31e96aee54b40edaf6b79ec
+211fdc95d95ef552aa532583d76a539e 988e416a0a10df2550cdeacafc3d61b0
+b0a79337960a0be8cf6169e4d55fa6e7 a9c2e8efabab3da008f5bcc38c1bbabd
+b6c10368723da0ae83c4b1819ff54946 e7806458d80d7be2c867d46fe1f029c5
+e952eb19ded16fabb19980480eb0fbcd
 ~~~
 
 ## Server Initial
@@ -1616,26 +1622,26 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001205f067a5502a4262b50040740001
+c1ff00001505f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
 from the third protected octet:
 
 ~~~
-sample = c4c2a2303d297e3c519bf6b22386e3d0
-mask   = 75f7ec8b62
-header = c4ff00001205f067a5502a4262b5004074f7ed
+sample = 6176fa3b713f272a9bf03ee28d3c8add
+mask   = 5bd74a846c
+header = caff00001505f067a5502a4262b5004074d74b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c4ff00001205f067a5502a4262b50040 74f7ed5f01c4c2a2303d297e3c519bf6
-b22386e3d0bd6dfc6612167729803104 1bb9a79c9f0f9d4c5877270a660f5da3
-6207d98b73839b2fdf2ef8e7df5a51b1 7b8c68d864fd3e708c6c1b71a98a3318
-15599ef5014ea38c44bdfd387c03b527 5c35e009b6238f831420047c7271281c
-cb54df7884
+caff00001505f067a5502a4262b50040 74d74b7e486176fa3b713f272a9bf03e
+e28d3c8addb4e805b3a110b663122a75 eee93c9177ac6b7a6b548e15a7b8f884
+65e9eab253a760779b2e6a2c574882b4 8d3a3eed696e50d04d5ec59af85261e4
+cdbe264bd65f2b076760c69beef23aa7 14c9a174d69034c09a2863e1e1863508
+8d4afdeab9
 ~~~
 
 
@@ -1650,6 +1656,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 ## Since draft-ietf-quic-tls-18
 
 - Increased the set of permissible frames in 0-RTT (#2344, #2355)
+- Transport parameter extension is mandatory (#2528, #2560)
 
 
 ## Since draft-ietf-quic-tls-17
