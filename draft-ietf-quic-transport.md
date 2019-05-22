@@ -3887,8 +3887,8 @@ from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
 the Initial packet sent by the client is subject to the same restrictions as the
 first Initial packet.  A client MUST use the same cryptographic handshake
 message it includes in this packet.  A server MAY treat a packet that
-contains a different cryptographic handshake message as a connection or discard
-it.
+contains a different cryptographic handshake message as a connection error or
+discard it.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client MUST NOT change
