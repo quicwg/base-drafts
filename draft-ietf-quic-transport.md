@@ -1584,16 +1584,23 @@ token with a newer one. The client MUST NOT use the token provided in a Retry
 for future connections. Servers MAY discard any Initial packet that does not
 carry the expected token.
 
-Unlike the token that is created for a Retry packet, there might be some time
-between when the token is created and when the token is subsequently used.
-Thus, a token SHOULD include an expiration time.  The server MAY include either
-an explicit expiration time or an issued timestamp and dynamically calculate the
-expiration time.  It is also unlikely that the client port number is the same on
-two different connections; validating the port is therefore unlikely to be
-successful.
-
 A token SHOULD be constructed for the server to easily distinguish it from
 tokens that are sent in Retry packets as they are carried in the same field.
+
+The token MUST NOT include information that would allow it to be linked by an
+on-path observer to the connection on which it was issued.  For example, it
+cannot include the connection ID or addressing information unless the values are
+encrypted.
+
+Unlike the token that is created for a Retry packet, there might be some time
+between when the token is created and when the token is subsequently used.
+Thus, a token SHOULD have an expiration time, which could be either an explicit
+expiration time or an issued timestamp that can be used to dynamically calculate
+the expiration time.  A server can store the expiration time or include it in an
+encrypted form in the token.
+
+It is unlikely that the client port number is the same on two different
+connections; validating the port is therefore unlikely to be successful.
 
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it SHOULD include that value in the
