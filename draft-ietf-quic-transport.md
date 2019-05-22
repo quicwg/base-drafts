@@ -1586,9 +1586,11 @@ carry the expected token.
 
 A token SHOULD be constructed for the server to easily distinguish it from
 tokens that are sent in Retry packets as they are carried in the same field.
-The token SHOULD NOT expose linkability; i.e., information that lets observers
-correlate the connection that is using the token and the one that issued the
-token.
+
+The token MUST NOT include information that would allow it to be linked by an
+on-path observer to the connection on which it was issued.  For example, it
+cannot include the connection ID or addressing information unless the values are
+encrypted.
 
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
