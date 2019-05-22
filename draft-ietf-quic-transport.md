@@ -3459,7 +3459,7 @@ DCIL:
 Destination Connection ID:
 
 : The Destination Connection ID field follows the DCIL and is between 0 and 48
-  bytes in length. {{negotiating-connection-ids}} describes the use of this 
+  bytes in length. {{negotiating-connection-ids}} describes the use of this
   field in more detail.
 
 SCIL:
