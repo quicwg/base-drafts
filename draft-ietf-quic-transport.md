@@ -3893,9 +3893,9 @@ it.
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client MUST NOT change
 the cryptographic handshake message it sends in response to receiving a Retry.
-A client that sends additional 0-RTT packets without constructing a new
-cryptographic handshake message MUST NOT reset the packet number to 0 after a
-Retry packet; see {{packet-0rtt}}.
+
+A client MUST NOT reset the packet number to 0 for any packet number space after
+processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
 original_connection_id transport parameter (see
