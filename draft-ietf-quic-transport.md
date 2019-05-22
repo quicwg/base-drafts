@@ -2472,17 +2472,17 @@ Stateless Reset Token means that the combination of connection ID and static key
 MUST NOT be used for another connection.  A denial of service attack is possible
 if the same connection ID is used by instances that share a static key, or if an
 attacker can cause a packet to be routed to an instance that has no state but
-the same static key (see {{reset-oracle}}).  A connection ID from a connection
+the same static key; see {{reset-oracle}}.  A connection ID from a connection
 that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
 connections at nodes that share a static key.
 
 The same Stateless Reset Token MAY be used for multiple connection IDs on the
 same connection.  An endpoint that reuses a Stateless Reset Token MUST ensure
-that any connection ID used on the connection is matched to the active
-connection, including any routing performed at load balancers, even when a
-connection ID has been retired.  Otherwise, an attacker might be able to send a
-packet with a retired connection ID and cause the endpoint to produce a
-Stateless Reset.
+that any connection ID associated with the reused value is correlated with to
+the active connection, even when the connection ID has been retired.  Otherwise,
+an attacker might be able to send a packet with a retired connection ID and
+cause the endpoint to produce a Stateless Reset that it can use to disrupt the
+connection; just as with the attacks in {{reset-oracle}}.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
 
