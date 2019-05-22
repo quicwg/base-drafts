@@ -2247,15 +2247,19 @@ containing frames other than ACK or PADDING (an ACK-eliciting packet; see
 since last receiving a packet.  Restarting when sending packets ensures that
 connections do not prematurely time out when initiating new activity.
 
-The value for an idle timeout can be asymmetric.  The value advertised by an
-endpoint is only used to determine whether the connection is live at that
-endpoint.  An endpoint that sends packets near the end of the idle timeout
-period of a peer risks having those packets discarded if its peer enters the
-draining state before the packets arrive.  If a peer could timeout within an
-Probe Timeout (PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to
-test for liveness before sending any data that cannot be retried safely.  Note
-that it is likely that only applications or application protocols will
-know what information can be retried.
+Each point can advertise a different idle timeout value.  An idle timeout does
+not guarantee that the connection will be abandoned when the timer ends.  The
+value advertised by an endpoint is only used to determine whether the connection
+is live at that endpoint.  By announcing an idle timeout, an endpoint commits to
+sending a CONNECTION_CLOSE if it abandons a connection within that period.
+
+An endpoint that sends packets near the end of the idle timeout period of a peer
+risks having those packets discarded if its peer enters the draining state
+before the packets arrive.  If a peer could timeout within an Probe Timeout
+(PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to test for
+liveness before sending any data that cannot be retried safely.  Note that it is
+likely that only applications or application protocols will know what
+information can be retried.
 
 
 ## Immediate Close
