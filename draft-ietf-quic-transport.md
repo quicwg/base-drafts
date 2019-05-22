@@ -2478,11 +2478,12 @@ connections at nodes that share a static key.
 
 The same Stateless Reset Token MAY be used for multiple connection IDs on the
 same connection.  An endpoint that reuses a Stateless Reset Token MUST ensure
-that packets that use connection IDs associated with the reused value are
-attributed to the active connection, even when the connection ID has been
-retired.  Otherwise, an attacker might be able to send a packet with a retired
-connection ID and cause the endpoint to produce a Stateless Reset that it can
-use to disrupt the connection; just as with the attacks in {{reset-oracle}}.
+that packets with Destination Connection ID field values that correspond to a
+reused Stateless Reset Token are attributed to the same connection, even when
+the connection ID has been retired.  Otherwise, an attacker might be able to
+send a packet with a retired connection ID and cause the endpoint to produce a
+Stateless Reset that it can use to disrupt the connection; just as with the
+attacks in {{reset-oracle}}.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
 
