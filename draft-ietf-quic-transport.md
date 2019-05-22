@@ -4016,7 +4016,8 @@ stateless_reset_token (0x0002):
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
   transport parameter MUST NOT be sent by a client, but MAY be sent by a server.
   A server that does not send this transport parameter cannot use stateless
-  reset; see {{stateless-reset}}.
+  reset ({{stateless-reset}}) for the connection ID negotiated during the
+  handshake.
 
 max_packet_size (0x0003):
 
