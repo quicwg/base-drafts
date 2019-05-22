@@ -3113,19 +3113,21 @@ Handshake packet number space will be incremented by one and the counts for the
 
 ### ECN Verification {#ecn-verification}
 
-Each endpoint independently verifies and enables use of ECN by setting the IP
-header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if not setting ECN codepoints on packets it transmits, the
-endpoint SHOULD provide feedback about ECN markings received (if accessible).
+It is possible for network devices on path to corrupt or erroneously drop all IP
+packets with ECN Capable Transport (ECT) codepoints set.  To provide robust
+connectivity in the presence of such devices, each endpoint independently
+verifies and enables use of ECN.  Even if not setting ECT codepoints on packets
+it transmits, the endpoint SHOULD provide feedback about ECN markings received
+if they are accessible.
 
-To verify both that a path supports ECN and the peer can provide ECN feedback,
-an endpoint sets the ECT(0) codepoint in the IP header of all outgoing
-packets {{!RFC8311}}.
+To verify both that a path supports ECN and that the peer can provide ECN
+feedback, an endpoint initially sets the ECT(0) codepoint in the IP header of
+all outgoing packets {{!RFC8311}}.
 
-If an ECT codepoint set in the IP header is not corrupted by a network device,
-then a received packet contains either the codepoint sent by the peer or the
-Congestion Experienced (CE) codepoint set by a network device that is
-experiencing congestion.
+If all packets with ECT codepoints are dropped by a network device, endpoints
+can detect loss of the packets and MAY cease setting ECT codepoints in
+subsequent packets.  As one concrete strategy, an endpoint could disable setting
+of ECT codepoints if Initial packets with ECT codepoints set are deemed lost.
 
 If a QUIC packet sent with an ECT codepoint is newly acknowledged by the peer in
 an ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
@@ -3160,20 +3162,17 @@ with packet number lower than a previously received ACK frame.  Verifying based
 on ACK frames that arrive out of order can result in disabling ECN
 unnecessarily.
 
-Upon successful verification, an endpoint continues to set ECT codepoints in
-subsequent packets with the expectation that the path is ECN-capable.
-
 If verification fails, then the endpoint ceases setting ECT codepoints in
 subsequent IP packets with the expectation that either the network path or the
 peer does not support ECN.
 
-If an endpoint sets ECT codepoints on outgoing IP packets and encounters a
-retransmission timeout due to the absence of acknowledgments from the peer (see
-{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
-the network path might be corrupting ECN codepoints, the endpoint MAY cease
-setting ECT codepoints in subsequent packets.  Doing so allows the connection to
-be resilient to network elements that corrupt ECN codepoints in the IP header or
-drop packets with ECT or CE codepoints in the IP header.
+If an ECT codepoint set is not dropped or corrupted by a network device, then a
+received packet contains either the codepoint sent by the peer or the Congestion
+Experienced (CE) codepoint set by a network device that is experiencing
+congestion.
+
+Upon successful verification, an endpoint continues to set ECT codepoints in
+subsequent packets with the expectation that the path is ECN-capable.
 
 
 # Packet Size {#packet-size}
