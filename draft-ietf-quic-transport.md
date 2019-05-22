@@ -2287,10 +2287,13 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  A stateless reset is not appropriate for
-signaling error conditions.  An endpoint that wishes to communicate a fatal
-connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
-to do so.
+properly continue the connection.  An endpoint MAY send a stateless reset in
+response to receiving a packet that it cannot associate with an active
+connection.
+
+A stateless reset is not appropriate for signaling error conditions.  An
+endpoint that wishes to communicate a fatal connection error MUST use a
+CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
@@ -4011,7 +4014,9 @@ stateless_reset_token (0x0002):
 
 : A stateless reset token is used in verifying a stateless reset, see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
-  transport parameter is only sent by a server.
+  transport parameter MUST NOT be sent by a client, but MAY be sent by a server.
+  A server that does not send this transport parameter cannot use stateless
+  reset; see {{stateless-reset}}.
 
 max_packet_size (0x0003):
 
