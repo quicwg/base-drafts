@@ -833,9 +833,9 @@ and produce an output 16 bytes larger than their input.
 
 Note:
 
-: An endpoint MUST NOT reject a ClientHello that offers a ciphersuite that
-  offers a ciphersuite that it does not support, or it would be impossible to
-  deploy a new ciphersuite.  This also applies to TLS_AES_128_CCM_8_SHA256.
+: An endpoint MUST NOT reject a ClientHello that offers a ciphersuite that it
+  does not support, or it would be impossible to deploy a new ciphersuite.  This
+  also applies to TLS_AES_128_CCM_8_SHA256.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -969,7 +969,7 @@ sample.
 
 To ensure that sufficient data is available for sampling, packets are padded so
 that the combined lengths of the encoded packet number and protected payload is
-at least 4 bytes longer than the sample required for header protection.  For the
+at least 4 bytes longer than the sample required for header protection.  The
 ciphersuites defined in {{?TLS13}} - other than TLS_AES_128_CCM_8_SHA256, for
 which a header protection scheme is not defined in this document - have 16-byte
 expansions and 16-byte header protection samples.  This results in needing at
