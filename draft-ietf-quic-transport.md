@@ -2632,7 +2632,8 @@ process coalesced packets.
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT) makes it more likely the receiver will be able to process all
 the packets in a single pass.  A packet with a short header does not include a
-length, so it can only be the last packet included in a UDP datagram.
+length, so it can only be the last packet included in a UDP datagram.  An
+endpoint SHOULD NOT coalesce multiple packets at the same encryption level.
 
 Senders MUST NOT coalesce QUIC packets for different connections into a single
 UDP datagram. Receivers SHOULD ignore any subsequent packets with a different
