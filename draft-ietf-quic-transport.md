@@ -3114,8 +3114,8 @@ Handshake packet number space will be incremented by one and the counts for the
 ### ECN Verification {#ecn-verification}
 
 It is possible for faulty network devices on path to corrupt or erroneously drop
-all IP packets with ECN Capable Transport (ECT) codepoints set.  To provide
-robust connectivity in the presence of such devices, each endpoint independently
+all packets with ECN Capable Transport (ECT) codepoints set.  To provide robust
+connectivity in the presence of such devices, each endpoint independently
 verifies and enables use of ECN.  Even if not setting ECT codepoints on packets
 it transmits, the endpoint SHOULD provide feedback about ECN markings received
 if they are accessible.
