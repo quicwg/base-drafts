@@ -825,11 +825,17 @@ This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
 QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
-TLS_AES_128_CCM_8_SHA256.  The AEAD for that ciphersuite, AEAD_AES_128_CCM_8
-{{?CCM=RFC6655}}, does not produce a large enough authentication tag for use
-with the header protection designs provided (see {{header-protect}}).  All other
-ciphersuites defined in {{!TLS13}} have a 16-byte authentication tag and produce
-an output 16 bytes larger than their input.
+TLS_AES_128_CCM_8_SHA256.  A ciphersuite MUST NOT be negotiated unless a header
+protection scheme is defined for the ciphersuite.  This document defines a
+header protection scheme for all ciphersuites defined in {{!TLS13}} aside from
+TLS_AES_128_CCM_8_SHA256.  These ciphersuites have a 16-byte authentication tag
+and produce an output 16 bytes larger than their input.
+
+Note:
+
+: An endpoint MUST NOT reject a ClientHello that offers a ciphersuite that it
+  does not support, or it would be impossible to deploy a new ciphersuite.  This
+  also applies to TLS_AES_128_CCM_8_SHA256.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -963,11 +969,13 @@ sample.
 
 To ensure that sufficient data is available for sampling, packets are padded so
 that the combined lengths of the encoded packet number and protected payload is
-at least 4 bytes longer than the sample required for header protection.  For the
-AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
-header protection samples, this results in needing at least 3 bytes of frames in
-the unprotected payload if the packet number is encoded on a single byte, or 2
-bytes of frames for a 2-byte packet number encoding.
+at least 4 bytes longer than the sample required for header protection.  The
+ciphersuites defined in {{?TLS13}} - other than TLS_AES_128_CCM_8_SHA256, for
+which a header protection scheme is not defined in this document - have 16-byte
+expansions and 16-byte header protection samples.  This results in needing at
+least 3 bytes of frames in the unprotected payload if the packet number is
+encoded on a single byte, or 2 bytes of frames for a 2-byte packet number
+encoding.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
