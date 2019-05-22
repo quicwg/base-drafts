@@ -166,8 +166,8 @@ The next byte contains the length in bytes of the destination Connection ID
 unsigned integer. This is followed by the destination Connection ID itself,
 associated with the receiver of the packet.
 
-The next two fields are the Connection ID length for the source (SCID) and
-the connection ID itself, associated with the sender of the packet.
+The next two fields are the Connection ID length for the source (SCIL) and
+the source connection ID itself, associated with the sender of the packet.
 
 The remainder of the packet contains version-specific content.
 
