@@ -947,8 +947,8 @@ Common Fields:
 
 Before a TLS ciphersuite can be used with QUIC, a header protection algorithm
 MUST be specified for the AEAD used with that ciphersuite.  This document
-defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
-AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
+defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM
+(all AES AEADs are defined in {{!AEAD=RFC5116}}), and
 AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.  Prior to TLS selecting a
 ciphersuite, AES header protection is used ({{hp-aes}}), matching the
 AEAD_AES_128_GCM packet protection.
@@ -1009,9 +1009,9 @@ sample = packet[sample_offset..sample_offset+sample_length]
 ### AES-Based Header Protection {#hp-aes}
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
-AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
+AEAD_AES_128_CCM, and AEAD_AES_256_GCM. AEAD_AES_128_GCM and
 AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
-electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
+electronic code-book (ECB) mode. AEAD_AES_256_GCM uses
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
