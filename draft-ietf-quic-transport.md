@@ -2251,7 +2251,8 @@ Each point can advertise a different idle timeout value.  An idle timeout does
 not guarantee that the connection will be abandoned when the timer ends.  The
 value advertised by an endpoint is only used to determine whether the connection
 is live at that endpoint.  By announcing an idle timeout, an endpoint commits to
-sending a CONNECTION_CLOSE if it abandons a connection within that period.
+initiating an immediate close ({{immediate-close}}) if it abandons a connection
+prior to its own idle timeout expiring.
 
 An endpoint that sends packets near the end of the idle timeout period of a peer
 risks having those packets discarded if its peer enters the draining state
