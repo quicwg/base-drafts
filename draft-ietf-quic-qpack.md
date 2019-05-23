@@ -138,7 +138,7 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative indicies.  Dynamic references are made relative
+: A reference point for relative indices.  Dynamic references are made relative
   to a Base in header blocks.
 
 Insert Count:
