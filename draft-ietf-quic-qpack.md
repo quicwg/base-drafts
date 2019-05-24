@@ -296,9 +296,13 @@ stream becoming blocked, the encoder tracks the number of entries received by
 the decoder.  The Known Received Count tracks the total number of acknowledged
 insertions.
 
-When blocking references are permitted, the encoder uses header block
-acknowledgement to maintain the Known Received Count, as described in
-{{header-acknowledgement}}.
+When blocking references are permitted, the encoder uses Header Acknowledgement
+instructions ({{header-acknowledgement}}) to maintain the Known Received
+Count.  If a header block was potentially blocking, the acknowledgement implies
+that the decoder has received all dynamic table state necessary to process the
+header block.  If the Required Insert Count of an acknowledged header block was
+greater than the encoder's current Known Received Count, the block's Required
+Insert Count becomes the new Known Received Count.
 
 To acknowledge dynamic table entries which are not referenced by header blocks,
 for example because the encoder or the decoder have chosen not to risk blocked
@@ -340,20 +344,41 @@ MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
-The decoder instructions ({{decoder-instructions}}) signal key events at the
-decoder that permit the encoder to track the decoder's state.  These events are:
+The decoder signals key events by emitting decoder instructions
+({{decoder-instructions}}) on the decoder stream.
 
-- Complete processing of a header block
-- Abandonment of a stream which might have remaining header blocks
-- Receipt of new dynamic table entries
+#### Completed Processing of a Header Block
 
-Knowledge that a header block with references to the dynamic table has been
-processed permits the encoder to evict entries to which no unacknowledged
-references remain (see {{blocked-insertion}}).  When a stream is reset or
-abandoned, the indication that these header blocks will never be processed
-serves a similar function (see {{stream-cancellation}}).
+When the decoder finishes decoding a header block containing dynamic table
+references, it emits a Header Acknowledgement instruction
+({{header-acknowledgement}}).  The same Stream ID can be identified by multiple
+Header Acknowledgement instructions, as multiple header blocks can be sent on a
+single stream in the case of intermediate responses, trailers, and pushed
+requests.  Since frames carrying header blocks on each stream are received and
+processed in order, this gives the encoder precise feedback on which header
+blocks within a stream have been fully processed.
 
-The decoder chooses when to emit Insert Count Increment instructions (see
+#### Abandonment of a Stream
+
+When an endpoint receives a stream reset before the end of a stream or before
+all header blocks are processed on that stream, or when it abandons reading of a
+stream, it generates a Stream Cancellation instruction (see
+{{stream-cancellation}}).  This signals to the encoder that all references to
+the dynamic table on that stream are no longer outstanding.  A decoder with a
+maximum dynamic table capacity equal to zero (see
+{{maximum-dynamic-table-capacity}}) MAY omit sending Stream Cancellations,
+because the encoder cannot have any dynamic table references.  An encoder cannot
+infer from this instruction that any updates to the dynamic table have been
+received.
+
+The Header Acknowledgement and Stream Cancellation instructions permit the
+encoder to evict entries to which no unacknowledged references remain (see
+{{blocked-insertion}}).
+
+#### New Table Entries
+
+After receiving new table entries on the encoder stream, the decoder chooses
+when to emit Insert Count Increment instructions (see
 {{insert-count-increment}}). Emitting an instruction after adding each new
 dynamic table entry will provide the timeliest feedback to the encoder, but
 could be redundant with other decoder feedback. By delaying an Insert Count
@@ -771,24 +796,10 @@ possibly update the Known Received Count.
 ~~~~~~~~~~
 {:#fig-header-ack title="Header Acknowledgement"}
 
-The same Stream ID can be identified multiple times, as multiple header blocks
-can be sent on a single stream in the case of intermediate responses, trailers,
-and pushed requests.  Since frames carrying header blocks on each stream are
-received and processed in order, this gives the encoder precise feedback on
-which header blocks within a stream have been fully processed.
-
 If an encoder receives a Header Acknowledgement instruction referring to a
 stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
-
-When blocking references are permitted, the encoder uses acknowledgement of
-header blocks to update the Known Received Count.  If a header block was
-potentially blocking, the acknowledgement implies that the decoder has received
-all dynamic table state necessary to process the header block.  If the Required
-Insert Count of an acknowledged header block was greater than the encoder's
-current Known Received Count, the block's Required Insert Count becomes the new
-Known Received Count.
 
 
 ### Stream Cancellation
@@ -803,19 +814,6 @@ the stream ID of the affected stream encoded as a 6-bit prefix integer.
 +---+---+-----------------------+
 ~~~~~~~~~~
 {:#fig-stream-cancel title="Stream Cancellation"}
-
-A stream that is reset might have multiple outstanding header blocks with
-dynamic table references.  When an endpoint receives a stream reset before the
-end of a stream or before all header blocks are processed on that stream, or
-when it abandons reading of a stream, it generates a Stream Cancellation
-instruction.  This signals to the encoder that all references to the dynamic
-table on that stream are no longer outstanding.  A decoder with a maximum
-dynamic table capacity equal to zero (see {{maximum-dynamic-table-capacity}})
-MAY omit sending Stream Cancellations, because the encoder cannot have any
-dynamic table references.
-
-An encoder cannot infer from this instruction that any updates to the dynamic
-table have been received.
 
 ### Insert Count Increment
 
