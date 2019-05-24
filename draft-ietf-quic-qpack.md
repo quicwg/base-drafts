@@ -270,30 +270,15 @@ Insert Count is one larger than the largest absolute index of all referenced
 dynamic table entries. For a header block with no references to the dynamic
 table, the Required Insert Count is zero.
 
-If the decoder encounters a header block with a Required Insert Count value
-larger than defined above, it MAY treat this as a connection error of type
-HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a header block with
-a Required Insert Count value smaller than defined above, it MUST treat this as
-a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in
-{{invalid-references}}.
-
-When the Required Insert Count is zero, the frame contains no references to the
-dynamic table and can always be processed immediately.
-
-If the Required Insert Count is greater than the number of dynamic table entries
-received, the stream is considered "blocked."  While blocked, header field data
-SHOULD remain in the blocked stream's flow control window.  A stream becomes
-unblocked when the Insert Count becomes greater than or equal to the Required
-Insert Count for all header blocks the decoder has started reading from the
-stream.
+When the decoder receives a header block with a Required Insert Count greater
+than its own Insert Count, the stream cannot be processed immediately, and is
+considered "blocked" (see {blocked-decoding}).
 
 The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
 upper bound on the number of streams which can be blocked. An encoder MUST limit
 the number of streams which could become blocked to the value of
 SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder might not
-become blocked on every stream which risks becoming blocked.  If the decoder
-encounters more blocked streams than it promised to support, it MUST treat this
-as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+become blocked on every stream which risks becoming blocked.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -332,9 +317,26 @@ the input header block.
 
 ### Blocked Decoding
 
-To track blocked streams, the Required Insert Count value for each stream can be
-used.  Whenever the decoder processes a table update, it can begin decoding any
-blocked streams that now have their dependencies satisfied.
+Upon receipt of a header block, the decoder examines the Required Insert Count.
+When the Required Insert Count is less than or equal to the decoder's Insert
+Count, the header block can be processed immediately.  Otherwise, the stream is
+blocked.
+
+While blocked, header block data SHOULD remain in the blocked stream's flow
+control window.  A stream becomes unblocked when the Insert Count becomes
+greater than or equal to the Required Insert Count for all header blocks the
+decoder has started reading from the stream.
+<!-- doesn't the stream become unblocked when the encoder receives the acks? -->
+
+If the decoder encounters a header block with a Required Insert Count value
+larger than defined in {{blocked-streams}}, it MAY treat this as a connection
+error of type HTTP_QPACK_DECOMPRESSION_FAILED.  If the decoder encounters a
+header block with a Required Insert Count value smaller than defined in
+{{blocked-streams}}, it MUST treat this as a connection error of type
+HTTP_QPACK_DECOMPRESSION_FAILED as prescribed in {{invalid-references}}.
+
+If the decoder encounters more blocked streams than it promised to support, it
+MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
