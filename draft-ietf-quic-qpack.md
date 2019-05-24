@@ -82,24 +82,21 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-The QUIC transport protocol was designed from the outset to support HTTP
-semantics, and its design subsumes many of the features of HTTP/2.  HTTP/2 uses
-HPACK ({{!RFC7541}}) for header compression, but QUIC's stream multiplexing
-comes into some conflict with HPACK.  A key goal of the design of QUIC is to
-improve stream multiplexing relative to HTTP/2 by reducing head-of-line
-blocking.  If HPACK were used for HTTP/3, it would induce head-of-line
-blocking due to built-in assumptions of a total ordering across frames on all
-streams.
-
-QUIC is described in {{QUIC-TRANSPORT}}.  The HTTP/3 mapping is described in
-{{HTTP3}}. For a full description of HTTP/2, see {{?RFC7540}}. The
-description of HPACK is {{!RFC7541}}.
+The QUIC transport protocol is designed to support HTTP semantics, and its
+design subsumes many of the features of HTTP/2.  HTTP/2 uses HPACK
+({{!RFC7541}}) for header compression.  If HPACK were used for HTTP/3, it would
+induce head-of-line blocking due to built-in assumptions of a total ordering
+across frames on all streams.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
 the presence of out-of-order delivery, with flexibility for implementations to
 balance between resilience against head-of-line blocking and optimal compression
 ratio.  The design goals are to closely approach the compression ratio of HPACK
 with substantially less head-of-line blocking under the same loss conditions.
+
+QUIC is described in {{QUIC-TRANSPORT}}.  The HTTP/3 mapping is described in
+{{HTTP3}}. For a full description of HTTP/2, see {{?RFC7540}}. The
+description of HPACK is {{!RFC7541}}.
 
 ## Conventions and Definitions
 
