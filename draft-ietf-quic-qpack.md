@@ -663,11 +663,12 @@ even if the connection's settings prevent their use.
 
 ## Encoder Instructions {#encoder-instructions}
 
-Table updates can add a table entry, possibly using existing entries to avoid
-transmitting redundant information.  The name can be transmitted as a reference
-to an existing entry in the static or the dynamic table or as a string literal.
-For entries which already exist in the dynamic table, the full entry can also be
-used by reference, creating a duplicate entry.
+An encoder uses encoder instructions to set the capacity of the dynamic table
+and add dynamic table entries.  Instructions adding table entries can use
+existing entries to avoid transmitting redundant information.  The name can be
+transmitted as a reference to an existing entry in the static or the dynamic
+table or as a string literal.  For entries which already exist in the dynamic
+table, the full entry can also be used by reference, creating a duplicate entry.
 
 This section specifies the following encoder instructions.
 
@@ -700,13 +701,14 @@ acknowledged as this instruction does not insert an entry.
 
 ### Insert With Name Reference
 
-An addition to the header table where the header field name matches the header
-field name of an entry stored in the static table or the dynamic table starts
-with the '1' one-bit pattern.  The `S` bit indicates whether the reference is to
-the static (S=1) or dynamic (S=0) table. The 6-bit prefix integer (see Section
-5.1 of [RFC7541]) that follows is used to locate the table entry for the header
-name.  When S=1, the number represents the static table index; when S=0, the
-number is the relative index of the entry in the dynamic table.
+An encoder adds an entry to the dynamic table where the header field name
+matches the header field name of an entry stored in the static table or the
+dynamic table using an instruction that starts with the '1' one-bit pattern.
+The second (`S`) bit indicates whether the reference is to the static or dynamic
+table. The 6-bit prefix integer (see Section 5.1 of [RFC7541]) that follows is
+used to locate the table entry for the header name.  When S=1, the number
+represents the static table index; when S=0, the number is the relative index of
+the entry in the dynamic table.
 
 The header name reference is followed by the header field value represented as a
 string literal (see Section 5.2 of [RFC7541]).
@@ -726,9 +728,9 @@ string literal (see Section 5.2 of [RFC7541]).
 
 ### Insert Without Name Reference
 
-An addition to the header table where both the header field name and the header
-field value are represented as string literals (see {{primitives}}) starts with
-the '01' two-bit pattern.
+An encoder adds an entry to the dynamic table where both the header field name
+and the header field value are represented as string literals (see
+{{primitives}}) using an instruction that starts with the '01' two-bit pattern.
 
 The name is represented as a 6-bit prefix string literal, while the value is
 represented as an 8-bit prefix string literal.
@@ -750,9 +752,9 @@ represented as an 8-bit prefix string literal.
 
 ### Duplicate {#duplicate}
 
-Duplication of an existing entry in the dynamic table starts with the '000'
-three-bit pattern.  The relative index of the existing entry is represented as
-an integer with a 5-bit prefix.
+An encoder duplicates an existing entry in the dynamic table using an
+instruction that starts with the '000' three-bit pattern.  The relative index of
+the existing entry is represented as an integer with a 5-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -782,11 +784,11 @@ This section specifies the following decoder instructions.
 ### Header Acknowledgement
 
 After processing a header block whose declared Required Insert Count is not
-zero, the decoder emits a Header Acknowledgement instruction on the decoder
-stream.  The instruction begins with the '1' one-bit pattern and includes the
-header block's associated stream ID, encoded as a 7-bit prefix integer.  It is
-used by the peer's encoder to know when it is safe to evict an entry, and
-possibly update the Known Received Count.
+zero, the decoder emits a Header Acknowledgement instruction.  The instruction
+begins with the '1' one-bit pattern and includes the header block's associated
+stream ID, encoded as a 7-bit prefix integer.  It is used by the peer's encoder
+to know when it is safe to evict an entry ({{blocked-insertion}}), and possibly
+update the Known Received Count ({{known-received-count}}).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -804,8 +806,10 @@ already been acknowledged, that MUST be treated as a connection error of type
 
 ### Stream Cancellation
 
-The instruction begins with the '01' two-bit pattern. The instruction includes
-the stream ID of the affected stream encoded as a 6-bit prefix integer.
+When a stream is reset, the decoder emits a Stream Cancellation instruction. The
+instruction begins with the '01' two-bit pattern. The instruction includes the
+stream ID of the affected stream encoded as a 6-bit prefix integer.  See
+{{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -974,6 +978,7 @@ entry.
 An indexed header field representation identifies an entry in either the static
 table or the dynamic table and causes that header field to be added to the
 decoded header list, as described in Section 3.2 of [RFC7541].
+<!-- is the 7541 reference still helpful here -->
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1008,7 +1013,7 @@ field, represented as an integer with a 4-bit prefix (see Section 5.1 of
 {: title="Indexed Header Field with Post-Base Index"}
 
 
-### Literal Header Field With Name Reference
+### Literal Header Field With Name Reference {#literal-name-reference}
 
 A literal header field with a name reference represents a header where the
 header field name matches the header field name of an entry stored in the static
@@ -1016,8 +1021,6 @@ table or the dynamic table.
 
 If the entry is in the static table, or in the dynamic table with an absolute
 index less than the Base, this representation starts with the '01' two-bit
-pattern.  If the entry is in the dynamic table with an absolute index greater
-than or equal to the Base, the representation starts with the '0000' four-bit
 pattern.
 
 Only the header field name stored in the static or dynamic table is used. Any
@@ -1044,17 +1047,19 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
 
-For entries in the static table or in the dynamic table with an absolute index
-less than the Base, the header field name is represented using the relative
-index of that entry, which is represented as an integer with a 4-bit prefix (see
-Section 5.1 of [RFC7541]). The `S` bit indicates whether the reference is to the
-static (S=1) or dynamic (S=0) table.
+The fourth (`S`) bit indicates whether the reference is to the static (S=1) or
+dynamic (S=0) table.  Finally, the header field name is represented using the
+static or relative index of that entry, which is represented as an integer with
+a 4-bit prefix (see Section 5.1 of [RFC7541]).
 
 ### Literal Header Field With Post-Base Name Reference
 
-For entries in the dynamic table with an absolute index greater than or equal to
-the Base, the header field name is represented using the post-base index of that
-entry (see {{post-base}}) encoded as an integer with a 3-bit prefix.
+If the name entry is in the dynamic table with an absolute index greater than or
+equal to the Base, the representation starts with the '0000' four-bit
+pattern. The fifth bit is the 'N' bit as described in
+{{literal-name-reference}}.  Finally, the header field name is represented using
+the post-base index of that entry (see {{post-base}}) encoded as an integer with
+a 3-bit prefix.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
