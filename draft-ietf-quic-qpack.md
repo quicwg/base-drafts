@@ -408,6 +408,7 @@ The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
 error by the decoder.
 
+Dynamic table entries can have empty values.
 
 ### Dynamic Table Size
 
@@ -423,19 +424,18 @@ without Huffman encoding applied.
 ### Dynamic Table Capacity and Eviction {#eviction}
 
 The encoder sets the capacity of the dynamic table, which serves as the upper
-limit on its size.  The initial capacity of the dynamic table is zero.
+limit on its size.  The initial capacity of the dynamic table is zero.  The
+encoder sends a Set Dynamic Table Capacity instruction
+({{set-dynamic-capacity}}) with a non-zero capacity to begin using the dynamic
+table.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
-equal to (table capacity - size of new entry) or until the table is empty. The
-encoder MUST NOT evict a blocking dynamic table entry (see
-{{blocked-insertion}}).
-
-If the size of the new entry is less than or equal to the dynamic table
-capacity, then that entry is added to the table.  It is an error if the encoder
-attempts to add an entry that is larger than the dynamic table capacity; the
-decoder MUST treat this as a connection error of type
-`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+equal to (table capacity - size of new entry). The encoder MUST NOT evict a
+blocking dynamic table entry (see {{blocked-insertion}}).  The entry is then
+added to the table.  It is an error if the encoder attempts to add an entry that
+is larger than the dynamic table capacity; the decoder MUST treat this as a
+connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -487,9 +487,9 @@ increase by one with each insertion.
 
 ### Relative Indexing
 
-The relative index begins at zero and increases in the opposite direction from
-the absolute index.  Determining which entry has a relative index of "0" depends
-on the context of the reference.
+Relative indices begin at zero and increase in the opposite direction from the
+absolute index.  Determining which entry has a relative index of "0" depends on
+the context of the reference.
 
 In encoder instructions, a relative index of "0" always refers to the most
 recently inserted value in the dynamic table.  Note that this means the entry
@@ -513,15 +513,11 @@ d = count of entries dropped
 
 Unlike encoder instructions, relative indices in header block instructions are
 relative to the Base at the beginning of the header block (see
-{{header-prefix}}). This ensures that references are stable even if the dynamic
-table is updated while decoding a header block.
+{{header-prefix}}). This ensures that references are stable even if header
+blocks and dynamic table updates are processed out of order.
 
-The Base is encoded as a value relative to the Required Insert Count. The Base
-identifies which dynamic table entries can be referenced using relative
-indexing, starting with 0 at the last entry added.
-
-Post-Base references are used for entries inserted after base, starting at 0 for
-the first entry added after the Base; see {{post-base}}.
+In a header block a relative index of "0" refers to the entry with absolute
+index equal to Base - 1.
 
 ~~~~~ drawing
  Required
@@ -543,12 +539,13 @@ d = count of entries dropped
 
 ### Post-Base Indexing {#post-base}
 
-A header block can reference entries added after the entry identified by the
-Base. This allows an encoder to process a header block in a single pass and
-include references to entries added while processing this (or other) header
-blocks. Newly added entries are referenced using Post-Base instructions. Indices
-for Post-Base instructions increase in the same direction as absolute indices,
-with the zero value being the first entry inserted after the Base.
+Post-Base indices are used for entries with absolute indexes greater than or
+equal to Base, starting at 0 for the entry with absolute index equal to Base,
+and increasing in the same direction as the absolute index.
+
+Post-Base indices allow an encoder to process a header block in a single pass
+and include references to entries added while processing this (or other) header
+blocks.
 
 ~~~~~ drawing
                Base
@@ -807,13 +804,13 @@ the stream ID of the affected stream encoded as a 6-bit prefix integer.
 
 A stream that is reset might have multiple outstanding header blocks with
 dynamic table references.  When an endpoint receives a stream reset before the
-end of a stream, it generates a Stream Cancellation instruction on the decoder
-stream.  Similarly, when an endpoint abandons reading of a stream it needs to
-signal this using the Stream Cancellation instruction.  This signals to the
-encoder that all references to the dynamic table on that stream are no longer
-outstanding.  A decoder with a maximum dynamic table capacity equal to zero (see
-{{maximum-dynamic-table-capacity}}) MAY omit sending Stream Cancellations,
-because the encoder cannot have any dynamic table references.
+end of a stream or before all header blocks are processed on that stream, or
+when it abandons reading of a stream, it generates a Stream Cancellation
+instruction.  This signals to the encoder that all references to the dynamic
+table on that stream are no longer outstanding.  A decoder with a maximum
+dynamic table capacity equal to zero (see {{maximum-dynamic-table-capacity}})
+MAY omit sending Stream Cancellations, because the encoder cannot have any
+dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
