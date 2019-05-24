@@ -330,6 +330,11 @@ instructions received on the encoder stream.
 The decoder MUST emit header fields in the order their representations appear in
 the input header block.
 
+### Blocked Decoding
+
+To track blocked streams, the Required Insert Count value for each stream can be
+used.  Whenever the decoder processes a table update, it can begin decoding any
+blocked streams that now have their dependencies satisfied.
 
 ### State Synchronization
 
@@ -356,11 +361,17 @@ Acknowledgements (see {{header-acknowledgement}}). However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
 
-### Blocked Decoding
+### Invalid References
 
-To track blocked streams, the Required Insert Count value for each stream can be
-used.  Whenever the decoder processes a table update, it can begin decoding any
-blocked streams that now have their dependencies satisfied.
+If the decoder encounters a reference in a header block instruction to a dynamic
+table entry which has already been evicted or which has an absolute index
+greater than or equal to the declared Required Insert Count (see
+{{header-prefix}}), it MUST treat this as a connection error of type
+`HTTP_QPACK_DECOMPRESSION_FAILED`.
+
+If the decoder encounters a reference in an encoder instruction to a dynamic
+table entry which has already been evicted, it MUST treat this as a connection
+error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 
 # Header Tables
@@ -555,18 +566,6 @@ d = count of entries dropped
 {: title="Example Dynamic Table Indexing - Post-Base Index in Header Block"}
 
 
-### Invalid References
-
-If the decoder encounters a reference in a header block instruction to a dynamic
-table entry which has already been evicted or which has an absolute index
-greater than or equal to the declared Required Insert Count (see
-{{header-prefix}}), it MUST treat this as a connection error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED`.
-
-If the decoder encounters a reference in an encoder instruction to a dynamic
-table entry which has already been evicted, it MUST treat this as a connection
-error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
-
 # Wire Format
 
 ## Primitives
@@ -648,6 +647,33 @@ used by reference, creating a duplicate entry.
 
 This section specifies the following encoder instructions.
 
+### Set Dynamic Table Capacity {#set-dynamic-capacity}
+
+An encoder informs the decoder of a change to the dynamic table capacity using
+an instruction which begins with the '001' three-bit pattern.  The new dynamic
+table capacity is represented as an integer with a 5-bit prefix (see Section 5.1
+of [RFC7541]).
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 | 1 |   Capacity (5+)   |
++---+---+---+-------------------+
+~~~~~~~~~~
+{:#fig-set-capacity title="Set Dynamic Table Capacity"}
+
+The new capacity MUST be lower than or equal to the limit described in
+{{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter (see {{configuration}}) received
+from the decoder.  The decoder MUST treat a new dynamic table capacity value
+that exceeds this limit as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+
+Reducing the dynamic table capacity can cause entries to be evicted (see
+{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
+{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
+acknowledged as this instruction does not insert an entry.
+
 ### Insert With Name Reference
 
 An addition to the header table where the header field name matches the header
@@ -718,33 +744,6 @@ entries which are frequently referenced, both to avoid the need to resend the
 header and to avoid the entry in the table blocking the ability to insert new
 headers.
 
-### Set Dynamic Table Capacity {#set-dynamic-capacity}
-
-An encoder informs the decoder of a change to the dynamic table capacity using
-an instruction which begins with the '001' three-bit pattern.  The new dynamic
-table capacity is represented as an integer with a 5-bit prefix (see Section 5.1
-of [RFC7541]).
-
-~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 0 | 1 |   Capacity (5+)   |
-+---+---+---+-------------------+
-~~~~~~~~~~
-{:#fig-set-capacity title="Set Dynamic Table Capacity"}
-
-The new capacity MUST be lower than or equal to the limit described in
-{{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
-SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter (see {{configuration}}) received
-from the decoder.  The decoder MUST treat a new dynamic table capacity value
-that exceeds this limit as a connection error of type
-`HTTP_QPACK_ENCODER_STREAM_ERROR`.
-
-Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
-{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
-acknowledged as this instruction does not insert an entry.
-
 
 ## Decoder Instructions {#decoder-instructions}
 
@@ -755,28 +754,6 @@ client's header blocks and table updates, and the client informs the server
 about the processing of the server's header blocks and table updates.
 
 This section specifies the following decoder instructions.
-
-### Insert Count Increment
-
-The Insert Count Increment instruction begins with the '00' two-bit pattern.
-The instruction specifies the total number of dynamic table inserts and
-duplications since the last Insert Count Increment or Header Acknowledgement
-that increased the Known Received Count for the dynamic table (see
-{{known-received-count}}).  The Increment field is encoded as a 6-bit prefix
-integer. The encoder uses this value to determine which table entries might
-cause a stream to become blocked, as described in {{state-synchronization}}.
-
-~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 0 |     Increment (6+)    |
-+---+---+-----------------------+
-~~~~~~~~~~
-{:#fig-size-sync title="Insert Count Increment"}
-
-An encoder that receives an Increment field equal to zero or one that increases
-the Known Received Count beyond what the encoder has sent MUST treat this as a
-connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 ### Header Acknowledgement
 
@@ -840,6 +817,28 @@ because the encoder cannot have any dynamic table references.
 
 An encoder cannot infer from this instruction that any updates to the dynamic
 table have been received.
+
+### Insert Count Increment
+
+The Insert Count Increment instruction begins with the '00' two-bit pattern.
+The instruction specifies the total number of dynamic table inserts and
+duplications since the last Insert Count Increment or Header Acknowledgement
+that increased the Known Received Count for the dynamic table (see
+{{known-received-count}}).  The Increment field is encoded as a 6-bit prefix
+integer. The encoder uses this value to determine which table entries might
+cause a stream to become blocked, as described in {{state-synchronization}}.
+
+~~~~~~~~~~ drawing
+  0   1   2   3   4   5   6   7
++---+---+---+---+---+---+---+---+
+| 0 | 0 |     Increment (6+)    |
++---+---+-----------------------+
+~~~~~~~~~~
+{:#fig-size-sync title="Insert Count Increment"}
+
+An encoder that receives an Increment field equal to zero or one that increases
+the Known Received Count beyond what the encoder has sent MUST treat this as a
+connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 
 ## Header Block Instructions
