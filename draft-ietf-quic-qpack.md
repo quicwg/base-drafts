@@ -172,8 +172,7 @@ QPACK instructions appear in three different types of streams:
 - The encoder uses a unidirectional stream to modify the state of the dynamic
 table without emitting header fields associated with any particular request.
 
-- HEADERS and PUSH_PROMISE frames on request and push streams reference the
-table state without modifying it.
+- Header blocks reference the table state without modifying it.
 
 - The decoder sends feedback to the encoder on a unidirectional stream.  This
 feedback enables the encoder to manage dynamic table state.
@@ -607,9 +606,8 @@ convey an encoded representation of a header list by referring to the QPACK
 table state.
 
 Encoder and decoder instructions appear on the unidirectional stream types
-described in this section. Header block instructions are contained in HEADERS
-and PUSH_PROMISE frames, which are conveyed on request or push streams as
-described in {{HTTP3}}.
+described in this section. Header block instructions are contained in header
+blocks, which are conveyed in frames as described in {{HTTP3}}.
 
 ### Encoder and Decoder Streams {#enc-dec-stream-def}
 
@@ -799,7 +797,7 @@ possibly update the Known Received Count.
 
 The same Stream ID can be identified multiple times, as multiple header blocks
 can be sent on a single stream in the case of intermediate responses, trailers,
-and pushed requests.  Since HEADERS and PUSH_PROMISE frames on each stream are
+and pushed requests.  Since frames carrying header blocks on each stream are
 received and processed in order, this gives the encoder precise feedback on
 which header blocks within a stream have been fully processed.
 
@@ -820,8 +818,7 @@ Known Received Count.
 ### Stream Cancellation
 
 The instruction begins with the '01' two-bit pattern. The instruction includes
-the stream ID of the affected stream - a request or push stream - encoded as a
-6-bit prefix integer.
+the stream ID of the affected stream encoded as a 6-bit prefix integer.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -847,12 +844,10 @@ table have been received.
 
 ## Header Block Instructions
 
-HTTP/3 endpoints convert header lists to headers blocks and exchange them inside
-HEADERS and PUSH_PROMISE frames. A decoder interprets header block instructions
-in order to construct a header list. These instructions reference the static
-table, or dynamic table in a particular state without modifying it.
-
-This section specifies the following header block instructions.
+Header blocks contain compressed representations of header lists and are carried
+in frames on streams defined by the enclosing protocol.  These instructions
+reference the static table, or dynamic table in a particular state without
+modifying it.
 
 ### Header Block Prefix {#header-prefix}
 
@@ -861,8 +856,7 @@ encoded as an integer with an 8-bit prefix after the encoding described in
 {{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
 bit and a value with a 7-bit prefix (see {{base}}).
 
-These two values are followed by instructions for compressed headers.  The
-entire block is expected to be framed by the enclosing protocol.
+These two values are followed by instructions for compressed headers.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
