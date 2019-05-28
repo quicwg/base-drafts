@@ -167,15 +167,8 @@ fields (some of them with an empty value).  The dynamic table (see
 {{table-dynamic}}) is built up over the course of the connection and can be used
 by the encoder to index header fields in the encoded header lists.
 
-QPACK instructions appear in three different types of streams:
-
-- The encoder uses a unidirectional stream to modify the state of the dynamic
-table without emitting header fields associated with any particular request.
-
-- Header blocks reference the table state without modifying it.
-
-- The decoder sends feedback to the encoder on a unidirectional stream.  This
-feedback enables the encoder to manage dynamic table state.
+QPACK defines unidirectional streams for sending instructions from encoder to
+decoder and vice-versa.
 
 ## Encoder
 
@@ -344,7 +337,7 @@ MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
-The decoder signals key events by emitting decoder instructions
+The decoder signals the following key events by emitting decoder instructions
 ({{decoder-instructions}}) on the decoder stream.
 
 #### Completed Processing of a Header Block
@@ -619,20 +612,7 @@ prefix integer.  The remainder of the string literal is unmodified.
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
 
-## Instructions
-
-There are three separate QPACK instruction spaces. Encoder instructions
-({{encoder-instructions}}) carry table updates, decoder instructions
-({{decoder-instructions}}) carry acknowledgments of table modifications and
-header processing, and header block instructions ({{header-block-instructions}})
-convey an encoded representation of a header list by referring to the QPACK
-table state.
-
-Encoder and decoder instructions appear on the unidirectional stream types
-described in this section. Header block instructions are contained in header
-blocks, which are conveyed in frames as described in {{HTTP3}}.
-
-### Encoder and Decoder Streams {#enc-dec-stream-def}
+## Encoder and Decoder Streams {#enc-dec-stream-def}
 
 QPACK defines two unidirectional stream types:
 
@@ -663,12 +643,13 @@ even if the connection's settings prevent their use.
 
 ## Encoder Instructions {#encoder-instructions}
 
-An encoder uses encoder instructions to set the capacity of the dynamic table
-and add dynamic table entries.  Instructions adding table entries can use
-existing entries to avoid transmitting redundant information.  The name can be
-transmitted as a reference to an existing entry in the static or the dynamic
-table or as a string literal.  For entries which already exist in the dynamic
-table, the full entry can also be used by reference, creating a duplicate entry.
+An encoder sends encoder instructions on the encoder stream to set the capacity
+of the dynamic table and add dynamic table entries.  Instructions adding table
+entries can use existing entries to avoid transmitting redundant information.
+The name can be transmitted as a reference to an existing entry in the static or
+the dynamic table or as a string literal.  For entries which already exist in
+the dynamic table, the full entry can also be used by reference, creating a
+duplicate entry.
 
 This section specifies the following encoder instructions.
 
