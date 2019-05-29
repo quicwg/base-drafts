@@ -174,7 +174,7 @@ decoder and vice-versa.
 
 An encoder compresses a header list into a header block by emitting either an
 indexed or a literal representation for each header field in the list (see
-{{header-block-instructions}}).  Indexed representations achieve high
+{{header-block-representations}}).  Indexed representations achieve high
 compression by replacing the literal name and possibly the value with an index
 to either the static or dynamic table.  References to the static table and
 literal representations do not require any dynamic state and never risk
@@ -383,9 +383,9 @@ acknowledged before using it.
 
 ### Invalid References
 
-If the decoder encounters a reference in a header block instruction to a dynamic
-table entry which has already been evicted or which has an absolute index
-greater than or equal to the declared Required Insert Count (see
+If the decoder encounters a reference in a header block representation to a
+dynamic table entry which has already been evicted or which has an absolute
+index greater than or equal to the declared Required Insert Count (see
 {{header-prefix}}), it MUST treat this as a connection error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.
 
@@ -412,7 +412,7 @@ Note the QPACK static table is indexed from 0, whereas the HPACK static table
 is indexed from 1.
 
 When the decoder encounters an invalid static table index in a header block
-instruction it MUST treat this as a connection error of type
+representation it MUST treat this as a connection error of type
 `HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
@@ -531,8 +531,8 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Encoder Stream"}
 
-Unlike encoder instructions, relative indices in header block instructions are
-relative to the Base at the beginning of the header block (see
+Unlike encoder instructions, relative indices in header block representations
+are relative to the Base at the beginning of the header block (see
 {{header-prefix}}). This ensures that references are stable even if header
 blocks and dynamic table updates are processed out of order.
 
@@ -823,10 +823,10 @@ the Known Received Count beyond what the encoder has sent MUST treat this as a
 connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 
-## Header Block Instructions
+## Header Block Representations
 
 Header blocks contain compressed representations of header lists and are carried
-in frames on streams defined by the enclosing protocol.  These instructions
+in frames on streams defined by the enclosing protocol.  These representations
 reference the static table, or dynamic table in a particular state without
 modifying it.
 
@@ -837,7 +837,7 @@ encoded as an integer with an 8-bit prefix after the encoding described in
 {{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
 bit and a value with a 7-bit prefix (see {{base}}).
 
-These two values are followed by instructions for compressed headers.
+These two values are followed by representations for compressed headers.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
@@ -1106,8 +1106,8 @@ The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the connection from continuing:
 
 HTTP_QPACK_DECOMPRESSION_FAILED (0x200):
-: The decoder failed to interpret a header block instruction and is not
-  able to continue decoding that header block.
+: The decoder failed to interpret a header block and is not able to continue
+  decoding that header block.
 
 HTTP_QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
