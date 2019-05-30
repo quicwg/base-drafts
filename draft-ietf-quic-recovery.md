@@ -527,6 +527,10 @@ is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
 {{?RFC6298}}.
 
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
+a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
+be considered an RTT sample.
+
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
 RTT.  This timer MUST be updated when a new crypto packet is sent and when
 an acknowledgement is received which computes a new RTT sample. Upon timeout,
