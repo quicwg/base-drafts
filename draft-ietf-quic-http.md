@@ -613,16 +613,16 @@ tree could be discarded safely. Clients could potentially reference closed
 streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
-In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintaining these placeholders in the prioritization tree, clients can use them
-with confidence that the server will not have discarded the state. Clients MUST
-NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
-server MUST be treated as a connection error of type
-`HTTP_WRONG_SETTING_DIRECTION`.
+In HTTP/3, placeholders are given their own number space that spans between 0
+and 2^62-1.  By using the `SETTINGS_NUM_PLACEHOLDERS` setting, the server
+advertises the range of placeholder IDs it is committing to maintain state,
+which is between zero and one less than the value of this setting.  Clients can
+use the placeholders within this range with the confidence that the server will
+not have discarded the state.
 
-Placeholders are identified by an ID between zero and one less than the number
-of placeholders the server has permitted.
+Clients MUST NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this
+setting by a server MUST be treated as a connection error of type
+`HTTP_WRONG_SETTING_DIRECTION`.
 
 Like streams, placeholders have priority information associated with them.
 
@@ -1202,9 +1202,15 @@ The following situations are examples of invalid PRIORITY frames:
 A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
 error of type HTTP_MALFORMED_FRAME.
 
-A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
-greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
+A PRIORITY frame that references a non-existent Push ID, or a Stream ID the
+client is not yet permitted to open MUST be treated as a connection error of
+type HTTP_LIMIT_EXCEEDED.
+
+A PRIORITY frame MAY reference a Placeholder ID that is equal to or greater than
+the server's advertised value of the `SETTINGS_NUM_PLACEHOLDERS` settings.  The
+server SHOULD ignore PRIORITY frames that specify such placeholders as the
+prioritized element.  The server SHOULD use the root of the tree as the
+dependency when such placeholders are specified as the depedencencies.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
