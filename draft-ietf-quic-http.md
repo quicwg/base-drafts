@@ -613,7 +613,7 @@ tree could be discarded safely. Clients could potentially reference closed
 streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
-In HTTP/3, placeholders are given their own number space that spans between 0
+In HTTP/3, placeholders are given their own number space that spans between zero
 and 2^62-1.  By using the `SETTINGS_NUM_PLACEHOLDERS` setting, the server
 advertises the range of placeholder IDs it is committing to maintain state,
 which is between zero and one less than the value of this setting.  Clients can
