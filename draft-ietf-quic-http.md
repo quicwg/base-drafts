@@ -1207,10 +1207,12 @@ client is not yet permitted to open MUST be treated as a connection error of
 type HTTP_LIMIT_EXCEEDED.
 
 A PRIORITY frame MAY reference a Placeholder ID that is equal to or greater than
-the server's advertised value of the `SETTINGS_NUM_PLACEHOLDERS` settings.  The
-server SHOULD ignore PRIORITY frames that specify such placeholders as the
-prioritized element.  The server SHOULD use the root of the tree as the
-dependency when such placeholders are specified as the depedencencies.
+the server's advertised value of the `SETTINGS_NUM_PLACEHOLDERS` settings.  When
+receiving a PRIORITY frame with its prioritized element set to such a
+placeholder, the server SHOULD discard the frame without making any change to
+the priority tree.  When receiving a PRIORITY frame with its element dependency
+set to such a placeholder, the server SHOULD update the priority tree with the
+root of the tree being the dependency instead.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
