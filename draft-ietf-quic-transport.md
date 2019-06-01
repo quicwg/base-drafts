@@ -3467,7 +3467,7 @@ Destination Connection ID:
 SCIL:
 
 : The byte following the Destination Connection ID contains the length in bytes
-  of the source connection ID field that follows it.  This length is encoded as
+  of the Source Connection ID field that follows it.  This length is encoded as
   a 8-bit unsigned integer.  In QUIC version 1, this value MUST NOT exceed 48
   bytes. Endpoints that receive a version 1 long header with a value larger than
   48 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
