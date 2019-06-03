@@ -3590,7 +3590,6 @@ attacker.
 
 As future versions of QUIC may support Connection IDs larger than the version 1
 limit, Version Negotiation Packets MAY carry Connection IDs that are longer than 48 bytes.
-length limit of 48 bytes in version 1.
 
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 which the server supports.
