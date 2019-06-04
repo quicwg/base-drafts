@@ -2485,7 +2485,7 @@ Stateless Reset Token are attributed to the same connection as long as the
 Stateless Reset Token is still usable, even when the connection ID has been
 retired.  Otherwise, an attacker might be able to send a packet with a retired
 connection ID and cause the endpoint to produce a Stateless Reset that it can
-use to disrupt the connection; just as with the attacks in {{reset-oracle}}.
+use to disrupt the connection, just as with the attacks in {{reset-oracle}}.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
 
