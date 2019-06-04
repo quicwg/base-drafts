@@ -4040,14 +4040,14 @@ to disable the spin bit either globally or on a per-connection basis. Even when
 the spin bit is not disabled by the administrator, implementations MUST disable
 the spin bit for a given connection with a certain likelihood. The random
 selection process SHOULD be designed such that on average the spin bit is
-disabled for at least one eighth of connections. The selection process performed
-at the beginning of the connection SHOULD be applied for all paths used by the
-connection.
+disabled for at least one eighth of network paths. The selection process
+performed at the beginning of the connection SHOULD be applied for all paths
+used by the connection.
 
-In case multiple connections share the same five-tuple, that is, have the same
-source and destination IP address and UDP ports, endpoints should try to
-co-ordinate across all connections to ensure a clear signal to any on-path
-measurement points.
+In case multiple connections share the same network path, as determined by
+having the same source and destination IP address and UDP ports, endpoints
+should try to co-ordinate across all connections to ensure a clear signal to any
+on-path measurement points.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
