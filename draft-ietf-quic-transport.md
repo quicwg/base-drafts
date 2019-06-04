@@ -2310,10 +2310,13 @@ coalesced (see {{packet-coalesce}}) to facilitate retransmission.
 A stateless reset is provided as an option of last resort for an endpoint that
 does not have access to the state of a connection.  A crash or outage might
 result in peers continuing to send data to an endpoint that is unable to
-properly continue the connection.  A stateless reset is not appropriate for
-signaling error conditions.  An endpoint that wishes to communicate a fatal
-connection error MUST use a CONNECTION_CLOSE frame if it has sufficient state
-to do so.
+properly continue the connection.  An endpoint MAY send a stateless reset in
+response to receiving a packet that it cannot associate with an active
+connection.
+
+A stateless reset is not appropriate for signaling error conditions.  An
+endpoint that wishes to communicate a fatal connection error MUST use a
+CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
@@ -2418,7 +2421,8 @@ An endpoint detects a potential stateless reset when an incoming packet either
 cannot be associated with a connection, cannot be decrypted, or is marked as a
 duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
 packet with all Stateless Reset Tokens that are associated with connection IDs
-that are currently in use.  This includes Stateless Reset Tokens from
+that the endpoint recently used to send packets from the IP address and port on
+which the datagram is received.  This includes Stateless Reset Tokens from
 NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
 MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
 has not used or for connection IDs that have been retired.
@@ -4125,7 +4129,10 @@ stateless_reset_token (0x0002):
 
 : A stateless reset token is used in verifying a stateless reset; see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
-  transport parameter is only sent by a server.
+  transport parameter MUST NOT be sent by a client, but MAY be sent by a server.
+  A server that does not send this transport parameter cannot use stateless
+  reset ({{stateless-reset}}) for the connection ID negotiated during the
+  handshake.
 
 max_packet_size (0x0003):
 
