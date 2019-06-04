@@ -5438,8 +5438,9 @@ their effects in more detail.
 An on-the-side attacker can duplicate and send packets with modified ECN
 codepoints to affect the sender's rate.  If duplicate packets are discarded by a
 receiver, an off-path attacker will need to race the duplicate packet against
-the original to be successful in this attack.  Therefore, QUIC receivers ignore
-ECN codepoints set in duplicate packets (see {{ecn}}).
+the original to be successful in this attack.  Therefore, QUIC endpoints ignore
+the ECN codepoint field on an IP packet unless at least one QUIC packet in that
+IP packet is successfully processed; see {{ecn}}.
 
 ## Stateless Reset Oracle {#reset-oracle}
 
