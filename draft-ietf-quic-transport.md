@@ -1379,12 +1379,14 @@ Once the handshake completes, the transport parameters declared by the peer are
 available.  Each endpoint validates the value provided by its peer.
 
 Definitions for each of the defined transport parameters are included in
-{{transport-parameter-definitions}}.  An endpoint MUST treat receipt of a
-transport parameter with an invalid value as a connection error of type
-TRANSPORT_PARAMETER_ERROR.  Any given parameter MUST appear at most once in a
-given transport parameters extension.  An endpoint MUST treat receipt of
-duplicate transport parameters as a connection error of type
-TRANSPORT_PARAMETER_ERROR.
+{{transport-parameter-definitions}}.
+
+An endpoint MUST treat receipt of a transport parameter with an invalid value as
+a connection error of type TRANSPORT_PARAMETER_ERROR.
+
+An endpoint MUST NOT send a parameter more than once in a given transport
+parameters extension.  An endpoint SHOULD treat receipt of duplicate transport
+parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 A server MUST include the original_connection_id transport parameter
 ({{transport-parameter-definitions}}) if it sent a Retry packet to enable
