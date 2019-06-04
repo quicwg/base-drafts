@@ -1732,29 +1732,13 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
 
-To ensure that packets can be both sent to and received from the peer, the
-PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
-That is, from the same local address on which the PATH_CHALLENGE was received,
-to the same remote address from which the PATH_CHALLENGE was received.
-
 
 ## Successful Path Validation
 
 A new address is considered valid when a PATH_RESPONSE frame is received that
-meets the following criteria:
-
-- It contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
-  acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-  validation, since the acknowledgment can be spoofed by a malicious peer.
-
-- It was sent from the same remote address to which the corresponding
-  PATH_CHALLENGE was sent. If a PATH_RESPONSE frame is received from a different
-  remote address than the one to which the PATH_CHALLENGE was sent, path
-  validation is considered to have failed, even if the data matches that sent in
-  the PATH_CHALLENGE.
-
-- It was received on the same local address from which the corresponding
-  PATH_CHALLENGE was sent.
+contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
+acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
+validation, since the acknowledgment can be spoofed by a malicious peer.
 
 Note that receipt on a different local address does not result in path
 validation failure, as it might be a result of a forwarded packet (see
@@ -1795,9 +1779,9 @@ initiated while a path validation on the old path is in progress.
 # Connection Migration {#migration}
 
 The use of a connection ID allows connections to survive changes to endpoint
-addresses (that is, IP address and/or port), such as those caused by an endpoint
-migrating to a new network.  This section describes the process by which an
-endpoint migrates to a new address.
+addresses (IP address and port), such as those caused by an
+endpoint migrating to a new network.  This section describes the process by
+which an endpoint migrates to a new address.
 
 An endpoint MUST NOT initiate connection migration before the handshake is
 finished and the endpoint has 1-RTT keys.  The design of QUIC relies on
@@ -1813,10 +1797,9 @@ Connection ID cannot be attributed to a connection based on address tuple.
 
 Not all changes of peer address are intentional migrations. The peer could
 experience NAT rebinding: a change of address due to a middlebox, usually a NAT,
-allocating a new outgoing port or even a new outgoing IP address for a flow.
-NAT rebinding is not connection migration as defined in this section, though an
-endpoint SHOULD perform path validation ({{migrate-validate}}) if it detects a
-change in the IP address of its peer.
+allocating a new outgoing port or even a new outgoing IP address for a flow.  An
+endpoint MUST perform path validation ({{migrate-validate}}) if it detects any
+change to a peer's address, unless it has previously validated that address.
 
 When an endpoint has no validated path on which to send packets, it MAY discard
 connection state.  An endpoint capable of connection migration MAY wait for a
