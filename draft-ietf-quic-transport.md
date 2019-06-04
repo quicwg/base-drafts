@@ -4543,7 +4543,7 @@ The RESET_STREAM frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
+|                  Application Error Code (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Final Size (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4558,8 +4558,9 @@ Stream ID:
 
 Application Protocol Error Code:
 
-: A 16-bit application protocol error code (see {{app-error-codes}}) which
-  indicates why the stream is being closed.
+: A variable-length integer containing the application protocol error
+  code (see {{app-error-codes}}) which indicates why the stream is being
+  closed.
 
 Final Size:
 
@@ -4588,8 +4589,8 @@ The STOP_SENDING frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Stream ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Application Error Code (16)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Application Error Code (i)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 
 STOP_SENDING frames contain the following fields:
@@ -4600,8 +4601,8 @@ Stream ID:
 
 Application Error Code:
 
-: A 16-bit, application-specified reason the sender is ignoring the stream (see
-  {{app-error-codes}}).
+: A variable-length integer containing the application-specified reason the
+  sender is ignoring the stream (see {{app-error-codes}}).
 
 
 ## CRYPTO Frame {#frame-crypto}
@@ -4665,7 +4666,7 @@ The NEW_TOKEN frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                     Token Length (i)  ...
+|                        Token Length (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -5136,7 +5137,9 @@ The CONNECTION_CLOSE frames are as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|           Error Code (16)     |      [ Frame Type (i) ]     ...
+|                         Error Code (i)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       [ Frame Type (i) ]                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Reason Phrase Length (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -5148,10 +5151,11 @@ CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
-: A 16-bit error code which indicates the reason for closing this connection.  A
-  CONNECTION_CLOSE frame of type 0x1c uses codes from the space defined in
-  {{error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d uses codes from the
-  application protocol error code space; see {{app-error-codes}}
+: A variable length integer error code which indicates the reason for
+  closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
+  from the space defined in {{error-codes}}.  A CONNECTION_CLOSE frame of
+  type 0x1d uses codes from the application protocol error code space;
+  see {{app-error-codes}}
 
 Frame Type:
 
@@ -5196,7 +5200,7 @@ An IANA registry is used to manage the assignment of frame types; see
 
 # Transport Error Codes {#error-codes}
 
-QUIC error codes are 16-bit unsigned integers.
+QUIC error codes are 62-bit unsigned integers.
 
 This section lists the defined QUIC transport error codes that may be used in a
 CONNECTION_CLOSE frame.  These errors apply to the entire connection.
@@ -5277,7 +5281,7 @@ See {{iana-error-codes}} for details of registering new error codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 16-bit unsigned integers, but the
+Application protocol error codes are 62-bit unsigned integers, but the
 management of application error codes are left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
 ({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
@@ -5571,18 +5575,19 @@ The initial contents of this registry are tabulated in {{frame-types}}.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Error Codes" registry governs a 16-bit space.  This space is
-split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC8126}}.
+The "QUIC Transport Error Codes" registry governs a 62-bit space.  This space is
+split into three spaces that are governed by different policies.  Values between
+0x00 and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG
+Review policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the
+Specification Required policy {{!RFC8126}}.  All other values are assigned to
+Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
 Value:
 
 : The numeric value of the assignment (registrations will be between 0x0000 and
-  0xfeff).
+  0x3fff).
 
 Code:
 
@@ -5597,8 +5602,12 @@ Specification:
 
 : A reference to a publicly available specification for the value.
 
-The initial contents of this registry are shown in {{iana-error-table}}.  Values
-from 0xFF00 to 0xFFFF are reserved for Private Use {{!RFC8126}}.
+The nominated expert(s) verify that a specification exists and is readily
+accessible.  Expert(s) are encouraged to be biased towards approving
+registrations unless they are abusive, frivolous, or actively harmful (not
+merely aesthetically displeasing, or architecturally dubious).
+
+The initial contents of this registry are shown in {{iana-error-table}}.
 
 | Value | Error                     | Description                   | Specification   |
 |:------|:--------------------------|:------------------------------|:----------------|
