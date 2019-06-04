@@ -1424,6 +1424,7 @@ limits or alter any values that might be violated by the client with its
 values for the following parameters ({{transport-parameter-definitions}})
 that are smaller than the remembered value of the parameters.
 
+
 * initial_max_data
 * initial_max_stream_data_bidi_local
 * initial_max_stream_data_bidi_remote
@@ -1440,6 +1441,16 @@ initial_max_streams_uni and initial_max_stream_data_uni.
 
 A server MUST either reject 0-RTT data or abort a handshake if the implied
 values for transport parameters cannot be supported.
+
+When sending frames in 0-RTT packets, a client MUST only use remembered
+transport parameters; importantly, it MUST NOT use updated values that it learns
+from the server's updated transport parameters or from frames received in 1-RTT
+packets.  Updated values of transport parameters from the handshake apply only
+to 1-RTT packets.  For instance, flow control limits from remembered transport
+parameters apply to all 0-RTT packets even if those values are increased by the
+handshake or by frames sent in 1-RTT packets.  A server MAY treat use of updated
+transport parameters in 0-RTT as a connection error of type PROTOCOL_VIOLATION.
+
 
 ### New Transport Parameters {#new-transport-parameters}
 
@@ -3735,26 +3746,35 @@ resend data in 0-RTT packets after it sends a new Initial packet.
 
 A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
 used to protect 0-RTT packets will not change as a result of responding to a
-Retry packet unless the client also regenerates the
-cryptographic handshake message.  Sending packets with the same packet number in
-that case is likely to compromise the packet protection for all 0-RTT packets
-because the same key and nonce could be used to protect different content.
+Retry packet unless the client also regenerates the cryptographic handshake
+message.  Sending packets with the same packet number in that case is likely to
+compromise the packet protection for all 0-RTT packets because the same key and
+nonce could be used to protect different content.
 
-Receiving a Retry packet, especially a Retry that changes
-the connection ID used for subsequent packets, indicates a strong possibility
-that 0-RTT packets could be lost.  A client only receives acknowledgments for
-its 0-RTT packets once the handshake is complete.  Consequently, a server might
-expect 0-RTT packets to start with a packet number of 0.  Therefore, in
-determining the length of the packet number encoding for 0-RTT packets, a client
-MUST assume that all packets up to the current packet number are in flight,
-starting from a packet number of 0.  Thus, 0-RTT packets could need to use a
-longer packet number encoding.
+Receiving a Retry packet, especially a Retry that changes the connection ID used
+for subsequent packets, indicates a strong possibility that 0-RTT packets could
+be lost.  A client only receives acknowledgments for its 0-RTT packets once the
+handshake is complete.  Consequently, a server might expect 0-RTT packets to
+start with a packet number of 0.  Therefore, in determining the length of the
+packet number encoding for 0-RTT packets, a client MUST assume that all packets
+up to the current packet number are in flight, starting from a packet number of
+0.  Thus, 0-RTT packets could need to use a longer packet number encoding.
 
 A client SHOULD instead generate a fresh cryptographic handshake message and
 start packet numbers from 0.  This ensures that new 0-RTT packets will not use
 the same keys, avoiding any risk of key and nonce reuse; this also prevents
 0-RTT packets from previous handshake attempts from being accepted as part of
 the connection.
+
+A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
+from the server.  This means that 0-RTT packets cannot contain any response to
+frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
+0-RTT packet, because that can only acknowledge a 1-RTT packet.  An
+acknowledgment for a 1-RTT packet MUST be carried in a 1-RTT packet.
+
+A server SHOULD treat a violation of remembered limits as a connection error of
+an appropriate type (for instance, a FLOW_CONTROL_ERROR for exceeding stream
+data limits).
 
 
 ### Handshake Packet {#packet-handshake}
