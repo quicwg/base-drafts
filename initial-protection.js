@@ -10,7 +10,7 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var assert = require('assert');
 
-var INITIAL_SALT = Buffer.from('ef4fb0abb47470c41befcf8031334fae485e09a0', 'hex');
+var INITIAL_SALT = Buffer.from('7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a', 'hex');
 var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
@@ -251,7 +251,7 @@ function test(role, cid, hdr, pn, body) {
   }
 }
 
-var version = 'ff000012'
+var version = 'ff000015'
 var cid = '8394c8f03e515708';
 
 var ci_hdr = 'c3' + version + '50' + cid + '00';
