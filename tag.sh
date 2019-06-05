@@ -25,7 +25,6 @@ declare -A authors=( \
     [http]=mbishop@evequefou.be \
     [invariants]=mt@lowentropy.net \
     [qpack]=afrind@fb.com \
-    [spin-exp]=ietf@trammell.ch \
 )
 
 if ! make; then
