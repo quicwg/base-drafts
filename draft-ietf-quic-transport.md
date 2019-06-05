@@ -2304,7 +2304,7 @@ the application requests that the connection be closed.  The application
 protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
-When sending CONNECTION_CLOSE, the goal is to ensure that a peer will process
+When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
 the frame.  Generally, this means sending the frame in a packet with the highest
 level of packet protection to avoid the packet being discarded.  However, during
 the handshake, it is possible that more advanced packet protection keys are not
