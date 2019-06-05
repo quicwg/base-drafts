@@ -5137,8 +5137,8 @@ a connection error of type PROTOCOL_VIOLATION.
 
 An endpoint sends a CONNECTION_CLOSE frame (type=0x1c or 0x1d) to notify its
 peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
-type of 0x1d is used to signal errors at only the QUIC layer, or the absence of
-errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1e
+type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
+errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
 is used to signal an error with the application that uses QUIC.
 
 If there are open streams that haven't been explicitly closed, they are
