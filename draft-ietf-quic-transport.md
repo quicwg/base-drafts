@@ -2311,10 +2311,10 @@ the handshake, it is possible that more advanced packet protection keys are not
 available to the peer, so the frame MAY be replicated in a packet that uses a
 lower packet protection level.
 
-When the handshake is confirmed, an endpoint MUST send any CONNECTION_CLOSE frames
-in a 1-RTT packet.  Prior to handshake confirmation, the peer might not have
-1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a Handshake
-packet.  If the endpoint does not have Handshake keys, it SHOULD send
+After the handshake is confirmed, an endpoint MUST send any CONNECTION_CLOSE
+frames in a 1-RTT packet.  Prior to handshake confirmation, the peer might not
+have 1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a
+Handshake packet.  If the endpoint does not have Handshake keys, it SHOULD send
 CONNECTION_CLOSE frames in an Initial packet.
 
 A client will always know whether the server has Handshake keys
