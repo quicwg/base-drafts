@@ -2308,7 +2308,7 @@ When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
 the frame.  Generally, this means sending the frame in a packet with the highest
 level of packet protection to avoid the packet being discarded.  However, during
 the handshake, it is possible that more advanced packet protection keys are not
-available to a peer, so the frame MAY be replicated in a packet that uses a
+available to the peer, so the frame MAY be replicated in a packet that uses a
 lower packet protection level.
 
 If the handshake is confirmed, endpoints MUST send any CONNECTION_CLOSE frames
