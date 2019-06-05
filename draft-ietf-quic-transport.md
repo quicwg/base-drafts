@@ -995,12 +995,12 @@ local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
 The endpoint can explicitly request its peer to retire connection IDs by sending
-a NEW_CONNECTION_ID frame that contains a Retire Prior To field.  The peer is
+a NEW_CONNECTION_ID frame with an increased Retire Prior To field.  The peer is
 required to retire these connection IDs in a timely manner.  On receipt of the
 acknowledgement for the packet that contained the NEW_CONNECTION_ID frame, the
-endpoint may start a 3 PTO timer, which on expiring may close the connection
-with a PROTOCOL_VIOLATION error if all the connection IDs were not retired as
-requested.
+endpoint MAY start a 3 PTO timer.  If the timer expires before all the requested
+connection IDs are retired, the endpoint MAY close the connection with a
+PROTOCOL_VIOLATION.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -2784,11 +2784,11 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         |
 | 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
 | 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
-| 0x18 - 0x19 | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
-| 0x1a        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
-| 0x1b        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
-| 0x1c        | PATH_RESPONSE        | {{frame-path-response}}        |
-| 0x1d - 0x1e | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
+| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
+| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
+| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
 {: #frame-types title="Frame Types"}
 
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
@@ -4959,9 +4959,9 @@ Stream Limit:
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
 
-An endpoint sends a NEW_CONNECTION_ID frame (type=0x18 or 0x19) to provide its
-peer with alternative connection IDs that can be used to break linkability when
-migrating connections (see {{migration-linkability}}).
+An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
+alternative connection IDs that can be used to break linkability when migrating
+connections (see {{migration-linkability}}).
 
 The NEW_CONNECTION_ID frame is as follows:
 
@@ -4971,7 +4971,7 @@ The NEW_CONNECTION_ID frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Sequence Number (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    [Retire Prior To (i)]                    ...
+|                      Retire Prior To (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |                                               |
 +-+-+-+-+-+-+-+-+       Connection ID (32..144)                 +
@@ -4998,7 +4998,7 @@ Retire Prior To:
 
 : A variable-length integer specifying the limit, for which all connection IDs
   assigned to the receiver that have a sequence number less this value should be
-  retired.  See {{retiring-cids}}.  This field is only present for type=0x19.
+  retired.  See {{retiring-cids}}.
 
 Length:
 
@@ -5034,16 +5034,22 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-If the Retire Prior To field is present it is a request for the peer to
-immediately retire all connection IDs with a sequence number less than the
-specified value.  For more information see {{retiring-cids}}.  This field
-should only ever increase, though reordering and retransmission of older packets
-may make it seem to decrease.  So any decrease in this field should be ignored.
+The Retire Prior To field is a request for the peer to immediately retire all
+connection IDs with a sequence number less than the specified value.  The Retire
+Prior To field MUST be less than the Sequence Number field.  Values greater than
+or equal to the Sequence Number MUST be treated as a connection error of type
+PROTOCOL_VIOLATION.
+
+The sender cannot reduce the value of the Retire Prior To field in subsequent
+NEW_CONNECTION_ID frames.  That is, once a sender indicates a Retire Prior To
+value, it MAY indicate a smaller value, but it has no effect.  A receiver MUST
+ignore any Retire Prior To fields that do not increase.
+
 
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
-An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x1b) to indicate that it
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
 will no longer use a connection ID that was issued by its peer. This may include
 the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
 frame also serves as a request to the peer to send additional connection IDs for
@@ -5087,7 +5093,7 @@ type PROTOCOL_VIOLATION.
 
 ## PATH_CHALLENGE Frame {#frame-path-challenge}
 
-Endpoints can use PATH_CHALLENGE frames (type=0x1b) to check reachability to the
+Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
 peer and for path validation during connection migration.
 
 The PATH_CHALLENGE frames are as follows:
@@ -5118,7 +5124,7 @@ The recipient of this frame MUST generate a PATH_RESPONSE frame
 
 ## PATH_RESPONSE Frame {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x1c) is sent in response to a PATH_CHALLENGE
+The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
 frame.  Its format is identical to the PATH_CHALLENGE frame
 ({{frame-path-challenge}}).
 
@@ -5129,7 +5135,7 @@ a connection error of type PROTOCOL_VIOLATION.
 
 ## CONNECTION_CLOSE Frames {#frame-connection-close}
 
-An endpoint sends a CONNECTION_CLOSE frame (type=0x1d or 0x1e) to notify its
+An endpoint sends a CONNECTION_CLOSE frame (type=0x1c or 0x1d) to notify its
 peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
 type of 0x1d is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1e
