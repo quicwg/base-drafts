@@ -5037,7 +5037,7 @@ PROTOCOL_VIOLATION.
 The Retire Prior To field is a request for the peer to immediately retire all
 connection IDs with a sequence number less than the specified value.  The Retire
 Prior To field MUST be less than the Sequence Number field.  Values greater than
-or equal to the Sequence Number MUST be treated as a connection error of type
+the Sequence Number MUST be treated as a connection error of type
 PROTOCOL_VIOLATION.
 
 The sender cannot reduce the value of the Retire Prior To field in subsequent
