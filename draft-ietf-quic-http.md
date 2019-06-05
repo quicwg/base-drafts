@@ -1267,7 +1267,7 @@ frame MUST be sent as the first frame of each control stream (see
 an endpoint receives a second SETTINGS frame on the control stream, the endpoint
 MUST respond with a connection error of type HTTP_UNEXPECTED_FRAME.
 
-SETTINGS frames MUST NOT be sent on any steam other than the control stream.
+SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
 MUST respond with a connection error of type HTTP_WRONG_STREAM.
 
