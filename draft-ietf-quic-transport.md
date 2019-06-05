@@ -2313,7 +2313,7 @@ lower packet protection level.
 
 If the handshake is confirmed, endpoints MUST send any CONNECTION_CLOSE frames
 in a 1-RTT packet.  Prior to handshake confirmation, the peer might not have
-1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames in a Handshake
+1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a Handshake
 packet.  If the endpoint does not have Handshake keys, it SHOULD send
 CONNECTION_CLOSE frames in an Initial packet.
 
