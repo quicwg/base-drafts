@@ -1588,7 +1588,7 @@ A token SHOULD be constructed for the server to easily distinguish it from
 tokens that are sent in Retry packets as they are carried in the same field.
 
 The token MUST NOT include information that would allow it to be linked by an
-on-path observer to the connection on which it was issued. For example, it
+on-path observer to the connection on which it was issued.  For example, it
 cannot include the connection ID or addressing information unless the values are
 encrypted.
 
@@ -1596,7 +1596,7 @@ Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
 Thus, a token SHOULD have an expiration time, which could be either an explicit
 expiration time or an issued timestamp that can be used to dynamically calculate
-the expiration time. A server can store the expiration time or include it in an
+the expiration time.  A server can store the expiration time or include it in an
 encrypted form in the token.
 
 It is unlikely that the client port number is the same on two different
@@ -2504,7 +2504,7 @@ separate limits for different remote addresses will ensure that Stateless Reset
 packets can be used to close connections when other peers or connections have
 exhausted limits.
 
-Reducing the size of a Stateless Reset below the recommended minimum size of 39
+Reducing the size of a Stateless Reset below the recommended minimum size of 69
 bytes could mean that the packet could reveal to an observer that it is a
 Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
 a small packet might result in Stateless Reset not being useful in detecting
@@ -2512,7 +2512,7 @@ cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
 
 An endpoint can increase the odds that a packet will trigger a Stateless Reset
-if it cannot be processed by padding it to at least 40 bytes.
+if it cannot be processed by padding it to at least 70 bytes.
 
 
 # Error Handling {#error-handling}
@@ -3862,8 +3862,10 @@ fields. The value in the Unused field is selected randomly by the server. In
 
 ODCIL:
 
-: These bits the length of the Original Destination Connection ID field.  The
-  length uses the same encoding as the DCIL and SCIL fields.
+: The ODCIL contains the length in bytes of the Original Destination Connection
+  ID field that follows it.  This length is encoded as a 8-bit unsigned integer.
+  In QUIC version 1, this value MUST NOT exceed 48 bytes. Clients that receive a
+  version 1 Retry Packet with a value larger than 48 MUST drop the packet.
 
 Original Destination Connection ID:
 
