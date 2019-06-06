@@ -1535,6 +1535,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-recovery-19
 
+- Change kPersistentThreshold from an exponent to a multiplier (#2557)
 - Send a PING if the PTO timer fires and there's nothing to send (#2624)
 - Set loss delay to at least kGranularity (#2617)
 - Merge application limited and sending after idle sections. Always limit
