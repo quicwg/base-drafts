@@ -4997,8 +4997,8 @@ Sequence Number:
 Retire Prior To:
 
 : A variable-length integer specifying the limit, for which all connection IDs
-  assigned to the receiver that have a sequence number less this value should be
-  retired.  See {{retiring-cids}}.
+  assigned to the receiver that have a sequence number less than this value
+  should be retired.  See {{retiring-cids}}.
 
 Length:
 
