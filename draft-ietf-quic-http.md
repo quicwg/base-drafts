@@ -485,12 +485,16 @@ head-of-line blocking.  See that document for additional details.
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
 will accept on an individual HTTP message; encountering a larger message header
-SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  If an
-implementation wishes to advise its peer of this limit, it can be conveyed as a
-number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a
-header list is calculated based on the uncompressed size of header fields,
+SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  The size of
+a header list is calculated based on the uncompressed size of header fields,
 including the length of the name and value in bytes plus an overhead of 32 bytes
 for each header field.
+
+If an implementation wishes to advise its peer of this limit, it can be conveyed
+as a number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. An
+implementation which has received this parameter SHOULD NOT send an HTTP message
+header which exceeds the indicated size, as this will likely produce an error
+and could disrupt the entire connection if the peer reacts negatively.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
