@@ -924,10 +924,10 @@ HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
 
-HTTP/3 does not use server-initiated bidirectional streams; clients MUST omit or
-specify a value of zero for the QUIC transport parameter
-`initial_max_bidi_streams`.
-
+HTTP/3 does not use server-initiated bidirectional streams, though an extension
+could define a use for these streams.  Clients MUST treat receipt of a
+server-initiated bidirectional stream as a connection error of type
+HTTP_GENERAL_PROTOCOL_ERROR unless such an extension has been negotiated.
 
 ## Unidirectional Streams
 
