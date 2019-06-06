@@ -1321,8 +1321,8 @@ The following settings are defined in HTTP/3:
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
   SETTINGS_NUM_PLACEHOLDERS (0x9):
-  : The default value is 0.  However, this value SHOULD be set to a non-zero
-    value by servers.  See {{placeholders}} for usage.
+  : The default value is 0.  However, servers SHOULD set this value to 32 or
+    greater.  See {{placeholders}} for usage.
 
 Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
 reserved to exercise the requirement that unknown identifiers be ignored.  Such
