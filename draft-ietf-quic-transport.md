@@ -994,12 +994,11 @@ packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
-The endpoint can explicitly request its peer to retire connection IDs by sending
+The endpoint can explicitly require its peer to retire connection IDs by sending
 a NEW_CONNECTION_ID frame with an increased Retire Prior To field.  The peer is
-required to retire these connection IDs in a timely manner.  On receipt of the
-acknowledgement for the packet that contained the NEW_CONNECTION_ID frame, the
-endpoint MAY start a 3 PTO timer.  If the timer expires before all the requested
-connection IDs are retired, the endpoint MAY close the connection with a
+required to retire these connection IDs in a timely manner.  If the peer does
+not retire the connection IDs within 3 PTO of acknowledging the packet with the
+NEW_CONNECTION_ID frame, the endpoint MAY close the connection with a
 PROTOCOL_VIOLATION.
 
 
