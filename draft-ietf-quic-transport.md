@@ -5034,9 +5034,14 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field is a request for the peer to immediately retire all
-connection IDs with a sequence number less than the specified value.  This
-includes the initial and preferred_address transport parameter connection IDs.
+The Retire Prior To field is a requirement for the peer to retire all connection
+IDs with a sequence number less than the specified value.  This includes the
+initial and preferred_address transport parameter connection IDs.  The peer
+SHOULD immediately retire all the connection IDs.  The sender of the
+NEW_CONNECTION_ID frame MAY close the connection with an error of type
+PROTOCOL_VIOLATION if the peer does not retire the connection IDs within 3 PTO
+of the packet containing the NEW_CONNECTION_ID frame being acknowledged.
+
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Values greater than the Sequence Number MUST be treated as a connection
 error of type PROTOCOL_VIOLATION.
