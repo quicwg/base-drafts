@@ -1202,7 +1202,7 @@ The following situations are examples of invalid PRIORITY frames:
 A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
 error of type HTTP_MALFORMED_FRAME.
 
-A PRIORITY frame that references a non-existent Push ID, or a Stream ID the
+A PRIORITY frame that references a non-existent Push ID or a Stream ID the
 client is not yet permitted to open MUST be treated as a connection error of
 type HTTP_LIMIT_EXCEEDED.
 
