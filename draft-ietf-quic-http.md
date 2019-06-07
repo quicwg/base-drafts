@@ -1340,7 +1340,9 @@ setting is the default value. When a 0-RTT QUIC connection is being used, the
 initial value of each server setting is the value used in the previous session.
 Clients MUST store the settings the server provided in the session being resumed
 and MUST comply with stored settings until the current server settings are
-received.
+received.  A client uses these initial values in a situation where it wants to
+send requests before the server's SETTINGS frame has arrived.  This removes the
+need for a client to wait for the SETTINGS frame before sending requests.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -1350,7 +1352,8 @@ determining whether to accept 0-RTT data.
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.
+with its 0-RTT data.  The server MAY omit settings from its SETTINGS frame which
+are unchanged from the initial value.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
