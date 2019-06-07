@@ -911,7 +911,7 @@ Endpoints that set low values for the QUIC transport parameters
 `initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
 chance that the remote peer reaches the limit early and becomes blocked. In
 particular, the value chosen for `initial_max_uni_streams` should consider that
-remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
+remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
 To reduce the likelihood of blocking, both clients and servers SHOULD send a
 value of three or greater for the QUIC transport parameter
 `initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
