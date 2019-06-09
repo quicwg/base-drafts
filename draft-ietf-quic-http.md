@@ -1234,7 +1234,7 @@ receiving a PRIORITY frame with its prioritized element set to such a
 placeholder, the server SHOULD discard the frame without making any change to
 the priority tree.  When receiving a PRIORITY frame with its element dependency
 set to such a placeholder, the server SHOULD update the priority tree with the
-root of the tree being the dependency instead.
+orphan placeholder being the dependency instead.
 
 A PRIORITY frame received on any stream other than a request or control stream
 MUST be treated as a connection error of type HTTP_WRONG_STREAM.
