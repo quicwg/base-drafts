@@ -573,11 +573,18 @@ with the RST bit set.
 
 ## Prioritization {#priority}
 
-HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
+The purpose of prioritization is to allow a client to express how it would
+prefer the server to allocate resources when managing concurrent streams.  Most
+importantly, priority can be used to select streams for transmitting frames when
+there is limited capacity for sending.
+
+HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 5.3. In this priority scheme, a given element can be designated as dependent
-upon another element. This information is expressed in the PRIORITY frame
-{{frame-priority}} which identifies the element and the dependency. The elements
-that can be prioritized are:
+upon another element.  Each dependency is assigned a relative weight, a number
+that is used to determine the relative proportion of available resources that
+are assigned to streams dependent on the same stream. This information is
+expressed in the PRIORITY frame {{frame-priority}} which identifies the element
+and the dependency. The elements that can be prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
@@ -586,19 +593,32 @@ that can be prioritized are:
 
 Taken together, the dependencies across all prioritized elements in a connection
 form a dependency tree. An element can depend on another element or on the root
-of the tree. A reference to an element which is no longer in the tree is treated
-as a reference to the root of the tree. The structure of the dependency tree
-changes as PRIORITY frames modify the dependency links between prioritized
-elements.
+of the tree.  The tree also contains an orphan placeholder.  This placeholder
+cannot be reprioritized, and no resources should be allocated to descendants of
+the orphan placeholder if progress can be made on descendants of the root.  The
+structure of the dependency tree changes as PRIORITY frames modify the
+dependency links between other prioritized elements.
 
-Due to reordering between streams, an element can also be prioritized which is
-not yet in the tree. Such elements are added to the tree with the requested
-priority.
+All dependent streams are allocated an integer weight between 1 and 256
+(inclusive), derived by adding one to the weight expressed in the PRIORITY
+frame.
 
-When a prioritized element is first created, it has a default initial weight
-of 16 and a default dependency. Requests and placeholders are dependent on the
-root of the priority tree; pushes are dependent on the client request on which
-the PUSH_PROMISE frame was sent.
+Streams with the same parent SHOULD be allocated resources proportionally based
+on their weight.  Thus, if stream B depends on stream A with weight 4, stream C
+depends on stream A with weight 12, and no progress can be made on stream A,
+stream B ideally receives one-third of the resources allocated to stream C.
+
+A reference to an element which is no longer in the tree is treated as a
+reference to the orphan placeholder. Due to reordering between streams, an
+element can also be prioritized which is not yet in the tree. Such elements are
+added to the tree with the requested priority.  If a prioritized element depends
+on another element which is not yet in the tree, the requested parent is first
+added to the tree with the default priority.
+
+When a prioritized element is first created, it has a default initial weight of
+16 and a default dependency. Requests and placeholders are dependent on the
+orphan placeholder; pushes are dependent on the client request on which the
+PUSH_PROMISE frame was sent.
 
 Requests may override the default initial values by including a PRIORITY frame
 (see {{frame-priority}}) at the beginning of the stream. These priorities
@@ -614,16 +634,19 @@ streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
 In HTTP/3, by using the `SETTINGS_NUM_PLACEHOLDERS` setting, the server
-advertises the number of placeholders it is committing to maintain state.
-Placeholders are given their own number space that spans between zero and
-2^62-1.  Clients can use the placeholders with an ID less than the value of this
-setting with the confidence that the server will not have discarded the state.
+advertises the number of client-controlled placeholders it is committing to
+maintain state.  Client-controlled placeholders are given their own number space
+that spans between zero and 2^62-1.  Clients can use the client-controlled
+placeholders with an ID less than the value of this setting with the confidence
+that the server will not have discarded the state.  The orphan placeholder
+cannot be prioritized or referenced by the client.
 
 Clients MUST NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this
 setting by a server MUST be treated as a connection error of type
 `HTTP_WRONG_SETTING_DIRECTION`.
 
-Like streams, placeholders have priority information associated with them.
+Like streams, client-controlled placeholders have priority information
+associated with them.
 
 ### Priority Tree Maintenance
 
@@ -910,7 +933,7 @@ Endpoints that set low values for the QUIC transport parameters
 `initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
 chance that the remote peer reaches the limit early and becomes blocked. In
 particular, the value chosen for `initial_max_uni_streams` should consider that
-remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
+remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
 To reduce the likelihood of blocking, both clients and servers SHOULD send a
 value of three or greater for the QUIC transport parameter
 `initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
@@ -1000,7 +1023,7 @@ implementation chooses.
 HTTP frames are carried on QUIC streams, as described in {{stream-mapping}}.
 HTTP/3 defines three stream types: control stream, request stream, and push
 stream. This section describes HTTP/3 frame formats and the streams types on
-which they are permitted; see {{stream-frame-mapping}} for an overiew.  A
+which they are permitted; see {{stream-frame-mapping}} for an overview.  A
 comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 
 | Frame          | Control Stream | Request Stream | Push Stream | Section                  |
@@ -1274,7 +1297,7 @@ frame MUST be sent as the first frame of each control stream (see
 an endpoint receives a second SETTINGS frame on the control stream, the endpoint
 MUST respond with a connection error of type HTTP_UNEXPECTED_FRAME.
 
-SETTINGS frames MUST NOT be sent on any steam other than the control stream.
+SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
 MUST respond with a connection error of type HTTP_WRONG_STREAM.
 
@@ -1822,7 +1845,7 @@ assigned by IANA.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/3 error codes. The "HTTP/3 Error
-Code" registry manages a 16-bit space.  The "HTTP/3 Error Code" registry
+Code" registry manages a 62-bit space.  The "HTTP/3 Error Code" registry
 operates under the "Expert Review" policy {{?RFC8126}}.
 
 Registrations for error codes are required to include a description
@@ -1836,7 +1859,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 16-bit error code value.
+: The 62-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
