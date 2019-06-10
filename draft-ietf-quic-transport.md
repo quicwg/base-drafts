@@ -998,8 +998,9 @@ The endpoint can explicitly require its peer to retire connection IDs by sending
 a NEW_CONNECTION_ID frame with an increased Retire Prior To field.  The peer is
 required to retire these connection IDs in a timely manner.  If the peer does
 not retire the connection IDs within 3 PTO of acknowledging the packet with the
-NEW_CONNECTION_ID frame, the endpoint MAY close the connection with a
-PROTOCOL_VIOLATION.
+NEW_CONNECTION_ID frame, the endpoint MAY remove the connection IDs anyways.  If
+the peer continues to use the connection IDs they will likely receive a
+stateless reset.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -5036,10 +5037,17 @@ PROTOCOL_VIOLATION.
 The Retire Prior To field is a requirement for the peer to retire all connection
 IDs with a sequence number less than the specified value.  This includes the
 initial and preferred_address transport parameter connection IDs.  The peer
-SHOULD immediately retire all the connection IDs.  The sender of the
-NEW_CONNECTION_ID frame MAY close the connection with an error of type
-PROTOCOL_VIOLATION if the peer does not retire the connection IDs within 3 PTO
-of the packet containing the NEW_CONNECTION_ID frame being acknowledged.
+SHOULD immediately retire all the connection IDs.
+
+The sender of the NEW_CONNECTION_ID frame MAY remove the connection IDs after 3
+PTO, even if the peer has not retired them yet.  The 3 PTO timer starts on
+acknowledgement of the packet containing the NEW_CONNECTION_ID frame.  Continued
+use of the retired connection IDs after this point will likely result in a
+stateless reset being sent.
+
+In order to prevent a stateless reset, sent in response to a heavily delayed
+packet using a retired connection ID, from closing the connection, the
+stateless reset token of the retired connection IDs SHOULD NOT be reused.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Values greater than the Sequence Number MUST be treated as a connection
