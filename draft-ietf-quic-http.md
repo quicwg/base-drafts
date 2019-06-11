@@ -896,14 +896,8 @@ to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
 for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
 HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 `initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
-recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
+RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
-
-These streams carry frames related to the request/response (see
-{{request-response}}). When a stream terminates cleanly, if the last frame on
-the stream was truncated, this MUST be treated as a connection error (see
-HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
-may be reset at any point in the frame.
 
 HTTP/3 does not use server-initiated bidirectional streams; clients MUST omit or
 specify a value of zero for the QUIC transport parameter
@@ -975,7 +969,7 @@ control stream is closed at any point, this MUST be treated as a connection
 error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
-stream.  This allows either peer to send data as soon they are able.  Depending
+stream.  This allows either peer to send data as soon as it is able.  Depending
 on whether 0-RTT is enabled on the connection, either client or server might be
 able to send stream data first after the cryptographic handshake completes.
 
@@ -1083,6 +1077,11 @@ identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
 HTTP_MALFORMED_FRAME.
 
+When a stream terminates cleanly, if the last frame on the stream was truncated,
+this MUST be treated as a connection error ({{errors}}) of type
+HTTP_MALFORMED_FRAME. Streams which terminate abruptly may be reset at any point
+in a frame.
+
 ## Frame Definitions {#frames}
 
 ### DATA {#frame-data}
@@ -1117,7 +1116,9 @@ QPACK. See [QPACK] for more details.
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS frame payload"}
 
-HEADERS frames can only be sent on request / push streams.
+HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
+is received on a control stream, the recipient MUST respond with a connection
+error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 ### PRIORITY {#frame-priority}
 
@@ -1970,28 +1971,46 @@ on each stream only.  As a result, if a frame type makes assumptions that frames
 from different streams will still be received in the order sent, HTTP/3 will
 break them.
 
-For example, implicit in the HTTP/2 prioritization scheme is the notion of
-in-order delivery of priority changes (i.e., dependency tree mutations): since
+Some examples of feature adaptations are described below, as well as general
+guidance to extension frame implementors converting an HTTP/2 extension to
+HTTP/3.
+
+### Prioritization Differences
+
+HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
+HEADERS frames. Implicit in the HTTP/2 prioritization scheme is the notion of
+in-order delivery of priority changes (i.e., dependency tree mutations). Since
 operations on the dependency tree such as reparenting a subtree are not
 commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
-HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent or on the control stream.  HTTP/3 permits the
-prioritization of requests, pushes and placeholders that each exist in separate
-identifier spaces.  The HTTP/3 PRIORITY frame replaces the stream dependency
-field with fields that can identify the element of interest and its dependency.
 
-Likewise, HPACK was designed with the assumption of in-order delivery. A
-sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
-the same order in which they were encoded. This ensures that the dynamic state
-at the two endpoints remains in sync.  As a result, HTTP/3 uses a modified
-version of HPACK, described in [QPACK].
+To achieve in-order delivery of priority changes in HTTP/3, PRIORITY frames are
+sent on the control stream.  HTTP/3 permits the prioritization of requests,
+pushes and placeholders that each exist in separate identifier spaces. The
+HTTP/3 PRIORITY frame replaces the stream dependency field with fields that can
+identify the element of interest and its dependency.
+
+### Header Compression Differences
+
+HPACK was designed with the assumption of in-order delivery. A sequence of
+encoded header blocks must arrive (and be decoded) at an endpoint in the same
+order in which they were encoded. This ensures that the dynamic state at the two
+endpoints remains in sync.
+
+Because this total ordering is not provided by QUIC, HTTP/3 uses a modified
+version of HPACK, called QPACK.  QPACK uses a single unidirectional
+stream to make all modifications to the dynamic table, ensuring a total order of
+updates.  All frames which contain encoded headers merely reference the table
+state at a given time without modifying it.
+
+[QPACK] provides additional details.
+
+### Guidance for New Frame Type Definitions
 
 Frame type definitions in HTTP/3 often use the QUIC variable-length integer
-encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Some frames in
-HTTP/3 use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+encoding.  In particular, Stream IDs use this encoding, which allows for a
+larger range of possible values than the encoding used in HTTP/2.  Some frames
+in HTTP/3 use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
 frames). Redefinition of the encoding of extension frame types might be
 necessary if the encoding includes a Stream ID.
 
@@ -2004,7 +2023,7 @@ QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
 and would be portable to HTTP/2 in the same manner.
 
-Below is a listing of how each HTTP/2 frame type is mapped:
+### Mapping Between HTTP/2 and HTTP/3 Frame Types
 
 DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.
