@@ -599,6 +599,11 @@ the orphan placeholder if progress can be made on descendants of the root.  The
 structure of the dependency tree changes as PRIORITY frames modify the
 dependency links between other prioritized elements.
 
+An exclusive flag allows for the insertion of a new level of dependencies.  The
+exclusive flag causes the prioritized element to become the sole dependency of
+its parent, causing other dependencies to become dependent on the exclusive
+element.
+
 All dependent streams are allocated an integer weight between 1 and 256
 (inclusive), derived by adding one to the weight expressed in the PRIORITY
 frame.
