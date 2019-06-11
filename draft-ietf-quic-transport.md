@@ -5040,7 +5040,7 @@ initial and preferred_address transport parameter connection IDs.  The peer
 SHOULD immediately retire all the connection IDs.
 
 The sender of the NEW_CONNECTION_ID frame MAY remove the connection IDs after 3
-PTO, even if the peer has not retired them yet.  The 3 PTO timer starts on
+PTO, even if the peer has not retired them yet.  The 3-PTO timer starts on
 acknowledgement of the packet containing the NEW_CONNECTION_ID frame.  Continued
 use of the retired connection IDs after this point will likely result in a
 stateless reset being sent.
