@@ -892,7 +892,7 @@ to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
 for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
 HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 `initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
-recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
+RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
 
 These streams carry frames related to the request/response (see
