@@ -1488,6 +1488,7 @@ code. Packets containing discarded CRYPTO frames MUST be acknowledged because
 the packet has been received and processed by the transport even though the
 CRYPTO frame was discarded.
 
+
 # Address Validation
 
 Address validation is used by QUIC to avoid being used for a traffic
@@ -1793,10 +1794,9 @@ addresses (IP address and port), such as those caused by an
 endpoint migrating to a new network.  This section describes the process by
 which an endpoint migrates to a new address.
 
-The design of QUIC relies on
-endpoints retaining a stable address for the duration of the handshake.
-An endpoint MUST NOT initiate connection migration before the handshake is
-confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
+The design of QUIC relies on endpoints retaining a stable address for the
+duration of the handshake.  An endpoint MUST NOT initiate connection migration
+before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 
 An endpoint also MUST NOT initiate connection migration if the peer sent the
 `disable_migration` transport parameter during the handshake.  An endpoint which
