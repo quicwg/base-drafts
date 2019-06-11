@@ -5045,7 +5045,7 @@ acknowledgement of the packet containing the NEW_CONNECTION_ID frame.  Continued
 use of the retired connection IDs after this point will likely result in a
 stateless reset being sent.
 
-In order to prevent a stateless reset, sent in response to a heavily delayed
+In order to prevent a stateless reset sent in response to a heavily delayed
 packet using a retired connection ID, from closing the connection, the
 stateless reset token of the retired connection IDs SHOULD NOT be reused.
 
