@@ -5040,14 +5040,18 @@ initial and preferred_address transport parameter connection IDs.  The peer
 SHOULD immediately retire all the connection IDs.
 
 The sender of the NEW_CONNECTION_ID frame MAY remove the connection IDs after 3
-PTO, even if the peer has not retired them yet.  The 3-PTO timer starts on
-acknowledgement of the packet containing the NEW_CONNECTION_ID frame.  Continued
-use of the retired connection IDs after this point will likely result in a
-stateless reset being sent.
+PTO, even if the peer has not retired them with RETIRE_CONNECTION_ID yet.  The
+3-PTO timer starts on acknowledgement of the packet containing the
+NEW_CONNECTION_ID frame.  Continued use of the retired connection IDs after this
+point will likely result in a stateless reset being sent.
 
-In order to prevent a stateless reset sent in response to a heavily delayed
-packet using a retired connection ID from closing the connection, the
-stateless reset token of the retired connection IDs SHOULD NOT be reused.
+If a stateless reset is received in response to a retired connection ID, the
+reset SHOULD be ignored and the receiver SHOULD immediately switch to a
+connection ID that has not been retired if it has not done so already.
+
+In order to prevent a heavily delayed packet with a retired connection ID from
+eliciting a stateless reset that closes the connection, the stateless reset
+token of the retired connection IDs SHOULD NOT be reused.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Values greater than the Sequence Number MUST be treated as a connection
