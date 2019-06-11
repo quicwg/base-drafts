@@ -1137,7 +1137,7 @@ PRIORITY frames MUST be sent on the control stream.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT | Empty |          Prioritized Element ID (i)         ...
+|PT |DT |X|Empty|          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                [Element Dependency ID (i)]                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1156,8 +1156,12 @@ The PRIORITY frame payload has the following fields:
   : A two-bit field indicating the type of element being depended on (see
     {{element-dependency-types}}).
 
+  X (Exclusive Flag):
+  : A single-bit flag indicating that the dependency is exclusive (see
+    {{priority}}).
+
   Empty:
-  : A four-bit field which MUST be zero when sent and has no semantic value on
+  : A three-bit field which MUST be zero when sent and has no semantic value on
     receipt.
 
   Prioritized Element ID:
@@ -1973,11 +1977,10 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent or on the control stream and exclusive prioritization
-has been removed. HTTP/3 permits the prioritization of requests, pushes and
-placeholders that each exist in separate identifier spaces. The HTTP/3 PRIORITY
-frame replaces the stream dependency field with fields that can identify the
-element of interest and its dependency.
+PRIORITY frames are sent or on the control stream.  HTTP/3 permits the
+prioritization of requests, pushes and placeholders that each exist in separate
+identifier spaces.  The HTTP/3 PRIORITY frame replaces the stream dependency
+field with fields that can identify the element of interest and its dependency.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
