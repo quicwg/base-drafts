@@ -620,9 +620,8 @@ When a prioritized element is first created, it has a default initial weight of
 orphan placeholder; pushes are dependent on the client request on which the
 PUSH_PROMISE frame was sent.
 
-Requests may override the default initial values by including a PRIORITY frame
-(see {{frame-priority}}) at the beginning of the stream. These priorities
-can be updated by sending a PRIORITY frame on the control stream.
+Requests may override the default initial values by sending a PRIORITY frame
+(see {{frame-priority}}) on the control stream.
 
 ### Placeholders
 
@@ -1030,7 +1029,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | -------------- | -------------- | -------------- | ----------- | ------------------------ |
 | DATA           | No             | Yes            | Yes         | {{frame-data}}           |
 | HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
-| PRIORITY       | Yes            | Yes (1)        | No          | {{frame-priority}}       |
+| PRIORITY       | Yes            | No             | No          | {{frame-priority}}       |
 | CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
 | SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
@@ -1126,22 +1125,14 @@ request using the corresponding stream ID, a server push using a Push ID (see
 {{frame-push-promise}}), or a placeholder using a Placeholder ID (see
 {{placeholders}}).
 
-When a client initiates a request, a PRIORITY frame MAY be sent as the first
-frame of the stream, creating a dependency on an existing element.  In order to
-ensure that prioritization is processed in a consistent order, any subsequent
-PRIORITY frames for that request MUST be sent on the control stream.  A
-PRIORITY frame received after other frames on a request stream MUST be treated
-as a connection error of type HTTP_UNEXPECTED_FRAME.
-
-If, by the time a new request stream is opened, its priority information
-has already been received via the control stream, the PRIORITY frame
-sent on the request stream MUST be ignored.
+In order to ensure that prioritization is processed in a consistent order,
+PRIORITY frames MUST be sent on the control stream.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT | Empty |         [Prioritized Element ID (i)]        ...
+|PT |DT | Empty |          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                [Element Dependency ID (i)]                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1154,8 +1145,7 @@ The PRIORITY frame payload has the following fields:
 
   PT (Prioritized Element Type):
   : A two-bit field indicating the type of element being prioritized (see
-    {{prioritized-element-types}}). When sent on a request stream, this MUST be
-    set to `11`.  When sent on the control stream, this MUST NOT be set to `11`.
+    {{prioritized-element-types}}).
 
   DT (Element Dependency Type):
   : A two-bit field indicating the type of element being depended on (see
@@ -1168,8 +1158,8 @@ The PRIORITY frame payload has the following fields:
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
     Depending on the value of Prioritized Type, this contains the Stream ID of a
-    request stream, the Push ID of a promised resource, a Placeholder ID of a
-    placeholder, or is absent.
+    request stream, the Push ID of a promised resource, or a Placeholder ID of a
+    placeholder.
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
@@ -1192,7 +1182,6 @@ of the associated Element ID fields.
 | 00      | Request stream   | Stream ID                       |
 | 01      | Push stream      | Push ID                         |
 | 10      | Placeholder      | Placeholder ID                  |
-| 11      | Current stream   | Absent                          |
 {: #prioritized-element-types title="Prioritized Element Types"}
 
 | DT Bits | Type Description | Element Dependency ID Contents |
@@ -1212,12 +1201,7 @@ on the stream on which it is sent or its position in the stream. These
 situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 The following situations are examples of invalid PRIORITY frames:
 
-- A PRIORITY frame sent on a request stream with the Prioritized Element Type
-  set to any value other than `11`
-- A PRIORITY frame sent on a request stream which expresses a dependency on a
-  request with a greater Stream ID than the current stream
-- A PRIORITY frame sent on a control stream with the Prioritized Element Type
-  set to `11`
+- A PRIORITY frame with the Prioritized Element Type set to `11`.
 - A PRIORITY frame which claims to reference a request, but the associated ID
   does not identify a client-initiated bidirectional stream
 
@@ -1228,8 +1212,8 @@ A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
 to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
 
-A PRIORITY frame received on any stream other than a request or control stream
-MUST be treated as a connection error of type HTTP_WRONG_STREAM.
+A PRIORITY frame received on any stream other than the control stream MUST be
+treated as a connection error of type HTTP_WRONG_STREAM.
 
 PRIORITY frames received by a client MUST be treated as a connection error of
 type HTTP_UNEXPECTED_FRAME.
@@ -1984,11 +1968,11 @@ commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
 HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent as the first frame on a request stream or on the
-control stream and exclusive prioritization has been removed. HTTP/3 permits the
-prioritization of requests, pushes and placeholders that each exist in separate
-identifier spaces. The HTTP/3 PRIORITY frame replaces the stream dependency
-field with fields that can identify the element of interest and its dependency.
+PRIORITY frames are sent or on the control stream and exclusive prioritization
+has been removed. HTTP/3 permits the prioritization of requests, pushes and
+placeholders that each exist in separate identifier spaces. The HTTP/3 PRIORITY
+frame replaces the stream dependency field with fields that can identify the
+element of interest and its dependency.
 
 Likewise, HPACK was designed with the assumption of in-order delivery. A
 sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
