@@ -971,7 +971,7 @@ control stream is closed at any point, this MUST be treated as a connection
 error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
-stream.  This allows either peer to send data as soon they are able.  Depending
+stream.  This allows either peer to send data as soon it is able.  Depending
 on whether 0-RTT is enabled on the connection, either client or server might be
 able to send stream data first after the cryptographic handshake completes.
 
