@@ -2014,10 +2014,10 @@ order in which they were encoded. This ensures that the dynamic state at the two
 endpoints remains in sync.
 
 Because this total ordering is not provided by QUIC, HTTP/3 uses a modified
-version of HPACK, called QPACK.  QPACK uses a single unidirectional
-stream to make all modifications to the dynamic table, ensuring a total order of
-updates.  All frames which contain encoded headers merely reference the table
-state at a given time without modifying it.
+version of HPACK, called QPACK.  QPACK uses a single unidirectional stream to
+make all modifications to the dynamic table, ensuring a total order of updates.
+All frames which contain encoded headers merely reference the table state at a
+given time without modifying it.
 
 [QPACK] provides additional details.
 
