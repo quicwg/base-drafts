@@ -995,12 +995,11 @@ local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
 An endpoint can request that its peer retire connection IDs by sending a
-NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
+NEW_CONNECTION_ID frames with an increased Retire Prior To field.  Upon receipt,
 the peer SHOULD retire the corresponding connection IDs and send the
-corresponding RETIRE_CONNECTION_ID frame in a timely manner.  Failing to do so
-can cause packets to be delayed or lost and harm connection performance as the
-original endpoint might not route those connection IDs optimally after some
-delay.
+corresponding RETIRE_CONNECTION_ID frames in a timely manner.  Failing to do so
+can cause packets to be delayed, lost, or cause the original endpoint to send a
+stateless reset in response to a connection ID it can no longer route correctly.
 
 The sender of the Retire Prior To field MUST keep track of the connection IDs it
 wishes to retire until it has received a corresponding RETIRE_CONNECTION_ID
@@ -5046,7 +5045,7 @@ The Retire Prior To field is a request for the peer to retire all connection IDs
 with a sequence number less than the specified value.  This includes the initial
 and preferred_address transport parameter connection IDs.  The peer SHOULD
 retire the corresponding connection IDs and send the corresponding
-RETIRE_CONNECTION_ID frame in a timely manner
+RETIRE_CONNECTION_ID frames in a timely manner
 
 The sender of the NEW_CONNECTION_ID frame MAY remove the connection IDs after 3
 PTO, even if the peer has not retired them with RETIRE_CONNECTION_ID yet.  The
