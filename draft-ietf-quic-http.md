@@ -1340,9 +1340,9 @@ setting is the default value. When a 0-RTT QUIC connection is being used, the
 initial value of each server setting is the value used in the previous session.
 Clients MUST store the settings the server provided in the session being resumed
 and MUST comply with stored settings until the current server settings are
-received.  A client uses these initial values in a situation where it wants to
-send requests before the server's SETTINGS frame has arrived.  This removes the
-need for a client to wait for the SETTINGS frame before sending requests.
+received.  A client can use these initial values to send requests before the
+server's SETTINGS frame has arrived.  This removes the need for a client to wait
+for the SETTINGS frame before sending requests.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
