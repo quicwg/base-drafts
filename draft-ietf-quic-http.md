@@ -625,7 +625,7 @@ When a prioritized element is first created, it has a default initial weight of
 orphan placeholder; pushes are dependent on the client request on which the
 PUSH_PROMISE frame was sent.
 
-Requests may override the default initial values by sending a PRIORITY frame
+Priorities can be updated by sending a PRIORITY frame
 (see {{frame-priority}}) on the control stream.
 
 ### Placeholders
