@@ -1151,11 +1151,11 @@ The PRIORITY frame payload has the following fields:
 
   PT (Prioritized Element Type):
   : A two-bit field indicating the type of element being prioritized (see
-    {{prioritized-element-types}}).
+    {{priority-element-types}}).
 
   DT (Element Dependency Type):
   : A two-bit field indicating the type of element being depended on (see
-    {{element-dependency-types}}).
+    {{priority-element-types}}).
 
   X (Exclusive Flag):
   : A single-bit flag indicating that the dependency is exclusive (see
@@ -1183,24 +1183,17 @@ The PRIORITY frame payload has the following fields:
     element (see {{!HTTP2}}, Section 5.3). Add one to the value to obtain a
     weight between 1 and 256.
 
-The values for the Prioritized Element Type ({{prioritized-element-types}}) and
-Element Dependency Type ({{element-dependency-types}}) imply the interpretation
-of the associated Element ID fields.
+The values for the Prioritized Element Type and Element Dependency Type
+({{priority-element-types}}) imply the interpretation of the associated Element
+ID fields.
 
-| PT Bits | Type Description | Prioritized Element ID Contents |
-| ------- | ---------------- | ------------------------------- |
-| 00      | Request stream   | Stream ID                       |
-| 01      | Push stream      | Push ID                         |
-| 10      | Placeholder      | Placeholder ID                  |
-{: #prioritized-element-types title="Prioritized Element Types"}
-
-| DT Bits | Type Description | Element Dependency ID Contents |
-| ------- | ---------------- | ------------------------------ |
-| 00      | Request stream   | Stream ID                      |
-| 01      | Push stream      | Push ID                        |
-| 10      | Placeholder      | Placeholder ID                 |
-| 11      | Root of the tree | Absent                         |
-{: #element-dependency-types title="Element Dependency Types"}
+| Type Bits | Type Description | Element ID Contents |
+| --------- | ---------------- | ------------------- |
+| 00        | Request stream   | Stream ID           |
+| 01        | Push stream      | Push ID             |
+| 10        | Placeholder      | Placeholder ID      |
+| 11        | Root of the tree | Absent              |
+{: #priority-element-types title="Element Types of a PRIORITY frame"}
 
 Note that unlike in {{!HTTP2}}, the root of the tree cannot be referenced
 using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
