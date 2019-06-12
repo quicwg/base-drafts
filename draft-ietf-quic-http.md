@@ -1086,7 +1086,7 @@ DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
 associated with an HTTP request or response payload.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
-frame is received on either control stream, the recipient MUST respond with a
+frame is received on a control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~ drawing
