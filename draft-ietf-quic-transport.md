@@ -1007,7 +1007,7 @@ wishes to retire until it has received a corresponding RETIRE_CONNECTION_ID
 frame, with one exception: if the sender of the Retire Prior To field has used
 distinct stateless reset tokens for all of their issued connection IDs, and 3
 times the PTO has elapsed since it received an acknowledgment for its Retire
-Prior To field, then it MAY lose track of that connection ID, and respond to
+Prior To field, then it MAY drop state for that connection ID, and respond to
 packets with that connection ID with the corresponding stateless reset token.
 
 
