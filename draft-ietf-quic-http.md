@@ -424,8 +424,8 @@ The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
 If a DATA frame is received before a HEADERS frame on a either a request or push
-stream, the recipient must respond with a connection error ({{errors}}) of type
-HTTP_UNEXPECTED_FRAME.
+stream, the recipient MUST respond with a connection error of type
+HTTP_UNEXPECTED_FRAME ({{errors}}).
 
 Trailing header fields are carried in an additional HEADERS frame following the
 body. Senders MUST send only one HEADERS frame in the trailers section;
