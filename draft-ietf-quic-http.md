@@ -473,7 +473,7 @@ header field names and values are discussed in more detail in Section 3.2 of
 {{!RFC7230}}, though the wire rendering in HTTP/3 differs.  As in HTTP/2, header
 field names MUST be converted to lowercase prior to their encoding.  A request
 or response containing uppercase header field names MUST be treated as
-malformed.
+malformed ({{malformed}}).
 
 As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
@@ -527,6 +527,31 @@ after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
 permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 
+### Malformed Requests and Responses {#malformed}
+
+A malformed request or response is one that is an otherwise valid sequence of
+frames but is invalid due to the presence of extraneous frames, prohibited
+header fields, the absence of mandatory header fields, or the inclusion of
+uppercase header field names.
+
+A request or response that includes a payload body can include a
+`content-length` header field.  A request or response is also malformed if the
+value of a content-length header field does not equal the sum of the DATA frame
+payload lengths that form the body.  A response that is defined to have no
+payload, as described in Section 3.3.2 of {{!RFC7230}} can have a non-zero
+content-length header field, even though no content is included in DATA frames.
+
+Intermediaries that process HTTP requests or responses (i.e., any intermediary
+not acting as a tunnel) MUST NOT forward a malformed request or response.
+Malformed requests or responses that are detected MUST be treated as a stream
+error ({{errors}}) of type HTTP_GENERAL_PROTOCOL_ERROR.
+
+For malformed requests, a server MAY send an HTTP response prior to closing or
+resetting the stream.  Clients MUST NOT accept a malformed response.  Note that
+these requirements are intended to protect against several types of common
+attacks against HTTP; they are deliberately strict because being permissive can
+expose implementations to these vulnerabilities.
+
 
 ## The CONNECT Method
 
@@ -539,8 +564,8 @@ host for similar purposes.
 
 A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be closed at the end of the request.
+request that does not conform to these restrictions is malformed (see
+{{malformed}}). The request stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
