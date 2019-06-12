@@ -932,10 +932,20 @@ Endpoints that set low values for the QUIC transport parameters
 chance that the remote peer reaches the limit early and becomes blocked. In
 particular, the value chosen for `initial_max_uni_streams` should consider that
 remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
-To reduce the likelihood of blocking, both clients and servers SHOULD send a
-value of three or greater for the QUIC transport parameter
-`initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
-transport parameter `initial_max_stream_data_uni`.
+To avoid blocking, both clients and servers MUST allow the peer to create at
+least one unidirectional stream for the HTTP control stream plus the number of
+unidirectional streams required by mandatory extensions (such as QPACK) by
+setting an appropriate value for the QUIC transport parameter
+`initial_max_uni_streams` (three being the minimum value required for the base
+HTTP/3 protocol and QPACK), and SHOULD use a value of 1,024 or greater for the
+QUIC transport parameter `initial_max_stream_data_uni`.
+
+Note that an endpoint is not required to grant additional credits to create more
+unidirectional streams if its peer consumes all the initial credits before
+creating the critical unidirectional streams. Endpoints SHOULD create the HTTP
+control stream as well as the unidirectional streams required by mandatory
+extensions (such as the QPACK encoder and decoder streams) first, and then
+create additional streams as allowed by their peer.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
