@@ -1001,13 +1001,11 @@ corresponding RETIRE_CONNECTION_ID frames in a timely manner.  Failing to do so
 can cause packets to be delayed, lost, or cause the original endpoint to send a
 stateless reset in response to a connection ID it can no longer route correctly.
 
-The sender of the Retire Prior To field MUST keep track of the connection IDs it
-wishes to retire until it has received a corresponding RETIRE_CONNECTION_ID
-frame, with one exception: if the sender of the Retire Prior To field has used
-distinct stateless reset tokens for all of their issued connection IDs, and 3
-times the PTO has elapsed since it received an acknowledgment for its Retire
-Prior To field, then it MAY drop state for that connection ID, and respond to
-packets with that connection ID with the corresponding stateless reset token.
+An endpoint MAY discard a connection ID for which retirement has been requested
+once an interval of no less than 3 PTO has elapsed since an acknowledgement is
+received for the NEW_CONNECTION_ID frame requesting that retirement.  Subsequent
+incoming packets using that connection ID will elicit a response with the
+corresponding stateless reset token.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -5003,7 +5001,7 @@ Sequence Number:
 
 Retire Prior To:
 
-: A variable-length integer specifying the limit, for which all connection IDs
+: A variable-length integer specifying the limit for which all connection IDs
   assigned to the receiver that have a sequence number less than this value
   should be retired.  See {{retiring-cids}}.
 
@@ -5057,11 +5055,10 @@ The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Values greater than the Sequence Number MUST be treated as a connection
 error of type PROTOCOL_VIOLATION.
 
-The sender cannot reduce the value of the Retire Prior To field in subsequent
-NEW_CONNECTION_ID frames.  That is, once a sender indicates a Retire Prior To
-value, it MAY indicate a smaller value, but it has no effect.  A receiver MUST
-ignore any Retire Prior To fields that do not increase.
-
+Once a sender indicates a Retire Prior To value, smaller values sent in
+subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
+Retire Prior To fields that do not increase the largest received Retire Prior To
+value.
 
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
