@@ -1151,7 +1151,7 @@ The PRIORITY frame payload has the following fields:
 
   PT (Prioritized Element Type):
   : A two-bit field indicating the type of element being prioritized (see
-    {{priority-element-types}}).
+    {{priority-element-types}}).  This MUST NOT be set to `11`.
 
   DT (Element Dependency Type):
   : A two-bit field indicating the type of element being depended on (see
