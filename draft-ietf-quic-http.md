@@ -634,12 +634,12 @@ streams long after the server had discarded state, leading to disparate views of
 the prioritization the client had attempted to express.
 
 In HTTP/3, by using the `SETTINGS_NUM_PLACEHOLDERS` setting, the server
-advertises the number of client-controlled placeholders it is committing to
-maintain state.  Client-controlled placeholders are given their own number space
-that spans between zero and 2^62-1.  Clients can use the client-controlled
-placeholders with an ID less than the value of this setting with the confidence
-that the server will not have discarded the state.  The orphan placeholder
-cannot be prioritized or referenced by the client.
+advertises the number of client-controlled placeholders for which it is
+committing to maintain state.  Client-controlled placeholders are given their
+own number space that spans between zero and 2^62-1.  Clients can use the
+client-controlled placeholders with an ID less than the value of this setting
+with the confidence that the server will not have discarded the state.  The
+orphan placeholder cannot be prioritized or referenced by the client.
 
 Clients MUST NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this
 setting by a server MUST be treated as a connection error of type
