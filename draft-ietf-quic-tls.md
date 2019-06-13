@@ -1162,15 +1162,6 @@ number sent with each KEY_PHASE, and the highest acknowledged packet number
 in the 1-RTT space: once the latter is higher than or equal to the former,
 another key update can be initiated.
 
-Endpoints MAY limit the number of keys they retain to two sets for removing
-packet protection and one set for protecting packets.  Older keys can be
-discarded.  Updating keys multiple times rapidly can cause packets to be
-effectively lost if packets are significantly reordered.  Therefore, an
-endpoint SHOULD NOT initiate a key update for some time after it has last
-updated keys; the RECOMMENDED time period is three times the PTO. This avoids
-valid reordered packets being dropped by the peer as a result of the peer
-discarding older keys.
-
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
 and the corresponding read key and IV using the KDF function provided by TLS.
@@ -1218,6 +1209,14 @@ packet with a higher packet number.  This is only possible if there is a key
 compromise and an attack, or if the peer is incorrectly reverting to use of old
 keys.  Because the latter cannot be differentiated from an attack, an endpoint
 MUST immediately terminate the connection if it detects this condition.
+
+Endpoints MAY limit the number of keys they retain to two sets for removing
+packet protection.  Updating keys multiple times rapidly can cause packets to be
+effectively lost, because endpoints might not install the next generation of
+keys until the keys before the current generation are retired.  Therefore, an
+endpoint SHOULD NOT initiate a key update for some time after it has last
+updated keys; the RECOMMENDED time period is three times the PTO.  This avoids
+valid packets being dropped by the peer.
 
 In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
 specific keys, as described in Section 5.5 of {{!TLS13}}.
