@@ -307,10 +307,9 @@ when the corresponding acknowledgment is sent.  The endpoint encodes this host
 delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
 (see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
 to adjust for any host delays, which is important for delayed acknowledgements,
-when estimating the path RTT.  In certain deployments, a packet might be held in
-the OS kernel or elsewhere on the host before being processed by the QUIC
-stack. Where possible, an endpoint MAY include these delays when populating the
-Ack Delay field in an ACK frame.
+when estimating the path RTT.  A packet might be held in the OS kernel or 
+elsewhere on the host before being processed. An endpoint SHOULD NOT include
+these delays when populating the Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
@@ -319,7 +318,6 @@ explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
 the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
-
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
