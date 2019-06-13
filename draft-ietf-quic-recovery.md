@@ -319,6 +319,7 @@ ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
 the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
 
+
 # Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
