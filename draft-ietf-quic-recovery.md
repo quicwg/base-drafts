@@ -307,7 +307,7 @@ when the corresponding acknowledgment is sent.  The endpoint encodes this host
 delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
 (see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
 to adjust for any host delays, which is important for delayed acknowledgements,
-when estimating the path RTT.  A packet might be held in the OS kernel or 
+when estimating the path RTT.  A packet might be held in the OS kernel or
 elsewhere on the host before being processed. An endpoint SHOULD NOT include
 these delays when populating the Ack Delay field in an ACK frame.
 
