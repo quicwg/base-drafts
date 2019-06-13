@@ -302,14 +302,15 @@ continue making forward progress.
 
 ## Measuring and Reporting Host Delay {#host-delay}
 
-An endpoint measures the delay incurred between when a packet is received and
-when the corresponding acknowledgment is sent.  The endpoint encodes this host
-delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
-(see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
-to adjust for any host delays, which is important for delayed acknowledgements,
-when estimating the path RTT.  A packet might be held in the OS kernel or
-elsewhere on the host before being processed. An endpoint SHOULD NOT include
-these delays when populating the Ack Delay field in an ACK frame.
+An endpoint measures the intentional delay between when a packet is received
+and when the corresponding acknowledgment is sent.  The endpoint encodes this
+host delay for the largest acknowledged packet in the Ack Delay field of an ACK
+frame (see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the
+ACK to adjust for any intentional delays, which is important for delayed
+acknowledgements, when estimating the path RTT.  A packet might be held in the
+OS kernel or elsewhere on the host before being processed.  An endpoint
+SHOULD NOT include these delays when populating the Ack Delay field in an ACK
+frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
