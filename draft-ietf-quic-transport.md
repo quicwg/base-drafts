@@ -1725,8 +1725,9 @@ echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame,
 unless it has PATH_RESPONSE frames buffered for the same destination connection
 ID and wishes to limit memory consumption.
 
-An endpoint MUST NOT store or retransmit a PATH_RESPONSE frame, as a new
-PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is needed.
+An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
+PATH_CHALLENGE frame.  A new PATH_CHALLENGE frame will be sent if another
+PATH_RESPONSE frame is needed.
 
 To ensure that packets can be both sent to and received from the peer, the
 PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
