@@ -1167,13 +1167,12 @@ packet protection.
 
 An endpoint installs the new keys, possibly replacing the old keys, when it
 unprotects the header protection of a received packet and detects that the
-packet uses a new key phase.  The detection can be done by tracking the highest
-packet number of the packets being received, along with the KEY_PHASE bit of the
-packet that had the highest packet number.  If a newly received packet is likely
-to renew the recorded highest packet number and if it has a different KEY_PHASE
-value than the recorded bit, the endpoint install the new keys.  However, the
-highest packet number and the KEY_PHASE bit being tracked ought to be updated
-only after the packet is successfully unprotected.
+packet uses a new key phase.  The detection can be done by tracking the lowest
+packet number among the packets received with the currently active key phase.
+If a packet is received that has a different KEY_PHASE bit and a lower packet
+number than this value, the endpoint uses the old keys for unprotecting the
+packet, if these keys are still available.  If the packet has a higher packet
+number, the endpoint installs the updated keys.
 
 Updating keys multiple times rapidly can cause packets to be effectively lost if
 packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
