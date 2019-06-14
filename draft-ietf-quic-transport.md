@@ -1743,8 +1743,6 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
-If a packet contains multiple PATH_CHALLENGE frames, only a single PATH_RESPONSE
-SHOULD be sent in response.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame (see {{retransmission-of-information}}).  A new
