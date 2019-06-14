@@ -423,6 +423,10 @@ must be received and processed before the message can be consumed.  See
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
+If a DATA frame is received before a HEADERS frame on a either a request or push
+stream, the recipient MUST respond with a connection error of type
+HTTP_UNEXPECTED_FRAME ({{errors}}).
+
 Trailing header fields are carried in an additional HEADERS frame following the
 body. Senders MUST send only one HEADERS frame in the trailers section;
 receivers MUST discard any subsequent HEADERS frames.
@@ -469,7 +473,7 @@ header field names and values are discussed in more detail in Section 3.2 of
 {{!RFC7230}}, though the wire rendering in HTTP/3 differs.  As in HTTP/2, header
 field names MUST be converted to lowercase prior to their encoding.  A request
 or response containing uppercase header field names MUST be treated as
-malformed.
+malformed ({{malformed}}).
 
 As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
@@ -523,6 +527,31 @@ after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
 permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 
+### Malformed Requests and Responses {#malformed}
+
+A malformed request or response is one that is an otherwise valid sequence of
+frames but is invalid due to the presence of extraneous frames, prohibited
+header fields, the absence of mandatory header fields, or the inclusion of
+uppercase header field names.
+
+A request or response that includes a payload body can include a
+`content-length` header field.  A request or response is also malformed if the
+value of a content-length header field does not equal the sum of the DATA frame
+payload lengths that form the body.  A response that is defined to have no
+payload, as described in Section 3.3.2 of {{!RFC7230}} can have a non-zero
+content-length header field, even though no content is included in DATA frames.
+
+Intermediaries that process HTTP requests or responses (i.e., any intermediary
+not acting as a tunnel) MUST NOT forward a malformed request or response.
+Malformed requests or responses that are detected MUST be treated as a stream
+error ({{errors}}) of type HTTP_GENERAL_PROTOCOL_ERROR.
+
+For malformed requests, a server MAY send an HTTP response prior to closing or
+resetting the stream.  Clients MUST NOT accept a malformed response.  Note that
+these requirements are intended to protect against several types of common
+attacks against HTTP; they are deliberately strict because being permissive can
+expose implementations to these vulnerabilities.
+
 
 ## The CONNECT Method
 
@@ -535,8 +564,8 @@ host for similar purposes.
 
 A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
 request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
-request that does not conform to these restrictions is malformed. The request
-stream MUST NOT be closed at the end of the request.
+request that does not conform to these restrictions is malformed (see
+{{malformed}}). The request stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -573,11 +602,18 @@ with the RST bit set.
 
 ## Prioritization {#priority}
 
-HTTP/3 uses a priority scheme similar to that described in {{!HTTP2}}, Section
+The purpose of prioritization is to allow a client to express how it would
+prefer the server to allocate resources when managing concurrent streams.  Most
+importantly, priority can be used to select streams for transmitting frames when
+there is limited capacity for sending.
+
+HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
 5.3. In this priority scheme, a given element can be designated as dependent
-upon another element. This information is expressed in the PRIORITY frame
-{{frame-priority}} which identifies the element and the dependency. The elements
-that can be prioritized are:
+upon another element.  Each dependency is assigned a relative weight, a number
+that is used to determine the relative proportion of available resources that
+are assigned to streams dependent on the same stream. This information is
+expressed in the PRIORITY frame {{frame-priority}} which identifies the element
+and the dependency. The elements that can be prioritized are:
 
 - Requests, identified by the ID of the request stream
 - Pushes, identified by the Push ID of the promised resource
@@ -586,23 +622,40 @@ that can be prioritized are:
 
 Taken together, the dependencies across all prioritized elements in a connection
 form a dependency tree. An element can depend on another element or on the root
-of the tree. A reference to an element which is no longer in the tree is treated
-as a reference to the root of the tree. The structure of the dependency tree
-changes as PRIORITY frames modify the dependency links between prioritized
-elements.
+of the tree.  The tree also contains an orphan placeholder.  This placeholder
+cannot be reprioritized, and no resources should be allocated to descendants of
+the orphan placeholder if progress can be made on descendants of the root.  The
+structure of the dependency tree changes as PRIORITY frames modify the
+dependency links between other prioritized elements.
 
-Due to reordering between streams, an element can also be prioritized which is
-not yet in the tree. Such elements are added to the tree with the requested
-priority.
+An exclusive flag allows for the insertion of a new level of dependencies.  The
+exclusive flag causes the prioritized element to become the sole dependency of
+its parent, causing other dependencies to become dependent on the exclusive
+element.
 
-When a prioritized element is first created, it has a default initial weight
-of 16 and a default dependency. Requests and placeholders are dependent on the
-root of the priority tree; pushes are dependent on the client request on which
-the PUSH_PROMISE frame was sent.
+All dependent streams are allocated an integer weight between 1 and 256
+(inclusive), derived by adding one to the weight expressed in the PRIORITY
+frame.
 
-Requests may override the default initial values by including a PRIORITY frame
-(see {{frame-priority}}) at the beginning of the stream. These priorities
-can be updated by sending a PRIORITY frame on the control stream.
+Streams with the same parent SHOULD be allocated resources proportionally based
+on their weight.  Thus, if stream B depends on stream A with weight 4, stream C
+depends on stream A with weight 12, and no progress can be made on stream A,
+stream B ideally receives one-third of the resources allocated to stream C.
+
+A reference to an element which is no longer in the tree is treated as a
+reference to the orphan placeholder. Due to reordering between streams, an
+element can also be prioritized which is not yet in the tree. Such elements are
+added to the tree with the requested priority.  If a prioritized element depends
+on another element which is not yet in the tree, the requested parent is first
+added to the tree with the default priority.
+
+When a prioritized element is first created, it has a default initial weight of
+16 and a default dependency. Requests and placeholders are dependent on the
+orphan placeholder; pushes are dependent on the client request on which the
+PUSH_PROMISE frame was sent.
+
+Priorities can be updated by sending a PRIORITY frame (see {{frame-priority}})
+on the control stream.
 
 ### Placeholders
 
@@ -621,10 +674,12 @@ NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
 server MUST be treated as a connection error of type
 `HTTP_WRONG_SETTING_DIRECTION`.
 
-Placeholders are identified by an ID between zero and one less than the number
-of placeholders the server has permitted.
+Client-controlled placeholders are identified by an ID between zero and one less
+than the number of placeholders the server has permitted.  The orphan
+placeholder cannot be prioritized or referenced by the client.
 
-Like streams, placeholders have priority information associated with them.
+Like streams, client-controlled placeholders have priority information
+associated with them.
 
 ### Priority Tree Maintenance
 
@@ -870,19 +925,13 @@ to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
 for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
 HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
 `initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
-recommended that `initial_max_bidi_streams` be no smaller than 100, so as to not
+RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
 unnecessarily limit parallelism.
 
-These streams carry frames related to the request/response (see
-{{request-response}}). When a stream terminates cleanly, if the last frame on
-the stream was truncated, this MUST be treated as a connection error (see
-HTTP_MALFORMED_FRAME in {{http-error-codes}}).  Streams which terminate abruptly
-may be reset at any point in the frame.
-
-HTTP/3 does not use server-initiated bidirectional streams; clients MUST omit or
-specify a value of zero for the QUIC transport parameter
-`initial_max_bidi_streams`.
-
+HTTP/3 does not use server-initiated bidirectional streams, though an extension
+could define a use for these streams.  Clients MUST treat receipt of a
+server-initiated bidirectional stream as a connection error of type
+HTTP_GENERAL_PROTOCOL_ERROR unless such an extension has been negotiated.
 
 ## Unidirectional Streams
 
@@ -911,11 +960,21 @@ Endpoints that set low values for the QUIC transport parameters
 `initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
 chance that the remote peer reaches the limit early and becomes blocked. In
 particular, the value chosen for `initial_max_uni_streams` should consider that
-remote peers may wish to exercise reserved stream behaviour ({{stream-grease}}).
-To reduce the likelihood of blocking, both clients and servers SHOULD send a
-value of three or greater for the QUIC transport parameter
-`initial_max_uni_streams`, and a value of 1,024 or greater for the QUIC
-transport parameter `initial_max_stream_data_uni`.
+remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
+To avoid blocking, both clients and servers MUST allow the peer to create at
+least one unidirectional stream for the HTTP control stream plus the number of
+unidirectional streams required by mandatory extensions (such as QPACK) by
+setting an appropriate value for the QUIC transport parameter
+`initial_max_uni_streams` (three being the minimum value required for the base
+HTTP/3 protocol and QPACK), and SHOULD use a value of 1,024 or greater for the
+QUIC transport parameter `initial_max_stream_data_uni`.
+
+Note that an endpoint is not required to grant additional credits to create more
+unidirectional streams if its peer consumes all the initial credits before
+creating the critical unidirectional streams. Endpoints SHOULD create the HTTP
+control stream as well as the unidirectional streams required by mandatory
+extensions (such as the QPACK encoder and decoder streams) first, and then
+create additional streams as allowed by their peer.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
@@ -949,7 +1008,7 @@ control stream is closed at any point, this MUST be treated as a connection
 error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
-stream.  This allows either peer to send data as soon they are able.  Depending
+stream.  This allows either peer to send data as soon as it is able.  Depending
 on whether 0-RTT is enabled on the connection, either client or server might be
 able to send stream data first after the cryptographic handshake completes.
 
@@ -1001,14 +1060,14 @@ implementation chooses.
 HTTP frames are carried on QUIC streams, as described in {{stream-mapping}}.
 HTTP/3 defines three stream types: control stream, request stream, and push
 stream. This section describes HTTP/3 frame formats and the streams types on
-which they are permitted; see {{stream-frame-mapping}} for an overiew.  A
+which they are permitted; see {{stream-frame-mapping}} for an overview.  A
 comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 
 | Frame          | Control Stream | Request Stream | Push Stream | Section                  |
 | -------------- | -------------- | -------------- | ----------- | ------------------------ |
 | DATA           | No             | Yes            | Yes         | {{frame-data}}           |
 | HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
-| PRIORITY       | Yes            | Yes (1)        | No          | {{frame-priority}}       |
+| PRIORITY       | Yes            | No             | No          | {{frame-priority}}       |
 | CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
 | SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
@@ -1057,6 +1116,11 @@ identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
 HTTP_MALFORMED_FRAME.
 
+When a stream terminates cleanly, if the last frame on the stream was truncated,
+this MUST be treated as a connection error ({{errors}}) of type
+HTTP_MALFORMED_FRAME. Streams which terminate abruptly may be reset at any point
+in a frame.
+
 ## Frame Definitions {#frames}
 
 ### DATA {#frame-data}
@@ -1065,7 +1129,7 @@ DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
 associated with an HTTP request or response payload.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
-frame is received on either control stream, the recipient MUST respond with a
+frame is received on a control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 ~~~~~~~~~~ drawing
@@ -1091,7 +1155,9 @@ QPACK. See [QPACK] for more details.
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS frame payload"}
 
-HEADERS frames can only be sent on request / push streams.
+HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
+is received on a control stream, the recipient MUST respond with a connection
+error ({{errors}}) of type HTTP_WRONG_STREAM.
 
 ### PRIORITY {#frame-priority}
 
@@ -1104,22 +1170,14 @@ request using the corresponding stream ID, a server push using a Push ID (see
 {{frame-push-promise}}), or a placeholder using a Placeholder ID (see
 {{placeholders}}).
 
-When a client initiates a request, a PRIORITY frame MAY be sent as the first
-frame of the stream, creating a dependency on an existing element.  In order to
-ensure that prioritization is processed in a consistent order, any subsequent
-PRIORITY frames for that request MUST be sent on the control stream.  A
-PRIORITY frame received after other frames on a request stream MUST be treated
-as a connection error of type HTTP_UNEXPECTED_FRAME.
-
-If, by the time a new request stream is opened, its priority information
-has already been received via the control stream, the PRIORITY frame
-sent on the request stream MUST be ignored.
+In order to ensure that prioritization is processed in a consistent order,
+PRIORITY frames MUST be sent on the control stream.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT | Empty |         [Prioritized Element ID (i)]        ...
+|PT |DT |X|Empty|          Prioritized Element ID (i)         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                [Element Dependency ID (i)]                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1132,22 +1190,25 @@ The PRIORITY frame payload has the following fields:
 
   PT (Prioritized Element Type):
   : A two-bit field indicating the type of element being prioritized (see
-    {{prioritized-element-types}}). When sent on a request stream, this MUST be
-    set to `11`.  When sent on the control stream, this MUST NOT be set to `11`.
+    {{priority-element-types}}).  This MUST NOT be set to `11`.
 
   DT (Element Dependency Type):
   : A two-bit field indicating the type of element being depended on (see
-    {{element-dependency-types}}).
+    {{priority-element-types}}).
+
+  X (Exclusive Flag):
+  : A single-bit flag indicating that the dependency is exclusive (see
+    {{priority}}).
 
   Empty:
-  : A four-bit field which MUST be zero when sent and has no semantic value on
+  : A three-bit field which MUST be zero when sent and has no semantic value on
     receipt.
 
   Prioritized Element ID:
   : A variable-length integer that identifies the element being prioritized.
     Depending on the value of Prioritized Type, this contains the Stream ID of a
-    request stream, the Push ID of a promised resource, a Placeholder ID of a
-    placeholder, or is absent.
+    request stream, the Push ID of a promised resource, or a Placeholder ID of a
+    placeholder.
 
   Element Dependency ID:
   : A variable-length integer that identifies the element on which a dependency
@@ -1161,25 +1222,17 @@ The PRIORITY frame payload has the following fields:
     element (see {{!HTTP2}}, Section 5.3). Add one to the value to obtain a
     weight between 1 and 256.
 
-The values for the Prioritized Element Type ({{prioritized-element-types}}) and
-Element Dependency Type ({{element-dependency-types}}) imply the interpretation
-of the associated Element ID fields.
+The values for the Prioritized Element Type and Element Dependency Type
+({{priority-element-types}}) imply the interpretation of the associated Element
+ID fields.
 
-| PT Bits | Type Description | Prioritized Element ID Contents |
-| ------- | ---------------- | ------------------------------- |
-| 00      | Request stream   | Stream ID                       |
-| 01      | Push stream      | Push ID                         |
-| 10      | Placeholder      | Placeholder ID                  |
-| 11      | Current stream   | Absent                          |
-{: #prioritized-element-types title="Prioritized Element Types"}
-
-| DT Bits | Type Description | Element Dependency ID Contents |
-| ------- | ---------------- | ------------------------------ |
-| 00      | Request stream   | Stream ID                      |
-| 01      | Push stream      | Push ID                        |
-| 10      | Placeholder      | Placeholder ID                 |
-| 11      | Root of the tree | Absent                         |
-{: #element-dependency-types title="Element Dependency Types"}
+| Type Bits | Type Description | Element ID Contents |
+| --------- | ---------------- | ------------------- |
+| 00        | Request stream   | Stream ID           |
+| 01        | Push stream      | Push ID             |
+| 10        | Placeholder      | Placeholder ID      |
+| 11        | Root of the tree | Absent              |
+{: #priority-element-types title="Element Types of a PRIORITY frame"}
 
 Note that unlike in {{!HTTP2}}, the root of the tree cannot be referenced
 using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
@@ -1190,12 +1243,7 @@ on the stream on which it is sent or its position in the stream. These
 situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
 The following situations are examples of invalid PRIORITY frames:
 
-- A PRIORITY frame sent on a request stream with the Prioritized Element Type
-  set to any value other than `11`
-- A PRIORITY frame sent on a request stream which expresses a dependency on a
-  request with a greater Stream ID than the current stream
-- A PRIORITY frame sent on a control stream with the Prioritized Element Type
-  set to `11`
+- A PRIORITY frame with the Prioritized Element Type set to `11`.
 - A PRIORITY frame which claims to reference a request, but the associated ID
   does not identify a client-initiated bidirectional stream
 
@@ -1206,8 +1254,8 @@ A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
 to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
 
-A PRIORITY frame received on any stream other than a request or control stream
-MUST be treated as a connection error of type HTTP_WRONG_STREAM.
+A PRIORITY frame received on any stream other than the control stream MUST be
+treated as a connection error of type HTTP_WRONG_STREAM.
 
 PRIORITY frames received by a client MUST be treated as a connection error of
 type HTTP_UNEXPECTED_FRAME.
@@ -1267,7 +1315,7 @@ frame MUST be sent as the first frame of each control stream (see
 an endpoint receives a second SETTINGS frame on the control stream, the endpoint
 MUST respond with a connection error of type HTTP_UNEXPECTED_FRAME.
 
-SETTINGS frames MUST NOT be sent on any steam other than the control stream.
+SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
 MUST respond with a connection error of type HTTP_WRONG_STREAM.
 
@@ -1340,7 +1388,9 @@ setting is the default value. When a 0-RTT QUIC connection is being used, the
 initial value of each server setting is the value used in the previous session.
 Clients MUST store the settings the server provided in the session being resumed
 and MUST comply with stored settings until the current server settings are
-received.
+received.  A client can use these initial values to send requests before the
+server's SETTINGS frame has arrived.  This removes the need for a client to wait
+for the SETTINGS frame before sending requests.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
@@ -1350,7 +1400,8 @@ determining whether to accept 0-RTT data.
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.
+with its 0-RTT data.  The server MAY omit settings from its SETTINGS frame which
+are unchanged from the initial value.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
@@ -1815,7 +1866,7 @@ assigned by IANA.
 ## Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/3 error codes. The "HTTP/3 Error
-Code" registry manages a 16-bit space.  The "HTTP/3 Error Code" registry
+Code" registry manages a 62-bit space.  The "HTTP/3 Error Code" registry
 operates under the "Expert Review" policy {{?RFC8126}}.
 
 Registrations for error codes are required to include a description
@@ -1829,7 +1880,7 @@ Name:
 : A name for the error code.  Specifying an error code name is optional.
 
 Code:
-: The 16-bit error code value.
+: The 62-bit error code value.
 
 Description:
 : A brief description of the error code semantics, longer if no detailed
@@ -1955,29 +2006,46 @@ on each stream only.  As a result, if a frame type makes assumptions that frames
 from different streams will still be received in the order sent, HTTP/3 will
 break them.
 
-For example, implicit in the HTTP/2 prioritization scheme is the notion of
-in-order delivery of priority changes (i.e., dependency tree mutations): since
+Some examples of feature adaptations are described below, as well as general
+guidance to extension frame implementors converting an HTTP/2 extension to
+HTTP/3.
+
+### Prioritization Differences
+
+HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
+HEADERS frames. Implicit in the HTTP/2 prioritization scheme is the notion of
+in-order delivery of priority changes (i.e., dependency tree mutations). Since
 operations on the dependency tree such as reparenting a subtree are not
 commutative, both sender and receiver must apply them in the same order to
 ensure that both sides have a consistent view of the stream dependency tree.
-HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. To achieve in-order delivery of priority changes in HTTP/3,
-PRIORITY frames are sent as the first frame on a request stream or on the
-control stream and exclusive prioritization has been removed. HTTP/3 permits the
-prioritization of requests, pushes and placeholders that each exist in separate
-identifier spaces. The HTTP/3 PRIORITY frame replaces the stream dependency
-field with fields that can identify the element of interest and its dependency.
 
-Likewise, HPACK was designed with the assumption of in-order delivery. A
-sequence of encoded header blocks must arrive (and be decoded) at an endpoint in
-the same order in which they were encoded. This ensures that the dynamic state
-at the two endpoints remains in sync.  As a result, HTTP/3 uses a modified
-version of HPACK, described in [QPACK].
+To achieve in-order delivery of priority changes in HTTP/3, PRIORITY frames are
+sent on the control stream.  HTTP/3 permits the prioritization of requests,
+pushes and placeholders that each exist in separate identifier spaces. The
+HTTP/3 PRIORITY frame replaces the stream dependency field with fields that can
+identify the element of interest and its dependency.
+
+### Header Compression Differences
+
+HPACK was designed with the assumption of in-order delivery. A sequence of
+encoded header blocks must arrive (and be decoded) at an endpoint in the same
+order in which they were encoded. This ensures that the dynamic state at the two
+endpoints remains in sync.
+
+Because this total ordering is not provided by QUIC, HTTP/3 uses a modified
+version of HPACK, called QPACK.  QPACK uses a single unidirectional stream to
+make all modifications to the dynamic table, ensuring a total order of updates.
+All frames which contain encoded headers merely reference the table state at a
+given time without modifying it.
+
+[QPACK] provides additional details.
+
+### Guidance for New Frame Type Definitions
 
 Frame type definitions in HTTP/3 often use the QUIC variable-length integer
-encoding.  In particular, Stream IDs use this encoding, which allow for a larger
-range of possible values than the encoding used in HTTP/2.  Some frames in
-HTTP/3 use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
+encoding.  In particular, Stream IDs use this encoding, which allows for a
+larger range of possible values than the encoding used in HTTP/2.  Some frames
+in HTTP/3 use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
 frames). Redefinition of the encoding of extension frame types might be
 necessary if the encoding includes a Stream ID.
 
@@ -1990,7 +2058,7 @@ QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
 and would be portable to HTTP/2 in the same manner.
 
-Below is a listing of how each HTTP/2 frame type is mapped:
+### Mapping Between HTTP/2 and HTTP/3 Frame Types
 
 DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.

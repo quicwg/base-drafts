@@ -107,6 +107,7 @@ The drafts currently in the late stage are:
 * Transport
 * TLS
 
+![diagram of the late stage workflow](workflow.png "Late Stage Workflow")
 
 ### Discretionary Design Issue Labels
 

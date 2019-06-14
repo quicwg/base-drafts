@@ -138,7 +138,7 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative indicies.  Dynamic references are made relative
+: A reference point for relative indices.  Dynamic references are made relative
   to a Base in header blocks.
 
 Insert Count:
@@ -409,7 +409,7 @@ without Huffman encoding applied.
 ### Dynamic Table Capacity and Eviction {#eviction}
 
 The encoder sets the capacity of the dynamic table, which serves as the upper
-limit on its size.  The initial capcity of the dynamic table is zero.
+limit on its size.  The initial capacity of the dynamic table is zero.
 
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
@@ -619,13 +619,22 @@ QPACK defines two unidirectional stream types:
    It carries an unframed sequence of decoder instructions from decoder
    to encoder.
 
-<!-- s/exactly/no more than/  ? -->
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
-initiate a single encoder stream and decoder stream. Receipt of a second
-instance of either stream type be MUST treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT. These streams MUST NOT be closed. Closure of either
-unidirectional stream type MUST be treated as a connection error of type
+initiate at most one encoder stream and at most one decoder stream. Receipt of a
+second instance of either stream type MUST be treated as a connection error of
+type HTTP_WRONG_STREAM_COUNT. These streams MUST NOT be closed. Closure of
+either unidirectional stream type MUST be treated as a connection error of type
 HTTP_CLOSED_CRITICAL_STREAM.
+
+An endpoint MAY avoid creating its own encoder stream if it's not going to be
+used (for example if the endpoint doesn't wish to use the dynamic table, or if
+the maximum size of the dynamic table permitted by the peer is zero).
+
+An endpoint MAY avoid creating its own decoder stream if the maximum size of
+its own dynamic table is zero.
+
+An endpoint MUST allow its peer to create both encoder and decoder streams
+even if the connection's settings prevent their use.
 
 ## Encoder Instructions {#encoder-instructions}
 
@@ -1104,13 +1113,11 @@ represented as an 8-bit prefix string literal.
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
-  : An integer with a maximum value of 2^30 - 1.  The default value is zero
-    bytes.  See {{table-dynamic}} for usage.  This is the equivalent of the
-    SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
+  : The default value is zero.  See {{table-dynamic}} for usage.  This is
+    the equivalent of the SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
-  : An integer with a maximum value of 2^16 - 1.  The default value is zero.
-    See {{overview-hol-avoidance}}.
+  : The default value is zero.  See {{overview-hol-avoidance}}.
 
 
 # Error Handling {#error-handling}
