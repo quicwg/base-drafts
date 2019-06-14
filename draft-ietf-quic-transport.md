@@ -1710,9 +1710,10 @@ To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
 a random payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
-loss.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently than it
-would an Initial packet, ensuring that connection migration is no more load on a
-new path than establishing a new connection.
+loss, however an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
+single packet.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently
+than it would an Initial packet, ensuring that connection migration is no more
+load on a new path than establishing a new connection.
 
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
@@ -1721,13 +1722,13 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 ## Path Validation Responses
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
-echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame,
-unless it has PATH_RESPONSE frames buffered for the same destination connection
-ID and wishes to limit memory consumption.
+echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+If a packet contains multiple PATH_CHALLENGE frames, only a single PATH_RESPONSE
+SHOULD be sent in response.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
-PATH_CHALLENGE frame.  A new PATH_CHALLENGE frame will be sent if another
-PATH_RESPONSE frame is needed.
+PATH_CHALLENGE frame (see {{retransmission-of-information}}).  A new
+PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is needed.
 
 To ensure that packets can be both sent to and received from the peer, the
 PATH_RESPONSE MUST be sent on the same path as the triggering PATH_CHALLENGE.
