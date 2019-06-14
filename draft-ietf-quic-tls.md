@@ -1163,13 +1163,23 @@ in the 1-RTT space: once the latter is higher than or equal to the former,
 another key update can be initiated.
 
 Endpoints MAY limit the number of keys they retain to two sets for removing
-packet protection and one set for protecting packets.  Older keys can be
-discarded.  Updating keys multiple times rapidly can cause packets to be
-effectively lost if packets are significantly reordered.  Therefore, an
-endpoint SHOULD NOT initiate a key update for some time after it has last
-updated keys; the RECOMMENDED time period is three times the PTO. This avoids
-valid reordered packets being dropped by the peer as a result of the peer
-discarding older keys.
+packet protection.
+
+An endpoint installs the new keys, possibly replacing the old keys, when it
+unprotects the header protection of a received packet and detects that the
+packet uses a new key phase.  The detection can be done by tracking the highest
+packet number of the packets being received, along with the KEY_PHASE bit of the
+packet that had the highest packet number.  If a newly received packet is likely
+to renew the recorded highest packet number and if it has a different KEY_PHASE
+value than the recorded bit, the endpoint install the new keys.  However, the
+highest packet number and the KEY_PHASE bit being tracked ought to be updated
+only after the packet is successfully unprotected.
+
+Updating keys multiple times rapidly can cause packets to be effectively lost if
+packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
+a key update for some time after it has last updated keys; the RECOMMENDED time
+period is three times the PTO.  This avoids valid reordered packets being
+dropped by the peer as a result of the peer discarding older keys.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
