@@ -2864,8 +2864,9 @@ received packet that contains frames other than ACK and PADDING frames.
 An endpoint MUST NOT send a packet containing only an ACK frame in response
 to a packet containing only ACK or PADDING frames, even if there are packet
 gaps which precede the received packet. This prevents an indefinite feedback
-loop of ACKs. The endpoint MUST however acknowledge packets containing only
-ACK or PADDING frames when sending ACK frames in response to other packets.
+loop of ACKs, which may prevent the connection from ever becoming idle.
+The endpoint MUST however acknowledge packets containing only ACK or PADDING
+frames when sending ACK frames in response to other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2883,16 +2884,19 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
-received by the sender, the receiver SHOULD track which ACK frames have been
-acknowledged by its peer. The receiver SHOULD exclude already acknowledged
-packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.
-
 Because ACK frames are not sent in response to ACK-only packets, a receiver that
 is only sending ACK frames will only receive acknowledgements for its packets if
 the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
 ACK frames with other frames when possible.
+
+To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
+received by the sender, the receiver SHOULD track which ACK frames have been
+acknowledged by its peer. The receiver SHOULD exclude already acknowledged
+packets from future ACK frames whenever these packets would unnecessarily
+contribute to the ACK frame size.  When the receiver is only sending ACK-only
+packets, it can bundle a PING with a fraction of them, such as one per round
+trip, to drop unnecessary ACK ranges and any tracking state associated with the
+send ACK-only packets.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Ranges it sends.  A receiver can do this even without receiving
