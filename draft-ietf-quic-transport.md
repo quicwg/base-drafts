@@ -2896,7 +2896,7 @@ packets from future ACK frames whenever these packets would unnecessarily
 contribute to the ACK frame size.  When the receiver is only sending ACK-only
 packets, it can bundle a PING with a fraction of them, such as one per round
 trip, to drop unnecessary ACK ranges and any tracking state associated with the
-send ACK-only packets.
+previously sent ACK-only packets.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Ranges it sends.  A receiver can do this even without receiving
