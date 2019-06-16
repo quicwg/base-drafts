@@ -902,7 +902,7 @@ guarantees about order of delivery with regard to bytes on other streams. On the
 wire, data is framed into QUIC STREAM frames, but this framing is invisible to
 the HTTP framing layer. The transport layer buffers and orders received QUIC
 STREAM frames, exposing the data contained within as a reliable byte stream to
-the application. Although QUIC permits out-of-order delivery within a stream
+the application. Although QUIC permits out-of-order delivery within a stream,
 HTTP/3 does not make use of this feature.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
