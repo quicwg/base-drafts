@@ -2105,7 +2105,7 @@ Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/3 if still applicable.  The IDs of frames defined in {{!HTTP2}} have been
 reserved for simplicity.  Note that the frame type space in HTTP/3 is
 substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
-equivalent HTTP/2 code points.   See {{iana-frames}}.
+equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
