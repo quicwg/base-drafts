@@ -1745,8 +1745,9 @@ On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
 echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
-PATH_CHALLENGE frame (see {{retransmission-of-information}}).  A new
-PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is needed.
+PATH_CHALLENGE frame (see {{retransmission-of-information}}).  The peer is
+expected to send more PATH_CHALLENGE frames as necessary to evoke additional
+PATH_RESPONSE frames.
 
 
 ## Successful Path Validation
@@ -3002,8 +3003,8 @@ containing that information is acknowledged.
   frames include a different payload each time they are sent.
 
 * Responses to path validation using PATH_RESPONSE frames are sent just once.
-  A new PATH_CHALLENGE frame will be sent if another PATH_RESPONSE frame is
-  needed.
+  The peer is expected to send more PATH_CHALLENGE frames as necessary to evoke
+  additional PATH_RESPONSE frames.
 
 * New connection IDs are sent in NEW_CONNECTION_ID frames and retransmitted if
   the packet containing them is lost.  Retransmissions of this frame carry the
