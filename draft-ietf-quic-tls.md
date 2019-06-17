@@ -1171,18 +1171,15 @@ number among the packets received with the currently active key phase.  If a
 packet is received that has a different KEY_PHASE bit and a lower packet number
 than this value, the endpoint uses the old receive keys for unprotecting the
 packet, if these keys are still available.  If the packet has a higher packet
-number, the endpoint installs the updated recieve keys.
+number, the endpoint installs the new receive keys by calculating the next
+secret (see Section 7.2 of {{!TLS13}}), the corresponding read key and IV using
+the KDF function provided by TLS.  The header protection key is not updated.
 
 Updating keys multiple times rapidly can cause packets to be effectively lost if
 packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
 a key update for some time after it has last updated keys; the RECOMMENDED time
 period is three times the PTO.  This avoids valid reordered packets being
 dropped by the peer as a result of the peer discarding older keys.
-
-A receiving endpoint detects an update when the KEY_PHASE bit does not match
-what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the KDF function provided by TLS.
-The header protection key is not updated.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
