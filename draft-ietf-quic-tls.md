@@ -1213,11 +1213,12 @@ key updates in a short time frame succession and significant packet reordering.
 ~~~
 {: #ex-key-update title="Key Update"}
 
-A packet that triggers a key update could arrive after successfully processing a
-packet with a higher packet number.  This is only possible if there is a key
-compromise and an attack, or if the peer is incorrectly reverting to use of old
-keys.  Because the latter cannot be differentiated from an attack, an endpoint
-MUST immediately terminate the connection if it detects this condition.
+A packet that triggers a key update could arrive after the receiving endpoint
+successfully processed a packet with a higher packet number.  This is only
+possible if there is a key compromise and an attack, or if the peer is
+incorrectly reverting to use of old keys.  Because the latter cannot be
+differentiated from an attack, an endpoint MUST immediately terminate the
+connection if it detects this condition.
 
 In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
 specific keys, as described in Section 5.5 of {{!TLS13}}.
