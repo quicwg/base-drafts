@@ -1171,21 +1171,21 @@ number among the packets received with the currently active key phase.  If a
 packet is received that has a different KEY_PHASE bit and a lower packet number
 than this value, the endpoint uses the old receive keys for unprotecting the
 packet, if these keys are still available.  If the packet has a higher packet
-number, the endpoint installs the new receive keys by calculating the next
-secret (see Section 7.2 of {{!TLS13}}), the corresponding read key and IV using
-the KDF function provided by TLS.  The header protection key is not updated.
+number, the endpoint derives the new receive keys by calculating the next secret
+(see Section 7.2 of {{!TLS13}}), the corresponding read key and IV using the KDF
+function provided by TLS.  The header protection key is not updated.
+
+If the packet can be decrypted and authenticated using the derived read key and
+IV, then those keys are installed and the keys the endpoint uses for packet
+protection are also updated.  The next packet sent by the endpoint MUST then use
+the new keys.  Once an endpoint has sent a packet encrypted with a given key
+phase, it MUST NOT send a packet encrypted with an older key phase.
 
 Updating keys multiple times rapidly can cause packets to be effectively lost if
 packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
 a key update for some time after it has last updated keys; the RECOMMENDED time
 period is three times the PTO.  This avoids valid reordered packets being
 dropped by the peer as a result of the peer discarding older keys.
-
-If the packet can be decrypted and authenticated using the updated key and IV,
-then the keys the endpoint uses for packet protection are also updated.  The
-next packet sent by the endpoint MUST then use the new keys.  Once an endpoint
-has sent a packet encrypted with a given key phase, it MUST NOT send a packet
-encrypted with an older key phase.
 
 An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
