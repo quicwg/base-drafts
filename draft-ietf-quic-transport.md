@@ -2893,10 +2893,10 @@ To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.  When the receiver is only sending non
-ACK-eliciting packets, it can bundle a PING with a fraction of them, such as one
-per round trip, to enable dropping unnecessary ACK ranges and any state for
-previously sent packets.  The receiver MUST NOT bundle a PING with all
+contribute to the ACK frame size.  When the receiver is only sending
+non-ACK-eliciting packets, it can bundle a PING with a fraction of them, such
+as one per round trip, to enable dropping unnecessary ACK ranges and any state
+for previously sent packets.  The receiver MUST NOT bundle a PING with all
 packets that would otherwise not be ACK-eliciting, in order to avoid an
 indefinite feedback loop of ACKs.
 
