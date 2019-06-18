@@ -1162,9 +1162,9 @@ number sent with each KEY_PHASE, and the highest acknowledged packet number
 in the 1-RTT space: once the latter is higher than or equal to the former,
 another key update can be initiated.
 
-While only one send key is used at a time, an endpoint SHOULD retain at least
-two receive keys during a key update so that it can unprotect packets arriving
-out-of-order.
+While only one send key is used at a time, an endpoint MUST retain at least two
+receive keys during a key update so that it can unprotect packets arriving out-
+of-order.
 
 An endpoint determines which receive key to use by tracking the lowest packet
 number among the packets received with the currently active key phase.  If a
