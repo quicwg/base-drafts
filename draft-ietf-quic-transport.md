@@ -2865,8 +2865,9 @@ An endpoint MUST NOT send a packet containing only an ACK frame in response
 to a packet containing only ACK or PADDING frames, even if there are packet
 gaps which precede the received packet. This prevents an indefinite feedback
 loop of ACKs, which may prevent the connection from ever becoming idle.
-The endpoint MUST however acknowledge packets containing only ACK or PADDING
-frames when sending ACK frames in response to other packets.
+The endpoint MUST however acknowledge non ACK-eliciting packets(ie: those
+containing only ACK or PADDING frames) when sending ACK frames in response to
+other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
