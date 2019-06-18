@@ -641,6 +641,10 @@ client-controlled placeholders with an ID less than the value of this setting
 with the confidence that the server will not have discarded the state.  The
 orphan placeholder cannot be prioritized or referenced by the client.
 
+Servers are RECOMMENDED to support at least 32 placeholders.  Those do not
+SHOULD refrain from supporting placeholders at all, setting
+`SETTINGS_NUM_PLACEHOLDERS` to zero.
+
 Clients MUST NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this
 setting by a server MUST be treated as a connection error of type
 `HTTP_WRONG_SETTING_DIRECTION`.
@@ -1343,8 +1347,7 @@ The following settings are defined in HTTP/3:
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
   SETTINGS_NUM_PLACEHOLDERS (0x9):
-  : The default value is 0.  However, servers SHOULD set this value to 32 or
-    greater.  See {{placeholders}} for usage.
+  : The default value is 0.  See {{placeholders}} for usage.
 
 Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
 reserved to exercise the requirement that unknown identifiers be ignored.  Such
