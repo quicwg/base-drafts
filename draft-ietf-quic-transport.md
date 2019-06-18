@@ -985,9 +985,9 @@ response to a migrating peer; see {{migration-linkability}} for more.
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
 connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer.
-Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID won't be
-used again and requests that the peer replace it with a new connection ID using
-a NEW_CONNECTION_ID frame.
+Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
+be used again and requests that the peer replace it with a new connection ID
+using a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
@@ -2884,8 +2884,8 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-An endpoint that is only sending ACK frames won't receive acknowledgments from
-its peer unless those acknowledgements are included in packets with
+An endpoint that is only sending ACK frames will not receive acknowledgments
+from its peer unless those acknowledgements are included in packets with
 ACK-eliciting frames.  A sender SHOULD bundle ACK frames with other frames
 when possible.
 
