@@ -495,10 +495,9 @@ field.
 If an implementation wishes to advise its peer of this limit, it can be conveyed
 as a number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. An
 implementation which has received this parameter SHOULD NOT send an HTTP message
-header which exceeds the indicated size, as this will likely produce an error
-and could disrupt the entire connection if the peer reacts negatively.  However,
-because this limit is applied at each hop, messages below this limit are not
-guaranteed to be accepted.
+header which exceeds the indicated size, as the peer will likely refuse to
+process it.  However, because this limit is applied at each hop, messages below
+this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
