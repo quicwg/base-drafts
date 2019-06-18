@@ -2897,7 +2897,7 @@ contribute to the ACK frame size.  When the receiver is only sending ACK-only
 packets, it can bundle a PING with a fraction of them, such as one per round
 trip, to drop unnecessary ACK ranges and any tracking state associated with the
 previously sent ACK-only packets.  The receiver MUST NOT bundle a PING with all
-packets that would otherwise be ACK-only, in order to avoid an indefinite
+packets that would otherwise not be ACK-eliciting, in order to avoid an indefinite
 feedback loop of ACKs.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
