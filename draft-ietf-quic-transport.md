@@ -2307,13 +2307,25 @@ the application requests that the connection be closed.  The application
 protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
-If the connection has been successfully established, endpoints MUST send any
-CONNECTION_CLOSE frames in a 1-RTT packet.  Prior to connection establishment a
-peer might not have 1-RTT keys, so endpoints SHOULD send CONNECTION_CLOSE frames
-in a Handshake packet.  If the endpoint does not have Handshake keys, or it is
-not certain that the peer has Handshake keys, it MAY send CONNECTION_CLOSE
-frames in an Initial packet.  If multiple packets are sent, they can be
-coalesced (see {{packet-coalesce}}) to facilitate retransmission.
+When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
+the frame.  Generally, this means sending the frame in a packet with the highest
+level of packet protection to avoid the packet being discarded.  However, during
+the handshake, it is possible that more advanced packet protection keys are not
+available to the peer, so the frame MAY be replicated in a packet that uses a
+lower packet protection level.
+
+After the handshake is confirmed, an endpoint MUST send any CONNECTION_CLOSE
+frames in a 1-RTT packet.  Prior to handshake confirmation, the peer might not
+have 1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a
+Handshake packet.  If the endpoint does not have Handshake keys, it SHOULD send
+CONNECTION_CLOSE frames in an Initial packet.
+
+A client will always know whether the server has Handshake keys
+(see {{discard-initial}}), but it is possible that a server does not know
+whether the client has Handshake keys.  Under these circumstances, a server
+SHOULD send a CONNECTION_CLOSE frame in both Handshake and Initial packets
+to ensure that at least one of them is processable by the client.  These
+packets can be coalesced into a single UDP datagram (see {{packet-coalesce}}).
 
 
 ## Stateless Reset {#stateless-reset}
