@@ -2884,18 +2884,18 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-Because ACK frames are not sent in response to ACK-only packets, a receiver that
-is only sending ACK frames will only receive acknowledgements for its packets if
-the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
-ACK frames with other frames when possible.
+Because ACK frames are only sent in response to ACK-eliciting packets, a receiver
+that is only sending ACK frames will only receive acknowledgements for its packets
+if the sender includes them in packets with non-ACK frames.  A sender SHOULD
+bundle ACK frames with other frames when possible.
 
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.  When the receiver is only sending ACK-only
-packets, it can bundle a PING with a fraction of them, such as one per round
-trip, to drop unnecessary ACK ranges and any tracking state associated with the
+contribute to the ACK frame size.  When the receiver is only sending non
+ACK-eliciting packets, it can bundle a PING with a fraction of them, such as one
+per round trip, to enabel dropping unnecessary ACK ranges and any state for the
 previously sent ACK-only packets.  The receiver MUST NOT bundle a PING with all
 packets that would otherwise not be ACK-eliciting, in order to avoid an indefinite
 feedback loop of ACKs.
