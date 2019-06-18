@@ -487,14 +487,21 @@ HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
-An HTTP/3 implementation MAY impose a limit on the maximum size of the header it
-will accept on an individual HTTP message; encountering a larger message header
-SHOULD be treated as a stream error of type `HTTP_EXCESSIVE_LOAD`.  If an
-implementation wishes to advise its peer of this limit, it can be conveyed as a
-number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. The size of a
-header list is calculated based on the uncompressed size of header fields,
-including the length of the name and value in bytes plus an overhead of 32 bytes
-for each header field.
+An HTTP/3 implementation MAY impose a limit on the maximum size of the message
+header it will accept on an individual HTTP message.  A server that receives a
+larger header field list than it is willing to handle can send an HTTP 431
+(Request Header Fields Too Large) status code {{?RFC6585}}.  A client can
+discard responses that it cannot process.  The size of a header field list is
+calculated based on the uncompressed size of header fields, including the length
+of the name and value in bytes plus an overhead of 32 bytes for each header
+field.
+
+If an implementation wishes to advise its peer of this limit, it can be conveyed
+as a number of bytes in the `SETTINGS_MAX_HEADER_LIST_SIZE` parameter. An
+implementation which has received this parameter SHOULD NOT send an HTTP message
+header which exceeds the indicated size, as the peer will likely refuse to
+process it.  However, because this limit is applied at each hop, messages below
+this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
