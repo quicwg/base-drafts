@@ -2884,7 +2884,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-Because ACK frames are only sent in response to ACK-eliciting packets, a
+ACK-only packets are only sent in response to ACK-eliciting packets, so a
 receiver that is only sending ACK frames will only receive acknowledgements
 for its packets if the sender includes them in packets with non-ACK frames.
 A sender SHOULD bundle ACK frames with other frames when possible.
