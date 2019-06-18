@@ -1279,8 +1279,7 @@ An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
 version that the client has selected.  If the server cannot select a compatible
 combination of application protocol and QUIC version, it MUST abort the
-connection. A client MUST abort a connection if the server picks an incompatible
-combination of QUIC version and ALPN identifier.
+connection.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
