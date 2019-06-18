@@ -2898,7 +2898,7 @@ non-ACK-eliciting packets, it can bundle a PING with a fraction of them, such
 as one per round trip, to enable dropping unnecessary ACK ranges and any state
 for previously sent packets.  The receiver MUST NOT bundle a PING with all
 packets that would otherwise not be ACK-eliciting, in order to avoid an
-indefinite feedback loop of ACKs.
+indefinite feedback loop of acknowledgements.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Ranges it sends.  A receiver can do this even without receiving
