@@ -1252,17 +1252,7 @@ preliminary values for QUIC transport parameters, and allows a server to perform
 return routeability checks on clients.
 
 
-## Protocol and Version Negotiation {#version-negotiation}
-
-The QUIC version negotiation mechanism is used to negotiate the version of QUIC
-that is used prior to the completion of the handshake.  However, this packet is
-not authenticated, enabling an active attacker to force a version downgrade.
-
-To ensure that a QUIC version downgrade is not forced by an attacker, version
-information is copied into the TLS handshake, which provides integrity
-protection for the QUIC negotiation.  This does not prevent version downgrade
-prior to the completion of the handshake, though it means that a downgrade
-causes a handshake failure.
+## Protocol Negotiation {#protocol-negotiation}
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
