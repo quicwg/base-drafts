@@ -3913,14 +3913,17 @@ the connection ID as part of its token validation logic (see
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
 the Initial packet sent by the client is subject to the same restrictions as the
-first Initial packet.  A client can either reuse the cryptographic handshake
-message or construct a new one at its discretion.
+first Initial packet.  A client MUST use the same cryptographic handshake
+message it includes in this packet.  A server MAY treat a packet that
+contains a different cryptographic handshake message as a connection error or
+discard it.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
-packets to the connection ID provided by the server.  A client that sends
-additional 0-RTT packets without constructing a new cryptographic handshake
-message MUST NOT reset the packet number to 0 after a Retry packet; see
-{{packet-0rtt}}.
+packets to the connection ID provided by the server.  A client MUST NOT change
+the cryptographic handshake message it sends in response to receiving a Retry.
+
+A client MUST NOT reset the packet number for any packet number space after
+processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
 original_connection_id transport parameter (see
