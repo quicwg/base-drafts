@@ -1035,10 +1035,10 @@ matches a value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the address/port tuple to identify a
 connection.  Packets that don't match an existing connection are discarded.
 
-Due to packet reordering or loss, clients might receive packets for a connection
-that are encrypted with a key it has not yet computed. Clients MAY drop these
-packets, or MAY buffer them in anticipation of later packets that allow it to
-compute the key.
+Due to packet reordering or loss, a client might receive packets for a
+connection that are encrypted with a key it has not yet computed. The client MAY
+drop these packets, or MAY buffer them in anticipation of later packets that
+allow it to compute the key.
 
 If a client receives a packet that has an unsupported version, it MUST discard
 that packet.
