@@ -951,7 +951,7 @@ supplied connection ID is 1.
 
 Additional connection IDs are communicated to the peer using NEW_CONNECTION_ID
 frames ({{frame-new-connection-id}}).  The sequence number on each newly-issued
-connection ID MUST increase by 1. The connection ID randomly selected by the
+connection ID MUST increase by 1.  The connection ID randomly selected by the
 client in the Initial packet and any connection ID provided by a Retry packet
 are not assigned sequence numbers unless a server opts to retain them as its
 initial connection ID.
@@ -962,14 +962,16 @@ the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
-unused connection IDs. Endpoints store received connection IDs for future use.
-An endpoint uses the active_connection_id_limit transport parameter to advertise
-the number of connection IDs it can store for future use. An endpoint SHOULD NOT
-provide more connection IDs than the peer's limit. If an endpoint has provided
-its peer with the maximum number of connection IDs, it SHOULD only provide a new
-connection ID when the peer retires one. An endpoint MAY limit the frequency or
-the total number of connection IDs issued for each connection to avoid the risk
-of running out of connection IDs (see {{reset-token}}).
+unused connection IDs.  Endpoints store received connection IDs for future use
+and advertise the number of connection IDs they are willing to store with the
+active_connection_id_limit transport parameter.  An endpoint SHOULD NOT provide
+more connection IDs than the peer's limit.
+
+An endpoint SHOULD supply a new connection ID when it receives a packet with a
+previously unused connection ID or when the peer retires one, unless providing
+the new connection ID would exceed the peer's limit.  An endpoint MAY limit the
+frequency or the total number of connection IDs issued for each connection to
+avoid the risk of running out of connection IDs; see {{reset-token}}.
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
 SHOULD ensure that the pool of connection IDs available to its peer allows the
