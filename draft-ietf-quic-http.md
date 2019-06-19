@@ -2174,7 +2174,10 @@ NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
-: HTTP_GENERAL_PROTOCOL ERROR in {{http-error-codes}}.
+: No single mapping. Split into a few error codes, including
+  HTTP_GENERAL_PROTOCOL ERROR, HTTP_MALFORMED_FRAME, HTTP_WRONG_STREAM,
+  HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM defined in
+  {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
