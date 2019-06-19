@@ -1594,10 +1594,10 @@ The server uses the NEW_TOKEN frame {{frame-new-token}} to provide the client
 with an address validation token that can be used to validate future
 connections.  The client includes this token in Initial packets to provide
 address validation in a future connection.  The client MUST include the token in
-all Initial packets it sends, unless a Retry or NEW_TOKEN frame replaces the
-token with a newer one. The client MUST NOT use the token provided in a Retry
-for future connections. Servers MAY discard any Initial packet that does not
-carry the expected token.
+all Initial packets it sends, unless a Retry replaces the token with a newer
+one.  The client MUST NOT use the token provided in a Retry for future
+connections. Servers MAY discard any Initial packet that does not carry the
+expected token.
 
 A token SHOULD be constructed for the server to easily distinguish it from
 tokens that are sent in Retry packets as they are carried in the same field.
