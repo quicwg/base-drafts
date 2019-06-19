@@ -555,22 +555,21 @@ time.
 
 The retransmission timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  The time threshold loss
-detection timer is expected to both expire earlier than the crypto
-retransmission timeout and be less likely to spuriously retransmit data.
-The Initial and Handshake packet number spaces will typically contain a small
-number of packets, so losses are less likely to be detected using
-packet-threshold loss detection.
+detection timer is expected to both expire earlier than the PTO and be less
+likely to spuriously retransmit data. The Initial and Handshake packet number
+spaces will typically contain a small number of packets, so losses are less
+likely to be detected using packet-threshold loss detection.
 
 ## Handshakes and new paths
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.
 
-Initially there are no prior RTT samples for a connection.  Resumed
-connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
-is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
-resulting in a 1 second initial timeout as recommended in {{?RFC6298}}.
+Resumed connections over the same network SHOULD use the previous connection's
+final smoothed RTT value as the resumed connection's initial RTT.  If no
+previous RTT is available, or if the network changes, the initial RTT SHOULD
+be set to 500ms, resulting in a 1 second initial timeout as recommended in
+{{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
 a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
