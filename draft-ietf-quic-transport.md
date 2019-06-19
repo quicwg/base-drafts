@@ -660,9 +660,9 @@ RESET_STREAM frame it sends, but MAY use any application error code.  The
 endpoint that sends a STOP_SENDING frame MAY ignore the error code carried in
 any RESET_STREAM frame it receives.
 
-If the STOP_SENDING frame is received on a stream that is already in the	
-"Data Sent" state, an endpoint that wishes to cease retransmission of	
-previously-sent STREAM frames on that stream MUST first send a RESET_STREAM	
+If the STOP_SENDING frame is received on a stream that is already in the
+"Data Sent" state, an endpoint that wishes to cease retransmission of
+previously-sent STREAM frames on that stream MUST first send a RESET_STREAM
 frame.
 
 STOP_SENDING SHOULD only be sent for a stream that has not been reset by the
