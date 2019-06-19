@@ -785,10 +785,9 @@ amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
-also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
-{{errors}}). This asks the server not to transfer additional data and indicates
-that it will be discarded upon receipt.
+CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an error code of
+HTTP_PUSH_REFUSED. This asks the server not to transfer additional data and
+indicates that it will be discarded upon receipt.
 
 # Connection Closure
 
@@ -1606,8 +1605,8 @@ HTTP_PUSH_REFUSED (0x02):
 HTTP_INTERNAL_ERROR (0x03):
 : An internal error has occurred in the HTTP stack.
 
-HTTP_PUSH_ALREADY_IN_CACHE (0x04):
-: The server has attempted to push content which the client has cached.
+Reserved (0x04):
+: This code is reserved and has no meaning.
 
 HTTP_REQUEST_CANCELLED (0x05):
 : The request or its response is cancelled.
@@ -1905,7 +1904,7 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_SETTING_DIRECTION        | 0x0001     | Setting sent in wrong direction          | {{http-error-codes}}   |
 | HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
-| HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
+| Reserved                            | 0x0004     | N/A                                      | N/A                    |
 | HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
 | HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
