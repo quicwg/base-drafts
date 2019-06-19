@@ -1183,10 +1183,10 @@ as an attack vector.  An endpoint that retains only two receive keys drops the
 receive key of the previous key phase in favor of retaining the next receive
 key.
 
-If the packet can be decrypted and authenticated using the next receive key and
-IV, then the endpoint switches to the next key phase.  Once an endpoint has sent
-a packet encrypted with a given key phase, it MUST NOT send a packet encrypted
-with an older key phase.
+If the packet can be unprotected using the next receive key and IV, then the
+endpoint switches to the next key phase.  Once an endpoint has sent a packet
+encrypted with a given key phase, it MUST NOT send a packet encrypted with an
+older key phase.
 
 Updating keys multiple times rapidly can cause packets to be effectively lost if
 packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
