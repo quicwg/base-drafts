@@ -2174,8 +2174,7 @@ NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
-  {{http-error-codes}}.
+: HTTP_GENERAL_PROTOCOL ERROR in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
