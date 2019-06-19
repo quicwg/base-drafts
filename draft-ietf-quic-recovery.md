@@ -512,69 +512,6 @@ thresholds reduce reordering resilience and increase spurious retransmissions,
 and larger thresholds increase loss detection delay.
 
 
-## Crypto Retransmission Timeout
-
-Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.
-
-The initial crypto retransmission timeout SHOULD be set to twice the initial
-RTT.
-
-At the beginning, there are no prior RTT samples within a connection.  Resumed
-connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
-is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
-resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}.
-
-A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
-a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
-be considered an RTT sample.
-
-When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
-RTT.  This timer MUST be updated when a new crypto packet is sent and when
-an acknowledgement is received which computes a new RTT sample. Upon timeout,
-the sender MUST retransmit all unacknowledged CRYPTO data if possible.  The
-sender MUST NOT declare in-flight crypto packets as lost when the crypto timer
-expires.
-
-On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender MUST double the crypto
-retransmission timeout and set a timer for this period.
-
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
-CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
-sent, then no alarm should be armed until data has been received from the
-client.
-
-Because the server could be blocked until more packets are received, the client
-MUST ensure that the crypto retransmission timer is set if there is
-unacknowledged crypto data or if the client does not yet have 1-RTT keys.
-If the crypto retransmission timer expires before the client has 1-RTT keys,
-it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PADDING frames if
-necessary, to allow the server to continue sending data. If Handshake keys
-are available to the client, it MUST send a Handshake packet, and otherwise
-it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
-
-Because packets only containing PADDING do not elicit an acknowledgement,
-they may never be acknowledged, but they are removed from bytes in flight
-when the client gets Handshake keys and the Initial keys are discarded.
-
-The crypto retransmission timer is not set if the time threshold
-{{time-threshold}} loss detection timer is set.  The time threshold loss
-detection timer is expected to both expire earlier than the crypto
-retransmission timeout and be less likely to spuriously retransmit data.
-The Initial and Handshake packet number spaces will typically contain a small
-number of packets, so losses are less likely to be detected using
-packet-threshold loss detection.
-
-When the crypto retransmission timer is active, the probe timer ({{pto}})
-is not active.
-
-
 ## Probe Timeout {#pto}
 
 A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
@@ -615,6 +552,53 @@ A sender computes its PTO timer every time an ack-eliciting packet is sent. A
 sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
+
+
+
+The retransmission timer is not set if the time threshold
+{{time-threshold}} loss detection timer is set.  The time threshold loss
+detection timer is expected to both expire earlier than the crypto
+retransmission timeout and be less likely to spuriously retransmit data.
+The Initial and Handshake packet number spaces will typically contain a small
+number of packets, so losses are less likely to be detected using
+packet-threshold loss detection.
+
+## Handshakes and new paths
+
+The initial probe timeout for a new connection or new path SHOULD be
+set to twice the initial RTT.
+
+Initially there are no prior RTT samples for a connection.  Resumed
+connections over the same network SHOULD use the previous connection's final
+smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
+is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
+resulting in a 1 second initial timeout as recommended in {{?RFC6298}}.
+
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
+a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
+be considered an RTT sample.
+
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
+CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
+sent, then no alarm should be armed until data has been received from the
+client.
+
+Because the server could be blocked until more packets are received, the client
+MUST ensure that the retransmission timer is set if there is
+unacknowledged crypto data or if the client does not yet have 1-RTT keys.
+If the retransmission timer expires before the client has 1-RTT keys,
+it is possible that the client may not have any crypto data to retransmit.
+However, the client MUST send a new packet, containing only PADDING frames if
+necessary, to allow the server to continue sending data. If Handshake keys
+are available to the client, it MUST send a Handshake packet, and otherwise
+it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+
+Because Initial packets only containing PADDING do not elicit an
+acknowledgement, they may never be acknowledged, but they are removed from
+bytes in flight when the client gets Handshake keys and the Initial keys are
+discarded.
 
 ### Sending Probe Packets
 
