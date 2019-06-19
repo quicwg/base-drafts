@@ -1163,23 +1163,30 @@ in the 1-RTT space: once the latter is higher than or equal to the former,
 another key update can be initiated.
 
 While only one send key is used at a time, an endpoint MUST retain at least two
-receive keys during a key update so that it can unprotect packets arriving out-
-of-order.
+receive keys.
 
-An endpoint determines which receive key to use by tracking the lowest packet
-number among the packets received with the currently active key phase.  If a
-packet is received that has a different KEY_PHASE bit and a lower packet number
-than this value, the endpoint uses the old receive keys for unprotecting the
-packet, if these keys are still available.  If the packet has a higher packet
-number, the endpoint derives the new receive keys by calculating the next secret
-(see Section 7.2 of {{!TLS13}}), the corresponding read key and IV using the KDF
-function provided by TLS.  The header protection key is not updated.
+Packets received with the current key phase are unprotected using the
+corresponding receive key.  When a packet arrives with the opposite key phase,
+an endpoint determines which receive key to use by tracking the lowest packet
+number among the packets received with the currently key phase.  If a packet is
+received that has a different KEY_PHASE bit and a lower packet number than this
+value, the endpoint uses the receive key of the previous key phase for
+unprotecting the packet, if that key is available.  If the packet has a higher
+packet number, the endpoint derives the receive key of the next key phase by
+calculating the next secret (see Section 7.2 of {{!TLS13}}), the corresponding
+read key and IV using the KDF function provided by TLS, unless the next receive
+key has already been derived.  The header protection key is not updated.
 
-If the packet can be decrypted and authenticated using the derived read key and
-IV, then those keys are installed and the keys the endpoint uses for packet
-protection are also updated.  The next packet sent by the endpoint MUST then use
-the new keys.  Once an endpoint has sent a packet encrypted with a given key
-phase, it MUST NOT send a packet encrypted with an older key phase.
+Once derived, an endpoint retains the receive key of the next key phase, to
+prevent attackers from targeting the calculation process of the next receive key
+as an attack vector.  An endpoint that retains only two receive keys drops the
+receive key of the previous key phase in favor of retaining the next receive
+key.
+
+If the packet can be decrypted and authenticated using the next receive key and
+IV, then the endpoint switches to the next key phase.  Once an endpoint has sent
+a packet encrypted with a given key phase, it MUST NOT send a packet encrypted
+with an older key phase.
 
 Updating keys multiple times rapidly can cause packets to be effectively lost if
 packets are significantly reordered.  Therefore, an endpoint SHOULD NOT initiate
