@@ -246,8 +246,8 @@ x (*) ...:
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
 application. Streams can be unidirectional or bidirecational.  An alternative
-view of QUIC unidirectional streams is a "message" abstraction of unlimited
-length.
+view of QUIC unidirectional streams is a "message" abstraction of practically
+unlimited length.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -546,8 +546,9 @@ MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 
 Once all data for the stream has been received, the receiving part enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
-frame that causes the transition to "Size Known".  Any STREAM or
-STREAM_DATA_BLOCKED frames it receives for the stream can be discarded.
+frame that causes the transition to "Size Known".  After all data has been
+received, Any STREAM or STREAM_DATA_BLOCKED frames it receives for the stream
+can be discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
 application.  Once stream data has been delivered, the stream enters the "Data
@@ -645,7 +646,7 @@ receiving application is no longer reading data it receives from the stream, but
 it is not a guarantee that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward
-connection and stream flow control, even though these frames may be discarded
+connection and stream flow control, even though these frames can be discarded
 upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
@@ -658,6 +659,11 @@ An endpoint SHOULD copy the error code from the STOP_SENDING frame to the
 RESET_STREAM frame it sends, but MAY use any application error code.  The
 endpoint that sends a STOP_SENDING frame MAY ignore the error code carried in
 any RESET_STREAM frame it receives.
+
+If the STOP_SENDING frame is received on a stream that is already in the	
+"Data Sent" state, an endpoint that wishes to cease retransmission of	
+previously-sent STREAM frames on that stream MUST first send a RESET_STREAM	
+frame.
 
 STOP_SENDING SHOULD only be sent for a stream that has not been reset by the
 peer. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
@@ -731,8 +737,8 @@ used to check for flow control violations. A receiver might use a sum of bytes
 consumed on all streams to determine the maximum data limit to be advertised.
 
 A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
-frames.  That is, once a receiver advertises an offset, it MAY advertise a
-smaller offset, but this has no effect.
+frames.  Once a receiver advertises an offset, it MAY advertise a smaller
+offset, but this has no effect.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the sender violates the advertised connection or stream
@@ -742,7 +748,7 @@ A sender MUST ignore any MAX_STREAM_DATA or MAX_DATA frames that do not increase
 flow control limits.
 
 If a sender runs out of flow control credit, it will be unable to send new data
-and is considered blocked.  A sender SHOULD send a single STREAM_DATA_BLOCKED or
+and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
 control limits.  These frames are expected to be sent infrequently in common
 cases, but they are considered useful for debugging and monitoring purposes.
@@ -790,11 +796,9 @@ Endpoints need to eventually agree on the amount of flow control credit that has
 been consumed, to avoid either exceeding flow control limits or deadlocking.
 
 On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
-matching stream and ignore further data arriving on that stream.  If a
-RESET_STREAM frame is reordered with stream data for the same stream, the
-receiver's maximum total size on that stream can be lower than the
-sender's total size.  As a result, the two endpoints could disagree on
-the number of bytes that count towards connection flow control.
+matching stream and ignore further data arriving on that stream.  Without the
+offset included in RESET_STREAM, the two endpoints could disagree on
+the number of bytes that count towards connection flow control if 
 
 To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
 final size of data sent on the stream.  On receiving a RESET_STREAM frame, a
