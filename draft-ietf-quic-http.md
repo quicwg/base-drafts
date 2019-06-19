@@ -1594,10 +1594,9 @@ HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
-HTTP_SETTINGS_ERROR (0x01):
-: An endpoint detected an error with a SETTINGS frame: a duplicate setting was
-  detected, a client-only setting was sent by a server, or a server-only setting
-  by a client.
+HTTP_GENERAL_PROTOCOL_ERROR (0x01):
+: Peer violated protocol requirements in a way which doesn't match a more
+  specific error code, or endpoint declines to use the more specific error code.
 
 Reserved (0x02):
 : This code is reserved and has no meaning.
@@ -1663,9 +1662,10 @@ HTTP_UNEXPECTED_FRAME (0x0013):
 HTTP_REQUEST_REJECTED (0x0014):
 : A server rejected a request without performing any application processing.
 
-HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
-: Peer violated protocol requirements in a way which doesn't match a more
-  specific error code, or endpoint declines to use the more specific error code.
+HTTP_SETTINGS_ERROR (0x00FF):
+: An endpoint detected an error with a SETTINGS frame: a duplicate setting was
+  detected, a client-only setting was sent by a server, or a server-only setting
+  by a client.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  If the frame type is `0xfe` or less, the
@@ -1901,7 +1901,7 @@ The entries in the following table are registered by this document.
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x0001     | Setting duplication or wrong direction   | {{http-error-codes}}   |
+| HTTP_GENERAL_PROTOCOL_ERROR         | 0x0001     | General protocol error                   | {{http-error-codes}}   |
 | Reserved                            | 0x0002     | N/A                                      | N/A                    |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
 | Reserved                            | 0x0004     | N/A                                      | N/A                    |
@@ -1922,6 +1922,7 @@ The entries in the following table are registered by this document.
 | HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
 | HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x00FF     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
