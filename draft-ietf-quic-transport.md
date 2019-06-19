@@ -798,7 +798,7 @@ been consumed, to avoid either exceeding flow control limits or deadlocking.
 On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.  Without the
 offset included in RESET_STREAM, the two endpoints could disagree on
-the number of bytes that count towards connection flow control if 
+the number of bytes that count towards connection flow control.
 
 To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
 final size of data sent on the stream.  On receiving a RESET_STREAM frame, a
