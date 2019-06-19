@@ -2860,13 +2860,13 @@ valid frames? -->
 ### Sending ACK Frames
 
 An endpoint MUST NOT send more than one packet containing only an ACK frame per
-received non-ACK-eliciting packet(ie: one containing only ACK and/or PADDING
-frames).  An endpoint MUST NOT send a packet containing only an ACK frame in
-response to a non-ACK-eliciting packet, even if there are packet gaps which
-precede the received packet. This prevents an indefinite feedback loop of
-acknowledgements, which may prevent the connection from ever becoming idle.
-The endpoint MUST however acknowledge non-ACK-eliciting packets when sending
-ACK frames in response to other packets.
+received ACK-eliciting packet(ie: one containing frames other than ACK and/or
+PADDING).  An endpoint MUST NOT send a packet containing only an ACK frame in
+response to a non-ACK-eliciting packet(one containing only ACK and/or PADDING
+frames), even if there are packet gaps which precede the received packet. This
+prevents an indefinite feedback loop of acknowledgements, which may prevent the
+connection from ever becoming idle. The endpoint MUST however acknowledge
+non-ACK-eliciting packets when sending ACK frames in response to other packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2884,10 +2884,10 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-An endpoint that is only sending ACK frames will not receive acknowledgments
-from its peer unless those acknowledgements are included in packets with
-ACK-eliciting frames.  A sender SHOULD bundle ACK frames with other frames
-when possible.
+An endpoint that is only sending acknowledgements will not receive
+acknowledgments from its peer unless those acknowledgements are included in
+packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
+other frames when possible.
 
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
