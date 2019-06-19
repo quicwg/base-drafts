@@ -1327,8 +1327,8 @@ Initial or Retry packet from the server, it populates the Destination Connection
 ID field with an unpredictable value.  This MUST be at least 8 bytes in length.
 Until a packet is received from the server, the client MUST use the same value
 unless it abandons the connection attempt and starts a new one. The initial
-Destination Connection ID is used to determine packet protection keys for Initial
-packets.
+Destination Connection ID is used to determine packet protection keys for
+Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCIL field to indicate the length.  The first flight of 0-RTT
