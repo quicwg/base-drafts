@@ -5043,13 +5043,7 @@ The Retire Prior To field is a request for the peer to retire all connection IDs
 with a sequence number less than the specified value.  This includes the initial
 and preferred_address transport parameter connection IDs.  The peer SHOULD
 retire the corresponding connection IDs and send the corresponding
-RETIRE_CONNECTION_ID frames in a timely manner
-
-The sender of the NEW_CONNECTION_ID frame MAY remove the connection IDs after 3
-PTO, even if the peer has not retired them with RETIRE_CONNECTION_ID yet.  The
-3-PTO timer starts on acknowledgement of the packet containing the
-NEW_CONNECTION_ID frame.  Continued use of the retired connection IDs after this
-point will likely result in a stateless reset being sent.
+RETIRE_CONNECTION_ID frames in a timely manner.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Values greater than the Sequence Number MUST be treated as a connection
