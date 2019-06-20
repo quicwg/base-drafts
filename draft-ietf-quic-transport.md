@@ -5001,9 +5001,8 @@ Sequence Number:
 
 Retire Prior To:
 
-: A variable-length integer specifying the limit for which all connection IDs
-  assigned to the receiver that have a sequence number less than this value
-  should be retired.  See {{retiring-cids}}.
+: A variable-length integer indicating which connection IDs should be retired.
+  See {{retiring-cids}}.
 
 Length:
 
