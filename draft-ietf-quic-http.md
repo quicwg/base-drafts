@@ -786,8 +786,8 @@ amount of data a server may commit to the pushed stream.
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
 CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an error code of
-HTTP_REQUEST_CANCELLED. This asks the server not to transfer additional data and
-indicates that it will be discarded upon receipt.
+HTTP_REQUEST_CANCELLED can be used. This asks the server not to transfer
+additional data and indicates that it will be discarded upon receipt.
 
 # Connection Closure
 
