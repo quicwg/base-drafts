@@ -1663,9 +1663,9 @@ HTTP_REQUEST_REJECTED (0x0014):
 : A server rejected a request without performing any application processing.
 
 HTTP_SETTINGS_ERROR (0x00FF):
-: An endpoint detected an error with a SETTINGS frame: a duplicate setting was
-  detected, a client-only setting was sent by a server, or a server-only setting
-  by a client.
+: An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
+  setting was detected, a client-only setting was sent by a server, or a
+  server-only setting by a client.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  If the frame type is `0xfe` or less, the
