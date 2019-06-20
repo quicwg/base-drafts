@@ -1184,11 +1184,13 @@ receive key of the previous key phase in favor of retaining the next receive
 key.
 
 If the packet can be unprotected using the next receive key and IV, then the
-endpoint switches to the next key phase.  Once an endpoint has sent a packet
-encrypted with a given key phase, it MUST NOT send a packet encrypted with an
-older key phase.  An endpoint MAY close the connection with a PROTOCOL_VIOLATION
-error code if it successfully unprotects a packet and detects the peer violating
-this requirement; one way of detecting such misbehavior is to see if the packet
+endpoint switches to the next key phase: both send and receive keys associated
+with the next key phase become current. The next packet sent by the endpoint
+MUST then use the new send key.  Once an endpoint has sent a packet encrypted
+with a given key phase, it MUST NOT send a packet encrypted with an older key
+phase.  An endpoint MAY close the connection with a PROTOCOL_VIOLATION error
+code if it successfully unprotects a packet and detects the peer violating this
+requirement; one way of detecting such misbehavior is to see if the packet
 number of a successfully unprotected packet using the previous key phase is no
 less than the tracked lowest of the current key phase.
 
