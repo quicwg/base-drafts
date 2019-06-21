@@ -749,7 +749,7 @@ receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
 control the number of pushes that a server can promise. A server SHOULD use Push
 IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
 with a Push ID that is greater than the maximum Push ID as a connection error of
-type HTTP_LIMIT_EXCEEDED.
+type HTTP_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
@@ -1047,7 +1047,7 @@ MUST be treated as a connection error of type HTTP_WRONG_STREAM_DIRECTION.
 
 Each Push ID MUST only be used once in a push stream header. If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_PUSH_ID_ERROR.
+client MUST treat this as a connection error of type HTTP_ID_ERROR.
 
 ### Reserved Stream Types {#stream-grease}
 
@@ -1259,7 +1259,7 @@ error of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
+to open MUST be treated as a connection error of type HTTP_ID_ERROR.
 
 A PRIORITY frame received on any stream other than the control stream MUST be
 treated as a connection error of type HTTP_WRONG_STREAM.
@@ -1442,11 +1442,11 @@ Header Block:
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}). A client MUST treat receipt of a
 PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
-as a connection error of HTTP_LIMIT_EXCEEDED.
+as a connection error of HTTP_ID_ERROR.
 
 A server MUST NOT use the same Push ID in multiple PUSH_PROMISE frames. A client
 MUST treat receipt of a Push ID which has already been promised as a connection
-error of type HTTP_PUSH_ID_ERROR.
+error of type HTTP_ID_ERROR.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
@@ -1521,7 +1521,7 @@ The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
-MUST be treated as a connection error of type HTTP_PUSH_ID_ERROR.
+MUST be treated as a connection error of type HTTP_ID_ERROR.
 
 ### DUPLICATE_PUSH {#frame-duplicate-push}
 
@@ -1550,7 +1550,7 @@ identifies the Push ID of a resource that the server has previously promised
 this frame.  A server MUST NOT use a Push ID that is larger than the client has
 provided in a MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat
 receipt of a DUPLICATE_PUSH that contains a larger Push ID than the client has
-advertised as a connection error of type HTTP_LIMIT_EXCEEDED.
+advertised as a connection error of type HTTP_ID_ERROR.
 
 This frame allows the server to use the same server push in response to multiple
 concurrent requests.  Referencing the same server push ensures that a promise
@@ -1633,13 +1633,12 @@ HTTP_VERSION_FALLBACK (0x09):
 HTTP_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_LIMIT_EXCEEDED (0x0B):
-: A Stream ID, Push ID, or Placeholder ID greater than the current maximum for
-  that identifier was referenced.
+HTTP_ID_ERROR (0x0B):
+: A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
+  exceeding a limit, reducing a limit or being reused.
 
-HTTP_PUSH_ID_ERROR (0x0C):
-: A Push ID was referenced multiple times or the the maximum Push ID was
-  reduced.
+Reserved (0x0C):
+: N/A
 
 HTTP_UNKNOWN_STREAM_TYPE (0x0D):
 : A unidirectional stream header contained an unknown stream type.
@@ -1916,8 +1915,8 @@ The entries in the following table are registered by this document.
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_LIMIT_EXCEEDED                 | 0x000B     | An identifier limit was exceeded         | {{http-error-codes}}   |
-| HTTP_PUSH_ID_ERROR                  | 0x000C     | Error in Push ID usage                   | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x000B     | An identifier used incorrectly           | {{http-error-codes}}   |
+| Reserved                            | 0x000C     | N/A                                      | N/A                    |
 | HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
