@@ -187,9 +187,9 @@ QUIC:
 
 QUIC packet:
 
-: A complete processable payload with a packet type, encryption level and
-  packet number. Multiple QUIC packets can be encapsulated in a single UDP
-  datagram.
+: A complete processable unit of QUIC consisting of a header, payload, and
+  authentication tag.  Multiple QUIC packets can be encapsulated in a single
+  UDP datagram.
 
 Endpoint:
 
@@ -338,7 +338,7 @@ Stream multiplexing can have a significant effect on application performance if
 resources allocated to streams are correctly prioritized.
 
 QUIC does not provide a mechanism for exchanging prioritization information.
-Instead it relies on receiving priority information from the application that
+Instead, it relies on receiving priority information from the application that
 uses QUIC.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
@@ -547,8 +547,8 @@ MAX_STREAM_DATA frames, it only receives any retransmissions of stream data.
 Once all data for the stream has been received, the receiving part enters the
 "Data Recvd" state.  This might happen as a result of receiving the same STREAM
 frame that causes the transition to "Size Known".  After all data has been
-received, Any STREAM or STREAM_DATA_BLOCKED frames it receives for the stream
-can be discarded.
+received, any STREAM or STREAM_DATA_BLOCKED frames for the stream can be
+discarded.
 
 The "Data Recvd" state persists until stream data has been delivered to the
 application.  Once stream data has been delivered, the stream enters the "Data
