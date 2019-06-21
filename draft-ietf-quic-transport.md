@@ -1322,7 +1322,7 @@ Destination Connection ID field of packets being sent to them.  Upon receiving a
 packet, each endpoint sets the Destination Connection ID it sends to match the
 value of the Source Connection ID that they receive.
 
-When an Initial packet is sent by a client which has not previously received an
+When an Initial packet is sent by a client that has not previously received an
 Initial or Retry packet from the server, it populates the Destination Connection
 ID field with an unpredictable value.  This MUST be at least 8 bytes in length.
 Until a packet is received from the server, the client MUST use the same value
