@@ -861,8 +861,8 @@ If either is received, the connection MUST be closed immediately with a
 connection error of type STREAM_LIMIT_ERROR (see {{immediate-close}}).
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
-receives a STREAM frame with a stream ID exceeding the limit it has sent MUST
-treat this as a stream error of type STREAM_LIMIT_ERROR ({{error-handling}}).
+receives a frame with a stream ID exceeding the limit it has sent MUST treat
+this as a connection error of type STREAM_LIMIT_ERROR ({{error-handling}}).
 
 A receiver cannot renege on an advertisement. That is, once a receiver
 advertises a stream limit using the MAX_STREAMS frame, advertising a smaller
