@@ -2087,7 +2087,7 @@ work. If a client receives packets from a new server address not indicated by
 the preferred_address transport parameter, the client SHOULD discard these
 packets.
 
-### Communicating A Preferred Address
+### Communicating a Preferred Address
 
 A server conveys a preferred address by including the preferred_address
 transport parameter in the TLS handshake.
