@@ -3765,14 +3765,12 @@ message.  Sending packets with the same packet number in that case is likely to
 compromise the packet protection for all 0-RTT packets because the same key and
 nonce could be used to protect different content.
 
-Receiving a Retry packet, especially a Retry that changes the connection ID used
-for subsequent packets, indicates a strong possibility that 0-RTT packets could
-be lost.  A client only receives acknowledgments for its 0-RTT packets once the
-handshake is complete.  Consequently, a server might expect 0-RTT packets to
-start with a packet number of 0.  Therefore, in determining the length of the
-packet number encoding for 0-RTT packets, a client MUST assume that all packets
-up to the current packet number are in flight, starting from a packet number of
-0.  Thus, 0-RTT packets could need to use a longer packet number encoding.
+A client only receives acknowledgments for its 0-RTT packets once the handshake
+is complete.  Consequently, a server might expect 0-RTT packets to start with a
+packet number of 0.  Therefore, in determining the length of the packet number
+encoding for 0-RTT packets, a client MUST assume that all packets up to the
+current packet number are in flight, starting from a packet number of 0.  Thus,
+0-RTT packets could need to use a longer packet number encoding.
 
 A client SHOULD instead generate a fresh cryptographic handshake message and
 start packet numbers from 0.  This ensures that new 0-RTT packets will not use
