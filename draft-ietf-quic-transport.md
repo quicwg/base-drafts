@@ -526,7 +526,7 @@ an unopened stream indicates that the remote peer no longer wishes to receive
 data on this stream.  Either frame might arrive before a STREAM or
 STREAM_DATA_BLOCKED frame if packets are lost or reordered.
 
-Before creating a stream, all streams of the same type with lower-numbered
+Before a stream is created, all streams of the same type with lower-numbered
 stream IDs MUST be created.  This ensures that the creation order for streams is
 consistent on both endpoints.
 
