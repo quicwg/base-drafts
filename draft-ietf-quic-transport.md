@@ -3758,12 +3758,11 @@ After a client receives a Retry packet, 0-RTT packets are
 likely to have been lost or discarded by the server.  A client MAY attempt to
 resend data in 0-RTT packets after it sends a new Initial packet.
 
-A client MUST NOT reset the packet number it uses for 0-RTT packets.  The keys
-used to protect 0-RTT packets will not change as a result of responding to a
-Retry packet unless the client also regenerates the cryptographic handshake
-message.  Sending packets with the same packet number in that case is likely to
-compromise the packet protection for all 0-RTT packets because the same key and
-nonce could be used to protect different content.
+A client MUST NOT reset the packet number it uses for 0-RTT packets, since the
+keys used to protect 0-RTT packets will not change as a result of responding to
+a Retry packet.  Sending packets with the same packet number in that case is
+likely to compromise the packet protection for all 0-RTT packets because the
+same key and nonce could be used to protect different content.
 
 Receiving a Retry packet, especially a Retry that changes the connection ID used
 for subsequent packets, indicates a strong possibility that 0-RTT packets could
