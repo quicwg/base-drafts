@@ -3773,12 +3773,6 @@ packet number encoding for 0-RTT packets, a client MUST assume that all packets
 up to the current packet number are in flight, starting from a packet number of
 0.  Thus, 0-RTT packets could need to use a longer packet number encoding.
 
-A client SHOULD instead generate a fresh cryptographic handshake message and
-start packet numbers from 0.  This ensures that new 0-RTT packets will not use
-the same keys, avoiding any risk of key and nonce reuse; this also prevents
-0-RTT packets from previous handshake attempts from being accepted as part of
-the connection.
-
 A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
 frames from 1-RTT packets.  For instance, a client cannot send an ACK frame in a
