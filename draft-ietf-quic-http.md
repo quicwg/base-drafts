@@ -1635,7 +1635,7 @@ HTTP_WRONG_STREAM (0x0A):
 
 HTTP_ID_ERROR (0x0B):
 : A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
-  exceeding a limit, reducing a limit or being reused.
+  exceeding a limit, reducing a limit, or being reused.
 
 Reserved (0x0C):
 : N/A
@@ -1915,7 +1915,7 @@ The entries in the following table are registered by this document.
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_ID_ERROR                       | 0x000B     | An identifier used incorrectly           | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
 | Reserved                            | 0x000C     | N/A                                      | N/A                    |
 | HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
