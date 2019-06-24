@@ -702,7 +702,7 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
+sooner, as soon as handshake keys are available (see Section 4.9.1 of
 {{QUIC-TLS}}).
 
 ## Discussion
