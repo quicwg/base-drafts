@@ -2568,7 +2568,7 @@ manner even if the error only affects a single stream.
 Application protocols can signal application-specific protocol errors using the
 application-specific variant of the CONNECTION_CLOSE frame.  Errors that are
 specific to the transport, including all those described in this document, are
-carried the QUIC-specific variant of the CONNECTION_CLOSE frame.
+carried in the QUIC-specific variant of the CONNECTION_CLOSE frame.
 
 A CONNECTION_CLOSE frame could be sent in a packet that is lost.  An endpoint
 SHOULD be prepared to retransmit a packet containing a CONNECTION_CLOSE frame if
