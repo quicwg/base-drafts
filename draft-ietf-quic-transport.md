@@ -2860,7 +2860,7 @@ valid frames? -->
 ### Sending ACK Frames
 
 Packets containing only ACK frames are not congestion controlled, so there are
-limits on how frequently the can be sent.  An endpoint MUST NOT send more than
+limits on how frequently they can be sent.  An endpoint MUST NOT send more than
 one packet containing only an ACK frame per received ACK-eliciting
 packet(one containing frames other than ACK and/or PADDING).  An endpoint
 MUST NOT send a packet containing only an ACK frame in response to a
