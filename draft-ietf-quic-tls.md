@@ -624,7 +624,7 @@ A server accepts 0-RTT by sending the EarlyDataIndication in the ServerHello
 (see Section 4.10.2 of {{!TLS13}}). A server that accepts 0-RTT MUST process and
 acknowledge all 0-RTT packets that it receives.
 
-A server rejects 0-RTT by sending a ServerHello with the EarlyDataIndication.
+A server rejects 0-RTT by sending a ServerHello without the EarlyDataIndication.
 When rejecting 0-RTT, a server MUST NOT process any 0-RTT packets, even if it is
 in possesion of the keys to do so. A server will always reject 0-RTT if it sends
 a TLS HelloRetryRequest.
