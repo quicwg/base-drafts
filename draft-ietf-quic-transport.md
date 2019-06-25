@@ -1485,7 +1485,7 @@ CRYPTO_BUFFER_EXCEEDED error code.
 
 Once the handshake completes, if an endpoint is unable to buffer all data in a
 CRYPTO frame, it MAY discard that CRYPTO frame and all CRYPTO frames received in
-the future, or it MAY close the connection with an CRYPTO_BUFFER_EXCEEDED error
+the future, or it MAY close the connection with a CRYPTO_BUFFER_EXCEEDED error
 code. Packets containing discarded CRYPTO frames MUST be acknowledged because
 the packet has been received and processed by the transport even though the
 CRYPTO frame was discarded.
@@ -2306,7 +2306,7 @@ close a connection.  This might be after the application protocols negotiates a
 graceful shutdown.  The application protocol exchanges whatever messages that
 are needed to cause both endpoints to agree to close the connection, after which
 the application requests that the connection be closed.  The application
-protocol can use an CONNECTION_CLOSE frame with an appropriate error code to
+protocol can use a CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
 When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
@@ -3481,7 +3481,7 @@ DCIL and SCIL:
   occupies the 4 low bits of the byte.  An encoded length of 0 indicates that
   the connection ID is also 0 bytes in length.  Non-zero encoded lengths are
   increased by 3 to get the full length of the connection ID, producing a length
-  between 4 and 18 bytes inclusive.  For example, an byte with the value 0x50
+  between 4 and 18 bytes inclusive.  For example, a byte with the value 0x50
   describes an 8-byte Destination Connection ID and a zero-length Source
   Connection ID.
 

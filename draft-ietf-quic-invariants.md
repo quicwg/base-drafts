@@ -166,7 +166,7 @@ bits of the byte and the length of the Source Connection ID (SCIL) occupies the
 low bits of the byte.  An encoded length of 0 indicates that the connection ID
 is also 0 bytes in length.  Non-zero encoded lengths are increased by 3 to get
 the full length of the connection ID; the final value is therefore either 0 or
-between 4 and 18 bytes in length (inclusive).  For example, an byte with the
+between 4 and 18 bytes in length (inclusive).  For example, a byte with the
 value 0xe0 describes a 17 byte Destination Connection ID and a zero byte Source
 Connection ID.
 
