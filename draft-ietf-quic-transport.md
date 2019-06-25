@@ -1078,8 +1078,8 @@ Initial packet containing a CONNECTION_CLOSE frame with error code
 SERVER_BUSY.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
-packets in anticipation of a late-arriving Initial Packet. Clients are forbidden
-from sending Handshake packets prior to receiving a server response, so servers
+packets in anticipation of a late-arriving Initial packet. Clients are not able
+to send Handshake packets prior to receiving a server response, so servers
 SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
