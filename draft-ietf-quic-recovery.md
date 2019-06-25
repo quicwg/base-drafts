@@ -302,15 +302,15 @@ continue making forward progress.
 
 ## Measuring and Reporting Host Delay {#host-delay}
 
-An endpoint measures the delay incurred between when a packet is received and
-when the corresponding acknowledgment is sent.  The endpoint encodes this host
-delay for the largest acknowledged packet in the Ack Delay field of an ACK frame
-(see Section 19.3 of {{QUIC-TRANSPORT}}).  This allows the receiver of the ACK
-to adjust for any host delays, which is important for delayed acknowledgements,
-when estimating the path RTT.  In certain deployments, a packet might be held in
-the OS kernel or elsewhere on the host before being processed by the QUIC
-stack. Where possible, an endpoint MAY include these delays when populating the
-Ack Delay field in an ACK frame.
+An endpoint measures the delays intentionally introduced between when an
+ACK-eliciting packet is received and the corresponding acknowledgment is sent.
+The endpoint encodes this delay for the largest acknowledged packet in the
+Ack Delay field of an ACK frame (see Section 19.3 of {{QUIC-TRANSPORT}}).
+This allows the receiver of the ACK to adjust for any intentional delays,
+which is important for delayed acknowledgements, when estimating the path RTT.
+A packet might be held in the OS kernel or elsewhere on the host before being
+processed.  An endpoint SHOULD NOT include these unintentional delays when
+populating the Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
@@ -527,6 +527,10 @@ is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
 resulting in a 1 second initial handshake timeout as recommended in
 {{?RFC6298}}.
 
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
+a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
+be considered an RTT sample.
+
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
 RTT.  This timer MUST be updated when a new crypto packet is sent and when
 an acknowledgement is received which computes a new RTT sample. Upon timeout,
@@ -569,20 +573,6 @@ packet-threshold loss detection.
 
 When the crypto retransmission timer is active, the probe timer ({{pto}})
 is not active.
-
-
-### Retry and Version Negotiation
-
-A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process and resetting congestion
-control and loss recovery state, including resetting any pending timers.  Either
-packet indicates that the Initial was received but not processed.  Neither
-packet can be treated as an acknowledgment for the Initial.
-
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
 
 
 ## Probe Timeout {#pto}
@@ -678,6 +668,19 @@ prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
+## Retry and Version Negotiation
+
+A Retry or Version Negotiation packet causes a client to send another Initial
+packet, effectively restarting the connection process and resetting congestion
+control and loss recovery state, including resetting any pending timers.  Either
+packet indicates that the Initial was received but not processed.  Neither
+packet can be treated as an acknowledgment for the Initial.
+
+The client MAY however compute an RTT estimate to the server as the time period
+from when the first Initial was sent to when a Retry or a Version Negotiation
+packet is received.  The client MAY use this value to seed the RTT estimator for
+a subsequent connection attempt to the server.
+
 ## Discarding Keys and Packet State {#discarding-packets}
 
 When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
@@ -699,7 +702,7 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
+sooner, as soon as handshake keys are available (see Section 4.9.1 of
 {{QUIC-TLS}}).
 
 ## Discussion
@@ -1531,6 +1534,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-recovery-19
 
+- Change kPersistentThreshold from an exponent to a multiplier (#2557)
 - Send a PING if the PTO timer fires and there's nothing to send (#2624)
 - Set loss delay to at least kGranularity (#2617)
 - Merge application limited and sending after idle sections. Always limit

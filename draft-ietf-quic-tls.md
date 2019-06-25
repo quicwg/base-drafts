@@ -369,6 +369,29 @@ primary functions:
 Additional functions might be needed to configure TLS.
 
 
+### Handshake Complete {#handshake-complete}
+
+In this document, the TLS handshake is considered complete when the TLS stack
+has reported that the handshake is complete.  This happens when the TLS stack
+has both sent a Finished message and verified the peer's Finished message.
+Verifying the peer's Finished provides the endpoints with an assurance that
+previous handshake messages have not been modified.  Note that the handshake
+does not complete at both endpoints simultaneously.  Consequently, any
+requirement that is based on the completion of the handshake depends on the
+perspective of the endpoint in question.
+
+
+### Handshake Confirmed {#handshake-confirmed}
+
+In this document, the TLS handshake is considered confirmed at an endpoint when
+the following two conditions are met: the handshake is complete, and the
+endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
+This second condition can be implemented by recording the lowest packet number
+sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
+in any received 1-RTT ACK frame: once the latter is higher than or equal to the
+former, the handshake is confirmed.
+
+
 ### Sending and Receiving Handshake Messages
 
 In order to drive the handshake, TLS depends on being able to send and receive
@@ -430,22 +453,6 @@ tickets to a client.
 When the handshake is complete, QUIC only needs to provide TLS with any data
 that arrives in CRYPTO streams.  In the same way that is done during the
 handshake, new data is requested from TLS after providing received data.
-
-Important:
-
-: Until the handshake is reported as complete, the connection and key exchange
-  are not properly authenticated at the server.  Even though 1-RTT keys are
-  available to a server after receiving the first handshake messages from a
-  client, the server cannot consider the client to be authenticated until it
-  receives and validates the client's Finished message.  A server MUST NOT
-  process 1-RTT packets until the handshake is complete.  A server MAY buffer or
-  discard 1-RTT packets that it cannot read.
-
-: The requirement for the server to wait for the client Finished message creates
-  a dependency on that message being delivered.  A client can avoid the
-  potential for head-of-line blocking that this implies by sending a copy of the
-  CRYPTO frame that carries the Finished message in multiple packets.  This
-  enables immediate server processing for those packets.
 
 
 ### Encryption Level Changes
@@ -655,8 +662,7 @@ alerts at the "warning" level.
 
 After QUIC moves to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated (see {{key-update}}).  Initial
-packet protection keys are treated specially; see {{discard-initial}}.
+handshake, as well as when keys are updated; see {{key-update}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -673,40 +679,13 @@ However, this does not guarantee that no further packets will need to be
 received or sent at that encryption level because a peer might not have received
 all the acknowledgements necessary to reach the same state.
 
-After all CRYPTO frames for a given encryption level have been sent and all
-expected CRYPTO frames received, and all the corresponding acknowledgments have
-been received or sent, an endpoint starts a timer.  For 0-RTT keys, which do not
-carry CRYPTO frames, this timer starts when the first packets protected with
-1-RTT are sent or received.  To limit the effect of packet loss around a change
-in keys, endpoints MUST retain packet protection keys for that encryption level
-for at least three times the current Probe Timeout (PTO) interval as defined in
-{{QUIC-RECOVERY}}.  Retaining keys for this interval allows packets containing
-CRYPTO or ACK frames at that encryption level to be sent if packets are
-determined to be lost or new packets require acknowledgment.
-
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
 data in CRYPTO frames are sent at a previous encryption level.  These packets
 MAY also include PADDING frames.
 
-Once this timer expires, an endpoint MUST NOT either accept or generate new
-packets using those packet protection keys.  An endpoint can discard packet
-protection keys for that encryption level.
 
-Key updates (see {{key-update}}) can be used to update 1-RTT keys before keys
-from other encryption levels are discarded.  In that case, packets protected
-with the newest packet protection keys and packets sent two updates prior will
-appear to use the same keys.  After the handshake is complete, endpoints only
-need to maintain the two latest sets of packet protection keys and MAY discard
-older keys.  Updating keys multiple times rapidly can cause packets to be
-effectively lost if packets are significantly delayed.  Because key updates can
-only be performed once per round trip time, only packets that are delayed by
-more than a round trip will be lost as a result of changing keys; such packets
-will be marked as lost before this, as they leave a gap in the sequence of
-packet numbers.
-
-
-## Discarding Initial Keys {#discard-initial}
+### Discarding Initial Keys
 
 Packets protected with Initial secrets ({{initial-secrets}}) are not
 authenticated, meaning that an attacker could spoof packets with the intent to
@@ -722,6 +701,37 @@ send Initial packets after this point.
 
 This results in abandoning loss recovery state for the Initial encryption level
 and ignoring any outstanding Initial packets.
+
+
+### Discarding Handshake Keys
+
+An endpoint MUST NOT discard its handshake keys until the TLS handshake is
+confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
+keys as soon as it has confirmed the handshake.  Most application protocols
+will send data after the handshake, resulting in acknowledgements that allow
+both endpoints to discard their handshake keys promptly.  Endpoints that do
+not have reason to send immediately after completing the handshake MAY send
+ack-eliciting frames, such as PING, which will cause the handshake to be
+confirmed when they are acknowledged.
+
+
+### Discarding 0-RTT Keys
+
+0-RTT and 1-RTT packets share the same packet number space, and clients do not
+send 0-RTT packets after sending a 1-RTT packet ({{using-early-data}}).
+
+Therefore, a client SHOULD discard 0-RTT keys as soon as it installs 1-RTT
+keys, since they have no use after that moment.
+
+Additionally, a server MAY discard 0-RTT keys as soon as it receives a 1-RTT
+packet.  However, due to packet reordering, a 0-RTT packet could arrive after
+a 1-RTT packet.  Servers MAY temporarily retain 0-RTT keys to allow decrypting
+reordered packets without requiring their contents to be retransmitted with
+1-RTT keys.  After receiving a 1-RTT packet, servers MUST discard 0-RTT keys
+within a short time; the RECOMMENDED time period is three times the Probe
+Timeout (PTO, see {{QUIC-RECOVERY}}).  A server MAY discard 0-RTT keys earlier
+if it determines that it has received all 0-RTT packets, which can be done by
+keeping track of missing packet numbers.
 
 
 # Packet Protection {#packet-protection}
@@ -825,11 +835,17 @@ This provides protection against off-path attackers and robustness against QUIC
 version unaware middleboxes, but not against on-path attackers.
 
 QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
-TLS_AES_128_CCM_8_SHA256.  The AEAD for that ciphersuite, AEAD_AES_128_CCM_8
-{{?CCM=RFC6655}}, does not produce a large enough authentication tag for use
-with the header protection designs provided (see {{header-protect}}).  All other
-ciphersuites defined in {{!TLS13}} have a 16-byte authentication tag and produce
-an output 16 bytes larger than their input.
+TLS_AES_128_CCM_8_SHA256.  A ciphersuite MUST NOT be negotiated unless a header
+protection scheme is defined for the ciphersuite.  This document defines a
+header protection scheme for all ciphersuites defined in {{!TLS13}} aside from
+TLS_AES_128_CCM_8_SHA256.  These ciphersuites have a 16-byte authentication tag
+and produce an output 16 bytes larger than their input.
+
+Note:
+
+: An endpoint MUST NOT reject a ClientHello that offers a ciphersuite that it
+  does not support, or it would be impossible to deploy a new ciphersuite.  This
+  also applies to TLS_AES_128_CCM_8_SHA256.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -941,8 +957,8 @@ Common Fields:
 
 Before a TLS ciphersuite can be used with QUIC, a header protection algorithm
 MUST be specified for the AEAD used with that ciphersuite.  This document
-defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM,
-AEAD_AES_256_CCM (all AES AEADs are defined in {{!AEAD=RFC5116}}), and
+defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM
+(all AES AEADs are defined in {{!AEAD=RFC5116}}), and
 AEAD_CHACHA20_POLY1305 {{!CHACHA=RFC8439}}.  Prior to TLS selecting a
 ciphersuite, AES header protection is used ({{hp-aes}}), matching the
 AEAD_AES_128_GCM packet protection.
@@ -963,11 +979,13 @@ sample.
 
 To ensure that sufficient data is available for sampling, packets are padded so
 that the combined lengths of the encoded packet number and protected payload is
-at least 4 bytes longer than the sample required for header protection.  For the
-AEAD functions defined in {{?TLS13}}, which have 16-byte expansions and 16-byte
-header protection samples, this results in needing at least 3 bytes of frames in
-the unprotected payload if the packet number is encoded on a single byte, or 2
-bytes of frames for a 2-byte packet number encoding.
+at least 4 bytes longer than the sample required for header protection.  The
+ciphersuites defined in {{?TLS13}} - other than TLS_AES_128_CCM_8_SHA256, for
+which a header protection scheme is not defined in this document - have 16-byte
+expansions and 16-byte header protection samples.  This results in needing at
+least 3 bytes of frames in the unprotected payload if the packet number is
+encoded on a single byte, or 2 bytes of frames for a 2-byte packet number
+encoding.
 
 The sampled ciphertext for a packet with a short header can be determined by the
 following pseudocode:
@@ -1001,9 +1019,9 @@ sample = packet[sample_offset..sample_offset+sample_length]
 ### AES-Based Header Protection {#hp-aes}
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
-AEAD_AES_128_CCM, AEAD_AES_256_GCM, and AEAD_AES_256_CCM. AEAD_AES_128_GCM and
+AEAD_AES_128_CCM, and AEAD_AES_256_GCM. AEAD_AES_128_GCM and
 AEAD_AES_128_CCM use 128-bit AES {{!AES=DOI.10.6028/NIST.FIPS.197}} in
-electronic code-book (ECB) mode. AEAD_AES_256_GCM, and AEAD_AES_256_CCM use
+electronic code-book (ECB) mode. AEAD_AES_256_GCM uses
 256-bit AES in ECB mode.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
@@ -1070,6 +1088,9 @@ A server MUST NOT use 0-RTT keys to protect packets; it uses 1-RTT keys to
 protect acknowledgements of 0-RTT packets.  A client MUST NOT attempt to
 decrypt 0-RTT packets it receives and instead MUST discard them.
 
+Once a client has installed 1-RTT keys, it MUST NOT send any more 0-RTT
+packets.
+
 Note:
 
 : 0-RTT data can be acknowledged by the server as it receives it, but any
@@ -1086,13 +1107,30 @@ before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
 decrypt 1-RTT packets from the client.
 
-However, a server MUST NOT process data from incoming 1-RTT protected packets
-before verifying either the client Finished message or - in the case that the
-server has chosen to use a pre-shared key - the pre-shared key binder (see
-Section 4.2.11 of {{!TLS13}}).  Verifying these values provides the server with
-an assurance that the ClientHello has not been modified.  Packets protected with
-1-RTT keys MAY be stored and later decrypted and used once the handshake is
-complete.
+Even though 1-RTT keys are available to a server after receiving the first
+handshake messages from a client, it is missing assurances on the client state:
+
+- The client is not authenticated, unless the server has chosen to use a
+pre-shared key and validated the client's pre-shared key binder; see
+Section 4.2.11 of {{!TLS13}}.
+- The client has not demonstrated liveness, unless a RETRY packet was used.
+- Any received 0-RTT data that the server responds to might be due to a replay
+attack.
+
+Therefore, the server's use of 1-RTT keys is limited before the handshake is
+complete.  A server MUST NOT process data from incoming 1-RTT
+protected packets before the TLS handshake is complete.  Because
+sending acknowledgments indicates that all frames in a packet have been
+processed, a server cannot send acknowledgments for 1-RTT packets until the
+TLS handshake is complete.  Received packets protected with 1-RTT keys MAY be
+stored and later decrypted and used once the handshake is complete.
+
+The requirement for the server to wait for the client Finished message creates
+a dependency on that message being delivered.  A client can avoid the
+potential for head-of-line blocking that this implies by sending its 1-RTT
+packets coalesced with a handshake packet containing a copy of the CRYPTO frame
+that carries the Finished message, until one of the handshake packets is
+acknowledged.  This enables immediate server processing for those packets.
 
 A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
@@ -1101,10 +1139,10 @@ anticipation of receiving a ClientHello.
 
 # Key Update
 
-Once the 1-RTT keys are established and the short header is in use, it is
-possible to update the keys. The KEY_PHASE bit in the short header is used to
-indicate whether key updates have occurred. The KEY_PHASE bit is initially set
-to 0 and then inverted with each key update.
+Once the handshake is confirmed, it is possible to update the keys. The
+KEY_PHASE bit in the short header is used to indicate whether key updates
+have occurred. The KEY_PHASE bit is initially set to 0 and then inverted
+with each key update.
 
 The KEY_PHASE bit allows a recipient to detect a change in keying material
 without necessarily needing to receive the first packet that triggered the
@@ -1116,9 +1154,22 @@ TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-An endpoint MUST NOT initiate more than one key update at a time.  A new key
-cannot be used until the endpoint has received and successfully decrypted a
-packet with a matching KEY_PHASE.
+An endpoint MUST NOT initiate the first key update until the handshake is
+confirmed ({{handshake-confirmed}}). An endpoint MUST NOT initiate a subsequent
+key update until it has received an acknowledgment for a packet sent at the
+current KEY_PHASE.  This can be implemented by tracking the lowest packet
+number sent with each KEY_PHASE, and the highest acknowledged packet number
+in the 1-RTT space: once the latter is higher than or equal to the former,
+another key update can be initiated.
+
+Endpoints MAY limit the number of keys they retain to two sets for removing
+packet protection and one set for protecting packets.  Older keys can be
+discarded.  Updating keys multiple times rapidly can cause packets to be
+effectively lost if packets are significantly reordered.  Therefore, an
+endpoint SHOULD NOT initiate a key update for some time after it has last
+updated keys; the RECOMMENDED time period is three times the PTO. This avoids
+valid reordered packets being dropped by the peer as a result of the peer
+discarding older keys.
 
 A receiving endpoint detects an update when the KEY_PHASE bit does not match
 what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
@@ -1127,7 +1178,9 @@ The header protection key is not updated.
 
 If the packet can be decrypted and authenticated using the updated key and IV,
 then the keys the endpoint uses for packet protection are also updated.  The
-next packet sent by the endpoint will then use the new keys.
+next packet sent by the endpoint MUST then use the new keys.  Once an endpoint
+has sent a packet encrypted with a given key phase, it MUST NOT send a packet
+encrypted with an older key phase.
 
 An endpoint does not always need to send packets when it detects that its peer
 has updated keys.  The next packet that it sends will simply use the new keys.
@@ -1137,11 +1190,10 @@ a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
 error and abort the connection.
 
 An endpoint SHOULD retain old keys for a period of no more than three times the
-Probe Timeout (PTO; see {{QUIC-RECOVERY}}).  After this period, old keys and
-their corresponding secrets SHOULD be discarded.  Retaining keys allow endpoints
-to process packets that were sent with old keys and delayed in the network.
-Packets with higher packet numbers always use the updated keys and MUST NOT be
-decrypted with old keys.
+PTO.  After this period, old keys and their corresponding secrets SHOULD be
+discarded.  Retaining keys allow endpoints to process packets that were sent
+with old keys and delayed in the network.  Packets with higher packet numbers
+always use the updated keys and MUST NOT be decrypted with old keys.
 
 This ensures that once the handshake is complete, packets with the same
 KEY_PHASE will have the same packet protection keys, unless there are multiple
@@ -1161,11 +1213,12 @@ key updates in a short time frame succession and significant packet reordering.
 ~~~
 {: #ex-key-update title="Key Update"}
 
-A packet that triggers a key update could arrive after successfully processing a
-packet with a higher packet number.  This is only possible if there is a key
-compromise and an attack, or if the peer is incorrectly reverting to use of old
-keys.  Because the latter cannot be differentiated from an attack, an endpoint
-MUST immediately terminate the connection if it detects this condition.
+A packet that triggers a key update could arrive after the receiving endpoint
+successfully processed a packet with a higher packet number.  This is only
+possible if there is a key compromise and an attack, or if the peer is
+incorrectly reverting to use of old keys.  Because the latter cannot be
+differentiated from an attack, an endpoint MUST immediately terminate the
+connection if it detects this condition.
 
 In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
 specific keys, as described in Section 5.5 of {{!TLS13}}.
@@ -1200,17 +1253,7 @@ preliminary values for QUIC transport parameters, and allows a server to perform
 return routeability checks on clients.
 
 
-## Protocol and Version Negotiation {#version-negotiation}
-
-The QUIC version negotiation mechanism is used to negotiate the version of QUIC
-that is used prior to the completion of the handshake.  However, this packet is
-not authenticated, enabling an active attacker to force a version downgrade.
-
-To ensure that a QUIC version downgrade is not forced by an attacker, version
-information is copied into the TLS handshake, which provides integrity
-protection for the QUIC negotiation.  This does not prevent version downgrade
-prior to the completion of the handshake, though it means that a downgrade
-causes a handshake failure.
+## Protocol Negotiation {#protocol-negotiation}
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
