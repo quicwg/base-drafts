@@ -1052,7 +1052,8 @@ If a server receives a packet that has an unsupported version, but the packet is
 sufficiently large to initiate a new connection for any version supported by the
 server, it SHOULD send a Version Negotiation packet as described in
 {{send-vn}}. Servers MAY rate control these packets to avoid storms of Version
-Negotiation packets.
+Negotiation packets.  Otherwise, servers MUST drop packets that specify
+unsupported versions.
 
 The first packet for an unsupported version can use different semantics and
 encodings for any version-specific field.  In particular, different packet
@@ -1061,8 +1062,6 @@ support a particular version are unlikely to be able to decrypt the payload of
 the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
 unknown version, but instead send a Version Negotiation packet, provided that
 the packet is sufficiently long.
-
-Servers MUST drop other packets that contain unsupported versions.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
@@ -1325,26 +1324,20 @@ Destination Connection ID field of packets being sent to them.  Upon receiving a
 packet, each endpoint sets the Destination Connection ID it sends to match the
 value of the Source Connection ID that they receive.
 
-When an Initial packet is sent by a client which has not previously received a
-Retry packet from the server, it populates the Destination Connection ID field
-with an unpredictable value.  This MUST be at least 8 bytes in length. Until a
-packet is received from the server, the client MUST use the same value unless it
-abandons the connection attempt and starts a new one. The initial Destination
-Connection ID is used to determine packet protection keys for Initial packets.
+When an Initial packet is sent by a client that has not previously received an
+Initial or Retry packet from the server, it populates the Destination Connection
+ID field with an unpredictable value.  This MUST be at least 8 bytes in length.
+Until a packet is received from the server, the client MUST use the same value
+unless it abandons the connection attempt and starts a new one. The initial
+Destination Connection ID is used to determine packet protection keys for
+Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the SCIL field to indicate the length.
+and sets the SCIL field to indicate the length.  The first flight of 0-RTT
+packets use the same Destination and Source Connection ID values as the client's
+first Initial.
 
-The first flight of 0-RTT packets use the same Destination and Source Connection
-ID values as the client's first Initial.
-
-The Destination Connection ID field in the server's Initial packet contains a
-connection ID that is chosen by the recipient of the packet (i.e., the client);
-the Source Connection ID includes the connection ID that the sender of the
-packet wishes to use (see {{connection-id}}). The server MUST use consistent
-Source Connection IDs during the handshake.
-
-On first receiving an Initial or Retry packet from the server, the client uses
+Upon first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
 for subsequent packets, including any subsequent 0-RTT packets.  That means that
 a client might change the Destination Connection ID twice during connection
