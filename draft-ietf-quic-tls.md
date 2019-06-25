@@ -613,6 +613,10 @@ by the "initial_max_data" transport parameter supplied by the server.  A client
 MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
+A client that wishes to send early data uses the "early_data" extension in the
+ClientHello message of a subsequent handshake (see Section 4.10.2 of
+{{!TLS13}}). It then sends the application data in 0-RTT packets.
+
 Early data within the TLS connection MUST NOT be used.  As it is for other TLS
 application data, a server MUST treat receiving early data on the TLS connection
 as a connection error of type PROTOCOL_VIOLATION.
