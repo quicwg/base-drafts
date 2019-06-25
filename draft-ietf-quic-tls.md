@@ -621,8 +621,8 @@ as a connection error of type PROTOCOL_VIOLATION.
 ## Accepting and rejecting 0-RTT
 
 A server accepts 0-RTT by sending the EarlyDataIndication in the ServerHello
-(see Section 4.10.2 of {{!TLS13}}). A server that accepts 0-RTT MUST process and
-acknowledge all 0-RTT packets that it receives.
+(see Section 4.10.2 of {{!TLS13}}).  The server then processes and acknowledges
+the 0-RTT packets that it receives.
 
 A server rejects 0-RTT by sending a ServerHello without the EarlyDataIndication.
 A server will always reject 0-RTT if it sends a TLS HelloRetryRequest.  When
