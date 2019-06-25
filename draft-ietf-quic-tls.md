@@ -624,16 +624,16 @@ as a connection error of type PROTOCOL_VIOLATION.
 
 ## Accepting and Rejecting 0-RTT
 
-A server accepts 0-RTT by sending the EarlyDataIndication in the ServerHello
+A server accepts 0-RTT by sending the early_data extension in the ServerHello
 (see Section 4.10.2 of {{!TLS13}}).  The server then processes and acknowledges
 the 0-RTT packets that it receives.
 
-A server rejects 0-RTT by sending a ServerHello without the EarlyDataIndication.
-A server will always reject 0-RTT if it sends a TLS HelloRetryRequest.  When
-rejecting 0-RTT, a server MUST NOT process any 0-RTT packets, even if it is in
-possesion of the keys to do so.  When 0-RTT was rejected, a client MUST treat
-receipt of an acknowledgement for a 0-RTT packet as a connection error of type
-PROTOCOL_VIOLATION.
+A server rejects 0-RTT by sending a ServerHello without the early_data
+extension. A server will always reject 0-RTT if it sends a TLS
+HelloRetryRequest.  When rejecting 0-RTT, a server MUST NOT process any 0-RTT
+packets, even if it is in possesion of the keys to do so.  When 0-RTT was
+rejected, a client MUST treat receipt of an acknowledgement for a 0-RTT packet
+as a connection error of type PROTOCOL_VIOLATION.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
