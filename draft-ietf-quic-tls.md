@@ -622,7 +622,7 @@ application data, a server MUST treat receiving early data on the TLS connection
 as a connection error of type PROTOCOL_VIOLATION.
 
 
-## Accepting and rejecting 0-RTT
+## Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending the EarlyDataIndication in the ServerHello
 (see Section 4.10.2 of {{!TLS13}}).  The server then processes and acknowledges
