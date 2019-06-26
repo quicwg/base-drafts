@@ -614,7 +614,7 @@ MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
-the ClientHello message of a subsequent handshake (see Section 4.10.2 of
+the ClientHello message of a subsequent handshake (see Section 4.2.10 of
 {{!TLS13}}). It then sends the application data in 0-RTT packets.
 
 Early data within the TLS connection MUST NOT be used.  As it is for other TLS
@@ -625,7 +625,7 @@ as a connection error of type PROTOCOL_VIOLATION.
 ## Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
-EncryptedExtensions (see Section 4.10.2 of {{!TLS13}}).  The server then
+EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
 processes and acknowledges the 0-RTT packets that it receives.
 
 A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
