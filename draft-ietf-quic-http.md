@@ -641,7 +641,7 @@ client-controlled placeholders with an ID less than the value of this setting
 with the confidence that the server will not have discarded the state.  The
 orphan placeholder cannot be prioritized or referenced by the client.
 
-Servers are RECOMMENDED to support at least 32 placeholders.  Those that do not
+Servers SHOULD support at least 32 placeholders.  Those that do not
 SHOULD refrain from supporting placeholders at all, setting
 `SETTINGS_NUM_PLACEHOLDERS` to zero.
 
