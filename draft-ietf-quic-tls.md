@@ -624,9 +624,9 @@ as a connection error of type PROTOCOL_VIOLATION.
 
 ## Accepting and Rejecting 0-RTT
 
-A server accepts 0-RTT by sending an early_data extension in the ServerHello
-(see Section 4.10.2 of {{!TLS13}}).  The server then processes and acknowledges
-the 0-RTT packets that it receives.
+A server accepts 0-RTT by sending an early_data extension in the
+EncryptedExtensions (see Section 4.10.2 of {{!TLS13}}).  The server then
+processes and acknowledges the 0-RTT packets that it receives.
 
 A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
 extension.  A server will always reject 0-RTT if it sends a TLS
