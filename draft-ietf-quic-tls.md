@@ -632,7 +632,8 @@ A server rejects 0-RTT by sending a ServerHello without an early_data extension.
 A server will always reject 0-RTT if it sends a TLS HelloRetryRequest.  When
 rejecting 0-RTT, a server MUST NOT process any 0-RTT packets, even if it could.
 When 0-RTT was rejected, a client SHOULD treat receipt of an acknowledgement
-for a 0-RTT packet as a connection error of type PROTOCOL_VIOLATION.
+for a 0-RTT packet as a connection error of type PROTOCOL_VIOLATION, if it is
+able to detect the condition.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport

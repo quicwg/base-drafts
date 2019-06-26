@@ -2918,7 +2918,9 @@ received packets in preference to packets received in the past.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.
+the condition. This includes receiving an ACK frame containing a packet number
+that the endpoint has not sent, as well as acknowledgements for 0-RTT packets
+when the server has rejected the use of 0-RTT.
 
 
 ### ACK Frames and Packet Protection
