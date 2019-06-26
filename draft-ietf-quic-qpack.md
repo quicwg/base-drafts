@@ -320,11 +320,11 @@ greater than or equal to the Required Insert Count for all header blocks the
 decoder has started reading from the stream.
 <!-- doesn't the stream become unblocked when the encoder receives the acks? -->
 
-When processing header blocks, the decoder expects the Required Insert Count
-value to exactly match the value defined in {{blocked-streams}. If it encounters
-a smaller value, it MUST treat this as a connection error of type
+When processing header blocks, the decoder expects the Required Insert Count to
+exactly match the value defined in {{blocked-streams}. If it encounters a
+smaller value than expected, it MUST treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED (see {{invalid-references}}). If it encounters a
-larger value, it MAY treat this as a connection error of type
+larger value than expected, it MAY treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED.
 
 If the decoder encounters more blocked streams than it promised to support, it
@@ -970,8 +970,8 @@ index less than the Base, this representation starts with the '1' 1-bit pattern,
 followed by the `S` bit indicating whether the reference is into the static or
 dynamic table.  The 6-bit prefix integer (see Section 5.1 of [RFC7541]) that
 follows is used to locate the table entry for the header name.  When S=1, the
-number represents the static table index; when S=0, the number is the index of
-the entry in the dynamic table relative to Base.
+number represents the static table index; when S=0, the number is the relative
+index of the entry in the dynamic table.
 
 
 ### Indexed Header Field With Post-Base Index
@@ -1028,8 +1028,8 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 The fourth (`S`) bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer (see Section 5.1 of [RFC7541]) that follows is
 used to locate the table entry for the header name.  When S=1, the number
-represents the static table index; when S=0, the number is the index of the
-entry in the dynamic table relative to Base.
+represents the static table index; when S=0, the number is the relative index of
+the entry in the dynamic table.
 
 
 ### Literal Header Field With Post-Base Name Reference
