@@ -187,8 +187,8 @@ QUIC:
 
 QUIC packet:
 
-: A complete processable unit of QUIC that can be encapsulated in a UDP datagram.
-  Multiple QUIC packets can be encapsulated in a single UDP datagram.
+: A complete processable unit of QUIC that can be encapsulated in a UDP
+  datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
 
 Endpoint:
 
