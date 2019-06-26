@@ -3149,11 +3149,11 @@ sent in a single IP packet.
 
 The payload of a UDP datagram carrying the first Initial packet MUST be expanded
 to at least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
-combining the Initial packet with a 0-RTT packet (see {{packet-coalesce}}).
-Sending a UDP datagram of this size ensures that the network path supports a
-reasonable Maximum Transmission Unit (MTU), and helps reduce the amplitude of
-amplification attacks caused by server responses toward an unverified client
-address; see {{address-validation}}.
+coalescing the Initial packet (see {{packet-coalesce}}). Sending a UDP datagram
+of this size ensures that the network path supports a reasonable Maximum
+Transmission Unit (MTU), and helps reduce the amplitude of amplification attacks
+caused by server responses toward an unverified client address; see
+{{address-validation}}.
 
 The datagram containing the first Initial packet from a client MAY exceed 1200
 bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
