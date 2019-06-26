@@ -937,7 +937,7 @@ unnecessarily limit parallelism.
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
 server-initiated bidirectional stream as a connection error of type
-HTTP_GENERAL_PROTOCOL_ERROR unless such an extension has been negotiated.
+HTTP_STREAM_CREATION_ERROR unless such an extension has been negotiated.
 
 ## Unidirectional Streams
 
