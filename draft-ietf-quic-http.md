@@ -452,12 +452,12 @@ HTTP_INCOMPLETE_REQUEST.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
-response, and cleanly closing its stream. Clients MUST NOT discard complete
-responses as a result of having their request terminated abruptly, though
-clients can always discard responses at their discretion for other reasons.
+not been sent and received. When this is true, a server MAY abort reading the
+receiving part of the request stream with error code HTTP_EARLY_RESPONSE,
+sending a complete response, and cleanly closing the sending part of the stream.
+Clients MUST NOT discard complete responses as a result of having their request
+terminated abruptly, though clients can always discard responses at their
+discretion for other reasons.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -505,11 +505,11 @@ this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
-Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
-STOP_SENDING frames, as appropriate) with an error code of
-HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-response, it indicates that this response is no longer of interest.
-Implementations SHOULD cancel requests by aborting both directions of a stream.
+Clients can cancel requests by abruptly terminating the sending part of the
+request stream with an error code of HTTP_REQUEST_CANCELLED
+({{http-error-codes}}).  When the client aborts reading a response, it indicates
+that this response is no longer of interest. Implementations SHOULD cancel
+requests by terminating both directions of a stream.
 
 When the server rejects a request without performing any application processing,
 it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
@@ -522,11 +522,11 @@ were partially or fully processed.  When a server abandons a response after
 partial processing, it SHOULD abort its response stream with the error code
 HTTP_REQUEST_CANCELLED.
 
-When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
-send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
-if no processing was performed.  Clients MUST NOT reset streams with the
-HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
-frame that contains the same code.
+When a client abruptly terminates a request with the error code
+HTTP_REQUEST_CANCELLED, a server MAY abruptly terminate the response using the
+error code HTTP_REQUEST_REJECTED if no processing was performed.  Clients MUST
+NOT use the HTTP_REQUEST_REJECTED error code, except when a server has requested
+closure of the request stream with this error code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -599,9 +599,9 @@ a single direction are not invalid, but are often handled poorly by servers, so
 clients SHOULD NOT close a stream for sending while they still expect to receive
 data from the target of the CONNECT.
 
-A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
-any error in the TCP connection, which includes receiving a TCP segment with the
-RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+A TCP connection error is signaled by abruptly terminating the stream. A proxy
+treats any error in the TCP connection, which includes receiving a TCP segment
+with the RST bit set, as a stream error of type HTTP_CONNECT_ERROR
 ({{http-error-codes}}).  Correspondingly, if a proxy detects an error with the
 stream or the QUIC connection, it MUST close the TCP connection.  If the
 underlying TCP implementation permits it, the proxy SHOULD send a TCP segment
@@ -785,9 +785,9 @@ amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an error code of
-HTTP_REQUEST_CANCELLED can be used. This asks the server not to transfer
-additional data and indicates that it will be discarded upon receipt.
+CANCEL_PUSH frame, the client can abort reading the stream with an error code of
+HTTP_REQUEST_CANCELLED. This asks the server not to transfer additional data and
+indicates that it will be discarded upon receipt.
 
 # Connection Closure
 
@@ -827,9 +827,9 @@ Servers initiate the shutdown of a connection by sending a GOAWAY frame
 on lower stream IDs were or might be processed in this connection, while
 requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the QUIC MAX_STREAMS limit after
-sending a GOAWAY frame.
+connection shutdown.  This identifier MAY be zero if no requests were processed.
+Servers SHOULD NOT permit additional transport streams after sending a GOAWAY
+frame.
 
 Clients MUST NOT send new requests on the connection after receiving GOAWAY;
 a new connection MAY be established to send additional requests.
@@ -927,12 +927,10 @@ All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
 on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
-for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
-HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
-`initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
-RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
-unnecessarily limit parallelism.
+to permit these streams to open, an HTTP/3 server SHOULD configure non-zero
+minimum values for the number of permitted streams and the initial flow control
+window for each stream. It is RECOMMENDED that at least 100 requests be
+permitted at a time, so as to not unnecessarily limit parallelism.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
@@ -962,18 +960,16 @@ see {{extensions}} for more details.
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
-Endpoints that set low values for the QUIC transport parameters
-`initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
-chance that the remote peer reaches the limit early and becomes blocked. In
-particular, the value chosen for `initial_max_uni_streams` should consider that
-remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
-To avoid blocking, both clients and servers MUST allow the peer to create at
-least one unidirectional stream for the HTTP control stream plus the number of
-unidirectional streams required by mandatory extensions (such as QPACK) by
-setting an appropriate value for the QUIC transport parameter
-`initial_max_uni_streams` (three being the minimum value required for the base
-HTTP/3 protocol and QPACK), and SHOULD use a value of 1,024 or greater for the
-QUIC transport parameter `initial_max_stream_data_uni`.
+Endpoints that excessively restrict the number or flow control window of these
+streams will increase the chance that the remote peer reaches the limit early
+and becomes blocked. In particular, implementations should consider that remote
+peers may wish to exercise reserved stream behavior ({{stream-grease}}) with
+some of the unidirectional streams they are permitted to use. To avoid blocking,
+both clients and servers MUST allow the peer to create at least one
+unidirectional stream for the HTTP control stream plus the number of
+unidirectional streams required by mandatory extensions (three being the minimum
+number required for the base HTTP/3 protocol and QPACK), and SHOULD provide at
+least 1,024 bytes of flow control credit to each stream.
 
 Note that an endpoint is not required to grant additional credits to create more
 unidirectional streams if its peer consumes all the initial credits before
@@ -984,9 +980,9 @@ create additional streams as allowed by their peer.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
-frame with an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider
-such streams to be a connection error of any kind.
+unknown. Recipients of unknown stream types MAY abort reading of the stream with
+an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider such streams
+to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -1277,14 +1273,12 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RESET_STREAM frame on that stream and cease transmission of the
-response.
+abruptly terminate that stream.
 
 A server can send the CANCEL_PUSH frame to indicate that it will not be
 fulfilling a promise prior to creation of a push stream.  Once the push stream
 has been created, sending CANCEL_PUSH has no effect on the state of the push
-stream.  A QUIC RESET_STREAM frame SHOULD be used instead to abort transmission
-of the server push response.
+stream.  The server SHOULD abruptly terminate the push stream instead.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
@@ -1493,7 +1487,7 @@ The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
-to the limit set by the QUIC MAX_STREAMS frame.
+to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
@@ -1590,8 +1584,9 @@ the cause of a connection or stream error.
 
 ## HTTP/3 Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RESET_STREAM frames,
-STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/3.
+The following error codes are defined for use when abruptly terminating the
+sending part of streams, aborting reading of the receiving part of streams, or
+immediately closing connections.
 
 HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
@@ -1718,8 +1713,8 @@ extension is disabled if the setting is omitted.
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
 with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
 other frames to make a connection more resistant to traffic analysis, HTTP/3 can
-rely on QUIC PADDING frames or employ the reserved frame and stream types
-discussed in {{frame-grease}} and {{stream-grease}}.
+either rely on transport-layer padding or employ the reserved frame and stream
+types discussed in {{frame-grease}} and {{stream-grease}}.
 
 When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
 security considerations of {{!ALTSVC}} also apply.
