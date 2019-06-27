@@ -453,9 +453,9 @@ HTTP_INCOMPLETE_REQUEST.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY abort reading the
-receiving part of the request stream with error code HTTP_EARLY_RESPONSE,
-sending a complete response, and cleanly closing the sending part of the stream.
-Clients MUST NOT discard complete responses as a result of having their request
+receiving part of the request stream with error code HTTP_EARLY_RESPONSE, send a
+complete response, and cleanly close the sending part of the stream. Clients
+MUST NOT discard complete responses as a result of having their request
 terminated abruptly, though clients can always discard responses at their
 discretion for other reasons.
 
