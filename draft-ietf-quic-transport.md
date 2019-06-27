@@ -3743,9 +3743,9 @@ limitations.
 Packet numbers for 0-RTT protected packets use the same space as 1-RTT protected
 packets.
 
-After a client receives a Retry packet, 0-RTT packets are
-likely to have been lost or discarded by the server.  A client MAY attempt to
-resend data in 0-RTT packets after it sends a new Initial packet.
+After a client receives a Retry packet, 0-RTT packets are likely to have been
+lost or discarded by the server.  A client SHOULD attempt to resend data in
+0-RTT packets after it sends a new Initial packet.
 
 A client MUST NOT reset the packet number it uses for 0-RTT packets, since the
 keys used to protect 0-RTT packets will not change as a result of responding to
