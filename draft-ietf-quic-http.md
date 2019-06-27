@@ -937,7 +937,7 @@ unnecessarily limit parallelism.
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
 server-initiated bidirectional stream as a connection error of type
-HTTP_GENERAL_PROTOCOL_ERROR unless such an extension has been negotiated.
+HTTP_STREAM_CREATION_ERROR unless such an extension has been negotiated.
 
 ## Unidirectional Streams
 
@@ -985,8 +985,8 @@ create additional streams as allowed by their peer.
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
-frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
-streams to be a connection error of any kind.
+frame with an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider
+such streams to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -1008,10 +1008,10 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream, and the
-receiver MUST NOT request that the sender close the control stream.  If either
-control stream is closed at any point, this MUST be treated as a connection
-error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_STREAM_CREATION_ERROR.  The sender MUST NOT close the control stream, and
+the receiver MUST NOT request that the sender close the control stream.  If
+either control stream is closed at any point, this MUST be treated as a
+connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
@@ -1031,7 +1031,7 @@ remaining data on this stream consists of HTTP/3 frames, as defined in
 described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
-MUST be treated as a connection error of type HTTP_WRONG_STREAM_DIRECTION.
+MUST be treated as a connection error of type HTTP_STREAM_CREATION_ERROR.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -1638,19 +1638,17 @@ HTTP_ID_ERROR (0x0B):
 Reserved (0x0C):
 : N/A
 
-HTTP_UNKNOWN_STREAM_TYPE (0x0D):
-: A unidirectional stream header contained an unknown stream type.
+HTTP_STREAM_CREATION_ERROR (0x0D):
+: The endpoint detected that its peer created a stream that it will not accept.
 
-HTTP_WRONG_STREAM_COUNT (0x0E):
-: A unidirectional stream type was used more times than is permitted by that
-  type.
+Reserved (0x0E):
+: N/A
 
 HTTP_CLOSED_CRITICAL_STREAM (0x0F):
 : A stream required by the connection was closed or reset.
 
-HTTP_WRONG_STREAM_DIRECTION (0x0010):
-: A unidirectional stream type was used by a peer which is not permitted to do
-  so.
+Reserved (0x0010):
+: N/A
 
 HTTP_EARLY_RESPONSE (0x0011):
 : The remainder of the client's request is not needed to produce a response.
@@ -1916,10 +1914,10 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
 | HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
 | Reserved                            | 0x000C     | N/A                                      | N/A                    |
-| HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
+| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Stream creation error                    | {{http-error-codes}}   |
+| Reserved                            | 0x000E     | N/A                                      | N/A                    |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
+| Reserved                            | 0x000E     | N/A                                      | N/A                    |
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
