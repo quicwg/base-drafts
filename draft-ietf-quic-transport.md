@@ -877,6 +877,29 @@ signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
+## Required Operations on Streams
+
+There are certain operations which an application MUST be able to perform when
+interacting with QUIC streams.  This document does not specify an API, but
+any implementation of this version of QUIC MUST expose the ability to perform
+the operations described in this section on a QUIC stream.
+
+On the sending part of a stream:
+- Attempt to write data, understanding when stream flow control credit
+  ({{data-flow-control}}) has successfully been reserved to send the written
+  data or possibly discovering that the stream has been closed because the peer
+  sent a STOP_SENDING frame ({{frame-stop-sending}})
+- Cleanly terminate the stream, resulting in a STREAM frame ({{frame-stream}})
+  with the FIN bit set
+- Abruptly terminate the stream, resulting in a RESET_STREAM frame
+  ({{frame-reset-stream}}), even if the stream was cleanly terminated previously
+
+On the receiving part of a stream:
+- Attempt to read data, possibly discovering that the peer has terminated the
+  stream either cleanly or abruptly
+- Abort reading of the stream and request closure, resulting in a STOP_SENDING
+  frame ({{frame-stop-sending}})
+
 
 # Connections {#connections}
 
@@ -1099,6 +1122,35 @@ suggested structure:
  - shutdown
 
 -->
+
+
+## Required Operations on Connections
+
+There are certain operations which an application MUST be able to perform when
+interacting with the QUIC transport.  This document does not specify an API, but
+any implementation of this version of QUIC MUST expose the ability to perform
+the operations described in this section on a QUIC connection.
+
+When implementing the client role:
+- Open a connection, which begins the exchange described in {{handshake}}
+
+When implementing the server role:
+- Listen for incoming connections, which prepares for the exchange described in
+  {{handshake}}
+- If Early Data is supported, embed application-controlled data in the TLS
+  resumption ticket sent to the client
+- If Early Data is supported, retrieve application-controlled data from the
+  client's resumption ticket and approve/veto accepting Early Data
+
+In either role:
+- Configure minimum values for the initial number of permitted streams of each
+  type, as communicated in the transport parameters ({{transport-parameters}})
+- Keep a connection from silently closing, either by generating PING frames
+  ({{frame-ping}}) or by requesting that the transport send additional frames
+  before the idle timeout expires ({{idle-timeout}})
+- Cease issuing credit for new streams via MAX_STREAMS frames
+  ({{frame-max-streams}})
+- Immediately close ({{immediate-close}}) the connection
 
 
 # Version Negotiation {#version-negotiation}
