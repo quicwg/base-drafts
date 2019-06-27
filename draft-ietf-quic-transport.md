@@ -345,6 +345,29 @@ the relative priority of streams.  When deciding which streams to dedicate
 resources to, the implementation SHOULD use the information provided by the
 application.
 
+## Required Operations on Streams
+
+There are certain operations which an application MUST be able to perform when
+interacting with QUIC streams.  This document does not specify an API, but
+any implementation of this version of QUIC MUST expose the ability to perform
+the operations described in this section on a QUIC stream.
+
+On the sending part of a stream:
+- Attempt to write data, understanding when stream flow control credit
+  ({{data-flow-control}}) has successfully been reserved to send the written
+  data or possibly discovering that the stream has been closed because the peer
+  sent a STOP_SENDING frame ({{frame-stop-sending}})
+- Cleanly terminate the stream, resulting in a STREAM frame ({{frame-stream}})
+  with the FIN bit set
+- Abruptly terminate the stream, resulting in a RESET_STREAM frame
+  ({{frame-reset-stream}}), even if the stream was cleanly terminated previously
+
+On the receiving part of a stream:
+- Attempt to read data, possibly discovering that the peer has terminated the
+  stream either cleanly or abruptly
+- Abort reading of the stream and request closure, resulting in a STOP_SENDING
+  frame ({{frame-stop-sending}})
+
 
 # Stream States {#stream-states}
 
@@ -876,29 +899,6 @@ considered useful for debugging. An endpoint MUST NOT wait to receive this
 signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses to not send STREAMS_BLOCKED frames.
-
-## Required Operations on Streams
-
-There are certain operations which an application MUST be able to perform when
-interacting with QUIC streams.  This document does not specify an API, but
-any implementation of this version of QUIC MUST expose the ability to perform
-the operations described in this section on a QUIC stream.
-
-On the sending part of a stream:
-- Attempt to write data, understanding when stream flow control credit
-  ({{data-flow-control}}) has successfully been reserved to send the written
-  data or possibly discovering that the stream has been closed because the peer
-  sent a STOP_SENDING frame ({{frame-stop-sending}})
-- Cleanly terminate the stream, resulting in a STREAM frame ({{frame-stream}})
-  with the FIN bit set
-- Abruptly terminate the stream, resulting in a RESET_STREAM frame
-  ({{frame-reset-stream}}), even if the stream was cleanly terminated previously
-
-On the receiving part of a stream:
-- Attempt to read data, possibly discovering that the peer has terminated the
-  stream either cleanly or abruptly
-- Abort reading of the stream and request closure, resulting in a STOP_SENDING
-  frame ({{frame-stop-sending}})
 
 
 # Connections {#connections}
