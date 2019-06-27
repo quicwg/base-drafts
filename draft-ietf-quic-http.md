@@ -1639,8 +1639,7 @@ Reserved (0x0C):
 : N/A
 
 HTTP_STREAM_CREATION_ERROR (0x0D):
-: The endpoint detected that its peer created a unidirectional stream that it
-  will not accept.
+: The endpoint detected that its peer created a stream that it will not accept.
 
 Reserved (0x0E):
 : N/A
@@ -1915,7 +1914,7 @@ The entries in the following table are registered by this document.
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
 | HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
 | Reserved                            | 0x000C     | N/A                                      | N/A                    |
-| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Unidirectional stream creation error     | {{http-error-codes}}   |
+| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Stream creation error                    | {{http-error-codes}}   |
 | Reserved                            | 0x000E     | N/A                                      | N/A                    |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
 | Reserved                            | 0x000E     | N/A                                      | N/A                    |
