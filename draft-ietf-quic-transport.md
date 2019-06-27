@@ -353,6 +353,7 @@ any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC stream.
 
 On the sending part of a stream:
+
 - Attempt to write data, understanding when stream flow control credit
   ({{data-flow-control}}) has successfully been reserved to send the written
   data or possibly discovering that the stream has been closed because the peer
@@ -363,6 +364,7 @@ On the sending part of a stream:
   ({{frame-reset-stream}}), even if the stream was cleanly terminated previously
 
 On the receiving part of a stream:
+
 - Attempt to read data, possibly discovering that the peer has terminated the
   stream either cleanly or abruptly
 - Abort reading of the stream and request closure, resulting in a STOP_SENDING
@@ -1132,9 +1134,11 @@ any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC connection.
 
 When implementing the client role:
+
 - Open a connection, which begins the exchange described in {{handshake}}
 
 When implementing the server role:
+
 - Listen for incoming connections, which prepares for the exchange described in
   {{handshake}}
 - If Early Data is supported, embed application-controlled data in the TLS
@@ -1143,6 +1147,7 @@ When implementing the server role:
   client's resumption ticket and approve/veto accepting Early Data
 
 In either role:
+
 - Configure minimum values for the initial number of permitted streams of each
   type, as communicated in the transport parameters ({{transport-parameters}})
 - Keep a connection from silently closing, either by generating PING frames
