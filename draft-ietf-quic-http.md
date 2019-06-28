@@ -453,11 +453,11 @@ HTTP_INCOMPLETE_REQUEST.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When this is true, a server MAY abort reading the
-receiving part of the request stream with error code HTTP_EARLY_RESPONSE, send a
-complete response, and cleanly close the sending part of the stream. Clients
-MUST NOT discard complete responses as a result of having their request
-terminated abruptly, though clients can always discard responses at their
-discretion for other reasons.
+request stream with error code HTTP_EARLY_RESPONSE, send a complete response,
+and cleanly close the sending part of the stream. Clients MUST NOT discard
+complete responses as a result of having their request terminated abruptly,
+though clients can always discard responses at their discretion for other
+reasons.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -505,11 +505,11 @@ this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
-Clients can cancel requests by abruptly terminating the sending part of the
-request stream with an error code of HTTP_REQUEST_CANCELLED
-({{http-error-codes}}).  When the client aborts reading a response, it indicates
-that this response is no longer of interest. Implementations SHOULD cancel
-requests by terminating both directions of a stream.
+Clients can cancel requests by resetting the request stream with an error code
+of HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client aborts
+reading a response, it indicates that this response is no longer of interest.
+Implementations SHOULD cancel requests by terminating both directions of a
+stream.
 
 When the server rejects a request without performing any application processing,
 it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
@@ -522,11 +522,11 @@ were partially or fully processed.  When a server abandons a response after
 partial processing, it SHOULD abort its response stream with the error code
 HTTP_REQUEST_CANCELLED.
 
-When a client abruptly terminates a request with the error code
-HTTP_REQUEST_CANCELLED, a server MAY abruptly terminate the response using the
-error code HTTP_REQUEST_REJECTED if no processing was performed.  Clients MUST
-NOT use the HTTP_REQUEST_REJECTED error code, except when a server has requested
-closure of the request stream with this error code.
+When a client resets a request with the error code HTTP_REQUEST_CANCELLED, a
+server MAY abruptly terminate the response using the error code
+HTTP_REQUEST_REJECTED if no processing was performed.  Clients MUST NOT use the
+HTTP_REQUEST_REJECTED error code, except when a server has requested closure of
+the request stream with this error code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -1584,9 +1584,8 @@ the cause of a connection or stream error.
 
 ## HTTP/3 Error Codes {#http-error-codes}
 
-The following error codes are defined for use when abruptly terminating the
-sending part of streams, aborting reading of the receiving part of streams, or
-immediately closing connections.
+The following error codes are defined for use when abruptly terminating streams,
+aborting reading of streams, or immediately closing connections.
 
 HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but

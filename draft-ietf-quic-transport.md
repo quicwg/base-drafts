@@ -352,24 +352,27 @@ interacting with QUIC streams.  This document does not specify an API, but
 any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC stream.
 
-On the sending part of a stream:
+On the sending part of a stream, application protocols need to be able to:
 
-- Attempt to write data, understanding when stream flow control credit
+- write data, understanding when stream flow control credit
   ({{data-flow-control}}) has successfully been reserved to send the written
   data or possibly discovering that the stream has been closed because the peer
-  sent a STOP_SENDING frame ({{frame-stop-sending}})
-- Cleanly terminate the stream, resulting in a STREAM frame ({{frame-stream}})
-  with the FIN bit set
-- Abruptly terminate the stream, resulting in a RESET_STREAM frame
-  ({{frame-reset-stream}}), even if the stream was cleanly terminated previously
+  sent a STOP_SENDING frame ({{frame-stop-sending}});
+- end the stream (clean termination), resulting in a STREAM frame
+  ({{frame-stream}}) with the FIN bit set; and
+- reset the stream (abrupt termination), resulting in a RESET_STREAM frame
+  ({{frame-reset-stream}}), even if the stream was already ended.
 
-On the receiving part of a stream:
+On the receiving part of a stream, application protocols need to be able to:
 
-- Attempt to read data, possibly discovering that the peer has terminated the
-  stream either cleanly or abruptly
-- Abort reading of the stream and request closure, resulting in a STOP_SENDING
-  frame ({{frame-stop-sending}})
+- read data
+- abort reading of the stream and request closure, possibly resulting in a
+  STOP_SENDING frame ({{frame-stop-sending}})
 
+Applications also need to be informed of state changes on streams, including
+when the peer has initiated, reset, or aborted reading on a stream; when new
+data is available; and when data on the stream is blocked due to flow
+control.
 
 # Stream States {#stream-states}
 
@@ -1133,29 +1136,32 @@ interacting with the QUIC transport.  This document does not specify an API, but
 any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC connection.
 
-When implementing the client role:
+When implementing the client role, applications need to be able to:
 
-- Open a connection, which begins the exchange described in {{handshake}}
+- open a connection, which begins the exchange described in {{handshake}};
+- enable 0-RTT; and
+- be informed when 0-RTT has been accepted or rejected by a server.
 
-When implementing the server role:
+When implementing the server role, applications need to be able to:
 
-- Listen for incoming connections, which prepares for the exchange described in
-  {{handshake}}
-- If Early Data is supported, embed application-controlled data in the TLS
-  resumption ticket sent to the client
-- If Early Data is supported, retrieve application-controlled data from the
-  client's resumption ticket and approve/veto accepting Early Data
+- listen for incoming connections, which prepares for the exchange described in
+  {{handshake}};
+- if Early Data is supported, embed application-controlled data in the TLS
+  resumption ticket sent to the client; and
+- if Early Data is supported, retrieve application-controlled data from the
+  client's resumption ticket and enable rejecting Early Data based on that
+  information.
 
-In either role:
+In either role, applications need to be able to:
 
-- Configure minimum values for the initial number of permitted streams of each
-  type, as communicated in the transport parameters ({{transport-parameters}})
-- Keep a connection from silently closing, either by generating PING frames
+- configure minimum values for the initial number of permitted streams of each
+  type, as communicated in the transport parameters ({{transport-parameters}});
+- control resource allocation of various types, including flow control and the
+  number of permitted streams of each type;
+- keep a connection from silently closing, either by generating PING frames
   ({{frame-ping}}) or by requesting that the transport send additional frames
-  before the idle timeout expires ({{idle-timeout}})
-- Cease issuing credit for new streams via MAX_STREAMS frames
-  ({{frame-max-streams}})
-- Immediately close ({{immediate-close}}) the connection
+  before the idle timeout expires ({{idle-timeout}}); and
+- immediately close ({{immediate-close}}) the connection.
 
 
 # Version Negotiation {#version-negotiation}
