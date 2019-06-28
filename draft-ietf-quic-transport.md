@@ -2199,12 +2199,12 @@ the closing period would have ended.  In other words, the endpoint can use the
 same end time, but cease retransmission of the closing packet.
 
 Disposing of connection state prior to the end of the closing or draining period
-could cause delayed or reordered packets to be handled poorly.  Endpoints that
-have some alternative means to ensure that late-arriving packets on the
-connection do not create QUIC state, such as those that are able to close the
-UDP socket, MAY use an abbreviated draining period which can allow for faster
-resource recovery.  Servers that retain an open socket for accepting new
-connections SHOULD NOT exit the closing or draining period early.
+could cause delayed or reordered packets to generate an unnecessary stateless
+reset. Endpoints that have some alternative means to ensure that late-arriving
+packets on the connection do not induce a response, such as those that are able
+to close the UDP socket, MAY use an abbreviated draining period which can allow
+for faster resource recovery.  Servers that retain an open socket for accepting
+new connections SHOULD NOT exit the closing or draining period early.
 
 Once the closing or draining period has ended, an endpoint SHOULD discard all
 connection state.  This results in new packets on the connection being handled
