@@ -638,8 +638,9 @@ advertises the number of client-controlled placeholders for which it is
 committing to maintain state.  Client-controlled placeholders are given their
 own number space that spans between zero and 2^62-1.  Clients can use the
 client-controlled placeholders with an ID less than the value of this setting
-with the confidence that the server will not have discarded the state.  The
-orphan placeholder cannot be prioritized or referenced by the client.
+with the confidence that the server will not have disposed of the priority of
+these placeholders.  The orphan placeholder cannot be prioritized or referenced
+by the client.
 
 Servers SHOULD support at least 32 placeholders.  Those that do not
 SHOULD refrain from supporting placeholders at all, setting
