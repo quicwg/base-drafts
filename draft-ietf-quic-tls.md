@@ -1397,10 +1397,6 @@ processing is disproportionately large in comparison to the observable effects
 on bandwidth or state, then this could allow a malicious peer to exhaust
 processing capacity without consequence.
 
-QUIC prohibits the sending of empty `STREAM` frames unless they are marked with
-the FIN bit.  This prevents `STREAM` frames from being sent that only waste
-effort.
-
 While there are legitimate uses for some redundant packets, implementations
 SHOULD track redundant packets and treat excessive volumes of any non-productive
 packets as indicative of an attack.
