@@ -2510,7 +2510,8 @@ Reset in response, which could lead to an infinite exchange.
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
 the packet which triggered it, unless it maintains state sufficient to prevent
 looping.  In the event of a loop, this results in packets eventually being too
-small to trigger a response.
+small to trigger a response.  An endpoint MAY choose not to send a Stateless
+Reset in response to a packet that is smaller than 40 bytes.
 
 An endpoint can remember the number of Stateless Reset packets that it has sent
 and stop generating new Stateless Reset packets once a limit is reached.  Using
@@ -2524,9 +2525,6 @@ Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
 a small packet might result in Stateless Reset not being useful in detecting
 cases of broken connections where only very small packets are sent; such
 failures might only be detected by other means, such as timers.
-
-An endpoint can increase the odds that a packet will trigger a Stateless Reset
-if it cannot be processed by padding it to at least 40 bytes.
 
 
 # Error Handling {#error-handling}
