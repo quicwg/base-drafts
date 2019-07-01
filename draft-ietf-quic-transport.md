@@ -1004,7 +1004,7 @@ stateless reset in response to a connection ID it can no longer route correctly.
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
 received for the NEW_CONNECTION_ID frame requesting that retirement.  Subsequent
-incoming packets using that connection ID will elicit a response with the
+incoming packets using that connection ID could elicit a response with the
 corresponding stateless reset token.
 
 
@@ -5045,8 +5045,8 @@ retire the corresponding connection IDs and send the corresponding
 RETIRE_CONNECTION_ID frames in a timely manner.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
-field.  Values greater than the Sequence Number MUST be treated as a connection
-error of type PROTOCOL_VIOLATION.
+field.  Receiving a value greater than the Sequence Number MUST be treated as a
+connection error of type PROTOCOL_VIOLATION.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
