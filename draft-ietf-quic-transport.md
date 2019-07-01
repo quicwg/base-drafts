@@ -2873,7 +2873,7 @@ packet gaps which precede the received packet. Limiting the sending of ACK
 frames avoids creating an indefinite feedback loop of acknowledgements,
 which could prevent the connection from ever becoming idle. The endpoint MUST
 however acknowledge non-ACK-eliciting packets when sending ACK frames in
-response to Ack-eliciting packets.
+response to ACK-eliciting packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
