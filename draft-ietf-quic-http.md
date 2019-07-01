@@ -2184,15 +2184,13 @@ INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
 
 FLOW_CONTROL_ERROR (0x3):
-: Not applicable, since QUIC handles flow control.  Would provoke a
-  QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA from the QUIC layer.
+: Not applicable, since QUIC handles flow control.
 
 SETTINGS_TIMEOUT (0x4):
 : Not applicable, since no acknowledgement of SETTINGS is defined.
 
 STREAM_CLOSED (0x5):
-: Not applicable, since QUIC handles stream management.  Would provoke a
-  QUIC_STREAM_DATA_AFTER_TERMINATION from the QUIC layer.
+: Not applicable, since QUIC handles stream management.
 
 FRAME_SIZE_ERROR (0x6):
 : HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
@@ -2200,8 +2198,7 @@ FRAME_SIZE_ERROR (0x6):
 REFUSED_STREAM (0x7):
 : HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
   request was not processed. Otherwise, not applicable because QUIC handles
-  stream management.  A STREAM_ID_ERROR at the QUIC layer is used for streams
-  that are improperly opened.
+  stream management.
 
 CANCEL (0x8):
 : HTTP_REQUEST_CANCELLED in {{http-error-codes}}.
