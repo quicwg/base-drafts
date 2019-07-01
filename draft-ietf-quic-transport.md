@@ -2859,16 +2859,21 @@ valid frames? -->
 
 ### Sending ACK Frames
 
+An endpoint sends ACK frames to acknowledge packets it has received and
+processed. Sending ACK frames is the primary mechanism for advancing the state
+of a connection.
+
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
 one packet containing only an ACK frame per received ACK-eliciting packet
 (one containing frames other than ACK and/or PADDING).  An endpoint MUST NOT
 send a packet containing only an ACK frame in response to a non-ACK-eliciting
 packet (one containing only ACK and/or PADDING frames), even if there are
-packet gaps which precede the received packet. This prevents an indefinite
-feedback loop of acknowledgements, which may prevent the connection from ever
-becoming idle. The endpoint MUST however acknowledge non-ACK-eliciting packets
-when sending ACK frames in response to other packets.
+packet gaps which precede the received packet. Limiting the sending of ACK
+frames avoids creating an indefinite feedback loop of acknowledgements,
+which could prevent the connection from ever becoming idle. The endpoint MUST
+however acknowledge non-ACK-eliciting packets when sending ACK frames in
+response to Ack-eliciting packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2876,6 +2881,18 @@ sender to become limited by the congestion controller (as described in
 {{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
 receiver. Therefore, a sender SHOULD ensure that other frames are sent in
 addition to PADDING frames to elicit acknowledgments from the receiver.
+
+An endpoint that is only sending acknowledgements will not receive
+acknowledgments from its peer unless those acknowledgements are included in
+packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
+other frames when possible and there are new ACK-eliciting packets to
+acknowledge.  When only non-ACK-eliciting packets need to be acknowledged,
+the sender MAY wait until an ACK-eliciting packet has been received to bundle
+an ACK frame with outgoing frames.
+
+An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
+send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
+the condition.
 
 The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
@@ -2886,10 +2903,8 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-An endpoint that is only sending acknowledgements will not receive
-acknowledgments from its peer unless those acknowledgements are included in
-packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
-other frames when possible.
+
+### Limiting ACK ranges
 
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
@@ -2909,10 +2924,6 @@ to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
-
-An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
-send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.
 
 
 ### ACK Frames and Packet Protection
