@@ -2885,10 +2885,10 @@ addition to PADDING frames to elicit acknowledgments from the receiver.
 An endpoint that is only sending acknowledgements will not receive
 acknowledgments from its peer unless those acknowledgements are included in
 packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
-other frames when possible and there are new ACK-eliciting packets to
-acknowledge.  When only non-ACK-eliciting packets need to be acknowledged,
-the sender MAY wait until an ACK-eliciting packet has been received to bundle
-an ACK frame with outgoing frames.
+other frames when there are new ACK-eliciting packets to acknowledge.
+When only non-ACK-eliciting packets need to be acknowledged, the sender MAY
+wait until an ACK-eliciting packet has been received to bundle an ACK frame
+with outgoing frames.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
