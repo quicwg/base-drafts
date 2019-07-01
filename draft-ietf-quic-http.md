@@ -155,7 +155,7 @@ potential latency gain.  Several HTTP/3 frames are used to manage server push,
 such as PUSH_PROMISE, DUPLICATE_PUSH, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response headers are compressed for transmission.
-Because HPACK {{?HPACK=RFC7231}} relies on in-order transmission of compressed
+Because HPACK {{?HPACK=RFC7541}} relies on in-order transmission of compressed
 header blocks (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
 QPACK [QPACK].  QPACK uses separate unidirectional streams to modify and track
 header table state, while header blocks refer to the state of the table without
