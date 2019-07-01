@@ -1367,7 +1367,7 @@ all QUIC protocol features that carry application semantics.
 
 Disabling 0-RTT entirely is the most effective defense against replay attack.
 
-QUIC extensions MUST describe how replay attacks affects their operation, or
+QUIC extensions MUST describe how replay attacks affect their operation, or
 prohibit their use in 0-RTT.  Application protocols MUST either prohibit the use
 of extensions that carry application semantics in 0-RTT or provide replay
 mitigation strategies.
