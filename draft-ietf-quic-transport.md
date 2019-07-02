@@ -2868,11 +2868,10 @@ one ACK-frame-only packet in response to receiving an ACK-eliciting packet
 (one containing frames other than ACK and/or PADDING).  An endpoint MUST NOT
 send a packet containing only an ACK frame in response to a non-ACK-eliciting
 packet (one containing only ACK and/or PADDING frames), even if there are
-packet gaps which precede the received packet. Limiting ACK
-frames avoids an infinite feedback loop of acknowledgements,
-which could prevent the connection from ever becoming idle. The endpoint MUST
-however acknowledge non-ACK-eliciting packets when sending ACK frames in
-response to ACK-eliciting packets.
+packet gaps which precede the received packet. Limiting ACK frames avoids an
+infinite feedback loop of acknowledgements, which could prevent the connection
+from ever becoming idle. However, the endpoint acknowledges non-ACK-eliciting
+packets when it sends an ACK frame.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
