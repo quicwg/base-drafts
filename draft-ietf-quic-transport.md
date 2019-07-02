@@ -2881,7 +2881,7 @@ sender to become limited by the congestion controller (as described in
 receiver. Therefore, a sender SHOULD ensure that other frames are sent in
 addition to PADDING frames to elicit acknowledgments from the receiver.
 
-An endpoint that is only sending acknowledgements will not receive
+An endpoint that is only sending ACK frames will not receive
 acknowledgments from its peer unless those acknowledgements are included in
 packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
 other frames when there are new ACK-eliciting packets to acknowledge.
