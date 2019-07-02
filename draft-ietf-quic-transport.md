@@ -2860,8 +2860,7 @@ valid frames? -->
 ### Sending ACK Frames
 
 An endpoint sends ACK frames to acknowledge packets it has received and
-processed. Sending ACK frames is the primary mechanism for advancing the state
-of a connection.
+processed.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
