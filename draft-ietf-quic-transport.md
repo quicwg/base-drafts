@@ -2885,7 +2885,7 @@ An endpoint that is only sending ACK frames will not receive
 acknowledgments from its peer unless those acknowledgements are included in
 packets with ACK-eliciting frames.  A sender SHOULD bundle ACK frames with
 other frames when there are new ACK-eliciting packets to acknowledge.
-When only non-ACK-eliciting packets need to be acknowledged, the sender MAY
+When only non-ACK-eliciting packets need to be acknowledged, an endpoint MAY
 wait until an ACK-eliciting packet has been received to bundle an ACK frame
 with outgoing frames.
 
