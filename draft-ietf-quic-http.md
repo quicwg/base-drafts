@@ -1617,46 +1617,45 @@ HTTP_FRAME_ERROR (0x106):
 : A frame that fails to satisfy layout requirements or with an invalid size
   was received.
 
-HTTP_REQUEST_REJECTED (0x107):
-: A server rejected a request without performing any application processing.
-
-HTTP_REQUEST_CANCELLED (0x108):
-: The request or its response (including pushed response) is cancelled.
-
-HTTP_EARLY_RESPONSE (0x109):
-: The remainder of the client's request is not needed to produce a response.
-  For use in STOP_SENDING only.
-
-HTTP_CONNECT_ERROR (0x10A):
-: The connection established in response to a CONNECT request was reset or
-  abnormally closed.
-
-HTTP_EXCESSIVE_LOAD (0x10B):
+HTTP_EXCESSIVE_LOAD (0x107):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_WRONG_STREAM (0x10C):
+HTTP_WRONG_STREAM (0x108):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_VERSION_FALLBACK (0x10D):
-: The requested operation cannot be served over HTTP/3.  The
-  peer should retry over HTTP/1.1.
-
-HTTP_ID_ERROR (0x10E):
+HTTP_ID_ERROR (0x109):
 : A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
   exceeding a limit, reducing a limit, or being reused.
 
-HTTP_INCOMPLETE_REQUEST (0x10F):
-: The client's stream terminated without containing a fully-formed request.
-
-HTTP_SETTINGS_ERROR (0x110):
+HTTP_SETTINGS_ERROR (0x10A):
 : An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
   setting was detected, a client-only setting was sent by a server, or a
   server-only setting by a client.
 
-HTTP_MISSING_SETTINGS (0x111):
+HTTP_MISSING_SETTINGS (0x10B):
 : No SETTINGS frame was received at the beginning of the control stream.
 
+HTTP_REQUEST_REJECTED (0x10C):
+: A server rejected a request without performing any application processing.
+
+HTTP_REQUEST_CANCELLED (0x10D):
+: The request or its response (including pushed response) is cancelled.
+
+HTTP_INCOMPLETE_REQUEST (0x10E):
+: The client's stream terminated without containing a fully-formed request.
+
+HTTP_EARLY_RESPONSE (0x10F):
+: The remainder of the client's request is not needed to produce a response.
+  For use in STOP_SENDING only.
+
+HTTP_CONNECT_ERROR (0x110):
+: The connection established in response to a CONNECT request was reset or
+  abnormally closed.
+
+HTTP_VERSION_FALLBACK (0x111):
+: The requested operation cannot be served over HTTP/3.  The peer should
+  retry over HTTP/1.1.
 
 # Extensions to HTTP/3 {#extensions}
 
@@ -1891,17 +1890,17 @@ The entries in the following table are registered by this document.
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x0104     | Critical stream was closed               | {{http-error-codes}}   |
 | HTTP_UNEXPECTED_FRAME               | 0x0105     | Frame not permitted in the current state | {{http-error-codes}}   |
 | HTTP_FRAME_ERROR                    | 0x0106     | Frame violated layout or size rules      | {{http-error-codes}}   |
-| HTTP_REQUEST_REJECTED               | 0x0107     | Request not processed                    | {{http-error-codes}}   |
-| HTTP_REQUEST_CANCELLED              | 0x0108     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_EARLY_RESPONSE                 | 0x0109     | Remainder of request not needed          | {{http-error-codes}}   |
-| HTTP_CONNECT_ERROR                  | 0x010A     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| HTTP_EXCESSIVE_LOAD                 | 0x010B     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM                   | 0x010C     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x010D     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| HTTP_ID_ERROR                       | 0x010E     | An identifier was used incorrectly       | {{http-error-codes}}   |
-| HTTP_INCOMPLETE_REQUEST             | 0x010F     | Stream terminated early                  | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x0110     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| HTTP_MISSING_SETTINGS               | 0x0111     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM                   | 0x0108     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x0109     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x010A     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
+| HTTP_MISSING_SETTINGS               | 0x010B     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x010C     | Request not processed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_CANCELLED              | 0x010D     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_INCOMPLETE_REQUEST             | 0x010E     | Stream terminated early                  | {{http-error-codes}}   |
+| HTTP_EARLY_RESPONSE                 | 0x010F     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_CONNECT_ERROR                  | 0x0110     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x0111     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
