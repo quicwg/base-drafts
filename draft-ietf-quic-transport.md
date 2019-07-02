@@ -2870,7 +2870,7 @@ one packet containing only an ACK frame per received ACK-eliciting packet
 send a packet containing only an ACK frame in response to a non-ACK-eliciting
 packet (one containing only ACK and/or PADDING frames), even if there are
 packet gaps which precede the received packet. Limiting the sending of ACK
-frames avoids creating an indefinite feedback loop of acknowledgements,
+frames avoids an infinite feedback loop of acknowledgements,
 which could prevent the connection from ever becoming idle. The endpoint MUST
 however acknowledge non-ACK-eliciting packets when sending ACK frames in
 response to ACK-eliciting packets.
