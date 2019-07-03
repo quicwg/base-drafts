@@ -577,8 +577,8 @@ be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
-CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
+If not all data can be retransmitted, then data at Initial and Handshake
+encryption should be retransmitted before any ApplicationData. If no data can be
 sent, then no alarm should be armed until data has been received from the
 client.
 
