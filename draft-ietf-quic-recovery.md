@@ -165,7 +165,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
-  acknowledgement and retransmission.
+  acknowledgement.
 
 * Packets that contain only ACK frames do not count toward congestion control
   limits and are not considered in-flight.
