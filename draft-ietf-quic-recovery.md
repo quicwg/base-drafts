@@ -553,7 +553,7 @@ sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
 
-The retransmission timer is not set if the time threshold
+The probe timer is not set if the time threshold
 {{time-threshold}} loss detection timer is set.  The time threshold loss
 detection timer is expected to both expire earlier than the PTO and be less
 likely to spuriously retransmit data. The Initial and Handshake packet number
