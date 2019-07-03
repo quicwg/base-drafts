@@ -2909,10 +2909,11 @@ received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
 contribute to the ACK frame size.  When the receiver is only sending
-non-ACK-eliciting packets, it can bundle a PING with a fraction of them, such
-as once per round trip, to enable dropping unnecessary ACK ranges and any state
-for previously sent packets.  The receiver MUST NOT bundle a PING with all
-packets that would otherwise not be ACK-eliciting, in order to avoid an
+non-ACK-eliciting packets, it can bundle a PING or other small ACK-eliciting
+frame with a fraction of them, such as once per round trip, to enable
+dropping unnecessary ACK ranges and any state for previously sent packets.
+The receiver MUST NOT bundle an ACK-elicing frame, such as a PING, with all
+packets that would otherwise be non-ACK-eliciting, in order to avoid an
 infinite feedback loop of acknowledgements.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
