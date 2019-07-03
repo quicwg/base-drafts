@@ -514,11 +514,12 @@ and larger thresholds increase loss detection delay.
 
 ## Probe Timeout {#pto}
 
-A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
-flight but an acknowledgement is not received within the expected period of
-time.  A PTO enables a connection to recover from loss of tail packets or acks.
-The PTO algorithm used in QUIC implements the reliability functions of Tail Loss
-Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
+A Probe Timeout (PTO) triggers sending one or two probe packets when
+ack-eliciting packets are not acknowledged within the expected period of
+time or the handshake has not been completed.  A PTO enables a connection to
+recover from loss of tail packets or acks. The PTO algorithm used in QUIC
+implements the reliability functions of Tail Loss Probe
+{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
 
@@ -1191,14 +1192,14 @@ SetLossDetectionTimer():
 
   // Don't arm timer if there are no ack-eliciting packets
   // in flight and the handshake is complete.
-  if (!(endpoint is client without 1-RTT keys ||
-        has ack-eliciting packets in flight):
+  if (endpoint is client with 1-RTT keys ||
+      no ack-eliciting packets in flight):
     loss_detection_timer.cancel()
     return
-    
-  // Initialize the timeout if there are no RTT measurements
+
+  // Use a default timeout if ther are no RTT measurements
   if (smoothed_rtt == 0):
-    timeout = 1 second
+    timeout = 2 * kInitialRtt
     return
 
   // Calculate PTO duration
