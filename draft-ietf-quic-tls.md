@@ -800,8 +800,8 @@ modifying the contents of packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-{{test-vectors-initial}} contains test vectors for the initial packet
-encryption.
+The secrets used for protecting Initial packets changes when a server sends a
+Retry packet to use the connection ID value selected by the server.
 
 Note:
 
@@ -810,6 +810,9 @@ Note:
   ID field.  In this case, the Initial keys provide no assurance to the client
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
+
+{{test-vectors-initial}} contains test vectors for the initial packet
+encryption.
 
 
 ## AEAD Usage {#aead}
