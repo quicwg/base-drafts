@@ -2902,7 +2902,7 @@ Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
 
-### Limiting ACK ranges
+### Limiting ACK Ranges
 
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
