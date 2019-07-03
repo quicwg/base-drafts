@@ -583,9 +583,8 @@ sent, then no alarm should be armed until data has been received from the
 client.
 
 Because the server could be blocked until more packets are received, the client
-MUST ensure that the retransmission timer is set if there is
-unacknowledged crypto data or if the client does not yet have 1-RTT keys.
-If the probe timer expires before the client has 1-RTT keys,
+MUST ensure that the retransmission timer is set if the client does not yet
+have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
 it is possible that the client may not have any crypto data to retransmit.
 However, the client MUST send a new packet, containing only PADDING frames if
 necessary, to allow the server to continue sending data. If Handshake keys
@@ -937,12 +936,6 @@ in_flight:
 : A boolean that indicates whether the packet counts towards bytes in
   flight.
 
-is_crypto_packet:
-: A boolean that indicates whether the packet contains
-  cryptographic handshake messages critical to the completion of the QUIC
-  handshake. In this version of QUIC, this includes any packet with the long
-  header that includes a CRYPTO frame.
-
 sent_bytes:
 : The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
@@ -994,18 +987,11 @@ are described in this section.
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
 
-crypto_count:
-: The number of times all unacknowledged CRYPTO data has been
-  retransmitted without receiving an ack.
-
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
 time_of_last_sent_ack_eliciting_packet:
 : The time the most recent ack-eliciting packet was sent.
-
-time_of_last_sent_crypto_packet:
-: The time the most recent crypto packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
@@ -1046,7 +1032,6 @@ follows:
 
 ~~~
    loss_detection_timer.reset()
-   crypto_count = 0
    pto_count = 0
    latest_rtt = 0
    smoothed_rtt = 0
@@ -1054,7 +1039,6 @@ follows:
    min_rtt = 0
    max_ack_delay = 0
    time_of_last_sent_ack_eliciting_packet = 0
-   time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
      loss_time[pn_space] = 0
@@ -1070,7 +1054,7 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, pn_space, ack_eliciting,
-              in_flight, is_crypto_packet, sent_bytes):
+              in_flight, sent_bytes):
    sent_packets[pn_space][packet_number].packet_number =
                                             packet_number
    sent_packets[pn_space][packet_number].time_sent = now
@@ -1078,8 +1062,6 @@ Pseudocode for OnPacketSent follows:
                                             ack_eliciting
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
-     if (is_crypto_packet):
-       time_of_last_sent_crypto_packet = now
      if (ack_eliciting):
        time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
@@ -1127,7 +1109,6 @@ OnAckReceived(ack, pn_space):
 
   DetectLostPackets(pn_space)
 
-  crypto_count = 0
   pto_count = 0
 
   SetLossDetectionTimer()
@@ -1208,23 +1189,16 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (has unacknowledged crypto data
-      || endpoint is client without 1-RTT keys):
-    // Crypto retransmission timer.
-    if (smoothed_rtt == 0):
-      timeout = 2 * kInitialRtt
-    else:
-      timeout = 2 * smoothed_rtt
-    timeout = max(timeout, kGranularity)
-    timeout = timeout * (2 ^ crypto_count)
-    loss_detection_timer.update(
-      time_of_last_sent_crypto_packet + timeout)
-    return
-
   // Don't arm timer if there are no ack-eliciting packets
-  // in flight.
-  if (no ack-eliciting packets in flight):
+  // in flight and the handshake is complete.
+  if (!(endpoint is client without 1-RTT keys ||
+        has ack-eliciting packets in flight):
     loss_detection_timer.cancel()
+    return
+    
+  // Initialize the timeout if there are no RTT measurements
+  if (smoothed_rtt == 0):
+    timeout = 1 second
     return
 
   // Calculate PTO duration
@@ -1255,7 +1229,7 @@ OnLossDetectionTimeout():
   else if (has unacknowledged crypto data):
     // Crypto retransmission timeout.
     RetransmitUnackedCryptoData()
-    crypto_count++
+    pto_count++
   else if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
@@ -1264,7 +1238,7 @@ OnLossDetectionTimeout():
        SendOneHandshakePacket()
      else:
        SendOnePaddedInitialPacket()
-    crypto_count++
+    pto_count++
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
