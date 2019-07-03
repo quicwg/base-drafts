@@ -564,13 +564,11 @@ packet-threshold loss detection.
 ## Handshakes and new paths
 
 The initial probe timeout for a new connection or new path SHOULD be
-set to twice the initial RTT.
-
-Resumed connections over the same network SHOULD use the previous connection's
-final smoothed RTT value as the resumed connection's initial RTT.  If no
-previous RTT is available, or if the network changes, the initial RTT SHOULD
-be set to 500ms, resulting in a 1 second initial timeout as recommended in
-{{?RFC6298}}.
+set to twice the initial RTT.  Resumed connections over the same network 
+SHOULD use the previous connection's final smoothed RTT value as the resumed
+connection's initial RTT.  If no previous RTT is available, the initial RTT
+SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
+in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
 a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
@@ -579,9 +577,9 @@ be considered an RTT sample.
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
 If not all data can be retransmitted, then data at Initial and Handshake
-encryption should be retransmitted before any ApplicationData. If no data can be
-sent, then the PTO alarm should not be armed until data has been received from
-the client.
+encryption should be retransmitted before any ApplicationData data. If no data
+can be sent, then the PTO alarm should not be armed until data has been
+received from the client.
 
 Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client does not yet
