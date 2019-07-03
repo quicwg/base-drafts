@@ -580,8 +580,8 @@ Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
 If not all data can be retransmitted, then data at Initial and Handshake
 encryption should be retransmitted before any ApplicationData. If no data can be
-sent, then no alarm should be armed until data has been received from the
-client.
+sent, then the PTO alarm should not be armed until data has been received from
+the client.
 
 Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client does not yet
