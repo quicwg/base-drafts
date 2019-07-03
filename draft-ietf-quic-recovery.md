@@ -585,7 +585,7 @@ client.
 Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if there is
 unacknowledged crypto data or if the client does not yet have 1-RTT keys.
-If the retransmission timer expires before the client has 1-RTT keys,
+If the probe timer expires before the client has 1-RTT keys,
 it is possible that the client may not have any crypto data to retransmit.
 However, the client MUST send a new packet, containing only PADDING frames if
 necessary, to allow the server to continue sending data. If Handshake keys
