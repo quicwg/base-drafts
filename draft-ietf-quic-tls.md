@@ -767,8 +767,7 @@ TLS 1.3 (see {{initial-secrets}}).
 ## Initial Secrets {#initial-secrets}
 
 Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's first Initial packet of the
-connection. Specifically:
+Connection ID field from the client's Initial packet. Specifically:
 
 ~~~
 initial_salt = 0x7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a
@@ -801,7 +800,9 @@ The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
 The secrets used for protecting Initial packets changes when a server sends a
-Retry packet to use the connection ID value selected by the server.
+Retry packet to use the connection ID value selected by the server.  The secrets
+do not change when a client changes the Destination Connection ID it uses in
+response to an Initial packet from the server.
 
 Note:
 
