@@ -4260,6 +4260,12 @@ preferred_address (0x000d):
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 
+active_connection_id_limit (0x000e):
+
+: The maximum number of connection IDs from the peer that an endpoint is willing
+  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
+  frames. If this parameter is absent, a default of 0 is assumed.
+
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
 initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
@@ -4270,12 +4276,6 @@ that type start with a flow control limit of 0.
 A client MUST NOT include an original connection ID, a stateless reset token, or
 a preferred address.  A server MUST treat receipt of any of these transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
-
-active_connection_id_limit (0x000e):
-
-: The maximum number of connection IDs from the peer that an endpoint is willing
-  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
-  frames. If this parameter is absent, a default of 0 is assumed.
 
 
 # Frame Types and Formats {#frame-formats}
