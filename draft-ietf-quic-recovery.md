@@ -1234,9 +1234,9 @@ OnLossDetectionTimeout():
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
     if (has Handshake keys):
-       SendOneHandshakePacket()
-     else:
-       SendOnePaddedInitialPacket()
+      SendOneHandshakePacket()
+    else:
+      SendOnePaddedInitialPacket()
     pto_count++
   else:
     // PTO. Send new data if available, else retransmit old data.
