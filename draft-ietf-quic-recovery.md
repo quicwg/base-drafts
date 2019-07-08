@@ -564,7 +564,7 @@ packet-threshold loss detection.
 ## Handshakes and New Paths
 
 The initial probe timeout for a new connection or new path SHOULD be
-set to twice the initial RTT.  Resumed connections over the same network 
+set to twice the initial RTT.  Resumed connections over the same network
 SHOULD use the previous connection's final smoothed RTT value as the resumed
 connection's initial RTT.  If no previous RTT is available, the initial RTT
 SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
