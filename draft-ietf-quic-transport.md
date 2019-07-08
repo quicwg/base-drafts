@@ -983,9 +983,9 @@ response to a migrating peer; see {{migration-linkability}} for more.
 An endpoint maintains a set of connection IDs received from its peer, any of
 which it can use when sending packets.  When the endpoint wishes to remove a
 connection ID from use, it sends a RETIRE_CONNECTION_ID frame to its peer.
-Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID won't be
-used again and requests that the peer replace it with a new connection ID using
-a NEW_CONNECTION_ID frame.
+Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
+be used again and requests that the peer replace it with a new connection ID
+using a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
 packets sent from only one local address.  An endpoint that migrates away from a
@@ -2881,13 +2881,19 @@ valid frames? -->
 
 ### Sending ACK Frames
 
-An endpoint MUST NOT send more than one packet containing only an ACK frame per
-received packet that contains frames other than ACK and PADDING frames.
-An endpoint MUST NOT send a packet containing only an ACK frame in response
-to a packet containing only ACK or PADDING frames, even if there are packet
-gaps which precede the received packet. This prevents an indefinite feedback
-loop of ACKs. The endpoint MUST however acknowledge packets containing only
-ACK or PADDING frames when sending ACK frames in response to other packets.
+An endpoint sends ACK frames to acknowledge packets it has received and
+processed.
+
+Packets containing only ACK frames are not congestion controlled, so there are
+limits on how frequently they can be sent.  An endpoint MUST NOT send more than
+one ACK-frame-only packet in response to receiving an ACK-eliciting packet
+(one containing frames other than ACK and/or PADDING).  An endpoint MUST NOT
+send a packet containing only an ACK frame in response to a non-ACK-eliciting
+packet (one containing only ACK and/or PADDING frames), even if there are
+packet gaps which precede the received packet. Limiting ACK frames avoids an
+infinite feedback loop of acknowledgements, which could prevent the connection
+from ever becoming idle. However, the endpoint acknowledges non-ACK-eliciting
+packets when it sends an ACK frame.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -2895,6 +2901,18 @@ sender to become limited by the congestion controller (as described in
 {{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
 receiver. Therefore, a sender SHOULD ensure that other frames are sent in
 addition to PADDING frames to elicit acknowledgments from the receiver.
+
+An endpoint that is only sending ACK frames will not receive
+acknowledgments from its peer unless those acknowledgements are included in
+packets with ACK-eliciting frames.  An endpoint SHOULD bundle ACK frames with
+other frames when there are new ACK-eliciting packets to acknowledge.
+When only non-ACK-eliciting packets need to be acknowledged, an endpoint MAY
+wait until an ACK-eliciting packet has been received to bundle an ACK frame
+with outgoing frames.
+
+An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
+send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
+the condition.
 
 The receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
@@ -2905,16 +2923,20 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
+
+### Limiting ACK Ranges
+
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.
-
-Because ACK frames are not sent in response to ACK-only packets, a receiver that
-is only sending ACK frames will only receive acknowledgements for its packets if
-the sender includes them in packets with non-ACK frames.  A sender SHOULD bundle
-ACK frames with other frames when possible.
+contribute to the ACK frame size.  When the receiver is only sending
+non-ACK-eliciting packets, it can bundle a PING or other small ACK-eliciting
+frame with a fraction of them, such as once per round trip, to enable
+dropping unnecessary ACK ranges and any state for previously sent packets.
+The receiver MUST NOT bundle an ACK-elicing frame, such as a PING, with all
+packets that would otherwise be non-ACK-eliciting, in order to avoid an
+infinite feedback loop of acknowledgements.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Ranges it sends.  A receiver can do this even without receiving
@@ -2923,10 +2945,6 @@ to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
 algorithms declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
-
-An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
-send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.
 
 
 ### ACK Frames and Packet Protection
