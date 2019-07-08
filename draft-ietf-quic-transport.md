@@ -2412,8 +2412,8 @@ header.  Sending a stateless reset is not effective prior to the stateless reset
 token being available to a peer.  In this QUIC version, packets with a long
 header are only used during connection establishment.   Because the stateless
 reset token is not available until connection establishment is complete or near
-completion, ignoring an unknown packet with a long header might be as
-effective than sending a stateless reset.
+completion, ignoring an unknown packet with a long header might be as effective
+as sending a stateless reset.
 
 An endpoint cannot determine the Source Connection ID from a packet with a short
 header, therefore it cannot set the Destination Connection ID in the stateless
