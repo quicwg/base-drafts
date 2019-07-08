@@ -5733,6 +5733,35 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-20
+
+- Connection ID lengths are now one octet, but limited in version 1 to 20 octets
+  of length (#2736, #2749)
+- Error codes are encoded as variable-length integers (#2672, #2680)
+- NEW_CONNECTION_ID includes a request to retire old connection IDs (#2645,
+  #2769)
+- Tighter rules for generating and explicitly eliciting ACK frames (#2546,
+  #2794)
+- Recommend having only one packet per encryption level in a datagram (#2308,
+  #2747)
+- More normative language about use of stateless reset (#2471, #2574)
+- Allow reuse of stateless reset tokens (#2732, #2733)
+- Allow, but not require, enforcing non-duplicate transport parameters (#2689,
+  #2691)
+- Added a active_connection_id_limit transport parameter (#1994, #1998)
+- max_ack_delay transport parameter defaults to 0 (#2638, #2646)
+- When sending 0-RTT, only remembered transport parameters apply (#2458, #2360,
+  #2466, #2461)
+- Define handshake completion and confirmation; define clearer rules when it
+  encryption keys should be discarded (#2214, #2267, #2673)
+- Prohibit path migration prior to handshake confirmation (#2309, #2370)
+- PATH_RESPONSE no longer needs to be received on the validated path (#2582,
+  #2580, #2579, #2637)
+- PATH_RESPONSE frames are not stored and retransmitted (#2724, #2729)
+- Document hack for enabling routing of ICMP when doing PMTU probing (#1243,
+  #2402)
+
+
 ## Since draft-ietf-quic-transport-19
 
 - Refine discussion of 0-RTT transport parameters (#2467, #2464)

@@ -2230,6 +2230,30 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-20
+
+- Prohibit closing the control stream (#2509, #2666)
+- Change default priority to use an orphan node (#2502, #2690)
+- Exclusive priorities are restored (#2754, #2781)
+- Restrict use of frames when using CONNECT (#2229, #2702)
+- Close and maybe reset streams if a connection error occurs for CONNECT (#2228,
+  #2703)
+- Encourage provision of sufficient unidirectional streams for QPACK (#2100,
+  #2529, #2762)
+- Allow extensions to use server-initiated bidirectional streams (#2711, #2773)
+- Clarify use of maximum header list size setting (#2516, #2774)
+- Extensive changes to error codes and conditions of their sending
+  - Require connection errors for more error conditions (#2511, #2510)
+  - Updated the error codes for illegal GOAWAY frames (#2714, #2707)
+  - Specified error code for HEADERS on control stream (#2708)
+  - Specified error code for servers receiving PUSH_PROMISE (#2709)
+  - Specified error code for receiving DATA before HEADERS (#2715)
+  - Describe malformed messages and their handling (#2410, #2764)
+  - Remove HTTP_PUSH_ALREADY_IN_CACHE error (#2812, #2813)
+  - Refactor Push ID related errors (#2818, #2820)
+  - Rationalize HTTP/3 stream creation errors (#2821, #2822)
+
+
 ## Since draft-ietf-quic-http-19
 
 - SETTINGS_NUM_PLACEHOLDERS is 0x9 (#2443,#2530)
