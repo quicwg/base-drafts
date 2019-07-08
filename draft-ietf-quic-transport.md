@@ -2941,8 +2941,8 @@ infinite feedback loop of acknowledgements.
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
 number of ACK Ranges it sends.  A receiver can do this even without receiving
 acknowledgment of its ACK frames, with the knowledge this could cause the sender
-to unnecessarily retransmit some data.  Standard QUIC {{QUIC-RECOVERY}}
-algorithms declare packets lost after sufficiently newer packets are
+to unnecessarily retransmit some data.  Standard QUIC algorithms
+({{QUIC-RECOVERY}}) declare packets lost after sufficiently newer packets are
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
 
@@ -2961,7 +2961,7 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 6.2.1 of {{QUIC-RECOVERY}}.
+a reduced delay; see Section 6.2 of {{QUIC-RECOVERY}}.
 
 
 ## Retransmission of Information
@@ -3740,7 +3740,7 @@ when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.9.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+control state (see Section 6.5 of {{QUIC-RECOVERY}}).
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
