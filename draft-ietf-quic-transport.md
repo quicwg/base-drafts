@@ -992,6 +992,19 @@ packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
+An endpoint can request that its peer retire connection IDs by sending a
+NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
+the peer SHOULD retire the corresponding connection IDs and send the
+corresponding RETIRE_CONNECTION_ID frames in a timely manner.  Failing to do so
+can cause packets to be delayed, lost, or cause the original endpoint to send a
+stateless reset in response to a connection ID it can no longer route correctly.
+
+An endpoint MAY discard a connection ID for which retirement has been requested
+once an interval of no less than 3 PTO has elapsed since an acknowledgement is
+received for the NEW_CONNECTION_ID frame requesting that retirement.  Subsequent
+incoming packets using that connection ID could elicit a response with the
+corresponding stateless reset token.
+
 
 ## Matching Packets to Connections {#packet-handling}
 
@@ -4985,6 +4998,8 @@ The NEW_CONNECTION_ID frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                      Sequence Number (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Retire Prior To (i)                    ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |   Length (8)  |                                               |
 +-+-+-+-+-+-+-+-+       Connection ID (32..144)                 +
 |                                                             ...
@@ -5005,6 +5020,11 @@ Sequence Number:
 
 : The sequence number assigned to the connection ID by the sender.  See
   {{issue-cid}}.
+
+Retire Prior To:
+
+: A variable-length integer indicating which connection IDs should be retired.
+  See {{retiring-cids}}.
 
 Length:
 
@@ -5039,6 +5059,21 @@ issued connection ID with a different Stateless Reset Token or a different
 sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
+
+The Retire Prior To field is a request for the peer to retire all connection IDs
+with a sequence number less than the specified value.  This includes the initial
+and preferred_address transport parameter connection IDs.  The peer SHOULD
+retire the corresponding connection IDs and send the corresponding
+RETIRE_CONNECTION_ID frames in a timely manner.
+
+The Retire Prior To field MUST be less than or equal to the Sequence Number
+field.  Receiving a value greater than the Sequence Number MUST be treated as a
+connection error of type PROTOCOL_VIOLATION.
+
+Once a sender indicates a Retire Prior To value, smaller values sent in
+subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
+Retire Prior To fields that do not increase the largest received Retire Prior To
+value.
 
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
