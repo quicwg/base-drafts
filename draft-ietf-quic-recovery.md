@@ -1532,6 +1532,13 @@ Invoked from DetectLostPackets when packets are deemed lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-20
+
+- Path validation can be used to initial RTT value (#2644, #2687)
+- max_ack_delay transport parameter defaults to 0 (#2638, #2646)
+- Ack Delay only measures delays induced by the QUIC implementation (#2596,
+  #2786)
+
 ## Since draft-ietf-quic-recovery-19
 
 - Change kPersistentThreshold from an exponent to a multiplier (#2557)

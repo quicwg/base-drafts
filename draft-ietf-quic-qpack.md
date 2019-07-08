@@ -1325,6 +1325,12 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-08
+
+- Endpoints are permitted to create encoder and decoder streams even if they
+  can't use them (#2100, #2529)
+- Maximum values for settings removed (#2766, #2767)
+
 ## Since draft-ietf-quic-qpack-06
 
 - Clarify initial dynamic table capacity maximums (#2276, #2330, #2330)

@@ -1688,6 +1688,12 @@ cdbe264bd65f2b076760c69beef23aa7 14c9a174d69034c09a2863e1e1863508
 Issue and pull request numbers are listed with a leading octothorp.
 
 
+## Since draft-ietf-quic-tls-20
+
+- Mandate the use of the QUIC transport parameters extension (#2528, #2560)
+- Define handshake completion and confirmation; define clearer rules when it
+  encryption keys should be discarded (#2214, #2267, #2673)
+
 ## Since draft-ietf-quic-tls-18
 
 - Increased the set of permissible frames in 0-RTT (#2344, #2355)
