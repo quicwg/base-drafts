@@ -561,7 +561,7 @@ data. The Initial and Handshake packet number spaces will typically contain a
 small number of packets, so losses are less likely to be detected using
 packet-threshold loss detection.
 
-## Handshakes and new paths
+## Handshakes and New Paths
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.  Resumed connections over the same network 
