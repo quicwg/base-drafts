@@ -547,7 +547,8 @@ immediately.
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. This exponential reduction in the sender's rate is important because
 the PTOs might be caused by loss of packets or acknowledgements due to severe
-congestion.
+congestion.  The life of a connection that is experiencing consecutive PTOs is
+limited by the endpoint's idle timeout.
 
 A sender computes its PTO timer every time an ack-eliciting packet is sent. A
 sender might choose to optimize this by setting the timer fewer times if it
