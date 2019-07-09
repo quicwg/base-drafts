@@ -679,7 +679,7 @@ maintaining these placeholders in the prioritization tree, clients can use them
 with confidence that the server will not have discarded the state. Clients MUST
 NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
 server MUST be treated as a connection error of type
-`HTTP_WRONG_SETTING_DIRECTION`.
+`HTTP_SETTINGS_ERROR`.
 
 Client-controlled placeholders are identified by an ID between zero and one less
 than the number of placeholders the server has permitted.  The orphan
@@ -749,7 +749,7 @@ receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
 control the number of pushes that a server can promise. A server SHOULD use Push
 IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
 with a Push ID that is greater than the maximum Push ID as a connection error of
-type HTTP_LIMIT_EXCEEDED.
+type HTTP_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
 {{frame-push-promise}}) on the request stream which generated the push. This
@@ -785,10 +785,9 @@ amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an appropriate error code can
-also be used (e.g., HTTP_PUSH_REFUSED, HTTP_PUSH_ALREADY_IN_CACHE; see
-{{errors}}). This asks the server not to transfer additional data and indicates
-that it will be discarded upon receipt.
+CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an error code of
+HTTP_REQUEST_CANCELLED can be used. This asks the server not to transfer
+additional data and indicates that it will be discarded upon receipt.
 
 # Connection Closure
 
@@ -938,7 +937,7 @@ unnecessarily limit parallelism.
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
 server-initiated bidirectional stream as a connection error of type
-HTTP_GENERAL_PROTOCOL_ERROR unless such an extension has been negotiated.
+HTTP_STREAM_CREATION_ERROR unless such an extension has been negotiated.
 
 ## Unidirectional Streams
 
@@ -986,8 +985,8 @@ create additional streams as allowed by their peer.
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
-frame with an error code of HTTP_UNKNOWN_STREAM_TYPE, but MUST NOT consider such
-streams to be a connection error of any kind.
+frame with an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider
+such streams to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -1009,10 +1008,10 @@ the first frame of the control stream is any other frame type, this MUST be
 treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
 stream per peer is permitted; receipt of a second stream which claims to be a
 control stream MUST be treated as a connection error of type
-HTTP_WRONG_STREAM_COUNT.  The sender MUST NOT close the control stream, and the
-receiver MUST NOT request that the sender close the control stream.  If either
-control stream is closed at any point, this MUST be treated as a connection
-error of type HTTP_CLOSED_CRITICAL_STREAM.
+HTTP_STREAM_CREATION_ERROR.  The sender MUST NOT close the control stream, and
+the receiver MUST NOT request that the sender close the control stream.  If
+either control stream is closed at any point, this MUST be treated as a
+connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
@@ -1032,7 +1031,7 @@ remaining data on this stream consists of HTTP/3 frames, as defined in
 described in {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
-MUST be treated as a connection error of type HTTP_WRONG_STREAM_DIRECTION.
+MUST be treated as a connection error of type HTTP_STREAM_CREATION_ERROR.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -1047,7 +1046,7 @@ MUST be treated as a connection error of type HTTP_WRONG_STREAM_DIRECTION.
 
 Each Push ID MUST only be used once in a push stream header. If a push stream
 header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type HTTP_DUPLICATE_PUSH.
+client MUST treat this as a connection error of type HTTP_ID_ERROR.
 
 ### Reserved Stream Types {#stream-grease}
 
@@ -1259,7 +1258,7 @@ error of type HTTP_MALFORMED_FRAME.
 
 A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
 greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as a connection error of type HTTP_LIMIT_EXCEEDED.
+to open MUST be treated as a connection error of type HTTP_ID_ERROR.
 
 A PRIORITY frame received on any stream other than the control stream MUST be
 treated as a connection error of type HTTP_WRONG_STREAM.
@@ -1339,7 +1338,7 @@ while servers are more cautious about request size.
 
 Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
 treat the presence of the same parameter more than once as a connection error of
-type HTTP_MALFORMED_FRAME.
+type HTTP_SETTINGS_ERROR.
 
 The payload of a SETTINGS frame consists of zero or more parameters.  Each
 parameter consists of a setting identifier and a value, both encoded as QUIC
@@ -1440,10 +1439,13 @@ Header Block:
   for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
-MAX_PUSH_ID frame ({{frame-max-push-id}}) and MUST NOT use the same Push ID in
-multiple PUSH_PROMISE frames.  A client MUST treat receipt of a PUSH_PROMISE
-that contains a larger Push ID than the client has advertised or a Push ID which
-has already been promised as a connection error of type HTTP_MALFORMED_FRAME.
+MAX_PUSH_ID frame ({{frame-max-push-id}}). A client MUST treat receipt of a
+PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
+as a connection error of HTTP_ID_ERROR.
+
+A server MUST NOT use the same Push ID in multiple PUSH_PROMISE frames. A client
+MUST treat receipt of a Push ID which has already been promised as a connection
+error of type HTTP_ID_ERROR.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
@@ -1518,7 +1520,7 @@ The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
-MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
+MUST be treated as a connection error of type HTTP_ID_ERROR.
 
 ### DUPLICATE_PUSH {#frame-duplicate-push}
 
@@ -1547,7 +1549,7 @@ identifies the Push ID of a resource that the server has previously promised
 this frame.  A server MUST NOT use a Push ID that is larger than the client has
 provided in a MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat
 receipt of a DUPLICATE_PUSH that contains a larger Push ID than the client has
-advertised as a connection error of type HTTP_MALFORMED_FRAME.
+advertised as a connection error of type HTTP_ID_ERROR.
 
 This frame allows the server to use the same server push in response to multiple
 concurrent requests.  Referencing the same server push ensures that a promise
@@ -1595,22 +1597,21 @@ HTTP_NO_ERROR (0x00):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
-HTTP_WRONG_SETTING_DIRECTION (0x01):
-: A client-only setting was sent by a server, or a server-only setting by a
-  client.
+HTTP_GENERAL_PROTOCOL_ERROR (0x01):
+: Peer violated protocol requirements in a way which doesn't match a more
+  specific error code, or endpoint declines to use the more specific error code.
 
-HTTP_PUSH_REFUSED (0x02):
-: The server has attempted to push content which the client will not accept
-  on this connection.
+Reserved (0x02):
+: This code is reserved and has no meaning.
 
 HTTP_INTERNAL_ERROR (0x03):
 : An internal error has occurred in the HTTP stack.
 
-HTTP_PUSH_ALREADY_IN_CACHE (0x04):
-: The server has attempted to push content which the client has cached.
+Reserved (0x04):
+: This code is reserved and has no meaning.
 
 HTTP_REQUEST_CANCELLED (0x05):
-: The request or its response is cancelled.
+: The request or its response (including pushed response) is cancelled.
 
 HTTP_INCOMPLETE_REQUEST (0x06):
 : The client's stream terminated without containing a fully-formed request.
@@ -1630,26 +1631,24 @@ HTTP_VERSION_FALLBACK (0x09):
 HTTP_WRONG_STREAM (0x0A):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_LIMIT_EXCEEDED (0x0B):
-: A Stream ID, Push ID, or Placeholder ID greater than the current maximum for
-  that identifier was referenced.
+HTTP_ID_ERROR (0x0B):
+: A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
+  exceeding a limit, reducing a limit, or being reused.
 
-HTTP_DUPLICATE_PUSH (0x0C):
-: A Push ID was referenced in two different stream headers.
+Reserved (0x0C):
+: N/A
 
-HTTP_UNKNOWN_STREAM_TYPE (0x0D):
-: A unidirectional stream header contained an unknown stream type.
+HTTP_STREAM_CREATION_ERROR (0x0D):
+: The endpoint detected that its peer created a stream that it will not accept.
 
-HTTP_WRONG_STREAM_COUNT (0x0E):
-: A unidirectional stream type was used more times than is permitted by that
-  type.
+Reserved (0x0E):
+: N/A
 
 HTTP_CLOSED_CRITICAL_STREAM (0x0F):
 : A stream required by the connection was closed or reset.
 
-HTTP_WRONG_STREAM_DIRECTION (0x0010):
-: A unidirectional stream type was used by a peer which is not permitted to do
-  so.
+Reserved (0x0010):
+: N/A
 
 HTTP_EARLY_RESPONSE (0x0011):
 : The remainder of the client's request is not needed to produce a response.
@@ -1664,9 +1663,10 @@ HTTP_UNEXPECTED_FRAME (0x0013):
 HTTP_REQUEST_REJECTED (0x0014):
 : A server rejected a request without performing any application processing.
 
-HTTP_GENERAL_PROTOCOL_ERROR (0x00FF):
-: Peer violated protocol requirements in a way which doesn't match a more
-  specific error code, or endpoint declines to use the more specific error code.
+HTTP_SETTINGS_ERROR (0x00FF):
+: An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
+  setting was detected, a client-only setting was sent by a server, or a
+  server-only setting by a client.
 
 HTTP_MALFORMED_FRAME (0x01XX):
 : An error in a specific frame type.  If the frame type is `0xfe` or less, the
@@ -1902,27 +1902,28 @@ The entries in the following table are registered by this document.
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
-| HTTP_WRONG_SETTING_DIRECTION        | 0x0001     | Setting sent in wrong direction          | {{http-error-codes}}   |
-| HTTP_PUSH_REFUSED                   | 0x0002     | Client refused pushed content            | {{http-error-codes}}   |
+| HTTP_GENERAL_PROTOCOL_ERROR         | 0x0001     | General protocol error                   | {{http-error-codes}}   |
+| Reserved                            | 0x0002     | N/A                                      | N/A                    |
 | HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
-| HTTP_PUSH_ALREADY_IN_CACHE          | 0x0004     | Pushed content already cached            | {{http-error-codes}}   |
+| Reserved                            | 0x0004     | N/A                                      | N/A                    |
 | HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
 | HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_LIMIT_EXCEEDED                 | 0x000B     | An identifier limit was exceeded         | {{http-error-codes}}   |
-| HTTP_DUPLICATE_PUSH                 | 0x000C     | Push ID was fulfilled multiple times     | {{http-error-codes}}   |
-| HTTP_UNKNOWN_STREAM_TYPE            | 0x000D     | Unknown unidirectional stream type       | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_COUNT             | 0x000E     | Too many unidirectional streams          | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| Reserved                            | 0x000C     | N/A                                      | N/A                    |
+| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Stream creation error                    | {{http-error-codes}}   |
+| Reserved                            | 0x000E     | N/A                                      | N/A                    |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM_DIRECTION         | 0x0010     | Unidirectional stream in wrong direction | {{http-error-codes}}   |
+| Reserved                            | 0x000E     | N/A                                      | N/A                    |
 | HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
 | HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x00FF     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
@@ -2174,8 +2175,10 @@ NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
-: No single mapping.  See new HTTP_MALFORMED_FRAME error codes defined in
-  {{http-error-codes}}.
+: This is mapped to HTTP_GENERAL_PROTOCOL_ERROR except in cases where more
+  specific error codes have been defined. This includes HTTP_MALFORMED_FRAME,
+  HTTP_WRONG_STREAM, HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM
+  defined in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
@@ -2226,6 +2229,33 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-21
+
+- No changes
+
+## Since draft-ietf-quic-http-20
+
+- Prohibit closing the control stream (#2509, #2666)
+- Change default priority to use an orphan node (#2502, #2690)
+- Exclusive priorities are restored (#2754, #2781)
+- Restrict use of frames when using CONNECT (#2229, #2702)
+- Close and maybe reset streams if a connection error occurs for CONNECT (#2228,
+  #2703)
+- Encourage provision of sufficient unidirectional streams for QPACK (#2100,
+  #2529, #2762)
+- Allow extensions to use server-initiated bidirectional streams (#2711, #2773)
+- Clarify use of maximum header list size setting (#2516, #2774)
+- Extensive changes to error codes and conditions of their sending
+  - Require connection errors for more error conditions (#2511, #2510)
+  - Updated the error codes for illegal GOAWAY frames (#2714, #2707)
+  - Specified error code for HEADERS on control stream (#2708)
+  - Specified error code for servers receiving PUSH_PROMISE (#2709)
+  - Specified error code for receiving DATA before HEADERS (#2715)
+  - Describe malformed messages and their handling (#2410, #2764)
+  - Remove HTTP_PUSH_ALREADY_IN_CACHE error (#2812, #2813)
+  - Refactor Push ID related errors (#2818, #2820)
+  - Rationalize HTTP/3 stream creation errors (#2821, #2822)
 
 ## Since draft-ietf-quic-http-19
 

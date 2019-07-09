@@ -1308,8 +1308,8 @@ The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake. Endpoints MUST send the
 quic_transport_parameters extension; endpoints that receive ClientHello or
 EncryptedExtensions messages without the quic_transport_parameters extension
-MUST terminate the TLS handshake with a fatal missing_extension alert (an error
-of 0x16d).
+MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
+missing_extension alert, see {{tls-errors}}).
 
 While the transport parameters are technically available prior to the completion
 of the handshake, they cannot be fully trusted until the handshake completes,
@@ -1382,7 +1382,7 @@ all QUIC protocol features that carry application semantics.
 
 Disabling 0-RTT entirely is the most effective defense against replay attack.
 
-QUIC extensions MUST describe how replay attacks affects their operation, or
+QUIC extensions MUST describe how replay attacks affect their operation, or
 prohibit their use in 0-RTT.  Application protocols MUST either prohibit the use
 of extensions that carry application semantics in 0-RTT or provide replay
 mitigation strategies.
@@ -1411,10 +1411,6 @@ without having any observable impact on the state of the connection.  If
 processing is disproportionately large in comparison to the observable effects
 on bandwidth or state, then this could allow a malicious peer to exhaust
 processing capacity without consequence.
-
-QUIC prohibits the sending of empty `STREAM` frames unless they are marked with
-the FIN bit.  This prevents `STREAM` frames from being sent that only waste
-effort.
 
 While there are legitimate uses for some redundant packets, implementations
 SHOULD track redundant packets and treat excessive volumes of any non-productive
@@ -1705,6 +1701,18 @@ cdbe264bd65f2b076760c69beef23aa7 14c9a174d69034c09a2863e1e1863508
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+
+## Since draft-ietf-quic-tls-21
+
+- No changes
+
+
+## Since draft-ietf-quic-tls-20
+
+- Mandate the use of the QUIC transport parameters extension (#2528, #2560)
+- Define handshake completion and confirmation; define clearer rules when it
+  encryption keys should be discarded (#2214, #2267, #2673)
 
 
 ## Since draft-ietf-quic-tls-18

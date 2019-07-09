@@ -702,7 +702,7 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10 of
+sooner, as soon as handshake keys are available (see Section 4.9.1 of
 {{QUIC-TLS}}).
 
 ## Discussion
@@ -1531,6 +1531,17 @@ Invoked from DetectLostPackets when packets are deemed lost.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-21
+
+- No changes
+
+## Since draft-ietf-quic-recovery-20
+
+- Path validation can be used as initial RTT value (#2644, #2687)
+- max_ack_delay transport parameter defaults to 0 (#2638, #2646)
+- Ack Delay only measures intentional delays induced by the implementation
+  (#2596, #2786)
 
 ## Since draft-ietf-quic-recovery-19
 
