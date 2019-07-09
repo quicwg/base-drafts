@@ -169,7 +169,7 @@ field and is between 0 and 255 bytes in length.
 The byte following the Source Connection ID contains the length in bytes
 of the Source Connection ID field that follows it.  This length is encoded as
 a 8-bit unsigned integer.  The Source Connection ID field follows the SCID Len
-and is between 0 and 255 bytes in length.
+field and is between 0 and 255 bytes in length.
 
 {{negotiating-connection-ids}} describes the use of the source and destination
 connection ID fields in more detail.
