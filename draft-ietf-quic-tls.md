@@ -391,6 +391,15 @@ sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
 in any received 1-RTT ACK frame: once the latter is higher than or equal to the
 former, the handshake is confirmed.
 
+Note:
+
+: Unless ack-eliciting packets protected by 1-RTT keys are sent by an endpoint,
+  the handshake might never be confirmed by an endpoint.  If the peer does
+  confirm the handshake, this could result in perpetual retransmission of
+  Handshake packets, which cannot be acknowledged.  To avoid this problem,
+  endpoints can send ack-eliciting packets after the handshake is complete until
+  the handshake is confirmed.
+
 
 ### Sending and Receiving Handshake Messages
 
