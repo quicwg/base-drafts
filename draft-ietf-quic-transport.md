@@ -244,7 +244,7 @@ x (*) ...:
 # Streams {#streams}
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
-application. Streams can be unidirectional or bidirecational.  An alternative
+application. Streams can be unidirectional or bidirectional.  An alternative
 view of QUIC unidirectional streams is a "message" abstraction of practically
 unlimited length.
 
