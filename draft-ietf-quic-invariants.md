@@ -164,7 +164,7 @@ The next four bytes include a 32-bit Version field (see {{version}}).
 The byte contains the length in bytes of the Destination Connection ID (see
 {{connection-id}}) field that follows it.  This length is encoded as an 8-bit
 unsigned integer.  The Destination Connection ID field follows the DCID Len
-and is between 0 and 255 bytes in length.
+field and is between 0 and 255 bytes in length.
 
 The byte following the Source Connection ID contains the length in bytes
 of the Source Connection ID field that follows it.  This length is encoded as
