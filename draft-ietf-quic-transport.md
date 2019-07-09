@@ -4108,11 +4108,6 @@ disabled for at least one eighth of network paths. The selection process
 performed at the beginning of the connection SHOULD be applied for all paths
 used by the connection.
 
-In case multiple connections share the same network path, as determined by
-having the same source and destination IP address and UDP ports, endpoints
-should try to co-ordinate across all connections to ensure a clear signal to any
-on-path measurement points.
-
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
