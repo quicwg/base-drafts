@@ -161,21 +161,18 @@ All other bits in that byte are version specific.
 
 The next four bytes include a 32-bit Version field (see {{version}}).
 
-The next byte contains the length in bytes of the two Connection IDs (see
-{{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
-integer.  The length of the Destination Connection ID (DCIL) occupies the high
-bits of the byte and the length of the Source Connection ID (SCIL) occupies the
-low bits of the byte.  An encoded length of 0 indicates that the connection ID
-is also 0 bytes in length.  Non-zero encoded lengths are increased by 3 to get
-the full length of the connection ID; the final value is therefore either 0 or
-between 4 and 18 bytes in length (inclusive).  For example, a byte with the
-value 0xe0 describes a 17 byte Destination Connection ID and a zero byte Source
-Connection ID.
+The byte contains the length in bytes of the Destination Connection ID (see
+{{connection-id}}) field that follows it.  This length is encoded as an 8-bit
+unsigned integer.  The Destination Connection ID field follows the DCI Len
+and is between 0 and 255 bytes in length.
 
-The connection ID lengths are followed by two connection IDs.  The connection
-ID associated with the recipient of the packet (the Destination Connection ID)
-is followed by the connection ID associated with the sender of the packet (the
-Source Connection ID).
+The byte following the Source Connection ID contains the length in bytes
+of the Source Connection ID field that follows it.  This length is encoded as
+a 8-bit unsigned integer.  The Source Connection ID field follows the SCID Len
+and is between 0 and 255 bytes in length.
+
+{{negotiating-connection-ids}} describes the use of the source and destination
+connection ID fields in more detail.
 
 The remainder of the packet contains version-specific content.
 
