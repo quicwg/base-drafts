@@ -5545,6 +5545,9 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
+Additionally, each value of the format `31 * N + 27` for integer values of N
+(that is, `31`, `58`, `85`, ...) MUST NOT be assigned by IANA.
+
 ## QUIC Frame Type Registry {#iana-frames}
 
 IANA \[SHALL add/has added] a registry for "QUIC Frame Types" under a
