@@ -3154,11 +3154,13 @@ to be greater than the number of packets acknowledged in an ACK frame.  When
 this happens, and if verification succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
 
-Processing counts out of order can result in verification failure.  An endpoint
-SHOULD NOT perform this verification if the ACK frame is received in a packet
-with packet number lower than a previously received ACK frame.  Verifying based
-on ACK frames that arrive out of order can result in disabling ECN
-unnecessarily.
+Processing counts out of order can result in verification failure.  This can
+happen when packets containing ACK frames are reordered in the network, or if a
+sender retransmits an ACK frame with stale information.  An endpoint SHOULD NOT
+perform this verification if the ACK frame is received in a packet with packet
+number lower than a previously received ACK frame or if the ACK frame does not
+acknowledge any new packets. ACK frames that arrive out of order can result in
+disabling ECN unnecessarily.
 
 Upon successful verification, an endpoint continues to set ECT codepoints in
 subsequent packets with the expectation that the path is ECN-capable.
