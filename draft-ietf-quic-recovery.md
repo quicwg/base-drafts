@@ -1188,7 +1188,7 @@ SetLossDetectionTimer():
 
   // Don't arm timer if there are no ack-eliciting packets
   // in flight and the handshake is complete.
-  if (endpoint is client with 1-RTT keys ||
+  if (endpoint is client with 1-RTT keys &&
       no ack-eliciting packets in flight):
     loss_detection_timer.cancel()
     return
