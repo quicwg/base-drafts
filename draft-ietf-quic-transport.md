@@ -5763,10 +5763,14 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
-## Since draft-ietf-quic-transport-20
+## Since draft-ietf-quic-transport-21
 
 - Connection ID lengths are now one octet, but limited in version 1 to 20 octets
   of length (#2736, #2749)
+
+
+## Since draft-ietf-quic-transport-20
+
 - Error codes are encoded as variable-length integers (#2672, #2680)
 - NEW_CONNECTION_ID includes a request to retire old connection IDs (#2645,
   #2769)

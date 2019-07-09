@@ -2230,6 +2230,10 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-21
+
+- No changes
+
 ## Since draft-ietf-quic-http-20
 
 - Prohibit closing the control stream (#2509, #2666)
@@ -2252,7 +2256,6 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
   - Remove HTTP_PUSH_ALREADY_IN_CACHE error (#2812, #2813)
   - Refactor Push ID related errors (#2818, #2820)
   - Rationalize HTTP/3 stream creation errors (#2821, #2822)
-
 
 ## Since draft-ietf-quic-http-19
 

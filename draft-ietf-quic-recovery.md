@@ -1532,6 +1532,10 @@ Invoked from DetectLostPackets when packets are deemed lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-21
+
+- No changes
+
 ## Since draft-ietf-quic-recovery-20
 
 - Path validation can be used as initial RTT value (#2644, #2687)
