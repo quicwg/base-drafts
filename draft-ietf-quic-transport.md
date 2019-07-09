@@ -3505,7 +3505,7 @@ DCID Len:
 
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
-  unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20 bytes.
+  unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
   Endpoints that receive a version 1 long header with a value larger than
   20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
   from other QUIC versions in order to properly form a version negotiation
