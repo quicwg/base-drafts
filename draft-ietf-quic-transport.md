@@ -924,14 +924,15 @@ selected by the client, both to ensure correct routing toward the client and to
 allow the client to validate that the packet is in response to an Initial
 packet.
 
-A zero-length connection ID MAY be used when the connection ID is not needed
-for routing and the destination address and port of incoming packets is
-sufficient to identify a connection (e.g., when there is a single connection
-on a given local port). Note that it is not possible to use the source address
-and port of incoming packets to demultiplex them across connections because a
-peer might multiplex multiple connections on a single address and port and rely
-on its connection IDs for demultiplexing, and the peer's connection IDs are not
-transmitted in the short header packets they send.
+A zero-length connection ID can be used when a connection ID is not needed
+to route to the correct endpoint. An endpoint MUST NOT use a zero-length
+connection ID unless it can use only its IP address and port to identify a
+connection. The IP address and port used by a peer cannot be used for routing
+or connection identification as these values can change during a connection's
+lifetime, and the peer can reuse a given address and port for additional
+connections. Similarly, the peer's connection IDs cannot be used for routing
+or identification, as they are not transmitted in the short header packets
+they send.
 
 When an endpoint has requested a non-zero-length connection ID, it needs to
 ensure that the peer has a supply of connection IDs from which to choose for
@@ -1010,9 +1011,6 @@ connection ID can be associated with a connection; see {{connection-id}}.
 If the Destination Connection ID is zero-length and the packet matches the
 local address and port of a connection where the host used zero-length
 connection IDs, QUIC processes the packet as part of that connection.
-Endpoints that share a local address and port across multiple connections MUST
-use non-zero-length connection IDs so that packets can be correctly attributed
-to connections.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
