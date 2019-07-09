@@ -1221,7 +1221,10 @@ OnLossDetectionTimeout():
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
-  else if (endpoint is client without 1-RTT keys):
+    SetLossDetectionTimer()
+    return
+
+  if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
@@ -1229,13 +1232,12 @@ OnLossDetectionTimeout():
       SendOneHandshakePacket()
     else:
       SendOnePaddedInitialPacket()
-    pto_count++
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
     SendOneOrTwoPackets()
-    pto_count++
 
+  pto_count++
   SetLossDetectionTimer()
 ~~~
 
