@@ -576,7 +576,7 @@ Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
 Data at Initial encryption MUST be retransmitted before Handshake data and
 data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm should not be armed until
+data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
 data has been received from the client.
 
 Because the server could be blocked until more packets are received, the client
