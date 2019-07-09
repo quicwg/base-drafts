@@ -1221,12 +1221,6 @@ OnLossDetectionTimeout():
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
-  // Retransmit crypto data if no packets were lost
-  // and there is crypto data to retransmit.
-  else if (has unacknowledged crypto data):
-    // Crypto retransmission timeout.
-    RetransmitUnackedCryptoData()
-    pto_count++
   else if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
