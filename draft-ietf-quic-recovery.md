@@ -557,9 +557,7 @@ time.
 The probe timer is not set if the time threshold {{time-threshold}} loss
 detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
-data. The Initial and Handshake packet number spaces will typically contain a
-small number of packets, so losses are less likely to be detected using
-packet-threshold loss detection.
+data.
 
 ## Handshakes and New Paths
 
