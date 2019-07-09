@@ -1390,9 +1390,6 @@ An endpoint MUST NOT send a parameter more than once in a given transport
 parameters extension.  An endpoint SHOULD treat receipt of duplicate transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
-A server MUST include the original_connection_id transport parameter
-({{transport-parameter-definitions}}) if it sent a Retry packet to enable
-validation of the Retry, as described in {{packet-retry}}.
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
@@ -1409,10 +1406,10 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and active_connection_id_limit. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+preferred_address, stateless_reset_token, ack_delay_exponent and
+active_connection_id_limit. The client MUST use the server's new values
+in the handshake instead, and absent new values from the server, the
+default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -3939,18 +3936,6 @@ the cryptographic handshake message it sends in response to receiving a Retry.
 A client MUST NOT reset the packet number for any packet number space after
 processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
-A server acknowledges the use of a Retry packet for a connection using the
-original_connection_id transport parameter (see
-{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
-MUST include the value of the Original Destination Connection ID field of the
-Retry packet (that is, the Destination Connection ID field from the client's
-first Initial packet) in the transport parameter.
-
-If the client received and processed a Retry packet, it MUST validate that the
-original_connection_id transport parameter is present and correct; otherwise, it
-MUST validate that the transport parameter is absent.  A client MUST treat a
-failed validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
-
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
@@ -4103,7 +4088,6 @@ language from Section 3 of {{!TLS13=RFC8446}}.
 
 ~~~
    enum {
-      original_connection_id(0),
       idle_timeout(1),
       stateless_reset_token(2),
       max_packet_size(3),
@@ -4148,13 +4132,6 @@ encoding (see {{integer-encoding}}) and have a default value of 0 if the
 transport parameter is absent, unless otherwise stated.
 
 The following transport parameters are defined:
-
-original_connection_id (0x0000):
-
-: The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by a server.  A
-  server MUST include the original_connection_id transport parameter if it sent
-  a Retry packet.
 
 idle_timeout (0x0001):
 
@@ -5539,7 +5516,6 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 
 | Value  | Parameter Name              | Specification                       |
 |:-------|:----------------------------|:------------------------------------|
-| 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
 | 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
 | 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
 | 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
