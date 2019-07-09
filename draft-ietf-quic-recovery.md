@@ -532,11 +532,18 @@ a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
 be considered an RTT sample.
 
 When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
-RTT.  This timer MUST be updated when a new crypto packet is sent and when
-an acknowledgement is received which computes a new RTT sample. Upon timeout,
-the sender MUST retransmit all unacknowledged CRYPTO data if possible.  The
-sender MUST NOT declare in-flight crypto packets as lost when the crypto timer
-expires.
+RTT.  This timer MUST be updated when a new crypto packet is sent and when an
+acknowledgement is received that produces a new RTT sample. Upon timeout, the
+sender MUST retransmit unacknowledged cryptographic handshake data.  The sender
+MUST NOT declare in-flight crypto packets as lost when the crypto timer expires.
+
+If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
+4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged crytographic
+handshake data, endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can
+be coalesced with Handshake packets, even if there is sufficient unacknowledged
+cryptographic handshake data outstanding to consume the entire PMTU.  Sending an
+ack-eliciting 1-RTT packet provides a peer with the opportunity to confirm the
+handshake and allow all state associated with Handshake packets to be discarded.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender MUST double the crypto
@@ -1273,7 +1280,7 @@ OnLossDetectionTimeout():
   // and there is crypto data to retransmit.
   else if (has unacknowledged crypto data):
     // Crypto retransmission timeout.
-    RetransmitUnackedCryptoData()
+    RetransmitUnackedCryptoDataAnd1Rtt()
     crypto_count++
   else if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
