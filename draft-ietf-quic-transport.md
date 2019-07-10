@@ -2558,7 +2558,12 @@ errors can be isolated to a single stream (see {{stream-errors}}).
 
 The most appropriate error code ({{error-codes}}) SHOULD be included in the
 frame that signals the error.  Where this specification identifies error
-conditions, it also identifies the error code that is used.
+conditions, it also identifies the error code that is used; though these are
+worded as requirements, different implementation strategies might lead to
+different errors being reported.  In particular, an endpoint MAY use any
+applicable error code when it detects an error condition; a generic error code
+(such as PROTOCOL_VIOLATION or INTERNAL_ERROR) can always be used in place of
+specific error codes.
 
 A stateless reset ({{stateless-reset}}) is not suitable for any error that can
 be signaled with a CONNECTION_CLOSE or RESET_STREAM frame.  A stateless reset
@@ -5381,12 +5386,6 @@ Absent either of these conditions, error codes are used to identify a general
 function of the stack, like flow control or transport parameter handling.
 Finally, generic errors are provided for conditions where implementations are
 unable or unwilling to use more specific codes.
-
-This approach recognizes that implementation strategies can differ.  This
-extends to prioritizing the choice of which error code to report.  In
-particular, where multiple error conditions could apply, implementations can
-choose to report any error condition.  Reporting generic error codes
-(PROTOCOL_VIOLATION and INTERNAL_ERROR) is always acceptable.
 
 
 ## Application Protocol Error Codes {#app-error-codes}
