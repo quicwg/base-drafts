@@ -5380,7 +5380,7 @@ CRYPTO_ERROR (0x1XX):
 See {{iana-error-codes}} for details of registering new error codes.
 
 In defining these error codes, several principles are applied.  Error conditions
-that might require specific action on the part of a recipient are giving unique
+that might require specific action on the part of a recipient are given unique
 codes.  Errors that represent common conditions are given specific codes.
 Absent either of these conditions, error codes are used to identify a general
 function of the stack, like flow control or transport parameter handling.
