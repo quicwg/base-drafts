@@ -589,7 +589,7 @@ necessary, to allow the server to continue sending data. If Handshake keys
 are available to the client, it MUST send a Handshake packet, and otherwise
 it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
 
-Because Initial packets only containing PADDING do not elicit an
+Because Initial packets containing only PADDING do not elicit an
 acknowledgement, they may never be acknowledged, but they are removed from
 bytes in flight when the client gets Handshake keys and the Initial keys are
 discarded.
