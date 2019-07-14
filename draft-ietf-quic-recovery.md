@@ -538,12 +538,12 @@ sender MUST retransmit unacknowledged cryptographic handshake data.  The sender
 MUST NOT declare in-flight crypto packets as lost when the crypto timer expires.
 
 If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
-4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged crytographic
-handshake data, endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can
-be coalesced with Handshake packets, even if there is sufficient unacknowledged
-cryptographic handshake data outstanding to consume the entire PMTU.  Sending an
-ack-eliciting 1-RTT packet provides a peer with the opportunity to confirm the
-handshake and allow all state associated with Handshake packets to be discarded.
+4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged CRYPTO data,
+endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can be coalesced with
+Handshake packets, even if there is sufficient unacknowledged cryptographic
+handshake data outstanding to consume the entire PMTU.  Sending an ack-eliciting
+1-RTT packet provides a peer with the opportunity to confirm the handshake and
+allow all state associated with Handshake packets to be discarded.
 
 On each consecutive expiration of the crypto timer without receiving an
 acknowledgement for a new packet, the sender MUST double the crypto
