@@ -5442,6 +5442,7 @@ server to send an initial congestion window's worth of data towards the victim.
 Servers SHOULD provide mitigations for this attack by limiting the usage and
 lifetime of address validation tokens (see {{validate-future}}).
 
+
 ## Optimistic ACK Attack
 
 An endpoint that acknowledges packets it has not received might cause a
@@ -5512,6 +5513,25 @@ effect of the stream commitment attack.  However, setting the limit too low
 could affect performance when applications expect to open large number of
 streams.
 
+
+## Peer Denial of Service {#useless}
+
+QUIC and TLS both contain messages that have legitimate uses in some contexts,
+but that can be abused to cause a peer to expend processing resources without
+having any observable impact on the state of the connection.
+
+Messages can also be used to change and revert state in small or inconsequential
+ways, such as by sending small increments to flow control limits.
+
+If processing costs are disproportionately large in comparison to bandwidth
+consumption or effect on state, then this could allow a malicious peer to
+exhaust processing capacity without consequence, thereby evading notice.
+
+While there are legitimate uses for these messages in limited quantities,
+implementations SHOULD track cost of processing relative to progress and treat
+excessive quantities of any non-productive packets as indicative of an attack.
+
+
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
 An on-path attacker could manipulate the value of ECN codepoints in the IP
@@ -5524,6 +5544,7 @@ receiver, an off-path attacker will need to race the duplicate packet against
 the original to be successful in this attack.  Therefore, QUIC endpoints ignore
 the ECN codepoint field on an IP packet unless at least one QUIC packet in that
 IP packet is successfully processed; see {{ecn}}.
+
 
 ## Stateless Reset Oracle {#reset-oracle}
 
@@ -5549,6 +5570,7 @@ correct instance, it is better to send a stateless reset than wait for
 connections to time out.  However, this is acceptable only if the routing cannot
 be influenced by an attacker.
 
+
 ## Version Downgrade {#version-downgrade}
 
 This document defines QUIC Version Negotiation packets {{version-negotiation}},
@@ -5559,6 +5581,7 @@ Negotiation packets do not contain any mechanism to prevent version downgrade
 attacks.  Future versions of QUIC that use Version Negotiation packets MUST
 define a mechanism that is robust against version downgrade attacks.
 
+
 ## Targeted Attacks by Routing
 
 Deployments should limit the ability of an attacker to target a new connection
@@ -5567,6 +5590,7 @@ as the initial Destination Connection ID used on Initial and 0-RTT packets
 SHOULD NOT be used by themselves to make routing decisions.  Ideally, routing
 decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
+
 
 # IANA Considerations
 
@@ -5621,6 +5645,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
 | 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
+
 
 ## QUIC Frame Type Registry {#iana-frames}
 

@@ -1388,20 +1388,6 @@ attacker cannot forge them.  Put together, these defenses limit the level of
 amplification.
 
 
-## Peer Denial of Service {#useless}
-
-QUIC, TLS, and HTTP/2 all contain messages that have legitimate uses in some
-contexts, but that can be abused to cause a peer to expend processing resources
-without having any observable impact on the state of the connection.  If
-processing is disproportionately large in comparison to the observable effects
-on bandwidth or state, then this could allow a malicious peer to exhaust
-processing capacity without consequence.
-
-While there are legitimate uses for some redundant packets, implementations
-SHOULD track redundant packets and treat excessive volumes of any non-productive
-packets as indicative of an attack.
-
-
 ## Header Protection Analysis {#header-protect-analysis}
 
 Header protection relies on the packet protection AEAD being a pseudorandom
