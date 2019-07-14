@@ -5525,11 +5525,11 @@ ways, such as by sending small increments to flow control limits.
 
 If processing costs are disproportionately large in comparison to bandwidth
 consumption or effect on state, then this could allow a malicious peer to
-exhaust processing capacity without consequence, thereby evading notice.
+exhaust processing capacity.
 
-While there are legitimate uses for these messages in limited quantities,
-implementations SHOULD track cost of processing relative to progress and treat
-excessive quantities of any non-productive packets as indicative of an attack.
+While there are legitimate uses for all messages, implementations SHOULD track
+cost of processing relative to progress and treat excessive quantities of any
+non-productive packets as indicative of an attack.
 
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
