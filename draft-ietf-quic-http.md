@@ -505,11 +505,11 @@ this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
-Clients can cancel requests by resetting the request stream with an error code
-of HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client aborts
-reading a response, it indicates that this response is no longer of interest.
-Implementations SHOULD cancel requests by terminating both directions of a
-stream.
+Clients can cancel requests by resetting and aborting the request stream with an
+error code of HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client
+aborts reading a response, it indicates that this response is no longer of
+interest. Implementations SHOULD cancel requests by abruptly terminating any
+directions of a stream that are still open.
 
 When the server rejects a request without performing any application processing,
 it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
@@ -828,8 +828,7 @@ on lower stream IDs were or might be processed in this connection, while
 requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
 connection shutdown.  This identifier MAY be zero if no requests were processed.
-Servers SHOULD NOT permit additional transport streams after sending a GOAWAY
-frame.
+Servers SHOULD NOT permit additional QUIC streams after sending a GOAWAY frame.
 
 Clients MUST NOT send new requests on the connection after receiving GOAWAY;
 a new connection MAY be established to send additional requests.
@@ -928,9 +927,9 @@ responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
 on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
 to permit these streams to open, an HTTP/3 server SHOULD configure non-zero
-minimum values for the number of permitted streams and the initial flow control
-window for each stream. It is RECOMMENDED that at least 100 requests be
-permitted at a time, so as to not unnecessarily limit parallelism.
+minimum values for the number of permitted streams and the initial stream flow
+control window.  It is RECOMMENDED that at least 100 requests be permitted at a
+time, so as to not unnecessarily limit parallelism.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
@@ -960,16 +959,17 @@ see {{extensions}} for more details.
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
-Endpoints that excessively restrict the number or flow control window of these
-streams will increase the chance that the remote peer reaches the limit early
-and becomes blocked. In particular, implementations should consider that remote
-peers may wish to exercise reserved stream behavior ({{stream-grease}}) with
-some of the unidirectional streams they are permitted to use. To avoid blocking,
-both clients and servers MUST allow the peer to create at least one
-unidirectional stream for the HTTP control stream plus the number of
-unidirectional streams required by mandatory extensions (three being the minimum
-number required for the base HTTP/3 protocol and QPACK), and SHOULD provide at
-least 1,024 bytes of flow control credit to each stream.
+Endpoints that excessively restrict the number of streams or the flow control
+window of these streams will increase the chance that the remote peer reaches
+the limit early and becomes blocked. In particular, implementations should
+consider that remote peers may wish to exercise reserved stream behavior
+({{stream-grease}}) with some of the unidirectional streams they are permitted
+to use. To avoid blocking, the transport parameters sent by both clients and
+servers MUST allow the peer to create at least one unidirectional stream for the
+HTTP control stream plus the number of unidirectional streams required by
+mandatory extensions (three being the minimum number required for the base
+HTTP/3 protocol and QPACK), and SHOULD provide at least 1,024 bytes of flow
+control credit to each stream.
 
 Note that an endpoint is not required to grant additional credits to create more
 unidirectional streams if its peer consumes all the initial credits before
