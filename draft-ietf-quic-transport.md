@@ -1816,10 +1816,7 @@ parameter, but detects that a peer has nonetheless migrated to a different
 network MUST either drop the incoming packets on that path without generating a
 stateless reset or proceed with path validation and allow the peer to migrate.
 This helps to prevent third parties in the network causing connections to close
-due to spoofed addresses or other manipulation of observed traffic. An endpoint
-MUST NOT actively initiate migration if its peer supplies a zero-length
-connection ID as packets without a Destination Connection ID cannot be
-attributed to a connection based on address tuple.
+due to spoofed addresses or other manipulation of observed traffic.
 
 Not all changes of peer address are intentional, or active, migrations. The peer
 could experience NAT rebinding: a change of address due to a middlebox, usually
