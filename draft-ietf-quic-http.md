@@ -1024,9 +1024,10 @@ more details.
 
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
-remaining data on this stream consists of zero or more non-final HTTP responses
-followed by a single final HTTP response, as defined in {{request-response}},
-and fulfills a promised server push.  Server push and Push IDs are described in
+remaining data on this stream consists of HTTP/3 frames, as defined in
+{{frames}}, and fulfills a promised server push by zero or more non-final HTTP
+responses followed by a single final HTTP response, as defined in
+{{request-response}}.  Server push and Push IDs are described in
 {{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
