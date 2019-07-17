@@ -2661,8 +2661,7 @@ Initial ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), and Handshake
 ({{packet-handshake}}) packets contain a Length field, which determines the end
 of the packet.  The length includes both the Packet Number and Payload
 fields, both of which are confidentiality protected and initially of unknown
-length. The length of the Payload field is learned once header protection is
-removed.
+length.
 
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
