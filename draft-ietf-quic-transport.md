@@ -5529,7 +5529,8 @@ exhaust processing capacity.
 
 While there are legitimate uses for all messages, implementations SHOULD track
 cost of processing relative to progress and treat excessive quantities of any
-non-productive packets as indicative of an attack.
+non-productive packets as indicative of an attack.  Endpoints MAY respond to
+this condition with a connection error, or by dropping packets.
 
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
