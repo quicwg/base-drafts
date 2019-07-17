@@ -415,6 +415,10 @@ before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
+Reserved frames ({{frame-grease}}) or frames of types not defined in this
+document MAY be sent on a request or push stream before, after, or interleaved
+with other frames described in this section.
+
 The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
 table. While these updates are not directly part of the message exchange, they
 must be received and processed before the message can be consumed.  See
