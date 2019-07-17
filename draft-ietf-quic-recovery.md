@@ -1197,11 +1197,10 @@ SetLossDetectionTimer():
   // Use a default timeout if ther are no RTT measurements
   if (smoothed_rtt == 0):
     timeout = 2 * kInitialRtt
-    return
-
-  // Calculate PTO duration
-  timeout =
-    smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
+  else:
+    // Calculate PTO duration
+    timeout =
+      smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   loss_detection_timer.update(
