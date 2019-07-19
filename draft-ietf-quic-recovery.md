@@ -1090,11 +1090,11 @@ OnAckReceived(ack, pn_space):
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
   if (sent_packets[pn_space][ack.largest_acked] &&
-      IncludesAckEliciting(newly_acked_packets))
+      IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
-    if pn_space == ApplicationData:
+    if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
     UpdateRtt(ack_delay)
 
@@ -1174,8 +1174,8 @@ GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if loss_time[pn_space] != 0 &&
-       (time == 0 || loss_time[pn_space] < time):
+    if (loss_time[pn_space] != 0 &&
+        (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
   return time, space
@@ -1400,7 +1400,7 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppLimited())
+     if (IsAppLimited()):
        // Do not increase congestion_window if application
        // limited.
        return
