@@ -395,7 +395,7 @@ Note:
 
 : Unless ack-eliciting packets protected by 1-RTT keys are sent by an endpoint,
   the handshake might never be confirmed by an endpoint.  If the peer does
-  confirm the handshake, this could result in perpetual retransmission of
+  confirm the handshake, this could result in perpetual transmission of
   Handshake packets, which cannot be acknowledged.  To avoid this problem, in
   addition to retransmitting Handshake packets, endpoints can send ack-eliciting
   packets after the handshake is complete until the handshake is confirmed.
