@@ -805,8 +805,8 @@ packets even where the TLS versions offered do not include TLS 1.3.
 
 The secrets used for protecting Initial packets do not change during the
 connection, even after receiving a Retry.  A server that sends a Retry
-therefore needs to either remember Initial protection keys or
-save them in the Retry token.
+therefore needs to either remember Initial protection keys or save them
+in the Retry token.
 
 {{test-vectors-initial}} contains test vectors for the initial packet
 encryption.
