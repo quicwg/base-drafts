@@ -321,7 +321,7 @@ decoder has started reading from the stream.
 <!-- doesn't the stream become unblocked when the encoder receives the acks? -->
 
 When processing header blocks, the decoder expects the Required Insert Count to
-exactly match the value defined in {{blocked-streams}. If it encounters a
+exactly match the value defined in {{blocked-streams}}. If it encounters a
 smaller value than expected, it MUST treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED (see {{invalid-references}}). If it encounters a
 larger value than expected, it MAY treat this as a connection error of type

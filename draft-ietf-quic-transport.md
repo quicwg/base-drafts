@@ -244,7 +244,7 @@ x (*) ...:
 # Streams {#streams}
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
-application. Streams can be unidirectional or bidirecational.  An alternative
+application. Streams can be unidirectional or bidirectional.  An alternative
 view of QUIC unidirectional streams is a "message" abstraction of practically
 unlimited length.
 
@@ -3503,16 +3503,13 @@ Version:
 
 DCID Len:
 
-: The byte following the version contains the lengths of the two connection ID
-  fields that follow it.  These lengths are encoded as two 4-bit unsigned
-  integers. The Destination Connection ID Length (DCIL) field occupies the 4
-  high bits of the byte and the Source Connection ID Length (SCIL) field
-  occupies the 4 low bits of the byte.  An encoded length of 0 indicates that
-  the connection ID is also 0 bytes in length.  Non-zero encoded lengths are
-  increased by 3 to get the full length of the connection ID, producing a length
-  between 4 and 18 bytes inclusive.  For example, a byte with the value 0x50
-  describes an 8-byte Destination Connection ID and a zero-length Source
-  Connection ID.
+: The byte following the version contains the length in bytes of the Destination
+  Connection ID field that follows it.  This length is encoded as an 8-bit
+  unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
+  Endpoints that receive a version 1 long header with a value larger than
+  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
+  from other QUIC versions in order to properly form a version negotiation
+  packet.
 
 Destination Connection ID:
 
@@ -5782,7 +5779,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Allow reuse of stateless reset tokens (#2732, #2733)
 - Allow, but not require, enforcing non-duplicate transport parameters (#2689,
   #2691)
-- Added a active_connection_id_limit transport parameter (#1994, #1998)
+- Added an active_connection_id_limit transport parameter (#1994, #1998)
 - max_ack_delay transport parameter defaults to 0 (#2638, #2646)
 - When sending 0-RTT, only remembered transport parameters apply (#2458, #2360,
   #2466, #2461)

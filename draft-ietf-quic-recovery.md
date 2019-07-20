@@ -165,7 +165,7 @@ of frames contained in a packet affect recovery and congestion control logic:
 
 * Long header packets that contain CRYPTO frames are critical to the
   performance of the QUIC handshake and use shorter timers for
-  acknowledgement and retransmission.
+  acknowledgement.
 
 * Packets that contain only ACK frames do not count toward congestion control
   limits and are not considered in-flight.
@@ -512,83 +512,14 @@ thresholds reduce reordering resilience and increase spurious retransmissions,
 and larger thresholds increase loss detection delay.
 
 
-## Crypto Retransmission Timeout
-
-Data in CRYPTO frames is critical to QUIC transport and crypto negotiation, so a
-more aggressive timeout is used to retransmit it.
-
-The initial crypto retransmission timeout SHOULD be set to twice the initial
-RTT.
-
-At the beginning, there are no prior RTT samples within a connection.  Resumed
-connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT.  If no previous RTT
-is available, or if the network changes, the initial RTT SHOULD be set to 500ms,
-resulting in a 1 second initial handshake timeout as recommended in
-{{?RFC6298}}.
-
-A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
-a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
-be considered an RTT sample.
-
-When a crypto packet is sent, the sender MUST set a timer for twice the smoothed
-RTT.  This timer MUST be updated when a new crypto packet is sent and when an
-acknowledgement is received that produces a new RTT sample. Upon timeout, the
-sender MUST retransmit unacknowledged cryptographic handshake data.  The sender
-MUST NOT declare in-flight crypto packets as lost when the crypto timer expires.
-
-If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
-4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged CRYPTO data,
-endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can be coalesced with
-Handshake packets, even if there is sufficient unacknowledged cryptographic
-handshake data outstanding to consume the entire PMTU.  Sending an ack-eliciting
-1-RTT packet provides a peer with the opportunity to confirm the handshake and
-allow all state associated with Handshake packets to be discarded.
-
-On each consecutive expiration of the crypto timer without receiving an
-acknowledgement for a new packet, the sender MUST double the crypto
-retransmission timeout and set a timer for this period.
-
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If not all unacknowledged CRYPTO data can be sent, then all unacknowledged
-CRYPTO data sent in Initial packets should be retransmitted.  If no data can be
-sent, then no alarm should be armed until data has been received from the
-client.
-
-Because the server could be blocked until more packets are received, the client
-MUST ensure that the crypto retransmission timer is set if there is
-unacknowledged crypto data or if the client does not yet have 1-RTT keys.
-If the crypto retransmission timer expires before the client has 1-RTT keys,
-it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PADDING frames if
-necessary, to allow the server to continue sending data. If Handshake keys
-are available to the client, it MUST send a Handshake packet, and otherwise
-it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
-
-Because packets only containing PADDING do not elicit an acknowledgement,
-they may never be acknowledged, but they are removed from bytes in flight
-when the client gets Handshake keys and the Initial keys are discarded.
-
-The crypto retransmission timer is not set if the time threshold
-{{time-threshold}} loss detection timer is set.  The time threshold loss
-detection timer is expected to both expire earlier than the crypto
-retransmission timeout and be less likely to spuriously retransmit data.
-The Initial and Handshake packet number spaces will typically contain a small
-number of packets, so losses are less likely to be detected using
-packet-threshold loss detection.
-
-When the crypto retransmission timer is active, the probe timer ({{pto}})
-is not active.
-
-
 ## Probe Timeout {#pto}
 
-A Probe Timeout (PTO) triggers a probe packet when ack-eliciting data is in
-flight but an acknowledgement is not received within the expected period of
-time.  A PTO enables a connection to recover from loss of tail packets or acks.
-The PTO algorithm used in QUIC implements the reliability functions of Tail Loss
-Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
+A Probe Timeout (PTO) triggers sending one or two probe packets when
+ack-eliciting packets are not acknowledged within the expected period of
+time or the handshake has not been completed.  A PTO enables a connection to
+recover from loss of tail packets or acks. The PTO algorithm used in QUIC
+implements the reliability functions of Tail Loss Probe
+{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
 
@@ -613,15 +544,55 @@ delay sending an acknowledgement.
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
-When a PTO timer expires, the sender probes the network as described in the next
-section. The PTO period MUST be set to twice its current value. This exponential
-reduction in the sender's rate is important because the PTOs might be caused by
-loss of packets or acknowledgements due to severe congestion.
+When a PTO timer expires, the PTO period MUST be set to twice its current
+value. This exponential reduction in the sender's rate is important because
+the PTOs might be caused by loss of packets or acknowledgements due to severe
+congestion.  The life of a connection that is experiencing consecutive PTOs is
+limited by the endpoint's idle timeout.
 
 A sender computes its PTO timer every time an ack-eliciting packet is sent. A
 sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
+
+The probe timer is not set if the time threshold {{time-threshold}} loss
+detection timer is set.  The time threshold loss detection timer is expected
+to both expire earlier than the PTO and be less likely to spuriously retransmit
+data.
+
+## Handshakes and New Paths
+
+The initial probe timeout for a new connection or new path SHOULD be
+set to twice the initial RTT.  Resumed connections over the same network
+SHOULD use the previous connection's final smoothed RTT value as the resumed
+connection's initial RTT.  If no previous RTT is available, the initial RTT
+SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
+in {{?RFC6298}}.
+
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
+a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
+be considered an RTT sample.
+
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+Data at Initial encryption MUST be retransmitted before Handshake data and
+data at Handshake encryption MUST be retransmitted before any ApplicationData
+data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
+data has been received from the client.
+
+Because the server could be blocked until more packets are received, the client
+MUST ensure that the retransmission timer is set if the client does not yet
+have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
+it is possible that the client may not have any crypto data to retransmit.
+However, the client MUST send a new packet, containing only PADDING frames if
+necessary, to allow the server to continue sending data. If Handshake keys
+are available to the client, it MUST send a Handshake packet, and otherwise
+it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+
+Because Initial packets containing only PADDING do not elicit an
+acknowledgement, they may never be acknowledged, but they are removed from
+bytes in flight when the client gets Handshake keys and the Initial keys are
+discarded.
 
 ### Sending Probe Packets
 
@@ -657,6 +628,14 @@ be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
+
+If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
+4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged CRYPTO data,
+endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can be coalesced with
+Handshake packets, even if there is sufficient unacknowledged CRYPTO data
+outstanding to consume the entire PMTU.  Sending an ack-eliciting 1-RTT packet
+provides a peer with the opportunity to confirm the handshake and allow all
+state associated with Handshake packets to be discarded.
 
 When the PTO timer expires multiple times and new data cannot be sent,
 implementations must choose between sending the same payload every time
@@ -963,12 +942,6 @@ in_flight:
 : A boolean that indicates whether the packet counts towards bytes in
   flight.
 
-is_crypto_packet:
-: A boolean that indicates whether the packet contains
-  cryptographic handshake messages critical to the completion of the QUIC
-  handshake. In this version of QUIC, this includes any packet with the long
-  header that includes a CRYPTO frame.
-
 sent_bytes:
 : The number of bytes sent in the packet, not including UDP or IP
   overhead, but including QUIC framing overhead.
@@ -1020,18 +993,11 @@ are described in this section.
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
 
-crypto_count:
-: The number of times all unacknowledged CRYPTO data has been
-  retransmitted without receiving an ack.
-
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
 time_of_last_sent_ack_eliciting_packet:
 : The time the most recent ack-eliciting packet was sent.
-
-time_of_last_sent_crypto_packet:
-: The time the most recent crypto packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
@@ -1072,7 +1038,6 @@ follows:
 
 ~~~
    loss_detection_timer.reset()
-   crypto_count = 0
    pto_count = 0
    latest_rtt = 0
    smoothed_rtt = 0
@@ -1080,7 +1045,6 @@ follows:
    min_rtt = 0
    max_ack_delay = 0
    time_of_last_sent_ack_eliciting_packet = 0
-   time_of_last_sent_crypto_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
      loss_time[pn_space] = 0
@@ -1096,7 +1060,7 @@ Pseudocode for OnPacketSent follows:
 
 ~~~
  OnPacketSent(packet_number, pn_space, ack_eliciting,
-              in_flight, is_crypto_packet, sent_bytes):
+              in_flight, sent_bytes):
    sent_packets[pn_space][packet_number].packet_number =
                                             packet_number
    sent_packets[pn_space][packet_number].time_sent = now
@@ -1104,8 +1068,6 @@ Pseudocode for OnPacketSent follows:
                                             ack_eliciting
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
-     if (is_crypto_packet):
-       time_of_last_sent_crypto_packet = now
      if (ack_eliciting):
        time_of_last_sent_ack_eliciting_packet = now
      OnPacketSentCC(sent_bytes)
@@ -1153,7 +1115,6 @@ OnAckReceived(ack, pn_space):
 
   DetectLostPackets(pn_space)
 
-  crypto_count = 0
   pto_count = 0
 
   SetLossDetectionTimer()
@@ -1234,28 +1195,20 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  if (has unacknowledged crypto data
-      || endpoint is client without 1-RTT keys):
-    // Crypto retransmission timer.
-    if (smoothed_rtt == 0):
-      timeout = 2 * kInitialRtt
-    else:
-      timeout = 2 * smoothed_rtt
-    timeout = max(timeout, kGranularity)
-    timeout = timeout * (2 ^ crypto_count)
-    loss_detection_timer.update(
-      time_of_last_sent_crypto_packet + timeout)
-    return
-
   // Don't arm timer if there are no ack-eliciting packets
-  // in flight.
-  if (no ack-eliciting packets in flight):
+  // in flight and the handshake is complete.
+  if (endpoint is client with 1-RTT keys &&
+      no ack-eliciting packets in flight):
     loss_detection_timer.cancel()
     return
 
-  // Calculate PTO duration
-  timeout =
-    smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
+  // Use a default timeout if there are no RTT measurements
+  if (smoothed_rtt == 0):
+    timeout = 2 * kInitialRtt
+  else:
+    // Calculate PTO duration
+    timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
+      max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   loss_detection_timer.update(
@@ -1276,27 +1229,24 @@ OnLossDetectionTimeout():
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
-  // Retransmit crypto data if no packets were lost
-  // and there is crypto data to retransmit.
-  else if (has unacknowledged crypto data):
-    // Crypto retransmission timeout.
-    RetransmitUnackedCryptoDataAnd1Rtt()
-    crypto_count++
-  else if (endpoint is client without 1-RTT keys):
-    // Client sends an anti-deadlock packet: Initial is padded
-    // to earn more anti-amplification credit,
-    // a Handshake packet proves address ownership.
-    if (has Handshake keys):
-       SendOneHandshakePacket()
-     else:
-       SendOnePaddedInitialPacket()
-    crypto_count++
+  if (endpoint is client &&
+      handshake is not confirmed):
+    // Client sends an anti-deadlock packet
+    if (does not have Handshake keys):
+      // Pad Initial to earn more anti-amplification credit.
+      SendOnePaddedInitialPacket()
+    else if (has 1-RTT keys):
+      // Send Handshake coalesced with 1-RTT.
+      SendOneHandshakePacketAnd1Rtt()
+    else:
+      // Send a Handshake packet.
+      SendOneHandshakePacket()
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
     SendOneOrTwoPackets()
-    pto_count++
 
+  pto_count++
   SetLossDetectionTimer()
 ~~~
 
