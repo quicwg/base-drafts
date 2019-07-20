@@ -581,13 +581,13 @@ data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
 data has been received from the client.
 
 Because the server could be blocked until more packets are received, the client
-MUST ensure that the retransmission timer is set if the client does not yet
-have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
-it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PADDING frames if
-necessary, to allow the server to continue sending data. If Handshake keys
-are available to the client, it MUST send a Handshake packet, and otherwise
-it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+MUST ensure that the retransmission timer is set if the client has not received
+an ACK in a Handshake packet or does not yet have 1-RTT keys.  If the probe
+timer expires and the client does not have any crypto data to retransmit it
+MUST send a packet, containing only PADDING frames if necessary, to allow the
+server to continue sending data. If Handshake keys are available to the client,
+it MUST send a Handshake packet, and otherwise it MUST send an Initial packet
+in a UDP datagram of at least 1200 bytes.
 
 Because Initial packets containing only PADDING do not elicit an
 acknowledgement, they may never be acknowledged, but they are removed from
@@ -1188,10 +1188,12 @@ SetLossDetectionTimer():
     return
 
   // Don't arm timer if there are no ack-eliciting packets
-  // in flight and the endpoint is a server or has
-  // completed the handshake.
+  // in flight and the endpoint is a server.  Do arm the
+  // timer until the client has received a Handshake ACK
+  // or completed the handshake.
   if (no ack-eliciting packets in flight &&
-      (endpoint is server or has 1-RTT keys)):
+      (endpoint is server or has 1-RTT keys
+       or has received Handshake ACK)):
     loss_detection_timer.cancel()
     return
 
