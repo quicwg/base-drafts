@@ -3101,20 +3101,20 @@ received packets in preference to packets received in the past.
 An endpoint measures the delays intentionally introduced between when an
 ACK-eliciting packet is received and the corresponding acknowledgment is sent.
 The endpoint encodes this delay for the largest acknowledged packet in the
-Ack Delay field of an ACK frame (see Section 19.3 of {{QUIC-TRANSPORT}}).
-This allows the receiver of the ACK to adjust for any intentional delays,
-which is important for delayed acknowledgements, when estimating the path RTT.
-A packet might be held in the OS kernel or elsewhere on the host before being
-processed.  An endpoint SHOULD NOT include these unintentional delays when
-populating the Ack Delay field in an ACK frame.
+Ack Delay field of an ACK frame (see Section 19.3). This allows the receiver
+of the ACK to adjust for any intentional delays, which is important for
+delayed acknowledgements, when estimating the path RTT. A packet might be
+held in the OS kernel or elsewhere on the host before being processed.
+An endpoint SHOULD NOT include these unintentional delays when populating
+the Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
-explicit contract: an endpoint promises to never delay acknowledgments of an
-ack-eliciting packet by more than the indicated value. If it does, any excess
-accrues to the RTT estimate and could result in spurious retransmissions from
-the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
+parameter; see Section 18.1.  max_ack_delay implies an explicit contract:
+an endpoint promises to never delay acknowledgments of an ack-eliciting packet
+by more than the indicated value. If it does, any excess accrues to the RTT
+estimate and could result in spurious retransmissions from the peer.
+For Initial and Handshake packets, a max_ack_delay of 0 is used.
 
 ### ACK Frames and Packet Protection
 
