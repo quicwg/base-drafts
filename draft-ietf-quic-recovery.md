@@ -516,7 +516,7 @@ and larger thresholds increase loss detection delay.
 
 A Probe Timeout (PTO) triggers sending one or two probe packets when
 ack-eliciting packets are not acknowledged within the expected period of
-time or the handshake has not been completed.  A PTO enables a connection to
+time or the handshake has not been confirmed.  A PTO enables a connection to
 recover from loss of tail packets or acks. The PTO algorithm used in QUIC
 implements the reliability functions of Tail Loss Probe
 {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
