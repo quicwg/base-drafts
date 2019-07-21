@@ -326,10 +326,10 @@ the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays ({{host-delay}}) to generate a
-statistical description of the connection's RTT.  An endpoint computes the
+statistical description of the path's RTT.  An endpoint computes the
 following three values: the minimum value observed over the lifetime of the
-connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
-and the variance in the observed RTT samples (rttvar).
+congestion control context (min_rtt), an exponentially-weighted moving average
+(smoothed_rtt), and the variance in the observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -371,15 +371,22 @@ retain sufficient history is an open research question.
 
 ## Estimating min_rtt {#min-rtt}
 
-min_rtt is the minimum RTT observed over the lifetime of the connection.
-min_rtt is set to the latest_rtt on the first sample in a connection, and to the
-lesser of min_rtt and latest_rtt on subsequent samples.
+min_rtt is the minimum RTT observed for a given congestion control context.
+min_rtt is set to the latest_rtt on the first RTT sample, and to the lesser
+of min_rtt and latest_rtt on subsequent samples.  min_rtt is used to reject
+implausible RTT samples, but is not used directly in congestion control or
+loss recovery.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
 not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
 allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
 what it observes (see {{smoothed-rtt}}), and limits potential underestimation
 due to erroneously-reported delays by the peer.
+
+The RTT for the path may change over time.  If the real path RTT decreases,
+it should be observed quickly.  If the real path RTT increases, it will not
+be observed, but the impact is limited to allowing some RTT samples that are
+smaller than the new RTT be included in smoothed_rtt.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
@@ -410,11 +417,11 @@ endpoint:
   min_rtt.  This limits the underestimation that a misreporting peer can cause
   to the smoothed_rtt.
 
-On the first RTT sample in a connection, the smoothed_rtt is set to the
+On the first RTT sample in a congestion control context, the smoothed_rtt is set to the
 latest_rtt.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
-the first RTT sample in a connection:
+the first RTT sample in a congestion control context:
 
 ~~~
 smoothed_rtt = latest_rtt
