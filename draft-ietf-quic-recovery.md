@@ -1175,7 +1175,7 @@ GetEarliestLossTime():
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
     if (loss_time[pn_space] != 0 &&
-        (time == 0 or loss_time[pn_space] < time)):
+        (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
   return time, space
@@ -1192,8 +1192,9 @@ SetLossDetectionTimer():
   // timer until the client has received a Handshake ACK
   // or completed the handshake.
   if (no ack-eliciting packets in flight &&
-      (endpoint is server or has 1-RTT keys
-       or has received Handshake ACK)):
+      (endpoint is server ||
+       has 1-RTT keys ||
+       has received Handshake ACK)):
     loss_detection_timer.cancel()
     return
 
@@ -1270,7 +1271,7 @@ DetectLostPackets(pn_space):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
-    if (unacked.time_sent <= lost_send_time or
+    if (unacked.time_sent <= lost_send_time ||
         largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
       sent_packets[pn_space].remove(unacked.packet_number)
