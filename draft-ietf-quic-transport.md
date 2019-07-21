@@ -2015,7 +2015,7 @@ estimation for the new path.
 
 On confirming a peer's ownership of its new address, an endpoint SHOULD
 immediately reset the congestion controller and round-trip time estimator for
-the new path.
+the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}}).
 
 An endpoint MUST NOT return to the send rate used for the previous path unless
 it is reasonably sure that the previous send rate is valid for the new path.
