@@ -3045,7 +3045,7 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
-### ACK Ranges
+### Managing ACK Ranges
 
 When an ACK frame is sent, one or more ranges of acknowledged packets are
 included.  Including older packets reduces the chance of spurious retransmits
