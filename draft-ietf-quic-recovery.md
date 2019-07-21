@@ -239,18 +239,19 @@ forward progress without relying on timeouts.
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
-more accurate round-trip time estimate (see {{host-delay}}).
+more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays ({{host-delay}}) to generate a
-statistical description of the connection's RTT.  An endpoint computes the
-following three values: the minimum value observed over the lifetime of the
-connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
-and the variance in the observed RTT samples (rttvar).
+RTT samples and peer-reported host delays (see Section 13.2 of
+{{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
+RTT. An endpoint computes the following three values: the minimum value
+observed over the lifetime of the connection (min_rtt), an
+exponentially-weighted moving average (smoothed_rtt), and the variance in the
+observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -297,10 +298,10 @@ min_rtt is set to the latest_rtt on the first sample in a connection, and to the
 lesser of min_rtt and latest_rtt on subsequent samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
-allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
-what it observes (see {{smoothed-rtt}}), and limits potential underestimation
-due to erroneously-reported delays by the peer.
+not adjust for host delays reported by the peer.  Doing so allows the endpoint
+to set a lower bound for the smoothed_rtt based entirely on what it observes
+(see {{smoothed-rtt}}), and limits potential underestimation due to
+erroneously-reported delays by the peer.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
@@ -308,15 +309,14 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for host delays ({{host-delay}}).  For packets sent in the ApplicationData
-packet number space, a peer limits any delay in sending an acknowledgement for
-an ack-eliciting packet to no greater than the value it advertised in the
-max_ack_delay transport parameter.  Consequently, when a peer reports an Ack
-Delay that is greater than its max_ack_delay, the delay is attributed to reasons
-out of the peer's control, such as scheduler latency at the peer or loss of
-previous ACK frames.  Any delays beyond the peer's max_ack_delay are therefore
-considered effectively part of path delay and incorporated into the smoothed_rtt
-estimate.
+for host delays.  For packets sent in the ApplicationData packet number space,
+a peer limits any delay in sending an acknowledgement for an ack-eliciting packet
+to no greater than the value it advertised in the max_ack_delay transport
+parameter.  Consequently, when a peer reports an Ack Delay that is greater than
+its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+such as scheduler latency at the peer or loss of previous ACK frames.  Any
+delays beyond the peer's max_ack_delay are therefore considered effectively
+part of path delay and incorporated into the smoothed_rtt estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
@@ -325,7 +325,7 @@ endpoint:
   Initial and Handshake packet number space.
 
 - MUST use the lesser of the value reported in Ack Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter ({{host-delay}}).
+  and the peer's max_ack_delay transport parameter.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
   min_rtt.  This limits the underestimation that a misreporting peer can cause
@@ -362,7 +362,7 @@ this section provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
-frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
+frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
 
 ## Acknowledgement-based Detection {#ack-loss-detection}
