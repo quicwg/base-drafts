@@ -417,8 +417,8 @@ endpoint:
   min_rtt.  This limits the underestimation that a misreporting peer can cause
   to the smoothed_rtt.
 
-On the first RTT sample in a congestion control context, the smoothed_rtt is set to the
-latest_rtt.
+On the first RTT sample in a congestion control context, the smoothed_rtt is
+set to the latest_rtt.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
 the first RTT sample in a congestion control context:
