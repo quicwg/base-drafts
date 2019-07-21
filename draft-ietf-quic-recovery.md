@@ -310,8 +310,8 @@ samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for host delays.  For packets sent in the ApplicationData packet number space,
-a peer limits any delay in sending an acknowledgement for an ack-eliciting packet
-to no greater than the value it advertised in the max_ack_delay transport
+a peer limits any delay in sending an acknowledgement for an ack-eliciting
+packet to no greater than the value it advertised in the max_ack_delay transport
 parameter.  Consequently, when a peer reports an Ack Delay that is greater than
 its max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
