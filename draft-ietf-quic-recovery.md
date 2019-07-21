@@ -584,15 +584,17 @@ Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client does not yet
 have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
 it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PADDING frames if
-necessary, to allow the server to continue sending data. If Handshake keys
-are available to the client, it MUST send a Handshake packet, and otherwise
-it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+However, the client MUST send a new packet to allow the server to continue
+sending data.  At this stage in the connection, when few to none RTT samples
+have been generated, it is possible that the probe timer expiration is due to
+an incorrect RTT estimate at the client. To allow the client to improve its RTT
+estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake
+keys are available to the client, it MUST send a Handshake packet, and
+otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
+bytes.
 
-Because Initial packets containing only PADDING do not elicit an
-acknowledgement, they may never be acknowledged, but they are removed from
-bytes in flight when the client gets Handshake keys and the Initial keys are
-discarded.
+Initial packets and Handshake packets may never be acknowledged, but they are
+removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
 
@@ -1229,13 +1231,13 @@ OnLossDetectionTimeout():
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
     if (has Handshake keys):
-      SendOneHandshakePacket()
+      SendOneAckElicitingHandshakePacket()
     else:
-      SendOnePaddedInitialPacket()
+      SendOneAckElicitingPaddedInitialPacket()
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    SendOneOrTwoPackets()
+    SendOneOrTwoAckElicitingPackets()
 
   pto_count++
   SetLossDetectionTimer()
