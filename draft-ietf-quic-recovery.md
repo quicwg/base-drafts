@@ -853,7 +853,9 @@ utilized the congestion window without pacing delay.
 Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
 Implementations SHOULD either use pacing or reduce their congestion window
-to limit such bursts to the size of the initial congestion window.
+to limit such bursts to minimum of 10 * kMaxDatagramSize and
+max(2* kMaxDatagramSize, 14720)), the same as the recommended initial
+congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
