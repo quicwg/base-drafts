@@ -383,7 +383,7 @@ allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
 what it observes (see {{smoothed-rtt}}), and limits potential underestimation
 due to erroneously-reported delays by the peer.
 
-The RTT for the path may change over time.  If the real path RTT decreases,
+The RTT for a path may change over time.  If a path's actual RTT decreases,
 it should be observed quickly.  If the real path RTT increases, it will not
 be observed, but the impact is limited to allowing some RTT samples that are
 smaller than the new RTT be included in smoothed_rtt.
