@@ -2015,7 +2015,7 @@ estimation for the new path.
 
 On confirming a peer's ownership of its new address, an endpoint SHOULD
 immediately reset the congestion controller and round-trip time estimator for
-the new path.
+the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}}).
 
 An endpoint MUST NOT return to the send rate used for the previous path unless
 it is reasonably sure that the previous send rate is valid for the new path.
@@ -5779,7 +5779,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Allow reuse of stateless reset tokens (#2732, #2733)
 - Allow, but not require, enforcing non-duplicate transport parameters (#2689,
   #2691)
-- Added a active_connection_id_limit transport parameter (#1994, #1998)
+- Added an active_connection_id_limit transport parameter (#1994, #1998)
 - max_ack_delay transport parameter defaults to 0 (#2638, #2646)
 - When sending 0-RTT, only remembered transport parameters apply (#2458, #2360,
   #2466, #2461)

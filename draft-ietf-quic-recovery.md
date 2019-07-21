@@ -514,11 +514,11 @@ and larger thresholds increase loss detection delay.
 
 ## Probe Timeout {#pto}
 
-A Probe Timeout (PTO) triggers sending one or two probe packets when
+A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
 time or the handshake has not been completed.  A PTO enables a connection to
-recover from loss of tail packets or acks. The PTO algorithm used in QUIC
-implements the reliability functions of Tail Loss Probe
+recover from loss of tail packets or acknowledgements. The PTO algorithm used
+in QUIC implements the reliability functions of Tail Loss Probe
 {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
@@ -583,23 +583,25 @@ data has been received from the client.
 Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client has not received
 an ACK in a Handshake packet or does not yet have 1-RTT keys.  If the probe
-timer expires and the client does not have any crypto data to retransmit it
-MUST send a packet, containing only PADDING frames if necessary, to allow the
-server to continue sending data. If Handshake keys are available to the client,
+timer expires before the client has 1-RTT keys, it is possible that the client
+may not have any crypto data to retransmit. However, the client MUST send a new
+packet to allow the server to continue sending data.  At this stage in the
+connection, when few to none RTT samples have been generated, it is possible
+that the probe timer expiration is due to an incorrect RTT estimate at the
+client. To allow the client to improve its RTT estimate, the new packet that
+it sends MUST be ack-eliciting.  If Handshake keys are available to the client,
 it MUST send a Handshake packet, and otherwise it MUST send an Initial packet
 in a UDP datagram of at least 1200 bytes.
 
-Because Initial packets containing only PADDING do not elicit an
-acknowledgement, they may never be acknowledged, but they are removed from
-bytes in flight when the client gets Handshake keys and the Initial keys are
-discarded.
+Initial packets and Handshake packets may never be acknowledged, but they are
+removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
 as a probe, unless there is no data available to send.  An endpoint MAY send up
-to two ack-eliciting packets, to avoid an expensive consecutive PTO expiration
-due to a single packet loss.
+to two full-sized datagrams containing ack-eliciting packets, to avoid an
+expensive consecutive PTO expiration due to a single lost datagram.
 
 It is possible that the sender has no new or previously-sent data to send.  As
 an example, consider the following sequence of events: new application data is
@@ -1233,13 +1235,13 @@ OnLossDetectionTimeout():
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
     if (has Handshake keys):
-      SendOneHandshakePacket()
+      SendOneAckElicitingHandshakePacket()
     else:
-      SendOnePaddedInitialPacket()
+      SendOneAckElicitingPaddedInitialPacket()
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    SendOneOrTwoPackets()
+    SendOneOrTwoAckElicitingPackets()
 
   pto_count++
   SetLossDetectionTimer()
