@@ -2963,7 +2963,7 @@ streams as necessary in outgoing packets without losing transmission efficiency
 to underfilled packets.
 
 
-## Packet Processing and Acknowledgment {#processing-and-ack}
+## Packet Processing {#processing}
 
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed.  For STREAM
@@ -2978,6 +2978,28 @@ packet.
 <!-- TODO: Do we need to say anything about partial processing. And our
 expectations about what implementations do with packets that have errors after
 valid frames? -->
+
+
+## Generating Acknowledgements {#generating-acks}
+
+An acknowledgement SHOULD be sent immediately upon receipt of a second
+ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
+an ACK immediately when receiving a second ack-eliciting packet.
+
+In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
+send an immediate ACK after it receives an out-of-order packet. It could send
+immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
+1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
+order, then an immediate ACK SHOULD be sent for every received packet.
+
+Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
+the IP header SHOULD be acknowledged immediately, to reduce the peer's response
+time to congestion events.
+
+As an optimization, a receiver MAY process multiple packets before sending any
+ACK frames in response.  In this case the receiver can determine whether an
+immediate or delayed acknowledgement should be generated after processing
+incoming packets.
 
 ### Sending ACK Frames
 
@@ -3023,6 +3045,42 @@ needing acknowledgement are received.  The sender can use the receiver's
 Strategies and implications of the frequency of generating acknowledgments are
 discussed in more detail in {{QUIC-RECOVERY}}.
 
+### Crypto Handshake Data
+
+In order to quickly complete the handshake and avoid spurious retransmissions
+due to crypto retransmission timeouts, crypto packets SHOULD use a very short
+ack delay, such as the local timer granularity.  ACK frames SHOULD be sent
+immediately when the crypto stack indicates all data for that packet number
+space has been received.
+
+### ACK Ranges
+
+When an ACK frame is sent, one or more ranges of acknowledged packets are
+included.  Including older packets reduces the chance of spurious retransmits
+caused by losing previously sent ACK frames, at the cost of larger ACK frames.
+
+ACK frames SHOULD always acknowledge the most recently received packets, and the
+more out-of-order the packets are, the more important it is to send an updated
+ACK frame quickly, to prevent the peer from declaring a packet as lost and
+spuriously retransmitting the frames it contains.
+
+Below is one recommended approach for determining what packets to include in an
+ACK frame.
+
+### Receiver Tracking of ACK Frames
+
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
+
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
+of reordering. In cases with ACK frame loss and reordering, this approach does
+not guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order and
+all subsequent ACK frames containing them could be lost. In this case, the
+loss recovery algorithm may cause spurious retransmits, but the sender will
+continue making forward progress.
 
 ### Limiting ACK Ranges
 
@@ -3046,12 +3104,25 @@ to unnecessarily retransmit some data.  Standard QUIC algorithms
 acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
 received packets in preference to packets received in the past.
 
-An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
-send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition. This includes receiving an ACK frame containing a packet number
-that the endpoint has not sent, as well as acknowledgements for 0-RTT packets
-when the server has rejected the use of 0-RTT.
+### Measuring and Reporting Host Delay {#host-delay}
 
+An endpoint measures the delays intentionally introduced between when an
+ACK-eliciting packet is received and the corresponding acknowledgment is sent.
+The endpoint encodes this delay for the largest acknowledged packet in the
+Ack Delay field of an ACK frame (see Section 19.3 of {{QUIC-TRANSPORT}}).
+This allows the receiver of the ACK to adjust for any intentional delays,
+which is important for delayed acknowledgements, when estimating the path RTT.
+A packet might be held in the OS kernel or elsewhere on the host before being
+processed.  An endpoint SHOULD NOT include these unintentional delays when
+populating the Ack Delay field in an ACK frame.
+
+An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
+packets.  The maximum ack delay is communicated in the max_ack_delay transport
+parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
+explicit contract: an endpoint promises to never delay acknowledgments of an
+ack-eliciting packet by more than the indicated value. If it does, any excess
+accrues to the RTT estimate and could result in spurious retransmissions from
+the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
 
 ### ACK Frames and Packet Protection
 
@@ -3195,7 +3266,7 @@ during connection establishment and when migrating to a new path
 On receiving a QUIC packet with an ECT or CE codepoint, an ECN-enabled endpoint
 that can access the ECN codepoints from the enclosing IP packet increases the
 corresponding ECT(0), ECT(1), or CE count, and includes these counts in
-subsequent ACK frames (see {{processing-and-ack}} and {{frame-ack}}).  Note
+subsequent ACK frames (see {{generating-acks}} and {{frame-ack}}).  Note
 that this requires being able to read the ECN codepoints from the enclosing IP
 packet, which is not possible on all platforms.
 
@@ -3204,7 +3275,7 @@ local ECN codepoint counts; see ({{security-ecn}}) for relevant security
 concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
-packet header, it responds per {{processing-and-ack}} with an ACK frame without
+packet header, it responds per {{generating-acks}} with an ACK frame without
 increasing any ECN counts.  If an endpoint does not implement ECN
 support or does not have access to received ECN codepoints, it does not increase
 ECN counts.
