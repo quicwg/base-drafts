@@ -382,7 +382,7 @@ assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
 
 A server that does not wish clients to reuse connections for a particular origin
-can indicate that it is not authoritative for a request by sending a 421
+MAY indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
 of {{!HTTP2}}).
 
