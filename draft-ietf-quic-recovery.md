@@ -851,7 +851,7 @@ should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
 Sending multiple packets into the network without any delay between them
-creates a burst of load that might cause short-term congestion and losses.
+creates a packet burst that might cause short-term congestion and losses.
 Implementations SHOULD either use pacing or reduce their congestion window
 to limit such bursts to the size of the initial congestion window.
 
