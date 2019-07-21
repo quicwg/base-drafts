@@ -589,6 +589,14 @@ necessary, to allow the server to continue sending data. If Handshake keys
 are available to the client, it MUST send a Handshake packet, and otherwise
 it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
 
+If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
+4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged CRYPTO data in a
+probe packet, endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can be
+coalesced with Handshake packets, even if there is sufficient unacknowledged
+CRYPTO data outstanding to consume the entire PMTU.  Sending an ack-eliciting
+1-RTT packet provides a peer with the opportunity to confirm the handshake and
+allow all state associated with Handshake packets to be discarded.
+
 Because Initial packets containing only PADDING do not elicit an
 acknowledgement, they may never be acknowledged, but they are removed from
 bytes in flight when the client gets Handshake keys and the Initial keys are
@@ -628,14 +636,6 @@ be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternate strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
-
-If the handshake is complete, but not confirmed (see Section 4.1.1 and Section
-4.1.2 of {{QUIC-TLS}}), in addition to sending unacknowledged CRYPTO data,
-endpoints SHOULD send an ack-eliciting 1-RTT packet.  This can be coalesced with
-Handshake packets, even if there is sufficient unacknowledged CRYPTO data
-outstanding to consume the entire PMTU.  Sending an ack-eliciting 1-RTT packet
-provides a peer with the opportunity to confirm the handshake and allow all
-state associated with Handshake packets to be discarded.
 
 When the PTO timer expires multiple times and new data cannot be sent,
 implementations must choose between sending the same payload every time
