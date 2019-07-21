@@ -3129,9 +3129,6 @@ unable to use these acknowledgments if the server cryptographic handshake
 messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
-Endpoints SHOULD send acknowledgments for packets containing CRYPTO frames with
-a reduced delay; see Section 6.2 of {{QUIC-RECOVERY}}.
-
 
 ## Retransmission of Information
 
