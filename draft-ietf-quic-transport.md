@@ -2013,17 +2013,17 @@ The capacity available on the new path might not be the same as the old path.
 Packets sent on the old path SHOULD NOT contribute to congestion control or RTT
 estimation for the new path.
 
-On confirming a peer's ownership of its new address, an endpoint SHOULD
+On confirming a peer's ownership of its new address, an endpoint MUST
 immediately reset the congestion controller and round-trip time estimator for
-the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}}).
-
-An endpoint MUST NOT return to the send rate used for the previous path unless
-it is reasonably sure that the previous send rate is valid for the new path.
-For instance, a change in the client's port number is likely indicative of a
-rebinding in a middlebox and not a complete change in path.  This determination
-likely depends on heuristics, which could be imperfect; if the new path capacity
-is significantly reduced, ultimately this relies on the congestion controller
-responding to congestion signals and reducing send rates appropriately.
+the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}})
+unless it has knowledge that the previous send rate or round-trip time estimate
+is valid for the new path.  For instance, an endpoint might infer that a change
+in only the client's port number is likely indicative of a NAT rebinding,
+meaning that the new path is likely to have similar bandwidth and round-trip
+time. This determination might be a heuristic and is likely to be imperfect.
+Implementations are advised to be cautious when using previous values on the new
+path. If the determination is incorrect, the congestion controller and the RTT
+estimator are expected to adapt to the new path.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
