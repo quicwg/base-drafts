@@ -598,7 +598,7 @@ discarded.
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
 as a probe, unless there is no data available to send.  An endpoint MAY send up
-to two full sized datagrams containing ack-eliciting packets, to avoid an
+to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
 It is possible that the sender has no new or previously-sent data to send.  As
