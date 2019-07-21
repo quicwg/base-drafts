@@ -385,7 +385,7 @@ due to erroneously-reported delays by the peer.
 
 The RTT for a path may change over time.  If a path's actual RTT decreases,
 it should be observed quickly.  If the real path RTT increases, it will not
-be observed, but the impact is limited to allowing some RTT samples that are
+the min_rtt will not adapt to it, potentially causing future RTT samples that are
 smaller than the new RTT be included in smoothed_rtt.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
