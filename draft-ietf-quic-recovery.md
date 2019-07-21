@@ -384,9 +384,9 @@ what it observes (see {{smoothed-rtt}}), and limits potential underestimation
 due to erroneously-reported delays by the peer.
 
 The RTT for a path may change over time.  If a path's actual RTT decreases,
-the min_rtt will adapt immediately on the first low sample.  If the path's actual RTT increases,
-the min_rtt will not adapt to it, potentially causing future RTT samples that are
-smaller than the new RTT be included in smoothed_rtt.
+the min_rtt will adapt immediately on the first low sample.  If the path's
+actual RTT increases, the min_rtt will not adapt to it, allowing future
+RTT samples that are smaller than the new RTT be included in smoothed_rtt.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
