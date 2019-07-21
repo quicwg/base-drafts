@@ -1192,7 +1192,7 @@ SetLossDetectionTimer():
   // Don't arm timer if there are no ack-eliciting packets
   // in flight and the endpoint is a server.  Do arm the
   // timer until the client has received a Handshake ACK
-  // or completed the handshake.
+  // or has completed the handshake.
   if (no ack-eliciting packets in flight &&
       (endpoint is server ||
        has 1-RTT keys ||
