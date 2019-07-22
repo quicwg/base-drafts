@@ -1815,8 +1815,9 @@ parameter during the handshake. An endpoint which has sent this transport
 parameter, but detects that a peer has nonetheless migrated to a different
 network MUST either drop the incoming packets on that path without generating a
 stateless reset or proceed with path validation and allow the peer to migrate.
-This helps to prevent third parties in the network causing connections to close
-due to spoofed addresses or other manipulation of observed traffic.
+Generating a stateless reset or closing the connection would allow third parties
+in the network to cause connections to close by spoofing or otherwise
+manipulating observed traffic.
 
 Not all changes of peer address are intentional, or active, migrations. The peer
 could experience NAT rebinding: a change of address due to a middlebox, usually
