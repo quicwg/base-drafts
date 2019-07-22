@@ -1225,11 +1225,13 @@ properties:
 
    * 1-RTT keys have forward secrecy
 
-* authenticated values for the transport parameters of the peer (see
+* authenticated values for transport parameters of both endpoints, and
+  confidentiality protection for server transport parameters (see
   {{transport-parameters}})
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
+
 
 The first CRYPTO frame from a client MUST be sent in a single packet.  Any
 second attempt that is triggered by address validation (see
