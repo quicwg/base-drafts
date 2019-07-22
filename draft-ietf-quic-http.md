@@ -139,8 +139,7 @@ Alternative Services; this process is described in greater detail in
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
 and DATA frames form the basis of HTTP requests and responses
-({{request-response}}).  Other frame types like SETTINGS and GOAWAY are used to
-manage the overall connection and relationships between streams.
+({{request-response}}).
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
 described in Section 2 of {{QUIC-TRANSPORT}}.  Each request and response
