@@ -5870,7 +5870,7 @@ cannot observe the new path.
 5. An off-path attacker can become a limited on-path attacker during migration
 to a new path for which it is also an off-path attacker.
 
-6. An off-path attacker can beocome a limited on-path attacker by affecting
+6. An off-path attacker can become a limited on-path attacker by affecting
 shared NAT state such that it sends packets to the server from the same IP
 address and port that the client originally used.
 
