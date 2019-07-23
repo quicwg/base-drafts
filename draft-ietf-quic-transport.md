@@ -2391,14 +2391,13 @@ of the datagram contain a Stateless Reset Token.
 To entities other than its intended recipient, a stateless reset will appear
 to be a packet with a short header.  For the stateless reset to appear as a
 valid QUIC packet and be smaller than the received packet, the Unpredictable
-Bits field needs to include at least 46 bits of data (or 6 bytes, less the
-two fixed bits), because packets that are smaller than 21 bytes are never
-valid.  To ensure the stateless reset packet is not smaller than other
-packets received on the connection, the an endpoint SHOULD also ensure the
-total packet length is at least the minimum chosen CID length + 19 bytes.
-19 bytes allows for 1 type byte, 1 data byte, the 16 byte authentication
-tag byte, and the one extra byte lost when the peer sends a smaller
-stateless reset than the packet it receives.
+Bits field needs to include at least 48 bits of data (or 6 bytes, less the
+two fixed bits).  To ensure the stateless reset packet is not smaller than
+other packets received on the connection, an endpoint SHOULD also ensure the
+total packet length is at least the minimum chosen CID length + 22 bytes.
+22 bytes allows for 1 type byte, 4 packet number and data bytes, the
+16 byte authentication tag, and the one extra byte to allow the peer to
+send a smaller stateless reset than the packet it receives.
 
 The Stateless Reset Token corresponds to the minimum expansion of the
 packet protection AEAD.  More unpredictable bytes might be necessary if the
