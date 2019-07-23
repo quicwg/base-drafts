@@ -925,7 +925,7 @@ allow the client to validate that the packet is in response to an Initial
 packet.
 
 A zero-length connection ID can be used when a connection ID is not needed
-to route to the correct endpoint. An endpoint MUST NOT use a zero-length
+to route to the correct endpoint. An endpoint SHOULD NOT use a zero-length
 connection ID unless it can use only its IP address and port to identify a
 connection. The IP address and port used by a peer cannot be used for routing
 or connection identification as these values can change during a connection's
