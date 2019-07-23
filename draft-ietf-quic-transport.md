@@ -2367,7 +2367,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|               Unpredictable Bits (198..)                ...
+|0|1|               Unpredictable Bits (46 ..)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2389,11 +2389,18 @@ of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear
-to be a packet with a short header.  For the packet to appear as valid, the
-Unpredictable Bits field needs to include at least 198 bits of data (or 25
-bytes, less the two fixed bits).  This is intended to allow for a Destination
-Connection ID of the maximum length permitted, with a minimal packet number, and
-payload.  The Stateless Reset Token corresponds to the minimum expansion of the
+to be a packet with a short header.  For the stateless reset to appear as a
+valid QUIC packet and be smaller than the received packet, the Unpredictable
+Bits field needs to include at least 46 bits of data (or 6 bytes, less the
+two fixed bits), because packets that are smaller than 21 bytes are never
+valid.  To ensure the stateless reset packet is not smaller than other
+packets received on the connection, the an endpoint SHOULD also ensure the
+total packet length is at least the minimum chosen CID length + 19 bytes.
+19 bytes allows for 1 type byte, 1 data byte, the 16 byte authentication
+tag byte, and the one extra byte lost when the peer sends a smaller
+stateless reset than the packet it receives.
+
+The Stateless Reset Token corresponds to the minimum expansion of the
 packet protection AEAD.  More unpredictable bytes might be necessary if the
 endpoint could have negotiated a packet protection scheme with a larger minimum
 AEAD expansion.
@@ -2401,7 +2408,7 @@ AEAD expansion.
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets that are smaller than 21 bytes are never valid.
+packets that are smaller than 21 bytes are never valid.  When a packet is b
 
 Endpoints MUST send stateless reset packets formatted as a packet with a short
 header.  However, endpoints MUST treat any packet ending in a valid stateless
