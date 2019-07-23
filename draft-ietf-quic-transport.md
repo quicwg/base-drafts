@@ -2407,7 +2407,7 @@ AEAD expansion.
 An endpoint SHOULD NOT send a stateless reset that is significantly larger than
 the packet it receives.  Endpoints MUST discard packets that are too small to be
 valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets that are smaller than 21 bytes are never valid.  When a packet is b
+packets that are smaller than 21 bytes are never valid.
 
 Endpoints MUST send stateless reset packets formatted as a packet with a short
 header.  However, endpoints MUST treat any packet ending in a valid stateless
