@@ -5753,12 +5753,183 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    return candidate_pn
 ~~~
 
+# Overview of Security Properties {#security-properties}
+
+A complete security analysis of QUIC is outside the scope of this document.  In
+this appendix, we provide an informal description of the desired security
+properties as an aid to implementors and to help guide protocol analysis.
+
+We cover properties of the handshake, general transport, and migration
+separately.
+
+## Handshake {#handshake-properties}
+
+TBD.
+
+## Short Headers {#short-headers-properties}
+
+TBD.
+
+## Connection Migration {#migration-properties}
+
+Connection Migration ({{migration}}) provides endpoints with the ability to
+transition between IP addresses and ports on multiple paths, using one path at a
+time for sending non-probing frames.  Path validation helps to establish
+bidirectional connectivity with the peer over a new path and prevents source
+address spoofing from being used in a denial-of-service attack.  Migration is
+further restricted to be initiated only by QUIC clients.
+
+This section describes the intended security properties of connection migration
+when under attack by the following attackers.  These attackers all mount active
+attacks, requiring injection of packets into the network, as described in
+{{?RFC3552}}.
+
+### On-Path Attacker
+
+An on-path attacker is present between the QUIC client and server, and an
+endpoint is required to send packets through this attacker to establish
+connectivity on a given path.
+
+An on-path attacker can:
+
+- Inspect packets
+- Modify unencrypted packet headers
+- Inject new packets
+- Delay packets
+- Drop packets
+
+An on-path attacker cannot:
+
+- Modify encrypted packet payloads
+
+In the presence of an on-path attacker, QUIC aims to provide the following
+properties.
+
+1. An on-path attacker can interrupt a QUIC connection, causing it to fail if it
+cannot migrate to a new path that does not contain the attacker.  This can be
+achieved by dropping all packets, modifying them so that they fail to decrypt,
+or other methods.
+
+2. An on-path attacker can prevent migration to a new path for which the
+attacker is also on-path by causing path validation to fail on the new path.
+
+3. An on-path attacker cannot prevent a client from migrating to a path for
+which the attacker is not on-path.
+
+4. An on-path attacker can reduce the throughput of a connection by delaying
+packets or dropping them.
+
+
+### Off-Path Attacker
+
+An off-path attacker is not directly on the path between the QUIC client and
+server, but is able to obtain copies of all packets sent between the client and
+the server.  It is also able to send copies of those packets to either endpoint.
+
+An off-path attacker can:
+
+- Inspect packets
+- Inject new packets
+
+An off-path attacker cannot:
+
+- Modify any part of a packet
+- Delay packets
+- Drop packets
+
+An off-path attacker can, however, modify packets that it has observed and
+inject them back into the network, potentially with spoofed source and
+destination addresses.
+
+For the purposes of this discussion, we assume that an off-path attacker has the
+ability to observe, modify, and re-inject a packet into the network that will
+reach the destination endpoint prior to the arrival of the original packet
+observed by the attacker.  In other words, the attacker has the ability to
+consistently "win" a race with the legitimate packets between the endpoints,
+potentially causing the original packet to be ignored by the recipient.
+
+We also assume that the attacker has the resources necessary to affect NAT
+state, potentially both causing an endpoint to lose its NAT binding, and an
+attacker to obtain the same port for use with its traffic.
+
+In the presence of an off-path attacker, QUIC aims to provide the following
+properties.
+
+1. An off-path attacker can race packets and attempt to become a "limited"
+on-path attacker.
+
+2. An off-path attacker can cause path validation to succeed for forwarded
+packets with the source address listed as the off-path attacker as long as it
+can provide improved connectivity between the client and the server.
+
+3. An off-path attacker cannot cause a connection to close.
+
+4. An off-path attacker cannot cause migration to a new path to fail if it
+cannot observe the new path.
+
+5. An off-path attacker can become a limited on-path attacker during migration
+to a new path for which it is also an off-path attacker.
+
+6. An off-path attacker can beocome a limited on-path attacker by affecting
+shared NAT state such that it sends packets to the server from the same IP
+address and port that the client originally used.
+
+
+### Limited On-Path Attacker
+
+A limited on-path attacker is an off-path attacker that has offered improved
+routing of packets by duplicating and forwarding original packets between the
+server and the client, causing those packets to arrive before the original
+copies such that the original packets are dropped by the destination endpoint.
+
+A limited on-path attacker differs from an on-path attacker in that it is not on
+the original path between endpoints, and therefore the original packets sent by
+an endpoint are still reaching their destination.  This means that a future
+failure to route copied packets to the destination faster than their original
+path will not prevent the original packets from reaching the destination.
+
+A limited on-path attacker can:
+
+- Inspect packets
+- Inject new packets
+- Modify unencrypted packet headers
+
+A limited on-path attacker cannot:
+
+- Delay packets beyond the original packet duration
+- Drop packets
+- Modify encrypted packet payloads
+
+A limited on-path attacker can only delay packets up to the point that the
+original packets arrive before the duplicate packets, meaning that it cannot
+offer worse routing than the original path, only improved routing.  If a limited
+on-path attacker drops packets, the original copy will still arrive at the
+destination endpoint.
+
+In the presence of a limited on-path attacker, QUIC aims to provide the
+following properties.
+
+1. A limited on-path attacker cannot cause an active connection to close.
+
+2. A limited on-path attacker cannot cause an idle connection to close if the
+client is first to resume activity.
+
+3. A limited on-path attacker can cause an idle connection to be deemed lost if
+the server is the first to resume activity.
+
+Note that these guarantees are the same guarantees provided for any NAT, for the
+same reasons.
+
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-22
+
+- Added security properties appendix and migration threat model (#2143)
 
 ## Since draft-ietf-quic-transport-21
 
