@@ -932,7 +932,11 @@ or connection identification as these values can change during a connection's
 lifetime, and the peer can reuse a given address and port for additional
 connections. Similarly, the peer's connection IDs cannot be used for routing
 or identification, as they are not transmitted in the short header packets
-they send.
+they send. Note that multiplexing while using zero-length connection IDs and
+relying on the four-tuple of IP addresses and ports for routing will cause
+failures in the presence of connection migration, NAT rebinding, and client
+port reuse; and therefore MUST NOT be done unless an endpoint is certain that
+those protocol features are not in use.
 
 When an endpoint has requested a non-zero-length connection ID, it needs to
 ensure that the peer has a supply of connection IDs from which to choose for
