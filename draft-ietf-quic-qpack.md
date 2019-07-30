@@ -901,9 +901,13 @@ table.
       # If ReqInsertCount exceeds MaxValue, the Encoder's value
       # must have wrapped one fewer time
       if ReqInsertCount > MaxValue:
-         if ReqInsertCount < FullRange:
+         if ReqInsertCount <= FullRange:
             Error
          ReqInsertCount -= FullRange
+
+      # Value of 0 must be encoded as 0.
+      if ReqInsertCount == 0:
+         Error
 ~~~
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
