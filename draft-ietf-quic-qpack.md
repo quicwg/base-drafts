@@ -131,8 +131,8 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative indices.  Dynamic references are made relative
-  to a Base in header blocks.
+: A reference point for relative and post-base indices.  References to dynamic
+  table entries in header blocks are relative to a Base.
 
 Insert Count:
 
@@ -950,7 +950,7 @@ the Base; setting Delta Base to zero is the most efficient encoding.
 
 For example, with a Required Insert Count of 9, a decoder receives a S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
-for three entries.  In this example, a regular index of 1 refers to the 5th
+for three entries.  In this example, a relative index of 1 refers to the 5th
 entry that was added to the table; a post-base index of 1 refers to the 8th
 entry.
 
