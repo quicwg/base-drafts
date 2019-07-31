@@ -229,8 +229,9 @@ table that it will emit a reference for.  As new entries are inserted, the
 encoder increases the draining index to maintain the section of the table that
 it will not reference.  If the encoder does not create new references to entries
 with an absolute index lower than the draining index, the number of
-unacknowledged references to those entries will eventually become zero, allowing
-them to be evicted.
+unacknowledged references to every such entry will eventually become zero,
+allowing it to be evicted provided that its insertion has been acknowledged by
+the decoder.
 
 ~~~~~~~~~~  drawing
    +----------+---------------------------------+--------+
@@ -359,9 +360,9 @@ infer from this instruction that any updates to the dynamic table have been
 received.
 
 The Header Acknowledgement and Stream Cancellation instructions permit the
-encoder to remove references to entries in the dynamic table.  When entries
-have zero references they are no longer considered blocking (see
-{{blocked-insertion}}).
+encoder to remove references to entries in the dynamic table.  When an entry
+with absolute index lower than the Known Received Count has zero references,
+then it is no longer considered blocking (see {{blocked-insertion}}).
 
 #### New Table Entries
 
