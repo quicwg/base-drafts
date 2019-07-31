@@ -262,11 +262,15 @@ When the decoder receives a header block with a Required Insert Count greater
 than its own Insert Count, the stream cannot be processed immediately, and is
 considered "blocked" (see {blocked-decoding}).
 
-The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
-upper bound on the number of streams which can be blocked. An encoder MUST limit
-the number of streams which could become blocked to the value of
-SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder might not
-become blocked on every stream which risks becoming blocked.
+The decoder specifies an upper bound on the number of streams which can be
+blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
+{{configuration}}). An encoder MUST limit the number of streams which could
+become blocked to the value of SETTINGS_QPACK_BLOCKED_STREAMS at all times.
+If an decoder encounters more blocked streams than it promised to support, it
+MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+
+Note that the decoder might not become blocked on every stream which risks
+becoming blocked.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -326,9 +330,6 @@ smaller value than expected, it MUST treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED (see {{invalid-references}}). If it encounters a
 larger value than expected, it MAY treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED.
-
-If the decoder encounters more blocked streams than it promised to support, it
-MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
