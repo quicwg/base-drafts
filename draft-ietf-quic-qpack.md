@@ -746,9 +746,9 @@ the existing entry is represented as an integer with a 5-bit prefix.
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
 
-The existing entry is re-inserted into the dynamic table. This is useful to
-avoid adding a reference to an older entry, which might block inserting new
-entries.
+The existing entry is re-inserted into the dynamic table without resending
+either the name or the value. This is useful to avoid adding a reference to an
+older entry, which might block inserting new entries.
 
 
 ## Decoder Instructions {#decoder-instructions}
