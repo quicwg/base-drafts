@@ -4318,7 +4318,7 @@ preferred_address (0x000d):
      uint16 ipv4Port;
      opaque ipv6Address[16];
      uint16 ipv6Port;
-     opaque connectionId<0..18>;
+     opaque connectionId<0..20>;
      opaque statelessResetToken[16];
    } PreferredAddress;
 ~~~
