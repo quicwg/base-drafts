@@ -536,11 +536,9 @@ In a header block a relative index of "0" refers to the entry with absolute
 index equal to Base - 1.
 
 ~~~~~ drawing
- Required
-  Insert
-  Count        Base
-    |           |
-    V           V
+            Base
+             |
+             V
     +-----+-----+-----+-----+-------+
     | n-1 | n-2 | n-3 | ... |   d   |  Absolute Index
     +-----+-----+  -  +-----+   -   +
@@ -564,9 +562,9 @@ and include references to entries added while processing this (or other) header
 blocks.
 
 ~~~~~ drawing
-               Base
-                |
-                V
+            Base
+             |
+             V
     +-----+-----+-----+-----+-----+
     | n-1 | n-2 | n-3 | ... |  d  |  Absolute Index
     +-----+-----+-----+-----+-----+
