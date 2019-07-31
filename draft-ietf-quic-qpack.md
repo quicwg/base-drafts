@@ -680,7 +680,7 @@ acknowledged as this instruction does not insert an entry.
 
 An encoder adds an entry to the dynamic table where the header field name
 matches the header field name of an entry stored in the static or the dynamic
-table using an instruction that begins with the '1' one-bit pattern.  The second
+table using an instruction that starts with the '1' one-bit pattern.  The second
 (`S`) bit indicates whether the reference is to the static or dynamic table. The
 6-bit prefix integer (see {{prefixed-integers}}) that follows is used to locate
 the table entry for the header name.  When S=1, the number represents the static
@@ -707,7 +707,7 @@ string literal (see {{string-literals}}).
 
 An encoder adds an entry to the dynamic table where both the header field name
 and the header field value are represented as string literals using an
-instruction that begins with the '01' two-bit pattern.
+instruction that starts with the '01' two-bit pattern.
 
 This is followed by the name represented as a 6-bit prefix string literal, and
 the value represented as an 8-bit prefix string literal (see
@@ -989,7 +989,8 @@ index of the entry in the dynamic table.
 If the entry is in the dynamic table with an absolute index greater than or
 equal to the Base, the representation starts with the '0001' 4-bit pattern,
 followed by the post-base index (see {{post-base}}) of the matching header
-field, represented as an integer with a 4-bit prefix (see {{prefixed-integers}}).
+field, represented as an integer with a 4-bit prefix (see
+{{prefixed-integers}}).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1063,8 +1064,8 @@ entry (see {{post-base}}) encoded as an integer with a 3-bit prefix (see
 The literal header field without name reference representation encodes a header
 field name and header field value as string literals (see {{primitives}}).
 
-This representation begins with the '001' three-bit pattern.  The fourth bit is the
-'N' bit as described in {{literal-name-reference}}.  The name follows,
+This representation begins with the '001' three-bit pattern.  The fourth bit is
+the 'N' bit as described in {{literal-name-reference}}.  The name follows,
 represented as a 4-bit prefix string literal, then the value, represented as an
 8-bit prefix string literal (see {{string-literals}}).
 
