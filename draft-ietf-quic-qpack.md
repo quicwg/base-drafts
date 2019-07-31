@@ -339,7 +339,7 @@ The decoder signals the following events by emitting decoder instructions
 #### Completed Processing of a Header Block
 
 When the decoder finishes decoding a header block containing dynamic table
-references, it emits a Header Acknowledgement instruction
+references, it MUST emit a Header Acknowledgement instruction
 ({{header-acknowledgement}}).  A stream may carry multiple header blocks in the
 case of intermediate responses, trailers, and pushed requests.  The encoder
 interprets each Header Acknowledgement instruction as acknowledging the earliest
