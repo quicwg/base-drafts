@@ -632,12 +632,12 @@ type HTTP_WRONG_STREAM_COUNT. These streams MUST NOT be closed. Closure of
 either unidirectional stream type MUST be treated as a connection error of type
 HTTP_CLOSED_CRITICAL_STREAM.
 
-An endpoint MAY choose not to create an encoder stream if it's not going to be
-used (for example if its encoder doesn't wish to use the dynamic table, or if
-the maximum size of the dynamic table permitted by the peer is zero).
+An endpoint MAY avoid creating an encoder stream if it's not going to be used
+(for example if its encoder doesn't wish to use the dynamic table, or if the
+maximum size of the dynamic table permitted by the peer is zero).
 
-An endpoint MAY choose not to create a decoder stream if its decoder sets the
-maximum capacity of the dynamic table to zero.
+An endpoint MAY avoid creating a decoder stream if its decoder sets the maximum
+capacity of the dynamic table to zero.
 
 An endpoint MUST allow its peer to create both the encoder and decoder streams
 even if the connection's settings prevent their use.
