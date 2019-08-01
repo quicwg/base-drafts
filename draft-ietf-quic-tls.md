@@ -299,7 +299,7 @@ protection being called out specially.
 
 Unlike TLS over TCP, QUIC applications which want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
-frames which are then carried in QUIC packets.
+frames or other frame types which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
