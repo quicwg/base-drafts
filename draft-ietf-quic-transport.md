@@ -4382,6 +4382,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       disable_active_migration(12),
       preferred_address(13),
       active_connection_id_limit(14),
+      application_layer_parameters(15),
       (65535)
    } TransportParameterId;
 
@@ -4541,6 +4542,12 @@ preferred_address (0x000d):
   Servers MAY choose to only send a preferred address of one address family by
   sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
   IP addresses are encoded in network byte order.
+
+application_layer_parameters (0x000e):
+
+: Parameters from the application layer that the application wishes to announce
+  or negotiate in the handshake. The format of this transport parameter is
+  application specific.
 
 ~~~
    struct {

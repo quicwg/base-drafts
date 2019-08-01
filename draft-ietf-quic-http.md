@@ -363,8 +363,8 @@ MAY be offered in the same handshake.
 While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/3-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
-({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (see {{control-streams}}).
+({{frame-settings}}) MUST be sent by the client as the initial frame of its HTTP
+control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
@@ -899,11 +899,11 @@ A control stream is indicated by a stream type of `0x00`.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
-connection and send its SETTINGS frame as the first frame on this stream.  If
-the first frame of the control stream is any other frame type, this MUST be
-treated as a connection error of type HTTP_MISSING_SETTINGS. Only one control
-stream per peer is permitted; receipt of a second stream which claims to be a
-control stream MUST be treated as a connection error of type
+connection.  A client MUST send its SETTINGS frame as the first frame on this
+stream.  If the first frame of a client's control stream is any other frame
+type, this MUST be treated as a connection error of type HTTP_MISSING_SETTINGS.
+Only one control stream per peer is permitted; receipt of a second stream which
+claims to be a control stream MUST be treated as a connection error of type
 HTTP_STREAM_CREATION_ERROR.  The sender MUST NOT close the control stream, and
 the receiver MUST NOT request that the sender close the control stream.  If
 either control stream is closed at any point, this MUST be treated as a
@@ -1111,10 +1111,14 @@ identifier and value of each setting parameter can be referred to as a "setting
 identifier" and a "setting value".
 
 SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of each control stream (see
+frame MUST be sent as the first frame of a client's control stream (see
 {{control-streams}}) by each peer, and MUST NOT be sent subsequently. If
 an endpoint receives a second SETTINGS frame on the control stream, the endpoint
-MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED.
+MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED. A server's
+SETTINGS frame MUST be sent in the application_layer_parameters field of the
+server's transport parameters (section 7.3 of {{QUIC-TRANSPORT}}). Only the
+frame payload of the server's SETTINGS frame is sent in transport parameters;
+the type and length from the framing overhead are omitted.
 
 SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
