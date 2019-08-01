@@ -279,13 +279,14 @@ components:
 protection being called out specially.
 
 ~~~
-+------------+                        +------------+
-|            |<- Handshake Messages ->|            |
-|            |<---- 0-RTT Keys -------|            |
-|            |<--- Handshake Keys-----|            |
-|   QUIC     |<---- 1-RTT Keys -------|    TLS     |
-|            |<--- Handshake Done ----|            |
-+------------+                        +------------+
++------------+                               +------------+
+|            |<---- Handshake Messages ----->|            |
+|            |<- Validate 0-RTT parameters ->|            |
+|            |<--------- 0-RTT Keys ---------|            |
+|    QUIC    |<------- Handshake Keys -------|    TLS     |
+|            |<--------- 1-RTT Keys ---------|            |
+|            |<------- Handshake Done -------|            |
++------------+                               +------------+
  |         ^
  | Protect | Protected
  v         | Packet
@@ -359,10 +360,12 @@ levels fit into the handshake process.
 
 ## Interface to TLS
 
-As shown in {{schematic}}, the interface from QUIC to TLS consists of three
+As shown in {{schematic}}, the interface from QUIC to TLS consists of four
 primary functions:
 
 - Sending and receiving handshake messages
+- Processing stored transport and application state from a 0-RTT capable session
+  ticket and determining if it is valid to accept early data on the connection
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
@@ -642,6 +645,27 @@ the state of all streams, including application state bound to those streams.
 
 A client MAY attempt to send 0-RTT again if it receives a Retry or Version
 Negotiation packet.  These packets do not signify rejection of 0-RTT.
+
+
+## Validating 0-RTT configuration
+
+When a server receives a ClientHello with the "early_data" extension, it has to
+decide whether to accept or reject early data from the client. Some of this
+decision is made by the TLS stack (e.g., checking that the cipher suite being
+resumed was included in the ClientHello; see Section 4.2.10 of {{!TLS13}}). Even
+when the TLS stack has no reason to reject early data, the QUIC stack or the
+application protocol using QUIC might reject early data because the
+configuration of the transport or application associated with the resumed
+session is not compatible with the server's current configuration.
+
+QUIC requires additional transport state to be associated with a 0-RTT session
+ticket. If stateless session tickets are used, this information must be stored
+in the session ticket. Application protocols that use QUIC might have similar
+requirements regarding associating or storing state. This associated state is
+used for deciding whether early data must be rejected. For example, HTTP/3
+({{QUIC-HTTP}}) settings determine how early data from the client is
+interpreted. Other applications using QUIC could have different requiremenets
+for determining whether ot accept or reject early data.
 
 
 ## HelloRetryRequest
