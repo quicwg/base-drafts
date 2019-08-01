@@ -114,7 +114,7 @@ reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
 a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
 comparable security to running TLS over TCP, with the improved connection setup
-latency of TCP Fast Open {{?RFC7413}}}.
+latency of TCP Fast Open {{?RFC7413}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
