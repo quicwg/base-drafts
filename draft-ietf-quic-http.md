@@ -489,6 +489,12 @@ HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
+To allow for better compression efficiency, the cookie header field {{!RFC6265}}
+MAY be split into separate header fields, each with one or more cookie-pairs,
+before compression. If a decompressed header list contains multiple cookie
+header fields, these MUST be concatenated before being passed into a non-HTTP/2,
+non-HTTP/3 context, as described in {{!HTTP2}}, Section 8.1.2.5.
+
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
 larger header field list than it is willing to handle can send an HTTP 431
