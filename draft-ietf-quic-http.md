@@ -404,16 +404,20 @@ An HTTP message (request or response) consists of:
 1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
    frame (see {{frame-headers}}),
 
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
-   frames (see {{frame-data}}),
+2. optionally, the payload body, if present (see {{!RFC7230}}, Section 3.3),
+   sent as a series of DATA frames (see {{frame-data}}),
 
-3. optionally, one HEADERS frame containing the trailer-part, if present (see
-   {{!RFC7230}}, Section 4.1.2).
+3. optionally, trailing headers, if present (see {{!RFC7230}}, Section 4.1.2),
+   sent as a single HEADERS frame.
 
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
+
+Frames of unknown types ({{extensions}}), including reserved frames
+({{frame-grease}}) MAY be sent on a request or push stream before, after, or
+interleaved with other frames described in this section.
 
 The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
 table. While these updates are not directly part of the message exchange, they
@@ -423,18 +427,16 @@ must be received and processed before the message can be consumed.  See
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
-If a DATA frame is received before a HEADERS frame on a either a request or push
-stream, the recipient MUST respond with a connection error of type
-HTTP_UNEXPECTED_FRAME ({{errors}}).
-
-Trailing header fields are carried in an additional HEADERS frame following the
-body. Senders MUST send only one HEADERS frame in the trailers section;
-receivers MUST discard any subsequent HEADERS frames.
-
 A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
+
+If an endpoint receives an invalid sequence of frames on either a request or
+a push stream, it MUST respond with a connection error of type
+HTTP_UNEXPECTED_FRAME ({{errors}}).  In particular, a DATA frame before any
+HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
+considered invalid.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
 After sending a request, a client MUST close the stream for sending.  Unless
@@ -1027,8 +1029,10 @@ more details.
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
 remaining data on this stream consists of HTTP/3 frames, as defined in
-{{frames}}, and fulfills a promised server push.  Server push and Push IDs are
-described in {{server-push}}.
+{{frames}}, and fulfills a promised server push by zero or more non-final HTTP
+responses followed by a single final HTTP response, as defined in
+{{request-response}}.  Server push and Push IDs are described in
+{{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a connection error of type HTTP_STREAM_CREATION_ERROR.
