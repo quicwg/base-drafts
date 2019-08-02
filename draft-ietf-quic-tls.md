@@ -1244,9 +1244,8 @@ messages, that tampering will cause the TLS handshake to fail.
 # QUIC-Specific Additions to the TLS Handshake
 
 QUIC uses the TLS handshake for more than just negotiation of cryptographic
-parameters.  The TLS handshake validates protocol version selection, provides
-preliminary values for QUIC transport parameters, and allows a server to perform
-return routability checks on clients.
+parameters.  The TLS handshake provides preliminary values for QUIC transport
+parameters and allows a server to perform return routability checks on clients.
 
 
 ## Protocol Negotiation {#protocol-negotiation}
