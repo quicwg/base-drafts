@@ -448,7 +448,7 @@ messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
 messages once enough of the message has been received to make progress.  If a
 client stream terminates without enough of the HTTP message to provide a
 complete response, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+HTTP_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -1642,7 +1642,7 @@ HTTP_REQUEST_REJECTED (0x10C):
 HTTP_REQUEST_CANCELLED (0x10D):
 : The request or its response (including pushed response) is cancelled.
 
-HTTP_INCOMPLETE_REQUEST (0x10E):
+HTTP_REQUEST_INCOMPLETE (0x10E):
 : The client's stream terminated without containing a fully-formed request.
 
 HTTP_EARLY_RESPONSE (0x10F):
@@ -1897,7 +1897,7 @@ The entries in the following table are registered by this document.
 | HTTP_MISSING_SETTINGS               | 0x010B     | No SETTINGS frame received               | {{http-error-codes}}   |
 | HTTP_REQUEST_REJECTED               | 0x010C     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_REQUEST_CANCELLED              | 0x010D     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_INCOMPLETE_REQUEST             | 0x010E     | Stream terminated early                  | {{http-error-codes}}   |
+| HTTP_REQUEST_INCOMPLETE             | 0x010E     | Stream terminated early                  | {{http-error-codes}}   |
 | HTTP_EARLY_RESPONSE                 | 0x010F     | Remainder of request not needed          | {{http-error-codes}}   |
 | HTTP_CONNECT_ERROR                  | 0x0110     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | HTTP_VERSION_FALLBACK               | 0x0111     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
