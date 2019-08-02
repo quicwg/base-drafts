@@ -587,6 +587,9 @@ In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
 
+When only sending a single packet on PTO, senders can skip a packet number to
+elicit a faster acknowledgement.
+
 When the PTO timer expires, and there is new or previously sent unacknowledged
 data, it MUST be sent.
 
