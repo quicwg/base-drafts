@@ -369,9 +369,9 @@ On the receiving part of a stream, application protocols need to be able to:
   STOP_SENDING frame ({{frame-stop-sending}})
 
 Applications also need to be informed of state changes on streams, including
-when the peer has initiated, reset, or aborted reading on a stream; when new
-data is available; and when data can or cannot be written to the stream due to
-flow control.
+when the peer has opened or reset a stream, when a peer aborts reading on a
+stream, when new data is available, and when data can or cannot be written to
+the stream due to flow control.
 
 # Stream States {#stream-states}
 
@@ -669,10 +669,10 @@ If an application is no longer interested in the data it is receiving on a
 stream, it can abort reading the stream and specify an application error code.
 
 If the stream is in the "Recv or "Size Known" states, the transport SHOULD
-signal this by sending a STOP_SENDING frame identifying that stream to prompt
-closure of the stream in the opposite direction.  This typically indicates that
-the receiving application is no longer reading data it receives from the stream,
-but it is not a guarantee that incoming data will be ignored.
+signal this by sending a STOP_SENDING frame to prompt closure of the stream in
+the opposite direction.  This typically indicates that the receiving application
+is no longer reading data it receives from the stream, but it is not a guarantee
+that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward
 connection and stream flow control, even though these frames can be discarded
