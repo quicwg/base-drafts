@@ -2396,7 +2396,7 @@ two fixed bits).  To ensure the stateless reset packet is not smaller than
 other packets received on the connection, an endpoint SHOULD also ensure the
 total packet length is at least the minimum chosen CID length plus 22 bytes.
 22 bytes allows for 1 type byte, 4 packet number and data bytes,
-16 byte authentication tag, and the one extra byte to allow the peer to
+16 bytes for AEAD expansion, and an extra byte to allow the peer to
 send a smaller stateless reset than the packet it receives.
 
 The Stateless Reset Token corresponds to the minimum expansion of the
