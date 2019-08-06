@@ -248,11 +248,14 @@ An acknowledgement SHOULD be sent immediately upon receipt of a second
 ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
-In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send an immediate ACK after it receives an out-of-order packet. It could send
-immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
-1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
-order, then an immediate ACK SHOULD be sent for every received packet.
+In order to accelerate loss recovery and reduce timeouts, a receiver SHOULD
+immediately send an ACK frame when it receives an out-of-order packet that is
+ACK-eliciting. The receiver MAY continue sending ACK frames immediately on each
+subsequently received packet, but the receiver SHOULD return to acknowledging
+every other packet after a period of 1/8 x RTT, unless more ACK-eliciting
+packets are received out of order.  If every subsequent ACK-eliciting packet
+arrives out of order, then an ACK frame SHOULD be sent immediately for every
+received ACK-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
