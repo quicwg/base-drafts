@@ -3113,10 +3113,10 @@ Handshake packet number space will be incremented by one and the counts for the
 
 ### ECN Validation {#ecn-validation}
 
-It is possible for faulty network devices to corrupt or erroneously drop IP
-packets which have ECN markings.  To provide robust connectivity in the presence
-of such devices, each endpoint independently validates, and enables or disables
-ECN marking on packets it transmits.
+It is possible for faulty network devices to corrupt or erroneously drop packets
+which have ECN markings.  To provide robust connectivity in the presence of such
+devices, each endpoint independently validates, and enables or disables ECN
+marking on packets it transmits.
 
 ECN validation is local to a path, and MUST be independently performed for each
 path from an endpoint to its peer.  An endpoint thus independently validates ECN
