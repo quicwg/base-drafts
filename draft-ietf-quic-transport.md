@@ -2395,7 +2395,7 @@ Bits field needs to include at least 46 bits of data (or 6 bytes, less the
 two fixed bits).  To ensure the stateless reset packet is not smaller than
 other packets received on the connection, an endpoint SHOULD also ensure the
 total packet length is at least the minimum chosen CID length plus 22 bytes.
-22 bytes allows for 1 type byte, 4 packet number and data bytes, the
+22 bytes allows for 1 type byte, 4 packet number and data bytes,
 16 byte authentication tag, and the one extra byte to allow the peer to
 send a smaller stateless reset than the packet it receives.
 
