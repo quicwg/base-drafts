@@ -2016,11 +2016,11 @@ estimation for the new path.
 On confirming a peer's ownership of its new address, an endpoint MUST
 immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}})
-unless it has knowledge that the previous send rate or round-trip time estimate
+unless it has knowledge that a previous send rate or round-trip time estimate
 is valid for the new path.  For instance, an endpoint might infer that a change
 in only the client's port number is likely indicative of a NAT rebinding,
 meaning that the new path is likely to have similar bandwidth and round-trip
-time. This determination might be a heuristic and is likely to be imperfect.  If
+time. This determination is likely to be imperfect.  If
 the determination is incorrect, the congestion controller and the RTT estimator
 are expected to adapt to the new path.  Generally, implementations are advised
 to be cautious when using previous values on a new path.
