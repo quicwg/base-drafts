@@ -2015,7 +2015,7 @@ estimation for the new path.
 
 On confirming a peer's ownership of its new address, an endpoint SHOULD
 immediately reset the congestion controller and round-trip time estimator for
-the new path.
+the new path to initial values (see Sections A.3 and B.3 in {{QUIC-RECOVERY}}).
 
 An endpoint MUST NOT return to the send rate used for the previous path unless
 it is reasonably sure that the previous send rate is valid for the new path.
@@ -2935,7 +2935,7 @@ contribute to the ACK frame size.  When the receiver is only sending
 non-ACK-eliciting packets, it can bundle a PING or other small ACK-eliciting
 frame with a fraction of them, such as once per round trip, to enable
 dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ACK-elicing frame, such as a PING, with all
+The receiver MUST NOT bundle an ACK-eliciting frame, such as a PING, with all
 packets that would otherwise be non-ACK-eliciting, in order to avoid an
 infinite feedback loop of acknowledgements.
 
@@ -4318,7 +4318,7 @@ preferred_address (0x000d):
      uint16 ipv4Port;
      opaque ipv6Address[16];
      uint16 ipv6Port;
-     opaque connectionId<0..18>;
+     opaque connectionId<0..20>;
      opaque statelessResetToken[16];
    } PreferredAddress;
 ~~~

@@ -514,11 +514,11 @@ and larger thresholds increase loss detection delay.
 
 ## Probe Timeout {#pto}
 
-A Probe Timeout (PTO) triggers sending one or two probe packets when
+A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
-time or the handshake has not been confirmed.  A PTO enables a connection to
-recover from loss of tail packets or acks. The PTO algorithm used in QUIC
-implements the reliability functions of Tail Loss Probe
+time or the handshake has not been completed.  A PTO enables a connection to
+recover from loss of tail packets or acknowledgements. The PTO algorithm used
+in QUIC implements the reliability functions of Tail Loss Probe
 {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
 F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
 TCP's retransmission timeout period {{?RFC6298}}.
@@ -584,8 +584,11 @@ Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client does not yet
 have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
 it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet, containing only PADDING frames if
-necessary, to allow the server to continue sending data. If Handshake keys
+However, the client MUST send a new packet to allow the server to continue
+sending data.  At this stage in the connection, when few to none RTT samples
+have been generated, it is possible that the probe timer expiration is due to
+an incorrect RTT estimate at the client. To allow the client to improve its RTT
+estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake keys
 are available to the client, it MUST send a Handshake packet, and otherwise
 it MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
 
@@ -597,17 +600,15 @@ CRYPTO data outstanding to consume the entire PMTU.  Sending an ack-eliciting
 1-RTT packet provides a peer with the opportunity to confirm the handshake and
 allow all state associated with Handshake packets to be discarded.
 
-Because Initial packets containing only PADDING do not elicit an
-acknowledgement, they may never be acknowledged, but they are removed from
-bytes in flight when the client gets Handshake keys and the Initial keys are
-discarded.
+Initial packets and Handshake packets may never be acknowledged, but they are
+removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
 as a probe, unless there is no data available to send.  An endpoint MAY send up
-to two ack-eliciting packets, to avoid an expensive consecutive PTO expiration
-due to a single packet loss.
+to two full-sized datagrams containing ack-eliciting packets, to avoid an
+expensive consecutive PTO expiration due to a single lost datagram.
 
 It is possible that the sender has no new or previously-sent data to send.  As
 an example, consider the following sequence of events: new application data is
@@ -1098,11 +1099,11 @@ OnAckReceived(ack, pn_space):
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
   if (sent_packets[pn_space][ack.largest_acked] &&
-      IncludesAckEliciting(newly_acked_packets))
+      IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
-    if pn_space == ApplicationData:
+    if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
     UpdateRtt(ack_delay)
 
@@ -1182,8 +1183,8 @@ GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if loss_time[pn_space] != 0 &&
-       (time == 0 || loss_time[pn_space] < time):
+    if (loss_time[pn_space] != 0 &&
+        (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
   return time, space
@@ -1229,22 +1230,23 @@ OnLossDetectionTimeout():
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
-  if (endpoint is client &&
-      handshake is not confirmed):
-    // Client sends an anti-deadlock packet
-    if (does not have Handshake keys):
+    SetLossDetectionTimer()
+    return
+
+  if (endpoint is client without 1-RTT keys):
+    // Client sends an anti-deadlock packet.
+    if (has only Initial keys):
       // Pad Initial to earn more anti-amplification credit.
-      SendOnePaddedInitialPacket()
+      SendAckElicitingPaddedInitialPacket()
     else if (has 1-RTT keys):
       // Send Handshake coalesced with 1-RTT.
-      SendOneHandshakePacketAnd1Rtt()
+      SendAckElicitingHandshakeAnd1RttPackets()
     else:
-      // Send a Handshake packet.
-      SendOneHandshakePacket()
+      SendAckElicitingHandshakePacket()
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    SendOneOrTwoPackets()
+    SendOneOrTwoAckElicitingPackets()
 
   pto_count++
   SetLossDetectionTimer()
@@ -1408,7 +1410,7 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppLimited())
+     if (IsAppLimited()):
        // Do not increase congestion_window if application
        // limited.
        return
