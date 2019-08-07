@@ -799,7 +799,7 @@ modifying the contents of packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for protecting Initial packets changes when a server sends a
+The secrets used for protecting Initial packets change when a server sends a
 Retry packet to use the connection ID value selected by the server.  The secrets
 do not change when a client changes the Destination Connection ID it uses in
 response to an Initial packet from the server.
