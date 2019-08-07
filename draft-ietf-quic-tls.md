@@ -771,7 +771,8 @@ TLS 1.3 (see {{initial-secrets}}).
 ## Initial Secrets {#initial-secrets}
 
 Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's Initial packet. Specifically:
+Connection ID field from the client's first Initial packet of the connection.
+Specifically:
 
 ~~~
 initial_salt = 0x7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a
