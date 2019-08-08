@@ -4684,11 +4684,11 @@ Application Error Code:
 ## CRYPTO Frame {#frame-crypto}
 
 The CRYPTO frame (type=0x06) is used to transmit cryptographic handshake
-messages. It can be sent in all packet types. The CRYPTO frame offers the
-cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
-functionally identical to STREAM frames, except that they do not bear a stream
-identifier; they are not flow controlled; and they do not carry markers for
-optional offset, optional length, and the end of the stream.
+messages. It can be sent in all packet types except 0-RTT. The CRYPTO frame
+offers the cryptographic protocol an in-order stream of bytes.  CRYPTO frames
+are functionally identical to STREAM frames, except that they do not bear a
+stream identifier; they are not flow controlled; and they do not carry markers
+for optional offset, optional length, and the end of the stream.
 
 The CRYPTO frame is as follows:
 
