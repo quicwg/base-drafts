@@ -650,7 +650,7 @@ upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
-frame if the stream is in the Ready or Send state. If the stream is in the Data
+frame if the stream is in the Ready or Send state.  If the stream is in the Data
 Sent state and any outstanding data is declared lost, an endpoint SHOULD send a
 RESET_STREAM frame in lieu of a retransmission.
 
@@ -2601,12 +2601,17 @@ connection in a recoverable state, the endpoint can send a RESET_STREAM frame
 ({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-RESET_STREAM MUST be instigated by the protocol using QUIC, either directly or
-through the receipt of a STOP_SENDING frame from a peer.  RESET_STREAM carries
-an application error code.  Resetting a stream without knowledge of the
-application protocol could cause the protocol to enter an unrecoverable state.
-Application protocols might require certain streams to be reliably delivered in
-order to guarantee consistent state between endpoints.
+RESET_STREAM MUST be instigated by the protocol using QUIC.  RESET_STREAM
+carries an application error code.  Only the application protocol is able to
+cause a stream to be terminated.  A local instance of the application protocol
+uses a direct API call and a remote instance uses the STOP_SENDING frame, which
+triggers an automatic RESET_STREAM.
+
+Resetting a stream without knowledge of the application protocol could cause the
+protocol to enter an unrecoverable state.  Application protocols might require
+certain streams to be reliably delivered in order to guarantee consistent state
+between endpoints.  Application protocols SHOULD define rules for handling
+streams that are prematurely cancelled by either endpoint.
 
 
 # Packets and Frames {#packets-frames}
