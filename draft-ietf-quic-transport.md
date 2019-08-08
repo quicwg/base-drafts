@@ -3077,7 +3077,8 @@ To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
 path does not support ECN if ECN marked packets get dropped or ECN markings are
 rewritten on the path. An endpoint validates the use of ECN on the path, both
-during connection establishment and when migrating to a new path ({{migration}}).
+during connection establishment and when migrating to a new path
+({{migration}}).
 
 
 ### ECN Counts
