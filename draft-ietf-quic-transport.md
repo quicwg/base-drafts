@@ -3170,9 +3170,8 @@ use the following steps on receiving an ACK frame to validate ECN.
   vice versa).
 
 Processing ECN counts out of order can result in validation failure.  An
-endpoint SHOULD perform this validation only if the largest packet number
-acknowledged in this ACK frame is greater than the largest packet number
-acknowledged so far in this connection.
+endpoint SHOULD NOT perform this validation if this ACK frame does not advance
+the largest packet number acknowledged in this connection.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
