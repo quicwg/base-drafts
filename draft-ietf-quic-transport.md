@@ -3114,18 +3114,19 @@ Handshake packet number space will be incremented by one and the counts for the
 ### ECN Validation {#ecn-validation}
 
 It is possible for faulty network devices to corrupt or erroneously drop packets
-which have ECN markings.  To provide robust connectivity in the presence of such
-devices, each endpoint independently validates, and enables or disables ECN
+with ECN markings.  To provide robust connectivity in the presence of such
+devices, each endpoint independently validates ECN counts and disables ECN
+if errors are detected.
 marking on packets it transmits.
 
-ECN validation is local to a path, and MUST be independently performed for each
-path from an endpoint to its peer.  An endpoint thus independently validates ECN
+Endpoints validate ECN for packets sent on each network path independently.
+An endpoint thus validates ECN
 on new connection establishment, when switching to a new server preferred
 address, and on active connection migration to a new path.
 
 Even if an endpoint does not use ECN markings on packets it transmits, the
-endpoint SHOULD provide feedback about ECN markings received from the peer if
-they are accessible. Not doing so will cause the peer to disable ECN marking.
+endpoint MUST provide feedback about ECN markings received from the peer if
+they are accessible. Failing to report ECN counts will cause the peer to disable ECN marking.
 
 #### Sending ECN Markings
 
@@ -3169,7 +3170,7 @@ use the following steps on receiving an ACK frame to validate ECN.
   This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
   vice versa).
 
-Processing counts out of order can result in validation failure.  An endpoint
+Processing ECN counts out of order can result in validation failure.  An endpoint
 SHOULD NOT perform this validation if the ACK frame is received in a packet with
 packet number lower than a previously received ACK frame.  Validating based on
 ACK frames that arrive out of order can result in disabling ECN unnecessarily.
