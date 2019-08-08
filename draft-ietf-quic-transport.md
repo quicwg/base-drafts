@@ -3141,11 +3141,11 @@ packets on a new path to a peer:
 To reduce the chances of misinterpreting congestive loss as packets dropped by a
 faulty network element, an endpoint could set the ECT(0) codepoint in the first
 ten outgoing packets on a path, or for a period of three RTTs, whichever occurs
-first.  Alternate strategies are possible.  For example, an endpoint could send
-the first ten packets interleaved: five ECT(0)-marked packets interleaved with
-five unmarked packets.  This allows the endpoint to more clearly identify
-congestive loss as such.  Implementations MAY experiment with and use other
-strategies.
+first.  Implementations MAY experiment with and use other strategies.  An
+endpoint could send the first ten packets interleaved: five packets marked with
+ECT(0) or ECT(1) interleaved with five unmarked packets.  An endpoint could also
+simply send all packets marked with ECT(0) or ECT(1) until validation fails.
+
 
 #### Receiving ACK Frames
 
