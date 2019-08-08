@@ -3115,18 +3115,17 @@ Handshake packet number space will be incremented by one and the counts for the
 
 It is possible for faulty network devices to corrupt or erroneously drop packets
 with ECN markings.  To provide robust connectivity in the presence of such
-devices, each endpoint independently validates ECN counts and disables ECN
-if errors are detected.
-marking on packets it transmits.
+devices, each endpoint independently validates ECN counts and disables ECN if
+errors are detected.
 
-Endpoints validate ECN for packets sent on each network path independently.
-An endpoint thus validates ECN
-on new connection establishment, when switching to a new server preferred
-address, and on active connection migration to a new path.
+Endpoints validate ECN for packets sent on each network path independently.  An
+endpoint thus validates ECN on new connection establishment, when switching to a
+new server preferred address, and on active connection migration to a new path.
 
 Even if an endpoint does not use ECN markings on packets it transmits, the
-endpoint MUST provide feedback about ECN markings received from the peer if
-they are accessible. Failing to report ECN counts will cause the peer to disable ECN marking.
+endpoint MUST provide feedback about ECN markings received from the peer if they
+are accessible.  Failing to report ECN counts will cause the peer to disable ECN
+marking.
 
 #### Sending ECN Markings
 
@@ -3170,10 +3169,11 @@ use the following steps on receiving an ACK frame to validate ECN.
   This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
   vice versa).
 
-Processing ECN counts out of order can result in validation failure.  An endpoint
-SHOULD NOT perform this validation if the ACK frame is received in a packet with
-packet number lower than a previously received ACK frame.  Validating based on
-ACK frames that arrive out of order can result in disabling ECN unnecessarily.
+Processing ECN counts out of order can result in validation failure.  An
+endpoint SHOULD NOT perform this validation if the ACK frame is received in a
+packet with packet number lower than a previously received ACK frame.
+Validating based on ACK frames that arrive out of order can result in disabling
+ECN unnecessarily.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
