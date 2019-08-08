@@ -3142,10 +3142,12 @@ packets on a new path to a peer:
 To reduce the chances of misinterpreting congestive loss as packets dropped by a
 faulty network element, an endpoint could set the ECT(0) codepoint in the first
 ten outgoing packets on a path, or for a period of three RTTs, whichever occurs
-first.  Implementations MAY experiment with and use other strategies.  An
-endpoint could send the first ten packets interleaved: five packets marked with
-ECT(0) or ECT(1) interleaved with five unmarked packets.  An endpoint could also
-simply send all packets marked with ECT(0) or ECT(1) until validation fails.
+first.
+
+Implementations MAY experiment with and use other strategies for use of ECN.
+Other methods of probing paths for ECN support are possible, as are different
+marking strategies.  Implementations can also use the ECT(1) codepoint, as
+specified in {{?RFC8311}}.
 
 
 #### Receiving ACK Frames
@@ -3191,8 +3193,8 @@ subsequent packets with the expectation that the path is ECN-capable.  Network
 routing and path elements can change mid-connection however; an endpoint MUST
 disable ECN if validation fails at any point in the connection.
 
-Even if validation fails, an endpoint MAY re-validate ECN on the same path to
-the peer at any later time in the connection.
+Even if validation fails, an endpoint MAY revalidate ECN on the same path at any
+later time in the connection.
 
 
 # Packet Size {#packet-size}
