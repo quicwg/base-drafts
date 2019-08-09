@@ -1602,8 +1602,9 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-A token SHOULD be constructed for the server to easily distinguish it from
-tokens that are sent in Retry packets as they are carried in the same field.
+A token SHOULD be constructed in a way that allows the server to distinguish it
+from tokens that are sent in Retry packets as they are carried in the same
+field.
 
 The token MUST NOT include information that would allow it to be linked by an
 on-path observer to the connection on which it was issued.  For example, it
@@ -1632,13 +1633,23 @@ NEW_TOKEN frame.  A token obtained in a Retry packet MUST be used immediately
 during the connection attempt and cannot be used in subsequent connection
 attempts.
 
-A client SHOULD NOT reuse a token in different connections. Reusing a token
-allows connections to be linked by entities on the network path
-(see {{migration-linkability}}).  A client MUST NOT reuse a token if it
-believes that its point of network attachment has changed since the token was
-last used; that is, if there is a change in its local IP address or network
-interface.  A client needs to start the connection process over if it migrates
-prior to completing the handshake.
+A client SHOULD NOT reuse a token in different connections.  Reusing a token
+allows connections to be linked by entities on the network path (see
+{{migration-linkability}}).  A client MUST NOT reuse a token if it believes that
+its point of network attachment has changed since the token was last used; that
+is, if there is a change in its local IP address or network interface.  A client
+needs to start the connection process over if it migrates prior to completing
+the handshake.
+
+Clients might receive multiple tokens on a single connection.  Any token can be
+used in connection attempt, with the only consequence being that servers gain
+the ability to link the attempt with the connection on which the token was sent.
+Servers can send additional tokens to either enable address validation for
+multiple connection attempts or to replace older tokens that might become
+invalid.  For a client, this ambiguity means that sending the most recent unused
+token is the most effective use of tokens.  Though saving and using older tokens
+has no negative consequences, clients can regard older tokens as being less
+likely be useful to the server for address validation.
 
 When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
