@@ -5506,7 +5506,7 @@ of connections, in a manner similar to SYN flooding attacks in TCP.
 
 Normally, clients will open streams sequentially, as explained in {{stream-id}}.
 However, when several streams are initiated at short intervals, transmission
-error may cause STREAM DATA frames opening streams to be received out of
+error may cause STREAM frames opening streams to be received out of
 sequence.  A receiver is obligated to open intervening streams if a
 higher-numbered stream ID is received.  Thus, on a new connection, opening
 stream 4000000 opens 1 million streams, as required by the specification.
