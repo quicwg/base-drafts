@@ -5509,7 +5509,7 @@ However, when several streams are initiated at short intervals, transmission
 error may cause STREAM DATA frames opening streams to be received out of
 sequence.  A receiver is obligated to open intervening streams if a
 higher-numbered stream ID is received.  Thus, on a new connection, opening
-stream 2000001 opens 1 million streams, as required by the specification.
+stream 4000000 opens 1 million streams, as required by the specification.
 
 The number of active streams is limited by the initial_max_streams_bidi and
 initial_max_streams_uni transport parameters, as explained in
