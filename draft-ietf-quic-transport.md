@@ -1012,7 +1012,7 @@ non-zero-length Destination Connection ID corresponding to an existing
 connection, QUIC processes that packet accordingly. Note that more than one
 connection ID can be associated with a connection; see {{connection-id}}.
 
-If the Destination Connection ID is zero-length and the packet matches the
+If the Destination Connection ID is zero length and the packet matches the
 local address and port of a connection where the host used zero-length
 connection IDs, QUIC processes the packet as part of that connection.
 
