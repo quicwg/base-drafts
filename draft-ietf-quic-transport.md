@@ -4586,15 +4586,15 @@ The three ECN Counts are:
 
 ECT(0) Count:
 : A variable-length integer representing the total number of packets received
-  with the ECT(0) codepoint.
+  with the ECT(0) codepoint in the packet number space of the ACK frame.
 
 ECT(1) Count:
 : A variable-length integer representing the total number of packets received
-  with the ECT(1) codepoint.
+  with the ECT(1) codepoint in the packet number space of the ACK frame.
 
 CE Count:
 : A variable-length integer representing the total number of packets received
-  with the CE codepoint.
+  with the CE codepoint in the packet number space of the ACK frame.
 
 ECN counts are maintained separately for each packet number space.
 
