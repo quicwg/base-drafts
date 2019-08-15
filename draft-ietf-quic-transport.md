@@ -955,7 +955,8 @@ initial connection ID.
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+({{frame-retire-connection-id}}).  Connection IDs that are issued and not
+retired are considered active; any active connection ID can be used.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
@@ -2060,7 +2061,8 @@ value that has not been used on another path.
 An endpoint MUST use a new connection ID if it initiates connection migration as
 described in {{initiating-migration}}.  An endpoint MUST use a new connection ID
 in response to a change in the address of a peer if the packet that initiates
-migration uses a connection ID that has not been previously used by the peer.
+migration uses an active connection ID that has not been previously used by the
+peer.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
