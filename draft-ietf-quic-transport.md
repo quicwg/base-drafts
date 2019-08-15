@@ -2058,10 +2058,9 @@ At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
 An endpoint MUST use a new connection ID if it initiates connection migration as
-described in {{initiating-migration}}.  An endpoint MUST use a new
-connection ID in response to a connection migration if the packet that initiates
-migration uses a different connection ID to packets received on any previous
-path.
+described in {{initiating-migration}}.  An endpoint MUST use a new connection ID
+in response to a change in the address of a peer if the packet that initiates
+migration uses a connection ID that has not been previously used by the peer.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
