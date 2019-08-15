@@ -1634,22 +1634,21 @@ during the connection attempt and cannot be used in subsequent connection
 attempts.
 
 A client SHOULD NOT reuse a token in different connections.  Reusing a token
-allows connections to be linked by entities on the network path (see
-{{migration-linkability}}).  A client MUST NOT reuse a token if it believes that
+allows connections to be linked by entities on the network path; see
+{{migration-linkability}}.  A client MUST NOT reuse a token if it believes that
 its point of network attachment has changed since the token was last used; that
 is, if there is a change in its local IP address or network interface.  A client
 needs to start the connection process over if it migrates prior to completing
 the handshake.
 
-Clients might receive multiple tokens on a single connection.  Any token can be
-used in connection attempt, with the only consequence being that servers gain
-the ability to link the attempt with the connection on which the token was sent.
-Servers can send additional tokens to either enable address validation for
-multiple connection attempts or to replace older tokens that might become
-invalid.  For a client, this ambiguity means that sending the most recent unused
-token is the most effective use of tokens.  Though saving and using older tokens
-has no negative consequences, clients can regard older tokens as being less
-likely be useful to the server for address validation.
+Clients might receive multiple tokens on a single connection.  Aside from
+preventing linkability, any token can be used in connection attempt.  Servers
+can send additional tokens to either enable address validation for multiple
+connection attempts or to replace older tokens that might become invalid.  For a
+client, this ambiguity means that sending the most recent unused token is most
+likely to be effective.  Though saving and using older tokens has no negative
+consequences, clients can regard older tokens as being less likely be useful to
+the server for address validation.
 
 When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
