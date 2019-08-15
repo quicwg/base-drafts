@@ -2057,11 +2057,17 @@ linked by any other entity.
 At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
-An endpoint MUST use a new connection ID if it initiates connection migration.
-Using a new connection ID eliminates the use of the connection ID for linking
-activity from the same connection on different networks.  Header protection
-ensures that packet numbers cannot be used to correlate activity.  This does not
-prevent other properties of packets, such as timing and size, from being used to
+An endpoint MUST use a new connection ID if it initiates connection migration as
+described in {{initiating-migration}}.  An endpoint MUST use a new
+connection ID in response to a connection migration if the packet that initiates
+migration uses a different connection ID to packets received on any previous
+path.
+
+Using different connection IDs for packets sent in both directions on each new
+network path eliminates the use of the connection ID for linking packets from
+the same connection across different network paths.  Header protection ensures
+that packet numbers cannot be used to correlate activity.  This does not prevent
+other properties of packets, such as timing and size, from being used to
 correlate activity.
 
 Unintentional changes in path without a change in connection ID are possible.
