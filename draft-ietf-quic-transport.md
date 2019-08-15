@@ -2353,12 +2353,14 @@ endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
-the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
-stateless_reset_token transport parameter during the handshake (clients cannot
-because their transport parameters don't have confidentiality protection).  This
-value is protected by encryption, so only client and server know this value.
-Tokens are invalidated when their associated connection ID is retired via a
-RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
+the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
+specify a stateless_reset_token transport parameter during the handshake that
+applies to the connection ID that it select during the handshake; clients cannot
+use this transport parameter because their transport parameters don't have
+confidentiality protection.  These tokens are protected by encryption, so only
+client and server know their value.  Tokens are invalidated when their
+associated connection ID is retired via a RETIRE_CONNECTION_ID frame
+({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
