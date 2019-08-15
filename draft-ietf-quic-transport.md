@@ -4762,6 +4762,10 @@ Token:
 
 : An opaque blob that the client may use with a future Initial packet.
 
+An endpoint might receive multiple NEW_TOKEN frames that contain the same token
+value.  Endpoints are responsible for discarding duplicate values, which might
+be used to link connection attempts; see {{validate-future}}.
+
 
 ## STREAM Frames {#frame-stream}
 
