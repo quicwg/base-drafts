@@ -229,9 +229,8 @@ table that it will emit a reference for.  As new entries are inserted, the
 encoder increases the draining index to maintain the section of the table that
 it will not reference.  If the encoder does not create new references to entries
 with an absolute index lower than the draining index, the number of
-unacknowledged references to every such entry will eventually become zero,
-allowing it to be evicted provided that its insertion has been acknowledged by
-the decoder.
+unacknowledged references to those entries will eventually become zero, allowing
+them to be evicted.
 
 ~~~~~~~~~~  drawing
    +----------+---------------------------------+--------+
