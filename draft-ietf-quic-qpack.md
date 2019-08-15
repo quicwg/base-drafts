@@ -830,8 +830,8 @@ connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 A header block consists of a prefix and a possibly empty sequence of
 representations defined in this section.  Each representation corresponds to a
-single header field.  These representations can reference the static table, or
-the dynamic table in a particular state without modifying it.
+single header field.  These representations reference the static table or the
+dynamic table in a particular state, but do not modify that state.
 
 Header blocks are carried in frames on streams defined by the enclosing
 protocol.
@@ -1013,9 +1013,12 @@ pattern.
 
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
-set, the encoded header MUST always be encoded with a literal representation.
-This bit is intended for protecting header field values that are not to be put
-at risk by compressing them (see {{security-considerations}} for more details).
+set, the encoded header MUST always be encoded with a literal representation. In
+particular, when a peer sends a header field that it received represented as a
+literal header field with the 'N' bit set, it MUST use a literal representation
+to forward this header field.  This bit is intended for protecting header field
+values that are not to be put at risk by compressing them (see
+{{security-considerations}} for more details).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1033,18 +1036,27 @@ The fourth (`S`) bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer (see {{prefixed-integers}}) that follows is
 used to locate the table entry for the header name.  When S=1, the number
 represents the static table index; when S=0, the number is the relative index of
-the entry in the dynamic table.  Only the header field name stored in the static
-or dynamic table is used. Any header field value MUST be ignored.
+the entry in the dynamic table.
+
+Only the header field name is taken from the dynamic table entry; the header
+field value is encoded as an 8-bit prefix string literal (see
+{{string-literals}}).
 
 
 ### Literal Header Field With Post-Base Name Reference
 
-If the name entry is in the dynamic table with an absolute index greater than or
-equal to the Base, the representation starts with the '0000' four-bit pattern.
-The fifth bit is the 'N' bit as described in {{literal-name-reference}}.
-Finally, the header field name is represented using the post-base index of that
-entry (see {{post-base}}) encoded as an integer with a 3-bit prefix (see
-{{prefixed-integers}}).
+A literal header field with post-base name reference represents a header field
+where the name matches the header field name of a dynamic table entry with an
+absolute index greater than or equal to the Base.
+
+This representation starts with the '0000' four-bit pattern.  The fifth bit is
+the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
+post-base index of the dynamic table entry (see {{post-base}}) encoded as an
+integer with a 3-bit prefix (see {{prefixed-integers}}).
+
+Only the header field name is taken from the dynamic table entry; the header
+field value is encoded as an 8-bit prefix string literal (see
+{{string-literals}}).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1062,7 +1074,7 @@ entry (see {{post-base}}) encoded as an integer with a 3-bit prefix (see
 ### Literal Header Field Without Name Reference
 
 The literal header field without name reference representation encodes a header
-field name and header field value as string literals (see {{primitives}}).
+field name and header field value as string literals.
 
 This representation begins with the '001' three-bit pattern.  The fourth bit is
 the 'N' bit as described in {{literal-name-reference}}.  The name follows,
