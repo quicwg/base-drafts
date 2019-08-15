@@ -1642,13 +1642,13 @@ needs to start the connection process over if there is any change in its local
 address prior to completing the handshake.
 
 Clients might receive multiple tokens on a single connection.  Aside from
-preventing linkability, any token can be used in connection attempt.  Servers
-can send additional tokens to either enable address validation for multiple
-connection attempts or to replace older tokens that might become invalid.  For a
-client, this ambiguity means that sending the most recent unused token is most
-likely to be effective.  Though saving and using older tokens has no negative
-consequences, clients can regard older tokens as being less likely be useful to
-the server for address validation.
+preventing linkability, any token can be used in any connection attempt.
+Servers can send additional tokens to either enable address validation for
+multiple connection attempts or to replace older tokens that might become
+invalid.  For a client, this ambiguity means that sending the most recent unused
+token is most likely to be effective.  Though saving and using older tokens has
+no negative consequences, clients can regard older tokens as being less likely
+be useful to the server for address validation.
 
 When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
