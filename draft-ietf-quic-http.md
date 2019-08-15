@@ -530,11 +530,11 @@ were partially or fully processed.  When a server abandons a response after
 partial processing, it SHOULD abort its response stream with the error code
 HTTP_REQUEST_CANCELLED.
 
-When a client sends a QUIC STOP_SENDING frame with an error code of HTTP_REQUEST_CANCELLED, a server MAY
-send the error code HTTP_REQUEST_REJECTED in the corresponding QUIC RESET_STREAM frame
-if no processing was performed.  Clients MUST NOT reset streams with the
-HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
-frame that contains the same code.
+When a client sends a QUIC STOP_SENDING frame with an error code of
+HTTP_REQUEST_CANCELLED, a server MAY send the error code HTTP_REQUEST_REJECTED
+in the corresponding QUIC RESET_STREAM frame if no processing was performed.
+Clients MUST NOT reset streams with the HTTP_REQUEST_REJECTED error code except
+in response to a QUIC STOP_SENDING frame that contains the same code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
