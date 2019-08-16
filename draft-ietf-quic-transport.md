@@ -4402,6 +4402,7 @@ preferred_address (0x000d):
   {{fig-preferred-address}}.  This transport parameter is only sent by a server.
   Servers MAY choose to only send a preferred address of one address family by
   sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
+  IP addresses are encoded in network byte order.
 
 ~~~
    struct {
