@@ -131,8 +131,8 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative indices.  Dynamic references are made relative
-  to a Base in header blocks.
+: A reference point for relative and post-base indices.  References to dynamic
+  table entries in header blocks are relative to a Base.
 
 Insert Count:
 
@@ -262,11 +262,15 @@ When the decoder receives a header block with a Required Insert Count greater
 than its own Insert Count, the stream cannot be processed immediately, and is
 considered "blocked" (see {blocked-decoding}).
 
-The SETTINGS_QPACK_BLOCKED_STREAMS setting (see {{configuration}}) specifies an
-upper bound on the number of streams which can be blocked. An encoder MUST limit
-the number of streams which could become blocked to the value of
-SETTINGS_QPACK_BLOCKED_STREAMS at all times. Note that the decoder might not
-become blocked on every stream which risks becoming blocked.
+The decoder specifies an upper bound on the number of streams which can be
+blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
+{{configuration}}). An encoder MUST limit the number of streams which could
+become blocked to the value of SETTINGS_QPACK_BLOCKED_STREAMS at all times.
+If an decoder encounters more blocked streams than it promised to support, it
+MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+
+Note that the decoder might not become blocked on every stream which risks
+becoming blocked.
 
 An encoder can decide whether to risk having a stream become blocked. If
 permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
@@ -321,14 +325,11 @@ decoder has started reading from the stream.
 <!-- doesn't the stream become unblocked when the encoder receives the acks? -->
 
 When processing header blocks, the decoder expects the Required Insert Count to
-exactly match the value defined in {{blocked-streams}. If it encounters a
+exactly match the value defined in {{blocked-streams}}. If it encounters a
 smaller value than expected, it MUST treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED (see {{invalid-references}}). If it encounters a
 larger value than expected, it MAY treat this as a connection error of type
 HTTP_QPACK_DECOMPRESSION_FAILED.
-
-If the decoder encounters more blocked streams than it promised to support, it
-MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -337,8 +338,8 @@ The decoder signals the following events by emitting decoder instructions
 
 #### Completed Processing of a Header Block
 
-When the decoder finishes decoding a header block containing dynamic table
-references, it emits a Header Acknowledgement instruction
+After the decoder finishes decoding a header block containing dynamic table
+references, it MUST emit a Header Acknowledgement instruction
 ({{header-acknowledgement}}).  A stream may carry multiple header blocks in the
 case of intermediate responses, trailers, and pushed requests.  The encoder
 interprets each Header Acknowledgement instruction as acknowledging the earliest
@@ -901,9 +902,13 @@ table.
       # If ReqInsertCount exceeds MaxValue, the Encoder's value
       # must have wrapped one fewer time
       if ReqInsertCount > MaxValue:
-         if ReqInsertCount < FullRange:
+         if ReqInsertCount <= FullRange:
             Error
          ReqInsertCount -= FullRange
+
+      # Value of 0 must be encoded as 0.
+      if ReqInsertCount == 0:
+         Error
 ~~~
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
@@ -945,7 +950,7 @@ the Base; setting Delta Base to zero is the most efficient encoding.
 
 For example, with a Required Insert Count of 9, a decoder receives a S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
-for three entries.  In this example, a regular index of 1 refers to the 5th
+for three entries.  In this example, a relative index of 1 refers to the 5th
 entry that was added to the table; a post-base index of 1 refers to the 8th
 entry.
 
@@ -1324,6 +1329,12 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-08
+
+- Endpoints are permitted to create encoder and decoder streams even if they
+  can't use them (#2100, #2529)
+- Maximum values for settings removed (#2766, #2767)
 
 ## Since draft-ietf-quic-qpack-06
 
