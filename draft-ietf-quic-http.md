@@ -1410,8 +1410,8 @@ determining whether to accept 0-RTT data.
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.  The server MAY omit settings from its SETTINGS frame which
-are unchanged from the initial value.
+with its 0-RTT data.  The server MUST include all settings which differ from
+their default values, even if the value is unchanged from the previous session.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
