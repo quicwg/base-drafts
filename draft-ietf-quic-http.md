@@ -1396,16 +1396,19 @@ servers, the initial value of each client setting is the default value.
 For clients using a 1-RTT QUIC connection, the initial value of each server
 setting is the default value. When a 0-RTT QUIC connection is being used, the
 initial value of each server setting is the value used in the previous session.
-Clients MUST store the settings the server provided in the session being resumed
-and MUST comply with stored settings until the current server settings are
-received.  A client can use these initial values to send requests before the
+Clients SHOULD store the settings the server provided in the session being
+resumed and MUST comply with stored settings until the current server settings
+are received.  If the client did not store, or did not receive, server settings
+from the previous session, the initial value of each setting is the default
+value.  A client can use these initial values to send requests before the
 server's SETTINGS frame has arrived.  This removes the need for a client to wait
 for the SETTINGS frame before sending requests.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
 when accepting 0-RTT data. A server uses the HTTP/3 settings values in
-determining whether to accept 0-RTT data.
+determining whether to accept 0-RTT data.  If the server cannot recover the
+settings from a session being resumed, it MUST NOT accept 0-RTT data.
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
