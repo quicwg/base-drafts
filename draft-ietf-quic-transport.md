@@ -1529,7 +1529,8 @@ transport parameters in 0-RTT as a connection error of type PROTOCOL_VIOLATION.
 New transport parameters can be used to negotiate new protocol behavior.  An
 endpoint MUST ignore transport parameters that it does not support.  Absence of
 a transport parameter therefore disables any optional protocol feature that is
-negotiated using the parameter.
+negotiated using the parameter.  As described in {{transport-parameter-grease}},
+some identifiers are reserved in order to exercise this requirement.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
@@ -4263,6 +4264,14 @@ QUIC encodes transport parameters into a sequence of bytes, which are then
 included in the cryptographic handshake.
 
 
+## Reserved Transport Parameters {#transport-parameter-grease}
+
+Transport parameters with an identifier of the form `31 * N + 27` for integer
+values of N are reserved to exercise the requirement that unknown transport
+parameters be ignored.  These transport parameters have no semantics, and may
+carry arbitrary values.
+
+
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
 This section details the transport parameters defined in this document.
@@ -5724,6 +5733,9 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x000d | preferred_address           | {{transport-parameter-definitions}} |
 | 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
+
+Additionally, each value of the format `31 * N + 27` for integer values of N
+(that is, `27`, `58`, `89`, ...) MUST NOT be assigned by IANA.
 
 
 ## QUIC Frame Type Registry {#iana-frames}
