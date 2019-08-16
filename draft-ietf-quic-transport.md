@@ -957,7 +957,7 @@ packet.
 A zero-length connection ID can be used when a connection ID is not needed
 to route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
-failures in the presence of connection migration, NAT rebinding, and client port
+failures in the presence of peer connection migration, NAT rebinding, and client port
 reuse; and therefore MUST NOT be done unless an endpoint is certain that those
 protocol features are not in use.
 
