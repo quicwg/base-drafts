@@ -613,12 +613,27 @@ by the "initial_max_data" transport parameter supplied by the server.  A client
 MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
+A client that wishes to send 0-RTT packets uses the "early_data" extension in
+the ClientHello message of a subsequent handshake (see Section 4.2.10 of
+{{!TLS13}}). It then sends the application data in 0-RTT packets.
 
-## Rejecting 0-RTT
+Early data within the TLS connection MUST NOT be used.  As it is for other TLS
+application data, a server MUST treat receiving early data on the TLS connection
+as a connection error of type PROTOCOL_VIOLATION.
 
-A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
-QUIC from sending 0-RTT data. A server will always reject 0-RTT if it sends a
-TLS HelloRetryRequest.
+
+## Accepting and Rejecting 0-RTT
+
+A server accepts 0-RTT by sending an early_data extension in the
+EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
+processes and acknowledges the 0-RTT packets that it receives.
+
+A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
+extension.  A server will always reject 0-RTT if it sends a TLS
+HelloRetryRequest.  When rejecting 0-RTT, a server MUST NOT process any 0-RTT
+packets, even if it could.  When 0-RTT was rejected, a client SHOULD treat
+receipt of an acknowledgement for a 0-RTT packet as a connection error of type
+PROTOCOL_VIOLATION, if it is able to detect the condition.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
