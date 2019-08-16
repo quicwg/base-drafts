@@ -345,6 +345,33 @@ the relative priority of streams.  When deciding which streams to dedicate
 resources to, the implementation SHOULD use the information provided by the
 application.
 
+## Required Operations on Streams
+
+There are certain operations which an application MUST be able to perform when
+interacting with QUIC streams.  This document does not specify an API, but
+any implementation of this version of QUIC MUST expose the ability to perform
+the operations described in this section on a QUIC stream.
+
+On the sending part of a stream, application protocols need to be able to:
+
+- write data, understanding when stream flow control credit
+  ({{data-flow-control}}) has successfully been reserved to send the written
+  data
+- end the stream (clean termination), resulting in a STREAM frame
+  ({{frame-stream}}) with the FIN bit set; and
+- reset the stream (abrupt termination), resulting in a RESET_STREAM frame
+  ({{frame-reset-stream}}), even if the stream was already ended.
+
+On the receiving part of a stream, application protocols need to be able to:
+
+- read data
+- abort reading of the stream and request closure, possibly resulting in a
+  STOP_SENDING frame ({{frame-stop-sending}})
+
+Applications also need to be informed of state changes on streams, including
+when the peer has opened or reset a stream, when a peer aborts reading on a
+stream, when new data is available, and when data can or cannot be written to
+the stream due to flow control.
 
 # Stream States {#stream-states}
 
@@ -638,11 +665,14 @@ Note (*1):
 
 ## Solicited State Transitions
 
-If an endpoint is no longer interested in the data it is receiving on a stream,
-it MAY send a STOP_SENDING frame identifying that stream to prompt closure of
-the stream in the opposite direction.  This typically indicates that the
-receiving application is no longer reading data it receives from the stream, but
-it is not a guarantee that incoming data will be ignored.
+If an application is no longer interested in the data it is receiving on a
+stream, it can abort reading the stream and specify an application error code.
+
+If the stream is in the "Recv or "Size Known" states, the transport SHOULD
+signal this by sending a STOP_SENDING frame to prompt closure of the stream in
+the opposite direction.  This typically indicates that the receiving application
+is no longer reading data it receives from the stream, but it is not a guarantee
+that incoming data will be ignored.
 
 STREAM frames received after sending STOP_SENDING are still counted toward
 connection and stream flow control, even though these frames can be discarded
@@ -1112,6 +1142,42 @@ suggested structure:
  - shutdown
 
 -->
+
+
+## Required Operations on Connections
+
+There are certain operations which an application MUST be able to perform when
+interacting with the QUIC transport.  This document does not specify an API, but
+any implementation of this version of QUIC MUST expose the ability to perform
+the operations described in this section on a QUIC connection.
+
+When implementing the client role, applications need to be able to:
+
+- open a connection, which begins the exchange described in {{handshake}};
+- enable 0-RTT; and
+- be informed when 0-RTT has been accepted or rejected by a server.
+
+When implementing the server role, applications need to be able to:
+
+- listen for incoming connections, which prepares for the exchange described in
+  {{handshake}};
+- if Early Data is supported, embed application-controlled data in the TLS
+  resumption ticket sent to the client; and
+- if Early Data is supported, retrieve application-controlled data from the
+  client's resumption ticket and enable rejecting Early Data based on that
+  information.
+
+In either role, applications need to be able to:
+
+- configure minimum values for the initial number of permitted streams of each
+  type, as communicated in the transport parameters ({{transport-parameters}});
+- control resource allocation of various types, including flow control and the
+  number of permitted streams of each type;
+- identify whether the handshake has completed successfully or is still ongoing
+- keep a connection from silently closing, either by generating PING frames
+  ({{frame-ping}}) or by requesting that the transport send additional frames
+  before the idle timeout expires ({{idle-timeout}}); and
+- immediately close ({{immediate-close}}) the connection.
 
 
 # Version Negotiation {#version-negotiation}
