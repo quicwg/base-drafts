@@ -4843,7 +4843,8 @@ Token Length:
 
 Token:
 
-: An opaque blob that the client may use with a future Initial packet.
+: An opaque blob that the client may use with a future Initial packet. The token
+  MUST NOT be empty.
 
 
 ## STREAM Frames {#frame-stream}
