@@ -1656,15 +1656,15 @@ Default:
 
 The entries in the following table are registered by this document.
 
-| ---------------------------- | ------ | ------------------------- | ------- |
-| Setting Name                 |  Code  | Specification             | Default |
-| ---------------------------- | :----: | ------------------------- | ------- |
-| Reserved                     |  0x2   | N/A                       | N/A     |
-| Reserved                     |  0x3   | N/A                       | N/A     |
-| Reserved                     |  0x4   | N/A                       | N/A     |
-| Reserved                     |  0x5   | N/A                       | N/A     |
-| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   | 0       |
-| ---------------------------- | ------ | ------------------------- | ------- |
+| ---------------------------- | ------ | ------------------------- | --------- |
+| Setting Name                 |  Code  | Specification             | Default   |
+| ---------------------------- | :----: | ------------------------- | --------- |
+| Reserved                     |  0x2   | N/A                       | N/A       |
+| Reserved                     |  0x3   | N/A                       | N/A       |
+| Reserved                     |  0x4   | N/A                       | N/A       |
+| Reserved                     |  0x5   | N/A                       | N/A       |
+| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   | Unlimited |
+| ---------------------------- | ------ | ------------------------- | --------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
 (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
