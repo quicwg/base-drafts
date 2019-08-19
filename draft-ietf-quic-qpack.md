@@ -639,7 +639,7 @@ maximum size of the dynamic table permitted by the peer is zero).
 An endpoint MAY avoid creating a decoder stream if its decoder sets the maximum
 capacity of the dynamic table to zero.
 
-An endpoint MUST allow its peer to create both the encoder and decoder streams
+An endpoint MUST allow its peer to create an encoder stream and a decoder stream
 even if the connection's settings prevent their use.
 
 ## Encoder Instructions {#encoder-instructions}
