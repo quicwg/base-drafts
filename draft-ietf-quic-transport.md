@@ -2084,9 +2084,13 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-An endpoint that exhausts available connection IDs cannot migrate.  To ensure
-that migration is possible and packets sent on different paths cannot be
-correlated, endpoints SHOULD provide new connection IDs before peers migrate.
+An endpoint that exhausts available connection IDs cannot migrate.  Similarly,
+an endpoint is unable to respond to probes or an attempt by its peer to migrate
+or probe.  To ensure that migration is possible and packets sent on different
+paths cannot be correlated, endpoints SHOULD provide new connection IDs before
+peers migrate.  If a peer might have exhausted available connection IDs, a
+migrating endpoint could include a NEW_CONNECTION_ID frame in all packets sent
+on a new network path.
 
 
 ## Server's Preferred Address {#preferred-address}
