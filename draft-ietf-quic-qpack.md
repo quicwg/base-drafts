@@ -279,7 +279,7 @@ encoder becoming blocked on congestion or flow control limits.
 
 The Known Received Count is the total number of dynamic table insertions and
 duplications acknowledged by the decoder.  The encoder tracks the Known Received
-Count in order to identify which dynamic table entries can be references without
+Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
 order to be able to send Insert Count Increment instructions (see
 {{insert-count-increment}}).
@@ -451,7 +451,7 @@ the table size is less than or equal to the table capacity.  Another option is
 to first evict entries until the size of the dynamic table is less than or equal
 to (table capacity - size of new entry), then add the new entry.  Note that a
 new entry can reference an entry in the dynamic table that will be evicted when
-adding this new entry.  Therefore implementations utilizing the latter option
+adding this new entry.  Therefore, implementations utilizing the latter option
 are cautioned to avoid deleting the referenced name or value if the referenced
 entry is evicted from the dynamic table prior to inserting the new entry.
 
@@ -831,7 +831,7 @@ modifying it.
 
 Each header block is prefixed with two integers.  The Required Insert Count is
 encoded as an integer with an 8-bit prefix after the encoding described in
-{{ric}}).  The Base is encoded as a sign bit, and a Delta Base value with a
+{{ric}}).  The Base is encoded as a sign bit and a Delta Base value with a
 7-bit prefix (see {{base}}).
 
 ~~~~~~~~~~  drawing
