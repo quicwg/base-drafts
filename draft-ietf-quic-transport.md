@@ -3134,6 +3134,10 @@ containing that information is acknowledged.
   RETIRE_CONNECTION_ID frames and retransmitted if the packet containing them is
   lost.
 
+* NEW_TOKEN frames are retransmitted if the packet containing them is lost.  No
+  special support is made for detecting reordered and duplicated NEW_TOKEN
+  frames other than a direct comparison of the frame contents.
+
 * PING and PADDING frames contain no information, so lost PING or PADDING frames
   do not require repair.
 
@@ -4844,6 +4848,10 @@ Token Length:
 Token:
 
 : An opaque blob that the client may use with a future Initial packet.
+
+An endpoint might receive multiple NEW_TOKEN frames that contain the same token
+value.  Endpoints are responsible for discarding duplicate values, which might
+be used to link connection attempts; see {{validate-future}}.
 
 
 ## STREAM Frames {#frame-stream}
