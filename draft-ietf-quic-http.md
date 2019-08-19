@@ -1390,31 +1390,34 @@ for more details.
 
 An HTTP implementation MUST NOT send frames or requests which would be invalid
 based on its current understanding of the peer's settings.  All settings begin
-at an initial value, and are updated upon receipt of a SETTINGS frame.  For
-servers, the initial value of each client setting is the default value.
+at an initial value.  Each endpoint can use these values to send messages before
+the peer's SETTINGS frame has arrived.  This removes the need to wait for the
+SETTINGS frame before sending messages.  When the SETTINGS frame arrives, any
+settings are changed to their new values.
+
+For servers, the initial value of each client setting is the default value.
 
 For clients using a 1-RTT QUIC connection, the initial value of each server
-setting is the default value. When a 0-RTT QUIC connection is being used, the
+setting is the default value.  When a 0-RTT QUIC connection is being used, the
 initial value of each server setting is the value used in the previous session.
-Clients SHOULD store the settings the server provided in the session being
-resumed and MUST comply with stored settings until the current server settings
-are received.  If the client did not store, or did not receive, server settings
-from the previous session, the initial value of each setting is the default
-value.  A client can use these initial values to send requests before the
-server's SETTINGS frame has arrived.  This removes the need for a client to wait
-for the SETTINGS frame before sending requests.
+Clients SHOULD store the settings the server provided in the connection where
+resumption information was provided. A client MUST comply with either stored
+settings -- or default values, if no values are stored -- when attempting 0-RTT.
+Once a server has provided new settings, clients MUST comply with those values.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
 when accepting 0-RTT data. A server uses the HTTP/3 settings values in
-determining whether to accept 0-RTT data.  If the server cannot recover the
-settings from a session being resumed, it MUST NOT accept 0-RTT data.
+determining whether to accept 0-RTT data.  If the server cannot determine that
+the settings remembered by a client are compatible with its current settings, it
+MUST NOT accept 0-RTT data.  (Remembered settings are compatible if a client
+complying with those settings would not violate the server's current settings.)
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.  The server MUST include all settings which differ from
-their default values, even if the value is unchanged from the previous session.
+their default values.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
