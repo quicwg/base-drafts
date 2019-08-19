@@ -1713,8 +1713,9 @@ security considerations of {{!ALTSVC}} also apply.
 Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
 transport-layer padding or employ the reserved frame and stream types discussed
-in {{frame-grease}} and {{stream-grease}}.  This provides slightly different
-granularities of padding and may involve different control surfaces.
+in {{frame-grease}} and {{stream-grease}}.  These methods of padding produce
+different results in terms of the granularity of padding, the effect of packet
+loss and recovery, and how an implementation might control padding.
 
 ## Frame Parsing
 
