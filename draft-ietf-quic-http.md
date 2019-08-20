@@ -2114,9 +2114,9 @@ equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
+An important difference from HTTP/2 is that settings are sent once, as the first
+frame of the control stream, and thereafter cannot change.  This eliminates many
+corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
 superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
@@ -2158,6 +2158,10 @@ settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
+
+An endpoint cannot assume the peer's settings to arrive in a timely manner, as
+the packet carrying the settings can be lost, or the peer might postpone the
+transmission of the settings until it sees a use of the control stream.
 
 
 ## HTTP/2 Error Codes
