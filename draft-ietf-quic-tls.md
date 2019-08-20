@@ -1517,8 +1517,8 @@ The initial secret is common:
 
 ~~~
 initial_secret = HKDF-Extract(initial_salt, cid)
-    = 4496d3903d3f97cc5e45ac5790ddc686
-      683c7c0067012bb09d900cc21832d596
+    = 524e374c6da8cf8b496f4bcb69678350
+      7aafee6198b202b4bc823ebf7514a423
 ~~~
 
 The secrets for protecting client packets are:
@@ -1526,17 +1526,17 @@ The secrets for protecting client packets are:
 ~~~
 client_initial_secret
     = HKDF-Expand-Label(initial_secret, "client in", _, 32)
-    = 8a3515a14ae3c31b9c2d6d5bc58538ca
-      5cd2baa119087143e60887428dcb52f6
+    = fda3953aecc040e48b34e27ef87de3a6
+      098ecf0e38b7e032c5c57bcbd5975b84
 
 key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
-    = 98b0d7e5e7a402c67c33f350fa65ea54
+    = af7fd7efebd21878ff66811248983694
 
 iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
-    = 19e94387805eb0b46c03a788
+    = 8681359410a70bb9c92f0420
 
 hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
-    = 0edd982a6ac527f2eddcbb7348dea5d7
+    = a980b8b4fb7d9fbc13e814c23164253d
 ~~~
 
 The secrets for protecting server packets are:
@@ -1544,17 +1544,17 @@ The secrets for protecting server packets are:
 ~~~
 server_initial_secret
     = HKDF-Expand-Label(initial_secret, "server in", _, 32)
-    = 47b2eaea6c266e32c0697a9e2a898bdf
-      5c4fb3e5ac34f0e549bf2c58581a3811
+    = 554366b81912ff90be41f17e80222130
+      90ab17d8149179bcadf222f29ff2ddd5
 
 key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
-    = 9a8be902a9bdd91d16064ca118045fb4
+    = 5d51da9ee897a21b2659ccc7e5bfa577
 
 iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
-    = 0a82086d32205ba22241d8dc
+    = 5e5ae651fd1e8495af13508b
 
 hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
-    = 94b9452d2b3c7c7f6da7fdd8593537fd
+    = a8ed82e6664f865aedf6106943f95fb8
 ~~~
 
 
@@ -1686,6 +1686,10 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-22
+
+- Update the salt used for Initial secrets (#2887, #2980)
 
 
 ## Since draft-ietf-quic-tls-21
