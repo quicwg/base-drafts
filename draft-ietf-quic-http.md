@@ -1340,9 +1340,9 @@ Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
 while servers are more cautious about request size.
 
-The same setting identifier MUST NOT occur more than once in the SETTINGS frame.  A
-receiver MAY treat the presence of duplicate setting identifiers as
-a connection error of type HTTP_SETTINGS_ERROR.
+The same setting identifier MUST NOT occur more than once in the SETTINGS frame.
+A receiver MAY treat the presence of duplicate setting identifiers as a
+connection error of type HTTP_SETTINGS_ERROR.
 
 The payload of a SETTINGS frame consists of zero or more parameters.  Each
 parameter consists of a setting identifier and a value, both encoded as QUIC
