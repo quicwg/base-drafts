@@ -1,6 +1,5 @@
 ---
 title: Using TLS to Secure QUIC
-abbrev: QUIC over TLS
 docname: draft-ietf-quic-tls-latest
 date: {DATE}
 category: std
