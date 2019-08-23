@@ -1157,7 +1157,7 @@ Pseudocode for OnPacketAcked follows:
    OnPacketAcked(acked_packet, pn_space):
      if (acked_packet.in_flight):
        OnPacketAckedCC(acked_packet)
-     sent_packets[pn_space].remove(acked_packet.packet_number)
+     sent_packets[pn_space].[acked_packet.packet_number] = null
 ~~~
 
 
@@ -1276,7 +1276,7 @@ DetectLostPackets(pn_space):
     if (unacked.time_sent <= lost_send_time ||
         largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
-      sent_packets[pn_space].remove(unacked.packet_number)
+      sent_packets[pn_space][unacked.packet_number] = null
       if (unacked.in_flight):
         lost_packets.insert(unacked)
     else:
