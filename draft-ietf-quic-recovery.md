@@ -582,7 +582,7 @@ data has been received from the client.
 
 Because the server could be blocked until more packets are received, the client
 MUST ensure that the retransmission timer is set if the client has not received
-an ACK in a Handshake packet or does not yet have 1-RTT keys.  If the probe
+an ACK in a Handshake packet and does not yet have 1-RTT keys.  If the probe
 timer expires before the client has 1-RTT keys, it is possible that the client
 may not have any crypto data to retransmit. However, the client MUST send a new
 packet to allow the server to continue sending data.  At this stage in the
