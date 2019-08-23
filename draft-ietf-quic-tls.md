@@ -364,8 +364,8 @@ As shown in {{schematic}}, the interface from QUIC to TLS consists of four
 primary functions:
 
 - Sending and receiving handshake messages
-- Processing stored transport and application state from a 0-RTT capable session
-  ticket and determining if it is valid to accept early data on the connection
+- Processing stored transport and application state from a resumed session
+  and determining if it is valid to accept early data
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
@@ -647,7 +647,7 @@ A client MAY attempt to send 0-RTT again if it receives a Retry or Version
 Negotiation packet.  These packets do not signify rejection of 0-RTT.
 
 
-## Validating 0-RTT configuration
+## Validating 0-RTT Configuration
 
 When a server receives a ClientHello with the "early_data" extension, it has to
 decide whether to accept or reject early data from the client. Some of this
@@ -664,8 +664,8 @@ in the session ticket. Application protocols that use QUIC might have similar
 requirements regarding associating or storing state. This associated state is
 used for deciding whether early data must be rejected. For example, HTTP/3
 ({{QUIC-HTTP}}) settings determine how early data from the client is
-interpreted. Other applications using QUIC could have different requiremenets
-for determining whether ot accept or reject early data.
+interpreted. Other applications using QUIC could have different requirements
+for determining whether to accept or reject early data.
 
 
 ## HelloRetryRequest
