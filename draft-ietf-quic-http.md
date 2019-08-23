@@ -2159,9 +2159,11 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
-An endpoint cannot assume the peer's settings to arrive in a timely manner, as
-the packet carrying the settings can be lost, or the peer might postpone the
-transmission of the settings until it sees a use of the control stream.
+An endpoint SHOULD NOT wait for the peer's settings to arrive before responding
+to other streams, as it cannot assume the peer's settings to arrive in a timely
+manner.  This is because the packet carrying the settings can be lost, or the
+peer might prioritize the transmission of the control stream below other
+streams.
 
 
 ## HTTP/2 Error Codes
