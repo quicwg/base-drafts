@@ -1330,11 +1330,13 @@ If an endpoint receives a SETTINGS frame on a different stream, the endpoint
 MUST respond with a connection error of type HTTP_WRONG_STREAM.
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
-sending peer, which can be used by the receiving peer. However, a negotiation
-can be implied by the use of SETTINGS - each peer uses SETTINGS to advertise a
-set of supported values. The definition of the setting would describe how each
-peer combines the two sets to conclude which choice will be used.  SETTINGS does
-not provide a mechanism to identify when the choice takes effect.
+sending peer, which can be used by the receiving peer. An endpoint MUST NOT wait
+for the peer's SETTINGS frame to arrive before sending it's own SETTINGS frame.
+However, a negotiation can be implied by the use of SETTINGS - each peer uses
+SETTINGS to advertise a set of supported values. The definition of the setting
+would describe how each peer combines the two sets to conclude which choice will
+be used.  SETTINGS does not provide a mechanism to identify when the choice
+takes effect.
 
 Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
