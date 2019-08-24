@@ -580,18 +580,21 @@ data at Handshake encryption MUST be retransmitted before any ApplicationData
 data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
 data has been received from the client.
 
-Because the server could be blocked until more packets are received, the client
-MUST ensure that the retransmission timer is set if the client has not received
-an ACK in a Handshake packet and does not yet have 1-RTT keys.  If the probe
-timer expires before the client has 1-RTT keys, it is possible that the client
-may not have any crypto data to retransmit. However, the client MUST send a new
-packet to allow the server to continue sending data.  At this stage in the
-connection, when few to none RTT samples have been generated, it is possible
-that the probe timer expiration is due to an incorrect RTT estimate at the
-client. To allow the client to improve its RTT estimate, the new packet that
-it sends MUST be ack-eliciting.  If Handshake keys are available to the client,
-it MUST send a Handshake packet, and otherwise it MUST send an Initial packet
-in a UDP datagram of at least 1200 bytes.
+Since the server could be blocked until more packets are received from the
+client, it is the client's responsibility to send packets to unblock the server
+until it is certain that the server has finished its address validation
+(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
+probe timer if one of the following conditions is true: the client
+does not yet have 1-RTT keys, or the client has not received an acknowledgement
+for one of its Handshake packets.
+
+Prior to handshake completion, when few to none RTT samples have been
+generated, it is possible that the probe timer expiration is due to an
+incorrect RTT estimate at the client. To allow the client to improve its RTT
+estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake
+keys are available to the client, it MUST send a Handshake packet, and
+otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
+bytes.
 
 Initial packets and Handshake packets may never be acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
