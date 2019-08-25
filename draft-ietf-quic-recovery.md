@@ -988,18 +988,6 @@ kPacketNumberSpace:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-loss_detection_timer:
-: Multi-modal timer used for loss detection.
-
-pto_count:
-: The number of times a PTO has been sent without receiving an ack.
-
-time_of_last_sent_ack_eliciting_packet:
-: The time the most recent ack-eliciting packet was sent.
-
-largest_acked_packet\[kPacketNumberSpace]:
-: The largest packet number acknowledged in the packet number space so far.
-
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
   a previously unacked packet.
@@ -1019,6 +1007,18 @@ max_ack_delay:
   acknowledgments for packets in the ApplicationData packet number space. The
   actual ack_delay in a received ACK frame may be larger due to late timers,
   reordering, or lost ACKs.
+
+loss_detection_timer:
+: Multi-modal timer used for loss detection.
+
+pto_count:
+: The number of times a PTO has been sent without receiving an ack.
+
+time_of_last_sent_ack_eliciting_packet:
+: The time the most recent ack-eliciting packet was sent.
+
+largest_acked_packet\[kPacketNumberSpace]:
+: The largest packet number acknowledged in the packet number space so far.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
