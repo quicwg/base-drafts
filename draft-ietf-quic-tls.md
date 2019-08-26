@@ -1049,16 +1049,16 @@ function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
 16 bytes sampled from the packet protection output.
 
 The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
-in little-endian order and are used as the block count.  The remaining 12 bytes
-are interpreted as three concatenated 32-bit numbers in little-endian order and
-used as the nonce.
+in little-endian order and are used as the block count; a ChaCha20
+implementation might instead take the 4 bytes as an opaque sequence of bytes.
+The remaining 12 bytes are used as the nonce.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
 pseudocode:
 
 ~~~
 counter = DecodeLE(sample[0..3])
-nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
+nonce = sample[4....15]
 mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
 
