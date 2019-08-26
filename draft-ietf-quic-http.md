@@ -1403,14 +1403,20 @@ ready to send data.
 For servers, the initial value of each client setting is the default value.
 
 For clients using a 1-RTT QUIC connection, the initial value of each server
-setting is the default value.  When a 0-RTT QUIC connection is being used, the
-initial value of each server setting is the value used in the previous session.
-Clients SHOULD store the settings the server provided in the connection where
-resumption information was provided, but MAY opt not to store settings in
-certain cases (e.g. if the session ticket is received before the SETTINGS
-frame). A client MUST comply with stored settings -- or default values, if no
-values are stored -- when attempting 0-RTT. Once a server has provided new
-settings, clients MUST comply with those values.
+setting is the default value.  1-RTT keys will always become available prior to
+SETTINGS arriving, even if the server sends SETTINGS immediately. Clients SHOULD
+NOT wait indefinitely for SETTINGS to arrive before sending requests, but SHOULD
+process received datagrams in order to increase the likelihood of processing
+SETTINGS before sending the first request.
+
+When a 0-RTT QUIC connection is being used, the initial value of each server
+setting is the value used in the previous session. Clients SHOULD store the
+settings the server provided in the connection where resumption information was
+provided, but MAY opt not to store settings in certain cases (e.g. if the
+session ticket is received before the SETTINGS frame). A client MUST comply with
+stored settings -- or default values, if no values are stored -- when attempting
+0-RTT. Once a server has provided new settings, clients MUST comply with those
+values.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
