@@ -2438,7 +2438,7 @@ following layout:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|0|1|               Unpredictable Bits (198..)                ...
+|0|1|               Unpredictable Bits (38 ..)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -2460,11 +2460,17 @@ of bytes following it that are set to unpredictable values.  The last 16 bytes
 of the datagram contain a Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear
-to be a packet with a short header.  For the packet to appear as valid, the
-Unpredictable Bits field needs to include at least 198 bits of data (or 25
-bytes, less the two fixed bits).  This is intended to allow for a Destination
-Connection ID of the maximum length permitted, with a minimal packet number, and
-payload.  The Stateless Reset Token corresponds to the minimum expansion of the
+to be a packet with a short header.  For the stateless reset to appear as a
+valid QUIC packet and be smaller than the received packet, the Unpredictable
+Bits field needs to include at least 46 bits of data (or 6 bytes, less the
+two fixed bits).  To ensure the stateless reset packet is not smaller than
+other packets received on the connection, an endpoint SHOULD also ensure the
+total packet length is at least the minimum chosen CID length plus 22 bytes.
+22 bytes allows for 1 type byte, 4 packet number and data bytes,
+16 bytes for AEAD expansion, and an extra byte to allow the peer to
+send a smaller stateless reset than the packet it receives.
+
+The Stateless Reset Token corresponds to the minimum expansion of the
 packet protection AEAD.  More unpredictable bytes might be necessary if the
 endpoint could have negotiated a packet protection scheme with a larger minimum
 AEAD expansion.
@@ -2609,15 +2615,12 @@ separate limits for different remote addresses will ensure that Stateless Reset
 packets can be used to close connections when other peers or connections have
 exhausted limits.
 
-Reducing the size of a Stateless Reset below the recommended minimum size of 41
-bytes could mean that the packet could reveal to an observer that it is a
-Stateless Reset.  Conversely, refusing to send a Stateless Reset in response to
-a small packet might result in Stateless Reset not being useful in detecting
-cases of broken connections where only very small packets are sent; such
-failures might only be detected by other means, such as timers.
-
-An endpoint can increase the odds that a packet will trigger a Stateless Reset
-if it cannot be processed by padding it to at least 42 bytes.
+Reducing the size of a Stateless Reset below 41 bytes means that the packet
+could reveal to an observer that it is a Stateless Reset, depending upon the
+length of the peer's connection IDs.  Conversely, refusing to send a Stateless
+Reset in response to a small packet might result in Stateless Reset not being
+useful in detecting cases of broken connections where only very small packets
+are sent; such failures might only be detected by other means, such as timers.
 
 
 # Error Handling {#error-handling}
