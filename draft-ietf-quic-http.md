@@ -381,6 +381,13 @@ certificate for the origin before considering it authoritative. Clients MUST NOT
 assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
 
+Prior to making requests for an origin whose scheme is not "https," the client
+MUST ensure the server is willing to serve that scheme.  If the client intends
+to make requests for an origin whose scheme is "http", this means that it MUST
+obtain a valid `http-opportunistic` response for the origin as described in
+{{!RFC8164}} prior to making any such requests.  Other schemes might define
+other mechanisms.
+
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
