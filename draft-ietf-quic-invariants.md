@@ -194,9 +194,10 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first byte set to 0.
 
-A QUIC packet with a short header includes a Destination Connection ID.  The
-short header does not include the Connection ID Lengths, Source Connection ID,
-or Version fields.
+A QUIC packet with a short header includes a Destination Connection ID
+immediately following the first byte.  The short header does not include the
+Connection ID Lengths, Source Connection ID, or Version fields.  The length of
+the Destination Connection ID is not constrained in packets with a short header.
 
 The remainder of the packet has version-specific semantics.
 
