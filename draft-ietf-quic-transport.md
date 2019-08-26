@@ -1308,7 +1308,7 @@ a 1232 byte QUIC packet payload.  This includes overheads that reduce the space
 available to the cryptographic handshake protocol.
 
 An endpoint can verify support for Explicit Congestion Notification (ECN) in the
-first packets it sends, as described in {{ecn-verification}}.
+first packets it sends, as described in {{ecn-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces.  The sequence
 numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
@@ -3170,8 +3170,9 @@ rate in response, as described in {{QUIC-RECOVERY}}.
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
 path does not support ECN if ECN marked packets get dropped or ECN markings are
-rewritten on the path. An endpoint verifies the path, both during connection
-establishment and when migrating to a new path (see {{migration}}).
+rewritten on the path. An endpoint validates the use of ECN on the path, both
+during connection establishment and when migrating to a new path
+({{migration}}).
 
 
 ### ECN Counts
@@ -3205,36 +3206,59 @@ Handshake packet number space will be incremented by one and the counts for the
 1-RTT packet number space will be increased by two.
 
 
-### ECN Verification {#ecn-verification}
+### ECN Validation {#ecn-validation}
 
-Each endpoint independently verifies and enables use of ECN by setting the IP
-header ECN codepoint to ECN Capable Transport (ECT) for the path from it to the
-other peer. Even if not setting ECN codepoints on packets it transmits, the
-endpoint SHOULD provide feedback about ECN markings received (if accessible).
+It is possible for faulty network devices to corrupt or erroneously drop packets
+with ECN markings.  To provide robust connectivity in the presence of such
+devices, each endpoint independently validates ECN counts and disables ECN if
+errors are detected.
 
-To verify both that a path supports ECN and the peer can provide ECN feedback,
-an endpoint sets the ECT(0) codepoint in the IP header of all outgoing
-packets {{!RFC8311}}.
+Endpoints validate ECN for packets sent on each network path independently.  An
+endpoint thus validates ECN on new connection establishment, when switching to a
+new server preferred address, and on active connection migration to a new path.
 
-If an ECT codepoint set in the IP header is not corrupted by a network device,
-then a received packet contains either the codepoint sent by the peer or the
-Congestion Experienced (CE) codepoint set by a network device that is
-experiencing congestion.
+Even if an endpoint does not use ECN markings on packets it transmits, the
+endpoint MUST provide feedback about ECN markings received from the peer if they
+are accessible.  Failing to report ECN counts will cause the peer to disable ECN
+marking.
 
-If a QUIC packet sent with an ECT codepoint is newly acknowledged by the peer in
-an ACK frame without ECN feedback, the endpoint stops setting ECT codepoints in
-subsequent IP packets, with the expectation that either the network path or the
-peer no longer supports ECN.
+#### Sending ECN Markings
 
-Network devices that corrupt or apply non-standard ECN markings might result in
-reduced throughput or other undesirable side-effects.  To reduce this risk, an
-endpoint uses the following steps to verify the counts it receives in an ACK
-frame.
+To start ECN validation, an endpoint SHOULD do the following when sending
+packets on a new path to a peer:
 
-* The total increase in ECT(0), ECT(1), and CE counts MUST be no smaller than
-  the total number of QUIC packets sent with an ECT codepoint that are newly
-  acknowledged in this ACK frame.  This step detects any network remarking from
-  ECT(0), ECT(1), or CE codepoints to Not-ECT.
+* Set the ECT(0) codepoint in the IP header of early outgoing packets sent on a
+  new path to the peer {{!RFC8311}}.
+
+* If all packets that were sent with the ECT(0) codepoint are eventually deemed
+  lost {{QUIC-RECOVERY}}, validation is deemed to have failed.
+
+To reduce the chances of misinterpreting congestive loss as packets dropped by a
+faulty network element, an endpoint could set the ECT(0) codepoint in the first
+ten outgoing packets on a path, or for a period of three RTTs, whichever occurs
+first.
+
+Implementations MAY experiment with and use other strategies for use of ECN.
+Other methods of probing paths for ECN support are possible, as are different
+marking strategies.  Implementations can also use the ECT(1) codepoint, as
+specified in {{?RFC8311}}.
+
+
+#### Receiving ACK Frames
+
+An endpoint that sets ECT(0) or ECT(1) codepoints on packets it transmits MUST
+use the following steps on receiving an ACK frame to validate ECN.
+
+* If this ACK frame newly acknowledges a packet that the endpoint sent with
+  either ECT(0) or ECT(1) codepoints set, and if no ECN feedback is present in
+  the ACK frame, validation fails.  This step protects against both a network
+  element that zeroes out ECN bits and a peer that is unable to access ECN
+  markings, since the peer could respond without ECN feedback in these cases.
+
+* For validation to succeed, the total increase in ECT(0), ECT(1), and CE counts
+  MUST be no smaller than the total number of QUIC packets sent with an ECT
+  codepoint that are newly acknowledged in this ACK frame.  This step detects
+  any network remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT.
 
 * Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
   count, MUST be no smaller than the number of packets sent with the
@@ -3242,32 +3266,29 @@ frame.
   This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
   vice versa).
 
+Processing ECN counts out of order can result in validation failure.  An
+endpoint SHOULD NOT perform this validation if this ACK frame does not advance
+the largest packet number acknowledged in this connection.
+
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
 to be greater than the number of packets acknowledged in an ACK frame.  When
-this happens, and if verification succeeds, the local reference counts MUST be
+this happens, and if validation succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
 
-Processing counts out of order can result in verification failure.  An endpoint
-SHOULD NOT perform this verification if the ACK frame is received in a packet
-with packet number lower than a previously received ACK frame.  Verifying based
-on ACK frames that arrive out of order can result in disabling ECN
-unnecessarily.
+#### Validation Outcomes
 
-Upon successful verification, an endpoint continues to set ECT codepoints in
-subsequent packets with the expectation that the path is ECN-capable.
+If validation fails, then the endpoint stops sending ECN markings in subsequent
+IP packets with the expectation that either the network path or the peer does
+not support ECN.
 
-If verification fails, then the endpoint ceases setting ECT codepoints in
-subsequent IP packets with the expectation that either the network path or the
-peer does not support ECN.
+Upon successful validation, an endpoint can continue to set ECT codepoints in
+subsequent packets with the expectation that the path is ECN-capable.  Network
+routing and path elements can change mid-connection however; an endpoint MUST
+disable ECN if validation fails at any point in the connection.
 
-If an endpoint sets ECT codepoints on outgoing IP packets and encounters a
-retransmission timeout due to the absence of acknowledgments from the peer (see
-{{QUIC-RECOVERY}}), or if an endpoint has reason to believe that an element on
-the network path might be corrupting ECN codepoints, the endpoint MAY cease
-setting ECT codepoints in subsequent packets.  Doing so allows the connection to
-be resilient to network elements that corrupt ECN codepoints in the IP header or
-drop packets with ECT or CE codepoints in the IP header.
+Even if validation fails, an endpoint MAY revalidate ECN on the same path at any
+later time in the connection.
 
 
 # Packet Size {#packet-size}
