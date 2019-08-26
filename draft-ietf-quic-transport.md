@@ -668,7 +668,7 @@ Note (*1):
 If an application is no longer interested in the data it is receiving on a
 stream, it can abort reading the stream and specify an application error code.
 
-If the stream is in the "Recv or "Size Known" states, the transport SHOULD
+If the stream is in the "Recv" or "Size Known" states, the transport SHOULD
 signal this by sending a STOP_SENDING frame to prompt closure of the stream in
 the opposite direction.  This typically indicates that the receiving application
 is no longer reading data it receives from the stream, but it is not a guarantee
