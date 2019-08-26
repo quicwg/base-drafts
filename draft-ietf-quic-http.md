@@ -1386,18 +1386,20 @@ value the implementation selects.
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
-#### Initialization
+#### Initialization {#settings-initialization}
 
 An HTTP implementation MUST NOT send frames or requests which would be invalid
 based on its current understanding of the peer's settings.
 
-All settings begin at an initial value.  Each endpoint MAY use these initial
-values to send messages before the peer's SETTINGS frame has arrived.  When
-the SETTINGS frame arrives, any settings are changed to their new values.
+All settings begin at an initial value.  Each endpoint SHOULD use these initial
+values to send messages before the peer's SETTINGS frame has arrived.  This is
+because packets carrying the settings can be lost, or the peers might prioritize
+the transmission of the control stream below other streams.  When the SETTINGS
+frame arrives, any settings are changed to their new values.
 
 This removes the need to wait for the SETTINGS frame before sending messages.
 Endpoints MUST NOT require any data to be received from the peer prior to
-sending the SETTINGS frame; settings SHOULD be sent as soon as the transport is
+sending the SETTINGS frame; settings MUST be sent as soon as the transport is
 ready to send data.
 
 For servers, the initial value of each client setting is the default value.
@@ -2159,11 +2161,9 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
-An endpoint SHOULD NOT wait for the peer's settings to arrive before responding
-to other streams, as it cannot assume the peer's settings to arrive in a timely
-manner.  This is because the packet carrying the settings can be lost, or the
-peer might prioritize the transmission of the control stream below other
-streams.
+As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
+the peers' settings to arrive before responding to other streams.  See
+{{settings-initialization}}.
 
 
 ## HTTP/2 Error Codes
