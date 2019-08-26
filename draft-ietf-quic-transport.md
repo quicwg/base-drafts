@@ -933,9 +933,10 @@ deployment-specific) method which will allow packets with that connection ID to
 be routed back to the endpoint and identified by the endpoint upon receipt.
 
 Connection IDs MUST NOT contain any information that can be used by an external
-observer to correlate them with other connection IDs for the same connection.
-As a trivial example, this means the same connection ID MUST NOT be issued more
-than once on the same connection.
+observer (that is, one that does not cooperate with the issuer) to correlate
+them with other connection IDs for the same connection.  As a trivial example,
+this means the same connection ID MUST NOT be issued more than once on the same
+connection.
 
 Packets with long headers include Source Connection ID and Destination
 Connection ID fields.  These fields are used to set the connection IDs for new
