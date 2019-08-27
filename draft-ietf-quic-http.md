@@ -1500,13 +1500,22 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
-other frames to make a connection more resistant to traffic analysis, HTTP/3 can
-either rely on transport-layer padding or employ the reserved frame and stream
-types discussed in {{frame-grease}} and {{stream-grease}}.
+with TLS; the considerations from Section 10 of {{!HTTP2}} apply in addition to
+those listed here.
 
 When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
 security considerations of {{!ALTSVC}} also apply.
+
+## Traffic Analysis
+
+Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
+connection more resistant to traffic analysis, HTTP/3 can either rely on
+transport-layer padding or employ the reserved frame and stream types discussed
+in {{frame-grease}} and {{stream-grease}}.  These methods of padding produce
+different results in terms of the granularity of padding, the effect of packet
+loss and recovery, and how an implementation might control padding.
+
+## Frame Parsing
 
 Several protocol elements contain nested length elements, typically in the form
 of frames with an explicit length containing variable-length integers.  This
@@ -1514,9 +1523,13 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+## Early Data
+
 The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
 anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
 HTTP/3 with 0-RTT.
+
+## Migration
 
 Certain HTTP implementations use the client address for logging or
 access-control purposes.  Since a QUIC client's address might change during a
