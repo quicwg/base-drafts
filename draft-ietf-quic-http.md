@@ -1433,8 +1433,7 @@ with its 0-RTT data.  The server MUST include all settings which differ from
 their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
 frame which reduces a setting the client understands or omits a value that was
 previously specified to have a non-default value, this MUST be treated as a
-connection error of type
-HTTP_SETTINGS_ERROR.
+connection error of type HTTP_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
