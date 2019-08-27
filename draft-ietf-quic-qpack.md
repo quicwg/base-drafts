@@ -1133,12 +1133,12 @@ TBD.
 This document specifies two settings. The entries in the following table are
 registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 
-|------------------------------|--------|---------------------------|
-| Setting Name                 | Code   | Specification             |
-| ---------------------------- | :----: | ------------------------- |
-| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         |
-| QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         |
-| ---------------------------- | ------ | ------------------------- |
+|------------------------------|--------|---------------------------| ------- |
+| Setting Name                 | Code   | Specification             | Default |
+| ---------------------------- | :----: | ------------------------- | ------- |
+| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         | 0       |
+| QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         | 0       |
+| ---------------------------- | ------ | ------------------------- | ------- |
 
 ## Stream Type Registration
 
