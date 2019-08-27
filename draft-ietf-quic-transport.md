@@ -3105,7 +3105,7 @@ Ack Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver
 of the ACK to adjust for any intentional delays, which is important for
 delayed acknowledgements, when estimating the path RTT. A packet might be
 held in the OS kernel or elsewhere on the host before being processed.
-An endpoint SHOULD NOT include these unintentional delays when populating
+An endpoint MUST NOT include delays that is does not control when populating
 the Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
