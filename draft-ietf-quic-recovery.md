@@ -1157,7 +1157,7 @@ Pseudocode for OnPacketAcked follows:
    OnPacketAcked(acked_packet, pn_space):
      if (acked_packet.in_flight):
        OnPacketAckedCC(acked_packet)
-     sent_packets[pn_space].[acked_packet.packet_number] = null
+     sent_packets[pn_space][acked_packet.packet_number] = null
 ~~~
 
 
