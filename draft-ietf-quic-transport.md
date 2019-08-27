@@ -2561,12 +2561,23 @@ the packet other than the last 16 bytes for carrying data.
 An endpoint detects a potential stateless reset when an incoming packet either
 cannot be associated with a connection, cannot be decrypted, or is marked as a
 duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
-packet with all Stateless Reset Tokens corresponding to active connection IDs
-that the endpoint has used for sending packets to the IP address and port on
-which the datagram is received.  This includes Stateless Reset Tokens from
-NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
-MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
-has not used or for connection IDs that have been retired.
+packet with all Stateless Reset Tokens that are associated with connection IDs
+that the endpoint recently used to send packets from the IP address and port on
+which the datagram is received.
+This includes Stateless Reset Tokens from NEW_CONNECTION_ID frames and the
+server's transport parameters but excludes Stateless Reset Tokens associated
+with connection IDs that are either unused or retired.
+
+An endpoint MUST NOT check for any Stateless Reset Tokens associated with
+connection IDs it has not used or for connection IDs that have been retired.
+
+When comparing a packet to Stateless Reset Token values, endpoints MUST perform
+the comparison in constant time to avoid leaking information about valid values.
+Performing this comparison in constant time only protects the value of
+individual Stateless Reset Tokens from information leakage through timing side
+channels; it does not protect information about whether a packet was
+successfully decrypted, nor does it protect the number of valid Stateless Reset
+Tokens.
 
 If the last 16 bytes of the packet values are identical to a Stateless Reset
 Token, the endpoint MUST enter the draining period and not send any further
