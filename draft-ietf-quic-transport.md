@@ -3101,7 +3101,7 @@ received packets in preference to packets received in the past.
 An endpoint measures the delays intentionally introduced between when an
 ACK-eliciting packet is received and the corresponding acknowledgment is sent.
 The endpoint encodes this delay for the largest acknowledged packet in the
-Ack Delay field of an ACK frame (see Section 19.3). This allows the receiver
+Ack Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver
 of the ACK to adjust for any intentional delays, which is important for
 delayed acknowledgements, when estimating the path RTT. A packet might be
 held in the OS kernel or elsewhere on the host before being processed.
