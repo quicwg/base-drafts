@@ -1095,7 +1095,7 @@ OnAckReceived(ack, pn_space):
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (sent_packets[pn_space][ack.largest_acked] &&
+  if (sent_packets[pn_space][ack.largest_acked] != null &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
