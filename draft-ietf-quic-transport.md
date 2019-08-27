@@ -3071,7 +3071,7 @@ of reordering. In cases with ACK frame loss and reordering, this approach does
 not guarantee that every acknowledgement is seen by the sender before it is no
 longer included in the ACK frame. Packets could be received out of order and
 all subsequent ACK frames containing them could be lost. In this case, the
-loss recovery algorithm may cause spurious retransmits, but the sender will
+loss recovery algorithm could cause spurious retransmits, but the sender will
 continue making forward progress.
 
 ### Limiting ACK Ranges
