@@ -1412,7 +1412,7 @@ SETTINGS before sending the first request.
 When a 0-RTT QUIC connection is being used, the initial value of each server
 setting is the value used in the previous session. Clients SHOULD store the
 settings the server provided in the connection where resumption information was
-provided, but MAY opt not to store settings in certain cases (e.g. if the
+provided, but MAY opt not to store settings in certain cases (e.g., if the
 session ticket is received before the SETTINGS frame). A client MUST comply with
 stored settings -- or default values, if no values are stored -- when attempting
 0-RTT. Once a server has provided new settings, clients MUST comply with those
@@ -1423,8 +1423,8 @@ integrity-protected copy of the values in the ticket and recover the information
 when accepting 0-RTT data. A server uses the HTTP/3 settings values in
 determining whether to accept 0-RTT data.  If the server cannot determine that
 the settings remembered by a client are compatible with its current settings, it
-MUST NOT accept 0-RTT data.  (Remembered settings are compatible if a client
-complying with those settings would not violate the server's current settings.)
+MUST NOT accept 0-RTT data.  Remembered settings are compatible if a client
+complying with those settings would not violate the server's current settings.
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
@@ -1432,7 +1432,8 @@ NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.  The server MUST include all settings which differ from
 their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
 frame which reduces a setting the client understands or omits a value that was
-previous specified, this MUST be treated as a connection error of type
+previously specified to have a non-default value, this MUST be treated as a
+connection error of type
 HTTP_SETTINGS_ERROR.
 
 
