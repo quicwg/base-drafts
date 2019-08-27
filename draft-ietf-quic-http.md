@@ -1392,10 +1392,9 @@ An HTTP implementation MUST NOT send frames or requests which would be invalid
 based on its current understanding of the peer's settings.
 
 All settings begin at an initial value.  Each endpoint SHOULD use these initial
-values to send messages before the peer's SETTINGS frame has arrived.  This is
-because packets carrying the settings can be lost, or the peers might prioritize
-the transmission of the control stream below other streams.  When the SETTINGS
-frame arrives, any settings are changed to their new values.
+values to send messages before the peer's SETTINGS frame has arrived, as packets
+carrying the settings can be lost or delayed.  When the SETTINGS frame arrives,
+any settings are changed to their new values.
 
 This removes the need to wait for the SETTINGS frame before sending messages.
 Endpoints MUST NOT require any data to be received from the peer prior to
