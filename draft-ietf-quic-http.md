@@ -1656,9 +1656,7 @@ HTTP_ID_ERROR (0x109):
   exceeding a limit, reducing a limit, or being reused.
 
 HTTP_SETTINGS_ERROR (0x10A):
-: An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
-  setting was detected, a client-only setting was sent by a server, or a
-  server-only setting by a client.
+: An endpoint detected an error in the payload of a SETTINGS frame.
 
 HTTP_MISSING_SETTINGS (0x10B):
 : No SETTINGS frame was received at the beginning of the control stream.
