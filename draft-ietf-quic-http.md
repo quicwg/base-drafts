@@ -1386,18 +1386,19 @@ value the implementation selects.
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
-#### Initialization
+#### Initialization {#settings-initialization}
 
 An HTTP implementation MUST NOT send frames or requests which would be invalid
 based on its current understanding of the peer's settings.
 
-All settings begin at an initial value.  Each endpoint MAY use these initial
-values to send messages before the peer's SETTINGS frame has arrived.  When
-the SETTINGS frame arrives, any settings are changed to their new values.
+All settings begin at an initial value.  Each endpoint SHOULD use these initial
+values to send messages before the peer's SETTINGS frame has arrived, as packets
+carrying the settings can be lost or delayed.  When the SETTINGS frame arrives,
+any settings are changed to their new values.
 
 This removes the need to wait for the SETTINGS frame before sending messages.
 Endpoints MUST NOT require any data to be received from the peer prior to
-sending the SETTINGS frame; settings SHOULD be sent as soon as the transport is
+sending the SETTINGS frame; settings MUST be sent as soon as the transport is
 ready to send data.
 
 For servers, the initial value of each client setting is the default value.
@@ -2120,9 +2121,9 @@ equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
+An important difference from HTTP/2 is that settings are sent once, as the first
+frame of the control stream, and thereafter cannot change.  This eliminates many
+corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
 superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
@@ -2164,6 +2165,10 @@ settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
+
+As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
+the peers' settings to arrive before responding to other streams.  See
+{{settings-initialization}}.
 
 
 ## HTTP/2 Error Codes
