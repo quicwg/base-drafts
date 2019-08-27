@@ -4878,6 +4878,9 @@ An endpoint might receive multiple NEW_TOKEN frames that contain the same token
 value.  Endpoints are responsible for discarding duplicate values, which might
 be used to link connection attempts; see {{validate-future}}.
 
+Clients MUST NOT send NEW_TOKEN frames.  Servers MUST treat receipt of a
+NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
+
 
 ## STREAM Frames {#frame-stream}
 
