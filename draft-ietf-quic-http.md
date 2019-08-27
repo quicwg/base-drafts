@@ -1164,32 +1164,55 @@ value the implementation selects.
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
-#### Initialization
+#### Initialization {#settings-initialization}
 
 An HTTP implementation MUST NOT send frames or requests which would be invalid
-based on its current understanding of the peer's settings.  All settings begin
-at an initial value, and are updated upon receipt of a SETTINGS frame.  For
-servers, the initial value of each client setting is the default value.
+based on its current understanding of the peer's settings.
+
+All settings begin at an initial value.  Each endpoint SHOULD use these initial
+values to send messages before the peer's SETTINGS frame has arrived, as packets
+carrying the settings can be lost or delayed.  When the SETTINGS frame arrives,
+any settings are changed to their new values.
+
+This removes the need to wait for the SETTINGS frame before sending messages.
+Endpoints MUST NOT require any data to be received from the peer prior to
+sending the SETTINGS frame; settings MUST be sent as soon as the transport is
+ready to send data.
+
+For servers, the initial value of each client setting is the default value.
 
 For clients using a 1-RTT QUIC connection, the initial value of each server
-setting is the default value. When a 0-RTT QUIC connection is being used, the
-initial value of each server setting is the value used in the previous session.
-Clients MUST store the settings the server provided in the session being resumed
-and MUST comply with stored settings until the current server settings are
-received.  A client can use these initial values to send requests before the
-server's SETTINGS frame has arrived.  This removes the need for a client to wait
-for the SETTINGS frame before sending requests.
+setting is the default value.  1-RTT keys will always become available prior to
+SETTINGS arriving, even if the server sends SETTINGS immediately. Clients SHOULD
+NOT wait indefinitely for SETTINGS to arrive before sending requests, but SHOULD
+process received datagrams in order to increase the likelihood of processing
+SETTINGS before sending the first request.
+
+When a 0-RTT QUIC connection is being used, the initial value of each server
+setting is the value used in the previous session. Clients SHOULD store the
+settings the server provided in the connection where resumption information was
+provided, but MAY opt not to store settings in certain cases (e.g., if the
+session ticket is received before the SETTINGS frame). A client MUST comply with
+stored settings -- or default values, if no values are stored -- when attempting
+0-RTT. Once a server has provided new settings, clients MUST comply with those
+values.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
 when accepting 0-RTT data. A server uses the HTTP/3 settings values in
-determining whether to accept 0-RTT data.
+determining whether to accept 0-RTT data.  If the server cannot determine that
+the settings remembered by a client are compatible with its current settings, it
+MUST NOT accept 0-RTT data.  Remembered settings are compatible if a client
+complying with those settings would not violate the server's current settings.
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.  The server MAY omit settings from its SETTINGS frame which
-are unchanged from the initial value.
+with its 0-RTT data.  The server MUST include all settings which differ from
+their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
+frame which reduces a setting the client understands or omits a value that was
+previously specified to have a non-default value, this MUST be treated as a
+connection error of type HTTP_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
@@ -1410,9 +1433,7 @@ HTTP_ID_ERROR (0x109):
   reducing a limit, or being reused.
 
 HTTP_SETTINGS_ERROR (0x10A):
-: An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
-  setting was detected, a client-only setting was sent by a server, or a
-  server-only setting by a client.
+: An endpoint detected an error in the payload of a SETTINGS frame.
 
 HTTP_MISSING_SETTINGS (0x10B):
 : No SETTINGS frame was received at the beginning of the control stream.
@@ -1865,9 +1886,9 @@ equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
+An important difference from HTTP/2 is that settings are sent once, as the first
+frame of the control stream, and thereafter cannot change.  This eliminates many
+corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
 superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
@@ -1909,6 +1930,10 @@ settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
+
+As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
+the peers' settings to arrive before responding to other streams.  See
+{{settings-initialization}}.
 
 
 ## HTTP/2 Error Codes
