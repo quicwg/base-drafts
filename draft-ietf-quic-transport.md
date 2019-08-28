@@ -2777,7 +2777,8 @@ MUST attempt to process the remaining packets.
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
 contain a Length field and so cannot be followed by other packets in the same
-UDP datagram.
+UDP datagram.  Note also that there is no situation where a Retry or Version
+Negotiation packet is coalesced with another packet.
 
 
 ## Packet Numbers {#packet-numbers}
