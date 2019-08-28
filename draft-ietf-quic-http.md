@@ -890,7 +890,7 @@ A sender can close or reset a unidirectional stream unless otherwise specified.
 A receiver MUST tolerate unidirectional streams being closed or reset prior to
 the reception of the unidirectional stream header.
 
-###  Control Streams
+### Control Streams
 
 A control stream is indicated by a stream type of `0x00`.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
@@ -974,6 +974,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
+| Reserved       | Yes            | Yes            | Yes         | {{frame-grease}          |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
@@ -1377,13 +1378,17 @@ the DUPLICATE_PUSH.
 
 Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
 to exercise the requirement that unknown types be ignored ({{extensions}}).
-These frames have no semantics, and can be sent when application-layer padding
-is desired. They MAY also be sent on connections where no data is currently
-being transferred. Endpoints MUST NOT consider these frames to have any meaning
-upon receipt.
+These frames have no semantics, and can be sent on any open stream when
+application-layer padding is desired. They MAY also be sent on connections where
+no data is currently being transferred. Endpoints MUST NOT consider these frames
+to have any meaning upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
+
+Frame types which were used in HTTP/2 where there is no corresponding HTTP/3
+frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
+sent, and receipt MAY be treated as an error of type HTTP_UNEXPECTED_FRAME.
 
 
 # Error Handling {#errors}
@@ -1486,7 +1491,10 @@ Implementations MUST ignore unknown or unsupported values in all extensible
 protocol elements.  Implementations MUST discard frames and unidirectional
 streams that have unknown or unsupported types.  This means that any of these
 extension points can be safely used by extensions without prior arrangement or
-negotiation.
+negotiation.  However, where a known frame type is required to be in a specific
+location, such as the SETTINGS frame as the first frame of the control stream
+(see {{control-streams}}), an unknown frame type does not satisfy that
+requirement and SHOULD be treated as an error.
 
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
