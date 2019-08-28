@@ -621,6 +621,11 @@ stream or the QUIC connection, it MUST close the TCP connection.  If the
 underlying TCP implementation permits it, the proxy SHOULD send a TCP segment
 with the RST bit set.
 
+## HTTP Upgrade
+
+HTTP/3 does not support the HTTP Upgrade mechanism ([RFC7230], Section 6.7) or
+101 (Switching Protocols) informational status code ([RFC7231], Section 6.2.2).
+
 ## Server Push
 
 Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
