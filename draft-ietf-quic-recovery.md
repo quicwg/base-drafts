@@ -1193,7 +1193,7 @@ SetLossDetectionTimer():
 
   // Cancel the timer if there are no ack-eliciting packets
   // in flight, with the following exception. Do not cancel the
-  // timer at a client until the client has received an acknowledgement that
+  // timer at a client until it has received an acknowledgement that
   // indicates the server has validated the path.
   if (no ack-eliciting packets in flight &&
       (endpoint is server ||
