@@ -2572,11 +2572,11 @@ An endpoint MUST NOT check for any Stateless Reset Tokens associated with
 connection IDs it has not used or for connection IDs that have been retired.
 
 When comparing a packet to Stateless Reset Token values, endpoints MUST perform
-the comparison in constant time to avoid leaking information about valid values.
-Performing this comparison in constant time only protects the value of
+the comparison without leaking information about the value of the token.
+For example, performing this comparison in constant time protects the value of
 individual Stateless Reset Tokens from information leakage through timing side
-channels; it does not protect information about whether a packet was
-successfully decrypted, nor does it protect the number of valid Stateless Reset
+channels.  An endpoint is not expected to protect information about whether a
+packet was successfully decrypted, or the number of valid Stateless Reset
 Tokens.
 
 If the last 16 bytes of the packet values are identical to a Stateless Reset
