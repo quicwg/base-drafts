@@ -1192,9 +1192,9 @@ SetLossDetectionTimer():
     return
 
   // Cancel the timer if there are no ack-eliciting packets
-  // in flight, with the following exception. Do not cancel the
-  // timer at a client until it has received an acknowledgement that
-  // indicates the server has validated the path.
+  // in flight, with the following exception: Do not cancel the
+  // timer at a client until it has received an acknowledgement
+  // indicating the server has completed address validation.
   if (no ack-eliciting packets in flight &&
       (endpoint is server ||
        has received Handshake ACK ||
