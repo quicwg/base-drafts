@@ -5666,14 +5666,14 @@ An off-path attacker can, however, modify packets that it has observed and
 inject them back into the network, potentially with spoofed source and
 destination addresses.
 
-For the purposes of this discussion, we assume that an off-path attacker has the
-ability to observe, modify, and re-inject a packet into the network that will
-reach the destination endpoint prior to the arrival of the original packet
+For the purposes of this discussion, it is assumed that an off-path attacker has
+the ability to observe, modify, and re-inject a packet into the network that
+will reach the destination endpoint prior to the arrival of the original packet
 observed by the attacker.  In other words, an attacker has the ability to
 consistently "win" a race with the legitimate packets between the endpoints,
 potentially causing the original packet to be ignored by the recipient.
 
-We also assume that an attacker has the resources necessary to affect NAT
+It is also assumed that an attacker has the resources necessary to affect NAT
 state, potentially both causing an endpoint to lose its NAT binding, and an
 attacker to obtain the same port for use with its traffic.
 
