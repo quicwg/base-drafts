@@ -584,9 +584,8 @@ Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if one of the following conditions is true: the client
-does not yet have 1-RTT keys, or the client has not received an acknowledgement
-for one of its Handshake packets.
+probe timer if the client has not received an acknowledgement for one of its
+Handshake or 1-RTT packets.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -1198,8 +1197,8 @@ SetLossDetectionTimer():
   // or has completed the handshake.
   if (no ack-eliciting packets in flight &&
       (endpoint is server ||
-       has 1-RTT keys ||
-       has received Handshake ACK)):
+       has received Handshake ACK ||
+       has received 1-RTT ACK)):
     loss_detection_timer.cancel()
     return
 
