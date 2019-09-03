@@ -1126,6 +1126,13 @@ HTTP_QPACK_DECODER_STREAM_ERROR (0x202):
 
 TBD.
 
+While the negotiated limit on the dynamic table size accounts for much of the
+memory that can be consumed by a QPACK implementation, data which cannot be
+immediately sent due to flow control is not affected by this limit.
+Implementations MUST limit the size of unsent data, especially on the decoder
+stream where flexibility to choose what to send is limited.  If this limit is
+exceeded, the connection MUST be terminated.
+
 # IANA Considerations
 
 ## Settings Registration
