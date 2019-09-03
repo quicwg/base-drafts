@@ -1192,7 +1192,7 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  // Don't arm timer if there are no ack-eliciting packets
+  // Cancel the timer if there are no ack-eliciting packets
   // in flight and the endpoint is a server. Do not cancel the
   // timer until the client has received a Handshake ACK
   // or has completed the handshake.
