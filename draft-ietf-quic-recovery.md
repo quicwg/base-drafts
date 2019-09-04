@@ -1184,7 +1184,7 @@ GetEarliestLossTime():
       space = pn_space
   return time, space
 
-PeerAwaitingAddressValidation():
+IsPeerAwaitingAddressValidation():
   return endpoint is client &&
          !(has received Handshake ACK ||
            has received 1-RTT ACK)
