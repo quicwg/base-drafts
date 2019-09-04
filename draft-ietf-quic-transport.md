@@ -5730,7 +5730,7 @@ decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
 
 
-## Collision Attack on Stateless Reset Tokens
+## Hash Collision Attack on Stateless Reset Tokens
 
 As the stateless reset tokens are controlled by the peers, QUIC endpoints SHOULD
 be resistant to hash flooding DoS attacks when using a hash map for retaining
