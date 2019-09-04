@@ -1182,8 +1182,8 @@ GetEarliestLossTime():
         (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
-  return time, space           
-           
+  return time, space
+
 PeerNotAwaitingAddressValidation():
   # Assume clients validate the server's address implicitly.
   if (endpoint is server):
