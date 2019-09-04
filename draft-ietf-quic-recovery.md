@@ -248,20 +248,24 @@ An acknowledgement SHOULD be sent immediately upon receipt of a second
 ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
 an ACK immediately when receiving a second ack-eliciting packet.
 
-In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send an immediate ACK after it receives an out-of-order packet. It could send
-immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
-1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
-order, then an immediate ACK SHOULD be sent for every received packet.
+In order to accelerate loss recovery and reduce timeouts, an endpoint SHOULD
+immediately send an ACK frame when it receives an out-of-order packet that is
+ACK-eliciting. The endpoint MAY continue sending ACK frames immediately on each
+subsequently received packet, but the endpoint SHOULD return to acknowledging
+every other packet after a period of 1/8 x RTT, unless more ACK-eliciting
+packets are received out of order.  If every subsequent ACK-eliciting packet
+arrives out of order, then an ACK frame SHOULD be sent immediately for every
+received ACK-eliciting packet.
 
-Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
-the IP header SHOULD be acknowledged immediately, to reduce the peer's response
-time to congestion events.
+If a packet is received with the ECN Congestion Experienced (CE) codepoint in
+the IP header, the endpoint SHOULD respond with an ACK frame immediately, even
+if the packet is received in order.  Doing so reduces the peer's response time
+to congestion events.
 
-As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case the receiver can determine whether an
-immediate or delayed acknowledgement should be generated after processing
-incoming packets.
+If multiple packets are already available at an endpoint, the endpoint MAY
+process them all before sending an ACK frame in response.  The endpoint can
+determine whether an acknowledgement should be sent immediately or delayed after
+processing the batch.
 
 ## Crypto Handshake Data
 
@@ -314,7 +318,7 @@ populating the Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
+parameter; see Section 18.2 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
 explicit contract: an endpoint promises to never delay acknowledgments of an
 ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious retransmissions from
@@ -984,18 +988,6 @@ kPacketNumberSpace:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-loss_detection_timer:
-: Multi-modal timer used for loss detection.
-
-pto_count:
-: The number of times a PTO has been sent without receiving an ack.
-
-time_of_last_sent_ack_eliciting_packet:
-: The time the most recent ack-eliciting packet was sent.
-
-largest_acked_packet\[kPacketNumberSpace]:
-: The largest packet number acknowledged in the packet number space so far.
-
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
   a previously unacked packet.
@@ -1015,6 +1007,18 @@ max_ack_delay:
   acknowledgments for packets in the ApplicationData packet number space. The
   actual ack_delay in a received ACK frame may be larger due to late timers,
   reordering, or lost ACKs.
+
+loss_detection_timer:
+: Multi-modal timer used for loss detection.
+
+pto_count:
+: The number of times a PTO has been sent without receiving an ack.
+
+time_of_last_sent_ack_eliciting_packet:
+: The time the most recent ack-eliciting packet was sent.
+
+largest_acked_packet\[kPacketNumberSpace]:
+: The largest packet number acknowledged in the packet number space so far.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
@@ -1092,17 +1096,17 @@ OnAckReceived(ack, pn_space):
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
   if (sent_packets[pn_space][ack.largest_acked] &&
-      IncludesAckEliciting(newly_acked_packets))
+      IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
-    if pn_space == ApplicationData:
+    if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
     UpdateRtt(ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
-      ProcessECN(ack)
+      ProcessECN(ack, pn_space)
 
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
@@ -1176,8 +1180,8 @@ GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if loss_time[pn_space] != 0 &&
-       (time == 0 || loss_time[pn_space] < time):
+    if (loss_time[pn_space] != 0 &&
+        (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
   return time, space
@@ -1334,10 +1338,10 @@ kPersistentCongestionThreshold:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-ecn_ce_counter:
-: The highest value reported for the ECN-CE counter by the peer in an ACK
-  frame. This variable is used to detect increases in the reported ECN-CE
-  counter.
+ecn_ce_counters\[kPacketNumberSpace]:
+: The highest value reported for the ECN-CE counter in the packet number space
+  by the peer in an ACK frame. This value is used to detect increases in the
+  reported ECN-CE counter.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least one
@@ -1371,7 +1375,8 @@ variables as follows:
    bytes_in_flight = 0
    congestion_recovery_start_time = 0
    ssthresh = infinite
-   ecn_ce_counter = 0
+   for pn_space in [ Initial, Handshake, ApplicationData ]:
+     ecn_ce_counters[pn_space] = 0
 ~~~
 
 
@@ -1401,7 +1406,7 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppLimited())
+     if (IsAppLimited()):
        // Do not increase congestion_window if application
        // limited.
        return
@@ -1438,11 +1443,11 @@ window.
 Invoked when an ACK frame with an ECN section is received from the peer.
 
 ~~~
-   ProcessECN(ack):
+   ProcessECN(ack, pn_space):
      // If the ECN-CE counter reported by the peer has increased,
      // this could be a new congestion event.
-     if (ack.ce_counter > ecn_ce_counter):
-       ecn_ce_counter = ack.ce_counter
+     if (ack.ce_counter > ecn_ce_counters[pn_space]):
+       ecn_ce_counters[pn_space] = ack.ce_counter
        CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 

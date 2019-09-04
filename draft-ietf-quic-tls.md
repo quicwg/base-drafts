@@ -1,6 +1,5 @@
 ---
 title: Using TLS to Secure QUIC
-abbrev: QUIC over TLS
 docname: draft-ietf-quic-tls-latest
 date: {DATE}
 category: std
@@ -299,7 +298,7 @@ protection being called out specially.
 
 Unlike TLS over TCP, QUIC applications which want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
-frames which are then carried in QUIC packets.
+frames or other frame types which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
@@ -613,12 +612,27 @@ by the "initial_max_data" transport parameter supplied by the server.  A client
 MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
+A client that wishes to send 0-RTT packets uses the "early_data" extension in
+the ClientHello message of a subsequent handshake (see Section 4.2.10 of
+{{!TLS13}}). It then sends the application data in 0-RTT packets.
 
-## Rejecting 0-RTT
+Early data within the TLS connection MUST NOT be used.  As it is for other TLS
+application data, a server MUST treat receiving early data on the TLS connection
+as a connection error of type PROTOCOL_VIOLATION.
 
-A server rejects 0-RTT by rejecting 0-RTT at the TLS layer.  This also prevents
-QUIC from sending 0-RTT data. A server will always reject 0-RTT if it sends a
-TLS HelloRetryRequest.
+
+## Accepting and Rejecting 0-RTT
+
+A server accepts 0-RTT by sending an early_data extension in the
+EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
+processes and acknowledges the 0-RTT packets that it receives.
+
+A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
+extension.  A server will always reject 0-RTT if it sends a TLS
+HelloRetryRequest.  When rejecting 0-RTT, a server MUST NOT process any 0-RTT
+packets, even if it could.  When 0-RTT was rejected, a client SHOULD treat
+receipt of an acknowledgement for a 0-RTT packet as a connection error of type
+PROTOCOL_VIOLATION, if it is able to detect the condition.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
 might be incorrect.  This includes the choice of application protocol, transport
@@ -771,7 +785,7 @@ Connection ID field from the client's first Initial packet of the
 connection. Specifically:
 
 ~~~
-initial_salt = 0x7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a
+initial_salt = 0xc3eef712c72ebb5a11a7d2432bb46365bef9f502
 initial_secret = HKDF-Extract(initial_salt,
                               client_dst_connection_id)
 
@@ -1244,9 +1258,8 @@ messages, that tampering will cause the TLS handshake to fail.
 # QUIC-Specific Additions to the TLS Handshake
 
 QUIC uses the TLS handshake for more than just negotiation of cryptographic
-parameters.  The TLS handshake validates protocol version selection, provides
-preliminary values for QUIC transport parameters, and allows a server to perform
-return routability checks on clients.
+parameters.  The TLS handshake provides preliminary values for QUIC transport
+parameters and allows a server to perform return routability checks on clients.
 
 
 ## Protocol Negotiation {#protocol-negotiation}
@@ -1388,20 +1401,6 @@ attacker cannot forge them.  Put together, these defenses limit the level of
 amplification.
 
 
-## Peer Denial of Service {#useless}
-
-QUIC, TLS, and HTTP/2 all contain messages that have legitimate uses in some
-contexts, but that can be abused to cause a peer to expend processing resources
-without having any observable impact on the state of the connection.  If
-processing is disproportionately large in comparison to the observable effects
-on bandwidth or state, then this could allow a malicious peer to exhaust
-processing capacity without consequence.
-
-While there are legitimate uses for some redundant packets, implementations
-SHOULD track redundant packets and treat excessive volumes of any non-productive
-packets as indicative of an attack.
-
-
 ## Header Protection Analysis {#header-protect-analysis}
 
 Header protection relies on the packet protection AEAD being a pseudorandom
@@ -1517,8 +1516,8 @@ The initial secret is common:
 
 ~~~
 initial_secret = HKDF-Extract(initial_salt, cid)
-    = 4496d3903d3f97cc5e45ac5790ddc686
-      683c7c0067012bb09d900cc21832d596
+    = 524e374c6da8cf8b496f4bcb69678350
+      7aafee6198b202b4bc823ebf7514a423
 ~~~
 
 The secrets for protecting client packets are:
@@ -1526,17 +1525,17 @@ The secrets for protecting client packets are:
 ~~~
 client_initial_secret
     = HKDF-Expand-Label(initial_secret, "client in", _, 32)
-    = 8a3515a14ae3c31b9c2d6d5bc58538ca
-      5cd2baa119087143e60887428dcb52f6
+    = fda3953aecc040e48b34e27ef87de3a6
+      098ecf0e38b7e032c5c57bcbd5975b84
 
 key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
-    = 98b0d7e5e7a402c67c33f350fa65ea54
+    = af7fd7efebd21878ff66811248983694
 
 iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
-    = 19e94387805eb0b46c03a788
+    = 8681359410a70bb9c92f0420
 
 hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
-    = 0edd982a6ac527f2eddcbb7348dea5d7
+    = a980b8b4fb7d9fbc13e814c23164253d
 ~~~
 
 The secrets for protecting server packets are:
@@ -1544,17 +1543,17 @@ The secrets for protecting server packets are:
 ~~~
 server_initial_secret
     = HKDF-Expand-Label(initial_secret, "server in", _, 32)
-    = 47b2eaea6c266e32c0697a9e2a898bdf
-      5c4fb3e5ac34f0e549bf2c58581a3811
+    = 554366b81912ff90be41f17e80222130
+      90ab17d8149179bcadf222f29ff2ddd5
 
 key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
-    = 9a8be902a9bdd91d16064ca118045fb4
+    = 5d51da9ee897a21b2659ccc7e5bfa577
 
 iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
-    = 0a82086d32205ba22241d8dc
+    = 5e5ae651fd1e8495af13508b
 
 hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
-    = 94b9452d2b3c7c7f6da7fdd8593537fd
+    = a8ed82e6664f865aedf6106943f95fb8
 ~~~
 
 
@@ -1578,7 +1577,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000015508394c8f03e51570800449f00000002
+c3ff000017088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1586,59 +1585,59 @@ Because the header uses a 4 byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = 65f354ebb400418b614f73765009c016
+sample = 535064a4268a0d9d7b1c9d250ae35516
 
 mask = AES-ECB(hp, sample)[0..4]
-     = 519bd343ff
+     = 833b343aaa
 
 header[0] ^= mask[0] & 0x0f
-     = c2
+     = c0
 header[17..20] ^= mask[1..4]
-     = 9bd343fd
-header = c2ff000015508394c8f03e51570800449f9bd343fd
+     = 3b343aa8
+header = c0ff000017088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c2ff000015508394c8f03e5157080044 9f9bd343fd65f354ebb400418b614f73
-765009c0162d594777f9e6ddeb32fba3 865cffd7e26e3724d4997cdde8df34f8
-868772fed2412d43046f44dc7c6adf5e e10da456d56c892c8f69594594e8dcab
-edb10d591130ca464588f2834eab931b 10feb963c1947a05f57062692c242248
-ad0133b31f6dcc585ba344ca5beb382f b619272e65dfccae59c08eb00b7d2a5b
-bccd888582df1d1aee040aea76ab4dfd cae126791e71561b1f58312edb31c164
-ff1341fd2820e2399946bad901e425da e58a9859ef1825e7d757a6291d9ba6ee
-1a8c836dc0027cd705bd2bc67f56bad0 024efaa3819cbb5d46cefdb7e0df3ad9
-2b0689650e2b49ac29e6398bedc75554 1a3f3865bc4759bec74d721a28a0452c
-1260189e8e92f844c91b27a00fc5ed6d 14d8fceb5a848bea0a3208162c7a9578
-2fcf9a045b20b76710a2565372f25411 81030e4350e199e62fa4e2e0bba19ff6
-6662ab8cc6815eeaa20b80d5f31c41e5 51f558d2c836a215ccff4e8afd2fec4b
-fcb9ea9d051d12162f1b14842489b69d 72a307d9144fced64fc4aa21ebd310f8
-97cf00062e90dad5dbf04186622e6c12 96d388176585fdb395358ecfec4d95db
-4429f4473a76210866fd180eaeb60da4 33500c74c00aef24d77eae81755faa03
-e71a8879937b32d31be2ba51d41b5d7a 1fbb4d952b10dd2d6ec171a3187cf3f6
-4d520afad796e4188bc32d153241c083 f225b6e6b845ce9911bd3fe1eb4737b7
-1c8d55e3962871b73657b1e2cce368c7 400658d47cfd9290ed16cdc2a6e3e7dc
-ea77fb5c6459303a32d58f62969d8f46 70ce27f591c7a59cc3e7556eda4c58a3
-2e9f53fd7f9d60a9c05cd6238c71e3c8 2d2efabd3b5177670b8d595151d7eb44
-aa401fe3b5b87bdb88dffb2bfb6d1d0d 8868a41ba96265ca7a68d06fc0b74bcc
-ac55b038f8362b84d47f52744323d08b 46bfec8c421f991e1394938a546a7482
-a17c72be109ea4b0c71abc7d9c0ac096 0327754e1043f18a32b9fb402fc33fdc
-b6a0b4fdbbddbdf0d85779879e98ef21 1d104a5271f22823f16942cfa8ace68d
-0c9e5b52297da9702d8f1de24bcd0628 4ac8aa1068fa21a82abbca7e7454b848
-d7de8c3d43560541a362ff4f6be06c01 15e3a733bff44417da11ae668857bba2
-c53ba17db8c100f1b5c7c9ea960d3f3d 3b9e77c16c31a222b498a7384e286b9b
-7c45167d5703de715f9b06708403562d cff77fdf2793f94e294888cebe8da4ee
-88a53e38f2430addc161e8b2e2f2d405 41d10cda9a7aa518ac14d0195d8c2012
-0b4f1d47d6d0909e69c4a0e641b83c1a d4fff85af4751035bc5698b6141ecc3f
-bffcf2f55036880071ba118927400796 7f64468172854d140d229320d689f576
-60f6c445e629d15ff2dcdff4b71a41ec 0c24bd2fd8f5ad13b2c3688e0fdb8dbc
-ce42e6cf49cf60d022ccd5b19b4fd5d9 8dc10d9ce3a626851b1fdd23e1fa3a96
-1f9b0333ab8d632e48c944b82bdd9e80 0fa2b2b9e31e96aee54b40edaf6b79ec
-211fdc95d95ef552aa532583d76a539e 988e416a0a10df2550cdeacafc3d61b0
-b0a79337960a0be8cf6169e4d55fa6e7 a9c2e8efabab3da008f5bcc38c1bbabd
-b6c10368723da0ae83c4b1819ff54946 e7806458d80d7be2c867d46fe1f029c5
-e952eb19ded16fabb19980480eb0fbcd
+c0ff000017088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
+4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
+b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
+e95638ed8dd41da07487468791b719c5 5c46968eb3b54680037102a28e53dc1d
+12903db0af5821794b41c4a93357fa59 ce69cfe7f6bdfa629eef78616447e1d6
+11c4baf71bf33febcb03137c2c75d253 17d3e13b684370f668411c0f00304b50
+1c8fd422bd9b9ad81d643b20da89ca05 25d24d2b142041cae0af205092e43008
+0cd8559ea4c5c6e4fa3f66082b7d303e 52ce0162baa958532b0bbc2bc785681f
+cf37485dff6595e01e739c8ac9efba31 b985d5f656cc092432d781db95221724
+87641c4d3ab8ece01e39bc85b1543661 4775a98ba8fa12d46f9b35e2a55eb72d
+7f85181a366663387ddc20551807e007 673bd7e26bf9b29b5ab10a1ca87cbb7a
+d97e99eb66959c2a9bc3cbde4707ff77 20b110fa95354674e395812e47a0ae53
+b464dcb2d1f345df360dc227270c7506 76f6724eb479f0d2fbb6124429990457
+ac6c9167f40aab739998f38b9eccb24f d47c8410131bf65a52af841275d5b3d1
+880b197df2b5dea3e6de56ebce3ffb6e 9277a82082f8d9677a6767089b671ebd
+244c214f0bde95c2beb02cd1172d58bd f39dce56ff68eb35ab39b49b4eac7c81
+5ea60451d6e6ab82119118df02a58684 4a9ffe162ba006d0669ef57668cab38b
+62f71a2523a084852cd1d079b3658dc2 f3e87949b550bab3e177cfc49ed190df
+f0630e43077c30de8f6ae081537f1e83 da537da980afa668e7b7fb25301cf741
+524be3c49884b42821f17552fbd1931a 813017b6b6590a41ea18b6ba49cd48a4
+40bd9a3346a7623fb4ba34a3ee571e3c 731f35a7a3cf25b551a680fa68763507
+b7fde3aaf023c50b9d22da6876ba337e b5e9dd9ec3daf970242b6c5aab3aa4b2
+96ad8b9f6832f686ef70fa938b31b4e5 ddd7364442d3ea72e73d668fb0937796
+f462923a81a47e1cee7426ff6d922126 9b5a62ec03d6ec94d12606cb485560ba
+b574816009e96504249385bb61a819be 04f62c2066214d8360a2022beb316240
+b6c7d78bbe56c13082e0ca272661210a bf020bf3b5783f1426436cf9ff418405
+93a5d0638d32fc51c5c65ff291a3a7a5 2fd6775e623a4439cc08dd25582febc9
+44ef92d8dbd329c91de3e9c9582e41f1 7f3d186f104ad3f90995116c682a2a14
+a3b4b1f547c335f0be710fc9fc03e0e5 87b8cda31ce65b969878a4ad4283e6d5
+b0373f43da86e9e0ffe1ae0fddd35162 55bd74566f36a38703d5f34249ded1f6
+6b3d9b45b9af2ccfefe984e13376b1b2 c6404aa48c8026132343da3f3a33659e
+c1b3e95080540b28b7f3fcd35fa5d843 b579a84c089121a60d8c1754915c344e
+eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
+cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
+acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
+13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
+c9be6c7803567321829dd85853396269
 ~~~
 
 ## Server Initial
@@ -1657,26 +1656,26 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001505f067a5502a4262b50040740001
+c1ff0000170008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
 from the third protected octet:
 
 ~~~
-sample = 6176fa3b713f272a9bf03ee28d3c8add
-mask   = 5bd74a846c
-header = caff00001505f067a5502a4262b5004074d74b
+sample = 7002596f99ae67abf65a5852f54f58c3
+mask   = 38168a0c25
+header = c1ff0000170008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-caff00001505f067a5502a4262b50040 74d74b7e486176fa3b713f272a9bf03e
-e28d3c8addb4e805b3a110b663122a75 eee93c9177ac6b7a6b548e15a7b8f884
-65e9eab253a760779b2e6a2c574882b4 8d3a3eed696e50d04d5ec59af85261e4
-cdbe264bd65f2b076760c69beef23aa7 14c9a174d69034c09a2863e1e1863508
-8d4afdeab9
+c9ff0000170008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
+537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
+432348a2c413
 ~~~
 
 
@@ -1686,6 +1685,10 @@ cdbe264bd65f2b076760c69beef23aa7 14c9a174d69034c09a2863e1e1863508
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-22
+
+- Update the salt used for Initial secrets (#2887, #2980)
 
 
 ## Since draft-ietf-quic-tls-21

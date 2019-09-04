@@ -114,7 +114,7 @@ reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
 a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
 comparable security to running TLS over TCP, with the improved connection setup
-latency of TCP Fast Open {{?RFC7413}}}.
+latency of TCP Fast Open {{?RFC7413}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -139,8 +139,7 @@ Alternative Services; this process is described in greater detail in
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
 and DATA frames form the basis of HTTP requests and responses
-({{request-response}}).  Other frame types like SETTINGS, PRIORITY, and GOAWAY
-are used to manage the overall connection and relationships between streams.
+({{request-response}}).
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
 described in Section 2 of {{QUIC-TRANSPORT}}.  Each request and response
@@ -381,6 +380,13 @@ certificate for the origin before considering it authoritative. Clients MUST NOT
 assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
 
+Prior to making requests for an origin whose scheme is not "https," the client
+MUST ensure the server is willing to serve that scheme.  If the client intends
+to make requests for an origin whose scheme is "http", this means that it MUST
+obtain a valid `http-opportunistic` response for the origin as described in
+{{!RFC8164}} prior to making any such requests.  Other schemes might define
+other mechanisms.
+
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
@@ -404,16 +410,20 @@ An HTTP message (request or response) consists of:
 1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
    frame (see {{frame-headers}}),
 
-2. the payload body (see {{!RFC7230}}, Section 3.3), sent as a series of DATA
-   frames (see {{frame-data}}),
+2. optionally, the payload body, if present (see {{!RFC7230}}, Section 3.3),
+   sent as a series of DATA frames (see {{frame-data}}),
 
-3. optionally, one HEADERS frame containing the trailer-part, if present (see
-   {{!RFC7230}}, Section 4.1.2).
+3. optionally, trailing headers, if present (see {{!RFC7230}}, Section 4.1.2),
+   sent as a single HEADERS frame.
 
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
+
+Frames of unknown types ({{extensions}}), including reserved frames
+({{frame-grease}}) MAY be sent on a request or push stream before, after, or
+interleaved with other frames described in this section.
 
 The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
 table. While these updates are not directly part of the message exchange, they
@@ -423,18 +433,16 @@ must be received and processed before the message can be consumed.  See
 The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
-If a DATA frame is received before a HEADERS frame on a either a request or push
-stream, the recipient MUST respond with a connection error of type
-HTTP_UNEXPECTED_FRAME ({{errors}}).
-
-Trailing header fields are carried in an additional HEADERS frame following the
-body. Senders MUST send only one HEADERS frame in the trailers section;
-receivers MUST discard any subsequent HEADERS frames.
-
 A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
+
+If an endpoint receives an invalid sequence of frames on either a request or
+a push stream, it MUST respond with a connection error of type
+HTTP_UNEXPECTED_FRAME ({{errors}}).  In particular, a DATA frame before any
+HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
+considered invalid.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
 After sending a request, a client MUST close the stream for sending.  Unless
@@ -448,16 +456,16 @@ messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
 messages once enough of the message has been received to make progress.  If a
 client stream terminates without enough of the HTTP message to provide a
 complete response, the server SHOULD abort its response with the error code
-HTTP_INCOMPLETE_REQUEST.
+HTTP_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY request that the
-client abort transmission of a request without error by triggering a QUIC
-STOP_SENDING frame with error code HTTP_EARLY_RESPONSE, sending a complete
-response, and cleanly closing its stream. Clients MUST NOT discard complete
-responses as a result of having their request terminated abruptly, though
-clients can always discard responses at their discretion for other reasons.
+not been sent and received. When this is true, a server MAY abort reading the
+request stream with error code HTTP_EARLY_RESPONSE, send a complete response,
+and cleanly close the sending part of the stream. Clients MUST NOT discard
+complete responses as a result of having their request terminated abruptly,
+though clients can always discard responses at their discretion for other
+reasons.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -487,6 +495,12 @@ HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
 head-of-line blocking.  See that document for additional details.
 
+To allow for better compression efficiency, the cookie header field {{!RFC6265}}
+MAY be split into separate header fields, each with one or more cookie-pairs,
+before compression. If a decompressed header list contains multiple cookie
+header fields, these MUST be concatenated before being passed into a non-HTTP/2,
+non-HTTP/3 context, as described in {{!HTTP2}}, Section 8.1.2.5.
+
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
 larger header field list than it is willing to handle can send an HTTP 431
@@ -505,11 +519,11 @@ this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
-Clients can cancel requests by aborting the stream (QUIC RESET_STREAM and/or
-STOP_SENDING frames, as appropriate) with an error code of
-HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client cancels a
-response, it indicates that this response is no longer of interest.
-Implementations SHOULD cancel requests by aborting both directions of a stream.
+Clients can cancel requests by resetting and aborting the request stream with an
+error code of HTTP_REQUEST_CANCELLED ({{http-error-codes}}).  When the client
+aborts reading a response, it indicates that this response is no longer of
+interest. Implementations SHOULD cancel requests by abruptly terminating any
+directions of a stream that are still open.
 
 When the server rejects a request without performing any application processing,
 it SHOULD abort its response stream with the error code HTTP_REQUEST_REJECTED.
@@ -522,11 +536,11 @@ were partially or fully processed.  When a server abandons a response after
 partial processing, it SHOULD abort its response stream with the error code
 HTTP_REQUEST_CANCELLED.
 
-When a client sends a STOP_SENDING with HTTP_REQUEST_CANCELLED, a server MAY
-send the error code HTTP_REQUEST_REJECTED in the corresponding RESET_STREAM
-if no processing was performed.  Clients MUST NOT reset streams with the
-HTTP_REQUEST_REJECTED error code except in response to a QUIC STOP_SENDING
-frame that contains the same code.
+When a client resets a request with the error code HTTP_REQUEST_CANCELLED, a
+server MAY abruptly terminate the response using the error code
+HTTP_REQUEST_REJECTED if no processing was performed.  Clients MUST NOT use the
+HTTP_REQUEST_REJECTED error code, except when a server has requested closure of
+the request stream with this error code.
 
 If a stream is cancelled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
@@ -599,135 +613,18 @@ a single direction are not invalid, but are often handled poorly by servers, so
 clients SHOULD NOT close a stream for sending while they still expect to receive
 data from the target of the CONNECT.
 
-A TCP connection error is signaled with QUIC RESET_STREAM frame. A proxy treats
-any error in the TCP connection, which includes receiving a TCP segment with the
-RST bit set, as a stream error of type HTTP_CONNECT_ERROR
+A TCP connection error is signaled by abruptly terminating the stream. A proxy
+treats any error in the TCP connection, which includes receiving a TCP segment
+with the RST bit set, as a stream error of type HTTP_CONNECT_ERROR
 ({{http-error-codes}}).  Correspondingly, if a proxy detects an error with the
 stream or the QUIC connection, it MUST close the TCP connection.  If the
 underlying TCP implementation permits it, the proxy SHOULD send a TCP segment
 with the RST bit set.
 
-## Prioritization {#priority}
+## HTTP Upgrade
 
-The purpose of prioritization is to allow a client to express how it would
-prefer the server to allocate resources when managing concurrent streams.  Most
-importantly, priority can be used to select streams for transmitting frames when
-there is limited capacity for sending.
-
-HTTP/3 uses a priority scheme similar to that described in {{!RFC7540}}, Section
-5.3. In this priority scheme, a given element can be designated as dependent
-upon another element.  Each dependency is assigned a relative weight, a number
-that is used to determine the relative proportion of available resources that
-are assigned to streams dependent on the same stream. This information is
-expressed in the PRIORITY frame {{frame-priority}} which identifies the element
-and the dependency. The elements that can be prioritized are:
-
-- Requests, identified by the ID of the request stream
-- Pushes, identified by the Push ID of the promised resource
-  ({{frame-push-promise}})
-- Placeholders, identified by a Placeholder ID
-
-Taken together, the dependencies across all prioritized elements in a connection
-form a dependency tree. An element can depend on another element or on the root
-of the tree.  The tree also contains an orphan placeholder.  This placeholder
-cannot be reprioritized, and no resources should be allocated to descendants of
-the orphan placeholder if progress can be made on descendants of the root.  The
-structure of the dependency tree changes as PRIORITY frames modify the
-dependency links between other prioritized elements.
-
-An exclusive flag allows for the insertion of a new level of dependencies.  The
-exclusive flag causes the prioritized element to become the sole dependency of
-its parent, causing other dependencies to become dependent on the exclusive
-element.
-
-All dependent streams are allocated an integer weight between 1 and 256
-(inclusive), derived by adding one to the weight expressed in the PRIORITY
-frame.
-
-Streams with the same parent SHOULD be allocated resources proportionally based
-on their weight.  Thus, if stream B depends on stream A with weight 4, stream C
-depends on stream A with weight 12, and no progress can be made on stream A,
-stream B ideally receives one-third of the resources allocated to stream C.
-
-A reference to an element which is no longer in the tree is treated as a
-reference to the orphan placeholder. Due to reordering between streams, an
-element can also be prioritized which is not yet in the tree. Such elements are
-added to the tree with the requested priority.  If a prioritized element depends
-on another element which is not yet in the tree, the requested parent is first
-added to the tree with the default priority.
-
-When a prioritized element is first created, it has a default initial weight of
-16 and a default dependency. Requests and placeholders are dependent on the
-orphan placeholder; pushes are dependent on the client request on which the
-PUSH_PROMISE frame was sent.
-
-Priorities can be updated by sending a PRIORITY frame (see {{frame-priority}})
-on the control stream.
-
-### Placeholders
-
-In HTTP/2, certain implementations used closed or unused streams as placeholders
-in describing the relative priority of requests.  This created
-confusion as servers could not reliably identify which elements of the priority
-tree could be discarded safely. Clients could potentially reference closed
-streams long after the server had discarded state, leading to disparate views of
-the prioritization the client had attempted to express.
-
-In HTTP/3, a number of placeholders are explicitly permitted by the server using
-the `SETTINGS_NUM_PLACEHOLDERS` setting. Because the server commits to
-maintaining these placeholders in the prioritization tree, clients can use them
-with confidence that the server will not have discarded the state. Clients MUST
-NOT send the `SETTINGS_NUM_PLACEHOLDERS` setting; receipt of this setting by a
-server MUST be treated as a connection error of type
-`HTTP_SETTINGS_ERROR`.
-
-Client-controlled placeholders are identified by an ID between zero and one less
-than the number of placeholders the server has permitted.  The orphan
-placeholder cannot be prioritized or referenced by the client.
-
-Like streams, client-controlled placeholders have priority information
-associated with them.
-
-### Priority Tree Maintenance
-
-Because placeholders will be used to "root" any persistent structure of the tree
-which the client cares about retaining, servers can aggressively prune inactive
-regions from the priority tree. For prioritization purposes, a node in the tree
-is considered "inactive" when the corresponding stream has been closed for at
-least two round-trip times (using any reasonable estimate available on the
-server).  This delay helps mitigate race conditions where the server has pruned
-a node the client believed was still active and used as a Stream Dependency.
-
-Specifically, the server MAY at any time:
-
-- Identify and discard branches of the tree containing only inactive nodes
-  (i.e. a node with only other inactive nodes as descendants, along with those
-  descendants)
-- Identify and condense interior regions of the tree containing only inactive
-  nodes, allocating weight appropriately
-
-~~~~~~~~~~  drawing
-    x                x                 x
-    |                |                 |
-    P                P                 P
-   / \               |                 |
-  I   I     ==>      I      ==>        A
-     / \             |                 |
-    A   I            A                 A
-    |                |
-    A                A
-~~~~~~~~~~
-{: #fig-pruning title="Example of Priority Tree Pruning"}
-
-In the example in {{fig-pruning}}, `P` represents a Placeholder, `A` represents
-an active node, and `I` represents an inactive node.  In the first step, the
-server discards two inactive branches (each a single node).  In the second step,
-the server condenses an interior inactive node.  Note that these transformations
-will result in no change in the resources allocated to a particular active
-stream.
-
-Clients SHOULD assume the server is actively performing such pruning and SHOULD
-NOT declare a dependency on a stream it knows to have been closed.
+HTTP/3 does not support the HTTP Upgrade mechanism ([RFC7230], Section 6.7) or
+101 (Switching Protocols) informational status code ([RFC7231], Section 6.2.2).
 
 ## Server Push
 
@@ -785,9 +682,9 @@ amount of data a server may commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, a QUIC STOP_SENDING frame with an error code of
-HTTP_REQUEST_CANCELLED can be used. This asks the server not to transfer
-additional data and indicates that it will be discarded upon receipt.
+CANCEL_PUSH frame, the client can abort reading the stream with an error code of
+HTTP_REQUEST_CANCELLED. This asks the server not to transfer additional data and
+indicates that it will be discarded upon receipt.
 
 # Connection Closure
 
@@ -827,9 +724,8 @@ Servers initiate the shutdown of a connection by sending a GOAWAY frame
 on lower stream IDs were or might be processed in this connection, while
 requests on the indicated stream ID and greater were rejected. This enables
 client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be zero if no requests were
-processed.  Servers SHOULD NOT increase the QUIC MAX_STREAMS limit after
-sending a GOAWAY frame.
+connection shutdown.  This identifier MAY be zero if no requests were processed.
+Servers SHOULD NOT permit additional QUIC streams after sending a GOAWAY frame.
 
 Clients MUST NOT send new requests on the connection after receiving GOAWAY;
 a new connection MAY be established to send additional requests.
@@ -927,12 +823,10 @@ All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
 correlated with the request. This means that the client's first request occurs
 on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, an HTTP/3 client SHOULD send non-zero values
-for the QUIC transport parameters `initial_max_stream_data_bidi_local`. An
-HTTP/3 server SHOULD send non-zero values for the QUIC transport parameters
-`initial_max_stream_data_bidi_remote` and `initial_max_bidi_streams`. It is
-RECOMMENDED that `initial_max_bidi_streams` be no smaller than 100, so as to not
-unnecessarily limit parallelism.
+to permit these streams to open, an HTTP/3 server SHOULD configure non-zero
+minimum values for the number of permitted streams and the initial stream flow
+control window.  It is RECOMMENDED that at least 100 requests be permitted at a
+time, so as to not unnecessarily limit parallelism.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
@@ -962,18 +856,17 @@ see {{extensions}} for more details.
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
-Endpoints that set low values for the QUIC transport parameters
-`initial_max_uni_streams` and `initial_max_stream_data_uni` will increase the
-chance that the remote peer reaches the limit early and becomes blocked. In
-particular, the value chosen for `initial_max_uni_streams` should consider that
-remote peers may wish to exercise reserved stream behavior ({{stream-grease}}).
-To avoid blocking, both clients and servers MUST allow the peer to create at
-least one unidirectional stream for the HTTP control stream plus the number of
-unidirectional streams required by mandatory extensions (such as QPACK) by
-setting an appropriate value for the QUIC transport parameter
-`initial_max_uni_streams` (three being the minimum value required for the base
-HTTP/3 protocol and QPACK), and SHOULD use a value of 1,024 or greater for the
-QUIC transport parameter `initial_max_stream_data_uni`.
+Endpoints that excessively restrict the number of streams or the flow control
+window of these streams will increase the chance that the remote peer reaches
+the limit early and becomes blocked. In particular, implementations should
+consider that remote peers may wish to exercise reserved stream behavior
+({{stream-grease}}) with some of the unidirectional streams they are permitted
+to use. To avoid blocking, the transport parameters sent by both clients and
+servers MUST allow the peer to create at least one unidirectional stream for the
+HTTP control stream plus the number of unidirectional streams required by
+mandatory extensions (three being the minimum number required for the base
+HTTP/3 protocol and QPACK), and SHOULD provide at least 1,024 bytes of flow
+control credit to each stream.
 
 Note that an endpoint is not required to grant additional credits to create more
 unidirectional streams if its peer consumes all the initial credits before
@@ -984,9 +877,9 @@ create additional streams as allowed by their peer.
 
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY trigger a QUIC STOP_SENDING
-frame with an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider
-such streams to be a connection error of any kind.
+unknown. Recipients of unknown stream types MAY abort reading of the stream with
+an error code of HTTP_STREAM_CREATION_ERROR, but MUST NOT consider such streams
+to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -1027,8 +920,10 @@ more details.
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
 remaining data on this stream consists of HTTP/3 frames, as defined in
-{{frames}}, and fulfills a promised server push.  Server push and Push IDs are
-described in {{server-push}}.
+{{frames}}, and fulfills a promised server push by zero or more non-final HTTP
+responses followed by a single final HTTP response, as defined in
+{{request-response}}.  Server push and Push IDs are described in
+{{server-push}}.
 
 Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a connection error of type HTTP_STREAM_CREATION_ERROR.
@@ -1073,7 +968,6 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | -------------- | -------------- | -------------- | ----------- | ------------------------ |
 | DATA           | No             | Yes            | Yes         | {{frame-data}}           |
 | HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
-| PRIORITY       | Yes            | No             | No          | {{frame-priority}}       |
 | CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
 | SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
@@ -1120,12 +1014,12 @@ Each frame's payload MUST contain exactly the fields identified in its
 description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
-HTTP_MALFORMED_FRAME.
+HTTP_FRAME_ERROR.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error ({{errors}}) of type
-HTTP_MALFORMED_FRAME. Streams which terminate abruptly may be reset at any point
-in a frame.
+HTTP_FRAME_ERROR. Streams which terminate abruptly may be reset at any point in
+a frame.
 
 ## Frame Definitions {#frames}
 
@@ -1165,107 +1059,6 @@ HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
 error ({{errors}}) of type HTTP_WRONG_STREAM.
 
-### PRIORITY {#frame-priority}
-
-The PRIORITY (type=0x2) frame specifies the client-advised priority of a
-request, server push or placeholder.
-
-A PRIORITY frame identifies an element to prioritize, and an element upon which
-it depends.  A Prioritized ID or Dependency ID identifies a client-initiated
-request using the corresponding stream ID, a server push using a Push ID (see
-{{frame-push-promise}}), or a placeholder using a Placeholder ID (see
-{{placeholders}}).
-
-In order to ensure that prioritization is processed in a consistent order,
-PRIORITY frames MUST be sent on the control stream.
-
-~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PT |DT |X|Empty|          Prioritized Element ID (i)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                [Element Dependency ID (i)]                  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Weight (8)  |
-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-priority title="PRIORITY frame payload"}
-
-The PRIORITY frame payload has the following fields:
-
-  PT (Prioritized Element Type):
-  : A two-bit field indicating the type of element being prioritized (see
-    {{priority-element-types}}).  This MUST NOT be set to `11`.
-
-  DT (Element Dependency Type):
-  : A two-bit field indicating the type of element being depended on (see
-    {{priority-element-types}}).
-
-  X (Exclusive Flag):
-  : A single-bit flag indicating that the dependency is exclusive (see
-    {{priority}}).
-
-  Empty:
-  : A three-bit field which MUST be zero when sent and has no semantic value on
-    receipt.
-
-  Prioritized Element ID:
-  : A variable-length integer that identifies the element being prioritized.
-    Depending on the value of Prioritized Type, this contains the Stream ID of a
-    request stream, the Push ID of a promised resource, or a Placeholder ID of a
-    placeholder.
-
-  Element Dependency ID:
-  : A variable-length integer that identifies the element on which a dependency
-    is being expressed. Depending on the value of Dependency Type, this contains
-    the Stream ID of a request stream, the Push ID of a promised resource, the
-    Placeholder ID of a placeholder, or is absent.  For details of
-    dependencies, see {{priority}} and {{!HTTP2}}, Section 5.3.
-
-  Weight:
-  : An unsigned 8-bit integer representing a priority weight for the prioritized
-    element (see {{!HTTP2}}, Section 5.3). Add one to the value to obtain a
-    weight between 1 and 256.
-
-The values for the Prioritized Element Type and Element Dependency Type
-({{priority-element-types}}) imply the interpretation of the associated Element
-ID fields.
-
-| Type Bits | Type Description | Element ID Contents |
-| --------- | ---------------- | ------------------- |
-| 00        | Request stream   | Stream ID           |
-| 01        | Push stream      | Push ID             |
-| 10        | Placeholder      | Placeholder ID      |
-| 11        | Root of the tree | Absent              |
-{: #priority-element-types title="Element Types of a PRIORITY frame"}
-
-Note that unlike in {{!HTTP2}}, the root of the tree cannot be referenced
-using a Stream ID of 0, as in QUIC stream 0 carries a valid HTTP request.  The
-root of the tree cannot be reprioritized.
-
-The PRIORITY frame can express relationships which might not be permitted based
-on the stream on which it is sent or its position in the stream. These
-situations MUST be treated as a connection error of type HTTP_MALFORMED_FRAME.
-The following situations are examples of invalid PRIORITY frames:
-
-- A PRIORITY frame with the Prioritized Element Type set to `11`.
-- A PRIORITY frame which claims to reference a request, but the associated ID
-  does not identify a client-initiated bidirectional stream
-
-A PRIORITY frame with Empty bits not set to zero MAY be treated as a connection
-error of type HTTP_MALFORMED_FRAME.
-
-A PRIORITY frame that references a non-existent Push ID, a Placeholder ID
-greater than the server's limit, or a Stream ID the client is not yet permitted
-to open MUST be treated as a connection error of type HTTP_ID_ERROR.
-
-A PRIORITY frame received on any stream other than the control stream MUST be
-treated as a connection error of type HTTP_WRONG_STREAM.
-
-PRIORITY frames received by a client MUST be treated as a connection error of
-type HTTP_UNEXPECTED_FRAME.
-
 ### CANCEL_PUSH {#frame-cancel-push}
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
@@ -1277,14 +1070,12 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-send a QUIC RESET_STREAM frame on that stream and cease transmission of the
-response.
+abruptly terminate that stream.
 
 A server can send the CANCEL_PUSH frame to indicate that it will not be
 fulfilling a promise prior to creation of a push stream.  Once the push stream
 has been created, sending CANCEL_PUSH has no effect on the state of the push
-stream.  A QUIC RESET_STREAM frame SHOULD be used instead to abort transmission
-of the server push response.
+stream.  The server SHOULD abruptly terminate the push stream instead.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
@@ -1336,9 +1127,9 @@ Different values for the same parameter can be advertised by each peer. For
 example, a client might be willing to consume a very large response header,
 while servers are more cautious about request size.
 
-Parameters MUST NOT occur more than once in the SETTINGS frame.  A receiver MAY
-treat the presence of the same parameter more than once as a connection error of
-type HTTP_SETTINGS_ERROR.
+The same setting identifier MUST NOT occur more than once in the SETTINGS frame.
+A receiver MAY treat the presence of duplicate setting identifiers as a
+connection error of type HTTP_SETTINGS_ERROR.
 
 The payload of a SETTINGS frame consists of zero or more parameters.  Each
 parameter consists of a setting identifier and a value, both encoded as QUIC
@@ -1366,10 +1157,6 @@ The following settings are defined in HTTP/3:
   SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
-  SETTINGS_NUM_PLACEHOLDERS (0x9):
-  : The default value is 0.  However, this value SHOULD be set to a non-zero
-    value by servers.  See {{placeholders}} for usage.
-
 Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
 reserved to exercise the requirement that unknown identifiers be ignored.  Such
 settings have no defined meaning. Endpoints SHOULD include at least one such
@@ -1382,32 +1169,55 @@ value the implementation selects.
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
-#### Initialization
+#### Initialization {#settings-initialization}
 
 An HTTP implementation MUST NOT send frames or requests which would be invalid
-based on its current understanding of the peer's settings.  All settings begin
-at an initial value, and are updated upon receipt of a SETTINGS frame.  For
-servers, the initial value of each client setting is the default value.
+based on its current understanding of the peer's settings.
+
+All settings begin at an initial value.  Each endpoint SHOULD use these initial
+values to send messages before the peer's SETTINGS frame has arrived, as packets
+carrying the settings can be lost or delayed.  When the SETTINGS frame arrives,
+any settings are changed to their new values.
+
+This removes the need to wait for the SETTINGS frame before sending messages.
+Endpoints MUST NOT require any data to be received from the peer prior to
+sending the SETTINGS frame; settings MUST be sent as soon as the transport is
+ready to send data.
+
+For servers, the initial value of each client setting is the default value.
 
 For clients using a 1-RTT QUIC connection, the initial value of each server
-setting is the default value. When a 0-RTT QUIC connection is being used, the
-initial value of each server setting is the value used in the previous session.
-Clients MUST store the settings the server provided in the session being resumed
-and MUST comply with stored settings until the current server settings are
-received.  A client can use these initial values to send requests before the
-server's SETTINGS frame has arrived.  This removes the need for a client to wait
-for the SETTINGS frame before sending requests.
+setting is the default value.  1-RTT keys will always become available prior to
+SETTINGS arriving, even if the server sends SETTINGS immediately. Clients SHOULD
+NOT wait indefinitely for SETTINGS to arrive before sending requests, but SHOULD
+process received datagrams in order to increase the likelihood of processing
+SETTINGS before sending the first request.
+
+When a 0-RTT QUIC connection is being used, the initial value of each server
+setting is the value used in the previous session. Clients SHOULD store the
+settings the server provided in the connection where resumption information was
+provided, but MAY opt not to store settings in certain cases (e.g., if the
+session ticket is received before the SETTINGS frame). A client MUST comply with
+stored settings -- or default values, if no values are stored -- when attempting
+0-RTT. Once a server has provided new settings, clients MUST comply with those
+values.
 
 A server can remember the settings that it advertised, or store an
 integrity-protected copy of the values in the ticket and recover the information
 when accepting 0-RTT data. A server uses the HTTP/3 settings values in
-determining whether to accept 0-RTT data.
+determining whether to accept 0-RTT data.  If the server cannot determine that
+the settings remembered by a client are compatible with its current settings, it
+MUST NOT accept 0-RTT data.  Remembered settings are compatible if a client
+complying with those settings would not violate the server's current settings.
 
 A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.  The server MAY omit settings from its SETTINGS frame which
-are unchanged from the initial value.
+with its 0-RTT data.  The server MUST include all settings which differ from
+their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
+frame which reduces a setting the client understands or omits a value that was
+previously specified to have a non-default value, this MUST be treated as a
+connection error of type HTTP_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
@@ -1431,8 +1241,7 @@ The payload consists of:
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
-  ({{frame-cancel-push}}), DUPLICATE_PUSH frames ({{frame-duplicate-push}}), and
-  PRIORITY frames ({{frame-priority}}).
+  ({{frame-cancel-push}}), and DUPLICATE_PUSH frames ({{frame-duplicate-push}}).
 
 Header Block:
 : QPACK-compressed request header fields for the promised response.  See [QPACK]
@@ -1475,7 +1284,7 @@ close a connection.
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_MALFORMED_FRAME.
+of any other type as a connection error of type HTTP_ID_ERROR.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
@@ -1493,7 +1302,7 @@ The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
 also limits the number of push streams that the server can initiate in addition
-to the limit set by the QUIC MAX_STREAMS frame.
+to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
@@ -1590,90 +1399,70 @@ the cause of a connection or stream error.
 
 ## HTTP/3 Error Codes {#http-error-codes}
 
-The following error codes are defined for use in QUIC RESET_STREAM frames,
-STOP_SENDING frames, and CONNECTION_CLOSE frames when using HTTP/3.
+The following error codes are defined for use when abruptly terminating streams,
+aborting reading of streams, or immediately closing connections.
 
-HTTP_NO_ERROR (0x00):
+HTTP_NO_ERROR (0x100):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
-HTTP_GENERAL_PROTOCOL_ERROR (0x01):
+HTTP_GENERAL_PROTOCOL_ERROR (0x101):
 : Peer violated protocol requirements in a way which doesn't match a more
   specific error code, or endpoint declines to use the more specific error code.
 
-Reserved (0x02):
-: This code is reserved and has no meaning.
-
-HTTP_INTERNAL_ERROR (0x03):
+HTTP_INTERNAL_ERROR (0x102):
 : An internal error has occurred in the HTTP stack.
 
-Reserved (0x04):
-: This code is reserved and has no meaning.
+HTTP_STREAM_CREATION_ERROR (0x103):
+: The endpoint detected that its peer created a stream that it will not accept.
 
-HTTP_REQUEST_CANCELLED (0x05):
-: The request or its response (including pushed response) is cancelled.
+HTTP_CLOSED_CRITICAL_STREAM (0x104):
+: A stream required by the connection was closed or reset.
 
-HTTP_INCOMPLETE_REQUEST (0x06):
-: The client's stream terminated without containing a fully-formed request.
+HTTP_UNEXPECTED_FRAME (0x105):
+: A frame was received which was not permitted in the current state.
 
-HTTP_CONNECT_ERROR (0x07):
-: The connection established in response to a CONNECT request was reset or
-  abnormally closed.
+HTTP_FRAME_ERROR (0x106):
+: A frame that fails to satisfy layout requirements or with an invalid size
+  was received.
 
-HTTP_EXCESSIVE_LOAD (0x08):
+HTTP_EXCESSIVE_LOAD (0x107):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_VERSION_FALLBACK (0x09):
-: The requested operation cannot be served over HTTP/3.  The
-  peer should retry over HTTP/1.1.
-
-HTTP_WRONG_STREAM (0x0A):
+HTTP_WRONG_STREAM (0x108):
 : A frame was received on a stream where it is not permitted.
 
-HTTP_ID_ERROR (0x0B):
-: A Stream ID, Push ID, or Placeholder ID was used incorrectly, such as
-  exceeding a limit, reducing a limit, or being reused.
+HTTP_ID_ERROR (0x109):
+: A Stream ID or Push ID was used incorrectly, such as exceeding a limit,
+  reducing a limit, or being reused.
 
-Reserved (0x0C):
-: N/A
+HTTP_SETTINGS_ERROR (0x10A):
+: An endpoint detected an error in the payload of a SETTINGS frame.
 
-HTTP_STREAM_CREATION_ERROR (0x0D):
-: The endpoint detected that its peer created a stream that it will not accept.
+HTTP_MISSING_SETTINGS (0x10B):
+: No SETTINGS frame was received at the beginning of the control stream.
 
-Reserved (0x0E):
-: N/A
+HTTP_REQUEST_REJECTED (0x10C):
+: A server rejected a request without performing any application processing.
 
-HTTP_CLOSED_CRITICAL_STREAM (0x0F):
-: A stream required by the connection was closed or reset.
+HTTP_REQUEST_CANCELLED (0x10D):
+: The request or its response (including pushed response) is cancelled.
 
-Reserved (0x0010):
-: N/A
+HTTP_REQUEST_INCOMPLETE (0x10E):
+: The client's stream terminated without containing a fully-formed request.
 
-HTTP_EARLY_RESPONSE (0x0011):
+HTTP_EARLY_RESPONSE (0x10F):
 : The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
 
-HTTP_MISSING_SETTINGS (0x0012):
-: No SETTINGS frame was received at the beginning of the control stream.
+HTTP_CONNECT_ERROR (0x110):
+: The connection established in response to a CONNECT request was reset or
+  abnormally closed.
 
-HTTP_UNEXPECTED_FRAME (0x0013):
-: A frame was received which was not permitted in the current state.
-
-HTTP_REQUEST_REJECTED (0x0014):
-: A server rejected a request without performing any application processing.
-
-HTTP_SETTINGS_ERROR (0x00FF):
-: An endpoint detected an error in the payload of a SETTINGS frame: a duplicate
-  setting was detected, a client-only setting was sent by a server, or a
-  server-only setting by a client.
-
-HTTP_MALFORMED_FRAME (0x01XX):
-: An error in a specific frame type.  If the frame type is `0xfe` or less, the
-  type is included as the last byte of the error code.  For example, an error in
-  a MAX_PUSH_ID frame would be indicated with the code (0x10D).  The last byte
-  `0xff` is used to indicate any frame type greater than `0xfe`.
-
+HTTP_VERSION_FALLBACK (0x111):
+: The requested operation cannot be served over HTTP/3.  The peer should
+  retry over HTTP/1.1.
 
 # Extensions to HTTP/3 {#extensions}
 
@@ -1716,13 +1505,22 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS.  Note that where HTTP/2 employs PADDING frames and Padding fields in
-other frames to make a connection more resistant to traffic analysis, HTTP/3 can
-rely on QUIC PADDING frames or employ the reserved frame and stream types
-discussed in {{frame-grease}} and {{stream-grease}}.
+with TLS; the considerations from Section 10 of {{!HTTP2}} apply in addition to
+those listed here.
 
 When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
 security considerations of {{!ALTSVC}} also apply.
+
+## Traffic Analysis
+
+Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
+connection more resistant to traffic analysis, HTTP/3 can either rely on
+transport-layer padding or employ the reserved frame and stream types discussed
+in {{frame-grease}} and {{stream-grease}}.  These methods of padding produce
+different results in terms of the granularity of padding, the effect of packet
+loss and recovery, and how an implementation might control padding.
+
+## Frame Parsing
 
 Several protocol elements contain nested length elements, typically in the form
 of frames with an explicit length containing variable-length integers.  This
@@ -1730,9 +1528,13 @@ could pose a security risk to an incautious implementer.  An implementation MUST
 ensure that the length of a frame exactly matches the length of the fields it
 contains.
 
+## Early Data
+
 The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
 anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
 HTTP/3 with 0-RTT.
+
+## Migration
 
 Certain HTTP implementations use the client address for logging or
 access-control purposes.  Since a QUIC client's address might change during a
@@ -1809,7 +1611,7 @@ The entries in the following table are registered by this document.
 | ---------------- | :----: | -------------------------- |
 | DATA             |  0x0   | {{frame-data}}             |
 | HEADERS          |  0x1   | {{frame-headers}}          |
-| PRIORITY         |  0x2   | {{frame-priority}}         |
+| Reserved         |  0x2   | N/A                        |
 | CANCEL_PUSH      |  0x3   | {{frame-cancel-push}}      |
 | SETTINGS         |  0x4   | {{frame-settings}}         |
 | PUSH_PROMISE     |  0x5   | {{frame-push-promise}}     |
@@ -1853,18 +1655,21 @@ Specification:
 : An optional reference to a specification that describes the use of the
   setting.
 
+Default:
+: The value of the setting unless otherwise indicated. SHOULD be the most
+  restrictive possible value.
+
 The entries in the following table are registered by this document.
 
-| ---------------------------- | ------ | ------------------------- |
-| Setting Name                 |  Code  | Specification             |
-| ---------------------------- | :----: | ------------------------- |
-| Reserved                     |  0x2   | N/A                       |
-| Reserved                     |  0x3   | N/A                       |
-| Reserved                     |  0x4   | N/A                       |
-| Reserved                     |  0x5   | N/A                       |
-| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   |
-| NUM_PLACEHOLDERS             |  0x9   | {{settings-parameters}}   |
-| ---------------------------- | ------ | ------------------------- |
+| ---------------------------- | ------ | ------------------------- | --------- |
+| Setting Name                 |  Code  | Specification             | Default   |
+| ---------------------------- | :----: | ------------------------- | --------- |
+| Reserved                     |  0x2   | N/A                       | N/A       |
+| Reserved                     |  0x3   | N/A                       | N/A       |
+| Reserved                     |  0x4   | N/A                       | N/A       |
+| Reserved                     |  0x5   | N/A                       | N/A       |
+| MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   | Unlimited |
+| ---------------------------- | ------ | ------------------------- | --------- |
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
 (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
@@ -1901,29 +1706,24 @@ The entries in the following table are registered by this document.
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                                | Code       | Description                              | Specification          |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| HTTP_NO_ERROR                       | 0x0000     | No error                                 | {{http-error-codes}}   |
-| HTTP_GENERAL_PROTOCOL_ERROR         | 0x0001     | General protocol error                   | {{http-error-codes}}   |
-| Reserved                            | 0x0002     | N/A                                      | N/A                    |
-| HTTP_INTERNAL_ERROR                 | 0x0003     | Internal error                           | {{http-error-codes}}   |
-| Reserved                            | 0x0004     | N/A                                      | N/A                    |
-| HTTP_REQUEST_CANCELLED              | 0x0005     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_INCOMPLETE_REQUEST             | 0x0006     | Stream terminated early                  | {{http-error-codes}}   |
-| HTTP_CONNECT_ERROR                  | 0x0007     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| HTTP_EXCESSIVE_LOAD                 | 0x0008     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x0009     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM                   | 0x000A     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_ID_ERROR                       | 0x000B     | An identifier was used incorrectly       | {{http-error-codes}}   |
-| Reserved                            | 0x000C     | N/A                                      | N/A                    |
-| HTTP_STREAM_CREATION_ERROR          | 0x000D     | Stream creation error                    | {{http-error-codes}}   |
-| Reserved                            | 0x000E     | N/A                                      | N/A                    |
-| HTTP_CLOSED_CRITICAL_STREAM         | 0x000F     | Critical stream was closed               | {{http-error-codes}}   |
-| Reserved                            | 0x000E     | N/A                                      | N/A                    |
-| HTTP_EARLY_RESPONSE                 | 0x0011     | Remainder of request not needed          | {{http-error-codes}}   |
-| HTTP_MISSING_SETTINGS               | 0x0012     | No SETTINGS frame received               | {{http-error-codes}}   |
-| HTTP_UNEXPECTED_FRAME               | 0x0013     | Frame not permitted in the current state | {{http-error-codes}}   |
-| HTTP_REQUEST_REJECTED               | 0x0014     | Request not processed                    | {{http-error-codes}}   |
-| HTTP_MALFORMED_FRAME                | 0x01XX     | Error in frame formatting                | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x00FF     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
+| HTTP_NO_ERROR                       | 0x0100     | No error                                 | {{http-error-codes}}   |
+| HTTP_GENERAL_PROTOCOL_ERROR         | 0x0101     | General protocol error                   | {{http-error-codes}}   |
+| HTTP_INTERNAL_ERROR                 | 0x0102     | Internal error                           | {{http-error-codes}}   |
+| HTTP_STREAM_CREATION_ERROR          | 0x0103     | Stream creation error                    | {{http-error-codes}}   |
+| HTTP_CLOSED_CRITICAL_STREAM         | 0x0104     | Critical stream was closed               | {{http-error-codes}}   |
+| HTTP_UNEXPECTED_FRAME               | 0x0105     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_FRAME_ERROR                    | 0x0106     | Frame violated layout or size rules      | {{http-error-codes}}   |
+| HTTP_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
+| HTTP_WRONG_STREAM                   | 0x0108     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x0109     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x010A     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
+| HTTP_MISSING_SETTINGS               | 0x010B     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x010C     | Request not processed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_CANCELLED              | 0x010D     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_INCOMPLETE             | 0x010E     | Stream terminated early                  | {{http-error-codes}}   |
+| HTTP_EARLY_RESPONSE                 | 0x010F     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_CONNECT_ERROR                  | 0x0110     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x0111     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
@@ -2018,20 +1818,13 @@ Some examples of feature adaptations are described below, as well as general
 guidance to extension frame implementors converting an HTTP/2 extension to
 HTTP/3.
 
-### Prioritization Differences
+### Prioritization Differences {#h2-diff-priority}
 
 HTTP/2 specifies priority assignments in PRIORITY frames and (optionally) in
-HEADERS frames. Implicit in the HTTP/2 prioritization scheme is the notion of
-in-order delivery of priority changes (i.e., dependency tree mutations). Since
-operations on the dependency tree such as reparenting a subtree are not
-commutative, both sender and receiver must apply them in the same order to
-ensure that both sides have a consistent view of the stream dependency tree.
+HEADERS frames. HTTP/3 does not provide a means of signaling priority.
 
-To achieve in-order delivery of priority changes in HTTP/3, PRIORITY frames are
-sent on the control stream.  HTTP/3 permits the prioritization of requests,
-pushes and placeholders that each exist in separate identifier spaces. The
-HTTP/3 PRIORITY frame replaces the stream dependency field with fields that can
-identify the element of interest and its dependency.
+Note that while there is no explicit signaling for priority, this does not mean
+that prioritization is not important for achieving good performance.
 
 ### Header Compression Differences
 
@@ -2053,9 +1846,9 @@ given time without modifying it.
 Frame type definitions in HTTP/3 often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allows for a
 larger range of possible values than the encoding used in HTTP/2.  Some frames
-in HTTP/3 use an identifier rather than a Stream ID (e.g. Push IDs in PRIORITY
-frames). Redefinition of the encoding of extension frame types might be
-necessary if the encoding includes a Stream ID.
+in HTTP/3 use an identifier rather than a Stream ID (e.g., Push
+IDs). Redefinition of the encoding of extension frame types might be necessary
+if the encoding includes a Stream ID.
 
 Because the Flags field is not present in generic HTTP/3 frames, those frames
 which depend on the presence of flags need to allocate space for flags as part
@@ -2072,14 +1865,12 @@ DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.
 
 HEADERS (0x1):
-: The PRIORITY region of HEADERS is not defined in HTTP/3 frames. A separate
-  PRIORITY frame is used in all cases. Padding is not defined in HTTP/3 frames.
-  See {{frame-headers}}.
+: The PRIORITY region of HEADERS is not defined in HTTP/3 frames. Padding is not
+  defined in HTTP/3 frames.  See {{frame-headers}}.
 
 PRIORITY (0x2):
-: As described above, the PRIORITY frame references a variety of identifiers. It
-  is sent as the first frame on a request streams or on the control stream. See
-  {{frame-priority}}.
+: As described in {{h2-diff-priority}}, HTTP/3 does not provide a means of
+  signaling priority.
 
 RST_STREAM (0x3):
 : RST_STREAM frames do not exist, since QUIC provides stream lifecycle
@@ -2117,9 +1908,9 @@ equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
-An important difference from HTTP/2 is that settings are sent once, at the
-beginning of the connection, and thereafter cannot change.  This eliminates
-many corner cases around synchronization of changes.
+An important difference from HTTP/2 is that settings are sent once, as the first
+frame of the control stream, and thereafter cannot change.  This eliminates many
+corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
 superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
@@ -2162,23 +1953,29 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
+As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
+the peers' settings to arrive before responding to other streams.  See
+{{settings-initialization}}.
+
 
 ## HTTP/2 Error Codes
 
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
-provides. However, there is no direct portability of HTTP/2 error codes.
+provides. However, there is no direct portability of HTTP/2 error codes to
+HTTP/3 error codes; the values are shifted in order to prevent accidental
+or implicit conversion.
 
-The HTTP/2 error codes defined in Section 7 of {{!HTTP2}} map to the HTTP/3
-error codes as follows:
+The HTTP/2 error codes defined in Section 7 of {{!HTTP2}} logically map to
+the HTTP/3 error codes as follows:
 
 NO_ERROR (0x0):
 : HTTP_NO_ERROR in {{http-error-codes}}.
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to HTTP_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. This includes HTTP_MALFORMED_FRAME,
-  HTTP_WRONG_STREAM, HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM
-  defined in {{http-error-codes}}.
+  specific error codes have been defined. This includes HTTP_WRONG_STREAM,
+  HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM defined in
+  {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
@@ -2193,7 +1990,7 @@ STREAM_CLOSED (0x5):
 : Not applicable, since QUIC handles stream management.
 
 FRAME_SIZE_ERROR (0x6):
-: HTTP_MALFORMED_FRAME error codes defined in {{http-error-codes}}.
+: HTTP_FRAME_ERROR error code defined in {{http-error-codes}}.
 
 REFUSED_STREAM (0x7):
 : HTTP_REQUEST_REJECTED (in {{http-error-codes}}) is used to indicate that a
@@ -2226,6 +2023,10 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-22
+
+- Removed priority signaling.
 
 ## Since draft-ietf-quic-http-21
 
