@@ -1415,7 +1415,7 @@ HTTP_CLOSED_CRITICAL_STREAM (0x104):
 : A stream required by the connection was closed or reset.
 
 HTTP_FRAME_UNEXPECTED (0x105):
-: A frame was received which was not permitted in the current state or stream.
+: A frame was received which was not permitted in the current state or on the current stream.
 
 HTTP_FRAME_ERROR (0x106):
 : A frame that fails to satisfy layout requirements or with an invalid size
