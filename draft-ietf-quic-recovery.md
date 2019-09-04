@@ -1197,7 +1197,7 @@ SetLossDetectionTimer():
     return
 
   if (no ack-eliciting packets in flight &&
-      !PeerAwaitingAddressValidation()):
+      !IsPeerAwaitingAddressValidation()):
     loss_detection_timer.cancel()
     return
 
