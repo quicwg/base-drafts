@@ -1184,14 +1184,14 @@ GetEarliestLossTime():
       space = pn_space
   return time, space           
            
-PeerIsAwaitingAddressValidation():
+PeerNotAwaitingAddressValidation():
   # Assume clients validate the server's address implicitly.
   if (endpoint is server):
-    return false
+    return true
   # Servers complete address validation when a
   # protected packet is received.
-  return !(has received Handshake ACK ||
-           has received 1-RTT ACK)
+  return has received Handshake ACK ||
+         has received 1-RTT ACK
 
 SetLossDetectionTimer():
   loss_time, _ = GetEarliestLossTime()
@@ -1201,7 +1201,7 @@ SetLossDetectionTimer():
     return
 
   if (no ack-eliciting packets in flight &&
-      PeerIsAwaitingAddressValidation()):
+      PeerNotAwaitingAddressValidation()):
     loss_detection_timer.cancel()
     return
 
