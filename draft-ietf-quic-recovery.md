@@ -1184,6 +1184,11 @@ GetEarliestLossTime():
       space = pn_space
   return time, space
 
+PeerAwaitingAddressValidation():
+  return endpoint is client &&
+         !(has received Handshake ACK ||
+           has received 1-RTT ACK)
+
 SetLossDetectionTimer():
   loss_time, _ = GetEarliestLossTime()
   if (loss_time != 0):
@@ -1191,14 +1196,8 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  // Cancel the timer if there are no ack-eliciting packets
-  // in flight, with the following exception: Do not cancel the
-  // timer at a client until it has received an acknowledgement
-  // indicating the server has completed address validation.
   if (no ack-eliciting packets in flight &&
-      (endpoint is server ||
-       has received Handshake ACK ||
-       has received 1-RTT ACK)):
+      !PeerAwaitingAddressValidation()):
     loss_detection_timer.cancel()
     return
 
