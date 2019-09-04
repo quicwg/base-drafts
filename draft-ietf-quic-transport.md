@@ -2527,7 +2527,7 @@ QUIC need to be aware of this and either reuse this design, or use a portion of
 the packet other than the last 16 bytes for carrying data.
 
 
-### Detecting a Stateless Reset
+### Detecting a Stateless Reset {#detect-stateless-reset}
 
 An endpoint detects a potential stateless reset when an incoming packet either
 cannot be associated with a connection, cannot be decrypted, or is marked as a
@@ -5729,6 +5729,17 @@ SHOULD NOT be used by themselves to make routing decisions.  Ideally, routing
 decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
 
+
+## Collision Attack on Stateless Reset Tokens
+
+As the stateless reset tokens are controlled by the peers, QUIC endpoints SHOULD
+be resistant to hash flooding DoS attacks when using a hash map for retaining
+those tokens. One way of achieving such property is to retain and compare the
+transformed values of the stateless tokens where the transformation is defined
+as a pseudo-random permutation (e.g., block cipher) or a keyed hash (e.g., HMAC
+{{?RFC2104}}) that is cryptographically secure, instead of using the raw token
+values as the hash keys.  This approach also satisfies the constant time
+comparison requirements in {{detect-stateless-reset}}.
 
 # IANA Considerations
 
