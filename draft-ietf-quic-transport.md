@@ -5738,8 +5738,8 @@ those tokens. One way of achieving such property is to retain and compare the
 transformed values of the stateless tokens where the transformation is defined
 as a pseudo-random permutation (e.g., block cipher) or a keyed hash (e.g., HMAC
 {{?RFC2104}}) that is cryptographically secure, instead of using the raw token
-values as the hash keys.  This approach also satisfies the constant time
-comparison requirements in {{detect-stateless-reset}}.
+values as the hash keys.  This approach satisfies the secure comparison
+requirement in {{detect-stateless-reset}}.
 
 # IANA Considerations
 
