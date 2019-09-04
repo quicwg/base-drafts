@@ -1129,9 +1129,11 @@ TBD.
 While the negotiated limit on the dynamic table size accounts for much of the
 memory that can be consumed by a QPACK implementation, data which cannot be
 immediately sent due to flow control is not affected by this limit.
-Implementations MUST limit the size of unsent data, especially on the decoder
-stream where flexibility to choose what to send is limited.  If this limit is
-exceeded, the connection MUST be terminated.
+Implementations should limit the size of unsent data, especially on the decoder
+stream where flexibility to choose what to send is limited.  Possible responses
+to an excess of unsent data might include limiting the ability of the peer to
+open new streams, reading only from the encoder stream, or closing the
+connection.
 
 # IANA Considerations
 
