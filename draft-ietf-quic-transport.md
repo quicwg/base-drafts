@@ -2575,9 +2575,12 @@ When comparing a packet to Stateless Reset Token values, endpoints MUST perform
 the comparison without leaking information about the value of the token.
 For example, performing this comparison in constant time protects the value of
 individual Stateless Reset Tokens from information leakage through timing side
-channels.  An endpoint is not expected to protect information about whether a
-packet was successfully decrypted, or the number of valid Stateless Reset
-Tokens.
+channels.  Another approach would be to store and compare the transformed values
+of Stateless Reset Tokens instead of the raw token values, where the
+transformation is defined as a cryptographically-secure pseudo-random function
+using a secret key (e.g., block cipher, HMAC {{?RFC2104}}). An endpoint is not
+expected to protect information about whether a packet was successfully
+decrypted, or the number of valid Stateless Reset Tokens.
 
 If the last 16 bytes of the packet values are identical to a Stateless Reset
 Token, the endpoint MUST enter the draining period and not send any further
