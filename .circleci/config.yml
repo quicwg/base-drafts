@@ -13,6 +13,12 @@ jobs:
             - v1-cache-git-{{ .Branch }}
             - v1-cache-git-
 
+      - restore_cache:
+          name: "Restoring cache - References"
+          keys:
+            - v1-cache-references-{{ epoch }}
+            - v1-cache-references-
+
       - checkout
 
       # Build txt and html versions of drafts
@@ -58,6 +64,12 @@ jobs:
           key: v1-cache-git-{{ .Branch }}-{{ .Revision }}
           paths:
             - ~/draft
+
+      - save_cache:
+          name: "Saving Cache - Drafts"
+          key: v1-cache-references-{{ epoch }}
+          paths:
+            - ~/.cache/xml2rfc
 
 workflows:
   version: 2
