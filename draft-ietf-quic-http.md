@@ -422,7 +422,7 @@ PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
 Frames of unknown types ({{extensions}}), including reserved frames
-({{frame-grease}}) MAY be sent on a request or push stream before, after, or
+({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
 interleaved with other frames described in this section.
 
 The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
@@ -974,7 +974,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
-| Reserved       | Yes            | Yes            | Yes         | {{frame-grease}          |
+| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}        |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
@@ -1374,7 +1374,7 @@ uses a Push ID that they have since consumed and discarded are forced to ignore
 the DUPLICATE_PUSH.
 
 
-### Reserved Frame Types {#frame-grease}
+### Reserved Frame Types {#frame-reserved}
 
 Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
 to exercise the requirement that unknown types be ignored ({{extensions}}).
@@ -1524,7 +1524,7 @@ security considerations of {{!ALTSVC}} also apply.
 Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
 transport-layer padding or employ the reserved frame and stream types discussed
-in {{frame-grease}} and {{stream-grease}}.  These methods of padding produce
+in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
 different results in terms of the granularity of padding, the effect of packet
 loss and recovery, and how an implementation might control padding.
 
