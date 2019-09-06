@@ -2465,23 +2465,26 @@ be a packet with a short header.  For the stateless reset to appear as a valid
 QUIC packet, the Unpredictable Bits field needs to include at least 38 bits of
 data (or 6 bytes, less the two fixed bits).
 
-The minimum size does not guarantee that a stateless reset is difficult to
-distinguish from other packets if the recipient requires the use of a connection
-ID.  In order to ensure that a stateless reset that appears to be valid can be
-sent, all packets SHOULD be padded to at least 22 bytes longer than the minimum
-connection ID that the endpoint might use.  An endpoint that sends a stateless
-reset in response to packet that is 43 bytes or less in length SHOULD send a
-stateless reset that is one byte shorter than the packet it responds to.
+A minimum size of 21 bytes does not guarantee that a stateless reset is
+difficult to distinguish from other packets if the recipient requires the use of
+a connection ID.  In order to ensure that a stateless reset that appears to be
+valid can be sent, all packets SHOULD be padded to at least 22 bytes longer than
+the minimum connection ID that the endpoint might use.  An endpoint that sends a
+stateless reset in response to packet that is 43 bytes or less in length SHOULD
+send a stateless reset that is one byte shorter than the packet it responds to.
 
-Note that these calculations assume that the Stateless Reset Token is the same
-as the minimum expansion of the packet protection AEAD.  Additional
-unpredictable bytes are necessary if the endpoint could have negotiated a packet
-protection scheme with a larger minimum expansion.
+These values assume that the Stateless Reset Token is the same as the minimum
+expansion of the packet protection AEAD.  Additional unpredictable bytes are
+necessary if the endpoint could have negotiated a packet protection scheme with
+a larger minimum expansion.
 
-An endpoint SHOULD NOT send a stateless reset that is as large or larger than
-the packet it receives.  Endpoints MUST discard packets that are too small to be
-valid QUIC packets.  With the set of AEAD functions defined in {{QUIC-TLS}},
-packets that are smaller than 21 bytes are never valid.
+An endpoint MUST NOT send a stateless reset that is three times or more larger
+than the packet it receives to avoid being used for amplification.
+{{reset-looping}} describes additional limits on stateless reset size.
+
+Endpoints MUST discard packets that are too small to be valid QUIC packets.
+With the set of AEAD functions defined in {{QUIC-TLS}}, packets that are smaller
+than 21 bytes are never valid.
 
 Endpoints MUST send stateless reset packets formatted as a packet with a short
 header.  However, endpoints MUST treat any packet ending in a valid stateless
