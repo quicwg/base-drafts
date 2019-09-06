@@ -6,6 +6,13 @@ jobs:
     working_directory: ~/draft
 
     steps:
+      - restore_cache:
+          name: "Restoring cache - Git"
+          keys:
+            - v1-cache-git-{{ .Branch }}-{{ .Revision }}
+            - v1-cache-git-{{ .Branch }}
+            - v1-cache-git-
+
       - checkout
 
       # Build txt and html versions of drafts
@@ -42,6 +49,15 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
 
+      - run:
+          name: "Prepare for Caching"
+          command: "git gc"
+
+      - save_cache:
+          name: "Saving Cache - Git"
+          key: v1-cache-git-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/draft
 
 workflows:
   version: 2
