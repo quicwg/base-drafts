@@ -57,7 +57,7 @@ jobs:
 
       - run:
           name: "Prepare for Caching"
-          command: "git gc"
+          command: "git gc --auto"
 
       - save_cache:
           name: "Saving Cache - Git"
