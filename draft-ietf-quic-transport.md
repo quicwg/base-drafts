@@ -2467,11 +2467,12 @@ data (or 6 bytes, less the two fixed bits).
 
 A minimum size of 21 bytes does not guarantee that a stateless reset is
 difficult to distinguish from other packets if the recipient requires the use of
-a connection ID.  In order to ensure that a stateless reset that appears to be
-valid can be sent, all packets SHOULD be padded to at least 22 bytes longer than
-the minimum connection ID that the endpoint might use.  An endpoint that sends a
-stateless reset in response to packet that is 43 bytes or less in length SHOULD
-send a stateless reset that is one byte shorter than the packet it responds to.
+a connection ID.  To prevent a resulting stateless reset from being trivially
+distinguishable from a valid packet, all packets sent by an endpoint SHOULD be
+padded to at least 22 bytes longer than the minimum connection ID that the
+endpoint might use.  An endpoint that sends a stateless reset in response to
+packet that is 43 bytes or less in length SHOULD send a stateless reset that is
+one byte shorter than the packet it responds to.
 
 These values assume that the Stateless Reset Token is the same as the minimum
 expansion of the packet protection AEAD.  Additional unpredictable bytes are
