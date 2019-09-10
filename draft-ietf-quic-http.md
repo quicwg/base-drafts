@@ -2035,7 +2035,29 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 ## Since draft-ietf-quic-http-22
 
-- Removed priority signaling.
+- Removed priority signaling (#2922,#2924)
+- Further changes to error codes (#2662,#2551):
+  - Error codes renumbered
+  - HTTP_MALFORMED_FRAME replaced by HTTP_FRAME_ERROR, HTTP_ID_ERROR, and others
+- Clarify how unknown frame types interact with required frame sequence
+  (#2867,#2858)
+- Describe interactions with the transport in terms of defined interface terms
+  (#2857,#2805)
+- Require the use of the `http-opportunistic` resource (RFC 8164) when scheme is
+  `http` (#2439,#2973)
+- Settings identifiers cannot be duplicated (#2979)
+- Changes to SETTINGS frames in 0-RTT (#2972,#2790,#2945):
+  - Servers must send all settings with non-default values in their SETTINGS
+    frame, even when resuming
+  - If a client doesn't have settings associated with a 0-RTT ticket, it uses
+    the defaults
+  - Servers can't accept early data if they cannot recover the settings the
+    client will have remembered
+- Clarify that Upgrade and the 101 status code are prohibited (#2898,#2889)
+- Clarify that frame types reserved for greasing can occur on any stream, but
+  frame types reserved due to HTTP/2 correspondence are prohibited
+  (#2997,#2692,#2693)
+- Unknown error codes cannot be treated as errors (#2998,#2816)
 
 ## Since draft-ietf-quic-http-21
 
