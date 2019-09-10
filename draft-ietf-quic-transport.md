@@ -5887,6 +5887,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
