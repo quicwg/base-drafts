@@ -1048,19 +1048,24 @@ When AEAD_CHACHA20_POLY1305 is in use, header protection uses the raw ChaCha20
 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
 16 bytes sampled from the packet protection output.
 
-The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
-in little-endian order and are used as the block count.  The remaining 12 bytes
-are interpreted as three concatenated 32-bit numbers in little-endian order and
-used as the nonce.
+The first 4 bytes of the sampled ciphertext are the block counter.  A ChaCha20
+implementation could take a 32-bit integer in place of a byte sequence, in
+which case the byte sequence is interpreted as a little-endian value.
+
+The remaining 12 bytes are used as the nonce. A ChaCha20 implementation might
+take an array of three 32-bit integers in place of a byte sequence, in which
+case the nonce bytes are interpreted as a sequence of 32-bit little-endian
+integers.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
 pseudocode:
 
 ~~~
-counter = DecodeLE(sample[0..3])
-nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
+counter = sample[0..3]
+nonce = sample[4..15]
 mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
+
 
 
 ## Receiving Protected Packets
