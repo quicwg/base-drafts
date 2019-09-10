@@ -808,9 +808,10 @@ The secrets used for protecting Initial packets do not change during the
 connection, even though the destination connection ID in client Initial
 packets changes after receiving a Retry.  A server that sends a Retry
 therefore needs to either remember the original connection ID or save
-the original connection ID in the Retry token.  Because the initial
-connection ID is included in the server's transport parameters, the only
-difference is when in the packet processing this connection ID is utilized.
+the original connection ID in the Retry token.  The initial connection ID
+is needed by a server to reconstruct packet protection keys and so that it
+can produce the correct value for the original_connection_id transport
+parameter.
 
 {{test-vectors-initial}} contains test vectors for the initial packet
 encryption.
