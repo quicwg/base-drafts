@@ -520,7 +520,7 @@ Install tx 0-RTT Keys
                                                    Get Handshake
                      <------------- Initial
 Handshake Received
-Install tx Handshake keys
+Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
