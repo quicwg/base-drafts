@@ -360,9 +360,9 @@ infer from this instruction that any updates to the dynamic table have been
 received.
 
 The Header Acknowledgement and Stream Cancellation instructions permit the
-encoder to remove references to entries in the dynamic table.  When entries
-have zero references they are no longer considered blocking (see
-{{blocked-insertion}}).
+encoder to remove references to entries in the dynamic table.  When an entry
+with absolute index lower than the Known Received Count has zero references,
+then it is no longer considered blocking (see {{blocked-insertion}}).
 
 #### New Table Entries
 
