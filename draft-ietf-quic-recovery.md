@@ -10,7 +10,7 @@ workgroup: QUIC
 
 stand_alone: yes
 pi: [toc, sortrefs, symrefs, docmapping]
-
+f
 author:
  -
     ins: J. Iyengar
@@ -1495,6 +1495,11 @@ Invoked from DetectLostPackets when packets are deemed lost.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-22
+
+- PTO should always send an ack-eliciting packet (#2895)
+- Unify the Handshake Timer with the PTO timer (#2648, #2658, #2886)
 
 ## Since draft-ietf-quic-recovery-21
 
