@@ -149,8 +149,8 @@ x (A)
 : Indicates that x is A bits long
 
 x (A+)
-: Indicates that x uses the prefixed integer encoding defined in Section 5.1 of
-  [RFC7541], beginning with an A-bit prefix.
+: Indicates that x uses the prefixed integer encoding defined in
+  {{prefixed-integers}}, beginning with an A-bit prefix.
 
 x ...
 : Indicates that x is variable-length and extends to the end of the region.
@@ -653,9 +653,9 @@ This section specifies the following encoder instructions.
 ### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
 An encoder informs the decoder of a change to the dynamic table capacity using
-an instruction which begins with the '001' three-bit pattern.  The new dynamic
-table capacity is represented as an integer with a 5-bit prefix (see Section 5.1
-of [RFC7541]).
+an instruction which begins with the '001' three-bit pattern.  This is followed
+by the new dynamic table capacity represented as an integer with a 5-bit prefix
+(see {{prefixed-integers}}).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -683,13 +683,13 @@ An encoder adds an entry to the dynamic table where the header field name
 matches the header field name of an entry stored in the static or the dynamic
 table using an instruction that starts with the '1' one-bit pattern.  The second
 (`S`) bit indicates whether the reference is to the static or dynamic table. The
-6-bit prefix integer (see Section 5.1 of [RFC7541]) that follows is used to
-locate the table entry for the header name.  When S=1, the number represents the
-static table index; when S=0, the number is the relative index of the entry in
-the dynamic table.
+6-bit prefix integer (see {{prefixed-integers}}) that follows is used to locate
+the table entry for the header name.  When S=1, the number represents the static
+table index; when S=0, the number is the relative index of the entry in the
+dynamic table.
 
 The header name reference is followed by the header field value represented as a
-string literal (see Section 5.2 of [RFC7541]).
+string literal (see {{string-literals}}).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -707,11 +707,12 @@ string literal (see Section 5.2 of [RFC7541]).
 ### Insert Without Name Reference
 
 An encoder adds an entry to the dynamic table where both the header field name
-and the header field value are represented as string literals (see
-{{primitives}}) using an instruction that starts with the '01' two-bit pattern.
+and the header field value are represented as string literals using an
+instruction that starts with the '01' two-bit pattern.
 
-The name is represented as a 6-bit prefix string literal, while the value is
-represented as an 8-bit prefix string literal.
+This is followed by the name represented as a 6-bit prefix string literal, and
+the value represented as an 8-bit prefix string literal (see
+{{string-literals}}).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -731,8 +732,9 @@ represented as an 8-bit prefix string literal.
 ### Duplicate {#duplicate}
 
 An encoder duplicates an existing entry in the dynamic table using an
-instruction that starts with the '000' three-bit pattern.  The relative index of
-the existing entry is represented as an integer with a 5-bit prefix.
+instruction that begins with the '000' three-bit pattern.  This is followed by
+the relative index of the existing entry represented as an integer with a 5-bit
+prefix (see {{prefixed-integers}}.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -763,10 +765,12 @@ This section specifies the following decoder instructions.
 
 After processing a header block whose declared Required Insert Count is not
 zero, the decoder emits a Header Acknowledgement instruction.  The instruction
-begins with the '1' one-bit pattern and includes the header block's associated
-stream ID, encoded as a 7-bit prefix integer.  It is used by the peer's encoder
-to know when it is safe to evict an entry ({{blocked-insertion}}), and possibly
-update the Known Received Count ({{known-received-count}}).
+begins with the '1' one-bit pattern which is followed by the header block's
+associated stream ID encoded as a 7-bit prefix integer (see
+{{prefixed-integers}}).
+
+This instruction is used as described in {{known-received-count}} and
+in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -786,8 +790,10 @@ already been acknowledged, that MUST be treated as a connection error of type
 
 When a stream is reset or reading is abandoned, the decoder emits a Stream
 Cancellation instruction. The instruction begins with the '01' two-bit
-pattern. The instruction includes the stream ID of the affected stream encoded
-as a 6-bit prefix integer.  See {{state-synchronization}}.
+pattern, which is followed by the stream ID of the affected stream encoded as a
+6-bit prefix integer.
+
+This instruction is used as described in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -799,13 +805,14 @@ as a 6-bit prefix integer.  See {{state-synchronization}}.
 
 ### Insert Count Increment
 
-The Insert Count Increment instruction begins with the '00' two-bit pattern.
-The instruction specifies the total number of dynamic table inserts and
-duplications since the last Insert Count Increment or Header Acknowledgement
-that increased the Known Received Count for the dynamic table (see
-{{known-received-count}}).  The Increment field is encoded as a 6-bit prefix
-integer. The encoder uses this value to determine which table entries might
-cause a stream to become blocked, as described in {{state-synchronization}}.
+The Insert Count Increment instruction begins with the '00' two-bit pattern,
+followed by the Increment encoded as a 6-bit prefix integer.  The value of the
+Increment is the total number of dynamic table insertions and duplications
+processed by the decoder since the last time it sent a Header Acknowledgement
+instruction that increased the Known Received Count (see
+{{known-received-count}}) or an Insert Count Increment instruction.  The encoder
+uses this value to update the Known Received Count, as described in
+{{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -822,10 +829,13 @@ connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 ## Header Block Representations
 
-Header blocks contain compressed representations of header lists and are carried
-in frames on streams defined by the enclosing protocol.  These representations
-reference the static table, or dynamic table in a particular state without
-modifying it.
+A header block consists of a prefix and a possibly empty sequence of
+representations defined in this section.  Each representation corresponds to a
+single header field.  These representations reference the static table or the
+dynamic table in a particular state, but do not modify that state.
+
+Header blocks are carried in frames on streams defined by the enclosing
+protocol.
 
 ### Header Block Prefix {#header-prefix}
 
@@ -973,8 +983,8 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 If the entry is in the static table, or in the dynamic table with an absolute
 index less than the Base, this representation starts with the '1' 1-bit pattern,
 followed by the `S` bit indicating whether the reference is into the static or
-dynamic table.  The 6-bit prefix integer (see Section 5.1 of [RFC7541]) that
-follows is used to locate the table entry for the header name.  When S=1, the
+dynamic table.  The 6-bit prefix integer (see {{prefixed-integers}}) that
+follows is used to locate the table entry for the header field.  When S=1, the
 number represents the static table index; when S=0, the number is the relative
 index of the entry in the dynamic table.
 
@@ -984,8 +994,8 @@ index of the entry in the dynamic table.
 If the entry is in the dynamic table with an absolute index greater than or
 equal to the Base, the representation starts with the '0001' 4-bit pattern,
 followed by the post-base index (see {{post-base}}) of the matching header
-field, represented as an integer with a 4-bit prefix (see Section 5.1 of
-[RFC7541]).
+field, represented as an integer with a 4-bit prefix (see
+{{prefixed-integers}}).
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1006,17 +1016,14 @@ If the entry is in the static table, or in the dynamic table with an absolute
 index less than the Base, this representation starts with the '01' two-bit
 pattern.
 
-Only the header field name stored in the static or dynamic table is used. Any
-header field value MUST be ignored.
-
 The following bit, 'N', indicates whether an intermediary is permitted to add
 this header to the dynamic header table on subsequent hops. When the 'N' bit is
 set, the encoded header MUST always be encoded with a literal representation. In
 particular, when a peer sends a header field that it received represented as a
 literal header field with the 'N' bit set, it MUST use a literal representation
 to forward this header field.  This bit is intended for protecting header field
-values that are not to be put at risk by compressing them (see Section 7.1 of
-[RFC7541] for more details).
+values that are not to be put at risk by compressing them (see
+{{security-considerations}} for more details).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1031,20 +1038,30 @@ values that are not to be put at risk by compressing them (see Section 7.1 of
 {: title="Literal Header Field With Name Reference"}
 
 The fourth (`S`) bit indicates whether the reference is to the static or dynamic
-table.  The 4-bit prefix integer (see Section 5.1 of [RFC7541]) that follows is
+table.  The 4-bit prefix integer (see {{prefixed-integers}}) that follows is
 used to locate the table entry for the header name.  When S=1, the number
 represents the static table index; when S=0, the number is the relative index of
 the entry in the dynamic table.
 
+Only the header field name is taken from the dynamic table entry; the header
+field value is encoded as an 8-bit prefix string literal (see
+{{string-literals}}).
+
 
 ### Literal Header Field With Post-Base Name Reference
 
-If the name entry is in the dynamic table with an absolute index greater than or
-equal to the Base, the representation starts with the '0000' four-bit
-pattern. The fifth bit is the 'N' bit as described in
-{{literal-name-reference}}.  Finally, the header field name is represented using
-the post-base index of that entry (see {{post-base}}) encoded as an integer with
-a 3-bit prefix.
+A literal header field with post-base name reference represents a header field
+where the name matches the header field name of a dynamic table entry with an
+absolute index greater than or equal to the Base.
+
+This representation starts with the '0000' four-bit pattern.  The fifth bit is
+the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
+post-base index of the dynamic table entry (see {{post-base}}) encoded as an
+integer with a 3-bit prefix (see {{prefixed-integers}}).
+
+Only the header field name is taken from the dynamic table entry; the header
+field value is encoded as an 8-bit prefix string literal (see
+{{string-literals}}).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1061,21 +1078,13 @@ a 3-bit prefix.
 
 ### Literal Header Field Without Name Reference
 
-An addition to the header table where both the header field name and the header
-field value are represented as string literals (see {{primitives}}) starts with
-the '001' three-bit pattern.
+The literal header field without name reference representation encodes a header
+field name and header field value as string literals.
 
-The fourth bit, 'N', indicates whether an intermediary is permitted to add this
-header to the dynamic header table on subsequent hops. When the 'N' bit is set,
-the encoded header MUST always be encoded with a literal representation. In
-particular, when a peer sends a header field that it received represented as a
-literal header field with the 'N' bit set, it MUST use a literal representation
-to forward this header field.  This bit is intended for protecting header field
-values that are not to be put at risk by compressing them (see Section 7.1 of
-[RFC7541] for more details).
-
-The name is represented as a 4-bit prefix string literal, while the value is
-represented as an 8-bit prefix string literal.
+This representation begins with the '001' three-bit pattern.  The fourth bit is
+the 'N' bit as described in {{literal-name-reference}}.  The name follows,
+represented as a 4-bit prefix string literal, then the value, represented as an
+8-bit prefix string literal (see {{string-literals}}).
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
