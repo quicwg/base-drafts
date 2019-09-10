@@ -853,7 +853,7 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Bursting more than an intial window's worth of data into the network might
+Bursting more than an initial window's worth of data into the network might
 cause short-term congestion and losses. Implemementations SHOULD either use
 pacing or reduce their congestion window to limit such bursts.
 
