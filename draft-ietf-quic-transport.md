@@ -2463,7 +2463,7 @@ of the datagram contain a Stateless Reset Token.
 To entities other than its intended recipient, a stateless reset will appear to
 be a packet with a short header.  For the stateless reset to appear as a valid
 QUIC packet, the Unpredictable Bits field needs to include at least 38 bits of
-data (or 6 bytes, less the two fixed bits).
+data (or 5 bytes, less the two fixed bits).
 
 A minimum size of 21 bytes does not guarantee that a stateless reset is
 difficult to distinguish from other packets if the recipient requires the use of
