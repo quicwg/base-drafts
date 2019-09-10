@@ -6,6 +6,20 @@ jobs:
     working_directory: ~/draft
 
     steps:
+      - restore_cache:
+          name: "Restoring cache - Git"
+          keys:
+            - v1-cache-git-{{ .Branch }}-{{ .Revision }}
+            - v1-cache-git-{{ .Branch }}
+            - v1-cache-git-master
+            - v1-cache-git-
+
+      - restore_cache:
+          name: "Restoring cache - References"
+          keys:
+            - v1-cache-references-{{ epoch }}
+            - v1-cache-references-
+
       - checkout
 
       # Build txt and html versions of drafts
@@ -42,6 +56,21 @@ jobs:
       - store_artifacts:
           path: /tmp/artifacts
 
+      - run:
+          name: "Prepare for Caching"
+          command: "git gc --auto"
+
+      - save_cache:
+          name: "Saving Cache - Git"
+          key: v1-cache-git-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/draft
+
+      - save_cache:
+          name: "Saving Cache - Drafts"
+          key: v1-cache-references-{{ epoch }}
+          paths:
+            - ~/.cache/xml2rfc
 
 workflows:
   version: 2
