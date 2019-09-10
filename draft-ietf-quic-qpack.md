@@ -1348,6 +1348,12 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-09
+
+- Decoders MUST emit Header Acknowledgements (#2939)
+- Updated error code for multiple encoder or decoder streams (#2970)
+- Added explicit defaults for new SETTINGS (#2974)
+
 ## Since draft-ietf-quic-qpack-08
 
 - Endpoints are permitted to create encoder and decoder streams even if they
