@@ -498,7 +498,7 @@ detect lost Handshake packets.
 
 QUIC also needs access to keys that might not ordinarily be available to a TLS
 implementation.  For instance, a client might need to acknowledge Handshake
-packets before it is ready to sent CRYPTO frames at that encryption level.  TLS
+packets before it is ready to send CRYPTO frames at that encryption level.  TLS
 therefore needs to provide keys to QUIC before it might produce them for its own
 use.
 
