@@ -3088,7 +3088,7 @@ all subsequent ACK frames containing them could be lost. In this case, the
 loss recovery algorithm could cause spurious retransmits, but the sender will
 continue making forward progress.
 
-### Limiting ACK Ranges
+### Limiting ACK Ranges {#ack-limiting}
 
 To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
 received by the sender, the receiver SHOULD track which ACK frames have been
