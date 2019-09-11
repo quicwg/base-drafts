@@ -5935,6 +5935,38 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-22
+
+- NEW_CONNECTION_ID includes a request to retire old connection IDs (#2645,
+  #2769)
+- Rules for preventing correlation by connection ID tightened (#2084, #2929)
+- Clarified use of CONNECTION_CLOSE in Handshake packets (#2151, #2541, #2688)
+- Discourage regressions of largest acknowledged in ACK (#2205, #2752)
+- Improved robusness of validation process for ECN counts (#2534, #2752)
+- Introduce concept of handshake confirmation (#2267, #2673)
+- Disallow migration prior to handshake confirmation (#2309, #2370)
+- Require endpoints to ignore spurious migration attempts (#2342, #2893)
+- Transport parameter for disabling migration clarified to allow NAT rebinding
+  (#2389, #2893)
+- Document principles for defining new error codes (#2388, #2880)
+- Reserve transport parameters for greasing (#2550, #2873)
+- A maximum ACK delay of 0 is used for handshake packet number spaces (#2646,
+  #2638)
+- Improved rules for use of congestion control state on new paths (#2685, #2918)
+- PATH_RESPONSE frames are not sent again if lost (#2724, #2729)
+- Removed recommendation to coordinate spin for multiple connections that share
+  a path (#2763, #2882)
+- Allow smaller stateless resets and recommend a smaller minimum on packets
+  that might trigger a stateless reset (#2770, #2869, #2927)
+- Provide guidance around the interface to QUIC as used by application protocols
+  (#2805, #2857)
+- Frames other than STREAM can cause STREAM_LIMIT_ERROR (#2825, #2826)
+- Tighter rules about processing of rejected 0-RTT packets (#2829, #2840, #2841)
+- Explanation of the effect of Retry on 0-RTT packets (#2842, #2852)
+- Cryptographic handshake needs to provide server transport parameter encryption
+  (#2920, #2921)
+
+
 ## Since draft-ietf-quic-transport-21
 
 - Connection ID lengths are now one octet, but limited in version 1 to 20 octets
