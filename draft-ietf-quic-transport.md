@@ -3014,6 +3014,12 @@ ACK frames in response.  In this case the receiver can determine whether an
 immediate or delayed acknowledgement should be generated after processing
 incoming packets.
 
+Acknowledgements of packets carrying CRYPTO frames SHOULD be delayed but
+minimally, to complete the handshake with minimal latency. Delaying them allows
+the endpoint to bundle any response data with this ACK frame.  ACK frames SHOULD
+be sent immediately when the crypto stack indicates all data for that packet
+number space has been received.
+
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
 one ACK-frame-only packet in response to receiving an ACK-eliciting packet
