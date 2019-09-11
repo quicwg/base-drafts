@@ -2982,11 +2982,24 @@ valid frames? -->
 
 ## Generating Acknowledgements {#generating-acks}
 
-An acknowledgement SHOULD be sent immediately upon receipt of a second
-ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
-an ACK immediately when receiving a second ack-eliciting packet.
+Endpoints acknowledge all packets they receive and process. However, only
+ack-eliciting packets trigger the sending of an ACK frame.  Packets that are not
+ack-eliciting are only acknowledged when an ACK frame is sent for other reasons.
 
-In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
+When sending a packet for any reason, an endpoint should attempt to bundle an
+ACK frame if one has not been sent recently. Doing so helps with timely loss
+detection at the peer.  While loss detection and congestion control do not
+depend on receiving an immediate acknowledgment for packets that are sent,
+performance can be improved by acknowledging immediately in several cases, as
+discussed below.
+
+### Sending ACK Frames
+
+An ACK frame SHOULD be sent immediately upon receipt of a second ack-eliciting
+packet. Loss detection does not assume that the peer sends an ACK immediately on
+receiving a second ack-eliciting packet.
+
+In order to accelerate loss detection and reduce timeouts, the receiver SHOULD
 send an immediate ACK after it receives an out-of-order packet. It could send
 immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
 1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
@@ -3000,11 +3013,6 @@ As an optimization, a receiver MAY process multiple packets before sending any
 ACK frames in response.  In this case the receiver can determine whether an
 immediate or delayed acknowledgement should be generated after processing
 incoming packets.
-
-### Sending ACK Frames
-
-An endpoint sends ACK frames to acknowledge packets it has received and
-processed.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
@@ -3041,9 +3049,6 @@ estimate or the value it indicates in the `max_ack_delay` transport parameter.
 This ensures an acknowledgment is sent at least once per RTT when packets
 needing acknowledgement are received.  The sender can use the receiver's
 `max_ack_delay` value in determining timeouts for timer-based retransmission.
-
-Strategies and implications of the frequency of generating acknowledgments are
-discussed in more detail in {{QUIC-RECOVERY}}.
 
 ### Managing ACK Ranges
 
@@ -3100,21 +3105,22 @@ received packets in preference to packets received in the past.
 
 An endpoint measures the delays intentionally introduced between when an
 ACK-eliciting packet is received and the corresponding acknowledgment is sent.
-The endpoint encodes this delay for the largest acknowledged packet in the
-Ack Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver
-of the ACK to adjust for any intentional delays, which is important for
-delayed acknowledgements, when estimating the path RTT. A packet might be
-held in the OS kernel or elsewhere on the host before being processed.
-An endpoint MUST NOT include delays that is does not control when populating
-the Ack Delay field in an ACK frame.
+The endpoint encodes this delay for the largest acknowledged packet in the Ack
+Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver of the
+ACK to adjust for any intentional delays, which is important for getting a
+better estimate of the path RTT when acknowledgments are delayed. A packet might
+be held in the OS kernel or elsewhere on the host before being processed.  An
+endpoint MUST NOT include delays that is does not control when populating the
+Ack Delay field in an ACK frame.
 
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  An endpoint commits to a maximum delay using the max_ack_delay transport
-parameter; see {{transport-parameter-definitions}}.  max_ack_delay implies an explicit contract:
-an endpoint promises to never delay acknowledgments of an ack-eliciting packet
-by more than the indicated value. If it does, any excess accrues to the RTT
-estimate and could result in spurious retransmissions from the peer.
-For Initial and Handshake packets, a max_ack_delay of 0 is used.
+packets.  An endpoint commits to a maximum delay using the max_ack_delay
+transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
+implies an explicit contract: an endpoint promises to never delay
+acknowledgments of an ack-eliciting packet by more than the indicated value. If
+it does, any excess accrues to the RTT estimate and could result in delayed
+retransmissions from the peer.  For Initial and Handshake packets, a
+max_ack_delay of 0 is used.
 
 ### ACK Frames and Packet Protection
 
