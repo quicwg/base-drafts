@@ -3073,7 +3073,7 @@ spuriously retransmitting the frames it contains.
 {{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for determining what packets to acknowledge in each
 ACK frame.
 
-### Receiver Tracking of ACK Frames
+### Receiver Tracking of ACK Frames {#ack-tracking}
 
 When a packet containing an ACK frame is sent, the largest acknowledged in that
 frame may be saved.  When a packet containing an ACK frame is acknowledged, the
