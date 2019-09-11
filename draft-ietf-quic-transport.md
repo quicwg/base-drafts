@@ -3125,7 +3125,7 @@ Ack Delay field in an ACK frame.
 An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
 packets.  An endpoint commits to a maximum delay using the max_ack_delay
 transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
-implies an explicit contract: an endpoint promises to never delay
+declares an explicit contract: an endpoint promises to never delay
 acknowledgments of an ack-eliciting packet by more than the indicated value. If
 it does, any excess accrues to the RTT estimate and could result in delayed
 retransmissions from the peer.  For Initial and Handshake packets, a
