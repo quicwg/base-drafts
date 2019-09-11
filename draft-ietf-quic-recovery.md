@@ -239,101 +239,19 @@ forward progress without relying on timeouts.
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
-more accurate round-trip time estimate (see {{host-delay}}).
-
-
-# Generating Acknowledgements {#generating-acks}
-
-An acknowledgement SHOULD be sent immediately upon receipt of a second
-ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
-an ACK immediately when receiving a second ack-eliciting packet.
-
-In order to accelerate loss recovery and reduce timeouts, an endpoint SHOULD
-immediately send an ACK frame when it receives an out-of-order packet that is
-ACK-eliciting. The endpoint MAY continue sending ACK frames immediately on each
-subsequently received packet, but the endpoint SHOULD return to acknowledging
-every other packet after a period of 1/8 x RTT, unless more ACK-eliciting
-packets are received out of order.  If every subsequent ACK-eliciting packet
-arrives out of order, then an ACK frame SHOULD be sent immediately for every
-received ACK-eliciting packet.
-
-If a packet is received with the ECN Congestion Experienced (CE) codepoint in
-the IP header, the endpoint SHOULD respond with an ACK frame immediately, even
-if the packet is received in order.  Doing so reduces the peer's response time
-to congestion events.
-
-If multiple packets are already available at an endpoint, the endpoint MAY
-process them all before sending an ACK frame in response.  The endpoint can
-determine whether an acknowledgement should be sent immediately or delayed after
-processing the batch.
-
-## Crypto Handshake Data
-
-In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto retransmission timeouts, crypto packets SHOULD use a very short
-ack delay, such as the local timer granularity.  ACK frames SHOULD be sent
-immediately when the crypto stack indicates all data for that packet number
-space has been received.
-
-## ACK Ranges
-
-When an ACK frame is sent, one or more ranges of acknowledged packets are
-included.  Including older packets reduces the chance of spurious retransmits
-caused by losing previously sent ACK frames, at the cost of larger ACK frames.
-
-ACK frames SHOULD always acknowledge the most recently received packets, and the
-more out-of-order the packets are, the more important it is to send an updated
-ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriously retransmitting the frames it contains.
-
-Below is one recommended approach for determining what packets to include in an
-ACK frame.
-
-## Receiver Tracking of ACK Frames
-
-When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
-receiver can stop acknowledging packets less than or equal to the largest
-acknowledged in the sent ACK frame.
-
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
-of reordering. In cases with ACK frame loss and reordering, this approach does
-not guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and
-all subsequent ACK frames containing them could be lost. In this case, the
-loss recovery algorithm may cause spurious retransmits, but the sender will
-continue making forward progress.
-
-## Measuring and Reporting Host Delay {#host-delay}
-
-An endpoint measures the delays intentionally introduced between when an
-ACK-eliciting packet is received and the corresponding acknowledgment is sent.
-The endpoint encodes this delay for the largest acknowledged packet in the
-Ack Delay field of an ACK frame (see Section 19.3 of {{QUIC-TRANSPORT}}).
-This allows the receiver of the ACK to adjust for any intentional delays,
-which is important for delayed acknowledgements, when estimating the path RTT.
-A packet might be held in the OS kernel or elsewhere on the host before being
-processed.  An endpoint SHOULD NOT include these unintentional delays when
-populating the Ack Delay field in an ACK frame.
-
-An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter; see Section 18.2 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
-explicit contract: an endpoint promises to never delay acknowledgments of an
-ack-eliciting packet by more than the indicated value. If it does, any excess
-accrues to the RTT estimate and could result in spurious retransmissions from
-the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
+more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays ({{host-delay}}) to generate a
-statistical description of the connection's RTT.  An endpoint computes the
-following three values: the minimum value observed over the lifetime of the
-connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
-and the variance in the observed RTT samples (rttvar).
+RTT samples and peer-reported host delays (see Section 13.2 of
+{{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
+RTT. An endpoint computes the following three values: the minimum value
+observed over the lifetime of the connection (min_rtt), an
+exponentially-weighted moving average (smoothed_rtt), and the variance in the
+observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -380,10 +298,10 @@ min_rtt is set to the latest_rtt on the first sample in a connection, and to the
 lesser of min_rtt and latest_rtt on subsequent samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
-allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
-what it observes (see {{smoothed-rtt}}), and limits potential underestimation
-due to erroneously-reported delays by the peer.
+not adjust for host delays reported by the peer.  Doing so allows the endpoint
+to set a lower bound for the smoothed_rtt based entirely on what it observes
+(see {{smoothed-rtt}}), and limits potential underestimation due to
+erroneously-reported delays by the peer.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
@@ -391,15 +309,14 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for host delays ({{host-delay}}).  For packets sent in the ApplicationData
-packet number space, a peer limits any delay in sending an acknowledgement for
-an ack-eliciting packet to no greater than the value it advertised in the
-max_ack_delay transport parameter.  Consequently, when a peer reports an Ack
-Delay that is greater than its max_ack_delay, the delay is attributed to reasons
-out of the peer's control, such as scheduler latency at the peer or loss of
-previous ACK frames.  Any delays beyond the peer's max_ack_delay are therefore
-considered effectively part of path delay and incorporated into the smoothed_rtt
-estimate.
+for host delays.  For packets sent in the ApplicationData packet number space,
+a peer limits any delay in sending an acknowledgement for an ack-eliciting
+packet to no greater than the value it advertised in the max_ack_delay transport
+parameter.  Consequently, when a peer reports an Ack Delay that is greater than
+its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+such as scheduler latency at the peer or loss of previous ACK frames.  Any
+delays beyond the peer's max_ack_delay are therefore considered effectively
+part of path delay and incorporated into the smoothed_rtt estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
@@ -408,7 +325,7 @@ endpoint:
   Initial and Handshake packet number space.
 
 - MUST use the lesser of the value reported in Ack Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter ({{host-delay}}).
+  and the peer's max_ack_delay transport parameter.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
   min_rtt.  This limits the underestimation that a misreporting peer can cause
@@ -445,7 +362,7 @@ this section provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
-frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
+frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
 
 ## Acknowledgement-based Detection {#ack-loss-detection}
