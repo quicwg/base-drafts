@@ -2999,11 +2999,14 @@ An ACK frame SHOULD be sent immediately upon receipt of a second ack-eliciting
 packet. Loss detection does not assume that the peer sends an ACK immediately on
 receiving a second ack-eliciting packet.
 
-In order to accelerate loss detection and reduce timeouts, the receiver SHOULD
-send an immediate ACK after it receives an out-of-order packet. It could send
-immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
-1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
-order, then an immediate ACK SHOULD be sent for every received packet.
+In order to accelerate loss detection, an endpoint SHOULD immediately send an
+ACK frame when it receives an out-of-order packet that is ACK-eliciting. The
+endpoint MAY continue sending ACK frames immediately on each subsequently
+received packet, but the endpoint SHOULD return to acknowledging every other
+packet after a period of 1/8 x RTT, unless more ACK-eliciting packets are
+received out of order.  If every subsequent ACK-eliciting packet arrives out of
+order, then an ACK frame SHOULD be sent immediately for every received
+ACK-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
@@ -3014,11 +3017,11 @@ ACK frames in response.  In this case the receiver can determine whether an
 immediate or delayed acknowledgement should be generated after processing
 incoming packets.
 
-Acknowledgements of packets carrying CRYPTO frames SHOULD be delayed but
-minimally, to complete the handshake with minimal latency. Delaying them allows
-the endpoint to bundle any response data with this ACK frame.  ACK frames SHOULD
-be sent immediately when the crypto stack indicates all data for that packet
-number space has been received.
+Acknowledgements of packets carrying CRYPTO frames SHOULD be minimally delayed,
+to complete the handshake with minimal latency. Delaying them by a small amount,
+such as the local timer granularity, allows the endpoint to bundle any data sent
+in response with the ACK frame.  ACK frames SHOULD be sent immediately when the
+crypto stack indicates all data for that packet number space has been received.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
