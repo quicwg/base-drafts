@@ -457,10 +457,11 @@ handshake, new data is requested from TLS after providing received data.
 ### Encryption Level Changes
 
 As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as TLS starts using keys at a given encryption level, TLS
-indicates to QUIC that it is now reading or writing with keys at that encryption
-level.  These events are not asynchronous; they always occur immediately after
-TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
+keys.  Separately, as keys at a given encryption level become available to TLS,
+TLS indicates to QUIC that reading or writing keys at that encryption level are
+available.  These events are not asynchronous; they always occur immediately
+after TLS is provided with new handshake bytes, or after TLS produces handshake
+bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -495,6 +496,12 @@ client could interleave ACK frames that are protected with Handshake keys with
 0-RTT data and the server needs to process those acknowledgments in order to
 detect lost Handshake packets.
 
+QUIC also needs access to keys that might not ordinarily be available to a TLS
+implementation.  For instance, a client might need to acknowledge Handshake
+packets before it is ready to send CRYPTO frames at that encryption level.  TLS
+therefore needs to provide keys to QUIC before it might produce them for its own
+use.
+
 
 ### TLS Interface Summary
 
@@ -507,33 +514,39 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
+                                              Handshake Received
 Install tx 0-RTT Keys
                      0-RTT --------------->
-                                              Handshake Received
                                                    Get Handshake
                      <------------- Initial
+Handshake Received
+Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
+Handshake Received
                                            Install tx 1-RTT keys
                      <--------------- 1-RTT
-Handshake Received
-Install tx Handshake keys
-Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Install 1-RTT keys
-                     1-RTT --------------->
                                               Handshake Received
                                            Install rx 1-RTT keys
                                               Handshake Complete
+Install 1-RTT keys
+                     1-RTT --------------->
                                                    Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
+
+{{exchange-summary}} shows the multiple packets that form a single "flight" of
+messages being processed individually, to show what incoming messages trigger
+different actions.  New handshake messages are requested after all incoming
+packets have been processed.  This process might vary depending on how QUIC
+implementations and the packets they receive are structured.
 
 
 ## TLS Version {#tls-version}
