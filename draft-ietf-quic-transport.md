@@ -3070,7 +3070,7 @@ more out-of-order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
 spuriously retransmitting the frames it contains.
 
-Below is one recommended approach for determining what packets to include in an
+{{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for determining what packets to acknowledge in each
 ACK frame.
 
 ### Receiver Tracking of ACK Frames
