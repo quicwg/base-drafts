@@ -1500,7 +1500,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - PTO should always send an ack-eliciting packet (#2895)
 - Unify the Handshake Timer with the PTO timer (#2648, #2658, #2886)
-- Move ACK generation text to transport draft (#1860)
+- Move ACK generation text to transport draft (#1860, #2916)
 
 ## Since draft-ietf-quic-recovery-21
 
