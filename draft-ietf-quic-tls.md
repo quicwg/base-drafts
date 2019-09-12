@@ -1683,7 +1683,7 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c1ff0000170008f067a5502a4262b5004074168b
+header = c9ff0000170008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
