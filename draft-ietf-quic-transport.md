@@ -6022,7 +6022,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Rules for preventing correlation by connection ID tightened (#2084, #2929)
 - Clarified use of CONNECTION_CLOSE in Handshake packets (#2151, #2541, #2688)
 - Discourage regressions of largest acknowledged in ACK (#2205, #2752)
-- Improved robusness of validation process for ECN counts (#2534, #2752)
+- Improved robustness of validation process for ECN counts (#2534, #2752)
 - Require endpoints to ignore spurious migration attempts (#2342, #2893)
 - Transport parameter for disabling migration clarified to allow NAT rebinding
   (#2389, #2893)
