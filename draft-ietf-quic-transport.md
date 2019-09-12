@@ -5960,6 +5960,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Explanation of the effect of Retry on 0-RTT packets (#2842, #2852)
 - Cryptographic handshake needs to provide server transport parameter encryption
   (#2920, #2921)
+- Moved ACK generation guidance from recovery draft to transport draft (#1860,
+  #2916).
 
 
 ## Since draft-ietf-quic-transport-21
