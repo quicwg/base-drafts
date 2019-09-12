@@ -1578,7 +1578,7 @@ hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
 ## Client Initial
 
 The client sends an Initial packet.  The unprotected payload of this packet
-contains the following CRYPTO frame, plus enough PADDING frames to make an 1163
+contains the following CRYPTO frame, plus enough PADDING frames to make a 1162
 byte payload:
 
 ~~~
@@ -1683,7 +1683,7 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c1ff0000170008f067a5502a4262b5004074168b
+header = c9ff0000170008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
