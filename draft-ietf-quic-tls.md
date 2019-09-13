@@ -70,14 +70,22 @@ informative:
     date: 2016-03-08
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
-  IMC:
-    title: "Introduction to Modern Cryptography, Second Edition"
+  DefnAEAD:
+    title: "Authenticated-Encryption with Associated-Data"
     author:
-      - ins: J. Katz
-      - ins: Y. Lindell
-    date: 2014-11-06
-    seriesinfo:
-      ISBN: 978-1466570269
+      - ins: P. Rogaway
+    date: 2002-09-20
+    target: "https://web.cs.ucdavis.edu/~rogaway/papers/ad.pdf"
+
+  NAN:
+    title: "Nonces are Noticed: AEAD Revisited"
+    author:
+      - ins: M. Bellare
+      - ins: R. Ng
+      - ins: B. Tackmann
+    date: 2019-06-01
+    target: https://eprint.iacr.org/2019/624
+    seriesinfo: Advances in Cryptology – CRYPTO 2019, pages 235-265
 
   QUIC-HTTP:
     title: "Hypertext Transfer Protocol (HTTP) over QUIC"
@@ -1421,19 +1429,23 @@ amplification.
 
 ## Header Protection Analysis {#header-protect-analysis}
 
-Header protection relies on the packet protection AEAD being a pseudorandom
-function (PRF), which is not a property that AEAD algorithms
-guarantee. Therefore, no strong assurances about the general security of this
-mechanism can be shown in the general case. The AEAD algorithms described in
-this document are assumed to be PRFs.
-
-The header protection algorithms defined in this document take the form:
+{{NAN}} analyzes authenticated encryption algorithms which provide nonce
+privacy, referred to as "Hide Nonce" (HN) transforms. The general header
+protection construction in this document is one of those algorithms (HN1).
+Header protection uses the output of the packet protection AEAD to derive
+`sample`, and then encrypts the header field using a pseudorandom function
+(PRF) as follows:
 
 ~~~
 protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
-This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
+Assuming hp_key is distinct from the packet protection key, this construction
+(HN1) achieves AE2 security and therefore guarantees privacy of `field`, the
+protected packet header. One important distinction between HN1 and the header
+protection construction in this document is that the latter uses an AEAD
+algorithm as the PRF. However, since the encrypted output of an AEAD is
+pseudorandom {{DefnAEAD}}, this achieves the properties desired from a PRF.
 
 Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and
