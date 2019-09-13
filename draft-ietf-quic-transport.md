@@ -955,11 +955,12 @@ selected by the client, both to ensure correct routing toward the client and to
 allow the client to validate that the packet is in response to an Initial
 packet.
 
-A zero-length connection ID MAY be used when the connection ID is not needed for
-routing and the address/port tuple of packets is sufficient to identify a
-connection. An endpoint whose peer has selected a zero-length connection ID MUST
-continue to use a zero-length connection ID for the lifetime of the connection
-and MUST NOT send packets from any other local address.
+A zero-length connection ID can be used when a connection ID is not needed to
+route to the correct endpoint. However, multiplexing connections on the same
+local IP address and port while using zero-length connection IDs will cause
+failures in the presence of peer connection migration, NAT rebinding, and client
+port reuse; and therefore MUST NOT be done unless an endpoint is certain that
+those protocol features are not in use.
 
 When an endpoint has requested a non-zero-length connection ID, it needs to
 ensure that the peer has a supply of connection IDs from which to choose for
@@ -1044,16 +1045,13 @@ with an existing connection, or - for servers - potentially create a new
 connection.
 
 Hosts try to associate a packet with an existing connection. If the packet has a
-Destination Connection ID corresponding to an existing connection, QUIC
-processes that packet accordingly. Note that more than one connection ID can be
-associated with a connection; see {{connection-id}}.
+non-zero-length Destination Connection ID corresponding to an existing
+connection, QUIC processes that packet accordingly. Note that more than one
+connection ID can be associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
-address/port tuple of a connection where the host did not require connection
-IDs, QUIC processes the packet as part of that connection.  Endpoints SHOULD
-either reject connection attempts that use the same addresses as existing
-connections, or use a non-zero-length Destination Connection ID so that packets
-can be correctly attributed to connections.
+local address and port of a connection where the host used zero-length
+connection IDs, QUIC processes the packet as part of that connection.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
@@ -1074,7 +1072,7 @@ it commits changes to state before discovering an error.
 
 Valid packets sent to clients always include a Destination Connection ID that
 matches a value the client selects.  Clients that choose to receive
-zero-length connection IDs can use the address/port tuple to identify a
+zero-length connection IDs can use the local address and port to identify a
 connection.  Packets that don't match an existing connection are discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
@@ -1105,8 +1103,8 @@ the packet is sufficiently long.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
-IDs - the address tuple.  If the packet doesn't match an existing connection,
-the server continues below.
+IDs - the local address and port.  If the packet doesn't match an existing
+connection, the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
