@@ -987,7 +987,8 @@ initial connection ID.
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+({{frame-retire-connection-id}}).  Connection IDs that are issued and not
+retired are considered active; any active connection ID can be used.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
@@ -2137,11 +2138,17 @@ linked by any other entity.
 At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
-An endpoint MUST use a new connection ID if it initiates connection migration.
-Using a new connection ID eliminates the use of the connection ID for linking
-activity from the same connection on different networks.  Header protection
-ensures that packet numbers cannot be used to correlate activity.  This does not
-prevent other properties of packets, such as timing and size, from being used to
+An endpoint MUST use a new connection ID if it initiates connection migration as
+described in {{initiating-migration}} or probes a new network path as described
+in {{probing}}.  An endpoint MUST use a new connection ID in response to a
+change in the address of a peer if the packet with the new peer address uses an
+active connection ID that has not been previously used by the peer.
+
+Using different connection IDs for packets sent in both directions on each new
+network path eliminates the use of the connection ID for linking packets from
+the same connection across different network paths.  Header protection ensures
+that packet numbers cannot be used to correlate activity.  This does not prevent
+other properties of packets, such as timing and size, from being used to
 correlate activity.
 
 Unintentional changes in path without a change in connection ID are possible.
@@ -2157,9 +2164,13 @@ genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
-An endpoint that exhausts available connection IDs cannot migrate.  To ensure
-that migration is possible and packets sent on different paths cannot be
-correlated, endpoints SHOULD provide new connection IDs before peers migrate.
+An endpoint that exhausts available connection IDs cannot probe new paths or
+initiate migration, nor can it respond to probes or attempts by its peer to
+migrate.  To ensure that migration is possible and packets sent on different
+paths cannot be correlated, endpoints SHOULD provide new connection IDs before
+peers migrate; see {{issue-cid}}.  If a peer might have exhausted available
+connection IDs, a migrating endpoint could include a NEW_CONNECTION_ID frame in
+all packets sent on a new network path.
 
 
 ## Server's Preferred Address {#preferred-address}
