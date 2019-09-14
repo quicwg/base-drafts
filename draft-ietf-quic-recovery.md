@@ -533,8 +533,10 @@ then the original transmission is acknowledged.  In the absence of any new
 application data, a PTO timer expiration now would find the sender with no new
 or previously-sent data to send.
 
-When there is no data to send, the sender SHOULD send a PING or other
-ack-eliciting frame in a single packet, re-arming the PTO timer.
+When there is no data to send, the sender SHOULD send an ack-eliciting frame in
+a single packet, re-arming the PTO timer.  PING frames can be used for 0/1-RTT
+packets, while empty CRYPTO frames can be used for Initial/Handshake packets
+where PING frames are not allowed.
 
 Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
