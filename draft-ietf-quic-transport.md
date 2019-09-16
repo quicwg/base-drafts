@@ -2788,13 +2788,12 @@ UDP datagram. Receivers SHOULD ignore any subsequent packets with a different
 Destination Connection ID than the first packet in the datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
-complete.  Though the values of some fields in the packet header might be
-redundant, no fields are omitted.  The receiver of coalesced QUIC packets MUST
-individually process each QUIC packet and separately acknowledge them, as if
-they were received as the payload of different UDP datagrams.  For example, if
-decryption fails (because the keys are not available or any other reason),
-the receiver MAY either discard or buffer the packet for later processing and
-MUST attempt to process the remaining packets.
+complete.  The receiver of coalesced QUIC packets MUST individually process each
+QUIC packet and separately acknowledge them, as if they were received as the
+payload of different UDP datagrams.  For example, if decryption fails (because
+the keys are not available or any other reason), the receiver MAY either discard
+or buffer the packet for later processing and MUST attempt to process the
+remaining packets.
 
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
