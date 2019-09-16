@@ -1441,7 +1441,7 @@ protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 Assuming hp_key is distinct from the packet protection key, this construction
-(HN1) achieves AE2 security and therefore guarantees privacy of `field`, the
+(HN1) achieves AE2 security as defined in {{NAN}} and therefore guarantees privacy of `field`, the
 protected packet header. One important distinction between HN1 and the header
 protection construction in this document is that the latter uses an AEAD
 algorithm as the PRF. However, since the encrypted output of an AEAD is
