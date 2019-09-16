@@ -4977,7 +4977,9 @@ Token Length:
 
 Token:
 
-: An opaque blob that the client may use with a future Initial packet.
+: An opaque blob that the client may use with a future Initial packet. The token
+  MUST NOT be empty.  An endpoint MUST treat receipt of a NEW_TOKEN frame with
+  an empty Token field as a connection error of type FRAME_ENCODING_ERROR.
 
 An endpoint might receive multiple NEW_TOKEN frames that contain the same token
 value.  Endpoints are responsible for discarding duplicate values, which might
