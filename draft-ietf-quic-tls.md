@@ -74,8 +74,9 @@ informative:
     title: "Authenticated-Encryption with Associated-Data"
     author:
       - ins: P. Rogaway
-    date: 2002-09-20
-    target: "https://web.cs.ucdavis.edu/~rogaway/papers/ad.pdf"
+    date: 2002-11-22
+    target: "http://doi.acm.org/10.1145/586110.586125"
+    seriesinfo: Proceedings of the 9th ACM Conference on Computer and Communications Security, pages 98-107
 
   NAN:
     title: "Nonces are Noticed: AEAD Revisited"
@@ -84,7 +85,7 @@ informative:
       - ins: R. Ng
       - ins: B. Tackmann
     date: 2019-06-01
-    target: https://eprint.iacr.org/2019/624
+    target: "http://dx.doi.org/10.1007/978-3-030-26948-7_9"
     seriesinfo: Advances in Cryptology – CRYPTO 2019, pages 235-265
 
   QUIC-HTTP:
@@ -1441,11 +1442,12 @@ protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 As `hp_key` is distinct from the packet protection key, this construction
-(HN1) achieves AE2 security as defined in {{NAN}} and therefore guarantees privacy of `field`, the
-protected packet header. One important distinction between HN1 and the header
-protection construction in this document is that the latter uses an AEAD
-algorithm as the PRF. However, since the encrypted output of an AEAD is
-pseudorandom {{DefnAEAD}}, this achieves the properties desired from a PRF.
+(HN1) achieves AE2 security as defined in {{NAN}} and therefore guarantees
+privacy of `field`, the protected packet header. One important distinction
+between HN1 and the header protection construction in this document is that
+the latter uses an AEAD algorithm as the PRF. However, since the encrypted
+output of an AEAD is pseudorandom {{DefnAEAD}}, this achieves the properties
+desired from a PRF.
 
 Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and
