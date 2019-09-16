@@ -6043,7 +6043,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Removed recommendation to coordinate spin for multiple connections that share
   a path (#2763, #2882)
 - Allow smaller stateless resets and recommend a smaller minimum on packets
-  that might trigger a stateless reset (#2770, #2869, #2927)
+  that might trigger a stateless reset (#2770, #2869, #2927, #3007).
 - Provide guidance around the interface to QUIC as used by application protocols
   (#2805, #2857)
 - Frames other than STREAM can cause STREAM_LIMIT_ERROR (#2825, #2826)
