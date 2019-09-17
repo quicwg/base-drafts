@@ -291,6 +291,13 @@ are received within an RTT.  As suggested in {{?RFC6298}}, doing so might result
 in inadequate history in smoothed_rtt and rttvar.  Ensuring that RTT estimates
 retain sufficient history is an open research question.
 
+### Retransmitted ACK frames
+
+Section 13.3 of {{QUIC-TRANSPORT}} recommends sending the most recent set of
+acknowledgements in ACK frames, but if ACK frames are retransmitted, an inflated
+RTT can be measured.  Some incorrect RTT samples are prevented by only measuring
+RTT when the largest acked increases.
+
 ## Estimating min_rtt {#min-rtt}
 
 min_rtt is the minimum RTT observed over the lifetime of the connection.
