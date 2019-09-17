@@ -4776,8 +4776,7 @@ subsequent ACK Range using the following formula:
 ~~~
 
 If any computed packet number is negative, an endpoint MUST generate a
-connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
-frame.
+connection error of type FRAME_ENCODING_ERROR.
 
 
 ### ECN Counts {#ack-ecn-counts}
@@ -5061,7 +5060,7 @@ The first byte in the stream has an offset of 0.  The largest offset delivered
 on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
 it is not possible to provide flow control credit for that data.  Receipt of a
 frame that exceeds this limit will be treated as a connection error of type
-FLOW_CONTROL_ERROR.
+FRAME_ENCODING_ERROR.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -5315,7 +5314,7 @@ Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
   less than 1 and greater than 20 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
+  connection error of type FRAME_ENCODING_ERROR.
 
 Connection ID:
 
@@ -5353,7 +5352,7 @@ RETIRE_CONNECTION_ID frames in a timely manner.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type PROTOCOL_VIOLATION.
+connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
@@ -5397,7 +5396,7 @@ type PROTOCOL_VIOLATION.
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
 contained.  The peer MAY treat this as a connection error of type
-PROTOCOL_VIOLATION.
+FRAME_ENCODING_ERROR.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
