@@ -416,6 +416,11 @@ CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
 CRYPTO frames into QUIC packets, which are protected using QUIC packet
 protection.
 
+QUIC is only capable of conveying TLS handshake records in CRYPTO frames.  TLS
+alerts are turned into QUIC CONNECTION_CLOSE error codes; see {{tls-errors}}.
+TLS application data and other message types cannot be carried by QUIC at any
+encryption level and can be treated as an error if they are received.
+
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
 
@@ -628,10 +633,6 @@ with any other value as a connection error of type PROTOCOL_VIOLATION.
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
 the ClientHello message of a subsequent handshake (see Section 4.2.10 of
 {{!TLS13}}). It then sends the application data in 0-RTT packets.
-
-Early data within the TLS connection MUST NOT be used.  As it is for other TLS
-application data, a server MUST treat receiving early data on the TLS connection
-as a connection error of type PROTOCOL_VIOLATION.
 
 
 ## Accepting and Rejecting 0-RTT
