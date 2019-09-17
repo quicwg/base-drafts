@@ -615,9 +615,9 @@ and deployment.
 A server MUST NOT use post-handshake client authentication (as defined in
 Section 4.6.2 of {{!TLS13}}), because the multiplexing offered by QUIC prevents
 clients from correlating the certificate request with the application-level
-event which triggered it (see {{?HTTP2-TLS13=I-D.ietf-httpbis-http2-tls13}}).
+event that triggered it (see {{?HTTP2-TLS13=I-D.ietf-httpbis-http2-tls13}}).
 More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
-messages, and clients MUST treat receipt of such messages as a connection error
+messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
 
 
