@@ -419,7 +419,8 @@ protection.
 QUIC is only capable of conveying TLS handshake records in CRYPTO frames.  TLS
 alerts are turned into QUIC CONNECTION_CLOSE error codes; see {{tls-errors}}.
 TLS application data and other message types cannot be carried by QUIC at any
-encryption level and can be treated as an error if they are received.
+encryption level and can be treated as an error if they are received from the
+TLS stack.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
