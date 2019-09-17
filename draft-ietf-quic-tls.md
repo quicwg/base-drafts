@@ -565,11 +565,19 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-QUIC requires that the first Initial packet from a client contain an entire
-cryptographic handshake message, which for TLS is the ClientHello.  Though a
-packet larger than 1200 bytes might be supported by the path, a client improves
-the likelihood that a packet is accepted if it ensures that the first
-ClientHello message is small enough to stay within this limit.
+The first Initial packet from a client starts with its first cryptographic
+handshake message, which for TLS is the ClientHello.  Servers might need to
+parse the entire ClientHello (e.g., to access extensions such as Server Name
+Identification (SNI) or Application Layer Protocol Negotiation (ALPN)) in order
+to decide whether to accept the new incoming QUIC connection.  If the
+ClientHello spans multiple Initial packets, such servers would need to buffer
+the first received fragments, which could consume excessive resources if the
+client's address has not yet been validated.  To avoid this, servers MAY use
+the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
+partial ClientHellos from clients with a validated address.  Though a packet
+larger than 1200 bytes might be supported by the path, a client improves the
+likelihood that a packet is accepted if it ensures that the first ClientHello
+message is small enough to stay within this limit.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
 message.  That overhead increases if the client chooses a connection ID without
@@ -584,12 +592,9 @@ QUIC transport parameters, and other negotiable parameters and extensions could
 cause this message to grow.
 
 For servers, in addition to connection IDs and tokens, the size of TLS session
-tickets can have an effect on a client's ability to connect.  Minimizing the
-size of these values increases the probability that they can be successfully
-used by a client.
-
-A client is not required to fit the ClientHello that it sends in response to a
-HelloRetryRequest message into a single UDP datagram.
+tickets can have an effect on a client's ability to connect efficiently.
+Minimizing the size of these values increases the probability that they can be
+successfully used by a client.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
