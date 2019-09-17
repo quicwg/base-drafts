@@ -5059,8 +5059,8 @@ the offset of the next byte that would be sent.
 The first byte in the stream has an offset of 0.  The largest offset delivered
 on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
 it is not possible to provide flow control credit for that data.  Receipt of a
-frame that exceeds this limit will be treated as a connection error of type
-FRAME_ENCODING_ERROR.
+frame that exceeds this limit MUST be treated as a connection error of type
+FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
 ## MAX_DATA Frame {#frame-max-data}
