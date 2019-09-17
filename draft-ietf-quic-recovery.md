@@ -1007,8 +1007,8 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
-  // Nothing to do if there are no newly acked packets.
   newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
+  // Nothing to do if there are no newly acked packets.
   if (newly_acked_packets.empty()):
     return
 
@@ -1031,9 +1031,8 @@ OnAckReceived(ack, pn_space):
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
   DetectLostPackets(pn_space)
-
+  SendPacketsAsCongestionControllerAllows()
   pto_count = 0
-
   SetLossDetectionTimer()
 
 
