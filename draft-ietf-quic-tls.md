@@ -404,12 +404,12 @@ A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The client
 acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
-At any given time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. Each encryption level is
-associated with a different flow of bytes, which is reliably transmitted to the
-peer in CRYPTO frames. When TLS provides handshake bytes to be sent, they are
-appended to the current flow and any packet that includes the CRYPTO frame is
-protected using keys from the corresponding encryption level.
+At any time, the TLS stack at an endpoint will have a current sending encryption
+level and receiving encryption level. Each encryption level is associated with a
+different flow of bytes, which is reliably transmitted to the peer in CRYPTO
+frames. When TLS provides handshake bytes to be sent, they are appended to the
+current flow and any packet that includes the CRYPTO frame is protected using
+keys from the corresponding encryption level.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
