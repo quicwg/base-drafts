@@ -3183,7 +3183,8 @@ containing that information is acknowledged.
 
 * The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
   SHOULD contain all unacknowledged acknowledgments, as described in
-  {{sending-ack-frames}}.
+  {{sending-ack-frames}}.  Retransmitting an ACK frame can result in an
+  inflated RTT measurement.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
