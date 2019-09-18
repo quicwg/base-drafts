@@ -296,7 +296,7 @@ retain sufficient history is an open research question.
 Section 13.3 of {{QUIC-TRANSPORT}} recommends sending the most recent set of
 acknowledgements in ACK frames, but if ACK frames are retransmitted, an inflated
 RTT can be measured.  Some incorrect RTT samples are prevented by only measuring
-RTT when the largest acked increases.
+RTT when the largest acknowledged increases.
 
 ## Estimating min_rtt {#min-rtt}
 
