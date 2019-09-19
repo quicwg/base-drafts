@@ -1234,9 +1234,8 @@ can be initiated.
 
 Note:
 
-: Changes in keys from Initial to Handshake and from Handshake to 1-RTT don't
-  use this key update process. Key changes during the handshake are driven
-  solely by changes in the TLS handshake state.
+: Keys of packets other than the 1-RTT packets are never updated; their keys are
+  derived solely from the TLS handshake state.
 
 The endpoint that initiates a key update also updates the keys that it uses for
 receiving packets.  These keys will be needed to process packets the peer sends
@@ -1261,11 +1260,12 @@ An endpoint uses the same key derivation process as its peer uses to generate
 keys for receiving.
 
 If a packet is successfully processed using the next key and IV, then the peer
-has initiated a key update.  The endpoint MUST updates its send keys to the
+has initiated a key update.  The endpoint MUST update its send keys to the
 corresponding key phase in response, as described in {{key-update-initiate}}.
-By acknowledging the packet that triggered the key update in a packet protected
-with the updated keys, the endpoint will ultimately signal that the key update
-is complete.
+Sending keys MUST be updated before sending an acknowledgement for the packet
+that was received with updated keys.  By acknowledging the packet that triggered
+the key update in a packet protected with the updated keys, the endpoint signals
+that the key update is complete.
 
 An endpoint can defer sending the packet or acknowledgement according to its
 normal packet sending behaviour; it is not necessary to immediately generate a
@@ -1319,19 +1319,19 @@ update, an endpoint SHOULD generate and save the next set of packet protection
 keys.  After new keys are available, receipt of packets will not create timing
 signals about the value of the Key Phase.
 
-This depends on not doing this generating during packet processing and it can
-require that endpoints maintain three sets of packet protection keys for
+This depends on not doing this key generation during packet processing and it
+can require that endpoints maintain three sets of packet protection keys for
 receiving: for the previous key phase, for the current key phase, and for the
-next key phase.  Endpoints MAY choose to defer generation of the next packet
-protection keys until they discard old keys so that only two sets of receive
-keys need to be retained at any point in time.
+next key phase.  Endpoints MAY instead choose to defer generation of the next
+packet protection keys until they discard old keys so that only two sets of
+receive keys need to be retained at any point in time.
 
 
 ## Sending with Updated Keys {#old-keys-send}
 
 An endpoint always sends packets that are protected with the newest keys.  Keys
-used for adding packet protection can be discarded immediately after switching
-to newer keys.
+used for packet protection can be discarded immediately after switching to newer
+keys.
 
 Packets with higher packet numbers MUST be protected with either the same or
 newer packet protection keys than packets with lower packet numbers.  An
