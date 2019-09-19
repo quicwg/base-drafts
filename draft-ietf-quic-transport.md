@@ -1592,10 +1592,10 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST ensure that UDP datagrams containing only Initial packets are sized
-to at least 1200 bytes, adding padding to packets in the datagram as necessary.
-Sending padded datagrams ensures that the server is not overly constrained by
-the amplification restriction.
+Clients MUST ensure that UDP datagrams containing only Initial packets have
+payloads of at least 1200 bytes, adding padding to packets in the datagram as
+necessary. Sending padded datagrams ensures that the server is not overly
+constrained by the amplification restriction.
 
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
