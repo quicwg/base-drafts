@@ -1168,8 +1168,8 @@ anticipation of receiving a ClientHello.
 
 # Key Update
 
-Once the 1-RTT keys are established and confirmed, it is possible to update the
-keys used to protect packets.
+Once the handshake is confirmed (see {{handshake-confirmed}}), it is possible to
+update the keys used to protect packets.
 
 The Key Phase bit indicates which packet protection keys are used to protect the
 packet.  The Key Phase bit is initially set to 0 for the first set of 1-RTT
@@ -1185,9 +1185,9 @@ TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-{{ex-key-update}} shows a key update process, with keys used identified with @M
-cannot be used until the endpoint has received and successfully decrypted a and
-@N.  The value of Key Phase bit is indicated in brackets \[]..
+{{ex-key-update}} shows a key update process, where the initial set of keys used
+(identified with @M) are replaced by updated keys (identified with @N).  The
+value of the Key Phase bit is indicated in brackets \[].
 
 ~~~
    Initiating Peer                    Responding Peer
@@ -1223,6 +1223,12 @@ uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
 
+For example, to update write keys with TLS 1.3, HKDF-Expand-Label is used as:
+
+~~~
+secret_<n+1> = HKDF-Expand-Label(secret_<n>, "quic ku",
+                                 "", Hash.length)
+~~~
 
 The endpoint toggles the value of the Key Phase bit and uses the updated key and
 IV to protect all subsequent packets.
@@ -1299,8 +1305,8 @@ reveal that a key update has occurred.  An endpoint MAY perform this process as
 part of packet processing, but this creates a timing signal that can be used by
 an attacker to learn when key updates happen and thus the value of the Key Phase
 bit in certain packets.  Endpoints SHOULD instead defer the creation of the next
-set of packet protection keys until some time after a key update completes, up
-to three times the PTO; see {{old-keys-recv}}.
+set of receive packet protection keys until some time after a key update
+completes, up to three times the PTO; see {{old-keys-recv}}.
 
 Once generated, the next set of packet protection keys SHOULD be retained, even
 if the packet that was received was subsequently discarded.  Packets containing
@@ -1315,16 +1321,16 @@ keys in addition to these might improve performance, but this is not essential.
 The time taken to generate new keys could reveal through timing side channels
 that a key update has occurred, or where an attacker injects packets, be used to
 reveal the value of the Key Phase on injected packets.  After receiving a key
-update, an endpoint SHOULD generate and save the next set of packet protection
-keys.  After new keys are available, receipt of packets will not create timing
-signals about the value of the Key Phase.
+update, an endpoint SHOULD generate and save the next set of receive packet
+protection keys.  After new keys are available, receipt of packets will not
+create timing signals about the value of the Key Phase.
 
 This depends on not doing this key generation during packet processing and it
 can require that endpoints maintain three sets of packet protection keys for
 receiving: for the previous key phase, for the current key phase, and for the
 next key phase.  Endpoints MAY instead choose to defer generation of the next
-packet protection keys until they discard old keys so that only two sets of
-receive keys need to be retained at any point in time.
+receive packet protection keys until they discard old keys so that only two sets
+of receive keys need to be retained at any point in time.
 
 
 ## Sending with Updated Keys {#old-keys-send}
