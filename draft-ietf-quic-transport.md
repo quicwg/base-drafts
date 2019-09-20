@@ -3010,9 +3010,9 @@ An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
 
 A receiver's delayed acknowledgment timer SHOULD NOT exceed the value it
-indicates in the `max_ack_delay` transport parameter. The sender uses the receiver's
-`max_ack_delay` value in determining timeouts for timer-based retransmission, as
-detailed in section 5.2.1 of {{QUIC-RECOVERY}}.
+indicates in the `max_ack_delay` transport parameter. The sender uses the
+receiver's `max_ack_delay` value in determining timeouts for timer-based
+retransmission, as detailed in section 5.2.1 of {{QUIC-RECOVERY}}.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
