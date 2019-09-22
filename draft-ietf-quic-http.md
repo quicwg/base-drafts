@@ -422,7 +422,7 @@ PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.
 
 Frames of unknown types ({{extensions}}), including reserved frames
-({{frame-grease}}) MAY be sent on a request or push stream before, after, or
+({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
 interleaved with other frames described in this section.
 
 The HEADERS and PUSH_PROMISE frames might reference updates to the QPACK dynamic
@@ -440,7 +440,7 @@ or trailers.
 
 If an endpoint receives an invalid sequence of frames on either a request or
 a push stream, it MUST respond with a connection error of type
-HTTP_UNEXPECTED_FRAME ({{errors}}).  In particular, a DATA frame before any
+HTTP_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
 HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
 considered invalid.
 
@@ -602,7 +602,7 @@ map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 Once the CONNECT method has completed, only DATA frames are permitted
 to be sent on the stream.  Extension frames MAY be used if specifically
 permitted by the definition of the extension.  Receipt of any other frame type
-MUST be treated as a connection error of type HTTP_UNEXPECTED_FRAME.
+MUST be treated as a connection error of type HTTP_FRAME_UNEXPECTED.
 
 The TCP connection can be closed by either peer. When the client ends the
 request stream (that is, the receive stream at the proxy enters the "Data Recvd"
@@ -890,7 +890,7 @@ A sender can close or reset a unidirectional stream unless otherwise specified.
 A receiver MUST tolerate unidirectional streams being closed or reset prior to
 the reception of the unidirectional stream header.
 
-###  Control Streams
+### Control Streams
 
 A control stream is indicated by a stream type of `0x00`.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
@@ -974,6 +974,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
+| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}        |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
@@ -1030,7 +1031,7 @@ associated with an HTTP request or response payload.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on a control stream, the recipient MUST respond with a
-connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+connection error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~ drawing
  0                   1                   2                   3
@@ -1057,7 +1058,7 @@ QPACK. See [QPACK] for more details.
 
 HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
-error ({{errors}}) of type HTTP_WRONG_STREAM.
+error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
 
 ### CANCEL_PUSH {#frame-cancel-push}
 
@@ -1079,7 +1080,7 @@ stream.  The server SHOULD abruptly terminate the push stream instead.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
-error of type HTTP_WRONG_STREAM.
+error of type HTTP_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1110,11 +1111,11 @@ SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
 frame MUST be sent as the first frame of each control stream (see
 {{control-streams}}) by each peer, and MUST NOT be sent subsequently. If
 an endpoint receives a second SETTINGS frame on the control stream, the endpoint
-MUST respond with a connection error of type HTTP_UNEXPECTED_FRAME.
+MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED.
 
 SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
-MUST respond with a connection error of type HTTP_WRONG_STREAM.
+MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED.
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -1257,10 +1258,10 @@ MUST treat receipt of a Push ID which has already been promised as a connection
 error of type HTTP_ID_ERROR.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
-respond with a connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+respond with a connection error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
 
 A client MUST NOT send a PUSH_PROMISE frame.  A server MUST treat the receipt
-of a PUSH_PROMISE frame as a connection error of type HTTP_UNEXPECTED_FRAME.
+of a PUSH_PROMISE frame as a connection error of type HTTP_FRAME_UNEXPECTED.
 
 See {{server-push}} for a description of the overall server push mechanism.
 
@@ -1288,11 +1289,11 @@ of any other type as a connection error of type HTTP_ID_ERROR.
 
 Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
 stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
-stream as a connection error ({{errors}}) of type HTTP_UNEXPECTED_FRAME.
+stream as a connection error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
-connection error ({{errors}}) of type HTTP_WRONG_STREAM.
+connection error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
 
 See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
@@ -1306,10 +1307,10 @@ to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
-type HTTP_WRONG_STREAM.
+type HTTP_FRAME_UNEXPECTED.
 
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
-a MAX_PUSH_ID frame as a connection error of type HTTP_UNEXPECTED_FRAME.
+a MAX_PUSH_ID frame as a connection error of type HTTP_FRAME_UNEXPECTED.
 
 The maximum Push ID is unset when a connection is created, meaning that a server
 cannot push until it receives a MAX_PUSH_ID frame.  A client that wishes to
@@ -1338,10 +1339,10 @@ existing pushed resource is related to multiple client requests.
 
 The DUPLICATE_PUSH frame is always sent on a request stream.  Receipt of a
 DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
-of type HTTP_WRONG_STREAM.
+of type HTTP_FRAME_UNEXPECTED.
 
 A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type HTTP_UNEXPECTED_FRAME.
+of a DUPLICATE_PUSH frame as a connection error of type HTTP_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1373,17 +1374,21 @@ uses a Push ID that they have since consumed and discarded are forced to ignore
 the DUPLICATE_PUSH.
 
 
-### Reserved Frame Types {#frame-grease}
+### Reserved Frame Types {#frame-reserved}
 
 Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
 to exercise the requirement that unknown types be ignored ({{extensions}}).
-These frames have no semantics, and can be sent when application-layer padding
-is desired. They MAY also be sent on connections where no data is currently
-being transferred. Endpoints MUST NOT consider these frames to have any meaning
-upon receipt.
+These frames have no semantics, and can be sent on any open stream when
+application-layer padding is desired. They MAY also be sent on connections where
+no data is currently being transferred. Endpoints MUST NOT consider these frames
+to have any meaning upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
+
+Frame types which were used in HTTP/2 where there is no corresponding HTTP/3
+frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
+sent, and receipt MAY be treated as an error of type HTTP_UNEXPECTED_FRAME.
 
 
 # Error Handling {#errors}
@@ -1393,6 +1398,11 @@ the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
 {{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
 connection error.
+
+Because new error codes can be defined without negotiation (see {{extensions}}),
+receipt of an unknown error code or use of an error code in an unexpected
+context MUST NOT be treated as an error.  However, closing a stream can
+constitute an error regardless of the error code (see {{request-response}}).
 
 This section describes HTTP/3-specific error codes which can be used to express
 the cause of a connection or stream error.
@@ -1419,8 +1429,9 @@ HTTP_STREAM_CREATION_ERROR (0x103):
 HTTP_CLOSED_CRITICAL_STREAM (0x104):
 : A stream required by the connection was closed or reset.
 
-HTTP_UNEXPECTED_FRAME (0x105):
-: A frame was received which was not permitted in the current state.
+HTTP_FRAME_UNEXPECTED (0x105):
+: A frame was received which was not permitted in the current state or on the
+  current stream.
 
 HTTP_FRAME_ERROR (0x106):
 : A frame that fails to satisfy layout requirements or with an invalid size
@@ -1430,37 +1441,34 @@ HTTP_EXCESSIVE_LOAD (0x107):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-HTTP_WRONG_STREAM (0x108):
-: A frame was received on a stream where it is not permitted.
-
-HTTP_ID_ERROR (0x109):
+HTTP_ID_ERROR (0x108):
 : A Stream ID or Push ID was used incorrectly, such as exceeding a limit,
   reducing a limit, or being reused.
 
-HTTP_SETTINGS_ERROR (0x10A):
+HTTP_SETTINGS_ERROR (0x109):
 : An endpoint detected an error in the payload of a SETTINGS frame.
 
-HTTP_MISSING_SETTINGS (0x10B):
+HTTP_MISSING_SETTINGS (0x10A):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-HTTP_REQUEST_REJECTED (0x10C):
+HTTP_REQUEST_REJECTED (0x10B):
 : A server rejected a request without performing any application processing.
 
-HTTP_REQUEST_CANCELLED (0x10D):
+HTTP_REQUEST_CANCELLED (0x10C):
 : The request or its response (including pushed response) is cancelled.
 
-HTTP_REQUEST_INCOMPLETE (0x10E):
+HTTP_REQUEST_INCOMPLETE (0x10D):
 : The client's stream terminated without containing a fully-formed request.
 
-HTTP_EARLY_RESPONSE (0x10F):
+HTTP_EARLY_RESPONSE (0x10E):
 : The remainder of the client's request is not needed to produce a response.
   For use in STOP_SENDING only.
 
-HTTP_CONNECT_ERROR (0x110):
+HTTP_CONNECT_ERROR (0x10F):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
-HTTP_VERSION_FALLBACK (0x111):
+HTTP_VERSION_FALLBACK (0x110):
 : The requested operation cannot be served over HTTP/3.  The peer should
   retry over HTTP/1.1.
 
@@ -1486,7 +1494,10 @@ Implementations MUST ignore unknown or unsupported values in all extensible
 protocol elements.  Implementations MUST discard frames and unidirectional
 streams that have unknown or unsupported types.  This means that any of these
 extension points can be safely used by extensions without prior arrangement or
-negotiation.
+negotiation.  However, where a known frame type is required to be in a specific
+location, such as the SETTINGS frame as the first frame of the control stream
+(see {{control-streams}}), an unknown frame type does not satisfy that
+requirement and SHOULD be treated as an error.
 
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
@@ -1516,7 +1527,7 @@ security considerations of {{!ALTSVC}} also apply.
 Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
 transport-layer padding or employ the reserved frame and stream types discussed
-in {{frame-grease}} and {{stream-grease}}.  These methods of padding produce
+in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
 different results in terms of the granularity of padding, the effect of packet
 loss and recovery, and how an implementation might control padding.
 
@@ -1711,19 +1722,18 @@ The entries in the following table are registered by this document.
 | HTTP_INTERNAL_ERROR                 | 0x0102     | Internal error                           | {{http-error-codes}}   |
 | HTTP_STREAM_CREATION_ERROR          | 0x0103     | Stream creation error                    | {{http-error-codes}}   |
 | HTTP_CLOSED_CRITICAL_STREAM         | 0x0104     | Critical stream was closed               | {{http-error-codes}}   |
-| HTTP_UNEXPECTED_FRAME               | 0x0105     | Frame not permitted in the current state | {{http-error-codes}}   |
+| HTTP_FRAME_UNEXPECTED               | 0x0105     | Frame not permitted in the current state | {{http-error-codes}}   |
 | HTTP_FRAME_ERROR                    | 0x0106     | Frame violated layout or size rules      | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
-| HTTP_WRONG_STREAM                   | 0x0108     | A frame was sent on the wrong stream     | {{http-error-codes}}   |
-| HTTP_ID_ERROR                       | 0x0109     | An identifier was used incorrectly       | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x010A     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| HTTP_MISSING_SETTINGS               | 0x010B     | No SETTINGS frame received               | {{http-error-codes}}   |
-| HTTP_REQUEST_REJECTED               | 0x010C     | Request not processed                    | {{http-error-codes}}   |
-| HTTP_REQUEST_CANCELLED              | 0x010D     | Data no longer needed                    | {{http-error-codes}}   |
-| HTTP_REQUEST_INCOMPLETE             | 0x010E     | Stream terminated early                  | {{http-error-codes}}   |
-| HTTP_EARLY_RESPONSE                 | 0x010F     | Remainder of request not needed          | {{http-error-codes}}   |
-| HTTP_CONNECT_ERROR                  | 0x0110     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| HTTP_VERSION_FALLBACK               | 0x0111     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
+| HTTP_ID_ERROR                       | 0x0108     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x0109     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
+| HTTP_MISSING_SETTINGS               | 0x010A     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
+| HTTP_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
+| HTTP_EARLY_RESPONSE                 | 0x010E     | Remainder of request not needed          | {{http-error-codes}}   |
+| HTTP_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| HTTP_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
@@ -1973,9 +1983,8 @@ NO_ERROR (0x0):
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to HTTP_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. This includes HTTP_WRONG_STREAM,
-  HTTP_UNEXPECTED_FRAME and HTTP_CLOSED_CRITICAL_STREAM defined in
-  {{http-error-codes}}.
+  specific error codes have been defined. This includes HTTP_FRAME_UNEXPECTED
+  and HTTP_CLOSED_CRITICAL_STREAM defined in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : HTTP_INTERNAL_ERROR in {{http-error-codes}}.
@@ -2026,7 +2035,29 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 ## Since draft-ietf-quic-http-22
 
-- Removed priority signaling.
+- Removed priority signaling (#2922,#2924)
+- Further changes to error codes (#2662,#2551):
+  - Error codes renumbered
+  - HTTP_MALFORMED_FRAME replaced by HTTP_FRAME_ERROR, HTTP_ID_ERROR, and others
+- Clarify how unknown frame types interact with required frame sequence
+  (#2867,#2858)
+- Describe interactions with the transport in terms of defined interface terms
+  (#2857,#2805)
+- Require the use of the `http-opportunistic` resource (RFC 8164) when scheme is
+  `http` (#2439,#2973)
+- Settings identifiers cannot be duplicated (#2979)
+- Changes to SETTINGS frames in 0-RTT (#2972,#2790,#2945):
+  - Servers must send all settings with non-default values in their SETTINGS
+    frame, even when resuming
+  - If a client doesn't have settings associated with a 0-RTT ticket, it uses
+    the defaults
+  - Servers can't accept early data if they cannot recover the settings the
+    client will have remembered
+- Clarify that Upgrade and the 101 status code are prohibited (#2898,#2889)
+- Clarify that frame types reserved for greasing can occur on any stream, but
+  frame types reserved due to HTTP/2 correspondence are prohibited
+  (#2997,#2692,#2693)
+- Unknown error codes cannot be treated as errors (#2998,#2816)
 
 ## Since draft-ietf-quic-http-21
 

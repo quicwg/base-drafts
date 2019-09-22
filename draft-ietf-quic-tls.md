@@ -404,17 +404,22 @@ A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The client
 acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
-At any given time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. Each encryption level is
-associated with a different flow of bytes, which is reliably transmitted to the
-peer in CRYPTO frames. When TLS provides handshake bytes to be sent, they are
-appended to the current flow and any packet that includes the CRYPTO frame is
-protected using keys from the corresponding encryption level.
+At any time, the TLS stack at an endpoint will have a current sending encryption
+level and receiving encryption level. Each encryption level is associated with a
+different flow of bytes, which is reliably transmitted to the peer in CRYPTO
+frames. When TLS provides handshake bytes to be sent, they are appended to the
+current flow and any packet that includes the CRYPTO frame is protected using
+keys from the corresponding encryption level.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
 CRYPTO frames into QUIC packets, which are protected using QUIC packet
 protection.
+
+QUIC is only capable of conveying TLS handshake records in CRYPTO frames.  TLS
+alerts are turned into QUIC CONNECTION_CLOSE error codes; see {{tls-errors}}.
+TLS application data and other message types cannot be carried by QUIC at any
+encryption level and is an error if they are received from the TLS stack.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
@@ -457,10 +462,11 @@ handshake, new data is requested from TLS after providing received data.
 ### Encryption Level Changes
 
 As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as TLS starts using keys at a given encryption level, TLS
-indicates to QUIC that it is now reading or writing with keys at that encryption
-level.  These events are not asynchronous; they always occur immediately after
-TLS is provided with new handshake bytes, or after TLS produces handshake bytes.
+keys.  Separately, as keys at a given encryption level become available to TLS,
+TLS indicates to QUIC that reading or writing keys at that encryption level are
+available.  These events are not asynchronous; they always occur immediately
+after TLS is provided with new handshake bytes, or after TLS produces handshake
+bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -495,6 +501,12 @@ client could interleave ACK frames that are protected with Handshake keys with
 0-RTT data and the server needs to process those acknowledgments in order to
 detect lost Handshake packets.
 
+QUIC also needs access to keys that might not ordinarily be available to a TLS
+implementation.  For instance, a client might need to acknowledge Handshake
+packets before it is ready to send CRYPTO frames at that encryption level.  TLS
+therefore needs to provide keys to QUIC before it might produce them for its own
+use.
+
 
 ### TLS Interface Summary
 
@@ -507,33 +519,39 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
+                                              Handshake Received
 Install tx 0-RTT Keys
                      0-RTT --------------->
-                                              Handshake Received
                                                    Get Handshake
                      <------------- Initial
+Handshake Received
+Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
+Handshake Received
                                            Install tx 1-RTT keys
                      <--------------- 1-RTT
-Handshake Received
-Install tx Handshake keys
-Handshake Received
 Get Handshake
 Handshake Complete
                      Handshake ----------->
-Install 1-RTT keys
-                     1-RTT --------------->
                                               Handshake Received
                                            Install rx 1-RTT keys
                                               Handshake Complete
+Install 1-RTT keys
+                     1-RTT --------------->
                                                    Get Handshake
                      <--------------- 1-RTT
 Handshake Received
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
+
+{{exchange-summary}} shows the multiple packets that form a single "flight" of
+messages being processed individually, to show what incoming messages trigger
+different actions.  New handshake messages are requested after all incoming
+packets have been processed.  This process might vary depending on how QUIC
+implementations and the packets they receive are structured.
 
 
 ## TLS Version {#tls-version}
@@ -615,10 +633,6 @@ with any other value as a connection error of type PROTOCOL_VIOLATION.
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
 the ClientHello message of a subsequent handshake (see Section 4.2.10 of
 {{!TLS13}}). It then sends the application data in 0-RTT packets.
-
-Early data within the TLS connection MUST NOT be used.  As it is for other TLS
-application data, a server MUST treat receiving early data on the TLS connection
-as a connection error of type PROTOCOL_VIOLATION.
 
 
 ## Accepting and Rejecting 0-RTT
@@ -1048,19 +1062,24 @@ When AEAD_CHACHA20_POLY1305 is in use, header protection uses the raw ChaCha20
 function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
 16 bytes sampled from the packet protection output.
 
-The first 4 bytes of the sampled ciphertext are interpreted as a 32-bit number
-in little-endian order and are used as the block count.  The remaining 12 bytes
-are interpreted as three concatenated 32-bit numbers in little-endian order and
-used as the nonce.
+The first 4 bytes of the sampled ciphertext are the block counter.  A ChaCha20
+implementation could take a 32-bit integer in place of a byte sequence, in
+which case the byte sequence is interpreted as a little-endian value.
+
+The remaining 12 bytes are used as the nonce. A ChaCha20 implementation might
+take an array of three 32-bit integers in place of a byte sequence, in which
+case the nonce bytes are interpreted as a sequence of 32-bit little-endian
+integers.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
 pseudocode:
 
 ~~~
-counter = DecodeLE(sample[0..3])
-nonce = DecodeLE(sample[4..7], sample[8..11], sample[12..15])
+counter = sample[0..3]
+nonce = sample[4..15]
 mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
+
 
 
 ## Receiving Protected Packets
@@ -1279,8 +1298,8 @@ An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
 version that the client has selected.  If the server cannot select a compatible
 combination of application protocol and QUIC version, it MUST abort the
-connection. A client MUST abort a connection if the server picks an incompatible
-combination of QUIC version and ALPN identifier.
+connection.  A client MUST abort a connection if the server picks an application
+protocol incompatible with the protocol version being used.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1403,19 +1422,26 @@ amplification.
 
 ## Header Protection Analysis {#header-protect-analysis}
 
-Header protection relies on the packet protection AEAD being a pseudorandom
-function (PRF), which is not a property that AEAD algorithms
-guarantee. Therefore, no strong assurances about the general security of this
-mechanism can be shown in the general case. The AEAD algorithms described in
-this document are assumed to be PRFs.
-
-The header protection algorithms defined in this document take the form:
+{{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
+algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+transforms. The general header protection construction in this document is
+one of those algorithms (HN1). Header protection uses the output of the packet
+protection AEAD to derive `sample`, and then encrypts the header field using
+a pseudorandom function (PRF) as follows:
 
 ~~~
 protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
-This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
+The header protection variants in this document use a pseudorandom permutation
+(PRP) in place of a generic PRF. However, since all PRPs are also PRFs {{IMC}},
+these variants do not deviate from the HN1 construction.
+
+As `hp_key` is distinct from the packet protection key, it follows that header
+protection achieves AE2 security as defined in {{NAN}} and therefore guarantees
+privacy of `field`, the protected packet header. Future header protection
+variants based on this construction MUST use a PRF to ensure equivalent
+security guarantees.
 
 Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and
@@ -1560,7 +1586,7 @@ hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
 ## Client Initial
 
 The client sends an Initial packet.  The unprotected payload of this packet
-contains the following CRYPTO frame, plus enough PADDING frames to make an 1163
+contains the following CRYPTO frame, plus enough PADDING frames to make a 1162
 byte payload:
 
 ~~~
@@ -1665,7 +1691,7 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c1ff0000170008f067a5502a4262b5004074168b
+header = c9ff0000170008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
