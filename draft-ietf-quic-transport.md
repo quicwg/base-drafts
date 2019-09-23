@@ -5853,11 +5853,11 @@ TBD.
 
 Connection Migration ({{migration}}) provides endpoints with the ability to
 transition between IP addresses and ports on multiple paths, using one path at a
-time for transmission and receipt of non-probing frames.  Path validation helps
-to establish that a peer is both willing and able to receive packets sent on a
-particular path.  This helps reduce the effects of address spoofing, by limiting
-the number of packets sent to a spoofed address, unless an attacker is able to
-also receive packets sent to that address.
+time for transmission and receipt of non-probing frames.  Path validation
+({{migrate-validate}}) establishes that a peer is both willing and able
+to receive packets sent on a particular path.  This helps reduce the effects of
+address spoofing, by limiting the number of packets sent to a spoofed address,
+unless an attacker is able to also receive packets sent to that address.
 
 This section describes the intended security properties of connection migration
 when under various types of attack, as described in more detail by {{?RFC3552}}.
