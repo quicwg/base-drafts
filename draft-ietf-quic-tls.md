@@ -623,11 +623,13 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 
 ## Enabling 0-RTT {#enable-0rtt}
 
-In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "early_data" extension with a max_early_data_size of
-0xffffffff; the amount of data which the client can send in 0-RTT is controlled
-by the "initial_max_data" transport parameter supplied by the server.  A client
-MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
+To communicate their willingness to process 0-RTT data, servers send a
+NewSessionTicket message that contains the "early_data" extension with a
+max_early_data_size of 0xffffffff; the amount of data which the client can send
+in 0-RTT is controlled by the "initial_max_data" transport parameter supplied
+by the server.  Servers MUST NOT send the "early_data" extension with a
+max_early_data_size set to any value other than 0xffffffff.  A client MUST
+treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
