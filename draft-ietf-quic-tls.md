@@ -1422,19 +1422,26 @@ amplification.
 
 ## Header Protection Analysis {#header-protect-analysis}
 
-Header protection relies on the packet protection AEAD being a pseudorandom
-function (PRF), which is not a property that AEAD algorithms
-guarantee. Therefore, no strong assurances about the general security of this
-mechanism can be shown in the general case. The AEAD algorithms described in
-this document are assumed to be PRFs.
-
-The header protection algorithms defined in this document take the form:
+{{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
+algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+transforms. The general header protection construction in this document is
+one of those algorithms (HN1). Header protection uses the output of the packet
+protection AEAD to derive `sample`, and then encrypts the header field using
+a pseudorandom function (PRF) as follows:
 
 ~~~
 protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
-This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
+The header protection variants in this document use a pseudorandom permutation
+(PRP) in place of a generic PRF. However, since all PRPs are also PRFs {{IMC}},
+these variants do not deviate from the HN1 construction.
+
+As `hp_key` is distinct from the packet protection key, it follows that header
+protection achieves AE2 security as defined in {{NAN}} and therefore guarantees
+privacy of `field`, the protected packet header. Future header protection
+variants based on this construction MUST use a PRF to ensure equivalent
+security guarantees.
 
 Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and
