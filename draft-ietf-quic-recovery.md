@@ -526,12 +526,11 @@ as a probe, unless there is no data available to send.  An endpoint MAY send up
 to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
-It is possible that the sender has no new or previously-sent data to send.  As
-an example, consider the following sequence of events: new application data is
-sent in a STREAM frame, deemed lost, then retransmitted in a new packet, and
-then the original transmission is acknowledged.  In the absence of any new
-application data, a PTO timer expiration now would find the sender with no new
-or previously-sent data to send.
+When the PTO timer expires, and there is new or previously sent data, it MUST
+be sent.  It is possible the sender has no new or previously-sent data to send.
+As an example, consider the following sequence of events: new application data
+is sent in a STREAM frame, deemed lost, then retransmitted in a new packet,
+and then the original transmission is acknowledged.
 
 When there is no data to send, the sender SHOULD send a PING or other
 ack-eliciting frame in a single packet, re-arming the PTO timer.
