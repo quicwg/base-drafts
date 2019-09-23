@@ -317,11 +317,11 @@ provide version-negotiation hints to HTTP/3 clients. QUIC versions are four-byte
 sequences with no additional constraints on format. Leading zeros SHOULD be
 omitted for brevity.
 
-Syntax:
+Syntax of the "quic" parameter value:
 
 ~~~ abnf
-quic = DQUOTE version-number [ "," version-number ] * DQUOTE
-version-number = 1*8HEXDIG; hex-encoded QUIC version
+quic         = DQUOTE quic-version *( "," quic-version ) DQUOTE
+quic-version = 1*8HEXDIG      ; hex-encoded QUIC version
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
@@ -974,7 +974,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
-| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}        |
+| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
