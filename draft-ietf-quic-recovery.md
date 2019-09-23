@@ -496,10 +496,8 @@ be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-Data at Initial encryption MUST be retransmitted before Handshake data and
-data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
-data has been received from the client.
+If no data can be sent, then the PTO alarm MUST NOT be armed until data has
+been received from the client.
 
 Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
@@ -527,13 +525,15 @@ to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
 When the PTO timer expires, and there is new or previously sent data, it MUST
-be sent.  It is possible the sender has no new or previously-sent data to send.
+be sent.  Data at Initial encryption MUST be sent before Handshake data and
+data at Handshake encryption MUST be sent before any ApplicationData data.
+
+It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
 is sent in a STREAM frame, deemed lost, then retransmitted in a new packet,
-and then the original transmission is acknowledged.
-
-When there is no data to send, the sender SHOULD send a PING or other
-ack-eliciting frame in a single packet, re-arming the PTO timer.
+and then the original transmission is acknowledged.  When there is no data to
+send, the sender SHOULD send a PING or other ack-eliciting frame in a single
+packet, re-arming the PTO timer.
 
 Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
