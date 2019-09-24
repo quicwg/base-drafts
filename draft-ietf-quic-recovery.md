@@ -438,11 +438,13 @@ and larger thresholds increase loss detection delay.
 A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
 time or the handshake has not been completed.  A PTO enables a connection to
-recover from loss of tail packets or acknowledgements. The PTO algorithm used
-in QUIC implements the reliability functions of Tail Loss Probe
-{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
-F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
-TCP's retransmission timeout period {{?RFC6298}}.
+recover from loss of tail packets or acknowledgements.  As with loss
+detection, the probe timeout is per packet number space.
+
+The PTO algorithm used in QUIC implements the reliability functions of
+Tail Loss Probe {{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}},
+RTO {{?RFC5681}} and F-RTO algorithms for TCP {{?RFC5682}}, and the timeout
+computation is based on TCP's retransmission timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
@@ -471,8 +473,10 @@ the PTOs might be caused by loss of packets or acknowledgements due to severe
 congestion.  The life of a connection that is experiencing consecutive PTOs is
 limited by the endpoint's idle timeout.
 
-A sender computes its PTO timer every time an ack-eliciting packet is sent. A
-sender might choose to optimize this by setting the timer fewer times if it
+A sender computes its PTO timer every time an ack-eliciting packet is sent.
+When ack-eliciting packets are in-flight in multiple packet number spaces,
+the timer MUST be set from the packet number space with the earliest timeout.
+A sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
 
@@ -496,9 +500,7 @@ be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-Data at Initial encryption MUST be retransmitted before Handshake data and
-data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
+If no data can be sent, then the PTO alarm MUST NOT be armed until
 data has been received from the client.
 
 Since the server could be blocked until more packets are received from the
@@ -522,9 +524,14 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-as a probe, unless there is no data available to send.  An endpoint MAY send up
-to two full-sized datagrams containing ack-eliciting packets, to avoid an
-expensive consecutive PTO expiration due to a single lost datagram.
+in the packet number space as a probe, unless there is no data available to send.
+An endpoint MAY send up to two full-sized datagrams containing ack-eliciting
+packets, to avoid an expensive consecutive PTO expiration due to a single lost
+datagram.
+
+In addition to sending data in the packet number space for which the timer
+expired, the sender SHOULD coalesce ack-eliciting packets from all other packet
+number spaces with inflight data if sending coalesced packets is supported.
 
 It is possible that the sender has no new or previously-sent data to send.  As
 an example, consider the following sequence of events: new application data is
@@ -933,7 +940,7 @@ loss_detection_timer:
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
-time_of_last_sent_ack_eliciting_packet:
+time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace]:
 : The time the most recent ack-eliciting packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
@@ -961,9 +968,9 @@ follows:
    rttvar = 0
    min_rtt = 0
    max_ack_delay = 0
-   time_of_last_sent_ack_eliciting_packet = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
+     time_of_last_sent_ack_eliciting_packet[pn_space] = 0
      loss_time[pn_space] = 0
 ~~~
 
@@ -986,7 +993,7 @@ Pseudocode for OnPacketSent follows:
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (ack_eliciting):
-       time_of_last_sent_ack_eliciting_packet = now
+       time_of_last_sent_ack_eliciting_packet[pn_space] = now
      OnPacketSentCC(sent_bytes)
      sent_packets[pn_space][packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -1096,12 +1103,20 @@ Pseudocode for SetLossDetectionTimer follows:
 // Returns the earliest loss_time and the packet number
 // space it's from.  Returns 0 if all times are 0.
 GetEarliestLossTime():
-  time = loss_time[Initial]
+  return GetEarliestTimeAndSpace(loss_time)
+
+// Returns the earliest time_of_last_sent_ack_eliciting_packet
+// and the packet number space it's from.
+GetEarliestAckElicitingTime():
+  return GetEarliestTimeAndSpace(loss_time)
+
+GetEarliestTimeAndSpace(times):
+  time = times[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if (loss_time[pn_space] != 0 &&
-        (time == 0 || loss_time[pn_space] < time)):
-      time = loss_time[pn_space];
+    if (times[pn_space] != 0 &&
+        (time == 0 || times[pn_space] < time)):
+      time = times[pn_space];
       space = pn_space
   return time, space
 
@@ -1135,8 +1150,9 @@ SetLossDetectionTimer():
       max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
-  loss_detection_timer.update(
-    time_of_last_sent_ack_eliciting_packet + timeout)
+  // Set the 
+  sent_time, _ = GetEarliestAckElicitingTime()
+  loss_detection_timer.update(sent_time + timeout)
 ~~~
 
 
