@@ -3018,7 +3018,7 @@ it does, any excess accrues to the RTT estimate and could result in delayed
 retransmissions from the peer.  For Initial and Handshake packets, a
 max_ack_delay of 0 is used.  The sender uses the receiver's `max_ack_delay`
 value in determining timeouts for timer-based retransmission, as detailed
-in section 5.2.1 of {{QUIC-RECOVERY}}.
+in Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
