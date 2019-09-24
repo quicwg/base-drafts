@@ -1150,7 +1150,6 @@ SetLossDetectionTimer():
       max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
-  // Set the 
   sent_time, _ = GetEarliestAckElicitingTime()
   loss_detection_timer.update(sent_time + timeout)
 ~~~
