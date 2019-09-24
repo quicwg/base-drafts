@@ -579,10 +579,7 @@ ClientHello spans multiple Initial packets, such servers would need to buffer
 the first received fragments, which could consume excessive resources if the
 client's address has not yet been validated.  To avoid this, servers MAY use
 the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
-partial ClientHello messages from clients with a validated address.  Though a
-packet larger than 1200 bytes might be supported by the path, a client improves
-the likelihood that a packet is accepted if it ensures that the first
-ClientHello message is small enough to stay within this limit.
+partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
 message.  That overhead increases if the client chooses a connection ID without
