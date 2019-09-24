@@ -495,9 +495,9 @@ a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
 be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If no data can be sent, then the PTO alarm MUST NOT be armed until data has
-been received from the client.
+data it can send is limited to three times the amount of data received,
+as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
+then the PTO alarm MUST NOT be armed.
 
 Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
