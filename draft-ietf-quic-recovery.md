@@ -524,10 +524,10 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-in the packet number space as a probe, unless there is no data available to send.
-An endpoint MAY send up to two full-sized datagrams containing ack-eliciting
-packets, to avoid an expensive consecutive PTO expiration due to a single lost
-datagram.
+in the packet number space as a probe, unless there is no data available to
+send.  An endpoint MAY send up to two full-sized datagrams containing
+ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
+to a single lost datagram.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD coalesce ack-eliciting packets from all other packet
