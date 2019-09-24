@@ -404,17 +404,22 @@ A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The client
 acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
-At any given time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. Each encryption level is
-associated with a different flow of bytes, which is reliably transmitted to the
-peer in CRYPTO frames. When TLS provides handshake bytes to be sent, they are
-appended to the current flow and any packet that includes the CRYPTO frame is
-protected using keys from the corresponding encryption level.
+At any time, the TLS stack at an endpoint will have a current sending encryption
+level and receiving encryption level. Each encryption level is associated with a
+different flow of bytes, which is reliably transmitted to the peer in CRYPTO
+frames. When TLS provides handshake bytes to be sent, they are appended to the
+current flow and any packet that includes the CRYPTO frame is protected using
+keys from the corresponding encryption level.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
 CRYPTO frames into QUIC packets, which are protected using QUIC packet
 protection.
+
+QUIC is only capable of conveying TLS handshake records in CRYPTO frames.  TLS
+alerts are turned into QUIC CONNECTION_CLOSE error codes; see {{tls-errors}}.
+TLS application data and other message types cannot be carried by QUIC at any
+encryption level and is an error if they are received from the TLS stack.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
@@ -623,20 +628,18 @@ A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
 
 ## Enabling 0-RTT {#enable-0rtt}
 
-In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "early_data" extension with a max_early_data_size of
-0xffffffff; the amount of data which the client can send in 0-RTT is controlled
-by the "initial_max_data" transport parameter supplied by the server.  A client
-MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
+To communicate their willingness to process 0-RTT data, servers send a
+NewSessionTicket message that contains the "early_data" extension with a
+max_early_data_size of 0xffffffff; the amount of data which the client can send
+in 0-RTT is controlled by the "initial_max_data" transport parameter supplied
+by the server.  Servers MUST NOT send the "early_data" extension with a
+max_early_data_size set to any value other than 0xffffffff.  A client MUST
+treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
 the ClientHello message of a subsequent handshake (see Section 4.2.10 of
 {{!TLS13}}). It then sends the application data in 0-RTT packets.
-
-Early data within the TLS connection MUST NOT be used.  As it is for other TLS
-application data, a server MUST treat receiving early data on the TLS connection
-as a connection error of type PROTOCOL_VIOLATION.
 
 
 ## Accepting and Rejecting 0-RTT
@@ -1426,19 +1429,26 @@ amplification.
 
 ## Header Protection Analysis {#header-protect-analysis}
 
-Header protection relies on the packet protection AEAD being a pseudorandom
-function (PRF), which is not a property that AEAD algorithms
-guarantee. Therefore, no strong assurances about the general security of this
-mechanism can be shown in the general case. The AEAD algorithms described in
-this document are assumed to be PRFs.
-
-The header protection algorithms defined in this document take the form:
+{{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
+algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+transforms. The general header protection construction in this document is
+one of those algorithms (HN1). Header protection uses the output of the packet
+protection AEAD to derive `sample`, and then encrypts the header field using
+a pseudorandom function (PRF) as follows:
 
 ~~~
 protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
-This construction is secure against chosen plaintext attacks (IND-CPA) {{IMC}}.
+The header protection variants in this document use a pseudorandom permutation
+(PRP) in place of a generic PRF. However, since all PRPs are also PRFs {{IMC}},
+these variants do not deviate from the HN1 construction.
+
+As `hp_key` is distinct from the packet protection key, it follows that header
+protection achieves AE2 security as defined in {{NAN}} and therefore guarantees
+privacy of `field`, the protected packet header. Future header protection
+variants based on this construction MUST use a PRF to ensure equivalent
+security guarantees.
 
 Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and

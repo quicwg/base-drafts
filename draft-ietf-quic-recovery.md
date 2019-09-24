@@ -713,7 +713,7 @@ For example, assume:
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
 
-If an eck-eliciting packet is sent at time = 0, the following scenario would
+If an ack-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
 
   t=0 | Send Pkt #1 (App Data)
