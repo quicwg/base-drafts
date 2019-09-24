@@ -384,12 +384,18 @@ A packet is declared lost if it meets all the following conditions:
 The acknowledgement indicates that a packet sent later was delivered, while the
 packet and time thresholds provide some tolerance for packet reordering.
 
-Spuriously declaring packets as lost leads to unnecessary retransmissions and
-may result in degraded performance due to the actions of the congestion
-controller upon detecting loss.  Implementations that detect spurious
-retransmissions and increase the reordering threshold in packets or time MAY
-choose to start with smaller initial reordering thresholds to minimize recovery
-latency.
+Spuriously declaring packets as lost may lead to unnecessary retransmissions
+and can result in degraded performance due to the actions of the congestion
+controller upon detecting loss.
+
+Implementations can detect spurious retransmissions by tracking packets for a
+period of time after they've been declared lost.  For example,
+implementations can wait for at least one RTT by waiting for a packet sent
+after the packet was declared lost to be acknowledged.
+
+Implementations that detect spurious retransmissions can increase the
+reordering threshold in packets or time and MAY choose to start with smaller
+initial reordering thresholds to minimize recovery latency.
 
 ### Packet Threshold
 
