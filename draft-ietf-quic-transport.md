@@ -190,10 +190,10 @@ QUIC packet:
 : A complete processable unit of QUIC that can be encapsulated in a UDP
   datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
 
-Ack-eliciting Packets:
+Ack-eliciting Packet:
 
-: Packets that contain frames other than ACK and PADDING elicit an ACK from the
-  receiver within the maximum ack delay and are called ack-eliciting packets.
+: A QUIC packet that contain frames other than ACK and PADDING elicits an ACK frame
+  from the receiver within the maximum ack delay.
 
 Endpoint:
 
