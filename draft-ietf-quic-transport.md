@@ -2347,8 +2347,8 @@ current Probe Timeout (PTO).
 Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
 processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ACK-eliciting packet; see
-{{QUIC-RECOVERY}}), but only if no other ACK-eliciting packets have been sent
+containing frames other than ACK or PADDING (an ack-eliciting packet; see
+{{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been sent
 since last receiving a packet.  Restarting when sending packets ensures that
 connections do not prematurely time out when initiating new activity.
 
@@ -3019,10 +3019,10 @@ In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
 endpoint MAY continue sending ACK frames immediately on each subsequently
 received packet, but the endpoint SHOULD return to acknowledging every other
-packet after a period of 1/8 x RTT, unless more ACK-eliciting packets are
-received out of order.  If every subsequent ACK-eliciting packet arrives out of
+packet after a period of 1/8 x RTT, unless more ack-eliciting packets are
+received out of order.  If every subsequent ack-eliciting packet arrives out of
 order, then an ACK frame SHOULD be sent immediately for every received
-ACK-eliciting packet.
+ack-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
@@ -3048,10 +3048,10 @@ addition to PADDING frames to elicit acknowledgments from the receiver.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
-ACK-eliciting frames.  An endpoint SHOULD bundle ACK frames with other frames
-when there are new ACK-eliciting packets to acknowledge.  When only
-non-ACK-eliciting packets need to be acknowledged, an endpoint MAY wait until an
-ACK-eliciting packet has been received to bundle an ACK frame with outgoing
+ack-eliciting frames.  An endpoint SHOULD bundle ACK frames with other frames
+when there are new ack-eliciting packets to acknowledge.  When only
+non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
+ack-eliciting packet has been received to bundle an ACK frame with outgoing
 frames.
 
 The algorithms in {{QUIC-RECOVERY}} are resilient to receivers that do not
@@ -3061,13 +3061,13 @@ of doing so.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
-one ACK-frame-only packet in response to receiving an ACK-eliciting packet (one
+one ACK-frame-only packet in response to receiving an ack-eliciting packet (one
 containing frames other than ACK and/or PADDING).  An endpoint MUST NOT send a
-packet containing only an ACK frame in response to a non-ACK-eliciting packet
+packet containing only an ACK frame in response to a non-acl-eliciting packet
 (one containing only ACK and/or PADDING frames), even if there are packet gaps
 which precede the received packet. Limiting ACK frames avoids an infinite
 feedback loop of acknowledgements, which could prevent the connection from ever
-becoming idle. However, the endpoint acknowledges non-ACK-eliciting packets when
+becoming idle. However, the endpoint acknowledges non-ack-eliciting packets when
 it sends an ACK frame.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
@@ -3110,11 +3110,11 @@ received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
 contribute to the ACK frame size.  When the receiver is only sending
-non-ACK-eliciting packets, it can bundle a PING or other small ACK-eliciting
+non-ack-eliciting packets, it can bundle a PING or other small ack-eliciting
 frame with a fraction of them, such as once per round trip, to enable
 dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ACK-eliciting frame, such as a PING, with all
-packets that would otherwise be non-ACK-eliciting, in order to avoid an
+The receiver MUST NOT bundle an ack-eliciting frame, such as a PING, with all
+packets that would otherwise be non-ack-eliciting, in order to avoid an
 infinite feedback loop of acknowledgements.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
@@ -3128,7 +3128,7 @@ received packets in preference to packets received in the past.
 ### Measuring and Reporting Host Delay {#host-delay}
 
 An endpoint measures the delays intentionally introduced between when an
-ACK-eliciting packet is received and the corresponding acknowledgment is sent.
+ack-eliciting packet is received and the corresponding acknowledgment is sent.
 The endpoint encodes this delay for the largest acknowledged packet in the Ack
 Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver of the
 ACK to adjust for any intentional delays, which is important for getting a
