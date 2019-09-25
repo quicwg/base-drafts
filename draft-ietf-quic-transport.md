@@ -3954,9 +3954,11 @@ the start of the first cryptographic handshake message.  The first CRYPTO frame
 sent always begins at an offset of 0 (see {{handshake}}).
 
 Note that if the server sends a HelloRetryRequest, the client will send another
-series of Initial packets.  These Initial packets will continue the cryptographic handshake
-and will contain CRYPTO frames starting at an offset matching the size of the CRYPTO
-frames sent in the first flight of Initial packets.
+series of Initial packets.  These Initial packets will continue the
+cryptographic handshake and will contain CRYPTO frames starting at an offset
+matching the size of the CRYPTO frames sent in the first flight of Initial
+packets.
+
 
 #### Abandoning Initial Packets {#discard-initial}
 
