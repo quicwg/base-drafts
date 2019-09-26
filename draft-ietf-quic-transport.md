@@ -3068,7 +3068,7 @@ Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
 one ACK-frame-only packet in response to receiving an ack-eliciting packet (one
 containing frames other than ACK and/or PADDING).  An endpoint MUST NOT send a
-packet containing only an ACK frame in response to a non-acl-eliciting packet
+packet containing only an ACK frame in response to a non-ack-eliciting packet
 (one containing only ACK and/or PADDING frames), even if there are packet gaps
 which precede the received packet. Limiting ACK frames avoids an infinite
 feedback loop of acknowledgements, which could prevent the connection from ever
