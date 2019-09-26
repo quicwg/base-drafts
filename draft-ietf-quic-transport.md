@@ -192,8 +192,8 @@ QUIC packet:
 
 Ack-eliciting Packet:
 
-: A QUIC packet that contains frames other than ACK and PADDING. These cause a recipient
-  to send an acknowledgment within the maximum ack delay.
+: A QUIC packet that contains frames other than ACK and PADDING. These cause a
+  recipient to send an acknowledgment within the maximum ack delay.
 
 Endpoint:
 
