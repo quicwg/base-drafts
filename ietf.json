@@ -1,7 +1,6 @@
 {
     "group": "quic",
     "repo_type": "specs",
-    "spec_regex": "draft-ietf-quic-.+\\.md",
     "revisions_tagged": true,
     "report_to": "group_email",
     "report_exclude_labels": ["editorial"]
