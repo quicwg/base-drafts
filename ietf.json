@@ -1,5 +1,9 @@
 {
     "group": "quic",
+    "primary": true,
+    "group_name": "QUIC",
+    "group_type": "wg",
+    "group_email": "quic@ietf.org",
     "repo_type": "specs",
     "revisions_tagged": true,
     "report_to": "group_email",
