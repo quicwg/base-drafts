@@ -3950,8 +3950,8 @@ Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
-the start of the first cryptographic handshake message.  The first CRYPTO frame
-sent always begins at an offset of 0 (see {{handshake}}).
+the start or all of the first cryptographic handshake message.  The first
+CRYPTO frame sent always begins at an offset of 0 (see {{handshake}}).
 
 Note that if the server sends a HelloRetryRequest, the client will send another
 series of Initial packets.  These Initial packets will continue the

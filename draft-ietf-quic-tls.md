@@ -570,15 +570,15 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-The first Initial packet from a client starts with its first cryptographic
-handshake message, which for TLS is the ClientHello.  Servers might need to
-parse the entire ClientHello (e.g., to access extensions such as Server Name
-Identification (SNI) or Application Layer Protocol Negotiation (ALPN)) in order
-to decide whether to accept the new incoming QUIC connection.  If the
-ClientHello spans multiple Initial packets, such servers would need to buffer
-the first received fragments, which could consume excessive resources if the
-client's address has not yet been validated.  To avoid this, servers MAY use
-the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
+The first Initial packet from a client contains the start or all of its first
+cryptographic handshake message, which for TLS is the ClientHello.  Servers
+might need to parse the entire ClientHello (e.g., to access extensions such as
+Server Name Identification (SNI) or Application Layer Protocol Negotiation
+(ALPN)) in order to decide whether to accept the new incoming QUIC connection.
+If the ClientHello spans multiple Initial packets, such servers would need to
+buffer the first received fragments, which could consume excessive resources if
+the client's address has not yet been validated.  To avoid this, servers MAY
+use the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
 partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
@@ -595,8 +595,8 @@ cause this message to grow.
 
 For servers, in addition to connection IDs and tokens, the size of TLS session
 tickets can have an effect on a client's ability to connect efficiently.
-Minimizing the size of these values increases the probability that they can be
-successfully used by a client.
+Minimizing the size of these values increases the probability that clients can
+use them and still fit their ClientHello message in their first Initial packet.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
