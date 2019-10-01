@@ -13,13 +13,13 @@ stand_alone: yes
 pi: [toc, sortrefs, symrefs]
 
 author:
-  -
+  
     ins: A. Ferrieux
     role: editor
     name: Alexandre Ferrieux
     org: Orange Labs
     email: alexandre.ferrieux@orange.com
-  -
+  
     ins: I. Hamchaoui
     role: editor
     name: Isabelle Hamchaoui
@@ -260,6 +260,9 @@ An IANA registry  has been suggested for QUIC versions.  In support of
 the fully negotiated  status of the proposed extension,  a natural way
 of deploying this feature would be through such a registered version.
 
+# Implementation Status
+ Implementation are available for Picoquic, Quicker and mvfst.
+ 
 # Acknowledgments
 
 The  sQuare  Bit was  originally  specified  by  Kazuho Oku  in  early
