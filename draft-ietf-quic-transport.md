@@ -193,7 +193,8 @@ QUIC packet:
 Ack-eliciting Packet:
 
 : A QUIC packet that contains frames other than ACK and PADDING. These cause a
-  recipient to send an acknowledgment within its maximum ACK delay ({{transport-parameter-definitions}}).
+  recipient to send an acknowledgment within its maximum ACK delay
+  ({{transport-parameter-definitions}}).
 
 Endpoint:
 
