@@ -418,8 +418,8 @@ lost, then a timer SHOULD be set for the remaining time.
 
 Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
 
-* the latest RTT sample is lower than the smoothed RTT, perhaps due to reordering where
-  the acknowledgement encountered a shorter path;
+* the latest RTT sample is lower than the smoothed RTT, perhaps due to reordering
+  where the acknowledgement encountered a shorter path;
 
 * the latest RTT sample is higher than the smoothed RTT, perhaps due to a sustained
   increase in the actual RTT, but the smoothed RTT has not yet caught up.
