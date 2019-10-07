@@ -511,7 +511,7 @@ Handshake or 1-RTT packets.
 When a server receives duplicate CRYPTO data in an Initial packet after sending
 its Initial flight, it can assume the client did not receive all Initial CRYPTO
 data. To speed handshake completion, it SHOULD retransmit all unacknowledged
-Initial data subject to the path validation limits.  After doing so,
+Initial CRYPTO data subject to the path validation limits.  After doing so,
 the PTO is re-armed.
 
 Prior to handshake completion, when few to none RTT samples have been
