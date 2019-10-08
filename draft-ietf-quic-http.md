@@ -489,7 +489,9 @@ the status code for the response.  These pseudo-header fields are defined in
 Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
 header fields.  Endpoints MUST NOT generate pseudo-header fields other than
 those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2 of {{!HTTP2}} also apply to HTTP/3.
+fields in Section 8.1.2 of {{!HTTP2}} also apply to HTTP/3.  Messages which
+are considered malformed under these restrictions are handled as described in
+{{malformed}}.
 
 HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
