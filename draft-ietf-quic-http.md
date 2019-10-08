@@ -1071,7 +1071,8 @@ When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
 stream.  If the push stream has been opened by the server, the server SHOULD
-abruptly terminate that stream.
+abruptly terminate that stream.  If the push stream has already closed, the
+server MAY take no action.
 
 A server can send the CANCEL_PUSH frame to indicate that it will not be
 fulfilling a promise prior to creation of a push stream.  Once the push stream
@@ -1093,10 +1094,15 @@ error of type HTTP_FRAME_UNEXPECTED.
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
-{{frame-push-promise}}).
+{{frame-push-promise}}).  If a CANCEL_PUSH frame is received which references a
+Push ID greater than currently allowed on the connection, this MUST be treated
+as a connection error of type HTTP_ID_ERROR.
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
-that has not yet been mentioned by a PUSH_PROMISE frame.
+that has not yet been mentioned by a PUSH_PROMISE frame due to reordering.  If a
+server receives a CANCEL_PUSH frame for a Push ID that has not yet been
+mentioned by a PUSH_PROMISE frame, this MUST be treated as a connection error of
+type HTTP_ID_ERROR.
 
 
 ### SETTINGS {#frame-settings}
@@ -1301,9 +1307,9 @@ See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
-Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
-also limits the number of push streams that the server can initiate in addition
-to the limit maintained by the QUIC transport.
+Push ID that the server can use in PUSH_PROMISE and CANCEL_PUSH frames.
+Consequently, this also limits the number of push streams that the server can
+initiate in addition to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
