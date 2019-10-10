@@ -1255,8 +1255,8 @@ as packet loss by the peer and could adversely affect performance.
 
 ## Responding to a Key Update
 
-Once an endpoint has acknowledged a packet in the current key phase, a peer is
-permitted to initiate a key update.  If a packet is received with a key phase
+A peer is permitted to initiate a key update after receiving an acknowledgement
+of a packet in the current key phase.  If a packet is received with a key phase
 that differs from the value the endpoint used to protect the last packet it
 sent, the endpoint uses the next packet protection keys for reading and the
 corresponding key and IV; see {{receive-key-generation}} for considerations
@@ -1278,10 +1278,10 @@ normal packet sending behaviour; it is not necessary to immediately generate a
 packet in response to a key update.  The next packet sent by the endpoint will
 use the updated keys.  The next packet that contains an acknowledgement will
 cause the key update to be completed.  If an endpoint detects a second update
-before it has sent any packets with updated keys or an acknowledgement for the
-packet that initiated the key update, it indicates that its peer has updated
-keys twice without awaiting confirmation.  An endpoint MAY treat consecutive key
-updates as a connection error of type KEY_UPDATE_ERROR.
+before it has sent any packets with updated keys containing an
+acknowledgement for the packet that initiated the key update, it indicates that
+its peer has updated keys twice without awaiting confirmation.  An endpoint MAY
+treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
 
 An endpoint that receives an acknowledgement that is carried in a packet
 protected with old keys where any acknowledged packet was protected with newer
@@ -1295,7 +1295,7 @@ key update, but has not updated keys in response.
 Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
 {{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
-place of discarded keys when key updates are not permitted; using dummy keys
+place of discarded keys when key updates are not yet permitted; using dummy keys
 will generate no variation in the timing signal produced by attempting to remove
 packet protection, but all packets with an invalid Key Phase bit will be
 rejected.
@@ -1322,8 +1322,9 @@ The time taken to generate new keys could reveal through timing side channels
 that a key update has occurred, or where an attacker injects packets, be used to
 reveal the value of the Key Phase on injected packets.  After receiving a key
 update, an endpoint SHOULD generate and save the next set of receive packet
-protection keys.  After new keys are available, receipt of packets will not
-create timing signals about the value of the Key Phase.
+protection keys.  By generating new keys before a key update is received,
+receipt of packets will not create timing signals that leak the value of the Key
+Phase.
 
 This depends on not doing this key generation during packet processing and it
 can require that endpoints maintain three sets of packet protection keys for
@@ -1352,7 +1353,7 @@ For receiving packets during a key update, packets protected with older keys
 might arrive if they were delayed by the network.  Retaining old packet
 protection keys allows these packets to be successfully processed.
 
-As packet protected with keys from the next key phase use the same Key Phase
+As packets protected with keys from the next key phase use the same Key Phase
 value as those protected with keys from the previous key phase, it can be
 necessary to distinguish between the two.  This can be done using packet
 numbers.  A recovered packet number that is lower than any packet number from
@@ -1369,23 +1370,24 @@ swapping previous for next after enough time has passed to allow for reordering
 in the network.  In this case, the Key Phase bit alone can be used to select
 keys.
 
-An endpoint SHOULD allow a period between one and two times the Probe Timeout
-(PTO; see {{QUIC-RECOVERY}}) after a key update before it creates the next set
-of packet protection keys.  These MAY replace the previous keys at that time.
+An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
+{{QUIC-RECOVERY}}) after a key update before it creates the next set of packet
+protection keys.  These updated keys MAY replace the previous keys at that time.
 With the caveat that PTO is a subjective measure - that is, a peer could have a
 different view of the RTT - this time is expected to be long enough that any
 reordered packets would be declared lost by a peer even if they were
 acknowledged and short enough to allow for subsequent key updates.
 
-Endpoints SHOULD allow for the possibility that a peer is not able to handle a
-key update during this period by allowing three times the PTO after receiving an
-acknowledgment that signals that the key update is complete and initiating
-another.  Failing to allow sufficient time could lead to packets being
+Endpoints need to allow for the possibility that a peer might not be able to
+decrypt packets that initiate a key update during the period when it retains old
+keys.  Endpoints SHOULD wait three times the PTO before initiating a key update
+after receiving an acknowledgment that confirms that the previous key update was
+received.  Failing to allow sufficient time could lead to packets being
 discarded.
 
-An endpoint SHOULD retain old read keys for a period of no more than three times
-the current PTO.  After this period, old read keys and their corresponding
-secrets SHOULD be discarded.
+An endpoint SHOULD retain old read keys for no more than three times the PTO.
+After this period, old read keys and their corresponding secrets SHOULD be
+discarded.
 
 
 ## Key Update Frequency
