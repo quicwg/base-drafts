@@ -1236,7 +1236,10 @@ IV to protect all subsequent packets.
 An endpoint MUST NOT initiate a key update prior to having received an
 acknowledgment for a packet that it sent protected with keys from the current
 key phase.  This ensures that keys are available to both peers before another
-can be initiated.
+can be initiated.  This can be implemented by tracking the lowest packet number
+sent with each key phase, and the highest acknowledged packet number in the
+1-RTT space: once the latter is higher than or equal to the former, another key
+update can be initiated.
 
 Note:
 
