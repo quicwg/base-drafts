@@ -508,11 +508,11 @@ until it is certain that the server has finished its address validation
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets.
 
-When a server receives duplicate CRYPTO data in an Initial packet after sending
-its Initial flight, it can assume the client did not receive all Initial CRYPTO
-data. To speed handshake completion, it SHOULD retransmit all unacknowledged
-Initial CRYPTO data subject to the path validation limits.  After doing so,
-the PTO is re-armed.
+When a server receives duplicate Initial CRYPTO data when there
+is unacknoweledged Initial CRYPTO data, it can assume the client did not
+receive all Initial CRYPTO data or the client's estimated RTT is too short.
+To speed handshake completion, it MAY retransmit unacknowledged Initial
+CRYPTO data subject to the path validation limits, as though the PTO expired.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
