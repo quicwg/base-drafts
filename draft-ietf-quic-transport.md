@@ -3996,7 +3996,7 @@ Number Length bits.  It is used to carry "early" data from the client to the
 server as part of the first flight, prior to handshake completion. As part of
 the TLS handshake, the server can accept or reject this early data.
 
-See Section 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
@@ -4361,42 +4361,43 @@ connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
-The format of the transport parameters is the TransportParameters struct from
-{{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!TLS13=RFC8446}}.
-
-~~~
-   enum {
-      original_connection_id(0),
-      idle_timeout(1),
-      stateless_reset_token(2),
-      max_packet_size(3),
-      initial_max_data(4),
-      initial_max_stream_data_bidi_local(5),
-      initial_max_stream_data_bidi_remote(6),
-      initial_max_stream_data_uni(7),
-      initial_max_streams_bidi(8),
-      initial_max_streams_uni(9),
-      ack_delay_exponent(10),
-      max_ack_delay(11),
-      disable_active_migration(12),
-      preferred_address(13),
-      active_connection_id_limit(14),
-      (65535)
-   } TransportParameterId;
-
-   struct {
-      TransportParameterId parameter;
-      opaque value<0..2^16-1>;
-   } TransportParameter;
-
-   TransportParameter TransportParameters<0..2^16-1>;
-~~~
-{: #figure-transport-parameters title="Definition of TransportParameters"}
-
 The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to describe the encoding of transport parameters.
+{{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
+sequence of transport parameters, as shown in {{transport-parameter-sequence}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 1 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 2 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter N (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-sequence title="Sequence of Transport Parameters"}
+
+Each transport parameter is encoded as an (identifier, length, value) tuple, as
+shown in {{transport-parameter-encoding-fig}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Transport Parameter Identifier (i)             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Transport Parameter Length (i)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Transport Parameter Value (*)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
+
+The Transport Parameter Length field contains the length of the Transport
+Parameter Value field.
 
 QUIC encodes transport parameters into a sequence of bytes, which are then
 included in the cryptographic handshake.
@@ -4421,20 +4422,20 @@ transport parameter is absent, unless otherwise stated.
 
 The following transport parameters are defined:
 
-original_connection_id (0x0000):
+original_connection_id (0x0):
 
 : The value of the Destination Connection ID field from the first Initial packet
   sent by the client.  This transport parameter is only sent by a server.  A
   server MUST include the original_connection_id transport parameter if it sent
   a Retry packet.
 
-idle_timeout (0x0001):
+idle_timeout (0x1):
 
 : The idle timeout is a value in milliseconds that is encoded as an integer; see
   ({{idle-timeout}}).  If this parameter is absent or zero then the idle
   timeout is disabled.
 
-stateless_reset_token (0x0002):
+stateless_reset_token (0x2):
 
 : A stateless reset token is used in verifying a stateless reset; see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
@@ -4443,7 +4444,7 @@ stateless_reset_token (0x0002):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_packet_size (0x0003):
+max_packet_size (0x3):
 
 : The maximum packet size parameter is an integer value that limits the size of
   packets that the endpoint is willing to receive.  This indicates that packets
@@ -4451,14 +4452,14 @@ max_packet_size (0x0003):
   maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
   limit only applies to protected packets ({{packet-protected}}).
 
-initial_max_data (0x0004):
+initial_max_data (0x4):
 
 : The initial maximum data parameter is an integer value that contains the
   initial value for the maximum amount of data that can be sent on the
   connection.  This is equivalent to sending a MAX_DATA ({{frame-max-data}}) for
   the connection immediately after completing the handshake.
 
-initial_max_stream_data_bidi_local (0x0005):
+initial_max_stream_data_bidi_local (0x5):
 
 : This parameter is an integer value specifying the initial flow control limit
   for locally-initiated bidirectional streams.  This limit applies to newly
@@ -4468,7 +4469,7 @@ initial_max_stream_data_bidi_local (0x0005):
   parameters, this applies to streams with the least significant two bits set to
   0x1.
 
-initial_max_stream_data_bidi_remote (0x0006):
+initial_max_stream_data_bidi_remote (0x6):
 
 : This parameter is an integer value specifying the initial flow control limit
   for peer-initiated bidirectional streams.  This limit applies to newly created
@@ -4478,7 +4479,7 @@ initial_max_stream_data_bidi_remote (0x0006):
   parameters, this applies to streams with the least significant two bits set to
   0x0.
 
-initial_max_stream_data_uni (0x0007):
+initial_max_stream_data_uni (0x7):
 
 : This parameter is an integer value specifying the initial flow control limit
   for unidirectional streams.  This limit applies to newly created
@@ -4488,7 +4489,7 @@ initial_max_stream_data_uni (0x0007):
   parameters, this applies to streams with the least significant two bits set to
   0x2.
 
-initial_max_streams_bidi (0x0008):
+initial_max_streams_bidi (0x8):
 
 : The initial maximum bidirectional streams parameter is an integer value that
   contains the initial maximum number of bidirectional streams the peer may
@@ -4497,7 +4498,7 @@ initial_max_streams_bidi (0x0008):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-initial_max_streams_uni (0x0009):
+initial_max_streams_uni (0x9):
 
 : The initial maximum unidirectional streams parameter is an integer value that
   contains the initial maximum number of unidirectional streams the peer may
@@ -4506,14 +4507,14 @@ initial_max_streams_uni (0x0009):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-ack_delay_exponent (0x000a):
+ack_delay_exponent (0xA):
 
 : The ACK delay exponent is an integer value indicating an
   exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
   If this value is absent, a default value of 3 is assumed (indicating a
   multiplier of 8). Values above 20 are invalid.
 
-max_ack_delay (0x000b):
+max_ack_delay (0xB):
 
 : The maximum ACK delay is an integer value indicating the
   maximum amount of time in milliseconds by which the endpoint will delay
@@ -4523,7 +4524,7 @@ max_ack_delay (0x000b):
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
   Values of 2^14 or greater are invalid.
 
-disable_active_migration (0x000c):
+disable_active_migration (0xC):
 
 : The disable active migration transport parameter is included if the endpoint
   does not support active connection migration ({{migration}}). Peers of an
@@ -4532,29 +4533,39 @@ disable_active_migration (0x000c):
   than that used to perform the handshake.  This parameter is a zero-length
   value.
 
-preferred_address (0x000d):
+preferred_address (0xD):
 
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
-  of this transport parameter is the PreferredAddress struct shown in
-  {{fig-preferred-address}}.  This transport parameter is only sent by a server.
-  Servers MAY choose to only send a preferred address of one address family by
-  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
-  IP addresses are encoded in network byte order.
+  of this transport parameter is shown in {{fig-preferred-address}}.  This
+  transport parameter is only sent by a server. Servers MAY choose to only send
+  a preferred address of one address family by sending an all-zero address and
+  port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
+  network byte order. The CID Length field contains the length of the
+  Connection ID field.
 
 ~~~
-   struct {
-     opaque ipv4Address[4];
-     uint16 ipv4Port;
-     opaque ipv6Address[16];
-     uint16 ipv6Port;
-     opaque connectionId<0..20>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       IPv4 Address (32)                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv4 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     IPv6 Address (128)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv6 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| CID Length (8)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Connection ID (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Stateless Reset Token (128)                 ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 
-active_connection_id_limit (0x000e):
+active_connection_id_limit (0xE):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
@@ -5843,18 +5854,19 @@ ID can be selected to route later packets to the same server.
 IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 "QUIC Protocol" heading.
 
-The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
-split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC8126}}.
+The "QUIC Transport Parameters" registry governs a 62-bit space.  This space is
+split into three spaces that are governed by different policies.  Values between
+0x0 and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG
+Review policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the
+Specification Required policy {{!RFC8126}}.  All other values are assigned to
+Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
 Value:
 
-: The numeric value of the assignment (registrations will be between 0x0000 and
-  0xfeff).
+: The numeric value of the assignment (registrations will be between 0x0 and
+  0x3fff).
 
 Parameter Name:
 
@@ -5871,23 +5883,23 @@ merely aesthetically displeasing, or architecturally dubious).
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
-| Value  | Parameter Name              | Specification                       |
-|:-------|:----------------------------|:------------------------------------|
-| 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
-| 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
-| 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
-| 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
-| 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
-| 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
-| 0x0007 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
-| 0x0009 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
-| 0x000a | ack_delay_exponent          | {{transport-parameter-definitions}} |
-| 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
-| 0x000c | disable_active_migration    | {{transport-parameter-definitions}} |
-| 0x000d | preferred_address           | {{transport-parameter-definitions}} |
-| 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
+| Value | Parameter Name              | Specification                       |
+|:------|:----------------------------|:------------------------------------|
+|  0x0  | original_connection_id      | {{transport-parameter-definitions}} |
+|  0x1  | idle_timeout                | {{transport-parameter-definitions}} |
+|  0x2  | stateless_reset_token       | {{transport-parameter-definitions}} |
+|  0x3  | max_packet_size             | {{transport-parameter-definitions}} |
+|  0x4  | initial_max_data            | {{transport-parameter-definitions}} |
+|  0x5  | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+|  0x6  | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+|  0x7  | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+|  0x8  | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
+|  0x9  | initial_max_streams_uni     | {{transport-parameter-definitions}} |
+|  0xA  | ack_delay_exponent          | {{transport-parameter-definitions}} |
+|  0xB  | max_ack_delay               | {{transport-parameter-definitions}} |
+|  0xC  | disable_active_migration    | {{transport-parameter-definitions}} |
+|  0xD  | preferred_address           | {{transport-parameter-definitions}} |
+|  0xE  | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
