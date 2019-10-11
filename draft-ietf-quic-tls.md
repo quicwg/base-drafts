@@ -659,13 +659,13 @@ configuration of the transport or application associated with the resumed
 session is not compatible with the server's current configuration.
 
 QUIC requires additional transport state to be associated with a 0-RTT session
-ticket. If stateless session tickets are used, this information must be stored
-in the session ticket. Application protocols that use QUIC might have similar
-requirements regarding associating or storing state. This associated state is
-used for deciding whether early data must be rejected. For example, HTTP/3
-({{QUIC-HTTP}}) settings determine how early data from the client is
-interpreted. Other applications using QUIC could have different requirements
-for determining whether to accept or reject early data.
+ticket. One common way to implement this is using stateless session tickets and
+storing this state in the session ticket. Application protocols that use QUIC
+might have similar requirements regarding associating or storing state. This
+associated state is used for deciding whether early data must be rejected. For
+example, HTTP/3 ({{QUIC-HTTP}}) settings determine how early data from the
+client is interpreted. Other applications using QUIC could have different
+requirements for determining whether to accept or reject early data.
 
 
 ## HelloRetryRequest
