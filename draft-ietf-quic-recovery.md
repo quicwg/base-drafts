@@ -418,11 +418,12 @@ lost, then a timer SHOULD be set for the remaining time.
 
 Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
 
-* the latest RTT sample is lower than the smoothed RTT, perhaps due to reordering
-  where the acknowledgement encountered a shorter path;
+* the latest RTT sample is lower than the smoothed RTT, perhaps due to
+  reordering where the acknowledgement encountered a shorter path;
 
-* the latest RTT sample is higher than the smoothed RTT, perhaps due to a sustained
-  increase in the actual RTT, but the smoothed RTT has not yet caught up.
+* the latest RTT sample is higher than the smoothed RTT, perhaps due to a
+  sustained increase in the actual RTT, but the smoothed RTT has not yet caught
+  up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
 multiplier, is 9/8.
@@ -741,8 +742,8 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, and a pacer might use the
-rate estimate of a rate-based controller.
+the smoothed RTT when used with a window-based controller, and a pacer might use
+the rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
