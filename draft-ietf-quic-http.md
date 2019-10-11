@@ -1070,14 +1070,13 @@ variable-length integer.
 When a server receives this frame, it aborts sending the response for the
 identified server push.  If the server has not yet started to send the server
 push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
-stream.  If the push stream has been opened by the server, the server SHOULD
-abruptly terminate that stream.  If the push stream has already closed, the
-server MAY take no action.
+stream.  If the push stream is open, the server SHOULD abruptly terminate that
+stream.  If the push stream has already closed, the server MAY take no action.
 
-A server can send the CANCEL_PUSH frame to indicate that it will not be
-fulfilling a promise prior to creation of a push stream.  Once the push stream
-has been created, sending CANCEL_PUSH has no effect on the state of the push
-stream.  The server SHOULD abruptly terminate the push stream instead.
+When a client receives this frame, the server is indicating that it will not be
+fulfilling a promise and has not created a push stream.  Once the push stream
+has been created, sending CANCEL_PUSH would have no effect on the state of the
+push stream.  The server SHOULD abruptly terminate the push stream instead.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
