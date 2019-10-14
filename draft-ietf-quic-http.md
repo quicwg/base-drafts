@@ -1067,16 +1067,22 @@ push prior to the push stream being received.  The CANCEL_PUSH frame identifies
 a server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
-When a server receives this frame, it aborts sending the response for the
-identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
-stream.  If the push stream is open, the server SHOULD abruptly terminate that
-stream.  If the push stream has already closed, the server MAY take no action.
+When a client sends this frame, it is indicating that it does not wish to
+receive the promised resource.  The server SHOULD abort sending the resource,
+but the mechanism to do so depends on the state of the corresponding push
+stream.  If the server has not yet created a push stream, it does not create
+one.  If the push stream is open, the server SHOULD abruptly terminate that
+stream.  If the push stream has already closed, the server MAY abruptly
+terminate the stream (cancelling any retransmissions) or MAY take no action.
 
-When a client receives this frame, the server is indicating that it will not be
-fulfilling a promise and has not created a push stream.  Once the push stream
-has been created, sending CANCEL_PUSH would have no effect on the state of the
-push stream.  The server SHOULD abruptly terminate the push stream instead.
+When a server sends this frame, it is indicating that it will not be fulfilling
+a promise and has not created a push stream.  The client should not expect the
+corresponding promise to be fulfilled.
+
+Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
+A server SHOULD NOT send a CANCEL_PUSH when it has already created a
+corresponding push stream, and a client SHOULD NOT send a CANCEL_PUSH when it
+has already received a corresponding push stream.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
