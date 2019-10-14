@@ -1067,15 +1067,15 @@ push prior to the push stream being received.  The CANCEL_PUSH frame identifies
 a server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
-When a client sends this frame, it is indicating that it does not wish to
+When a client sends CANCEL_PUSH, it is indicating that it does not wish to
 receive the promised resource.  The server SHOULD abort sending the resource,
 but the mechanism to do so depends on the state of the corresponding push
 stream.  If the server has not yet created a push stream, it does not create
 one.  If the push stream is open, the server SHOULD abruptly terminate that
-stream.  If the push stream has already closed, the server MAY abruptly
-terminate the stream (cancelling any retransmissions) or MAY take no action.
+stream.  If the server has already fulfilled the promise, the server MAY still
+abruptly terminate the stream or MAY take no action.
 
-When a server sends this frame, it is indicating that it will not be fulfilling
+When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
 a promise and has not created a push stream.  The client should not expect the
 corresponding promise to be fulfilled.
 
