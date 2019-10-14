@@ -853,8 +853,9 @@ follows this integer is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
-see {{extensions}} for more details.
+({{push-streams}}).  [QPACK] defines two additional stream types.  Other stream
+types can be defined by extensions to HTTP/3; see {{extensions}} for more
+details.
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
