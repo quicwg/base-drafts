@@ -1072,8 +1072,8 @@ receive the promised resource.  The server SHOULD abort sending the resource,
 but the mechanism to do so depends on the state of the corresponding push
 stream.  If the server has not yet created a push stream, it does not create
 one.  If the push stream is open, the server SHOULD abruptly terminate that
-stream.  If the server has already fulfilled the promise, the server MAY still
-abruptly terminate the stream or MAY take no action.
+stream.  If the push stream has already ended, the server MAY still abruptly
+terminate the stream or MAY take no action.
 
 When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
 a promise and has not created a push stream.  The client should not expect the
