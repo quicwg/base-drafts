@@ -260,7 +260,7 @@ table, the Required Insert Count is zero.
 
 When the decoder receives a header block with a Required Insert Count greater
 than its own Insert Count, the stream cannot be processed immediately, and is
-considered "blocked" (see {blocked-decoding}).
+considered "blocked" (see {{blocked-decoding}}).
 
 The decoder specifies an upper bound on the number of streams which can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
@@ -311,7 +311,7 @@ instructions received on the encoder stream.
 The decoder MUST emit header fields in the order their representations appear in
 the input header block.
 
-### Blocked Decoding  {#blocked-decoding}
+### Blocked Decoding
 
 Upon receipt of a header block, the decoder examines the Required Insert Count.
 When the Required Insert Count is less than or equal to the decoder's Insert
