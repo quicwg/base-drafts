@@ -759,9 +759,11 @@ in Linux (3.11 onwards).
 
 ## Under-utilizing the Congestion Window
 
-A congestion window that is under-utilized SHOULD NOT be increased in either
-slow start or congestion avoidance. This can happen due to insufficient
-application data or flow control credit.
+When bytes in flight is smaller than the congestion window and sending is not
+pacing limited, the congestion window is under-utilized.  When this occurs,
+the congestion window SHOULD NOT be increased in either slow start or
+congestion avoidance. This can happen due to insufficient application data
+or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
@@ -771,9 +773,12 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Bursting more than an initial window's worth of data into the network might
-cause short-term congestion and losses. Implemementations SHOULD either use
-pacing or reduce their congestion window to limit such bursts.
+Sending multiple packets into the network without any delay between them
+creates a packet burst that might cause short-term congestion and losses.
+Implementations SHOULD either use pacing or reduce their congestion window
+to limit such bursts to minimum of 10 * kMaxDatagramSize and
+max(2* kMaxDatagramSize, 14720)), the same as the recommended initial
+congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
