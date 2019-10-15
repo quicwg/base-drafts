@@ -2570,8 +2570,8 @@ with connection IDs that are either unused or retired.
 This comparison can be performed for every inbound datagram.  Endpoints MAY skip
 this check if packets from a datagram are successfully processed.  However, the
 comparison MUST be performed when the first packet in an incoming datagram
-either cannot be associated with a connection, cannot be decrypted, or is
-identified as a duplicate.
+either cannot be associated with a connection, cannot be decrypted, or carries
+a duplicate packet number.
 
 An endpoint MUST NOT check for any Stateless Reset Tokens associated with
 connection IDs it has not used or for connection IDs that have been retired.
