@@ -2559,7 +2559,7 @@ the packet other than the last 16 bytes for carrying data.
 ### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset using the trailing 16 bytes of
-the UDP datagram.  The endpoint compare the last 16 bytes of the datagram with
+the UDP datagram.  The endpoint compares the last 16 bytes of the datagram with
 all Stateless Reset Tokens that are associated with connection IDs that the
 endpoint recently used to send packets from the IP address and port on which the
 datagram is received.
