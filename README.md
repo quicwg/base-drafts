@@ -1,7 +1,8 @@
 # QUIC Protocol
 
 This is the working area for the IETF QUIC Working Group documents for the
-QUIC protocol suite.
+QUIC protocol suite. **See also** the [draft index](https://quicwg.org/base-drafts/) for diffs and pull requests.
+
 
 ## QUIC Invariants
 

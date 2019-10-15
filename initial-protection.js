@@ -10,7 +10,7 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var assert = require('assert');
 
-var INITIAL_SALT = Buffer.from('ef4fb0abb47470c41befcf8031334fae485e09a0', 'hex');
+var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
 var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
@@ -186,8 +186,9 @@ class InitialProtection {
     if (data[0] & 0x80 === 0) {
       throw new Error('short header unsupported');
     }
-    var hdr_len = 1 + 4 + 1 +
-        this.cidLen(data[5]&0xf) + this.cidLen(data[5]>>4);
+    var hdr_len = 1 + 4;
+    hdr_len += 1 + data[hdr_len]; // DCID
+    hdr_len += 1 + data[hdr_len]; // SCID
     if ((data[0] & 0x30) === 0) { // Initial packet: token.
       if ((data[hdr_len] & 0xc0) !== 0) {
         throw new Error('multi-byte token length unsupported');
@@ -251,10 +252,11 @@ function test(role, cid, hdr, pn, body) {
   }
 }
 
-var version = 'ff000012'
+var version = 'ff000017'
 var cid = '8394c8f03e515708';
 
-var ci_hdr = 'c3' + version + '50' + cid + '00';
+var dcidl = '0' + (cid.length / 2).toString(16);
+var ci_hdr = 'c3' + version + dcidl + cid + '0000';
 // This is a client Initial.  Unfortunately, the ClientHello currently omits
 // the transport_parameters extension.
 var crypto_frame = '060040c4' +
@@ -274,5 +276,7 @@ var frames = '0d0000000018410a' +
     '5a1200130100002e00330024001d00209d3c940d89' +
     '690b84d08a60993c144eca684d1081287c834d5311' +
     'bcf32bb9da1a002b00020304';
-var si_hdr = 'c1' + version + '05' + 'f067a5502a4262b5' + '00';
+var scid = 'f067a5502a4262b5';
+var scidl = '0' + (scid.length / 2).toString(16);
+var si_hdr = 'c1' + version + '00' + scidl + scid + '00';
 test('server', cid, si_hdr, 1, frames);

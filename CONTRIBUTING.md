@@ -107,6 +107,7 @@ The drafts currently in the late stage are:
 * Transport
 * TLS
 
+![diagram of the late stage workflow](workflow.png "Late Stage Workflow")
 
 ### Discretionary Design Issue Labels
 
@@ -114,7 +115,6 @@ We also use the following labels to help understand the state of our design issu
 
 * [`arch`](https://github.com/quicwg/base-drafts/labels/arch): The issue is a higher-level architectural issue that should drive the solution to a number of other issues.
 * [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue blocks progress to our next milestone.
-* [`has-proposal`](https://github.com/quicwg/base-drafts/labels/has-proposal): The issue has a proposal for resolution.
 * [`editor-ready`](https://github.com/quicwg/base-drafts/labels/editor-ready): The Working Group believes it has a viable resolution, but the editors need to incorporate that into the document so we can see it in situ.
 
 
