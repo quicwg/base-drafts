@@ -2449,12 +2449,14 @@ endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
-the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
-stateless_reset_token transport parameter during the handshake (clients cannot
-because their transport parameters don't have confidentiality protection).  This
-value is protected by encryption, so only client and server know this value.
-Tokens are invalidated when their associated connection ID is retired via a
-RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
+the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
+specify a stateless_reset_token transport parameter during the handshake that
+applies to the connection ID that it selected during the handshake; clients
+cannot use this transport parameter because their transport parameters don't
+have confidentiality protection.  These tokens are protected by encryption, so
+only client and server know their value.  Tokens are invalidated when their
+associated connection ID is retired via a RETIRE_CONNECTION_ID frame
+({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2559,8 +2561,8 @@ the packet other than the last 16 bytes for carrying data.
 An endpoint detects a potential stateless reset when an incoming packet either
 cannot be associated with a connection, cannot be decrypted, or is marked as a
 duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
-packet with all Stateless Reset Tokens that are associated with connection IDs
-that the endpoint recently used to send packets from the IP address and port on
+packet with all Stateless Reset Tokens corresponding to active connection IDs
+that the endpoint has used for sending packets to the IP address and port on
 which the datagram is received.  This includes Stateless Reset Tokens from
 NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
 MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
@@ -2611,16 +2613,10 @@ the same static key; see {{reset-oracle}}.  A connection ID from a connection
 that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
 connections at nodes that share a static key.
 
-The same Stateless Reset Token MAY be used for multiple connection IDs on the
-same connection.  However, reuse of a Stateless Reset Token might expose an
-endpoint to denial of service if associated connection IDs are forgotten while
-the associated token is still active at a peer.  An endpoint MUST ensure that
-packets with Destination Connection ID field values that correspond to a reused
-Stateless Reset Token are attributed to the same connection as long as the
-Stateless Reset Token is still usable, even when the connection ID has been
-retired.  Otherwise, an attacker might be able to send a packet with a retired
-connection ID and cause the endpoint to produce a Stateless Reset that it can
-use to disrupt the connection, just as with the attacks in {{reset-oracle}}.
+The same Stateless Reset Token MUST NOT be used for multiple connection IDs.
+Endpoints are not required to compare new values against all previous values,
+but a duplicate value MAY be treated as a connection error of type
+PROTOCOL_VIOLATION.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
 
