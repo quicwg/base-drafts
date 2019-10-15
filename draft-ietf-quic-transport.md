@@ -3014,11 +3014,16 @@ guidance offered below seeks to strike this balance.
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
 
-A receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
-estimate or the value it indicates in the `max_ack_delay` transport parameter.
-This ensures an acknowledgment is sent at least once per RTT when packets
-needing acknowledgement are received.  The sender can use the receiver's
-`max_ack_delay` value in determining timeouts for timer-based retransmission.
+An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
+packets.  An endpoint commits to a maximum delay using the max_ack_delay
+transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
+declares an explicit contract: an endpoint promises to never delay
+acknowledgments of an ack-eliciting packet by more than the indicated value. If
+it does, any excess accrues to the RTT estimate and could result in delayed
+retransmissions from the peer.  For Initial and Handshake packets, a
+max_ack_delay of 0 is used.  The sender uses the receiver's `max_ack_delay`
+value in determining timeouts for timer-based retransmission, as detailed
+in Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
@@ -3037,12 +3042,6 @@ As an optimization, a receiver MAY process multiple packets before sending any
 ACK frames in response.  In this case the receiver can determine whether an
 immediate or delayed acknowledgement should be generated after processing
 incoming packets.
-
-Acknowledgements of packets carrying CRYPTO frames SHOULD be minimally delayed,
-to complete the handshake with minimal latency. Delaying them by a small amount,
-such as the local timer granularity, allows the endpoint to bundle any data sent
-in response with the ACK frame.  ACK frames SHOULD be sent immediately when the
-crypto stack indicates all data for that packet number space has been received.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
@@ -3141,15 +3140,6 @@ better estimate of the path RTT when acknowledgments are delayed. A packet might
 be held in the OS kernel or elsewhere on the host before being processed.  An
 endpoint MUST NOT include delays that is does not control when populating the
 Ack Delay field in an ACK frame.
-
-An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  An endpoint commits to a maximum delay using the max_ack_delay
-transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
-declares an explicit contract: an endpoint promises to never delay
-acknowledgments of an ack-eliciting packet by more than the indicated value. If
-it does, any excess accrues to the RTT estimate and could result in delayed
-retransmissions from the peer.  For Initial and Handshake packets, a
-max_ack_delay of 0 is used.
 
 ### ACK Frames and Packet Protection
 
