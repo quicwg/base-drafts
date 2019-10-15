@@ -3013,6 +3013,8 @@ guidance offered below seeks to strike this balance.
 
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+Every ack-eliciting packet MUST be acknowledged in at least one transmitted
+ACK frame, and SHOULD typically be acknoweldged in more than one ACK frame.
 
 A receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
 estimate or the value it indicates in the `max_ack_delay` transport parameter.
