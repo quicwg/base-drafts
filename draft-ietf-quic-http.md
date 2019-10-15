@@ -358,13 +358,120 @@ some other mechanism.
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
 token "h3" in the TLS handshake.  Support for other application-layer protocols
-MAY be offered in the same handshake.
+MAY be offered in the same handshake. HTTP/3-specific settings are also conveyed
+in the initial crypto handshake by using application_layer_parameters as
+described in Section 7.3.2 of {{QUIC-TRANSPORT}}.
 
-While connection-level options pertaining to the core QUIC protocol are set in
-the initial crypto handshake, HTTP/3-specific settings are conveyed in the
-SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
-({{frame-settings}}) MUST be sent by the client as the initial frame of its HTTP
-control stream (see {{control-streams}}).
+
+## Connection Settings {#settings}
+
+HTTP/3 defines settings which convey configuration parameters that affect how
+endpoints communicate, such as preferences and constraints on peer behavior.
+Individually, one of these parameters is referred to as a "setting"; the
+identifier and value of each setting parameter is referred to as a "setting
+identifier" and a "setting value". Combined, these are referred to as
+"settings".
+
+Settings always apply to a connection, never a single stream.
+
+Settings parameters are not negotiated; they describe characteristics of the
+sending peer, which can be used by the receiving peer. However, a negotiation
+can be implied by the use of settings - each peer uses settings to advertise a
+set of supported values. The definition of the setting would describe how each
+peer combines the two sets to conclude which choice will be used.  The settings
+mechanism does not provide a mechanism to identify when the choice takes effect.
+
+Different values for the same parameter can be advertised by each peer. For
+example, a client might be willing to consume a very large response header,
+while servers are more cautious about request size.
+
+The same setting identifier MUST NOT occur more than once in settings.
+A receiver MAY treat the presence of duplicate setting identifiers as a
+connection error of type HTTP_SETTINGS_ERROR.
+
+Each parameter consists of a setting identifier and a value, both encoded as
+QUCI variable-length integers, as shown in {{fig-ext-settings}}. A settings
+block consisting of all settings sent by an endpoint is encoded by concatenating
+the encodings of its settings parameters. A client sends its settings block
+as the param field of an ApplicationParameter struct with the alpn field
+containing the ALPN for HTTP/3 ({{connection-establishment}}). A server sends
+its settings block as the contents of the application_layer_parameters transport
+parameter (Section 7.3.2 of {{QUIC-TRANSPORT}}). Each endpoint MUST send a
+settings block; if an endpoint's settings are the default settings, its settings
+block is 0 bytes long.
+
+~~~~~~~~~~~~~~~  drawing
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Identifier (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Value (i)                         ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~~~~~~~~~~~~~
+{: #fig-ext-settings title="Settings parameter format"}
+
+An implementation MUST ignore the contents for any settings identifier it does
+not understand.
+
+
+#### Defined Settings Parameters {#settings-parameters}
+
+The following settings are defined in HTTP/3:
+
+  SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
+  : The default value is unlimited.  See {{header-formatting}} for usage.
+
+Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
+reserved to exercise the requirement that unknown identifiers be ignored.  Such
+settings have no defined meaning. Endpoints SHOULD include at least one such
+setting in their settings. Endpoints MUST NOT consider such settings to
+have any meaning upon receipt.
+
+Because the setting has no defined meaning, the value of the setting can be any
+value the implementation selects.
+
+Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
+for more details.
+
+#### Initialization {#settings-initialization}
+
+An HTTP implementation MUST NOT send frames or requests which would be invalid
+based on its current understanding of the peer's settings.
+
+For clients using a 1-RTT QUIC connection, the server's settings are read from
+application_layer_parameters and never change. Servers always read the client's
+settings from application_layer_parameters and never change.
+
+A server that does not receive application_layer_parameters with a param for
+HTTP/3 or a client that does not receive any application_layer_parameters MUST
+close the connection. The peer SHOULD close the connection with an
+HTTP_MISSING_SETTINGS error code.
+
+When a 0-RTT QUIC connection is being used, the initial value of each server
+setting is the value used in the previous session. Clients MUST store the
+settings the server provided in the connection where resumption information was
+provided.  A client MUST comply with stored settings when attempting 0-RTT. Once
+a server has provided new settings, clients MUST comply with those values.
+
+A server can remember the settings that it advertised, or store an
+integrity-protected copy of the values in the ticket and recover the information
+when accepting 0-RTT data. A server uses the HTTP/3 settings values in
+determining whether to accept 0-RTT data.  If the server cannot determine that
+the settings remembered by a client are compatible with its current settings, it
+MUST NOT accept 0-RTT data.  Remembered settings are compatible if a client
+complying with those settings would not violate the server's current settings.
+
+A server MAY accept 0-RTT and subsequently provide different settings in its
+application_layer_parameters.
+If 0-RTT data is accepted by the server, its settings MUST
+NOT reduce any limits or alter any values that might be violated by the client
+with its 0-RTT data.  The server MUST include all settings which differ from
+their default values.  If a server accepts 0-RTT, but sends settings
+which reduce a setting the client understands or omits a value that was
+previously specified to have a non-default value, this MUST be treated as a
+connection error of type HTTP_SETTINGS_ERROR.
+
 
 ## Connection Reuse
 
@@ -899,15 +1006,12 @@ A control stream is indicated by a stream type of `0x00`.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
-connection.  A client MUST send its SETTINGS frame as the first frame on this
-stream.  If the first frame of a client's control stream is any other frame
-type, this MUST be treated as a connection error of type HTTP_MISSING_SETTINGS.
-Only one control stream per peer is permitted; receipt of a second stream which
-claims to be a control stream MUST be treated as a connection error of type
-HTTP_STREAM_CREATION_ERROR.  The sender MUST NOT close the control stream, and
-the receiver MUST NOT request that the sender close the control stream.  If
-either control stream is closed at any point, this MUST be treated as a
-connection error of type HTTP_CLOSED_CRITICAL_STREAM.
+connection.  Only one control stream per peer is permitted; receipt of a second
+stream which claims to be a control stream MUST be treated as a connection error
+of type HTTP_STREAM_CREATION_ERROR.  The sender MUST NOT close the control
+stream, and the receiver MUST NOT request that the sender close the control
+stream.  If either control stream is closed at any point, this MUST be treated
+as a connection error of type HTTP_CLOSED_CRITICAL_STREAM.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
@@ -972,7 +1076,6 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | DATA           | No             | Yes            | Yes         | {{frame-data}}           |
 | HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
 | CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
-| SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
@@ -1100,132 +1203,6 @@ The Push ID identifies the server push that is being cancelled (see
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame.
-
-
-### SETTINGS {#frame-settings}
-
-The SETTINGS frame (type=0x4) conveys configuration parameters that affect how
-endpoints communicate, such as preferences and constraints on peer behavior.
-Individually, a SETTINGS parameter can also be referred to as a "setting"; the
-identifier and value of each setting parameter can be referred to as a "setting
-identifier" and a "setting value".
-
-SETTINGS frames always apply to a connection, never a single stream.  A SETTINGS
-frame MUST be sent as the first frame of a client's control stream (see
-{{control-streams}}) by each peer, and MUST NOT be sent subsequently. If
-an endpoint receives a second SETTINGS frame on the control stream, the endpoint
-MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED. A server's
-SETTINGS frame MUST be sent in the application_layer_parameters field of the
-server's transport parameters (section 7.3 of {{QUIC-TRANSPORT}}). Only the
-frame payload of the server's SETTINGS frame is sent in transport parameters;
-the type and length from the framing overhead are omitted.
-
-SETTINGS frames MUST NOT be sent on any stream other than the control stream.
-If an endpoint receives a SETTINGS frame on a different stream, the endpoint
-MUST respond with a connection error of type HTTP_FRAME_UNEXPECTED.
-
-SETTINGS parameters are not negotiated; they describe characteristics of the
-sending peer, which can be used by the receiving peer. However, a negotiation
-can be implied by the use of SETTINGS - each peer uses SETTINGS to advertise a
-set of supported values. The definition of the setting would describe how each
-peer combines the two sets to conclude which choice will be used.  SETTINGS does
-not provide a mechanism to identify when the choice takes effect.
-
-Different values for the same parameter can be advertised by each peer. For
-example, a client might be willing to consume a very large response header,
-while servers are more cautious about request size.
-
-The same setting identifier MUST NOT occur more than once in the SETTINGS frame.
-A receiver MAY treat the presence of duplicate setting identifiers as a
-connection error of type HTTP_SETTINGS_ERROR.
-
-The payload of a SETTINGS frame consists of zero or more parameters.  Each
-parameter consists of a setting identifier and a value, both encoded as QUIC
-variable-length integers.
-
-~~~~~~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Identifier (i)                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Value (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS parameter format"}
-
-An implementation MUST ignore the contents for any SETTINGS identifier it does
-not understand.
-
-
-#### Defined SETTINGS Parameters {#settings-parameters}
-
-The following settings are defined in HTTP/3:
-
-  SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
-  : The default value is unlimited.  See {{header-formatting}} for usage.
-
-Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
-reserved to exercise the requirement that unknown identifiers be ignored.  Such
-settings have no defined meaning. Endpoints SHOULD include at least one such
-setting in their SETTINGS frame. Endpoints MUST NOT consider such settings to
-have any meaning upon receipt.
-
-Because the setting has no defined meaning, the value of the setting can be any
-value the implementation selects.
-
-Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
-for more details.
-
-#### Initialization {#settings-initialization}
-
-An HTTP implementation MUST NOT send frames or requests which would be invalid
-based on its current understanding of the peer's settings.
-
-All settings begin at an initial value.  Each endpoint SHOULD use these initial
-values to send messages before the peer's SETTINGS frame has arrived, as packets
-carrying the settings can be lost or delayed.  When the SETTINGS frame arrives,
-any settings are changed to their new values.
-
-This removes the need to wait for the SETTINGS frame before sending messages.
-Endpoints MUST NOT require any data to be received from the peer prior to
-sending the SETTINGS frame; settings MUST be sent as soon as the transport is
-ready to send data.
-
-For servers, the initial value of each client setting is the default value.
-
-For clients using a 1-RTT QUIC connection, the initial value of each server
-setting is the default value.  1-RTT keys will always become available prior to
-SETTINGS arriving, even if the server sends SETTINGS immediately. Clients SHOULD
-NOT wait indefinitely for SETTINGS to arrive before sending requests, but SHOULD
-process received datagrams in order to increase the likelihood of processing
-SETTINGS before sending the first request.
-
-When a 0-RTT QUIC connection is being used, the initial value of each server
-setting is the value used in the previous session. Clients SHOULD store the
-settings the server provided in the connection where resumption information was
-provided, but MAY opt not to store settings in certain cases (e.g., if the
-session ticket is received before the SETTINGS frame). A client MUST comply with
-stored settings -- or default values, if no values are stored -- when attempting
-0-RTT. Once a server has provided new settings, clients MUST comply with those
-values.
-
-A server can remember the settings that it advertised, or store an
-integrity-protected copy of the values in the ticket and recover the information
-when accepting 0-RTT data. A server uses the HTTP/3 settings values in
-determining whether to accept 0-RTT data.  If the server cannot determine that
-the settings remembered by a client are compatible with its current settings, it
-MUST NOT accept 0-RTT data.  Remembered settings are compatible if a client
-complying with those settings would not violate the server's current settings.
-
-A server MAY accept 0-RTT and subsequently provide different settings in its
-SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
-NOT reduce any limits or alter any values that might be violated by the client
-with its 0-RTT data.  The server MUST include all settings which differ from
-their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
-frame which reduces a setting the client understands or omits a value that was
-previously specified to have a non-default value, this MUST be treated as a
-connection error of type HTTP_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
@@ -1453,10 +1430,10 @@ HTTP_ID_ERROR (0x108):
   reducing a limit, or being reused.
 
 HTTP_SETTINGS_ERROR (0x109):
-: An endpoint detected an error in the payload of a SETTINGS frame.
+: An endpoint detected an error in the payload of settings.
 
 HTTP_MISSING_SETTINGS (0x10A):
-: No SETTINGS frame was received at the beginning of the control stream.
+: No settings block was received in application_layer_parameters.
 
 HTTP_REQUEST_REJECTED (0x10B):
 : A server rejected a request without performing any application processing.
@@ -1502,9 +1479,8 @@ protocol elements.  Implementations MUST discard frames and unidirectional
 streams that have unknown or unsupported types.  This means that any of these
 extension points can be safely used by extensions without prior arrangement or
 negotiation.  However, where a known frame type is required to be in a specific
-location, such as the SETTINGS frame as the first frame of the control stream
-(see {{control-streams}}), an unknown frame type does not satisfy that
-requirement and SHOULD be treated as an error.
+location, an unknown frame type does not satisfy that requirement and SHOULD be
+treated as an error.
 
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
@@ -1631,7 +1607,6 @@ The entries in the following table are registered by this document.
 | HEADERS          |  0x1   | {{frame-headers}}          |
 | Reserved         |  0x2   | N/A                        |
 | CANCEL_PUSH      |  0x3   | {{frame-cancel-push}}      |
-| SETTINGS         |  0x4   | {{frame-settings}}         |
 | PUSH_PROMISE     |  0x5   | {{frame-push-promise}}     |
 | Reserved         |  0x6   | N/A                        |
 | GOAWAY           |  0x7   | {{frame-goaway}}           |
@@ -1733,8 +1708,8 @@ The entries in the following table are registered by this document.
 | HTTP_FRAME_ERROR                    | 0x0106     | Frame violated layout or size rules      | {{http-error-codes}}   |
 | HTTP_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
 | HTTP_ID_ERROR                       | 0x0108     | An identifier was used incorrectly       | {{http-error-codes}}   |
-| HTTP_SETTINGS_ERROR                 | 0x0109     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| HTTP_MISSING_SETTINGS               | 0x010A     | No SETTINGS frame received               | {{http-error-codes}}   |
+| HTTP_SETTINGS_ERROR                 | 0x0109     | Settings contained invalid values        | {{http-error-codes}}   |
+| HTTP_MISSING_SETTINGS               | 0x010A     | No settings block received               | {{settings}}           |
 | HTTP_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
 | HTTP_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
 | HTTP_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
@@ -1894,10 +1869,6 @@ RST_STREAM (0x3):
   management.  The same code point is used for the CANCEL_PUSH frame
   ({{frame-cancel-push}}).
 
-SETTINGS (0x4):
-: SETTINGS frames are sent only at the beginning of the connection.  See
-  {{frame-settings}} and {{h2-settings}}.
-
 PUSH_PROMISE (0x5):
 : The PUSH_PROMISE does not reference a stream; instead the push stream
   references the PUSH_PROMISE frame using a Push ID.  See
@@ -1925,8 +1896,8 @@ equivalent HTTP/2 code points.  See {{iana-frames}}.
 
 ## HTTP/2 SETTINGS Parameters {#h2-settings}
 
-An important difference from HTTP/2 is that settings are sent once, as the first
-frame of the control stream, and thereafter cannot change.  This eliminates many
+An important difference from HTTP/2 is that settings are sent once, at the
+beginning of the connection, and thereafter cannot change.  This eliminates many
 corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
@@ -1944,16 +1915,16 @@ SETTINGS_ENABLE_PUSH:
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in HTTP/3 settings is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
 : QUIC requires both stream and connection flow control window sizes to be
   specified in the initial transport handshake.  Specifying
-  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+  SETTINGS_INITIAL_WINDOW_SIZE in HTTP/3 settings is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/3.  Specifying it in the SETTINGS frame
-  is an error.
+: This setting has no equivalent in HTTP/3.  Specifying it in HTTP/3 settings is
+  an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : See {{settings-parameters}}.
@@ -1969,10 +1940,6 @@ settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
-
-As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
-the peers' settings to arrive before responding to other streams.  See
-{{settings-initialization}}.
 
 
 ## HTTP/2 Error Codes

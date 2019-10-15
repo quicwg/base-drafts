@@ -1529,6 +1529,33 @@ handshake or by frames sent in 1-RTT packets.  A server MAY treat use of updated
 transport parameters in 0-RTT as a connection error of type PROTOCOL_VIOLATION.
 
 
+### Application Parameters {#app-params}
+
+The transport parameter application_layer_parameters is used by the application
+protocol to exchange application-specific parameters concurrently with the
+cryptographic and transport handshake. The contents of an application parameter
+are opaque to QUIC transport and their semantic meaning is defined by their
+application protocol.
+
+Each application protocol MAY specify use of application parameters to be sent
+by one of or both the client and server. If not specified, an application
+parameter MUST NOT be sent for tht application's ALPN. For each application
+protocol that the client supports, it fills out an ApplicationParameter struct
+with the ALPN for that protocol in the alpn field, and the application-specific
+parameter in the param field. The ApplicationParameter structs generated
+by the client for each supported application protocol are combined into a single
+ApplicationParameters struct which is sent in application_layer_parameters.
+When a client receives application_layer_parameters from a server, it passes
+them to the application layer for processing.
+
+Once a server has selected the application protocol it is using for a
+connection, it can process application_layer_parameters. If the selected
+application protocol uses application parameters, the contents of the
+ApplicationParameters struct are passed to the application layer for processing.
+The application layer can provide bytes to send to the client in
+application_layer_parameters.
+
+
 ### New Transport Parameters {#new-transport-parameters}
 
 New transport parameters can be used to negotiate new protocol behavior.  An
@@ -4543,12 +4570,6 @@ preferred_address (0x000d):
   sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
   IP addresses are encoded in network byte order.
 
-application_layer_parameters (0x000e):
-
-: Parameters from the application layer that the application wishes to announce
-  or negotiate in the handshake. The format of this transport parameter is
-  application specific.
-
 ~~~
    struct {
      opaque ipv4Address[4];
@@ -4566,6 +4587,28 @@ active_connection_id_limit (0x000e):
 : The maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
   frames. If this parameter is absent, a default of 0 is assumed.
+
+application_layer_parameters (0x000f):
+
+: Parameters from the application layer that the application wishes to announce
+  or negotiate in the handshake. When sent by a client, it contains an
+  ApplicationParameters struct containing a mapping of ALPN identifiers to
+  opaque params, as shown in {{fig-application-parameters}}. When sent by a
+  server, it consists of an opaque sequence of bytes to be interpreted by the
+  application protocol. The semantics and processing of this transport parameter
+  is described in {{app-params}}.
+
+~~~
+struct {
+  opaque alpn<1..2^8-1>;
+  opaque param<0..2^16-1>;
+} ApplicationParameter;
+
+struct {
+  ApplicationParameter application_parameters<0..2^16-1>;
+} ApplicationParameters;
+~~~
+{: #fig-application-parameters title="Application Parameters format"}
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
