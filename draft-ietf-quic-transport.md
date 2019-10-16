@@ -2571,8 +2571,7 @@ which the datagram was received.
 This comparison can be performed for every inbound datagram.  Endpoints MAY skip
 this check if any packet from a datagram is successfully processed.  However,
 the comparison MUST be performed when the first packet in an incoming datagram
-either cannot be associated with a connection, cannot be decrypted, or carries
-a duplicate packet number.
+either cannot be associated with a connection, or cannot be decrypted.
 
 An endpoint MUST NOT check for any Stateless Reset Tokens associated with
 connection IDs it has not used or for connection IDs that have been retired.
