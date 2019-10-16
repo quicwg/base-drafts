@@ -1032,10 +1032,11 @@ longer plans to use that address.
 
 An endpoint can request that its peer retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer SHOULD retire the corresponding connection IDs and send the
-corresponding RETIRE_CONNECTION_ID frames in a timely manner.  Failing to do so
-can cause packets to be delayed, lost, or cause the original endpoint to send a
-stateless reset in response to a connection ID it can no longer route correctly.
+the peer MUST retire the corresponding connection IDs and send corresponding
+RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within one
+PTO can cause packets to be delayed, lost, or cause the original endpoint to
+send a stateless reset in response to a connection ID it can no longer route
+correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
