@@ -526,7 +526,7 @@ Insertion Point               Dropping Point
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Example Dynamic Table Indexing - Encoder Stream"}
+{: title="Example Dynamic Table Indexing on the Encoder Stream when Base = n-2"}
 
 Unlike encoder instructions, relative indices in header block representations
 are relative to the Base at the beginning of the header block (see
@@ -549,7 +549,7 @@ index equal to Base - 1.
 n = count of entries inserted
 d = count of entries dropped
 ~~~~~
-{: title="Example Dynamic Table Indexing - Relative Index in Header Block"}
+{: title="Example Dynamic Table Indexing in a Header Block when Base = n-2"}
 
 
 ### Post-Base Indexing {#post-base}
