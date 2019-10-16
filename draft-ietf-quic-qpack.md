@@ -604,8 +604,8 @@ table from Appendix B of [RFC7541] is used without modification.
 This document expands the definition of string literals and permits them to
 begin other than on a byte boundary.  An "N-bit prefix string literal" begins
 with the same Huffman flag, followed by the length encoded as an (N-1)-bit
-prefix integer.  The prefix size, N, can have a value between 2 and 8.  The
-remainder of the string literal is unmodified.
+prefix integer.  The prefix size, N, can have a value between 2 and 8 inclusive.
+The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
