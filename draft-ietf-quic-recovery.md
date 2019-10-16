@@ -551,7 +551,7 @@ Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
 new data when possible.  A probe packet MAY carry retransmitted unacknowledged
 data when new data is unavailable, when flow control does not permit new data to
 be sent, or to opportunistically reduce loss recovery delay.  Implementations
-MAY use alternate strategies for determining the content of probe packets,
+MAY use alternative strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
@@ -780,7 +780,7 @@ to limit such bursts to minimum of 10 * kMaxDatagramSize and
 max(2* kMaxDatagramSize, 14720)), the same as the recommended initial
 congestion window.
 
-A sender MAY implement alternate mechanisms to update its congestion window
+A sender MAY implement alternative mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
 {{?RFC7661}}.
 
