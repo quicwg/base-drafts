@@ -168,8 +168,8 @@ of frames contained in a packet affect recovery and congestion control logic:
   performance of the QUIC handshake and use shorter timers for
   acknowledgement.
 
-* Packets that contain only ACK or CONNECTION_CLOSE frames do not count toward
-  congestion control limits and are not considered in-flight.
+* Packets containing frames besides ACK or CONNECTION_CLOSE frames count toward
+  congestion control limits and are considered in-flight.
 
 * PADDING frames cause packets to contribute toward bytes in flight without
   directly causing an acknowledgment to be sent.
