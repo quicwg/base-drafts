@@ -969,8 +969,9 @@ entry.
 
 ### Indexed Header Field
 
-An indexed header field instruction identifies an entry in either the static
-table or the dynamic table and causes that header field to be emitted.
+An indexed header field representation identifies an entry in either the static
+table or the dynamic table and causes that header field to be added to the
+decoded header list.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
