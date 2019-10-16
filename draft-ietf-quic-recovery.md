@@ -239,97 +239,19 @@ forward progress without relying on timeouts.
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
-more accurate round-trip time estimate (see {{host-delay}}).
-
-
-# Generating Acknowledgements {#generating-acks}
-
-An acknowledgement SHOULD be sent immediately upon receipt of a second
-ack-eliciting packet. QUIC recovery algorithms do not assume the peer sends
-an ACK immediately when receiving a second ack-eliciting packet.
-
-In order to accelerate loss recovery and reduce timeouts, the receiver SHOULD
-send an immediate ACK after it receives an out-of-order packet. It could send
-immediate ACKs for in-order packets for a period of time that SHOULD NOT exceed
-1/8 RTT unless more out-of-order packets arrive. If every packet arrives out-of-
-order, then an immediate ACK SHOULD be sent for every received packet.
-
-Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
-the IP header SHOULD be acknowledged immediately, to reduce the peer's response
-time to congestion events.
-
-As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case the receiver can determine whether an
-immediate or delayed acknowledgement should be generated after processing
-incoming packets.
-
-## Crypto Handshake Data
-
-In order to quickly complete the handshake and avoid spurious retransmissions
-due to crypto retransmission timeouts, crypto packets SHOULD use a very short
-ack delay, such as the local timer granularity.  ACK frames SHOULD be sent
-immediately when the crypto stack indicates all data for that packet number
-space has been received.
-
-## ACK Ranges
-
-When an ACK frame is sent, one or more ranges of acknowledged packets are
-included.  Including older packets reduces the chance of spurious retransmits
-caused by losing previously sent ACK frames, at the cost of larger ACK frames.
-
-ACK frames SHOULD always acknowledge the most recently received packets, and the
-more out-of-order the packets are, the more important it is to send an updated
-ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriously retransmitting the frames it contains.
-
-Below is one recommended approach for determining what packets to include in an
-ACK frame.
-
-## Receiver Tracking of ACK Frames
-
-When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
-receiver can stop acknowledging packets less than or equal to the largest
-acknowledged in the sent ACK frame.
-
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT
-of reordering. In cases with ACK frame loss and reordering, this approach does
-not guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and
-all subsequent ACK frames containing them could be lost. In this case, the
-loss recovery algorithm may cause spurious retransmits, but the sender will
-continue making forward progress.
-
-## Measuring and Reporting Host Delay {#host-delay}
-
-An endpoint measures the delays intentionally introduced between when an
-ACK-eliciting packet is received and the corresponding acknowledgment is sent.
-The endpoint encodes this delay for the largest acknowledged packet in the
-Ack Delay field of an ACK frame (see Section 19.3 of {{QUIC-TRANSPORT}}).
-This allows the receiver of the ACK to adjust for any intentional delays,
-which is important for delayed acknowledgements, when estimating the path RTT.
-A packet might be held in the OS kernel or elsewhere on the host before being
-processed.  An endpoint SHOULD NOT include these unintentional delays when
-populating the Ack Delay field in an ACK frame.
-
-An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  The maximum ack delay is communicated in the max_ack_delay transport
-parameter; see Section 18.1 of {{QUIC-TRANSPORT}}.  max_ack_delay implies an
-explicit contract: an endpoint promises to never delay acknowledgments of an
-ack-eliciting packet by more than the indicated value. If it does, any excess
-accrues to the RTT estimate and could result in spurious retransmissions from
-the peer. For Initial and Handshake packets, a max_ack_delay of 0 is used.
+more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays ({{host-delay}}) to generate a
-statistical description of the connection's RTT.  An endpoint computes the
-following three values: the minimum value observed over the lifetime of the
-connection (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
-and the variance in the observed RTT samples (rttvar).
+RTT samples and peer-reported host delays (see Section 13.2 of
+{{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
+RTT. An endpoint computes the following three values: the minimum value
+observed over the lifetime of the connection (min_rtt), an
+exponentially-weighted moving average (smoothed_rtt), and the variance in the
+observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -376,10 +298,10 @@ min_rtt is set to the latest_rtt on the first sample in a connection, and to the
 lesser of min_rtt and latest_rtt on subsequent samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for host delays reported by the peer ({{host-delay}}).  Doing so
-allows the endpoint to set a lower bound for the smoothed_rtt based entirely on
-what it observes (see {{smoothed-rtt}}), and limits potential underestimation
-due to erroneously-reported delays by the peer.
+not adjust for host delays reported by the peer.  Doing so allows the endpoint
+to set a lower bound for the smoothed_rtt based entirely on what it observes
+(see {{smoothed-rtt}}), and limits potential underestimation due to
+erroneously-reported delays by the peer.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
@@ -387,15 +309,14 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for host delays ({{host-delay}}).  For packets sent in the ApplicationData
-packet number space, a peer limits any delay in sending an acknowledgement for
-an ack-eliciting packet to no greater than the value it advertised in the
-max_ack_delay transport parameter.  Consequently, when a peer reports an Ack
-Delay that is greater than its max_ack_delay, the delay is attributed to reasons
-out of the peer's control, such as scheduler latency at the peer or loss of
-previous ACK frames.  Any delays beyond the peer's max_ack_delay are therefore
-considered effectively part of path delay and incorporated into the smoothed_rtt
-estimate.
+for host delays.  For packets sent in the ApplicationData packet number space,
+a peer limits any delay in sending an acknowledgement for an ack-eliciting
+packet to no greater than the value it advertised in the max_ack_delay transport
+parameter.  Consequently, when a peer reports an Ack Delay that is greater than
+its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+such as scheduler latency at the peer or loss of previous ACK frames.  Any
+delays beyond the peer's max_ack_delay are therefore considered effectively
+part of path delay and incorporated into the smoothed_rtt estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
@@ -404,7 +325,7 @@ endpoint:
   Initial and Handshake packet number space.
 
 - MUST use the lesser of the value reported in Ack Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter ({{host-delay}}).
+  and the peer's max_ack_delay transport parameter.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
   min_rtt.  This limits the underestimation that a misreporting peer can cause
@@ -441,7 +362,7 @@ this section provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
-frame.  For more information, see Section 13.2 of {{QUIC-TRANSPORT}}.
+frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
 
 ## Acknowledgement-based Detection {#ack-loss-detection}
@@ -489,19 +410,20 @@ early, this time threshold MUST be set to at least kGranularity.  The time
 threshold is:
 
 ~~~
-kTimeThreshold * max(SRTT, latest_RTT, kGranularity)
+kTimeThreshold * max(smoothed_rtt, latest_rtt, kGranularity)
 ~~~
 
 If packets sent prior to the largest acknowledged packet cannot yet be declared
 lost, then a timer SHOULD be set for the remaining time.
 
-Using max(SRTT, latest_RTT) protects from the two following cases:
+Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
 
-* the latest RTT sample is lower than the SRTT, perhaps due to reordering where
-  the acknowledgement encountered a shorter path;
+* the latest RTT sample is lower than the smoothed RTT, perhaps due to
+  reordering where the acknowledgement encountered a shorter path;
 
-* the latest RTT sample is higher than the SRTT, perhaps due to a sustained
-  increase in the actual RTT, but the smoothed SRTT has not yet caught up.
+* the latest RTT sample is higher than the smoothed RTT, perhaps due to a
+  sustained increase in the actual RTT, but the smoothed RTT has not yet caught
+  up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
 multiplier, is 9/8.
@@ -580,14 +502,16 @@ data at Handshake encryption MUST be retransmitted before any ApplicationData
 data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
 data has been received from the client.
 
-Because the server could be blocked until more packets are received, the client
-MUST ensure that the retransmission timer is set if the client does not yet
-have 1-RTT keys.  If the probe timer expires before the client has 1-RTT keys,
-it is possible that the client may not have any crypto data to retransmit.
-However, the client MUST send a new packet to allow the server to continue
-sending data.  At this stage in the connection, when few to none RTT samples
-have been generated, it is possible that the probe timer expiration is due to
-an incorrect RTT estimate at the client. To allow the client to improve its RTT
+Since the server could be blocked until more packets are received from the
+client, it is the client's responsibility to send packets to unblock the server
+until it is certain that the server has finished its address validation
+(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
+probe timer if the client has not received an acknowledgement for one of its
+Handshake or 1-RTT packets.
+
+Prior to handshake completion, when few to none RTT samples have been
+generated, it is possible that the probe timer expiration is due to an
+incorrect RTT estimate at the client. To allow the client to improve its RTT
 estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake
 keys are available to the client, it MUST send a Handshake packet, and
 otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
@@ -790,7 +714,7 @@ For example, assume:
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
 
-If an eck-eliciting packet is sent at time = 0, the following scenario would
+If an ack-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
 
   t=0 | Send Pkt #1 (App Data)
@@ -818,8 +742,8 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
-the SRTT when used with a window-based controller, and a pacer might use the
-rate estimate of a rate-based controller.
+the smoothed RTT when used with a window-based controller, and a pacer might use
+the rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
@@ -835,9 +759,11 @@ in Linux (3.11 onwards).
 
 ## Under-utilizing the Congestion Window
 
-A congestion window that is under-utilized SHOULD NOT be increased in either
-slow start or congestion avoidance. This can happen due to insufficient
-application data or flow control credit.
+When bytes in flight is smaller than the congestion window and sending is not
+pacing limited, the congestion window is under-utilized.  When this occurs,
+the congestion window SHOULD NOT be increased in either slow start or
+congestion avoidance. This can happen due to insufficient application data
+or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
@@ -847,9 +773,12 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Bursting more than an intial window's worth of data into the network might
-cause short-term congestion and losses. Implemementations SHOULD either use
-pacing or reduce their congestion window to limit such bursts.
+Sending multiple packets into the network without any delay between them
+creates a packet burst that might cause short-term congestion and losses.
+Implementations SHOULD either use pacing or reduce their congestion window
+to limit such bursts to minimum of 10 * kMaxDatagramSize and
+max(2* kMaxDatagramSize, 14720)), the same as the recommended initial
+congestion window.
 
 A sender MAY implement alternate mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
@@ -984,18 +913,6 @@ kPacketNumberSpace:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-loss_detection_timer:
-: Multi-modal timer used for loss detection.
-
-pto_count:
-: The number of times a PTO has been sent without receiving an ack.
-
-time_of_last_sent_ack_eliciting_packet:
-: The time the most recent ack-eliciting packet was sent.
-
-largest_acked_packet\[kPacketNumberSpace]:
-: The largest packet number acknowledged in the packet number space so far.
-
 latest_rtt:
 : The most recent RTT measurement made when receiving an ack for
   a previously unacked packet.
@@ -1015,6 +932,18 @@ max_ack_delay:
   acknowledgments for packets in the ApplicationData packet number space. The
   actual ack_delay in a received ACK frame may be larger due to late timers,
   reordering, or lost ACKs.
+
+loss_detection_timer:
+: Multi-modal timer used for loss detection.
+
+pto_count:
+: The number of times a PTO has been sent without receiving an ack.
+
+time_of_last_sent_ack_eliciting_packet:
+: The time the most recent ack-eliciting packet was sent.
+
+largest_acked_packet\[kPacketNumberSpace]:
+: The largest packet number acknowledged in the packet number space so far.
 
 loss_time\[kPacketNumberSpace]:
 : The time at which the next packet in that packet number space will be
@@ -1091,18 +1020,18 @@ OnAckReceived(ack, pn_space):
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (sent_packets[pn_space][ack.largest_acked] &&
-      IncludesAckEliciting(newly_acked_packets))
+  if (sent_packets[pn_space].contains(ack.largest_acked) &&
+      IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
-    if pn_space == ApplicationData:
+    if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
     UpdateRtt(ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
-      ProcessECN(ack)
+      ProcessECN(ack, pn_space)
 
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
@@ -1176,11 +1105,20 @@ GetEarliestLossTime():
   time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if loss_time[pn_space] != 0 &&
-       (time == 0 || loss_time[pn_space] < time):
+    if (loss_time[pn_space] != 0 &&
+        (time == 0 || loss_time[pn_space] < time)):
       time = loss_time[pn_space];
       space = pn_space
   return time, space
+
+PeerNotAwaitingAddressValidation():
+  # Assume clients validate the server's address implicitly.
+  if (endpoint is server):
+    return true
+  # Servers complete address validation when a
+  # protected packet is received.
+  return has received Handshake ACK ||
+         has received 1-RTT ACK
 
 SetLossDetectionTimer():
   loss_time, _ = GetEarliestLossTime()
@@ -1189,10 +1127,8 @@ SetLossDetectionTimer():
     loss_detection_timer.update(loss_time)
     return
 
-  // Don't arm timer if there are no ack-eliciting packets
-  // in flight and the handshake is complete.
-  if (endpoint is client with 1-RTT keys &&
-      no ack-eliciting packets in flight):
+  if (no ack-eliciting packets in flight &&
+      PeerNotAwaitingAddressValidation()):
     loss_detection_timer.cancel()
     return
 
@@ -1334,10 +1270,10 @@ kPersistentCongestionThreshold:
 Variables required to implement the congestion control mechanisms
 are described in this section.
 
-ecn_ce_counter:
-: The highest value reported for the ECN-CE counter by the peer in an ACK
-  frame. This variable is used to detect increases in the reported ECN-CE
-  counter.
+ecn_ce_counters\[kPacketNumberSpace]:
+: The highest value reported for the ECN-CE counter in the packet number space
+  by the peer in an ACK frame. This value is used to detect increases in the
+  reported ECN-CE counter.
 
 bytes_in_flight:
 : The sum of the size in bytes of all sent packets that contain at least one
@@ -1371,7 +1307,8 @@ variables as follows:
    bytes_in_flight = 0
    congestion_recovery_start_time = 0
    ssthresh = infinite
-   ecn_ce_counter = 0
+   for pn_space in [ Initial, Handshake, ApplicationData ]:
+     ecn_ce_counters[pn_space] = 0
 ~~~
 
 
@@ -1401,7 +1338,7 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppLimited())
+     if (IsAppLimited()):
        // Do not increase congestion_window if application
        // limited.
        return
@@ -1438,11 +1375,11 @@ window.
 Invoked when an ACK frame with an ECN section is received from the peer.
 
 ~~~
-   ProcessECN(ack):
+   ProcessECN(ack, pn_space):
      // If the ECN-CE counter reported by the peer has increased,
      // this could be a new congestion event.
-     if (ack.ce_counter > ecn_ce_counter):
-       ecn_ce_counter = ack.ce_counter
+     if (ack.ce_counter > ecn_ce_counters[pn_space]):
+       ecn_ce_counters[pn_space] = ack.ce_counter
        CongestionEvent(sent_packets[ack.largest_acked].time_sent)
 ~~~
 
@@ -1481,6 +1418,12 @@ Invoked from DetectLostPackets when packets are deemed lost.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-22
+
+- PTO should always send an ack-eliciting packet (#2895)
+- Unify the Handshake Timer with the PTO timer (#2648, #2658, #2886)
+- Move ACK generation text to transport draft (#1860, #2916)
 
 ## Since draft-ietf-quic-recovery-21
 
