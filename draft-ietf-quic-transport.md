@@ -2366,7 +2366,7 @@ an endpoint commits to initiating an immediate close ({{immediate-close}})
 if it abandons a connection prior to both its peers and its own idle timeout
 expiring.
 
-An endpoint that sends packets near the end of the idle timeout period of a peer
+An endpoint that sends packets near the end of its peer's idle timeout period
 risks having those packets discarded if its peer enters the draining state
 before the packets arrive.  If a peer could time out within an Probe Timeout
 (PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to test for
