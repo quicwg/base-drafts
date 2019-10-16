@@ -444,22 +444,18 @@ encoder sends a Set Dynamic Table Capacity instruction
 ({{set-dynamic-capacity}}) with a non-zero capacity to begin using the dynamic
 table.
 
-When a new entry is added to the dynamic table, the minimum number of entries
-are evicted from the end of the dynamic table so that the final table size
-including the new entry does not exceed the table capacity.  This can be
-achieved by adding the new entry and then removing entries from the end until
-the table size is less than or equal to the table capacity.  Another option is
-to first evict entries until the size of the dynamic table is less than or equal
-to (table capacity - size of new entry), then add the new entry.  Note that a
-new entry can reference an entry in the dynamic table that will be evicted when
-adding this new entry.  Therefore, implementations utilizing the latter option
-are cautioned to avoid deleting the referenced name or value if the referenced
-entry is evicted from the dynamic table prior to inserting the new entry.
+Before a new entry is added to the dynamic table, entries are evicted from the
+end of the dynamic table until the size of the dynamic table is less than or
+equal to (table capacity - size of new entry). The encoder MUST NOT cause a
+blocking dynamic table entry to be evicted (see {{blocked-insertion}}).  The new
+entry is then added to the table.  It is an error if the encoder attempts to add
+an entry that is larger than the dynamic table capacity; the decoder MUST treat
+this as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
-The encoder MUST NOT cause a blocking dynamic table entry to be evicted (see
-{{blocked-insertion}}).  It is an error if the encoder attempts to add an entry
-that is larger than the dynamic table capacity; the decoder MUST treat this as a
-connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+A new entry can reference an entry in the dynamic table that will be evicted
+when adding this new entry into the dynamic table.  Implementations are
+cautioned to avoid deleting the referenced name or value if the referenced entry
+is evicted from the dynamic table prior to inserting the new entry.
 
 Whenever the dynamic table capacity is reduced by the encoder (see
 {{set-dynamic-capacity}}), entries are evicted from the end of the dynamic table
