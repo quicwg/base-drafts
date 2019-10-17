@@ -2736,7 +2736,7 @@ available.
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation and Retry packets use authenticated
+All QUIC packets except Version Negotiation packets use authenticated
 encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
 and integrity protection. Details of packet protection are found in
 {{QUIC-TLS}}; this section includes an overview of the process.
@@ -4111,11 +4111,15 @@ wishes to perform a retry (see {{validate-handshake}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0..160)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| ODCID Len (8) |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|          Original Destination Connection ID (0..160)        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Retry Integrity Tag (128)                   +
+|                                                               |
++                                                               +
+|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #retry-format title="Retry Packet"}
@@ -4124,23 +4128,13 @@ A Retry packet (shown in {{retry-format}}) does not contain any protected
 fields. The value in the Unused field is selected randomly by the server. In
  addition to the long header, it contains these additional fields:
 
-ODCID Len:
-
-: The ODCID Len contains the length in bytes of the Original Destination
-  Connection ID field that follows it.  This length is encoded as a 8-bit
-  unsigned integer. In QUIC version 1, this value MUST NOT exceed 20 bytes.
-  Clients that receive a version 1 Retry Packet with a value larger than 20 MUST
-  drop the packet.
-
-Original Destination Connection ID:
-
-: The Original Destination Connection ID contains the value of the Destination
-  Connection ID from the Initial packet that this Retry is in response to. The
-  length of this field is given in ODCID Len.
-
 Retry Token:
 
 : An opaque token that the server can use to validate the client's address.
+
+Retry Integrity Tag:
+
+: See the Retry Packet Integrity section of {{QUIC-TLS}}.
 
 <!-- Break this stuff up a little, maybe into "Sending Retry" and "Processing
 Retry" sections. -->
@@ -4163,10 +4157,9 @@ A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
 from the server, it MUST discard any subsequent Retry packets that it receives.
 
-Clients MUST discard Retry packets that contain an Original Destination
-Connection ID field that does not match the Destination Connection ID from its
-Initial packet.  This prevents an off-path attacker from injecting a Retry
-packet.
+Clients MUST discard Retry packets whose Retry Integrity Tag cannot be
+validated, see the Retry Packet Integrity section of {{QUIC-TLS}}. This prevents
+an off-path attacker from injecting a Retry packet.
 
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
@@ -4196,10 +4189,7 @@ processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
 original_connection_id transport parameter (see
-{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
-MUST include the value of the Original Destination Connection ID field of the
-Retry packet (that is, the Destination Connection ID field from the client's
-first Initial packet) in the transport parameter.
+{{transport-parameter-definitions}}).
 
 If the client received and processed a Retry packet, it MUST validate that the
 original_connection_id transport parameter is present and correct; otherwise, it

@@ -1197,6 +1197,64 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 
+## Retry Packet Integrity {#retry-integrity}
+
+Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
+Retry Integrity Tag that provides two properties: it allows discarding
+packets that have accidentally been corrupted by the network, and it ensures
+that valid Retry packets cannot be sent by off-path attackers.
+
+The Retry Integrity Tag is a 128-bit field that is computed as the output of
+AEAD_AES_128_GCM used with the following inputs:
+
+- The key is 128 bits all set to zero.
+- The nonce is 96 bits all set to zero.
+- The plaintext is empty.
+- The associated data is the contents of the Retry Pseudo-Packet, as described
+  in {{retry-pseudo}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|1|1| 3 | Unused|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0..160)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| SCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0..160)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| ODCID Len (8) |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Original Destination Connection ID (0..160)        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #retry-pseudo title="Retry Pseudo-Packet"}
+
+The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
+the transmitted Retry packet and replacing the Retry Integrity Tag with the two
+following fields:
+
+ODCID Len:
+
+: The ODCID Len contains the length in bytes of the Original Destination
+  Connection ID field that follows it, encoded as an 8-bit unsigned integer.
+
+Original Destination Connection ID:
+
+: The Original Destination Connection ID contains the value of the Destination
+  Connection ID from the Initial packet that this Retry is in response to. The
+  length of this field is given in ODCID Len. The presence of this field
+  prevents an off-path attacker from injecting a Retry packet.
+
+
 # Key Update
 
 Once the handshake is confirmed, it is possible to update the keys. The
