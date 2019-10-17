@@ -1194,10 +1194,13 @@ A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.  The server MUST include all settings which differ from
-their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
-frame which reduces a setting the client understands or omits a value that was
-previously specified to have a non-default value, this MUST be treated as a
-connection error of type H3_SETTINGS_ERROR.
+their default values.  If a server accepts 0-RTT but then sends settings that
+are not compatible with the previously specified settings, this MUST be treated
+as a connection error of type H3_SETTINGS_ERROR. If a server accepts 0-RTT but
+then sends a SETTINGS frame that omits a setting value that the client
+understands (apart from reserved setting identifiers) that was previously
+specified to have a non-default value, this MUST be treated as a connection
+error of type H3_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
