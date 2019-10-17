@@ -147,7 +147,7 @@ Internally, TLS is a layered protocol, with the structure shown below:
 ~~~~
           +-------------+--------------+--------------+--------------+
 Handshake |             |              |  Application |              |
-Layer     |  Hanshake   |    Alerts    |     Data     |      ...     |
+Layer     |  Handshake  |    Alerts    |     Data     |      ...     |
           |             |              |              |              |
           +-------------+--------------+--------------+--------------+
 Record    |                                                          |
