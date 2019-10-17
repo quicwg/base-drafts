@@ -760,14 +760,8 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys
 
-An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Most application protocols
-will send data after the handshake, resulting in acknowledgements that allow
-both endpoints to discard their handshake keys promptly.  Endpoints that do
-not have reason to send immediately after completing the handshake MAY send
-ack-eliciting frames, such as PING, which will cause the handshake to be
-confirmed when they are acknowledged.
+An endpoint MUST NOT discard its handshake keys.  Discarding Handshake keys too
+early can lead to deadlock conditions.
 
 
 ### Discarding 0-RTT Keys
