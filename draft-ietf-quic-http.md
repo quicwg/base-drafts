@@ -310,43 +310,6 @@ existing connection or try another alternative endpoint offered by the origin.
 Servers MAY serve HTTP/3 on any UDP port, since an alternative always includes
 an explicit port.
 
-### QUIC Version Hints {#alt-svc-version-hint}
-
-This document defines the "quic" parameter for Alt-Svc, which MAY be used to
-provide version-negotiation hints to HTTP/3 clients. QUIC versions are four-byte
-sequences with no additional constraints on format. Leading zeros SHOULD be
-omitted for brevity.
-
-Syntax of the "quic" parameter value:
-
-~~~ abnf
-quic         = DQUOTE quic-version *( "," quic-version ) DQUOTE
-quic-version = 1*8HEXDIG      ; hex-encoded QUIC version
-~~~
-
-Where multiple versions are listed, the order of the values reflects the
-server's preference (with the first value being the most preferred version).
-Reserved versions MAY be listed, but unreserved versions which are not supported
-by the alternative SHOULD NOT be present in the list. Origins MAY omit supported
-versions for any reason.
-
-Clients MUST ignore any included versions which they do not support.  The "quic"
-parameter MUST NOT occur more than once; clients SHOULD process only the first
-occurrence.
-
-For example, suppose a server supported both version 0x00000001 and the version
-rendered in ASCII as "Q034".  If it also opted to include the reserved version
-(from Section 15 of {{QUIC-TRANSPORT}}) 0x1abadaba, it could specify the
-following header field:
-
-~~~ example
-Alt-Svc: h3=":49288";quic="1,1abadaba,51303334"
-~~~
-
-A client acting on this header field would drop the reserved version (not
-supported), then attempt to connect to the alternative using the first version
-in the list which it does support, if any.
-
 ## Connection Establishment {#connection-establishment}
 
 HTTP/3 relies on QUIC as the underlying transport.  The QUIC version being used
@@ -375,7 +338,7 @@ any requests for which the client considers the server authoritative.
 An authoritative HTTP/3 endpoint is typically discovered because the client has
 received an Alt-Svc record from the request's origin which nominates the
 endpoint as a valid HTTP Alternative Service for that origin.  As required by
-{{RFC7838}}, clients MUST check that the nominated server can present a valid
+{{!RFC7838}}, clients MUST check that the nominated server can present a valid
 certificate for the origin before considering it authoritative. Clients MUST NOT
 assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
@@ -1587,18 +1550,6 @@ The "h3" string identifies HTTP/3:
 
   Specification:
   : This document
-
-## Registration of QUIC Version Hint Alt-Svc Parameter
-
-This document creates a new registration for version-negotiation hints in the
-"Hypertext Transfer Protocol (HTTP) Alt-Svc Parameter" registry established in
-{{!RFC7838}}.
-
-  Parameter:
-  : "quic"
-
-  Specification:
-  : This document, {{alt-svc-version-hint}}
 
 ## Frame Types {#iana-frames}
 
