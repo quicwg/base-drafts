@@ -753,6 +753,12 @@ delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames should therefore not be paced, to avoid delaying
 their delivery to the peer.
 
+Sending multiple packets into the network without any delay between them
+creates a packet burst that might cause short-term congestion and losses.
+Implementations MUST either use pacing or limit such bursts to minimum
+of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)), the same
+as the recommended initial congestion window.
+
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
@@ -772,13 +778,6 @@ A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
-
-Sending multiple packets into the network without any delay between them
-creates a packet burst that might cause short-term congestion and losses.
-Implementations SHOULD either use pacing or reduce their congestion window
-to limit such bursts to minimum of 10 * kMaxDatagramSize and
-max(2* kMaxDatagramSize, 14720)), the same as the recommended initial
-congestion window.
 
 A sender MAY implement alternative mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
