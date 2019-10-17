@@ -1646,7 +1646,8 @@ it knows the client will not accept another Retry token.  It can either
 proceed with the handshake without verifying the token or immediately close
 ({{immediate-close}}) the connection with an connection error of
 INVALID_TOKEN to cause the handshake to fail quickly instead of waiting
-for the client to timeout.
+for the client to timeout.  When a client receives a CONNECTION_CLOSE
+with an error of INVALID_TOKEN, it MAY create a new connection.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
