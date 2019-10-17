@@ -1814,6 +1814,15 @@ considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
 are reached first, such as the limit on the connection flow control window.
 
+QUIC manages stream concurrency on behalf of HTTP/3.  QUIC considers a stream
+closed when all sent data and all acknowledgements for received data have been
+acknowledged by the peer.  HTTP/2 considers a stream closed when the frame
+containing the END_STREAM bit has been committed to the transport. As a result,
+the stream for an equivalent exchange will remain "active" for at least one
+additional round trip.  Implementations of HTTP/3 might choose to permit a
+larger number of concurrent streams than in HTTP/2 to achieve equivalent
+concurrency, depending on the expected usage patterns.
+
 ## HTTP Frame Types {#h2-frames}
 
 Many framing concepts from HTTP/2 can be elided on QUIC, because the transport
