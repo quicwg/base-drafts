@@ -198,7 +198,7 @@ A simplified TLS handshake with 0-RTT application data is shown in
 not used in QUIC (see {{remove-eoed}}).  Likewise, neither
 ChangeCipherSpec nor KeyUpdate messages are used by QUIC;
 ChangeCipherSpec is redudnant in TLS 1.3 and QUIC has defined its own
-key update mechanism {{keyupdate}}. 
+key update mechanism {{key-update}}. 
 
 ~~~
     Client                                             Server
@@ -1202,7 +1202,7 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 
-# Key Update {#keyupdate}
+# Key Update
 
 Once the handshake is confirmed, it is possible to update the keys. The
 KEY_PHASE bit in the short header is used to indicate whether key updates
