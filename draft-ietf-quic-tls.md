@@ -145,53 +145,60 @@ exchange cannot be observed, modified, or forged.
 Internally, TLS is a layered protocol, with the structure shown below:
 
 ~~~~
-+--------------+--------------+--------------+
-|  Handshake   |    Alerts    |  Application |
-|    Layer     |              |     Data     |
-|              |              |              |
-+--------------+--------------+--------------+
-|                                            |
-|               Record Layer                 |
-|                                            |
-+--------------------------------------------+
+          +-------------+--------------+--------------+--------------+
+Handshake |             |              |  Application |              |
+Layer     |  Hanshake   |    Alerts    |     Data     |      ...     |
+          |             |              |              |              |
+          +-------------+--------------+--------------+--------------+
+Record    |                                                          |
+Layer     |                         Records                          |
+          |                                                          |
+          +----------------------------------------------------------+
 ~~~~
 
-Each upper layer (handshake, alerts, and application data) is carried as a
-series of typed TLS records. Records are individually cryptographically
-protected and then transmitted over a reliable transport (typically TCP) which
-provides sequencing and guaranteed delivery.
+Each Handshake layer message (e.g., Handshake, Alerts, and Application
+Data) is carried as a series of typed TLS records by the Record layer.
+Records are individually cryptographically protected and then
+transmitted over a reliable transport (typically TCP) which provides
+sequencing and guaranteed delivery.
 
-Change Cipher Spec records cannot be sent in QUIC.
-
-The TLS authenticated key exchange occurs between two entities: client and
-server.  The client initiates the exchange and the server responds.  If the key
-exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
-PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
-when the DH keys are destroyed.
+The TLS authenticated key exchange occurs between two endpoints: client
+and server.  The client initiates the exchange and the server responds.
+If the key exchange completes successfully, both client and server will
+agree on a secret.  TLS supports both pre-shared key (PSK) and
+Diffie-Hellman over either finite fields or elliptic curves ((EC)DHE)
+key exchanges.  PSK is the basis for 0-RTT; the latter provides perfect
+forward secrecy (PFS) when the (EC)DHE keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
-authenticated an identity for the server and the server is optionally able to
-learn and authenticate an identity for the client.  TLS supports X.509
-{{?RFC5280}} certificate-based authentication for both server and client.
+authenticated an identity for the server and the server is optionally
+able to learn and authenticate an identity for the client.  TLS
+supports X.509 {{?RFC5280}} certificate-based authentication for both
+server and client.
 
-The TLS key exchange is resistant to tampering by attackers and it produces
-shared secrets that cannot be controlled by either participating peer.
+The TLS key exchange is resistant to tampering by attackers and it
+produces shared secrets that cannot be controlled by either
+participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake in which the client is able to send application data
-   after one round trip and the server immediately responds after receiving the
-   first handshake message from the client.
+ * A full 1-RTT handshake in which the client is able to send
+   Application Data after one round trip and the server immediately
+   responds after receiving the first handshake message from the
+   client.
 
- * A 0-RTT handshake in which the client uses information it has previously
-   learned about the server to send application data immediately.  This
-   application data can be replayed by an attacker so it MUST NOT carry a
-   self-contained trigger for any non-idempotent action.
+ * A 0-RTT handshake in which the client uses information it has
+   previously learned about the server to send Application Data
+   immediately.  This Application Data can be replayed by an attacker
+   so it MUST NOT carry a self-contained trigger for any non-idempotent
+   action.
 
-A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
-Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
-{{remove-eoed}}).
+A simplified TLS handshake with 0-RTT application data is shown in
+{{tls-full}}.  Note that this omits the EndOfEarlyData message, which is
+not used in QUIC (see {{remove-eoed}}).  Likewise, neither
+ChangeCipherSpec nor KeyUpdate messages are used by QUIC;
+ChangeCipherSpec is redudnant in TLS 1.3 and QUIC has defined its own
+key update mechanism {{keyupdate}}. 
 
 ~~~
     Client                                             Server
@@ -206,10 +213,10 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
    [Application Data]        <------->      [Application Data]
 
-    () Indicates messages protected by early data (0-RTT) keys
-    {} Indicates messages protected using handshake keys
-    [] Indicates messages protected using application data
-       (1-RTT) keys
+    () Indicates messages protected by Early Data (0-RTT) Keys
+    {} Indicates messages protected using Handshake Keys
+    [] Indicates messages protected using Application Data
+       (1-RTT) Keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
 
@@ -220,13 +227,13 @@ Data is protected using a number of encryption levels:
 - Handshake Keys
 - Application Data (1-RTT) Keys
 
-Application data may appear only in the early data and application data
+Application Data may appear only in the Early Data and Application Data
 levels. Handshake and Alert messages may appear in any level.
 
-The 0-RTT handshake is only possible if the client and server have previously
-communicated.  In the 1-RTT handshake, the client is unable to send protected
-application data until it has received all of the handshake messages sent by the
-server.
+The 0-RTT handshake is only possible if the client and server have
+previously communicated.  In the 1-RTT handshake, the client is unable
+to send protected Application Data until it has received all of the
+Handshake messages sent by the server.
 
 
 # Protocol Overview
@@ -239,7 +246,6 @@ transport, which takes over the responsibilities of the TLS record layer, as
 shown below.
 
 ~~~~
-
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
@@ -255,7 +261,6 @@ shown below.
 |                                             |
 +---------------------------------------------+
 ~~~~
-
 
 QUIC also relies on TLS for authentication and negotiation of parameters that
 are critical to security and performance.
@@ -1197,7 +1202,7 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 
-# Key Update
+# Key Update {#keyupdate}
 
 Once the handshake is confirmed, it is possible to update the keys. The
 KEY_PHASE bit in the short header is used to indicate whether key updates
