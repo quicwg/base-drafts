@@ -317,11 +317,11 @@ provide version-negotiation hints to HTTP/3 clients. QUIC versions are four-byte
 sequences with no additional constraints on format. Leading zeros SHOULD be
 omitted for brevity.
 
-Syntax:
+Syntax of the "quic" parameter value:
 
 ~~~ abnf
-quic = DQUOTE version-number [ "," version-number ] * DQUOTE
-version-number = 1*8HEXDIG; hex-encoded QUIC version
+quic         = DQUOTE quic-version *( "," quic-version ) DQUOTE
+quic-version = 1*8HEXDIG      ; hex-encoded QUIC version
 ~~~
 
 Where multiple versions are listed, the order of the values reflects the
@@ -489,7 +489,9 @@ the status code for the response.  These pseudo-header fields are defined in
 Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
 header fields.  Endpoints MUST NOT generate pseudo-header fields other than
 those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2.1 of {{!HTTP2}} also apply to HTTP/3.
+fields in Section 8.1.2 of {{!HTTP2}} also apply to HTTP/3.  Messages which
+are considered malformed under these restrictions are handled as described in
+{{malformed}}.
 
 HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
@@ -851,8 +853,9 @@ follows this integer is determined by the stream type.
 
 Some stream types are reserved ({{stream-grease}}).  Two stream types are
 defined in this document: control streams ({{control-streams}}) and push streams
-({{push-streams}}).  Other stream types can be defined by extensions to HTTP/3;
-see {{extensions}} for more details.
+({{push-streams}}).  [QPACK] defines two additional stream types.  Other stream
+types can be defined by extensions to HTTP/3; see {{extensions}} for more
+details.
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
@@ -974,7 +977,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
-| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}        |
+| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
 {: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
@@ -1067,16 +1070,22 @@ push prior to the push stream being received.  The CANCEL_PUSH frame identifies
 a server push by Push ID (see {{frame-push-promise}}), encoded as a
 variable-length integer.
 
-When a server receives this frame, it aborts sending the response for the
-identified server push.  If the server has not yet started to send the server
-push, it can use the receipt of a CANCEL_PUSH frame to avoid opening a push
-stream.  If the push stream has been opened by the server, the server SHOULD
-abruptly terminate that stream.
+When a client sends CANCEL_PUSH, it is indicating that it does not wish to
+receive the promised resource.  The server SHOULD abort sending the resource,
+but the mechanism to do so depends on the state of the corresponding push
+stream.  If the server has not yet created a push stream, it does not create
+one.  If the push stream is open, the server SHOULD abruptly terminate that
+stream.  If the push stream has already ended, the server MAY still abruptly
+terminate the stream or MAY take no action.
 
-A server can send the CANCEL_PUSH frame to indicate that it will not be
-fulfilling a promise prior to creation of a push stream.  Once the push stream
-has been created, sending CANCEL_PUSH has no effect on the state of the push
-stream.  The server SHOULD abruptly terminate the push stream instead.
+When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
+a promise and has not created a push stream.  The client should not expect the
+corresponding promise to be fulfilled.
+
+Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
+A server SHOULD NOT send a CANCEL_PUSH when it has already created a
+corresponding push stream, and a client SHOULD NOT send a CANCEL_PUSH when it
+has already received a corresponding push stream.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
@@ -1093,10 +1102,15 @@ error of type HTTP_FRAME_UNEXPECTED.
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
-{{frame-push-promise}}).
+{{frame-push-promise}}).  If a CANCEL_PUSH frame is received which references a
+Push ID greater than currently allowed on the connection, this MUST be treated
+as a connection error of type HTTP_ID_ERROR.
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
-that has not yet been mentioned by a PUSH_PROMISE frame.
+that has not yet been mentioned by a PUSH_PROMISE frame due to reordering.  If a
+server receives a CANCEL_PUSH frame for a Push ID that has not yet been
+mentioned by a PUSH_PROMISE frame, this MUST be treated as a connection error of
+type HTTP_ID_ERROR.
 
 
 ### SETTINGS {#frame-settings}
@@ -1301,9 +1315,9 @@ See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
-Push ID that the server can use in a PUSH_PROMISE frame.  Consequently, this
-also limits the number of push streams that the server can initiate in addition
-to the limit maintained by the QUIC transport.
+Push ID that the server can use in PUSH_PROMISE and CANCEL_PUSH frames.
+Consequently, this also limits the number of push streams that the server can
+initiate in addition to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
 MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
@@ -1388,7 +1402,7 @@ implementation chooses.
 
 Frame types which were used in HTTP/2 where there is no corresponding HTTP/3
 frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
-sent, and receipt MAY be treated as an error of type HTTP_UNEXPECTED_FRAME.
+sent, and receipt MAY be treated as an error of type HTTP_FRAME_UNEXPECTED.
 
 
 # Error Handling {#errors}

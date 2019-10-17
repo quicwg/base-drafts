@@ -260,7 +260,7 @@ table, the Required Insert Count is zero.
 
 When the decoder receives a header block with a Required Insert Count greater
 than its own Insert Count, the stream cannot be processed immediately, and is
-considered "blocked" (see {blocked-decoding}).
+considered "blocked" (see {{blocked-decoding}}).
 
 The decoder specifies an upper bound on the number of streams which can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
@@ -596,10 +596,10 @@ The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
 This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
-single flag (indicating whether the string is Huffman-coded), followed by the
-Length encoded as a 7-bit prefix integer, and finally Length bytes of data.
-When Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541]
-is used without modification.
+single bit flag, denoted as 'H' in this document (indicating whether the string
+is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer,
+and finally Length bytes of data. When Huffman encoding is enabled, the Huffman
+table from Appendix B of [RFC7541] is used without modification.
 
 This document expands the definition of string literals and permits them to
 begin other than on a byte boundary.  An "N-bit prefix string literal" begins
@@ -682,10 +682,10 @@ acknowledged as this instruction does not insert an entry.
 An encoder adds an entry to the dynamic table where the header field name
 matches the header field name of an entry stored in the static or the dynamic
 table using an instruction that starts with the '1' one-bit pattern.  The second
-(`S`) bit indicates whether the reference is to the static or dynamic table. The
+('T') bit indicates whether the reference is to the static or dynamic table. The
 6-bit prefix integer (see {{prefixed-integers}}) that follows is used to locate
-the table entry for the header name.  When S=1, the number represents the static
-table index; when S=0, the number is the relative index of the entry in the
+the table entry for the header name.  When T=1, the number represents the static
+table index; when T=0, the number is the relative index of the entry in the
 dynamic table.
 
 The header name reference is followed by the header field value represented as a
@@ -694,7 +694,7 @@ string literal (see {{string-literals}}).
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 1 | S |    Name Index (6+)    |
+   | 1 | T |    Name Index (6+)    |
    +---+---+-----------------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
@@ -842,7 +842,7 @@ protocol.
 Each header block is prefixed with two integers.  The Required Insert Count is
 encoded as an integer with an 8-bit prefix after the encoding described in
 {{ric}}).  The Base is encoded as sign-and-modulus integer, using a single sign
-bit and a value with a 7-bit prefix (see {{base}}).
+bit ('S') and a value with a 7-bit prefix (see {{base}}).
 
 These two values are followed by representations for compressed headers.
 
@@ -931,10 +931,10 @@ The `Base` is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
 To save space, the Base is encoded relative to the Insert Count using a one-bit
-sign and the `Delta Base` value.  A sign bit of 0 indicates that the Base is
-greater than or equal to the value of the Insert Count; the value of Delta Base
-is added to the Insert Count to determine the value of the Base.  A sign bit of
-1 indicates that the Base is less than the Insert Count.  That is:
+sign ('S') and the `Delta Base` value.  A sign bit of 0 indicates that the Base
+is greater than or equal to the value of the Insert Count; the value of Delta
+Base is added to the Insert Count to determine the value of the Base.  A sign
+bit of 1 indicates that the Base is less than the Insert Count.  That is:
 
 ~~~
    if S == 0:
@@ -975,17 +975,17 @@ decoded header list, as described in Section 3.2 of [RFC7541].
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
 +---+---+---+---+---+---+---+---+
-| 1 | S |      Index (6+)       |
+| 1 | T |      Index (6+)       |
 +---+---+-----------------------+
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
 If the entry is in the static table, or in the dynamic table with an absolute
 index less than the Base, this representation starts with the '1' 1-bit pattern,
-followed by the `S` bit indicating whether the reference is into the static or
+followed by the 'T' bit indicating whether the reference is into the static or
 dynamic table.  The 6-bit prefix integer (see {{prefixed-integers}}) that
-follows is used to locate the table entry for the header field.  When S=1, the
-number represents the static table index; when S=0, the number is the relative
+follows is used to locate the table entry for the header field.  When T=1, the
+number represents the static table index; when T=0, the number is the relative
 index of the entry in the dynamic table.
 
 
@@ -1028,7 +1028,7 @@ values that are not to be put at risk by compressing them (see
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
    +---+---+---+---+---+---+---+---+
-   | 0 | 1 | N | S |Name Index (4+)|
+   | 0 | 1 | N | T |Name Index (4+)|
    +---+---+---+---+---------------+
    | H |     Value Length (7+)     |
    +---+---------------------------+
@@ -1037,10 +1037,10 @@ values that are not to be put at risk by compressing them (see
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
 
-The fourth (`S`) bit indicates whether the reference is to the static or dynamic
+The fourth ('T') bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer (see {{prefixed-integers}}) that follows is
-used to locate the table entry for the header name.  When S=1, the number
-represents the static table index; when S=0, the number is the relative index of
+used to locate the table entry for the header name.  When T=1, the number
+represents the static table index; when T=0, the number is the relative index of
 the entry in the dynamic table.
 
 Only the header field name is taken from the dynamic table entry; the header
