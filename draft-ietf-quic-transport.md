@@ -4567,7 +4567,7 @@ preferred_address (0x000d):
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 
-active_connection_id_limit (0xE):
+active_connection_id_limit (0x000e):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
