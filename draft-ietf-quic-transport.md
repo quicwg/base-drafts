@@ -1539,7 +1539,7 @@ application protocol.
 
 Each application protocol MAY specify use of application parameters to be sent
 by one of or both the client and server. If not specified, an application
-parameter MUST NOT be sent for tht application's ALPN. For each application
+parameter MUST NOT be sent for that application's ALPN. For each application
 protocol that the client supports, it fills out an ApplicationParameter struct
 with the ALPN for that protocol in the alpn field, and the application-specific
 parameter in the param field. The ApplicationParameter structs generated

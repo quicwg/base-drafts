@@ -479,15 +479,15 @@ it can choose to use a lower dynamic table capacity (see
 For clients using 0-RTT data in HTTP/3, the server's maximum table capacity is
 the remembered value of the setting, or zero if the value was not previously
 sent.  When the client's 0-RTT value of the SETTING is 0, the server MAY set it
-to a non-zero value in its SETTINGS frame. If the remembered value is non-zero,
-the server MUST send the same non-zero value in its SETTINGS frame.  If it
+to a non-zero value in its settings. If the remembered value is non-zero,
+the server MUST send the same non-zero value in its settings.  If it
 specifies any other value, or omits SETTINGS_QPACK_MAX_TABLE_CAPACITY from
-SETTINGS, the encoder must treat this as a connection error of type
+settings, the encoder must treat this as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
 For HTTP/3 servers and HTTP/3 clients when 0-RTT is not attempted or is
-rejected, the maximum table capacity is 0 until the encoder processes a SETTINGS
-frame with a non-zero value of SETTINGS_QPACK_MAX_TABLE_CAPACITY.
+rejected, the maximum table capacity is 0 until the encoder processes settings
+with a non-zero value of SETTINGS_QPACK_MAX_TABLE_CAPACITY.
 
 When the maximum table capacity is 0, the encoder MUST NOT insert entries into
 the dynamic table, and MUST NOT send any encoder instructions on the encoder
@@ -1103,7 +1103,7 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 
 #  Configuration
 
-QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
+QPACK defines two HTTP/3 settings.
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : The default value is zero.  See {{table-dynamic}} for usage.  This is
