@@ -3061,14 +3061,13 @@ of doing so.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
-one ACK-frame-only packet in response to receiving an ACK-eliciting packet (one
-containing frames other than ACK and/or PADDING).  An endpoint MUST NOT send a
-non-ack-eliciting packet in response to a non-ACK-eliciting packet (one
-containing only ACK and/or PADDING frames), even if there are packet gaps which
-precede the received packet. Limiting ACK frames avoids an infinite feedback
-loop of acknowledgements, which could prevent the connection from ever becoming
-idle. However, the endpoint acknowledges non-ACK-eliciting packets when it sends
-an ACK frame.
+one ACK-frame-only packet in response to receiving an ack-eliciting packet.  An
+endpoint MUST NOT send a non-ack-eliciting packet in response to a non-ack-
+eliciting packet, even if there are packet gaps which precede the received
+packet. Limiting ACK frames avoids an infinite feedback loop of
+acknowledgements, which could prevent the connection from ever becoming idle.
+However, the endpoint acknowledges non-ACK-eliciting packets when it sends an
+ACK frame.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
