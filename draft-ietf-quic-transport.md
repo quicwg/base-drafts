@@ -5830,17 +5830,18 @@ IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 "QUIC Protocol" heading.
 
 The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
-split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC8126}}.
+split into three spaces that are governed by different policies.  Values between
+0x0000 and 0x003f (in hexadecimal) are assigned via the Standards Action or IESG
+Review policies {{!RFC8126}}.  Values from 0x0040 to 0x3fff operate on the
+Specification Required policy {{!RFC8126}}.  Values from 0x4000 to 0xffff are
+assigned to Private Use {{!RFC8126}}.
 
 Registrations MUST include the following fields:
 
 Value:
 
 : The numeric value of the assignment (registrations will be between 0x0000 and
-  0xfeff).
+  0x3fff).
 
 Parameter Name:
 
