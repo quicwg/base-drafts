@@ -1819,9 +1819,16 @@ closed when all sent data and all acknowledgements for received data have been
 acknowledged by the peer.  HTTP/2 considers a stream closed when the frame
 containing the END_STREAM bit has been committed to the transport. As a result,
 the stream for an equivalent exchange will remain "active" for at least one
-additional round trip.  Implementations of HTTP/3 might choose to permit a
-larger number of concurrent streams than in HTTP/2 to achieve equivalent
-concurrency, depending on the expected usage patterns.
+additional round trip.  HTTP/3 servers might choose to permit a larger number of
+concurrent client-initiated bidirectional streams to achieve equivalent
+concurrency than were permitted in HTTP/2, depending on the expected usage
+patterns.
+
+Due to the presence of other unidirectional stream types, HTTP/3 does not rely
+exclusively on the number of concurrent unidirectional streams to control the
+number of concurrent pushes received by a client.  Instead, HTTP/3 clients use
+the MAX_PUSH_ID frame to control the number of pushes received from an HTTP/3
+server.
 
 ## HTTP Frame Types {#h2-frames}
 
