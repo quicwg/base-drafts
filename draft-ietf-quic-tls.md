@@ -1201,8 +1201,8 @@ anticipation of receiving a ClientHello.
 
 Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
 Retry Integrity Tag that provides two properties: it allows discarding
-packets that have accidentally been corrupted by the network, and it ensures
-that valid Retry packets cannot be sent by off-path attackers.
+packets that have accidentally been corrupted by the network, and it mitigates
+off-path attackers' ability to send valid Retry packets.
 
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
 AEAD_AES_128_GCM used with the following inputs:
@@ -1252,7 +1252,7 @@ Original Destination Connection ID:
 : The Original Destination Connection ID contains the value of the Destination
   Connection ID from the Initial packet that this Retry is in response to. The
   length of this field is given in ODCID Len. The presence of this field
-  prevents an off-path attacker from injecting a Retry packet.
+  mitigates an off-path attacker's ability to inject a Retry packet.
 
 
 # Key Update
