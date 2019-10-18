@@ -1814,11 +1814,11 @@ considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
 are reached first, such as the limit on the connection flow control window.
 
-QUIC manages stream concurrency on behalf of HTTP/3.  QUIC considers a stream
-closed when all sent data and all acknowledgements for received data have been
+In contrast to HTTP/2, stream concurrency in HTTP/3 is managed by QUIC.  QUIC
+considers a stream closed when all data has been received and sent data has been
 acknowledged by the peer.  HTTP/2 considers a stream closed when the frame
 containing the END_STREAM bit has been committed to the transport. As a result,
-the stream for an equivalent exchange will remain "active" for at least one
+the stream for an equivalent exchange will typically remain "active" for one
 additional round trip.  HTTP/3 servers might choose to permit a larger number of
 concurrent client-initiated bidirectional streams to achieve equivalent
 concurrency than were permitted in HTTP/2, depending on the expected usage
