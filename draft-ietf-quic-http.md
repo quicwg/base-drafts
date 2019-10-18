@@ -423,12 +423,14 @@ H3_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY abort reading the
-request stream with error code H3_EARLY_RESPONSE, send a complete response,
-and cleanly close the sending part of the stream. Clients MUST NOT discard
-complete responses as a result of having their request terminated abruptly,
-though clients can always discard responses at their discretion for other
-reasons.
+not been sent and received. When the server does not need to receive the
+remainder of the request, it MAY abort reading the request stream with error
+code H3_EARLY_RESPONSE, send a complete response, and cleanly close the
+sending part of the stream. Clients MUST NOT discard complete responses as a
+result of having their request terminated abruptly, though clients can always
+discard responses at their discretion for other reasons.  If the server sends a
+partial or complete response but does not abort reading, clients SHOULD continue
+sending the body of the request and close the stream normally.
 
 
 ### Header Formatting and Compression {#header-formatting}
