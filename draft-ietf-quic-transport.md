@@ -4189,7 +4189,9 @@ processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
 original_connection_id transport parameter (see
-{{transport-parameter-definitions}}).
+{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
+MUST include the Destination Connection ID field from the client's first
+Initial packet in the transport parameter.
 
 If the client received and processed a Retry packet, it MUST validate that the
 original_connection_id transport parameter is present and correct; otherwise, it
