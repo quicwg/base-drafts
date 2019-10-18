@@ -1826,8 +1826,8 @@ patterns.
 
 Due to the presence of other unidirectional stream types, HTTP/3 does not rely
 exclusively on the number of concurrent unidirectional streams to control the
-number of concurrent pushes received by a client.  Instead, HTTP/3 clients use
-the MAX_PUSH_ID frame to control the number of pushes received from an HTTP/3
+number of concurrent in-flight pushes.  Instead, HTTP/3 clients use the
+MAX_PUSH_ID frame to control the number of pushes received from an HTTP/3
 server.
 
 ## HTTP Frame Types {#h2-frames}
