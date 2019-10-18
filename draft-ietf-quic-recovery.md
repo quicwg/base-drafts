@@ -755,7 +755,7 @@ their delivery to the peer.
 
 Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or limit such bursts to minimum
+Implementations MUST either use pacing or limit such bursts to the minimum
 of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)), the same
 as the recommended initial congestion window.
 
