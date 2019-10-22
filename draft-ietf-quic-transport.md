@@ -5584,6 +5584,9 @@ PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
+  
+INVALID_TOKEN (0xB):
+: A server received a Retry Token in a client Initial that is invalid.
 
 CRYPTO_BUFFER_EXCEEDED (0xD):
 
