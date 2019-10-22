@@ -508,12 +508,6 @@ until it is certain that the server has finished its address validation
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets.
 
-When a server receives duplicate Initial CRYPTO data when there
-is unacknowledged Initial CRYPTO data, it can assume the client did not
-receive all Initial CRYPTO data or the client's estimated RTT is too short.
-To speed handshake completion, it MAY retransmit unacknowledged Initial
-CRYPTO data subject to the path validation limits, as though the PTO expired.
-
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
 incorrect RTT estimate at the client. To allow the client to improve its RTT
@@ -524,6 +518,22 @@ bytes.
 
 Initial packets and Handshake packets may never be acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
+
+### Speeding Handshake Completion
+
+When a server receives duplicate Initial CRYPTO data, it can assume the client
+did not receive all Initial CRYPTO data or the client's estimated RTT is too
+small. When a client receives undecryptable packets it may assume the server's
+Initial was lost.
+
+To speed handshake completion, either peer MAY send a packet containing unacknowledged
+Initial CRYPTO data subject to the path validation limits, as though the PTO
+expired. A client may send a retransmittable packet if all Initial data has been
+acknowledged.  The PTO may only be shortened once in this way.  Subsequently the PTO
+uses the normal calculation with exponential backoff.
+
+Peers can also use coalesced packets to ensure each datagram elicits at least one
+acknowledgement.
 
 ### Sending Probe Packets
 
