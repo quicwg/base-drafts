@@ -761,7 +761,8 @@ and ignoring any outstanding Initial packets.
 ### Discarding Handshake Keys
 
 An endpoint MUST NOT discard its handshake keys.  Discarding Handshake keys too
-early can lead to deadlock conditions.
+early can lead to a deadlock condition where one endpoint never receives
+acknowledgments for Handshake packets.
 
 
 ### Discarding 0-RTT Keys
