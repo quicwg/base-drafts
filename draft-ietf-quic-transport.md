@@ -3062,9 +3062,9 @@ of doing so.
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
 one ACK-frame-only packet in response to receiving an ack-eliciting packet.  An
-endpoint MUST NOT send a non-ack-eliciting packet in response to a non-ack-
-eliciting packet, even if there are packet gaps which precede the received
-packet. Limiting ACK frames avoids an infinite feedback loop of
+endpoint MUST NOT send a non-ack-eliciting packet in response to a
+non-ack-eliciting packet, even if there are packet gaps which precede the
+received packet. Limiting ACK frames avoids an infinite feedback loop of
 acknowledgements, which could prevent the connection from ever becoming idle.
 However, the endpoint acknowledges non-ACK-eliciting packets when it sends an
 ACK frame.
