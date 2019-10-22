@@ -551,7 +551,7 @@ Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
 new data when possible.  A probe packet MAY carry retransmitted unacknowledged
 data when new data is unavailable, when flow control does not permit new data to
 be sent, or to opportunistically reduce loss recovery delay.  Implementations
-MAY use alternate strategies for determining the content of probe packets,
+MAY use alternative strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
@@ -753,15 +753,23 @@ delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames should therefore not be paced, to avoid delaying
 their delivery to the peer.
 
+Sending multiple packets into the network without any delay between them
+creates a packet burst that might cause short-term congestion and losses.
+Implementations MUST either use pacing or limit such bursts to the minimum
+of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)), the same
+as the recommended initial congestion window.
+
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
 in Linux (3.11 onwards).
 
 ## Under-utilizing the Congestion Window
 
-A congestion window that is under-utilized SHOULD NOT be increased in either
-slow start or congestion avoidance. This can happen due to insufficient
-application data or flow control credit.
+When bytes in flight is smaller than the congestion window and sending is not
+pacing limited, the congestion window is under-utilized.  When this occurs,
+the congestion window SHOULD NOT be increased in either slow start or
+congestion avoidance. This can happen due to insufficient application data
+or flow control credit.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
@@ -771,11 +779,7 @@ and not fully utilize the congestion window due to this delay. A sender
 should not consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
-Bursting more than an initial window's worth of data into the network might
-cause short-term congestion and losses. Implemementations SHOULD either use
-pacing or reduce their congestion window to limit such bursts.
-
-A sender MAY implement alternate mechanisms to update its congestion window
+A sender MAY implement alternative mechanisms to update its congestion window
 after periods of under-utilization, such as those proposed for TCP in
 {{?RFC7661}}.
 
