@@ -197,8 +197,8 @@ A simplified TLS handshake with 0-RTT application data is shown in
 {{tls-full}}.  Note that this omits the EndOfEarlyData message, which is
 not used in QUIC (see {{remove-eoed}}).  Likewise, neither
 ChangeCipherSpec nor KeyUpdate messages are used by QUIC;
-ChangeCipherSpec is redudnant in TLS 1.3 and QUIC has defined its own
-key update mechanism {{key-update}}. 
+ChangeCipherSpec is redundant in TLS 1.3 and QUIC has defined its own
+key update mechanism {{key-update}}.
 
 ~~~
     Client                                             Server
