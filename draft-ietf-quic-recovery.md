@@ -123,7 +123,7 @@ In-flight:
 
 Ack-eliciting Frames:
 
-: All frames besides ACK, PADDING, or CONNECTION_CLOSE are considered
+: All frames other than ACK, PADDING, and CONNECTION_CLOSE are considered
   ack-eliciting.
 
 Ack-eliciting Packets:
