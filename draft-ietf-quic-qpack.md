@@ -534,11 +534,9 @@ In a header block a relative index of "0" refers to the entry with absolute
 index equal to Base - 1.
 
 ~~~~~ drawing
- Required
-  Insert
-  Count        Base
-    |           |
-    V           V
+               Base
+                |
+                V
     +-----+-----+-----+-----+-------+
     | n-1 | n-2 | n-3 | ... |   d   |  Absolute Index
     +-----+-----+  -  +-----+   -   +
@@ -547,6 +545,7 @@ index equal to Base - 1.
 
 n = count of entries inserted
 d = count of entries dropped
+In this example, Base = n - 2
 ~~~~~
 {: title="Example Dynamic Table Indexing - Relative Index in Header Block"}
 
@@ -574,6 +573,7 @@ blocks.
 
 n = count of entries inserted
 d = count of entries dropped
+In this example, Base = n - 2
 ~~~~~
 {: title="Example Dynamic Table Indexing - Post-Base Index in Header Block"}
 
