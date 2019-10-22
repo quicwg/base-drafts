@@ -1630,12 +1630,6 @@ that allows the server to identity how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
 
-A token MUST NOT include information that would allow values to be linked by an
-on-path observer to the connection on which it was issued.  For example, it
-cannot include the connection ID or addressing information unless the values are
-encrypted.  Information that allows the server to distinguish between tokens
-from Retry and NEW_TOKEN MAY be accessible to entities other than the server.
-
 
 ### Address Validation using Retry Packets {#validate-retry}
 
@@ -1695,6 +1689,13 @@ Thus, a token SHOULD have an expiration time, which could be either an explicit
 expiration time or an issued timestamp that can be used to dynamically calculate
 the expiration time.  A server can store the expiration time or include it in an
 encrypted form in the token.
+
+A token issued with NEW_TOKEN MUST NOT include information that would allow
+values to be linked by an on-path observer to the connection on which it was
+issued.  For example, it cannot include the connection ID or addressing
+information unless the values are encrypted.  Information that allows the server
+to distinguish between tokens from Retry and NEW_TOKEN MAY be accessible to
+entities other than the server.
 
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
