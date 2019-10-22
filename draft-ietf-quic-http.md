@@ -678,36 +678,38 @@ keep connections open.
 ## Connection Shutdown
 
 Even when a connection is not idle, either endpoint can decide to stop using the
-connection and let the connection close gracefully.  Since clients drive request
-generation, clients perform a connection shutdown by not sending additional
-requests on the connection; responses and pushed responses associated to
-previous requests will continue to completion.  Servers perform the same
-function by communicating with clients.
+connection and initiate a graceful connection close.  Endpoints initiate the
+graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
+The GOAWAY frame contains an identifier that indicates to the receiver the range
+of requests or pushes that were or might be processed in this connection.  The
+server sends a client-initiated bidirectional Stream ID; the client sends a Push
+ID.  Requests or pushes with the indicated identifier or greater are rejected by
+the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
+were processed.
 
-Servers initiate the shutdown of a connection by sending a GOAWAY frame
-({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
-on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were rejected. This enables
-client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be zero if no requests were processed.
-Servers SHOULD NOT permit additional QUIC streams after sending a GOAWAY frame.
+The information in the GOAWAY enables a client and server to agree on which
+requests or pushes were accepted prior to the connection shutdown.  Endpoints
+SHOULD abruptly terminate any requests or pushes that have identifiers greater
+than or equal to the smallest identifier sent in a GOAWAY frame.
 
-Clients MUST NOT send new requests on the connection after receiving GOAWAY;
-a new connection MAY be established to send additional requests.
+Endpoints MUST NOT initiate new requests or pushes on the connection with an
+identifier greater than or equal to the smallest identifier received in a GOAWAY
+frame.  Clients MAY establish a new connection to send additional requests.
 
-Some requests might already be in transit. If the client has already sent
-requests on streams with a Stream ID greater than or equal to that indicated in
-the GOAWAY frame, those requests will not be processed and MAY be retried by the
-client on a different connection.  The client MAY cancel these requests.  It is
-RECOMMENDED that the server explicitly reject such requests (see
-{{request-cancellation}}) in order to clean up transport state for the affected
-streams.
+Some requests or pushes might already be in transit. If the endpoint has already
+sent requests or pushes with an identifier greater than or equal to that
+received in a GOAWAY frame, those requests or pushes will not be processed;
+requests MAY be retried by the client on a different connection.  The endpoint
+that initiated these requests or pushes MAY cancel them.  It is RECOMMENDED that
+the receiving endpoint explicitly reject such requests (see
+{{request-cancellation}}) or pushes (see {{frame-cancel-push}}) in order to
+clean up transport state for the affected streams.
 
-Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until a response is received, the
-stream is reset individually, or the connection terminates.  Servers MAY reject
-individual requests on streams below the indicated ID if these requests were not
-processed.
+Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the server
+might have been processed; their status cannot be known until a response is
+received, the stream is reset individually, or the connection terminates.
+Servers MAY reject individual requests on streams below the indicated ID if
+these requests were not processed.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -718,21 +720,30 @@ request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
 A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server MAY send multiple GOAWAY frames
-indicating different stream IDs, but MUST NOT increase the value they send in
-the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.  A server that is attempting to gracefully shut
-down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the maximum value allowed by QUIC's MAX_STREAMS and SHOULD NOT increase
-the MAX_STREAMS limit thereafter.  This signals to the client that a shutdown is
-imminent and that initiating further requests is prohibited.  After allowing
-time for any in-flight requests (at least one round-trip time), the server MAY
-send another GOAWAY frame with an updated last Stream ID.  This ensures that a
-connection can be cleanly shut down without losing requests.
+when the server closes the connection.  An endpoint MAY send multiple GOAWAY
+frames indicating different identifiers, but MUST NOT increase the identifier
+value they send, in particular since clients might already have retried
+unprocessed requests on another connection.  A server that is attempting to
+gracefully shut down a connection SHOULD send an initial GOAWAY frame with the
+last Stream ID set to the maximum value allowed by QUIC's MAX_STREAMS and SHOULD
+NOT increase the MAX_STREAMS limit thereafter.  This signals to the client that
+a shutdown is imminent and that initiating further requests is prohibited.
+After allowing time for any in-flight requests (at least one round-trip time),
+the server MAY send another GOAWAY frame with an updated last Stream ID.  This
+ensures that a connection can be cleanly shut down without losing requests.
 
-Once all accepted requests have been processed, the server can permit the
-connection to become idle, or MAY initiate an immediate closure of the
-connection.  An endpoint that completes a graceful shutdown SHOULD use the
+A client has more flexibility in the value it chooses for the Push ID in a
+GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
+continue initiating pushes to complete outstanding requests, and the client can
+continue granting push credit as needed (see {{frame-max-push-id}}).  A smaller
+value indicates the client will reject pushes with Push IDs greater than or
+equal to this value.  Like the server, the client MAY send subsequent GOAWAY
+frames so long as the specified Push ID is strictly smaller than all previously
+sent values.
+
+Once all accepted requests and pushes have been processed, the endpoint can
+permit the connection to become idle, or MAY initiate an immediate closure of
+the connection.  An endpoint that completes a graceful shutdown SHOULD use the
 HTTP_NO_ERROR code when closing the connection.
 
 If a client has consumed all available bidirectional stream IDs with requests,
@@ -1245,28 +1256,28 @@ See {{server-push}} for a description of the overall server push mechanism.
 ### GOAWAY {#frame-goaway}
 
 The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
-connection by a server.  GOAWAY allows a server to stop accepting new requests
-while still finishing processing of previously received requests.  This enables
-administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.
+connection by either endpoint.  GOAWAY allows an endpoint to stop accepting new
+requests or pushes while still finishing processing of previously received
+requests and pushes.  This enables administrative actions, like server
+maintenance.  GOAWAY by itself does not close a connection.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Stream ID (i)                      ...
+|                  Stream ID/Push ID (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY frame payload"}
 
-The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
-ID for a client-initiated bidirectional stream encoded as a variable-length
-integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type HTTP_ID_ERROR.
+The GOAWAY frame is always sent on the control stream.  In the server to client
+direction, it carries a QUIC Stream ID for a client-initiated bidirectional
+stream encoded as a variable-length integer.  A client MUST treat receipt of a
+GOAWAY frame containing a Stream ID of any other type as a connection error of
+type HTTP_ID_ERROR.
 
-Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
-stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
-stream as a connection error ({{errors}}) of type HTTP_FRAME_UNEXPECTED.
+In the client to server direction, the GOAWAY frame carries a Push ID encoded as
+a variable-length integer.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
@@ -1865,7 +1876,8 @@ PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
 
 GOAWAY (0x7):
-: GOAWAY is sent only from server to client and does not contain an error code.
+: GOAWAY does not contain an error code.  In the client to server direction,
+it carries a Push ID instead of a server initiated stream ID.
   See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
