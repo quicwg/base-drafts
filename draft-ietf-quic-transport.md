@@ -1675,9 +1675,10 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-A token SHOULD be constructed in a way that allows the server to distinguish it
-from tokens that are sent in Retry packets as they are carried in the same
-field.
+A token send in NEW_TOKEN frames MUST be constructed in a way that allows the
+server to distinguish it from tokens that are sent in Retry packets.  These
+tokens are carried in the same field, but require different handling from
+servers.
 
 The token MUST NOT include information that would allow it to be linked by an
 on-path observer to the connection on which it was issued.  For example, it
