@@ -1336,7 +1336,7 @@ protocol incompatible with the protocol version being used.
 ## QUIC Transport Parameters Extension {#quic_parameters}
 
 QUIC transport parameters are carried in a TLS extension. Different versions of
-QUIC might define a different format for them.
+QUIC might define a different method for negotiating transport configuration.
 
 Including transport parameters in the TLS handshake provides integrity
 protection for these values.
