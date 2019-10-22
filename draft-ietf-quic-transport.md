@@ -3007,25 +3007,26 @@ guidance offered below seeks to strike this balance.
 
 ### Sending ACK Frames {#sending-acknowledgements}
 
+Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
+MUST be acknowledged at least once within the maximum ack delay. An endpoint
+communicates its maximum delay using the max_ack_delay transport parameter;
+see {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
+contract: an endpoint promises to never intentionally delay acknowledgments
+of an ack-eliciting packet by more than the indicated value. If it does,
+any excess accrues to the RTT estimate and could result in spurious or
+delayed retransmissions from the peer. For Initial and Handshake packets,
+a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
+value in determining timeouts for timer-based retransmission, as detailed in
+Section 5.2.1 of {{QUIC-RECOVERY}}.
+
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
-
-An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  An endpoint commits to a maximum delay using the max_ack_delay
-transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
-declares an explicit contract: an endpoint promises to never delay
-acknowledgments of an ack-eliciting packet by more than the indicated value. If
-it does, any excess accrues to the RTT estimate and could result in delayed
-retransmissions from the peer.  For Initial and Handshake packets, a
-max_ack_delay of 0 is used.  The sender uses the receiver's `max_ack_delay`
-value in determining timeouts for timer-based retransmission, as detailed
-in Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
 endpoint MAY continue sending ACK frames immediately on each subsequently
 received packet, but the endpoint SHOULD return to acknowledging every other
-packet after a period of 1/8 x RTT, unless more ack-eliciting packets are
+packet within a period of 1/8 x RTT, unless more ack-eliciting packets are
 received out of order.  If every subsequent ack-eliciting packet arrives out of
 order, then an ACK frame SHOULD be sent immediately for every received
 ack-eliciting packet.
@@ -3041,10 +3042,10 @@ incoming packets.
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
-sender to become limited by the congestion controller (as described in
-{{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
-receiver. Therefore, a sender SHOULD ensure that other frames are sent in
-addition to PADDING frames to elicit acknowledgments from the receiver.
+sender to become limited by the congestion controller with no acknowledgments
+forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
+frames are sent in addition to PADDING frames to elicit acknowledgments from
+the receiver.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
