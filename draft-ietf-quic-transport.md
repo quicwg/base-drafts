@@ -2993,8 +2993,9 @@ valid frames? -->
 ## Generating Acknowledgements {#generating-acks}
 
 Endpoints acknowledge all packets they receive and process. However, only
-ack-eliciting packets cause an ACK frame to be sent within the maximum ack delay.  Packets that are not
-ack-eliciting are only acknowledged when an ACK frame is sent for other reasons.
+ack-eliciting packets cause an ACK frame to be sent within the maximum ack
+delay.  Packets that are not ack-eliciting are only acknowledged when an ACK
+frame is sent for other reasons.
 
 When sending a packet for any reason, an endpoint should attempt to bundle an
 ACK frame if one has not been sent recently. Doing so helps with timely loss
