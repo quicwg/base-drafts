@@ -1623,6 +1623,20 @@ also constrained in what they can send by the limits set by the congestion
 controller.  Clients are only constrained by the congestion controller.
 
 
+### Token Construction
+
+Tokens sent in NEW_TOKEN frames or Retry packets MUST be constructed in a way
+that allows the server to identity how it was provided to a client.  These
+tokens are carried in the same field, but require different handling from
+servers.
+
+A token MUST NOT include information that would allow values to be linked by an
+on-path observer to the connection on which it was issued.  For example, it
+cannot include the connection ID or addressing information unless the values are
+encrypted.  Information that allows the server to distinguish between tokens
+from Retry and NEW_TOKEN MAY be accessible to entities other than the server.
+
+
 ### Address Validation using Retry Packets {#validate-retry}
 
 Upon receiving the client's Initial packet, the server can request address
@@ -1675,16 +1689,6 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-A token send in NEW_TOKEN frames MUST be constructed in a way that allows the
-server to distinguish it from tokens that are sent in Retry packets.  These
-tokens are carried in the same field, but require different handling from
-servers.
-
-The token MUST NOT include information that would allow it to be linked by an
-on-path observer to the connection on which it was issued.  For example, it
-cannot include the connection ID or addressing information unless the values are
-encrypted.
-
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
 Thus, a token SHOULD have an expiration time, which could be either an explicit
@@ -1703,12 +1707,12 @@ validate the client address without an additional round trip.
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
-NEW_TOKEN frame.  A token obtained in a Retry packet MUST be used immediately
-during the connection attempt and cannot be used in subsequent connection
-attempts.
+NEW_TOKEN frame.  In comparison, a token obtained in a Retry packet MUST be used
+immediately during the connection attempt and cannot be used in subsequent
+connection attempts.
 
-A client SHOULD NOT reuse a token in different connections.  Reusing a token
-allows connections to be linked by entities on the network path; see
+A client SHOULD NOT reuse a token for different connection attempts.  Reusing a
+token allows connections to be linked by entities on the network path; see
 {{migration-linkability}}.  A client MUST NOT reuse a token if it believes that
 its point of network attachment has changed since the token was last used; that
 is, if there is a change in its local IP address or network interface.  A client
