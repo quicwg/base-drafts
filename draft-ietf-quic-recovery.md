@@ -509,7 +509,7 @@ probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets.
 
 When a server receives duplicate Initial CRYPTO data when there
-is unacknoweledged Initial CRYPTO data, it can assume the client did not
+is unacknowledged Initial CRYPTO data, it can assume the client did not
 receive all Initial CRYPTO data or the client's estimated RTT is too short.
 To speed handshake completion, it MAY retransmit unacknowledged Initial
 CRYPTO data subject to the path validation limits, as though the PTO expired.
