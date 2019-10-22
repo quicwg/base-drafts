@@ -588,7 +588,8 @@ The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
 this document.  The format from [RFC7541] is used unmodified.  Note, however,
 that QPACK uses some prefix sizes not actually used in HPACK.
 
-QPACK implementations MUST be able to decode integers up to 62 bits long.
+QPACK implementations MUST be able to decode integers up to and including 62
+bits long.
 
 ### String Literals
 
