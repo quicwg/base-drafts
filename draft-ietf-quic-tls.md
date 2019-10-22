@@ -1205,10 +1205,10 @@ packets that have accidentally been corrupted by the network, and it mitigates
 off-path attackers' ability to send valid Retry packets.
 
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
-AEAD_AES_128_GCM used with the following inputs:
+AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
 
-- The key is 128 bits all set to zero.
-- The nonce is 96 bits all set to zero.
+- The secret key, K, is 128 bits all set to zero.
+- The nonce, N, is 96 bits all set to zero.
 - The plaintext is empty.
 - The associated data is the contents of the Retry Pseudo-Packet, as described
   in {{retry-pseudo}}:
