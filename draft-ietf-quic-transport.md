@@ -4159,7 +4159,7 @@ from the server, it MUST discard any subsequent Retry packets that it receives.
 
 Clients MUST discard Retry packets whose Retry Integrity Tag cannot be
 validated, see the Retry Packet Integrity section of {{QUIC-TLS}}. This
-mitigates an off-path attacker's ability to inject a Retry packet, and protects
+mitigates an off-path attacker's ability to inject a Retry packet and protects
 against accidental corruption of Retry packets.
 
 The client responds to a Retry packet with an Initial packet that includes the
