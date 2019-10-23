@@ -440,10 +440,9 @@ A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
 time or the handshake has not been completed.  A PTO enables a connection to
 recover from loss of tail packets or acknowledgements. The PTO algorithm used
-in QUIC implements the reliability functions of Tail Loss Probe
-{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
-F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
-TCP's retransmission timeout period {{?RFC6298}}.
+in QUIC implements the reliability functions of Tail Loss Probe {{?RACK}},
+RTO {{?RFC5681}} and F-RTO algorithms for TCP {{?RFC5682}}, and the timeout
+computation is based on TCP's retransmission timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
@@ -735,7 +734,7 @@ When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
-{{RFC5681}} after Tail Loss Probes (TLP) {{TLP}}.
+{{RFC5681}} after Tail Loss Probes (TLP) {{RACK}}.
 
 ## Pacing {#pacing}
 
@@ -1258,8 +1257,8 @@ kPersistentCongestionThreshold:
 : Period of time for persistent congestion to be established, specified as a PTO
   multiplier.  The rationale for this threshold is to enable a sender to use
   initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
-  {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
-  a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
+  {{RACK}}, before establishing persistent congestion, as TCP does with a
+  Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
   kPersistentCongestionThreshold is 3, which is approximately equivalent to
   having two TLPs before an RTO in TCP.
 
