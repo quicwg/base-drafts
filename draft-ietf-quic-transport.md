@@ -2096,7 +2096,7 @@ more likely to indicate an intentional migration rather than an attack.
 ## Loss Detection and Congestion Control {#migration-cc}
 
 The capacity available on the new path might not be the same as the old path.
-Packets sent on the old path SHOULD NOT contribute to congestion control or RTT
+Packets sent on the old path MUST NOT contribute to congestion control or RTT
 estimation for the new path.
 
 On confirming a peer's ownership of its new address, an endpoint MUST
