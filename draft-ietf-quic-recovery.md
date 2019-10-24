@@ -532,7 +532,10 @@ to a single lost datagram.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD coalesce ack-eliciting packets from all other packet
-number spaces with inflight data if sending coalesced packets is supported.
+number spaces with in-flight data if sending coalesced packets is supported.
+If implementations do not send coalesced packets upon timeout when multiple
+packet number spaces have in-flight data, then they MUST only send a single
+datagram per probe timeout.
 
 It is possible that the sender has no new or previously-sent data to send.  As
 an example, consider the following sequence of events: new application data is
@@ -945,7 +948,7 @@ loss_detection_timer:
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
-time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace]:
+time_of_last_sent_ack_eliciting_packet\[kPacketNumberSpace]:
 : The time the most recent ack-eliciting packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
@@ -1105,16 +1108,6 @@ timers wake up late. Timers set in the past SHOULD fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
-// Returns the earliest loss_time and the packet number
-// space it's from.  Returns 0 if all times are 0.
-GetEarliestLossTime():
-  return GetEarliestTimeAndSpace(loss_time)
-
-// Returns the earliest time_of_last_sent_ack_eliciting_packet
-// and the packet number space it's from.
-GetEarliestAckElicitingTime():
-  return GetEarliestTimeAndSpace(loss_time)
-
 GetEarliestTimeAndSpace(times):
   time = times[Initial]
   space = Initial
@@ -1135,7 +1128,7 @@ PeerNotAwaitingAddressValidation():
          has received 1-RTT ACK
 
 SetLossDetectionTimer():
-  loss_time, _ = GetEarliestLossTime()
+  loss_time, _ = GetEarliestTimeAndSpace(loss_time)
   if (loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
@@ -1155,7 +1148,8 @@ SetLossDetectionTimer():
       max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
-  sent_time, _ = GetEarliestAckElicitingTime()
+  sent_time, _ = GetEarliestTimeAndSpace(
+    time_of_last_sent_ack_eliciting_packet)
   loss_detection_timer.update(sent_time + timeout)
 ~~~
 
