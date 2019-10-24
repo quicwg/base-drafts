@@ -1818,7 +1818,7 @@ To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
 a random payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
-loss, however an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
+loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
 single packet.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently
 than it would an Initial packet, ensuring that connection migration is no more
 load on a new path than establishing a new connection.
