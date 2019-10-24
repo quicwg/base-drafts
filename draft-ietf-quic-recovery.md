@@ -1491,7 +1491,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Disable RTT calculation for packets that don't elicit acknowledgment (#2060,
   #2078)
 - Limit ack_delay by max_ack_delay (#2060, #2099)
-- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Initial keys are discarded once Handshake keys are available (#1951, #2045)
 - Reorder ECN and loss detection in pseudocode (#2142)
 - Only cancel loss detection timer if ack-eliciting packets are in flight
   (#2093, #2117)
