@@ -476,7 +476,7 @@ limited by the endpoint's idle timeout.
 
 A sender computes its PTO timer every time an ack-eliciting packet is sent.
 When ack-eliciting packets are in-flight in multiple packet number spaces,
-the timer MUST be set from the packet number space with the earliest timeout.
+the timer MUST be set for the packet number space with the earliest timeout.
 A sender might choose to optimize this by setting the timer fewer times if it
 knows that more ack-eliciting packets will be sent within a short period of
 time.
