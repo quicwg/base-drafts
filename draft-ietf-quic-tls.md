@@ -764,11 +764,8 @@ and ignoring any outstanding Initial packets.
 ### Discarding Handshake Keys
 
 An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
-({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame when the
-handshake completes.  Most application protocols will send data after the
-handshake.  A server might want to minimize the number of packets sent by
-bundling the HANDSHAKE_DONE frame with other data.  It MAY delay sending of the
-HANDSHAKE_DONE frame by no more than one round-trip.
+({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame within
+one round-trip time of handshake completion.
 
 
 ### Discarding 0-RTT Keys
