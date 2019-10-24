@@ -390,13 +390,9 @@ perspective of the endpoint in question.
 
 ### Handshake Confirmed {#handshake-confirmed}
 
-In this document, the TLS handshake is considered confirmed at an endpoint when
-the following two conditions are met: the handshake is complete, and the
-endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
-This second condition can be implemented by recording the lowest packet number
-sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
-in any received 1-RTT ACK frame: once the latter is higher than or equal to the
-former, the handshake is confirmed.
+In this document, the TLS handshake is considered confirmed at the server when
+the handshake completes. At the client, the handshake is considered confirmed
+when the HANDSHAKE_DONE frame is received.
 
 
 ### Sending and Receiving Handshake Messages
@@ -767,14 +763,12 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys
 
-An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Most application protocols
-will send data after the handshake, resulting in acknowledgements that allow
-both endpoints to discard their handshake keys promptly.  Endpoints that do
-not have reason to send immediately after completing the handshake MAY send
-ack-eliciting frames, such as PING, which will cause the handshake to be
-confirmed when they are acknowledged.
+An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
+({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame when the
+handshake completes.  Most application protocols will send data after the
+handshake.  A server might want to minimize the number of packets sent by
+bundling the HANDSHAKE_DONE frame with other data.  It MAY delay sending of the
+HANDSHAKE_DONE frame by no more than one round-trip.
 
 
 ### Discarding 0-RTT Keys

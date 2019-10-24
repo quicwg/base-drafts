@@ -5645,6 +5645,15 @@ CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
 alert; see {{?TLS13}}) in an Initial or a Handshake packet.
 
 
+## HANDSHAKE_DONE frame {#handshake-done-frame}
+
+The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
+the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
+fields.
+
+This frame MUST be retransmitted until it is acknowledged by the client.
+
+
 ## Extension Frames
 
 QUIC frames do not use a self-describing encoding.  An endpoint therefore needs
