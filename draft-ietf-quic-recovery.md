@@ -501,7 +501,7 @@ be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If no data can be sent, then the PTO alarm MUST NOT be armed until
+If no data can be sent, then the PTO alarm MUST NOT be armed for the corresponding packet number space until
 data has been received from the client.
 
 Since the server could be blocked until more packets are received from the
