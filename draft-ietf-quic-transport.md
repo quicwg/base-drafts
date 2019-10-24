@@ -1040,9 +1040,11 @@ can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
-received for the NEW_CONNECTION_ID frame requesting that retirement.  Subsequent
-incoming packets using that connection ID could elicit a response with the
-corresponding stateless reset token.
+received for the NEW_CONNECTION_ID frame requesting that retirement.  Until
+then, the endpoint SHOULD be prepared to receive packets that contain the
+connection ID that it has requested be retired.  Subsequent incoming packets
+using that connection ID could elicit a response with the corresponding
+stateless reset token.
 
 
 ## Matching Packets to Connections {#packet-handling}
