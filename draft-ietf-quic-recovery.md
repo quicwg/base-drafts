@@ -444,8 +444,8 @@ recover from loss of tail packets or acknowledgements.
 As with loss detection, the probe timeout is per packet number space.
 The PTO algorithm used in QUIC implements the reliability functions of
 Tail Loss Probe {{?RACK}}, RTO {{?RFC5681}} and F-RTO algorithms for
-TCP {{?RFC5682}}, and the timeout computation is based on TCP's
-retransmission timeout period {{?RFC6298}}.
+TCP {{?RFC5682}}. The timeout computation is based on TCP's retransmission
+timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
