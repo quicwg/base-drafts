@@ -190,6 +190,11 @@ QUIC packet:
 : A complete processable unit of QUIC that can be encapsulated in a UDP
   datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
 
+Ack-eliciting Packet:
+
+: A QUIC packet that contains frames other than ACK and PADDING. These cause a
+  recipient to send an acknowledgment (see {{sending-acknowledgements}}).
+
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating,
@@ -1592,19 +1597,19 @@ magnitude of any amplification attack that can be mounted using spoofed source
 addresses.  In determining this limit, servers only count the size of
 successfully processed packets.
 
-Clients MUST ensure that UDP datagrams containing only Initial packets are sized
-to at least 1200 bytes, adding padding to packets in the datagram as necessary.
-Sending padded datagrams ensures that the server is not overly constrained by
-the amplification restriction.
+Clients MUST ensure that UDP datagrams containing Initial packets have UDP
+payloads of at least 1200 bytes, adding padding to packets in the datagram as
+necessary. Sending padded datagrams ensures that the server is not overly
+constrained by the amplification restriction.
 
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
 and the anti-amplification limit is reached. In order to avoid this causing a
-handshake deadlock, clients SHOULD send a packet upon a crypto retransmission
-timeout, as described in {{QUIC-RECOVERY}}. If the client has no data to
-retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
-a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
-SHOULD send a Handshake packet.
+handshake deadlock, clients SHOULD send a packet upon a probe timeout, as
+described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
+not have Handshake keys, it SHOULD send an Initial packet in a UDP datagram of
+at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
+Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -2132,7 +2137,7 @@ to correlate activity between those paths.  An endpoint that moves between
 networks might not wish to have their activity correlated by any entity other
 than their peer, so different connection IDs are used when sending from
 different local addresses, as discussed in {{connection-id}}.  For this to be
-effective endpoints need to ensure that connections IDs they provide cannot be
+effective endpoints need to ensure that connection IDs they provide cannot be
 linked by any other entity.
 
 At any time, endpoints MAY change the Destination Connection ID they send to a
@@ -2347,8 +2352,8 @@ current Probe Timeout (PTO).
 Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
 processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ACK-eliciting packet; see
-{{QUIC-RECOVERY}}), but only if no other ACK-eliciting packets have been sent
+containing frames other than ACK or PADDING (an ack-eliciting packet; see
+{{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been sent
 since last receiving a packet.  Restarting when sending packets ensures that
 connections do not prematurely time out when initiating new activity.
 
@@ -2444,12 +2449,14 @@ endpoint that wishes to communicate a fatal connection error MUST use a
 CONNECTION_CLOSE frame if it has sufficient state to do so.
 
 To support this process, a token is sent by endpoints.  The token is carried in
-the NEW_CONNECTION_ID frame sent by either peer, and servers can specify the
-stateless_reset_token transport parameter during the handshake (clients cannot
-because their transport parameters don't have confidentiality protection).  This
-value is protected by encryption, so only client and server know this value.
-Tokens are invalidated when their associated connection ID is retired via a
-RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
+the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
+specify a stateless_reset_token transport parameter during the handshake that
+applies to the connection ID that it selected during the handshake; clients
+cannot use this transport parameter because their transport parameters don't
+have confidentiality protection.  These tokens are protected by encryption, so
+only client and server know their value.  Tokens are invalidated when their
+associated connection ID is retired via a RETIRE_CONNECTION_ID frame
+({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -2554,8 +2561,8 @@ the packet other than the last 16 bytes for carrying data.
 An endpoint detects a potential stateless reset when an incoming packet either
 cannot be associated with a connection, cannot be decrypted, or is marked as a
 duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
-packet with all Stateless Reset Tokens that are associated with connection IDs
-that the endpoint recently used to send packets from the IP address and port on
+packet with all Stateless Reset Tokens corresponding to active connection IDs
+that the endpoint has used for sending packets to the IP address and port on
 which the datagram is received.  This includes Stateless Reset Tokens from
 NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
 MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
@@ -2606,16 +2613,10 @@ the same static key; see {{reset-oracle}}.  A connection ID from a connection
 that is reset by revealing the Stateless Reset Token MUST NOT be reused for new
 connections at nodes that share a static key.
 
-The same Stateless Reset Token MAY be used for multiple connection IDs on the
-same connection.  However, reuse of a Stateless Reset Token might expose an
-endpoint to denial of service if associated connection IDs are forgotten while
-the associated token is still active at a peer.  An endpoint MUST ensure that
-packets with Destination Connection ID field values that correspond to a reused
-Stateless Reset Token are attributed to the same connection as long as the
-Stateless Reset Token is still usable, even when the connection ID has been
-retired.  Otherwise, an attacker might be able to send a packet with a retired
-connection ID and cause the endpoint to produce a Stateless Reset that it can
-use to disrupt the connection, just as with the attacks in {{reset-oracle}}.
+The same Stateless Reset Token MUST NOT be used for multiple connection IDs.
+Endpoints are not required to compare new values against all previous values,
+but a duplicate value MAY be treated as a connection error of type
+PROTOCOL_VIOLATION.
 
 Note that Stateless Reset packets do not have any cryptographic protection.
 
@@ -3004,25 +3005,31 @@ response, but this has to be balanced against excessive load generated by a
 receiver that sends an ACK frame in response to every ack-eliciting packet.  The
 guidance offered below seeks to strike this balance.
 
-### Sending ACK Frames
+### Sending ACK Frames {#sending-acknowledgements}
+
+Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
+MUST be acknowledged at least once within the maximum ack delay. An endpoint
+communicates its maximum delay using the max_ack_delay transport parameter;
+see {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
+contract: an endpoint promises to never intentionally delay acknowledgments
+of an ack-eliciting packet by more than the indicated value. If it does,
+any excess accrues to the RTT estimate and could result in spurious or
+delayed retransmissions from the peer. For Initial and Handshake packets,
+a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
+value in determining timeouts for timer-based retransmission, as detailed in
+Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
-
-A receiver's delayed acknowledgment timer SHOULD NOT exceed the current RTT
-estimate or the value it indicates in the `max_ack_delay` transport parameter.
-This ensures an acknowledgment is sent at least once per RTT when packets
-needing acknowledgement are received.  The sender can use the receiver's
-`max_ack_delay` value in determining timeouts for timer-based retransmission.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
 endpoint MAY continue sending ACK frames immediately on each subsequently
 received packet, but the endpoint SHOULD return to acknowledging every other
-packet after a period of 1/8 x RTT, unless more ACK-eliciting packets are
-received out of order.  If every subsequent ACK-eliciting packet arrives out of
+packet within a period of 1/8 x RTT, unless more ack-eliciting packets are
+received out of order.  If every subsequent ack-eliciting packet arrives out of
 order, then an ACK frame SHOULD be sent immediately for every received
-ACK-eliciting packet.
+ack-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
@@ -3033,25 +3040,19 @@ ACK frames in response.  In this case the receiver can determine whether an
 immediate or delayed acknowledgement should be generated after processing
 incoming packets.
 
-Acknowledgements of packets carrying CRYPTO frames SHOULD be minimally delayed,
-to complete the handshake with minimal latency. Delaying them by a small amount,
-such as the local timer granularity, allows the endpoint to bundle any data sent
-in response with the ACK frame.  ACK frames SHOULD be sent immediately when the
-crypto stack indicates all data for that packet number space has been received.
-
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
-sender to become limited by the congestion controller (as described in
-{{QUIC-RECOVERY}}) with no acknowledgments forthcoming from the
-receiver. Therefore, a sender SHOULD ensure that other frames are sent in
-addition to PADDING frames to elicit acknowledgments from the receiver.
+sender to become limited by the congestion controller with no acknowledgments
+forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
+frames are sent in addition to PADDING frames to elicit acknowledgments from
+the receiver.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
-ACK-eliciting frames.  An endpoint SHOULD bundle ACK frames with other frames
-when there are new ACK-eliciting packets to acknowledge.  When only
-non-ACK-eliciting packets need to be acknowledged, an endpoint MAY wait until an
-ACK-eliciting packet has been received to bundle an ACK frame with outgoing
+ack-eliciting frames.  An endpoint SHOULD bundle ACK frames with other frames
+when there are new ack-eliciting packets to acknowledge.  When only
+non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
+ack-eliciting packet has been received to bundle an ACK frame with outgoing
 frames.
 
 The algorithms in {{QUIC-RECOVERY}} are resilient to receivers that do not
@@ -3061,14 +3062,13 @@ of doing so.
 
 Packets containing only ACK frames are not congestion controlled, so there are
 limits on how frequently they can be sent.  An endpoint MUST NOT send more than
-one ACK-frame-only packet in response to receiving an ACK-eliciting packet (one
-containing frames other than ACK and/or PADDING).  An endpoint MUST NOT send a
-packet containing only an ACK frame in response to a non-ACK-eliciting packet
-(one containing only ACK and/or PADDING frames), even if there are packet gaps
-which precede the received packet. Limiting ACK frames avoids an infinite
-feedback loop of acknowledgements, which could prevent the connection from ever
-becoming idle. However, the endpoint acknowledges non-ACK-eliciting packets when
-it sends an ACK frame.
+one ACK-frame-only packet in response to receiving an ack-eliciting packet.  An
+endpoint MUST NOT send a non-ack-eliciting packet in response to a
+non-ack-eliciting packet, even if there are packet gaps which precede the
+received packet. Limiting ACK frames avoids an infinite feedback loop of
+acknowledgements, which could prevent the connection from ever becoming idle.
+However, the endpoint acknowledges non-ACK-eliciting packets when it sends an
+ACK frame.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
@@ -3110,11 +3110,11 @@ received by the sender, the receiver SHOULD track which ACK frames have been
 acknowledged by its peer. The receiver SHOULD exclude already acknowledged
 packets from future ACK frames whenever these packets would unnecessarily
 contribute to the ACK frame size.  When the receiver is only sending
-non-ACK-eliciting packets, it can bundle a PING or other small ACK-eliciting
+non-ack-eliciting packets, it can bundle a PING or other small ack-eliciting
 frame with a fraction of them, such as once per round trip, to enable
 dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ACK-eliciting frame, such as a PING, with all
-packets that would otherwise be non-ACK-eliciting, in order to avoid an
+The receiver MUST NOT bundle an ack-eliciting frame, such as a PING, with all
+packets that would otherwise be non-ack-eliciting, in order to avoid an
 infinite feedback loop of acknowledgements.
 
 To limit receiver state or the size of ACK frames, a receiver MAY limit the
@@ -3128,7 +3128,7 @@ received packets in preference to packets received in the past.
 ### Measuring and Reporting Host Delay {#host-delay}
 
 An endpoint measures the delays intentionally introduced between when an
-ACK-eliciting packet is received and the corresponding acknowledgment is sent.
+ack-eliciting packet is received and the corresponding acknowledgment is sent.
 The endpoint encodes this delay for the largest acknowledged packet in the Ack
 Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver of the
 ACK to adjust for any intentional delays, which is important for getting a
@@ -3136,15 +3136,6 @@ better estimate of the path RTT when acknowledgments are delayed. A packet might
 be held in the OS kernel or elsewhere on the host before being processed.  An
 endpoint MUST NOT include delays that is does not control when populating the
 Ack Delay field in an ACK frame.
-
-An endpoint MUST NOT excessively delay acknowledgements of ack-eliciting
-packets.  An endpoint commits to a maximum delay using the max_ack_delay
-transport parameter; see {{transport-parameter-definitions}}.  max_ack_delay
-declares an explicit contract: an endpoint promises to never delay
-acknowledgments of an ack-eliciting packet by more than the indicated value. If
-it does, any excess accrues to the RTT estimate and could result in delayed
-retransmissions from the peer.  For Initial and Handshake packets, a
-max_ack_delay of 0 is used.
 
 ### ACK Frames and Packet Protection
 
@@ -3182,10 +3173,10 @@ containing that information is acknowledged.
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
 * ACK frames carry the most recent set of acknowledgements and the Ack Delay
-  from the largest acknowledge packet, as described in {{sending-ack-frames}}.
-  Delaying the transmission of packets containing ACK frames or sending old
-  ACK frames can cause the peer to generate an inflated RTT sample or
-  unnecessarily disable ECN.
+  from the largest acknowledged packet, as described in
+  {{sending-acknowledgements}}. Delaying the transmission of packets
+  containing ACK frames or sending old ACK frames can cause the peer to
+  generate an inflated RTT sample or unnecessarily disable ECN.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
