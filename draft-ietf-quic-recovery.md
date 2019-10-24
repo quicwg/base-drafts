@@ -534,7 +534,10 @@ shortened once in this way. Subsequently the PTO uses the normal calculation
 with exponential backoff.
 
 Peers can also use coalesced packets to ensure each datagram elicits at least
-one acknowledgement.
+one acknowledgement.  For example, clients can coalesce an Initial packet
+containing a PING and PADDING with 0-RTT data packets and a server can
+coalesce an Initial packet containing a PING with one or more packets in
+it's first flight.
 
 ### Sending Probe Packets
 
