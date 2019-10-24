@@ -526,14 +526,15 @@ did not receive all Initial CRYPTO data or the client's estimated RTT is too
 small. When a client receives undecryptable packets it may assume the server's
 Initial was lost.
 
-To speed handshake completion, either peer MAY send a packet containing unacknowledged
-Initial CRYPTO data subject to the path validation limits, as though the PTO
-expired. A client may send an ack-eliciting packet with no CRYPTO data if all Initial
-data has been acknowledged.  The PTO may only be shortened once in this way.
-Subsequently the PTO uses the normal calculation with exponential backoff.
+To speed handshake completion, either peer MAY send a packet containing
+unacknowledged Initial CRYPTO data subject to the path validation limits, as
+though the PTO expired. A client may send an ack-eliciting packet with no
+CRYPTO data if all Initial data has been acknowledged.  The PTO may only be
+shortened once in this way. Subsequently the PTO uses the normal calculation
+with exponential backoff.
 
-Peers can also use coalesced packets to ensure each datagram elicits at least one
-acknowledgement.
+Peers can also use coalesced packets to ensure each datagram elicits at least
+one acknowledgement.
 
 ### Sending Probe Packets
 
