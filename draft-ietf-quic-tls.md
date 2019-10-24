@@ -278,13 +278,14 @@ components:
 protection being called out specially.
 
 ~~~
-+------------+                        +------------+
-|            |<- Handshake Messages ->|            |
-|            |<---- 0-RTT Keys -------|            |
-|            |<--- Handshake Keys-----|            |
-|   QUIC     |<---- 1-RTT Keys -------|    TLS     |
-|            |<--- Handshake Done ----|            |
-+------------+                        +------------+
++------------+                               +------------+
+|            |<---- Handshake Messages ----->|            |
+|            |<- Validate 0-RTT parameters ->|            |
+|            |<--------- 0-RTT Keys ---------|            |
+|    QUIC    |<------- Handshake Keys -------|    TLS     |
+|            |<--------- 1-RTT Keys ---------|            |
+|            |<------- Handshake Done -------|            |
++------------+                               +------------+
  |         ^
  | Protect | Protected
  v         | Packet
@@ -323,7 +324,7 @@ establishing the connection can usually appear at any encryption level, whereas
 those associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
-- PADDING frames MAY appear in packets of any encryption level.
+- PADDING and PING frames MAY appear in packets of any encryption level.
 
 - CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
   level except 0-RTT.
@@ -358,10 +359,12 @@ levels fit into the handshake process.
 
 ## Interface to TLS
 
-As shown in {{schematic}}, the interface from QUIC to TLS consists of three
+As shown in {{schematic}}, the interface from QUIC to TLS consists of four
 primary functions:
 
 - Sending and receiving handshake messages
+- Processing stored transport and application state from a resumed session
+  and determining if it is valid to accept early data
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
@@ -617,8 +620,13 @@ MAY refuse a connection if the client is unable to authenticate when requested.
 The requirements for client authentication vary based on application protocol
 and deployment.
 
-A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
-{{!TLS13}}).
+A server MUST NOT use post-handshake client authentication (as defined in
+Section 4.6.2 of {{!TLS13}}), because the multiplexing offered by QUIC prevents
+clients from correlating the certificate request with the application-level
+event that triggered it (see {{?HTTP2-TLS13=I-D.ietf-httpbis-http2-tls13}}).
+More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
+messages and clients MUST treat receipt of such messages as a connection error
+of type PROTOCOL_VIOLATION.
 
 
 ## Enabling 0-RTT {#enable-0rtt}
@@ -657,6 +665,27 @@ the state of all streams, including application state bound to those streams.
 
 A client MAY attempt to send 0-RTT again if it receives a Retry or Version
 Negotiation packet.  These packets do not signify rejection of 0-RTT.
+
+
+## Validating 0-RTT Configuration
+
+When a server receives a ClientHello with the "early_data" extension, it has to
+decide whether to accept or reject early data from the client. Some of this
+decision is made by the TLS stack (e.g., checking that the cipher suite being
+resumed was included in the ClientHello; see Section 4.2.10 of {{!TLS13}}). Even
+when the TLS stack has no reason to reject early data, the QUIC stack or the
+application protocol using QUIC might reject early data because the
+configuration of the transport or application associated with the resumed
+session is not compatible with the server's current configuration.
+
+QUIC requires additional transport state to be associated with a 0-RTT session
+ticket. One common way to implement this is using stateless session tickets and
+storing this state in the session ticket. Application protocols that use QUIC
+might have similar requirements regarding associating or storing state. This
+associated state is used for deciding whether early data must be rejected. For
+example, HTTP/3 ({{QUIC-HTTP}}) settings determine how early data from the
+client is interpreted. Other applications using QUIC could have different
+requirements for determining whether to accept or reject early data.
 
 
 ## HelloRetryRequest
