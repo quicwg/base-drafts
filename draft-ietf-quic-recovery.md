@@ -608,16 +608,6 @@ be acknowledged or declared lost.  Initial secrets however might be destroyed
 sooner, as soon as handshake keys are available (see Section 4.9.1 of
 {{QUIC-TLS}}).
 
-## Discussion
-
-The majority of constants were derived from best common practices among widely
-deployed TCP implementations on the internet.  Exceptions follow.
-
-A shorter delayed ack time of 25ms was chosen because longer delayed acks can
-delay loss recovery and for the small number of connections where less than
-packet per 25ms is delivered, acking every packet is beneficial to congestion
-control and loss recovery.
-
 # Congestion Control {#congestion-control}
 
 QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is a
