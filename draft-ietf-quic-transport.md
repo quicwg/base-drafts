@@ -5653,6 +5653,9 @@ The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
 the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
 fields.
 
+This frame can only be sent by the server. A server MUST treat receipt of a
+HANDSHAKE_DONE frame as a connection error of type PROTOCOL_VIOLATION.
+
 
 ## Extension Frames
 
