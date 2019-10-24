@@ -1159,7 +1159,7 @@ the operations described in this section on a QUIC connection.
 When implementing the client role, applications need to be able to:
 
 - open a connection, which begins the exchange described in {{handshake}};
-- disable or selectively reject 0-RTT; and
+- enable 0-RTT when available; and
 - be informed when 0-RTT has been accepted or rejected by a server.
 
 When implementing the server role, applications need to be able to:
