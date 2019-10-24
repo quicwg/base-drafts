@@ -477,9 +477,6 @@ limited by the endpoint's idle timeout.
 A sender computes its PTO timer every time an ack-eliciting packet is sent.
 When ack-eliciting packets are in-flight in multiple packet number spaces,
 the timer MUST be set for the packet number space with the earliest timeout.
-A sender might choose to optimize this by setting the timer fewer times if it
-knows that more ack-eliciting packets will be sent within a short period of
-time.
 
 The probe timer is not set if the time threshold {{time-threshold}} loss
 detection timer is set.  The time threshold loss detection timer is expected
@@ -531,11 +528,11 @@ ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
 to a single lost datagram.
 
 In addition to sending data in the packet number space for which the timer
-expired, the sender SHOULD coalesce ack-eliciting packets from all other packet
+expired, the sender SHOULD coalesce ack-eliciting packets from other packet
 number spaces with in-flight data if sending coalesced packets is supported.
-If implementations do not send coalesced packets upon timeout when multiple
-packet number spaces have in-flight data, then they MUST only send a single
-datagram per probe timeout.
+If an endpoint has data in multiple packet number spaces in-flight and is
+unable to send coalesced packets when a PTO expires, it MUST send only a
+single datagram.
 
 It is possible that the sender has no new or previously-sent data to send.  As
 an example, consider the following sequence of events: new application data is
