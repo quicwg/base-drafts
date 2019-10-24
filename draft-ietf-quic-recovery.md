@@ -525,7 +525,7 @@ to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent.  Data at Initial encryption MUST be sent before
+data, it MUST be sent.  Data that was previously sent with Initial encryption MUST be sent before
 Handshake data and data at Handshake encryption MUST be sent before any
 ApplicationData data.
 
