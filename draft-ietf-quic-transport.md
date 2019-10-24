@@ -3181,10 +3181,11 @@ containing that information is acknowledged.
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
-* ACK frames are sent containing the most recent set of acknowledgements and
-  Ack Delay, as described in {{sending-ack-frames}}. Delaying the transmission
-  of packets containing ACK frames or sending old ACK frames can cause the
-  peer to generate an inflated RTT sample or unnecessarily disable ECN.
+* ACK frames carry the most recent set of acknowledgements and the Ack Delay
+  from the largest acknowledge packet, as described in {{sending-ack-frames}}.
+  Delaying the transmission of packets containing ACK frames or sending old
+  ACK frames can cause the peer to generate an inflated RTT sample or
+  unnecessarily disable ECN.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
