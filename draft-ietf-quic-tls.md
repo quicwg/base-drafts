@@ -383,15 +383,26 @@ requirement that is based on the completion of the handshake depends on the
 perspective of the endpoint in question.
 
 
+### Handshake Acknowledged {#handshake-acknowledged}
+
+In this document, the TLS handshake is considered acknowledged at an endpoint
+when the handshake is complete and either of the following two conditions is
+met:
+
+- all the data sent using Handshake packets have been acknowledged
+- the peer initiates a key update ({{key-update}})
+
+When the handshake is acknowledged, the next 1-RTT packet that the endpoint
+sends MUST respond to the key update had it received a key update from peer as
+defined in {{key-update}}, else initiate a key update.
+
+
 ### Handshake Confirmed {#handshake-confirmed}
 
 In this document, the TLS handshake is considered confirmed at an endpoint when
-the following two conditions are met: the handshake is complete, and the
-endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
-This second condition can be implemented by recording the lowest packet number
-sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
-in any received 1-RTT ACK frame: once the latter is higher than or equal to the
-former, the handshake is confirmed.
+it receives a packet initiating a key update.  The transition from handshake
+acknowledged to handshake confirmed happens immediately when the endpoint
+receives a key update.
 
 
 ### Sending and Receiving Handshake Messages
@@ -1214,13 +1225,15 @@ TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-An endpoint MUST NOT initiate the first key update until the handshake is
-confirmed ({{handshake-confirmed}}). An endpoint MUST NOT initiate a subsequent
-key update until it has received an acknowledgment for a packet sent at the
-current KEY_PHASE.  This can be implemented by tracking the lowest packet
-number sent with each KEY_PHASE, and the highest acknowledged packet number
-in the 1-RTT space: once the latter is higher than or equal to the former,
-another key update can be initiated.
+An endpoint MUST NOT initiate a key update until the handshake is acknowledged
+({{handshake-acknowledged}}).  Once the handshake is acknowledged, an endpoint
+initiates or responds to the first key update as defined in
+{{handshake-acknowledged}}.  An endpoint MUST NOT initiate a subsequent key
+update until it has received an acknowledgment for a packet sent at the current
+KEY_PHASE.  This can be implemented by tracking the lowest packet number sent
+with each KEY_PHASE, and the highest acknowledged packet number in the 1-RTT
+space: once the latter is higher than or equal to the former, another key update
+can be initiated.
 
 Endpoints MAY limit the number of keys they retain to two sets for removing
 packet protection and one set for protecting packets.  Older keys can be
