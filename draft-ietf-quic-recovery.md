@@ -976,7 +976,7 @@ follows:
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
      time_of_last_sent_ack_eliciting_packet[pn_space] = 0
-     loss_time[pn_space] = 0
+     loss_times[pn_space] = 0
 ~~~
 
 
@@ -1125,7 +1125,7 @@ PeerNotAwaitingAddressValidation():
          has received 1-RTT ACK
 
 SetLossDetectionTimer():
-  loss_time, _ = GetEarliestTimeAndSpace(loss_time)
+  loss_time, _ = GetEarliestTimeAndSpace(loss_times)
   if (loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
@@ -1160,7 +1160,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  loss_time, pn_space = GetEarliestLossTime()
+  loss_time, pn_space = GetEarliestTimeAndSpace(loss_times)
   if (loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
@@ -1195,7 +1195,7 @@ Pseudocode for DetectLostPackets follows:
 ~~~
 DetectLostPackets(pn_space):
   assert(largest_acked_packet[pn_space] != infinite)
-  loss_time[pn_space] = 0
+  loss_times[pn_space] = 0
   lost_packets = {}
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
@@ -1217,10 +1217,10 @@ DetectLostPackets(pn_space):
       if (unacked.in_flight):
         lost_packets.insert(unacked)
     else:
-      if (loss_time[pn_space] == 0):
-        loss_time[pn_space] = unacked.time_sent + loss_delay
+      if (loss_times[pn_space] == 0):
+        loss_times[pn_space] = unacked.time_sent + loss_delay
       else:
-        loss_time[pn_space] = min(loss_time[pn_space],
+        loss_times[pn_space] = min(loss_times[pn_space],
                                   unacked.time_sent + loss_delay)
 
   // Inform the congestion controller of lost packets and
