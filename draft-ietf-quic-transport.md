@@ -2738,9 +2738,9 @@ available.
 
 All QUIC packets except Version Negotiation packets use authenticated
 encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
- and integrity protection. Retry packets use an AEAD to provide integrity 
-  protection.  Details of packet protection are found in
-{{QUIC-TLS}}; this section includes an overview of the process.
+and integrity protection.  Retry packets use an AEAD to provide integrity
+protection.  Details of packet protection are found in {{QUIC-TLS}}; this
+section includes an overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
 packet protection is not effective confidentiality protection.  Initial
@@ -4158,8 +4158,8 @@ A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
 from the server, it MUST discard any subsequent Retry packets that it receives.
 
-Clients MUST discard Retry packets that have a Retry Integrity Tag that cannot be
-validated, see the Retry Packet Integrity section of {{QUIC-TLS}}. This
+Clients MUST discard Retry packets that have a Retry Integrity Tag that cannot
+be validated, see the Retry Packet Integrity section of {{QUIC-TLS}}. This
 mitigates an off-path attacker's ability to inject a Retry packet and protects
 against accidental corruption of Retry packets.
 
