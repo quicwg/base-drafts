@@ -1643,7 +1643,7 @@ in {{transport-parameter-definitions}}, forces the server to demonstrate that
 it, or an entity it cooperates with, received the original Initial packet from
 the client.  Providing a different connection ID also grants a server some
 control over how subsequent packets are routed.  This can be used to direct
-connections to a server instance with more resources available.
+connections to a different server instance.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
