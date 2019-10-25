@@ -1636,10 +1636,14 @@ As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
 that token, it proves to the server that it received the token.
 
-A server can also use a Retry packet to defer the state and processing costs
-of connection establishment.  By giving the client a different connection ID to
-use, a server can cause the connection to be routed to a server instance with
-more resources available for new connections.
+A server can also use a Retry packet to defer the state and processing costs of
+connection establishment.  Requiring the server to provide a different
+connection ID, along with the original_connection_id transport parameter defined
+in {{transport-parameter-definitions}}, forces the server to demonstrate that
+it, or an entity it cooperates with, received the original Initial packet from
+the client.  Providing a different connection ID also grants a server some
+control over how subsequent packets are routed.  This can be used to direct
+connections to a different server instance.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
@@ -4152,8 +4156,10 @@ the client included in the Source Connection ID of the Initial packet.
 
 The server includes a connection ID of its choice in the Source Connection ID
 field.  This value MUST not be equal to the Destination Connection ID field of
-the packet sent by the client.  The client MUST use this connection ID in the
-Destination Connection ID of subsequent packets that it sends.
+the packet sent by the client.  A client MUST discard a Retry packet that
+contains a Source Connection ID field that is identical to the Destination
+Connection ID field of its Initial packet.  The client MUST use this connection
+ID in the Destination Connection ID field of subsequent packets that it sends.
 
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
