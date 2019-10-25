@@ -1209,8 +1209,8 @@ AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
 
 - The secret key, K, is 128 bits all set to zero.
 - The nonce, N, is 96 bits all set to zero.
-- The plaintext is empty.
-- The associated data is the contents of the Retry Pseudo-Packet, as described
+- The plaintext, P, is empty.
+- The associated data, A, is the contents of the Retry Pseudo-Packet, as illustrated
   in {{retry-pseudo}}:
 
 ~~~
