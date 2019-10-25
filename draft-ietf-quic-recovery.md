@@ -1160,7 +1160,8 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  earliest_loss_time, pn_space = GetEarliestTimeAndSpace(loss_times)
+  earliest_loss_time, pn_space =
+    GetEarliestTimeAndSpace(loss_times)
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
@@ -1178,7 +1179,8 @@ OnLossDetectionTimeout():
   else:
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(time_of_last_sent_ack_eliciting_packet)
+    _, pn_space = GetEarliestTimeAndSpace(
+      time_of_last_sent_ack_eliciting_packet)
     SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
