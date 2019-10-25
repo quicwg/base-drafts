@@ -575,7 +575,7 @@ dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
 A Retry packet causes a client to send another Initial packet, effectively
 restarting the connection process.  A Retry packet indicates that the Initial
-was received, but not processed.  A Retry packet cannot be treated as an
+was received, but not processed.  A Retry packet MUST NOT be treated as an
 acknowledgment.
 
 Clients that receive a Retry packet reset congestion control and loss recovery
