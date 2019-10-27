@@ -264,7 +264,7 @@ The decoder specifies an upper bound on the number of streams which can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
 {{configuration}}). An encoder MUST limit the number of streams which could
 become blocked to the value of SETTINGS_QPACK_BLOCKED_STREAMS at all times.
-If an decoder encounters more blocked streams than it promised to support, it
+If a decoder encounters more blocked streams than it promised to support, it
 MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 Note that the decoder might not become blocked on every stream which risks
@@ -956,7 +956,7 @@ the Delta Base will be set to zero.
 A header block that does not reference the dynamic table can use any value for
 the Base; setting Delta Base to zero is one of the most efficient encodings.
 
-For example, with a Required Insert Count of 9, a decoder receives a S bit of 1
+For example, with a Required Insert Count of 9, a decoder receives an S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
 for three entries.  In this example, a relative index of 1 refers to the 5th
 entry that was added to the table; a post-base index of 1 refers to the 8th
