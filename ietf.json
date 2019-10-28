@@ -6,6 +6,6 @@
     "group_email": "quic@ietf.org",
     "repo_type": "specs",
     "revisions_tagged": true,
-    "report_to": "group_email",
-    "report_exclude_labels": ["editorial"]
+    "report_to": ["group_email"],
+    "activity_exclude_labels": ["editorial"]
 }
