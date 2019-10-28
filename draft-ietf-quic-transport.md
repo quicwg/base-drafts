@@ -2379,15 +2379,19 @@ terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
-After sending a CONNECTION_CLOSE frame, endpoints immediately enter the closing
-state.  During the closing period, an endpoint that sends a CONNECTION_CLOSE
-frame SHOULD respond to any packet that it receives with another packet
-containing a CONNECTION_CLOSE frame.  To minimize the state that an endpoint
-maintains for a closing connection, endpoints MAY send the exact same packet.
-However, endpoints SHOULD limit the number of packets they generate containing a
-CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
-the number of packets that it receives before sending additional packets or
-increase the time between packets.
+After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
+closing state.  During the closing period, an endpoint that sends a
+CONNECTION_CLOSE frame SHOULD respond to any packet that it receives with
+another packet containing a CONNECTION_CLOSE frame, until it receives a packet
+that contains a CONNECTION_CLOSE frame.  However, such an endpoint SHOULD limit
+the number of packets it generates containing a CONNECTION_CLOSE frame.  For
+instance, an endpoint could progressively increase the number of packets that it
+receives before sending additional packets or increase the time between packets.
+An endpoint that drops the packet protection keys when entering the closing
+period and therefore being unable to decrypt the incoming packets MUST
+exponentially back off the frequency in which it sends a packet containing a
+CONNECTION_CLOSE frame.  To minimize the state that an endpoint maintains for a
+closing connection, endpoints MAY send the exact same packet.
 
 Note:
 
