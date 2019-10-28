@@ -523,8 +523,8 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 When a server receives duplicate Initial CRYPTO data, it can assume the client
 did not receive all Initial CRYPTO data or the client's estimated RTT is too
-small. When a client receives undecryptable packets it may assume the server's
-Initial was lost.
+small. When a client receives undecryptable Handshake packets it may assume
+some or all of the server's Initial was lost.
 
 To speed handshake completion, either peer MAY send a packet containing
 unacknowledged Initial CRYPTO data subject to the path validation limits, as
