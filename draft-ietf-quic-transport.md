@@ -1698,10 +1698,14 @@ encrypted form in the token.
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
 
-If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it SHOULD include that value in the
-Token field of its Initial packet.  Including a token might allow the server to
-validate the client address without an additional round trip.
+A token received in a NEW_TOKEN frame is applicable against the servers that the
+connection is considered authoritative for (e.g., server names included in the
+certificate).  A client MUST only use a token that is applicable to the server
+that the client is connecting to to.  If the client has a token received in a
+NEW_TOKEN frame that is applicable to a new connection attempt, it SHOULD
+include that value in the Token field of its Initial packet.  Including a token
+might allow the server to validate the client address without an additional
+round trip.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
