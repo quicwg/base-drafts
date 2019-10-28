@@ -1698,7 +1698,7 @@ encrypted form in the token.
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
 
-A token received in a NEW_TOKEN frame is applicable against the servers that the
+A token received in a NEW_TOKEN frame is applicable to any server that the
 connection is considered authoritative for (e.g., server names included in the
 certificate).  A client MUST only use a token that is applicable to the server
 that the client is connecting to to.  If the client has a token received in a
