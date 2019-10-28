@@ -8,5 +8,5 @@
     },
     "repo_type": "specs",
     "revisions_tagged": true,
-    "report_to": ["group_email"]
+    "activity_summary_to": ["group_email"]
 }
