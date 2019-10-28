@@ -494,19 +494,16 @@ A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
 a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
 be considered an RTT sample.
 
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
 Data at Initial encryption MUST be retransmitted before Handshake data and
 data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
-data has been received from the client.
+data.
 
-Since the server could be blocked until more packets are received from the
-client, it is the client's responsibility to send packets to unblock the server
-until it is certain that the server has finished its address validation
-(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets.
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+If the limit has been reached when the PTO expires, a PING with no PADDING MUST
+be sent.  This packet elicits a full-sized Initial packet from the client,
+allowing the server to send any data in need of transmission or
+re-transmission.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -559,7 +556,6 @@ implementations must choose between sending the same payload every time
 or sending different payloads.  Sending the same payload may be simpler
 and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
-
 
 ### Loss Detection {#pto-loss}
 
@@ -1150,18 +1146,9 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (endpoint is client without 1-RTT keys):
-    // Client sends an anti-deadlock packet: Initial is padded
-    // to earn more anti-amplification credit,
-    // a Handshake packet proves address ownership.
-    if (has Handshake keys):
-      SendOneAckElicitingHandshakePacket()
-    else:
-      SendOneAckElicitingPaddedInitialPacket()
-  else:
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    SendOneOrTwoAckElicitingPackets()
+  // PTO. Send new data if available, else retransmit old data.
+  // If neither is available, send a single PING frame.
+  SendOneOrTwoAckElicitingPackets()
 
   pto_count++
   SetLossDetectionTimer()
