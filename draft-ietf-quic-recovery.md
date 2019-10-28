@@ -500,9 +500,9 @@ data.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-If the limit has been reached when the PTO expires, a PING with no PADDING MUST
-be sent.  This packet elicits a full-sized Initial packet from the client,
-allowing the server to send data again.
+If the limit has been reached when the PTO expires, a single packet containing
+a PING with no PADDING MUST be sent.  This packet elicits a full-sized Initial
+packet from the client, allowing the server to send data again.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
