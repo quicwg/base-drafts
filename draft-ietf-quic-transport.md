@@ -2381,17 +2381,17 @@ implicitly reset.
 
 After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
 closing state.  During the closing period, an endpoint that sends a
-CONNECTION_CLOSE frame SHOULD respond to any packet that it receives with
-another packet containing a CONNECTION_CLOSE frame, until it receives a packet
-that contains a CONNECTION_CLOSE frame.  However, such an endpoint SHOULD limit
-the number of packets it generates containing a CONNECTION_CLOSE frame.  For
-instance, an endpoint could progressively increase the number of packets that it
-receives before sending additional packets or increase the time between packets.
-An endpoint that drops the packet protection keys when entering the closing
-period and therefore being unable to decrypt the incoming packets MUST
-exponentially back off the frequency in which it sends packets containing
-CONNECTION_CLOSE frames.  To minimize the state that an endpoint maintains for a
-closing connection, endpoints MAY send the exact same packet.
+CONNECTION_CLOSE frame SHOULD respond to any incoming packet that can be
+decrypted with another packet containing a CONNECTION_CLOSE frame.  However,
+such an endpoint SHOULD limit the number of packets it generates containing a
+CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
+the number of packets that it receives before sending additional packets or
+increase the time between packets.  An endpoint that drops the packet protection
+keys when entering the closing period and therefore being unable to decrypt the
+incoming packets MUST exponentially back off the frequency in which it sends
+packets containing CONNECTION_CLOSE frames.  To minimize the state that an
+endpoint maintains for a closing connection, endpoints MAY send the exact same
+packet.
 
 Note:
 
