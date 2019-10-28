@@ -2389,8 +2389,8 @@ instance, an endpoint could progressively increase the number of packets that it
 receives before sending additional packets or increase the time between packets.
 An endpoint that drops the packet protection keys when entering the closing
 period and therefore being unable to decrypt the incoming packets MUST
-exponentially back off the frequency in which it sends a packet containing a
-CONNECTION_CLOSE frame.  To minimize the state that an endpoint maintains for a
+exponentially back off the frequency in which it sends packets containing
+CONNECTION_CLOSE frames.  To minimize the state that an endpoint maintains for a
 closing connection, endpoints MAY send the exact same packet.
 
 Note:
