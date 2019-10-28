@@ -523,14 +523,14 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 When a server receives duplicate Initial CRYPTO data, it can assume the client
 did not receive all Initial CRYPTO data or the client's estimated RTT is too
-small. When a client receives undecryptable Handshake packets it may assume
-some or all of the server's Initial was lost.
+small. When a client receives Handshake packets prior to obtaining Handshake
+keys it may assume some or all of the server's Initial packets were lost.
 
 To speed handshake completion, either peer MAY send a packet containing
 unacknowledged Initial CRYPTO data subject to the path validation limits, as
-though the PTO expired. A client may send an ack-eliciting packet with no
-CRYPTO data if all Initial data has been acknowledged.  The PTO may only be
-shortened once in this way. Subsequently the PTO uses the normal calculation
+though the PTO expired. A client MAY send an ack-eliciting packet with no
+CRYPTO data if all Initial data has been acknowledged.  The PTO can only be
+shortened once in this way. Subsequently, the PTO uses the normal calculation
 with exponential backoff.
 
 Peers can also use coalesced packets to ensure each datagram elicits at least
