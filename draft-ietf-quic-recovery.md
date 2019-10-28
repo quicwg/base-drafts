@@ -556,8 +556,8 @@ or sending different payloads.  Sending the same payload may be simpler
 and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
 
-### Loss Detection {#pto-loss}
 
+### Loss Detection {#pto-loss}
 
 Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
