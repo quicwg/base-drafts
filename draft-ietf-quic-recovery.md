@@ -558,6 +558,7 @@ payloads each time reduces the chances of spurious retransmission.
 
 ### Loss Detection {#pto-loss}
 
+
 Delivery or loss of packets in flight is established when an ACK frame is
 received that newly acknowledges one or more packets.
 
