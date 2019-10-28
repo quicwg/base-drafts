@@ -1592,10 +1592,11 @@ server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
 Prior to validating the client address, servers MUST NOT send more than three
-times as many bytes as the number of bytes they have received.  This limits the
-magnitude of any amplification attack that can be mounted using spoofed source
-addresses.  In determining this limit, servers only count the size of
-successfully processed packets.
+times as many bytes as the number of bytes they have received, except upon the
+probe timeout expiring, when servers can send a single PING-only packet.
+This limits the magnitude of any amplification attack that can be mounted
+using spoofed source addresses.  In determining this limit, servers only count
+the size of successfully processed packets.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
 payloads of at least 1200 bytes, adding padding to packets in the datagram as
