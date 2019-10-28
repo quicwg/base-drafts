@@ -1700,12 +1700,11 @@ connections; validating the port is therefore unlikely to be successful.
 
 A token received in a NEW_TOKEN frame is applicable to any server that the
 connection is considered authoritative for (e.g., server names included in the
-certificate).  A client MUST only use a token that is applicable to the server
-that the client is connecting to to.  If the client has a token received in a
-NEW_TOKEN frame that is applicable to a new connection attempt, it SHOULD
-include that value in the Token field of its Initial packet.  Including a token
-might allow the server to validate the client address without an additional
-round trip.
+certificate).  When connecting to a server for which the client retains an
+applicable and unused token, it SHOULD include that token in the Token field of
+its Initial packet.  Including a token might allow the server to validate the
+client address without an additional round trip.  A client MUST NOT include a
+token that is unapplicable to the server that it is connecting to.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
