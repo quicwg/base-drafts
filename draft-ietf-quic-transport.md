@@ -3963,6 +3963,8 @@ carries ACKs in either direction.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     [Token Checksum (128)]                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                           Length (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Packet Number (8/16/24/32)               ...
@@ -3990,6 +3992,11 @@ Token:
 : The value of the token that was previously provided in a Retry packet or
   NEW_TOKEN frame.
 
+Token Checksum:
+
+: The checksum of the token.  The field is omitted when the value of the Token
+  Length field is zero.
+
 Payload:
 
 : The payload of the packet.
@@ -3999,6 +4006,19 @@ are protected with connection- and version-specific keys (Initial keys) as
 described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
 integrity against on-path attackers, but provides some level of protection
 against off-path attackers.
+
+Additionally, the token is accompanied by a checksum.  This is because when a
+token is used, its integrity is a prerequisite of unprotecting the Initial
+packet (see {{alternative-initial}}).  An endpoint MUST discard a packet that
+contains a corrupt token checksum.
+
+The checksum is calculated as the output of AEAD_AES_128_GCM {{!AEAD=RFC5116}}
+using the following inputs:
+
+- The secret key, K, is 128 bits all set to zero.
+- The nonce, N, is 96 bits all set to zero.
+- The plaintext, P, is empty.
+- The associated data, A, is the token.
 
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
