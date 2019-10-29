@@ -2393,10 +2393,9 @@ An endpoint is allowed to drop the packet protection keys when entering the
 closing period ({{draining}}).  However, an endpoint without the packet
 protection keys cannot identify and discard invalid packets.  To avoid creating
 an unwitting amplification attack, such endpoints MUST reduce the frequency with
-which it sends packets containing a CONNECTION_CLOSE frame.
-
-To minimize the state that an endpoint maintains for a closing connection,
-endpoints MAY send the exact same packet.
+which it sends packets containing a CONNECTION_CLOSE frame.  To minimize the
+state that an endpoint maintains for a closing connection, endpoints MAY send
+the exact same packet.
 
 Note:
 
