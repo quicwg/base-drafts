@@ -2391,12 +2391,12 @@ before sending additional packets or increase the time between packets.
 
 An endpoint is allowed to drop the packet protection keys when entering the
 closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
-response to any UDP datagram that is received.  However, an endpoint without the packet
-protection keys cannot identify and discard invalid packets.  To avoid creating
-an unwitting amplification attack, such endpoints MUST reduce the frequency with
-which it sends packets containing a CONNECTION_CLOSE frame.  To minimize the
-state that an endpoint maintains for a closing connection, endpoints MAY send
-the exact same packet.
+response to any UDP datagram that is received.  However, an endpoint without the
+packet protection keys cannot identify and discard invalid packets.  To avoid
+creating an unwitting amplification attack, such endpoints MUST reduce the
+frequency with which it sends packets containing a CONNECTION_CLOSE frame.  To
+minimize the state that an endpoint maintains for a closing connection,
+endpoints MAY send the exact same packet.
 
 Note:
 
