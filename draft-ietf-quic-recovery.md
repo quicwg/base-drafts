@@ -1257,9 +1257,9 @@ are described in this section.
 
 max_datagram_size:
 : The sender's current maximum payload size. Does not include UDP or IP
-  overhead.  The max datagram size is used for calculating initial and
-The sender's current maximum payload size. Does not include UDP or IP overhead.  The max datagram size is used for calculating  minimum congestion windows. An endpoint sets the value of this variable based on its PMTU, with a minimum value of 1200 bytes (see Section 14 of {{QUIC-TRANSPORT}}).
-  larger, and can not be smaller.
+  overhead.  The max datagram size is used for calculating the minimum congestion
+  window. An endpoint sets the value of this variable based on its PMTU, with a
+  minimum value of 1200 bytes (see Section 14.1 of {{QUIC-TRANSPORT}}).
 
 ecn_ce_counters\[kPacketNumberSpace]:
 : The highest value reported for the ECN-CE counter in the packet number space
