@@ -361,17 +361,17 @@ On the sending part of a stream, application protocols need to be able to:
 
 - write data, understanding when stream flow control credit
   ({{data-flow-control}}) has successfully been reserved to send the written
-  data
+  data;
 - end the stream (clean termination), resulting in a STREAM frame
   ({{frame-stream}}) with the FIN bit set; and
 - reset the stream (abrupt termination), resulting in a RESET_STREAM frame
-  ({{frame-reset-stream}}), even if the stream was already ended.
+  ({{frame-reset-stream}}), if the stream was not already in a terminal state.
 
 On the receiving part of a stream, application protocols need to be able to:
 
-- read data
+- read data; and
 - abort reading of the stream and request closure, possibly resulting in a
-  STOP_SENDING frame ({{frame-stop-sending}})
+  STOP_SENDING frame ({{frame-stop-sending}}).
 
 Applications also need to be informed of state changes on streams, including
 when the peer has opened or reset a stream, when a peer aborts reading on a
