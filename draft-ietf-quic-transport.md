@@ -2390,7 +2390,8 @@ endpoint could progressively increase the number of packets that it receives
 before sending additional packets or increase the time between packets.
 
 An endpoint is allowed to drop the packet protection keys when entering the
-closing period ({{draining}}).  However, an endpoint without the packet
+closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
+response to any UDP datagram that is received.  However, an endpoint without the packet
 protection keys cannot identify and discard invalid packets.  To avoid creating
 an unwitting amplification attack, such endpoints MUST reduce the frequency with
 which it sends packets containing a CONNECTION_CLOSE frame.  To minimize the
