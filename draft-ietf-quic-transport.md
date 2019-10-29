@@ -3988,7 +3988,7 @@ Number Length bits.  It is used to carry "early" data from the client to the
 server as part of the first flight, prior to handshake completion. As part of
 the TLS handshake, the server can accept or reject this early data.
 
-See Section 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
@@ -4356,42 +4356,45 @@ connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
-The format of the transport parameters is the TransportParameters struct from
-{{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!TLS13=RFC8446}}.
-
-~~~
-   enum {
-      original_connection_id(0),
-      idle_timeout(1),
-      stateless_reset_token(2),
-      max_packet_size(3),
-      initial_max_data(4),
-      initial_max_stream_data_bidi_local(5),
-      initial_max_stream_data_bidi_remote(6),
-      initial_max_stream_data_uni(7),
-      initial_max_streams_bidi(8),
-      initial_max_streams_uni(9),
-      ack_delay_exponent(10),
-      max_ack_delay(11),
-      disable_active_migration(12),
-      preferred_address(13),
-      active_connection_id_limit(14),
-      (65535)
-   } TransportParameterId;
-
-   struct {
-      TransportParameterId parameter;
-      opaque value<0..2^16-1>;
-   } TransportParameter;
-
-   TransportParameter TransportParameters<0..2^16-1>;
-~~~
-{: #figure-transport-parameters title="Definition of TransportParameters"}
-
 The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to describe the encoding of transport parameters.
+{{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
+length-prefixed sequence of transport parameters, as shown in
+{{transport-parameter-sequence}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Sequence Length (16)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 1 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 2 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter N (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-sequence title="Sequence of Transport Parameters"}
+
+The Sequence Length field contains the length of the sequence of transport
+parameters, in bytes. Each transport parameter is encoded as an (identifier,
+length, value) tuple, as shown in {{transport-parameter-encoding-fig}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Transport Parameter ID (16)  |  Transport Param Length (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Transport Parameter Value (*)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
+
+The Transport Param Length field contains the length of the Transport
+Parameter Value field.
 
 QUIC encodes transport parameters into a sequence of bytes, which are then
 included in the cryptographic handshake.
@@ -4531,21 +4534,43 @@ preferred_address (0x000d):
 
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
-  of this transport parameter is the PreferredAddress struct shown in
-  {{fig-preferred-address}}.  This transport parameter is only sent by a server.
-  Servers MAY choose to only send a preferred address of one address family by
-  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
-  IP addresses are encoded in network byte order.
+  of this transport parameter is shown in {{fig-preferred-address}}.  This
+  transport parameter is only sent by a server. Servers MAY choose to only send
+  a preferred address of one address family by sending an all-zero address and
+  port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
+  network byte order. The CID Length field contains the length of the
+  Connection ID field.
 
 ~~~
-   struct {
-     opaque ipv4Address[4];
-     uint16 ipv4Port;
-     opaque ipv6Address[16];
-     uint16 ipv6Port;
-     opaque connectionId<0..20>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       IPv4 Address (32)                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv4 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                      IPv6 Address (128)                       +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv6 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| CID Length (8)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Connection ID (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 

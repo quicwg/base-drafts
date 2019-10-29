@@ -1338,7 +1338,7 @@ protocol incompatible with the protocol version being used.
 ## QUIC Transport Parameters Extension {#quic_parameters}
 
 QUIC transport parameters are carried in a TLS extension. Different versions of
-QUIC might define a different format for this struct.
+QUIC might define a different method for negotiating transport configuration.
 
 Including transport parameters in the TLS handshake provides integrity
 protection for these values.
@@ -1350,9 +1350,7 @@ protection for these values.
 ~~~
 
 The `extension_data` field of the quic_transport_parameters extension contains a
-value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters struct when
-the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake. Endpoints MUST send the
