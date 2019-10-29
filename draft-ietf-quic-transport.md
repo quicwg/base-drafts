@@ -2764,9 +2764,16 @@ version.  A server that is incapable of issuing a different version number,
 packet type modifier, or initial salt MAY advertise the original values
 specified in this document as its alternative initial set.
 
+When the server receives an Initial packet containing a valid NEW_TOKEN token,
+and the value of the version number field of that Initial packet does not match
+the version number expected for that token, the server MUST close the connection
+with an VERSION_NEGOTIATION_ERROR.
+
 When a client uses a token supplied by a NEW_TOKEN frame, it MUST use the
 provided alternative initial set instead of using the default values defined in
-this document.
+this document.  When the client downgrades to the original version defined in
+this document due to receipt of a Version Negotiation packet, it MUST continue
+sending the same token.
 
 Other specifications MAY define other methods for distributing or deducing the
 alternative initial set.
@@ -5662,6 +5669,12 @@ TRANSPORT_PARAMETER_ERROR (0x8):
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
+
+VERSION_NEGOTIATION_ERROR (0x9):
+
+: An endpoint received a packet with an unexpected version.  This error code
+  indicates a potential version downgrade attack.
+
 
 PROTOCOL_VIOLATION (0xA):
 
