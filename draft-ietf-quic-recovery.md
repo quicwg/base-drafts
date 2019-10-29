@@ -1257,7 +1257,8 @@ are described in this section.
 max_datagram_size:
 : The sender's current maximum payload size. Does not include UDP or IP
   overhead.  The max datagram size is used for calculating initial and
-  minimum congestion windows. The RECOMMENDED value is 1200 bytes.
+  minimum congestion windows. The RECOMMENDED value is 1200 bytes, may be larger,
+  and can not be smaller.
 
 ecn_ce_counters\[kPacketNumberSpace]:
 : The highest value reported for the ECN-CE counter in the packet number space
