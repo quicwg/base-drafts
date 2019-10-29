@@ -4422,9 +4422,10 @@ The following transport parameters are defined:
 original_connection_id (0x0000):
 
 : The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by a server.  A
-  server MUST include the original_connection_id transport parameter if it sent
-  a Retry packet.
+  sent by the client.  This transport parameter is only sent by a server.  This
+  is the same value sent in the "Original Destination Connection ID" field of a
+  Retry packet (see {{packet-retry}}).  A server MUST include the
+  original_connection_id transport parameter if it sent a Retry packet.
 
 idle_timeout (0x0001):
 
@@ -4587,9 +4588,10 @@ initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
 immediately after opening.  If the transport parameter is absent, streams of
 that type start with a flow control limit of 0.
 
-A client MUST NOT include an original connection ID, a stateless reset token, or
-a preferred address.  A server MUST treat receipt of any of these transport
-parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
+A client MUST NOT include server-only transport parameters
+(original_connection_id, stateless_reset_token, or preferred_address).  A server
+MUST treat receipt of any of these transport parameters as a connection error of
+type TRANSPORT_PARAMETER_ERROR.
 
 
 # Frame Types and Formats {#frame-formats}
