@@ -2344,27 +2344,22 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled, a connection is silently closed and the state is
-discarded when it remains idle for longer than both the advertised
+If the idle timeout is enabled by either peer, a connection is silently closed
+and the state is discarded when it remains idle for longer than the max
 idle timeout (see {{transport-parameter-definitions}}) and three times the
 current Probe Timeout (PTO).
 
-Each endpoint advertises its own idle timeout to its peer.  An endpoint
-restarts any timer it maintains when a packet from its peer is received and
-processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ack-eliciting packet; see
-{{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been sent
-since last receiving a packet.  Restarting when sending packets ensures that
-connections do not prematurely time out when initiating new activity.
+Each endpoint advertises a different max idle timeout, but the effective value
+is determined by taking the minimum of the two advertised values. By announcing
+a max idle timeout, endpoints commit to initiating an immediate close
+({{immediate-close}}) if it abandons a connection prior to the effective value.
 
-Each endpoint can advertise a different idle timeout value. An idle timeout
-indicates the connection will be abandoned when the timer ends or soon
-afterwards.  If a peer advertises a smaller idle timeout value than the
-local endpoint, the local endpoint MAY choose to idle timeout after the
-shorter period advertised by the peer.  By announcing an idle timeout,
-an endpoint commits to initiating an immediate close ({{immediate-close}})
-if it abandons a connection prior to both its peers and its own idle timeout
-expiring.
+An endpoint restarts any timer it maintains when a packet from its peer is
+received and processed successfully.  The timer is also restarted when sending
+a packet containing frames other than ACK or PADDING (an ack-eliciting packet;
+see {{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been
+sent since last receiving a packet.  Restarting when sending packets ensures that
+connections do not prematurely time out when initiating new activity.
 
 An endpoint that sends packets near the end of its peer's idle timeout period
 risks having those packets discarded if its peer enters the draining state
@@ -4361,7 +4356,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
 ~~~
    enum {
       original_connection_id(0),
-      idle_timeout(1),
+      max_idle_timeout(1),
       stateless_reset_token(2),
       max_packet_size(3),
       initial_max_data(4),
@@ -4421,11 +4416,11 @@ original_connection_id (0x0000):
   server MUST include the original_connection_id transport parameter if it sent
   a Retry packet.
 
-idle_timeout (0x0001):
+max_idle_timeout (0x0001):
 
-: The idle timeout is a value in milliseconds that is encoded as an integer; see
-  ({{idle-timeout}}).  If this parameter is absent or zero then the idle
-  timeout is disabled.
+: The max idle timeout is a value in milliseconds that is encoded as an integer;
+  see ({{idle-timeout}}).  If this parameter is absent or zero then the idle
+  timeout is disabled unless the peer specifies a max idle timeout.
 
 stateless_reset_token (0x0002):
 
@@ -4600,11 +4595,12 @@ endpoints send PING frames without coordination can produce an excessive number
 of packets and poor performance.
 
 A connection will time out if no packets are sent or received for a period
-longer than the time specified in the idle_timeout transport parameter (see
-{{termination}}).  However, state in middleboxes might time out earlier than
-that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
-experience shows that sending packets every 15 to 30 seconds is necessary to
-prevent the majority of middleboxes from losing state for UDP flows.
+longer than the time specified in the max)idle_timeout transport parameter
+(see {{termination}}).  However, state in middleboxes might time out earlier
+than that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout
+interval, experience shows that sending packets every 15 to 30 seconds is
+necessary to prevent the majority of middleboxes from losing state for UDP
+flows.
 
 
 ## ACK Frames {#frame-ack}
@@ -5867,7 +5863,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | Value  | Parameter Name              | Specification                       |
 |:-------|:----------------------------|:------------------------------------|
 | 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
-| 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
+| 0x0001 | max_idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
 | 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
 | 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
