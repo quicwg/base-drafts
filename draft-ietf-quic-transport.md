@@ -4419,8 +4419,8 @@ original_connection_id (0x0000):
 max_idle_timeout (0x0001):
 
 : The max idle timeout is a value in milliseconds that is encoded as an integer;
-  see ({{idle-timeout}}).  If this parameter is absent or zero then the idle
-  timeout is disabled unless the peer specifies a max idle timeout.
+  see ({{idle-timeout}}).  Idle timeout is disabled when this parameter is
+  absent or zero on both sides.
 
 stateless_reset_token (0x0002):
 
@@ -4595,7 +4595,7 @@ endpoints send PING frames without coordination can produce an excessive number
 of packets and poor performance.
 
 A connection will time out if no packets are sent or received for a period
-longer than the time specified in the max_idle_timeout transport parameter
+longer than the time negotiated using the max_idle_timeout transport parameter
 (see {{termination}}).  However, state in middleboxes might time out earlier
 than that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout
 interval, experience shows that sending packets every 15 to 30 seconds is
