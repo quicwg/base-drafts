@@ -2768,8 +2768,8 @@ specified in this document as its alternative initial set.
 
 When the server receives an Initial packet containing a valid NEW_TOKEN token,
 and the value of the version number field of that Initial packet does not match
-the version number expected for that token, the server MUST close the connection
-with an VERSION_NEGOTIATION_ERROR.
+the alternative version number embedded to or associated with that token, the
+server MUST close the connection with an VERSION_NEGOTIATION_ERROR.
 
 When a client uses a token supplied by a NEW_TOKEN frame, it MUST use the
 provided alternative initial set instead of using the default values defined in
