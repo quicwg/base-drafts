@@ -463,7 +463,8 @@ The PTO period is the amount of time that a sender ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
 network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
-delay sending an acknowledgement.
+delay sending an acknowledgement.  When the PTO is armed for Initial or
+Handshake packet number spaces, the max_ack_delay is 0.
 
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
