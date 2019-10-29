@@ -2358,8 +2358,8 @@ An endpoint restarts any timer it maintains when a packet from its peer is
 received and processed successfully.  The timer is also restarted when sending
 a packet containing frames other than ACK or PADDING (an ack-eliciting packet;
 see {{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been
-sent since last receiving a packet.  Restarting when sending packets ensures that
-connections do not prematurely time out when initiating new activity.
+sent since last receiving a packet.  Restarting when sending packets ensures
+that connections do not prematurely time out when initiating new activity.
 
 An endpoint that sends packets near the end of its peer's idle timeout period
 risks having those packets discarded if its peer enters the draining state
