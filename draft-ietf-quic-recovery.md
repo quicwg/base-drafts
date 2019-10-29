@@ -745,7 +745,7 @@ their delivery to the peer.
 Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
 Implementations MUST either use pacing or limit such bursts to the initial
-congestion window, which is recommended to be the min of
+congestion window, which is recommended to be the minimum of
 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)).
 
 As an example of a well-known and publicly available implementation of a flow
