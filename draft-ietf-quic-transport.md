@@ -2389,10 +2389,11 @@ of packets it generates containing a CONNECTION_CLOSE frame.  For instance, an
 endpoint could progressively increase the number of packets that it receives
 before sending additional packets or increase the time between packets.
 
-An endpoint that drops the packet protection keys when entering the closing
-period and therefore being unable to decrypt the incoming packets MUST
-exponentially back off the frequency in which it sends packets containing
-CONNECTION_CLOSE frames.
+An endpoint is allowed to drop the packet protection keys when entering the
+closing period ({{draining}}).  However, an endpoint without the packet
+protection keys cannot identify and discard invalid packets.  To avoid creating
+an unwitting amplification attack, such endpoints MUST reduce the frequency with
+which it sends packets containing a CONNECTION_CLOSE frame.
 
 To minimize the state that an endpoint maintains for a closing connection,
 endpoints MAY send the exact same packet.
