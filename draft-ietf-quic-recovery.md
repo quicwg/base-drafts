@@ -468,18 +468,22 @@ delay sending an acknowledgement.
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
+A sender computes its PTO timer every time an ack-eliciting packet is sent.
+When ack-eliciting packets are in-flight in multiple packet number spaces,
+the timer MUST be set for the packet number space with the earliest timeout,
+except for ApplicationData, which MUST be ignored until the handshake
+completes(See Section 4.1.1 of {{QUIC-TLS}}).  Not arming the PTO for
+ApplicationData prioritizes completing the handshake and prevents the server
+from sending a 1-RTT PTO packet before it has the keys to process a 1-RTT
+packet.
+
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. This exponential reduction in the sender's rate is important because
 the PTOs might be caused by loss of packets or acknowledgements due to severe
-congestion.  The life of a connection that is experiencing consecutive PTOs is
-limited by the endpoint's idle timeout.
-
-A sender computes its PTO timer every time an ack-eliciting packet is sent.
-When ack-eliciting packets are in-flight in multiple packet number spaces,
-the timer MUST be set for the packet number space with the earliest timeout.
-Even when there are ack-eliciting packets in-flight in multiple packet number
-spaces, the exponential increase in probe timeout occurs across all spaces to
-prevent causing excess load on the network.
+congestion.  Even when there are ack-eliciting packets in-flight in multiple
+packet number spaces, the exponential increase in probe timeout occurs across
+all spaces to prevent excess load on the network. The life of a connection that
+is experiencing consecutive PTOs is limited by the endpoint's idle timeout.
 
 The probe timer is not set if the time threshold {{time-threshold}} loss
 detection timer is set.  The time threshold loss detection timer is expected
@@ -1110,7 +1114,10 @@ GetEarliestTimeAndSpace(times):
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
     if (times[pn_space] != 0 &&
-        (time == 0 || times[pn_space] < time)):
+        (time == 0 || times[pn_space] < time) &&
+        # Skip ApplicationData until handshake completion.
+        (pn_space != ApplicationData ||
+          IsHandshakeComplete()):
       time = times[pn_space];
       space = pn_space
   return time, space
