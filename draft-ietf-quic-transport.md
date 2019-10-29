@@ -2740,6 +2740,8 @@ which is comprised of:
   the initial salt defined in section 5.2 of {{QUIC-TLS}}.
 
 A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
+The token MUST include or associated with the alternative version number with
+which it can be used.
 
 Typically, a server would pre-allocate a set of unused version numbers as the
 alternative version numbers, associating each of those version numbers with a
