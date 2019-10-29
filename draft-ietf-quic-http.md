@@ -1774,11 +1774,10 @@ In contrast to HTTP/2, stream concurrency in HTTP/3 is managed by QUIC.  QUIC
 considers a stream closed when all data has been received and sent data has been
 acknowledged by the peer.  HTTP/2 considers a stream closed when the frame
 containing the END_STREAM bit has been committed to the transport. As a result,
-the stream for an equivalent exchange will typically remain "active" for one
-additional round trip.  HTTP/3 servers might choose to permit a larger number of
-concurrent client-initiated bidirectional streams to achieve equivalent
-concurrency than were permitted in HTTP/2, depending on the expected usage
-patterns.
+the stream for an equivalent exchange could remain "active" for a longer period
+of time.  HTTP/3 servers might choose to permit a larger number of concurrent
+client-initiated bidirectional streams to achieve equivalent concurrency to
+HTTP/2, depending on the expected usage patterns.
 
 Due to the presence of other unidirectional stream types, HTTP/3 does not rely
 exclusively on the number of concurrent unidirectional streams to control the
