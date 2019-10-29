@@ -2751,12 +2751,12 @@ the alternative initial set.
 
 When the client reconnects to the server by using the provided token and the
 alternative initial set, the server first checks if the version number field of
-the incoming packet is within the set of the alternative version numbers it
-advertises, then if that is the case, applies the packet type modifier to
-recover the correct packet type.  If the recovered packet type is an Initial
-packet and it contains a NEW_TOKEN token, the server decrypts that token and
-recovers the alternative initial salt, uses that to decrypt the payload of the
-Initial packet.
+the incoming packet contains one of the alternative version numbers it
+advertises, then if that is the case, applies the corresponding packet type
+modifier to recover the correct packet type.  If the recovered packet type is an
+Initial packet and that packet contains a NEW_TOKEN token, the server decrypts
+the embedded token and recovers the alternative initial salt, uses that to
+decrypt the payload of the Initial packet.
 
 When the server is incapable of determining the alternative initial salt, it can
 send a Version Negotiation packet that instructs the client to use the default
