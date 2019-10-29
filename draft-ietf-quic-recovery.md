@@ -571,18 +571,22 @@ prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
-## Retry and Version Negotiation
+## Handling Retry Packets
 
-A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process and resetting congestion
-control and loss recovery state, including resetting any pending timers.  Either
-packet indicates that the Initial was received but not processed.  Neither
-packet can be treated as an acknowledgment for the Initial.
+A Retry packet causes a client to send another Initial packet, effectively
+restarting the connection process.  A Retry packet indicates that the Initial
+was received, but not processed.  A Retry packet MUST NOT be treated as an
+acknowledgment.
 
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
+Clients that receive a Retry packet reset congestion control and loss recovery
+state, including resetting any pending timers.  Other connection state, in
+particular cryptographic handshake messages, is retained; see Section 17.2.5 of
+{{QUIC-TRANSPORT}}.
+
+The client MAY compute an RTT estimate to the server as the time period from
+when the first Initial was sent to when a Retry or a Version Negotiation packet
+is received.  The client MAY use this value in place of its default for the
+initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
