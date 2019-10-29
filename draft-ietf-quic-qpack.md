@@ -190,10 +190,10 @@ while the decoder is relatively simple.
 
 ### Blocked Dynamic Table Insertions {#blocked-insertion}
 
-A dynamic table entry is blocking if its insertion has not been acknowledged by
-the decoder, or if it is referenced by an unacknowledged header block.  In
-particular, a dynamic table entry that has never been referenced can still be
-blocking.
+A dynamic table entry is considered blocking and cannot be evicted until its
+insertion has been acknowledged and there are no outstanding unacknowledged
+references to the entry.  In particular, a dynamic table entry that has never
+been referenced can still be blocking.
 
 Note that references on the encoder stream do not make an entry blocking,
 because those are guaranteed to be processed before the instruction that evicts
