@@ -2721,6 +2721,57 @@ between endpoints.  Application protocols SHOULD define rules for handling
 streams that are prematurely cancelled by either endpoint.
 
 
+# Alternative Initial Set {#alternative-initial}
+
+In order to avoid ossification of the cleartext and obfuscated fields of QUIC
+packets, a server can announce an alternative set of initial values to be used,
+which is comprised of:
+
+* Alternative version number; a 32-bit unsigned number that is to be presented
+  on wire in place of the version number specified in this document.  This value
+  MUST NOT be a reserved version ({{versions}}).
+
+* Packet type modifier; a two-bit value that is to be applied as a bit-wise
+  exclusive or (XOR) to the most significant bits of the Initial, Handshake,
+  0-RTT, and Retry packets. This XOR is applied after the packets are encrypted
+  and before they are decrypted.
+
+* Alternative initial salt; a 16-byte binary blob that is to be used in place of
+  the initial salt defined in section 5.2 of {{QUIC-TLS}}.
+
+A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
+
+Typically, a server would pre-allocate a set of unused version numbers as the
+alternative version numbers, associating each of those version numbers with a
+packet type modifier chosen at random.  Then, when issuing a token using a
+NEW_TOKEN frame, the server generates the alternative initial salt by calling a
+pseudo-random function, embeds that initial salt into the token which is then
+encrypted, and sends a NEW_TOKEN frame that comprises of the generated token and
+the alternative initial set.
+
+When the client reconnects to the server by using the provided token and the
+alternative initial set, the server first checks if the version number field of
+the incoming packet is within the set of the alternative version numbers it
+advertises, then if that is the case, applies the packet type modifier to
+recover the correct packet type.  If the recovered packet type is an Initial
+packet and it contains a NEW_TOKEN token, the server decrypts that token and
+recovers the alternative initial salt, uses that to decrypt the payload of the
+Initial packet.
+
+When the server is incapable of determining the alternative initial salt, it can
+send a Version Negotiation packet that instructs the client to use the default
+version.  A server that is incapable of issuing a different version number,
+packet type modifier, or initial salt MAY advertise the original values
+specified in this document as its alternative initial set.
+
+When a client uses a token supplied by a NEW_TOKEN frame, it MUST use the
+provided alternative initial set instead of using the default values defined in
+this document.
+
+Other specifications MAY define other methods for distributing or deducing the
+alternative initial set.
+
+
 # Packets and Frames {#packets-frames}
 
 QUIC endpoints communicate by exchanging packets. Packets have confidentiality
@@ -4962,6 +5013,18 @@ The NEW_TOKEN frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Alternative Version Number (32)                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|PTM|R R R R R R|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                 Alternative Initial Salt (128)                +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Token Length (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Token (*)                        ...
@@ -4969,6 +5032,24 @@ The NEW_TOKEN frame is as follows:
 ~~~
 
 NEW_TOKEN frames contain the following fields:
+
+Alternative Version Number:
+
+: The alternative version number to be used (see {{alternative-initial}}).
+
+Packet Type Modifier (PTM):
+
+: The packet type modifier to be used.
+
+Reserved (R):
+
+: Reserved bits.  These bits MUST be set to zero.  An endpoint MUST treat
+  the receipt of a NEW_TOKEN frame carrying a non-zero reserved bit as a
+  connection error of type FRAME_ENCODING_ERROR.
+
+Alternative Initial Salt:
+
+: The alternative initial salt to be used.
 
 Token Length:
 
