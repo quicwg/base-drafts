@@ -577,7 +577,7 @@ A Retry packet causes a client to send another Initial packet, effectively
 restarting the connection process.  A Retry packet indicates that the Initial
 was received, but not processed.  A Retry packet cannot be treated as an
 acknowledgment, because it does not indicate a packet was processed or
-specify the packet number of the packet.
+specify the packet number.
 
 Clients that receive a Retry packet reset congestion control and loss recovery
 state, including resetting any pending timers.  Other connection state, in
