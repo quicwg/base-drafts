@@ -5058,6 +5058,8 @@ The NEW_TOKEN frame is as follows:
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Lifetime (i)                       ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Alternative Version Number (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |R R R R R R|PTM|
@@ -5077,6 +5079,12 @@ The NEW_TOKEN frame is as follows:
 ~~~
 
 NEW_TOKEN frames contain the following fields:
+
+Lifetime:
+
+: Indicates the lifetime of the values contained in this frame in milliseconds.
+  An endpoint MUST NOT use the values provided by this frame, once the time that
+  has elapsed since receipt becomes greater than the value of this field.
 
 Alternative Version Number:
 
