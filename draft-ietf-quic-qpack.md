@@ -198,15 +198,20 @@ acknowledged by the decoder (see {{header-acknowledgement}}).
 
 ### Limits on Dynamic Table Insertions {#blocked-insertion}
 
+Inserting entries into the dynamic table might not be possible if the table
+contains entries which cannot be evicted.
+
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
 acknowledged and there are no outstanding unacknowledged references to the
 entry, the entry becomes evictable.
 
-An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) unless all entries that would be evicted are evictable.  In
-order to avoid this, an encoder that uses the dynamic table has to keep track of
-whether each entry is currently evictable or not.
+If the dynamic table does not contain enough room for a new entry without
+evicting other entries, and the entries which would be evicted are not
+evictable, the encoder MUST NOT insert that entry into the dynamic table
+(including duplicates of existing entries). In order to avoid this, an encoder
+that uses the dynamic table has to keep track of whether each entry is currently
+evictable or not.
 
 #### Avoiding Prohibited Insertions
 
