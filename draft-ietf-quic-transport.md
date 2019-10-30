@@ -2745,7 +2745,25 @@ number being associated to the token.  This property can be achieved for example
 by embedding the alternative version number in the encrypted token.  Other
 elements of the alternative initial set MAY also be associated with the token.
 
-Typically, a server would act in the following steps:
+For the alternative initial set to work, all the servers within the scope of a
+NEW_TOKEN token are required to have a shared knowledge of the alternative
+initial sets being issued and / or how that can be recovered from the tokens.
+Certain server deployments might have difficulty in meeting such a requirement.
+
+A server (or a set of servers) that cannot satisfy this requirement can
+effectively opt-out from using alternative initial sets by fixing the
+alternative version number and the alternative initial salt to the defaults of
+QUIC for any NEW_TOKEN tokens it issues, and by setting the packet type modifier
+to zero.
+
+The rest of this section applies to the servers that advertise non-default
+values as their alternative initial sets.
+
+
+## Server Behavior
+
+A server that advertises alternative initial sets would typcially act in the
+following steps:
 
 * The server pre-allocates a set of unused version numbers as the alternative
   version numbers, associating each of those version numbers with a packet type
@@ -2771,9 +2789,7 @@ Typically, a server would act in the following steps:
 When the server receives an Initial packet using an alernative version number
 but is incapable of determining the alternative initial salt from the token
 being associated, it MAY send a Version Negotiation packet that instructs the
-client to use the default version.  A server that is incapable of issuing a
-different version number, packet type modifier, or initial salt MAY advertise
-the original values specified in this document as its alternative initial set.
+client to use the default version.
 
 When the server receives an Initial packet containing a valid NEW_TOKEN token,
 and the value of the version number field of that Initial packet does not match
@@ -2786,8 +2802,12 @@ this document.  When the client downgrades to the original version defined in
 this document due to receipt of a Version Negotiation packet, it MUST continue
 sending the same token.
 
-Other specifications MAY define other methods for distributing or deducing the
-alternative initial set.
+
+## Distributing the Alternative Initial Set
+
+This specification defines how the alternative initial set is used as well as
+how it is advertised using a NEW_TOKEN frame.  Other specifications MAY define
+other methods for distributing or deducing the alternative initial set.
 
 
 # Packets and Frames {#packets-frames}
