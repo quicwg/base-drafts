@@ -967,7 +967,8 @@ entry.
 ### Indexed Header Field
 
 An indexed header field representation identifies an entry in the static table,
-or an entry in the dynamic table with an absolute index less than the Base.
+or an entry in the dynamic table with an absolute index less than the value of
+the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -988,7 +989,8 @@ dynamic table.
 ### Indexed Header Field With Post-Base Index
 
 An indexed header field with post-base index representation identifies an entry
-in the dynamic table with an absolute index greater than or equal to the Base.
+in the dynamic table with an absolute index greater than or equal to the value
+of the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1008,7 +1010,7 @@ represented as an integer with a 4-bit prefix (see {{prefixed-integers}}).
 A literal header field with name reference representation encodes a header field
 where the header field name matches the header field name of an entry in the
 static table, or the header field name of an entry in the dynamic table with an
-absolute index less than the Base.
+absolute index less than the value of the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1047,7 +1049,8 @@ field value is encoded as an 8-bit prefix string literal (see
 
 A literal header field with post-base name reference representation encodes a
 header field where the header field name matches the header field name of a
-dynamic table entry with an absolute index greater than or equal to the Base.
+dynamic table entry with an absolute index greater than or equal to the value of
+the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
