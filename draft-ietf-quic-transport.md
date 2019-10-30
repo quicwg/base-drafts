@@ -5691,12 +5691,6 @@ TRANSPORT_PARAMETER_ERROR (0x8):
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
-VERSION_NEGOTIATION_ERROR (0x9):
-
-: An endpoint received a packet with an unexpected version.  This error code
-  indicates a potential version downgrade attack.
-
-
 PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
