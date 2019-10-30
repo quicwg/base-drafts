@@ -495,11 +495,9 @@ a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
 be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-Data at Initial encryption MUST be retransmitted before Handshake data and
-data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
-data has been received from the client.
+data it can send is limited to three times the amount of data received,
+as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
+then the PTO alarm MUST NOT be armed.
 
 Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
@@ -526,15 +524,17 @@ as a probe, unless there is no data available to send.  An endpoint MAY send up
 to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
-It is possible that the sender has no new or previously-sent data to send.  As
-an example, consider the following sequence of events: new application data is
-sent in a STREAM frame, deemed lost, then retransmitted in a new packet, and
-then the original transmission is acknowledged.  In the absence of any new
-application data, a PTO timer expiration now would find the sender with no new
-or previously-sent data to send.
+When the PTO timer expires, and there is new or previously sent unacknowledged
+data, it MUST be sent.  Data that was previously sent with Initial encryption
+MUST be sent before Handshake data and data previously sent at Handshake
+encryption MUST be sent before any ApplicationData data.
 
-When there is no data to send, the sender SHOULD send a PING or other
-ack-eliciting frame in a single packet, re-arming the PTO timer.
+It is possible the sender has no new or previously-sent data to send.
+As an example, consider the following sequence of events: new application data
+is sent in a STREAM frame, deemed lost, then retransmitted in a new packet,
+and then the original transmission is acknowledged.  When there is no data to
+send, the sender SHOULD send a PING or other ack-eliciting frame in a single
+packet, re-arming the PTO timer.
 
 Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
