@@ -1701,7 +1701,10 @@ connections; validating the port is therefore unlikely to be successful.
 If the client has a token received in a NEW_TOKEN frame on a previous connection
 to what it believes to be the same server, it SHOULD include that value in the
 Token field of its Initial packet.  Including a token might allow the server to
-validate the client address without an additional round trip.
+validate the client address without an additional round trip.  When using a
+NEW_TOKEN token for establishing a new connection, the client MUST construct its
+long header packets by using the values of the alternative initial set that it
+received alongside that token ({{alternative-initial}}).
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -2786,21 +2789,8 @@ following steps:
   decrypts the embedded token and recovers the alternative initial salt, uses
   that to decrypt the payload of the Initial packet.
 
-When the server receives an Initial packet using an alernative version number
-but is incapable of determining the alternative initial salt from the token
-being associated, it MAY send a Version Negotiation packet that instructs the
-client to use the default version.
-
-When the server receives an Initial packet containing a valid NEW_TOKEN token,
-and the value of the version number field of that Initial packet does not match
-the alternative version number embedded to or associated with that token, the
-server MUST close the connection with an VERSION_NEGOTIATION_ERROR.
-
-When a client uses a token supplied by a NEW_TOKEN frame, it MUST use the
-provided alternative initial set instead of using the default values defined in
-this document.  When the client downgrades to the original version defined in
-this document due to receipt of a Version Negotiation packet, it MUST continue
-sending the same token.
+A server MUST NOT send a Version Negotitation packet in response to a long
+header packet with an alternative version number it has advertised.
 
 
 ## Distributing the Alternative Initial Set
