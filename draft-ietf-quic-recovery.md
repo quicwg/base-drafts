@@ -1257,7 +1257,7 @@ are described in this section.
 max_datagram_size:
 : The sender's current maximum payload size. Does not include UDP or IP
   overhead.  The max datagram size is used for congestion window
-  congestion window. An endpoint sets the value of this variable based on its
+  computations. An endpoint sets the value of this variable based on its
   PMTU, with a minimum value of 1200 bytes
   (see Section 14.1 of {{QUIC-TRANSPORT}}).
 
