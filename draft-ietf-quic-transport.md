@@ -1030,7 +1030,7 @@ packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
-An endpoint can request that its peer retire connection IDs by sending a
+An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
 the peer MUST retire the corresponding connection IDs and send corresponding
 RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within
