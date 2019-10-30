@@ -196,22 +196,19 @@ evicted.  Hence the encoder needs to retain information about each compressed
 header block that references the dynamic table until that header block is
 acknowledged by the decoder (see {{header-acknowledgement}}).
 
-### Blocked Dynamic Table Insertions {#blocked-insertion}
+### Limits on Dynamic Table Insertions {#blocked-insertion}
 
-A dynamic table entry is considered blocking and cannot be evicted until its
-insertion has been acknowledged and there are no outstanding unacknowledged
-references to the entry.  In particular, a dynamic table entry that has never
-been referenced can still be blocking.
+A dynamic table entry cannot be evicted immediately after insertion, even if it
+has never been referenced. Once the insertion of a dynamic table entry has been
+acknowledged and there are no outstanding unacknowledged references to the
+entry, the entry becomes evictable.
 
 An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict a blocking entry.  In order to avoid
-this, an encoder that uses the dynamic table has to keep track of blocking
-entries.
+existing entry) unless all entries that would be evicted are evictable.  In
+order to avoid this, an encoder that uses the dynamic table has to keep track of
+whether each entry is currently evictable or not.
 
-Note:
-: A blocking entry is unrelated to a blocked stream, see {{blocked-streams}}.
-
-#### Avoiding Blocked Insertions
+#### Avoiding Prohibited Insertions
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -363,7 +360,7 @@ received.
 The Header Acknowledgement and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
 with absolute index lower than the Known Received Count has zero references,
-then it is no longer considered blocking (see {{blocked-insertion}}).
+then it is considered evictable (see {{blocked-insertion}}).
 
 #### New Table Entries
 
@@ -447,10 +444,11 @@ table.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (table capacity - size of new entry). The encoder MUST NOT cause a
-blocking dynamic table entry to be evicted (see {{blocked-insertion}}).  The new
-entry is then added to the table.  It is an error if the encoder attempts to add
-an entry that is larger than the dynamic table capacity; the decoder MUST treat
-this as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+dynamic table entry to be evicted unless that entry is evictable (see
+{{blocked-insertion}}).  The new entry is then added to the table.  It is an
+error if the encoder attempts to add an entry that is larger than the dynamic
+table capacity; the decoder MUST treat this as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -675,9 +673,9 @@ that exceeds this limit as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
-{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
-acknowledged as this instruction does not insert an entry.
+{{eviction}}).  This MUST NOT cause the eviction of entries which are not
+evictable (see {{blocked-insertion}}).  Changing the capacity of the dynamic
+table is not acknowledged as this instruction does not insert an entry.
 
 ### Insert With Name Reference
 
