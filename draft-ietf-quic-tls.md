@@ -332,7 +332,7 @@ encryption levels:
   0x1c) MAY appear in packets of any encryption level except 0-RTT.
 
 - CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
-  sent in 1-RTT level.
+  sent in packets at the 1-RTT encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
