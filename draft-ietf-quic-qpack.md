@@ -279,7 +279,6 @@ table entries which have been acknowledged, but this could mean using
 literals. Since literals make the header block larger, this can result in the
 encoder becoming blocked on congestion or flow control limits.
 
-
 ### Known Received Count
 
 The Known Received Count is the total number of dynamic table insertions and
