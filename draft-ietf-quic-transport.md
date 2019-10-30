@@ -5858,38 +5858,152 @@ decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
 
 
-# IANA Considerations
+# IANA Considerations {#iana}
 
-## QUIC Transport Parameter Registry {#iana-transport-parameters}
+This document establishes several registries for the management of codepoints in
+QUIC.  These registries operate on a common set of policies as defined in
+{{iana-policy}}.
 
-IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
-"QUIC Protocol" heading.
 
-The "QUIC Transport Parameters" registry governs a 16-bit space.  This space is
-split into two spaces that are governed by different policies.  Values with the
-first byte in the range 0x00 to 0xfe (in hexadecimal) are assigned via the
-Specification Required policy {{!RFC8126}}.  Values with the first byte 0xff are
-reserved for Private Use {{!RFC8126}}.
+## Registration Policies for QUIC Registries {#iana-policy}
 
-Registrations MUST include the following fields:
+All QUIC registries allow for both provisional and permanent registration of
+codepoints.  This section documents policies that are common to these
+registries.
+
+
+### Provisional Registrations {#iana-provisional}
+
+Provisional registration of codepoints are intended to allow for private use and
+experimentation with extensions to QUIC.  Provisional registrations only require
+the inclusion of the codepoint value and contact information.  However,
+provisional registrations could be reclaimed and reassigned for another purpose.
+
+Provisional registrations require Expert Review, as defined in Section 4.5 of
+{{!RFC8126}}.  Designated expert(s) are advised that only registrations for an
+excessive proportion of remaining codepoint space or the very first unassigned
+value (see {{iana-random}}) can be rejected.
+
+Provisional registrations will include a date field that indicates when the
+registration was last updated.  A request to update the date on any provisional
+registration can be made without review from the designated expert(s).
+
+All QUIC registries include the following fields to support provisional
+registration:
 
 Value:
+: The assigned codepoint.
 
-: The numeric value of the assignment (registrations will be between 0x0000 and
-  0xfeff).
-
-Parameter Name:
-
-: A short mnemonic for the parameter.
+Status:
+: "Permanent" or "Provisional".
 
 Specification:
 
 : A reference to a publicly available specification for the value.
 
-The nominated expert(s) verify that a specification exists and is readily
-accessible.  Expert(s) are encouraged to be biased towards approving
-registrations unless they are abusive, frivolous, or actively harmful (not
-merely aesthetically displeasing, or architecturally dubious).
+Date:
+: The date of last update to the registration.
+
+Contact:
+: Contact details for the registrant.
+
+Notes:
+: Supplementary notes about the registration.
+
+Provisional registrations MAY omit the Specification and Notes fields, plus any
+additional fields that might be required for a permanent registration.  The Date
+field is not required as part of requesting a registration as it is set to the
+date the registration is created or updated.
+
+
+### Selecting Codepoints {#iana-random}
+
+New uses of codepoints from QUIC registries SHOULD use a randomly selected
+codepoint that excludes both existing allocations and the first unallocated
+codepoint in the selected space.  This minimizes the risk that differing
+semantics are attributed to the same codepoint by different implementations.
+Use of the first codepoint in a range is intended for use by specifications that
+are developed through the standards process {{?STD=RFC2026}} and its allocation
+MUST be negotiated with IANA before use.
+
+For codepoints that are encoded in variable-length integers
+({{integer-encoding}}), such as frame types, codepoints that encode to four or
+eight bytes (that is, values 2^14 and above) SHOULD be used unless the usage is
+especially sensitive to having a longer encoding.
+
+Applications to register codepoints in QUIC registries MAY include a codepoint
+as part of the registration.  IANA MUST allocate the selected codepoint unless
+that codepoint is already assigned or the codepoints is the first unallocated
+codepoint in the registry.
+
+
+### Reclaiming Provisional Codepoints
+
+A request might be made to remove an unused provisional registration from the
+registry to reclaim space in a registry, or portion of the registry (such as the
+64-16383 range for codepoints that use variable-length encodings).  This SHOULD
+be done only for the codepoints with the earliest recorded date and entries that
+have been updated less than a year prior SHOULD NOT be reclaimed.
+
+A request to remove a codepoint MUST be reviewed by the designated expert(s).
+The expert(s) MUST attempt to determine whether the codepoint is still in use.
+Experts are advised to contact the listed contacts for the registration, plus as
+wide a set of protocol implementers as possible in order to determine whether
+any use of the codepoint is known.  The expert(s) are advised to allow at least
+four weeks for this search.
+
+If any use of the codepoints is identified by this search or a request to update
+the registration is made, the codepoint MUST NOT be reclaimed.  Instead, the
+date on the registration is updated.  A note might be added for the registration
+recording relevant information that was learned.
+
+If no use of the codepoint was identified and no request was made to update the
+registration, the codepoint MAY be removed from the registry.
+
+This process also applies to requests to change a provisional registration into
+a permanent registration, except that the goal is not to determine whether there
+is no use of the codepoint, but to determine that the registration is an
+accurate representation of any deployed usage.
+
+
+### Permanent Registrations {#iana-permanent}
+
+Permanent registrations in QUIC registries require Specification Required policy
+{{!RFC8126}}, unless otherwise specified.  The designated expert(s) verify that
+a specification exists and is readily accessible.  Expert(s) are encouraged to
+be biased towards approving registrations unless they are abusive, frivolous, or
+actively harmful (not merely aesthetically displeasing, or architecturally
+dubious).  The creation of a registry MAY specify additional constraints on
+permanent registrations.
+
+The creation of a registries MAY identify a range of codepoints where
+registrations are governed by a different registration policy.  For instance,
+the registries for 62-bit codepoints in this document have stricted policies for
+codepoints in the range from 0 to 63.
+
+Any stricter requirements for permanent registrations do not prevent provisional
+registrations for affected codepoints.  For instance, a provisional registration
+for a frame type {{iana-frames}} of 61 could be requested.
+
+All registrations made by Standards Track publications MUST be permanent.
+
+
+## QUIC Transport Parameter Registry {#iana-transport-parameters}
+
+IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
+"QUIC" heading.
+
+The "QUIC Transport Parameters" registry governs a 16-bit space.  This registry
+follows the registration policy from {{iana-policy}}.  Permanent registrations
+in this registry are assigned using the Specification Required policy
+{{!RFC8126}}.
+
+In addition to the fields in {{iana-provisional}}, permanent registrations in
+this registry MUST include the following fields:
+
+Parameter Name:
+
+: A short mnemonic for the parameter.
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
@@ -5913,47 +6027,34 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
-(that is, `27`, `58`, `89`, ...) MUST NOT be assigned by IANA.
+(that is, `27`, `58`, `89`, ...) are reserved and MUST NOT be assigned by IANA.
 
 
 ## QUIC Frame Type Registry {#iana-frames}
 
 IANA \[SHALL add/has added] a registry for "QUIC Frame Types" under a
-"QUIC Protocol" heading.
+"QUIC" heading.
 
-The "QUIC Frame Types" registry governs a 62-bit space.  This space is split
-into three spaces that are governed by different policies.  Values between 0x00
-and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
-policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the Specification
-Required policy {{!RFC8126}}.  All other values are assigned to Private Use
-{{!RFC8126}}.
+The "QUIC Frame Types" registry governs a 62-bit space.  This registry follows
+the registration policy from {{iana-policy}}.  Permanent registrations in this
+registry are assigned using the Specification Required policy {{!RFC8126}},
+except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
+assigned using Standards Action or IESG Approval as defined in Section 4.9 and
+4.10 of {{!RFC8126}}.
 
-Registrations MUST include the following fields:
-
-Value:
-
-: The numeric value of the assignment (registrations will be between 0x00 and
-  0x3fff).  A range of values MAY be assigned.
+In addition to the fields in {{iana-provisional}}, permanent registrations in
+this registry MUST include the following fields:
 
 Frame Name:
 
 : A short mnemonic for the frame type.
 
-Specification:
-
-: A reference to a publicly available specification for the value.
-
-The nominated expert(s) verify that a specification exists and is readily
-accessible.  Specifications for new registrations need to describe the means by
-which an endpoint might determine that it can send the identified type of frame.
-An accompanying transport parameter registration (see
-{{iana-transport-parameters}}) is expected for most registrations.  The
-specification needs to describe the format and assigned semantics of any fields
-in the frame.
-
-Expert(s) are encouraged to be biased towards approving registrations unless
-they are abusive, frivolous, or actively harmful (not merely aesthetically
-displeasing, or architecturally dubious).
+In addition to the advice in {{iana-policy}}, specifications for new permanent
+registrations SHOULD describe the means by which an endpoint might determine
+that it can send the identified type of frame.  An accompanying transport
+parameter registration (see {{iana-transport-parameters}}) is expected for most
+registrations.  Specifications for permanent registrations also needs to
+describe the format and assigned semantics of any fields in the frame.
 
 The initial contents of this registry are tabulated in {{frame-types}}.
 
@@ -5961,21 +6062,17 @@ The initial contents of this registry are tabulated in {{frame-types}}.
 ## QUIC Transport Error Codes Registry {#iana-error-codes}
 
 IANA \[SHALL add/has added] a registry for "QUIC Transport Error Codes" under a
-"QUIC Protocol" heading.
+"QUIC" heading.
 
 The "QUIC Transport Error Codes" registry governs a 62-bit space.  This space is
-split into three spaces that are governed by different policies.  Values between
-0x00 and 0x3f (in hexadecimal) are assigned via the Standards Action or IESG
-Review policies {{!RFC8126}}.  Values from 0x40 to 0x3fff operate on the
-Specification Required policy {{!RFC8126}}.  All other values are assigned to
-Private Use {{!RFC8126}}.
+split into three spaces that are governed by different policies.  Permanent
+registrations in this registry are assigned using the Specification Required
+policy {{!RFC8126}}, except for values between 0x00 and 0x3f (in hexadecimal;
+inclusive), which are assigned using Standards Action or IESG Approval as
+defined in Section 4.9 and 4.10 of {{!RFC8126}}.
 
-Registrations MUST include the following fields:
-
-Value:
-
-: The numeric value of the assignment (registrations will be between 0x0000 and
-  0x3fff).
+In addition to the fields in {{iana-provisional}}, permanent registrations in
+this registry MUST include the following fields:
 
 Code:
 
@@ -5985,15 +6082,6 @@ Description:
 
 : A brief description of the error code semantics, which MAY be a summary if a
   specification reference is provided.
-
-Specification:
-
-: A reference to a publicly available specification for the value.
-
-The nominated expert(s) verify that a specification exists and is readily
-accessible.  Expert(s) are encouraged to be biased towards approving
-registrations unless they are abusive, frivolous, or actively harmful (not
-merely aesthetically displeasing, or architecturally dubious).
 
 The initial contents of this registry are shown in {{iana-error-table}}.
 
