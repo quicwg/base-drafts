@@ -5053,7 +5053,7 @@ The NEW_TOKEN frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Alternative Version Number (32)                |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|PTM|R R R R R R|
+|R R R R R R|PTM|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
@@ -5075,15 +5075,15 @@ Alternative Version Number:
 
 : The alternative version number to be used (see {{alternative-initial}}).
 
-Packet Type Modifier (PTM):
-
-: The packet type modifier to be used.
-
 Reserved (R):
 
 : Reserved bits.  These bits MUST be set to zero.  An endpoint MUST treat
   the receipt of a NEW_TOKEN frame carrying a non-zero reserved bit as a
   connection error of type FRAME_ENCODING_ERROR.
+
+Packet Type Modifier (PTM):
+
+: The packet type modifier to be used.
 
 Alternative Initial Salt:
 
