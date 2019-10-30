@@ -2727,7 +2727,7 @@ streams that are prematurely cancelled by either endpoint.
 # Alternative Initial Set {#alternative-initial}
 
 In order to avoid ossification of the cleartext and obfuscated fields of QUIC
-packets, a server can announce an alternative set of initial values to be used,
+packets, a server announces an alternative set of initial values to be used,
 which is comprised of:
 
 * Alternative version number; a 32-bit unsigned number that is to be presented
