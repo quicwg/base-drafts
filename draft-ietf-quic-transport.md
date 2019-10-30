@@ -2789,6 +2789,23 @@ following steps:
   decrypts the embedded token and recovers the alternative initial salt, uses
   that to decrypt the payload of the Initial packet.
 
+* When sending a Retry in response to an Initial packet carrying an alternative
+  version number, the server embeds the NEW_TOKEN token found in the Initial
+  packet within the retry token it issues.  Once the server receives a response
+  from the client carrying that retry token and the path is validated, it
+  decrypts the NEW_TOKEN token embedded in the retry token to recover the
+  alternative initial salt that is to be used for unprotecting the packet
+  payload.
+
+Instead of associating a new alternative initial salt to every NEW_TOKEN token,
+a server might map a fixed salt to each of the alternative version numbers it
+issues.  Such design is not recommended, as an active attacker might build a
+list of known alternative version numbers and their initial salts and use that
+list to decrypt the payload of Initial packets using those alternative version
+numbers.  But still, having a set of version numbers and initial salts used
+concurrently is considered better than just using the default values of QUIC in
+terms of preventing ossification.
+
 A server MUST NOT send a Version Negotitation packet in response to a long
 header packet with an alternative version number it has advertised.
 
