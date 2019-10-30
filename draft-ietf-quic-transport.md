@@ -2756,8 +2756,8 @@ Typically, a server would act in the following steps:
   embeds the alternative initial set including the alternative initial salt
   being generated.  The token will be encrypted using a key known only to the
   server, thereby conforming to the requirements in {{validate-future}}. After
-  that, the server sends a NEW_TOKEN frame that comprises of the generated token
-  and the alternative initial set that has been embedded to that token.
+  that, the server sends a NEW_TOKEN frame that contains the generated token and
+  the alternative initial set that has been embedded to that token.
 
 * When the client reconnects to the server by using the provided token and the
   alternative initial set, the server first checks if the version number field
