@@ -282,12 +282,11 @@ encoder becoming blocked on congestion or flow control limits.
 
 ### Known Received Count
 
-The Known Received Count is the total number of acknowledged dynamic table
-insertions and duplications.  It is updated using Header Acknowledgement
-and Insert Count Increment instructions.  The encoder keeps track of the Known
-Received Count in order to know which entries can be referenced without the risk
-of blocking.  The decoder keeps track of the Known Received Count in order to be
-able to send Insert Count Increment instructions.
+The Known Received Count is the total number of dynamic table insertions and
+duplications acknowledged by the decoder.  The encoder tracks the Known Received
+Count in order to identify which dynamic table entries can be referenced without
+potentially blocking a stream.  The decoder tracks the Known Received Count in
+order to be able to send Insert Count Increment instructions.
 
 A Header Acknowledgement instruction ({{header-acknowledgement}}) implies that
 the decoder has received all dynamic table state necessary to process
