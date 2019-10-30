@@ -361,17 +361,17 @@ On the sending part of a stream, application protocols need to be able to:
 
 - write data, understanding when stream flow control credit
   ({{data-flow-control}}) has successfully been reserved to send the written
-  data
+  data;
 - end the stream (clean termination), resulting in a STREAM frame
   ({{frame-stream}}) with the FIN bit set; and
 - reset the stream (abrupt termination), resulting in a RESET_STREAM frame
-  ({{frame-reset-stream}}), even if the stream was already ended.
+  ({{frame-reset-stream}}), if the stream was not already in a terminal state.
 
 On the receiving part of a stream, application protocols need to be able to:
 
-- read data
+- read data; and
 - abort reading of the stream and request closure, possibly resulting in a
-  STOP_SENDING frame ({{frame-stop-sending}})
+  STOP_SENDING frame ({{frame-stop-sending}}).
 
 Applications also need to be informed of state changes on streams, including
 when the peer has opened or reset a stream, when a peer aborts reading on a
@@ -1159,7 +1159,7 @@ the operations described in this section on a QUIC connection.
 When implementing the client role, applications need to be able to:
 
 - open a connection, which begins the exchange described in {{handshake}};
-- enable 0-RTT; and
+- enable 0-RTT when available; and
 - be informed when 0-RTT has been accepted or rejected by a server.
 
 When implementing the server role, applications need to be able to:
@@ -1605,11 +1605,11 @@ constrained by the amplification restriction.
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
 and the anti-amplification limit is reached. In order to avoid this causing a
-handshake deadlock, clients SHOULD send a packet upon a crypto retransmission
-timeout, as described in {{QUIC-RECOVERY}}. If the client has no data to
-retransmit and does not have Handshake keys, it SHOULD send an Initial packet in
-a UDP datagram of at least 1200 bytes.  If the client has Handshake keys, it
-SHOULD send a Handshake packet.
+handshake deadlock, clients SHOULD send a packet upon a probe timeout, as
+described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
+not have Handshake keys, it SHOULD send an Initial packet in a UDP datagram of
+at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
+Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -1636,10 +1636,14 @@ As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
 that token, it proves to the server that it received the token.
 
-A server can also use a Retry packet to defer the state and processing costs
-of connection establishment.  By giving the client a different connection ID to
-use, a server can cause the connection to be routed to a server instance with
-more resources available for new connections.
+A server can also use a Retry packet to defer the state and processing costs of
+connection establishment.  Requiring the server to provide a different
+connection ID, along with the original_connection_id transport parameter defined
+in {{transport-parameter-definitions}}, forces the server to demonstrate that
+it, or an entity it cooperates with, received the original Initial packet from
+the client.  Providing a different connection ID also grants a server some
+control over how subsequent packets are routed.  This can be used to direct
+connections to a different server instance.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
@@ -1818,7 +1822,7 @@ To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
 a random payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
-loss, however an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
+loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
 single packet.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently
 than it would an Initial packet, ensuring that connection migration is no more
 load on a new path than establishing a new connection.
@@ -3172,9 +3176,11 @@ containing that information is acknowledged.
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
-* The most recent set of acknowledgments are sent in ACK frames.  An ACK frame
-  SHOULD contain all unacknowledged acknowledgments, as described in
-  {{sending-acknowledgements}}.
+* ACK frames carry the most recent set of acknowledgements and the Ack Delay
+  from the largest acknowledged packet, as described in
+  {{sending-acknowledgements}}. Delaying the transmission of packets
+  containing ACK frames or sending old ACK frames can cause the peer to
+  generate an inflated RTT sample or unnecessarily disable ECN.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
@@ -3982,7 +3988,7 @@ Number Length bits.  It is used to carry "early" data from the client to the
 server as part of the first flight, prior to handshake completion. As part of
 the TLS handshake, the server can accept or reject this early data.
 
-See Section 2.3 of {{!TLS13}} for a discussion of 0-RTT data and its
+See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
@@ -4150,8 +4156,11 @@ the client included in the Source Connection ID of the Initial packet.
 
 The server includes a connection ID of its choice in the Source Connection ID
 field.  This value MUST not be equal to the Destination Connection ID field of
-the packet sent by the client.  The client MUST use this connection ID in the
-Destination Connection ID of subsequent packets that it sends.
+the packet sent by the client.  A client MUST discard a Retry packet that
+contains a Source Connection ID field that is identical to the Destination
+Connection ID field of its Initial packet.  The client MUST use the value from
+the Source Connection ID field of the Retry packet in the Destination Connection
+ID field of subsequent packets that it sends.
 
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
@@ -4347,42 +4356,45 @@ connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
-The format of the transport parameters is the TransportParameters struct from
-{{figure-transport-parameters}}.  This is described using the presentation
-language from Section 3 of {{!TLS13=RFC8446}}.
-
-~~~
-   enum {
-      original_connection_id(0),
-      idle_timeout(1),
-      stateless_reset_token(2),
-      max_packet_size(3),
-      initial_max_data(4),
-      initial_max_stream_data_bidi_local(5),
-      initial_max_stream_data_bidi_remote(6),
-      initial_max_stream_data_uni(7),
-      initial_max_streams_bidi(8),
-      initial_max_streams_uni(9),
-      ack_delay_exponent(10),
-      max_ack_delay(11),
-      disable_active_migration(12),
-      preferred_address(13),
-      active_connection_id_limit(14),
-      (65535)
-   } TransportParameterId;
-
-   struct {
-      TransportParameterId parameter;
-      opaque value<0..2^16-1>;
-   } TransportParameter;
-
-   TransportParameter TransportParameters<0..2^16-1>;
-~~~
-{: #figure-transport-parameters title="Definition of TransportParameters"}
-
 The `extension_data` field of the quic_transport_parameters extension defined in
-{{QUIC-TLS}} contains a TransportParameters value.  TLS encoding rules are
-therefore used to describe the encoding of transport parameters.
+{{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
+length-prefixed sequence of transport parameters, as shown in
+{{transport-parameter-sequence}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Sequence Length (16)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 1 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter 2 (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Transport Parameter N (*)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-sequence title="Sequence of Transport Parameters"}
+
+The Sequence Length field contains the length of the sequence of transport
+parameters, in bytes. Each transport parameter is encoded as an (identifier,
+length, value) tuple, as shown in {{transport-parameter-encoding-fig}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Transport Parameter ID (16)  |  Transport Param Length (16)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Transport Parameter Value (*)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
+
+The Transport Param Length field contains the length of the Transport
+Parameter Value field.
 
 QUIC encodes transport parameters into a sequence of bytes, which are then
 included in the cryptographic handshake.
@@ -4410,9 +4422,10 @@ The following transport parameters are defined:
 original_connection_id (0x0000):
 
 : The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by a server.  A
-  server MUST include the original_connection_id transport parameter if it sent
-  a Retry packet.
+  sent by the client.  This transport parameter is only sent by a server.  This
+  is the same value sent in the "Original Destination Connection ID" field of a
+  Retry packet (see {{packet-retry}}).  A server MUST include the
+  original_connection_id transport parameter if it sent a Retry packet.
 
 idle_timeout (0x0001):
 
@@ -4522,21 +4535,43 @@ preferred_address (0x000d):
 
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
-  of this transport parameter is the PreferredAddress struct shown in
-  {{fig-preferred-address}}.  This transport parameter is only sent by a server.
-  Servers MAY choose to only send a preferred address of one address family by
-  sending an all-zero address and port (0.0.0.0:0 or ::.0) for the other family.
-  IP addresses are encoded in network byte order.
+  of this transport parameter is shown in {{fig-preferred-address}}.  This
+  transport parameter is only sent by a server. Servers MAY choose to only send
+  a preferred address of one address family by sending an all-zero address and
+  port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
+  network byte order. The CID Length field contains the length of the
+  Connection ID field.
 
 ~~~
-   struct {
-     opaque ipv4Address[4];
-     uint16 ipv4Port;
-     opaque ipv6Address[16];
-     uint16 ipv6Port;
-     opaque connectionId<0..20>;
-     opaque statelessResetToken[16];
-   } PreferredAddress;
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       IPv4 Address (32)                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv4 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                      IPv6 Address (128)                       +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         IPv6 Port (16)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| CID Length (8)|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Connection ID (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Stateless Reset Token (128)                 +
+|                                                               |
++                                                               +
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 
@@ -4553,9 +4588,10 @@ initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
 immediately after opening.  If the transport parameter is absent, streams of
 that type start with a flow control limit of 0.
 
-A client MUST NOT include an original connection ID, a stateless reset token, or
-a preferred address.  A server MUST treat receipt of any of these transport
-parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
+A client MUST NOT include server-only transport parameters
+(original_connection_id, stateless_reset_token, or preferred_address).  A server
+MUST treat receipt of any of these transport parameters as a connection error of
+type TRANSPORT_PARAMETER_ERROR.
 
 
 # Frame Types and Formats {#frame-formats}

@@ -440,10 +440,9 @@ A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
 time or the handshake has not been completed.  A PTO enables a connection to
 recover from loss of tail packets or acknowledgements. The PTO algorithm used
-in QUIC implements the reliability functions of Tail Loss Probe
-{{?TLP=I-D.dukkipati-tcpm-tcp-loss-probe}} {{?RACK}}, RTO {{?RFC5681}} and
-F-RTO algorithms for TCP {{?RFC5682}}, and the timeout computation is based on
-TCP's retransmission timeout period {{?RFC6298}}.
+in QUIC implements the reliability functions of Tail Loss Probe {{?RACK}},
+RTO {{?RFC5681}} and F-RTO algorithms for TCP {{?RFC5682}}, and the timeout
+computation is based on TCP's retransmission timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
@@ -496,11 +495,9 @@ a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
 be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
-data it can send is limited, as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
-Data at Initial encryption MUST be retransmitted before Handshake data and
-data at Handshake encryption MUST be retransmitted before any ApplicationData
-data.  If no data can be sent, then the PTO alarm MUST NOT be armed until
-data has been received from the client.
+data it can send is limited to three times the amount of data received,
+as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
+then the PTO alarm MUST NOT be armed.
 
 Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
@@ -527,15 +524,17 @@ as a probe, unless there is no data available to send.  An endpoint MAY send up
 to two full-sized datagrams containing ack-eliciting packets, to avoid an
 expensive consecutive PTO expiration due to a single lost datagram.
 
-It is possible that the sender has no new or previously-sent data to send.  As
-an example, consider the following sequence of events: new application data is
-sent in a STREAM frame, deemed lost, then retransmitted in a new packet, and
-then the original transmission is acknowledged.  In the absence of any new
-application data, a PTO timer expiration now would find the sender with no new
-or previously-sent data to send.
+When the PTO timer expires, and there is new or previously sent unacknowledged
+data, it MUST be sent.  Data that was previously sent with Initial encryption
+MUST be sent before Handshake data and data previously sent at Handshake
+encryption MUST be sent before any ApplicationData data.
 
-When there is no data to send, the sender SHOULD send a PING or other
-ack-eliciting frame in a single packet, re-arming the PTO timer.
+It is possible the sender has no new or previously-sent data to send.
+As an example, consider the following sequence of events: new application data
+is sent in a STREAM frame, deemed lost, then retransmitted in a new packet,
+and then the original transmission is acknowledged.  When there is no data to
+send, the sender SHOULD send a PING or other ack-eliciting frame in a single
+packet, re-arming the PTO timer.
 
 Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
@@ -572,18 +571,22 @@ prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
-## Retry and Version Negotiation
+## Handling Retry Packets
 
-A Retry or Version Negotiation packet causes a client to send another Initial
-packet, effectively restarting the connection process and resetting congestion
-control and loss recovery state, including resetting any pending timers.  Either
-packet indicates that the Initial was received but not processed.  Neither
-packet can be treated as an acknowledgment for the Initial.
+A Retry packet causes a client to send another Initial packet, effectively
+restarting the connection process.  A Retry packet indicates that the Initial
+was received, but not processed.  A Retry packet MUST NOT be treated as an
+acknowledgment.
 
-The client MAY however compute an RTT estimate to the server as the time period
-from when the first Initial was sent to when a Retry or a Version Negotiation
-packet is received.  The client MAY use this value to seed the RTT estimator for
-a subsequent connection attempt to the server.
+Clients that receive a Retry packet reset congestion control and loss recovery
+state, including resetting any pending timers.  Other connection state, in
+particular cryptographic handshake messages, is retained; see Section 17.2.5 of
+{{QUIC-TRANSPORT}}.
+
+The client MAY compute an RTT estimate to the server as the time period from
+when the first Initial was sent to when a Retry or a Version Negotiation packet
+is received.  The client MAY use this value in place of its default for the
+initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
@@ -608,16 +611,6 @@ It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
 sooner, as soon as handshake keys are available (see Section 4.9.1 of
 {{QUIC-TLS}}).
-
-## Discussion
-
-The majority of constants were derived from best common practices among widely
-deployed TCP implementations on the internet.  Exceptions follow.
-
-A shorter delayed ack time of 25ms was chosen because longer delayed acks can
-delay loss recovery and for the small number of connections where less than
-packet per 25ms is delivered, acking every packet is beneficial to congestion
-control and loss recovery.
 
 # Congestion Control {#congestion-control}
 
@@ -735,7 +728,7 @@ When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
-{{RFC5681}} after Tail Loss Probes (TLP) {{TLP}}.
+{{RFC5681}} after Tail Loss Probes (TLP) {{RACK}}.
 
 ## Pacing {#pacing}
 
@@ -755,9 +748,9 @@ their delivery to the peer.
 
 Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or limit such bursts to the minimum
-of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)), the same
-as the recommended initial congestion window.
+Implementations MUST either use pacing or limit such bursts to the initial
+congestion window, which is recommended to be the minimum of
+10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)).
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
@@ -1258,8 +1251,8 @@ kPersistentCongestionThreshold:
 : Period of time for persistent congestion to be established, specified as a PTO
   multiplier.  The rationale for this threshold is to enable a sender to use
   initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
-  {{TLP}} {{RACK}}, before establishing persistent congestion, as TCP does with
-  a Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
+  {{RACK}}, before establishing persistent congestion, as TCP does with a
+  Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
   kPersistentCongestionThreshold is 3, which is approximately equivalent to
   having two TLPs before an RTO in TCP.
 
@@ -1492,7 +1485,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Disable RTT calculation for packets that don't elicit acknowledgment (#2060,
   #2078)
 - Limit ack_delay by max_ack_delay (#2060, #2099)
-- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Initial keys are discarded once Handshake keys are available (#1951, #2045)
 - Reorder ECN and loss detection in pseudocode (#2142)
 - Only cancel loss detection timer if ack-eliciting packets are in flight
   (#2093, #2117)
