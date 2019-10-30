@@ -224,7 +224,7 @@ endpoint:
 
 frame:
 : The smallest unit of communication on a stream in HTTP/3, consisting of a
-  header and a variable-length sequence of octets structured according to the
+  header and a variable-length sequence of bytes structured according to the
   frame type.
 
   Protocol elements called "frames" exist in both this document and
@@ -974,7 +974,8 @@ A frame includes the following fields:
   : A variable-length integer that identifies the frame type.
 
   Length:
-  : A variable-length integer that describes the length of the Frame Payload.
+  : A variable-length integer that describes the length (in bytes) of
+    the Frame Payload.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
