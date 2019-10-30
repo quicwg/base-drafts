@@ -2743,28 +2743,35 @@ A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
 The token MUST include or associated with the alternative version number with
 which it can be used.
 
-Typically, a server would pre-allocate a set of unused version numbers as the
-alternative version numbers, associating each of those version numbers with a
-packet type modifier chosen at random.  Then, when issuing a token using a
-NEW_TOKEN frame, the server generates the alternative initial salt by calling a
-pseudo-random function, embeds that initial salt into the token which is then
-encrypted, and sends a NEW_TOKEN frame that comprises of the generated token and
-the alternative initial set.
+Typically, a server would act in the following steps:
 
-When the client reconnects to the server by using the provided token and the
-alternative initial set, the server first checks if the version number field of
-the incoming packet contains one of the alternative version numbers it
-advertises, then if that is the case, applies the corresponding packet type
-modifier to recover the correct packet type.  If the recovered packet type is an
-Initial packet and that packet contains a NEW_TOKEN token, the server decrypts
-the embedded token and recovers the alternative initial salt, uses that to
-decrypt the payload of the Initial packet.
+* The server pre-allocates a set of unused version numbers as the alternative
+  version numbers, associating each of those version numbers with a packet type
+  modifier chosen at random.
 
-When the server is incapable of determining the alternative initial salt, it can
-send a Version Negotiation packet that instructs the client to use the default
-version.  A server that is incapable of issuing a different version number,
-packet type modifier, or initial salt MAY advertise the original values
-specified in this document as its alternative initial set.
+* When issuing a NEW_TOKEN token, the server generates the alternative initial
+  salt by calling a pseudo-random function.  Then it builds a token that
+  embeds the alternative initial set including the alternative initial salt
+  being generated.  The token will be encrypted using a key known only to the
+  server, thereby conforming to the requirements in {{validate-future}}. After
+  that, the server sends a NEW_TOKEN frame that comprises of the generated token
+  and the alternative initial set that has been embedded to that token.
+
+* When the client reconnects to the server by using the provided token and the
+  alternative initial set, the server first checks if the version number field
+  of the incoming packet contains one of the alternative version numbers it
+  advertises, then if that is the case, applies the corresponding packet type
+  modifier to recover the correct packet type.  If the recovered packet type is
+  an Initial packet and that packet contains a NEW_TOKEN token, the server
+  decrypts the embedded token and recovers the alternative initial salt, uses
+  that to decrypt the payload of the Initial packet.
+
+When the server receives an Initial packet using an alernative version number
+but is incapable of determining the alternative initial salt from the token
+being associated, it MAY send a Version Negotiation packet that instructs the
+client to use the default version.  A server that is incapable of issuing a
+different version number, packet type modifier, or initial salt MAY advertise
+the original values specified in this document as its alternative initial set.
 
 When the server receives an Initial packet containing a valid NEW_TOKEN token,
 and the value of the version number field of that Initial packet does not match
