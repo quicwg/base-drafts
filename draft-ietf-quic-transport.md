@@ -5978,7 +5978,7 @@ permanent registrations.
 
 The creation of a registries MAY identify a range of codepoints where
 registrations are governed by a different registration policy.  For instance,
-the registries for 62-bit codepoints in this document have stricted policies for
+the registries for 62-bit codepoints in this document have stricter policies for
 codepoints in the range from 0 to 63.
 
 Any stricter requirements for permanent registrations do not prevent provisional
