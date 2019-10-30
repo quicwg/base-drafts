@@ -5504,7 +5504,7 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using an 1-RTT packet ({{QUIC-TLS}}; section 4).  An application can close
+sent using an 1-RTT packet ({{QUIC-TLS}}, Section 4).  An application can close
 the connection during the handshake by sending a CONNECTION_CLOSE frame (type
 0x1c) with an error code of 0x15a ("user_canceled" alert; see {{?TLS13}}) in an
 Initial or a Handshake packet.
