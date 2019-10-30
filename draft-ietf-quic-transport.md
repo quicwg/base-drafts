@@ -2731,10 +2731,10 @@ which is comprised of:
   on wire in place of the version number specified in this document.  This value
   MUST NOT be a reserved version ({{versions}}).
 
-* Packet type modifier; a two-bit value that is to be applied as a bit-wise
-  exclusive or (XOR) to the Long Packet Type of the long header packet
-  ({{long-header}}).  This XOR is applied after the packets are encrypted and
-  before they are decrypted.
+* Packet type modifier; a two-bit value that obfuscates the Long Packet Type of
+  a long header packet ({{long-header}}).  The long packet type bits of a long
+  header packet is encoded as an bti-wise exclusive or (XOR) of the packet type
+  modifier and the type numbers defined in {{long-packet-types}}.
 
 * Alternative initial salt; a 16-byte binary blob that is to be used in place of
   the initial salt defined in section 5.2 of {{QUIC-TLS}}.
