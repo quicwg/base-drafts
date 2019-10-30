@@ -2732,9 +2732,9 @@ which is comprised of:
   MUST NOT be a reserved version ({{versions}}).
 
 * Packet type modifier; a two-bit value that is to be applied as a bit-wise
-  exclusive or (XOR) to the most significant bits of the Initial, Handshake,
-  0-RTT, and Retry packets. This XOR is applied after the packets are encrypted
-  and before they are decrypted.
+  exclusive or (XOR) to the Long Packet Type of the long header packet
+  ({{long-header}}).  This XOR is applied after the packets are encrypted and
+  before they are decrypted.
 
 * Alternative initial salt; a 16-byte binary blob that is to be used in place of
   the initial salt defined in section 5.2 of {{QUIC-TLS}}.
