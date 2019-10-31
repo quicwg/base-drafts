@@ -1704,7 +1704,12 @@ Token field of its Initial packet.  Including a token might allow the server to
 validate the client address without an additional round trip.  When using a
 NEW_TOKEN token for establishing a new connection, the client MUST construct its
 long header packets by using the seeds that were provided alongside that token
-(see {{seeding}}).
+(see {{seeding}}).  When the client receives a Version Negotiation packet in
+response containing the QUIC version from which the client obtained the
+NEW_TOKEN token, the client MAY restart the connection establishment process
+using the default seeds of that QUIC version.  When doing so, the client MUST
+offer the same NEW_TOKEN token.  The client MUST discard Version Negotiation
+packets that do not contain the original version.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -2803,8 +2808,26 @@ numbers.  But still, having a set of version numbers and initial salts used
 concurrently is considered better than just using the default values of QUIC in
 terms of preventing ossification.
 
-A server MUST NOT send a Version Negotitation packet in response to a long
-header packet with an alternative version number it has advertised.
+When sending a Retry packet in response to an Initial packet, the server MUST
+build the retry token in such way that the seeds that were associated with the
+original token can be recovered from the retry token (in case the original token
+was valid), or embed in the retry token that the original token was invalid.
+
+When the server receives an Initial packet using an alternative version number
+but is incapable of determining the alternative initial salt from the token
+being associated, it MAY send a Version Negotiation packet that instructs the
+client to use the default version.
+
+In order to prevent corrupt Initial packets being misidentified as the client
+using an unusable token, a server MUST issue the tokens in such way that their
+accidental corruption can be detected, at least until those tokens expire (see
+{{frame-new-token}}).  One reasonable way of accomplishing this requirement is
+to embed a checksum obtained from an unkeyed hash function (e.g., SHA-256; {{?RFC6234}}) to every token.
+
+When the server receives an Initial packet containing a valid token, and the
+value of the version number field of that Initial packet does not match the
+version number recovered from the token, the server MUST close the connection
+with a VERSION_NEGOTIATION_ERROR.
 
 
 ## Distributing the Seeds
@@ -5712,6 +5735,12 @@ TRANSPORT_PARAMETER_ERROR (0x8):
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
+
+VERSION_NEGOTIATION_ERROR (0x9):
+
+: An endpoint received a packet with an unexpected version.  This error code
+  indicates a potential version downgrade attack.
+
 
 PROTOCOL_VIOLATION (0xA):
 
