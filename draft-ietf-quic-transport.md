@@ -2794,7 +2794,7 @@ following steps:
   alternative initial salt that is to be used for unprotecting the packet
   payload.
 
-Instead of associating a new alternative initial salt to every NEW_TOKEN token,
+Instead of associating a new alternative initial salt with every NEW_TOKEN token,
 a server might map a fixed salt to each of the alternative version numbers it
 issues.  Such design is not recommended, as an active attacker might build a
 list of known alternative version numbers and their initial salts and use that
