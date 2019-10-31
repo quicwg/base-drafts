@@ -1265,9 +1265,6 @@ sent, the endpoint uses the next packet protection keys for reading and the
 corresponding key and IV; see {{receive-key-generation}} for considerations
 about generating these keys.
 
-An endpoint uses the same key derivation process as its peer uses to generate
-keys for receiving.
-
 If a packet is successfully processed using the next key and IV, then the peer
 has initiated a key update.  The endpoint MUST update its send keys to the
 corresponding key phase in response, as described in {{key-update-initiate}}.
@@ -1321,21 +1318,6 @@ For this reason, endpoints MUST be able to retain two sets of packet protection
 keys for receiving packets: the current and the next.  Retaining the previous
 keys in addition to these might improve performance, but this is not essential.
 
-The time taken to generate new keys could reveal through timing side channels
-that a key update has occurred, or where an attacker injects packets, be used to
-reveal the value of the Key Phase on injected packets.  After receiving a key
-update, an endpoint SHOULD generate and save the next set of receive packet
-protection keys.  By generating new keys before a key update is received,
-receipt of packets will not create timing signals that leak the value of the Key
-Phase.
-
-This depends on not doing this key generation during packet processing and it
-can require that endpoints maintain three sets of packet protection keys for
-receiving: for the previous key phase, for the current key phase, and for the
-next key phase.  Endpoints MAY instead choose to defer generation of the next
-receive packet protection keys until they discard old keys so that only two sets
-of receive keys need to be retained at any point in time.
-
 
 ## Sending with Updated Keys {#old-keys-send}
 
@@ -1366,7 +1348,8 @@ requires the use of the next packet protection keys.
 
 Some care is necessary to ensure that any process for selecting between
 previous, current, and next packet protection keys does not expose a timing side
-channel that might reveal which keys were used to remove packet protection.
+channel that might reveal which keys were used to remove packet protection.  See
+{{hp-side-channel}} for more information.
 
 Alternatively, endpoints can retain only two sets of packet protection keys,
 swapping previous for next after enough time has passed to allow for reordering
@@ -1614,6 +1597,9 @@ authenticated using packet protection; the entire packet header is part of the
 authenticated additional data.  Protected fields that are falsified or modified
 can only be detected once the packet protection is removed.
 
+
+## Header Protection Timing Side-Channels {#hp-side-channel}
+
 An attacker could guess values for packet numbers or Key Phase and have an
 endpoint confirm guesses through timing side channels.  Similarly, guesses for
 the packet number length can be trialed and exposed.  If the recipient of a
@@ -1627,6 +1613,21 @@ and other side-channels.
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet
 number or its encoded size.
+
+During a key update, the time taken to generate new keys could reveal through
+timing side-channels that a key update has occurred.  Alternatively, where an
+attacker injects packets this side-channel could reveal the value of the Key
+Phase on injected packets.  After receiving a key update, an endpoint SHOULD
+generate and save the next set of receive packet protection keys.  By generating
+new keys before a key update is received, receipt of packets will not create
+timing signals that leak the value of the Key Phase.
+
+This depends on not doing this key generation during packet processing and it
+can require that endpoints maintain three sets of packet protection keys for
+receiving: for the previous key phase, for the current key phase, and for the
+next key phase.  Endpoints MAY instead choose to defer generation of the next
+receive packet protection keys until they discard old keys so that only two sets
+of receive keys need to be retained at any point in time.
 
 
 ## Key Diversity
