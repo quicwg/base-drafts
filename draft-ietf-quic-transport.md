@@ -5083,7 +5083,7 @@ NEW_TOKEN frames contain the following fields:
 Lifetime:
 
 : Indicates the lifetime of the values contained in this frame in milliseconds.
-  An endpoint MUST NOT use the values provided by this frame, once the time that
+  An endpoint MUST NOT use the values provided by this frame once the time that
   has elapsed since receipt becomes greater than the value of this field.
 
 Alternative Version Number:
