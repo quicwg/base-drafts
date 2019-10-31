@@ -2790,7 +2790,7 @@ following steps:
   version number, the server embeds the NEW_TOKEN token found in the Initial
   packet within the retry token it issues.  Once the server receives a response
   from the client carrying that retry token and the path is validated, it
-  decrypts the NEW_TOKEN token embedded in the retry token to recover the
+  decrypts the NEW_TOKEN token embedded within the retry token to recover the
   alternative initial salt that is to be used for unprotecting the packet
   payload.
 
