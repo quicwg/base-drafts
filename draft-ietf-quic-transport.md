@@ -2736,7 +2736,7 @@ which is comprised of:
 
 * Packet type modifier; a two-bit value that obfuscates the Long Packet Type of
   a long header packet ({{long-header}}).  The long packet type bits of a long
-  header packet is encoded as an bti-wise exclusive or (XOR) of the packet type
+  header packet is encoded as an bit-wise exclusive or (XOR) of the packet type
   modifier and the type numbers defined in {{long-packet-types}}.
 
 * Initial salt; a 16-byte binary blob that is to be used in place of the initial
