@@ -1307,15 +1307,6 @@ properties:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation (see
-{{validate-handshake}}) MUST also be sent within a single packet. This avoids
-having to reassemble a message from multiple packets.
-
-The first client packet of the cryptographic handshake protocol MUST fit within
-a 1232 byte QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.
-
 An endpoint can verify support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-validation}}.
 
@@ -3978,16 +3969,15 @@ Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
-the entirety of the first cryptographic handshake message.  This packet, and the
-cryptographic handshake message, MUST fit in a single UDP datagram (see
-{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
-(see {{handshake}}).
+the start or all of the first cryptographic handshake message.  The first
+CRYPTO frame sent always begins at an offset of 0 (see {{handshake}}).
 
-Note that if the server sends a HelloRetryRequest, the client will send a second
-Initial packet.  This Initial packet will continue the cryptographic handshake
-and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
-frame sent in the first Initial packet.  Cryptographic handshake messages
-subsequent to the first do not need to fit within a single UDP datagram.
+Note that if the server sends a HelloRetryRequest, the client will send another
+series of Initial packets.  These Initial packets will continue the
+cryptographic handshake and will contain CRYPTO frames starting at an offset
+matching the size of the CRYPTO frames sent in the first flight of Initial
+packets.
+
 
 #### Abandoning Initial Packets {#discard-initial}
 
