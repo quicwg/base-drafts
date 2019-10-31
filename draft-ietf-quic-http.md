@@ -974,7 +974,7 @@ A frame includes the following fields:
   : A variable-length integer that identifies the frame type.
 
   Length:
-  : A variable-length integer that describes the length (in bytes) of
+  : A variable-length integer that describes the length in bytes of
     the Frame Payload.
 
   Frame Payload:
