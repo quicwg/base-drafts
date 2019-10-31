@@ -1703,8 +1703,8 @@ to what it believes to be the same server, it SHOULD include that value in the
 Token field of its Initial packet.  Including a token might allow the server to
 validate the client address without an additional round trip.  When using a
 NEW_TOKEN token for establishing a new connection, the client MUST construct its
-long header packets by using the values of the alternative initial set that it
-received alongside that token ({{alternative-initial}}).
+long header packets by using the seeds that were provided alongside that token
+(see {{seeding}}).
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -2724,47 +2724,45 @@ between endpoints.  Application protocols SHOULD define rules for handling
 streams that are prematurely cancelled by either endpoint.
 
 
-# Alternative Initial Set {#alternative-initial}
+# Seeding {#seeding}
 
 In order to avoid ossification of the cleartext and obfuscated fields of QUIC
-packets, a server announces an alternative set of initial values to be used,
+packets, a server can announce a set of alternative initial values to be used,
 which is comprised of:
 
-* Alternative version number; a 32-bit unsigned number that is to be presented
-  on wire in place of the version number specified in this document.  This value
-  MUST NOT be a reserved version ({{versions}}).
+* Version number; a 32-bit unsigned number that is to be presented on wire in
+  place of the version number specified in this document.  This value MUST NOT
+  be a reserved version ({{versions}}).
 
 * Packet type modifier; a two-bit value that obfuscates the Long Packet Type of
   a long header packet ({{long-header}}).  The long packet type bits of a long
   header packet is encoded as an bti-wise exclusive or (XOR) of the packet type
   modifier and the type numbers defined in {{long-packet-types}}.
 
-* Alternative initial salt; a 16-byte binary blob that is to be used in place of
-  the initial salt defined in section 5.2 of {{QUIC-TLS}}.
+* Initial salt; a 16-byte binary blob that is to be used in place of the initial
+  salt defined in section 5.2 of {{QUIC-TLS}}.
 
-A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
-The token MUST permit the server to recover this alternative initial set.  This
-property can be achieved for example by embedding the alternative initial set in
-the encrypted token.
+A server advertises these seeds using a NEW_TOKEN frame {{frame-new-token}}.
+The token MUST permit the server to recover these seeds.  This property can be
+achieved for example by embedding these seeds in the encrypted token.
 
-For the alternative initial set to work, all the servers within the scope of a
-NEW_TOKEN token are required to have a shared knowledge of the alternative
-initial sets being issued and / or how that can be recovered from the tokens.
-Certain server deployments might have difficulty in meeting such a requirement.
+For the non-default seeds to work, all the servers within the scope of a
+NEW_TOKEN token are required to have a shared knowledge of those seeds being
+issued and / or how they can be recovered from the tokens. Certain server
+deployments might have difficulty in meeting such a requirement.
 
-A server (or a set of servers) that cannot satisfy this requirement can
-effectively opt-out from using alternative initial sets by fixing the
-alternative version number and the alternative initial salt to the defaults of
-QUIC for any NEW_TOKEN tokens it issues, and by setting the packet type modifier
-to zero.
+A server (or a set of servers) that cannot satisfy this requirement can stick to
+using the default values by consistently advertising the default version number,
+default initial salt, and a packet type modifier of zero in the NEW_TOKEN frames
+it sends.
 
 The rest of this section applies to the servers that advertise non-default
-values as their alternative initial sets.
+values as their seeds.
 
 
 ## Server Behavior
 
-Typically, a server that advertises alternative initial sets would act in the
+Typically, a server that advertises the alternative seeds would act in the
 following steps:
 
 * The server pre-allocates a set of unused version numbers as the alternative
@@ -2773,20 +2771,20 @@ following steps:
 
 * When issuing a NEW_TOKEN token, the server generates the alternative initial
   salt by calling a pseudo-random function.  Then it builds a token that
-  embeds the alternative initial set including the alternative initial salt
-  being generated.  The token will be encrypted using a key known only to the
-  server, thereby conforming to the requirements in {{validate-future}}. After
-  that, the server sends a NEW_TOKEN frame that contains the generated token and
-  the alternative initial set that has been embedded to that token.
+  embeds the alternative seeds including the initial salt being generated.  The
+  token will be encrypted using a key known only to the server, thereby
+  conforming to the requirements in {{validate-future}}. After that, the server
+  sends a NEW_TOKEN frame that contains the generated token and the seeds that
+  have been embedded to that token.
 
 * When the client reconnects to the server by using the provided token and the
-  alternative initial set, the server first checks if the version number field
-  of the incoming packet contains one of the alternative version numbers it
-  advertises, then if that is the case, applies the corresponding packet type
-  modifier to recover the correct packet type.  If the recovered packet type is
-  an Initial packet and that packet contains a NEW_TOKEN token, the server
-  decrypts the embedded token and recovers the alternative initial salt, uses
-  that to decrypt the payload of the Initial packet.
+  seeds, the server first checks if the version number field of the incoming
+  packet contains one of the alternative version numbers it advertises, then if
+  that is the case, applies the corresponding packet type modifier to recover
+  the correct packet type.  If the recovered packet type is an Initial packet
+  and that packet contains a NEW_TOKEN token, the server decrypts the embedded
+  token and recovers the initial salt, uses that to decrypt the payload of the
+  Initial packet.
 
 * When sending a Retry in response to an Initial packet carrying an alternative
   version number, the server embeds the NEW_TOKEN token found in the Initial
@@ -2809,11 +2807,11 @@ A server MUST NOT send a Version Negotitation packet in response to a long
 header packet with an alternative version number it has advertised.
 
 
-## Distributing the Alternative Initial Set
+## Distributing the Seeds
 
-This specification defines how the alternative initial set is used as well as
-how it is advertised using a NEW_TOKEN frame.  Other specifications MAY define
-other methods for distributing or deducing the alternative initial set.
+This specification defines how the seeds are used as well as how they are
+advertised using a NEW_TOKEN frame.  Other specifications MAY define other
+methods for distributing or deducing these seeds.
 
 
 # Packets and Frames {#packets-frames}
@@ -5059,14 +5057,14 @@ The NEW_TOKEN frame is as follows:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Lifetime (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                Alternative Version Number (32)                |
+|                   Seeded Version Number (32)                  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |R R R R R R|PTM|
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
 +                                                               +
 |                                                               |
-+                 Alternative Initial Salt (128)                +
++                   Seeded Initial Salt (128)                   +
 |                                                               |
 +                                                               +
 |                                                               |
@@ -5085,9 +5083,9 @@ Lifetime:
   An endpoint MUST NOT use the values provided by this frame once the time that
   has elapsed since receipt becomes greater than the value of this field.
 
-Alternative Version Number:
+Seeded Version Number:
 
-: The alternative version number to be used (see {{alternative-initial}}).
+: The version number to be used alongside the token (see {{seeding}}).
 
 Reserved (R):
 
@@ -5097,11 +5095,11 @@ Reserved (R):
 
 Packet Type Modifier (PTM):
 
-: The packet type modifier to be used.
+: The packet type modifier to be used alongside the token.
 
-Alternative Initial Salt:
+Seeded Initial Salt:
 
-: The alternative initial salt to be used.
+: The initial salt to be used to be used alongide the token.
 
 Token Length:
 
