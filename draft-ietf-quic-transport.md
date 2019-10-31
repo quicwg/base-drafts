@@ -2764,7 +2764,7 @@ values as their alternative initial sets.
 
 ## Server Behavior
 
-A server that advertises alternative initial sets would typcially act in the
+Typically, a server that advertises alternative initial sets would act in the
 following steps:
 
 * The server pre-allocates a set of unused version numbers as the alternative
