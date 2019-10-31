@@ -2770,12 +2770,12 @@ following steps:
   modifier chosen at random.
 
 * When issuing a NEW_TOKEN token, the server generates the alternative initial
-  salt by calling a pseudo-random function.  Then it builds a token that
-  embeds the alternative seeds including the initial salt being generated.  The
-  token will be encrypted using a key known only to the server, thereby
-  conforming to the requirements in {{validate-future}}. After that, the server
-  sends a NEW_TOKEN frame that contains the generated token and the seeds that
-  have been embedded into that token.
+  salt using a cryptographically secure pseudo-random number generator.  Then it
+  builds a token that embeds the alternative seeds including the initial salt
+  being generated.  The  token will be encrypted using a key known only to the
+  server, thereby conforming to the requirements in {{validate-future}}.  After
+  that, the server sends a NEW_TOKEN frame that contains the generated token and
+  the seeds that have been embedded into that token.
 
 * When the client reconnects to the server by using the provided token and the
   seeds, the server first checks if the version number field of the incoming
