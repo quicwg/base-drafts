@@ -192,8 +192,9 @@ QUIC packet:
 
 Ack-eliciting Packet:
 
-: A QUIC packet that contains frames other than ACK and PADDING. These cause a
-  recipient to send an acknowledgment (see {{sending-acknowledgements}}).
+: A QUIC packet that contains frames other than ACK, PADDING, and
+  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment (see
+  {{sending-acknowledgements}}).
 
 Endpoint:
 
@@ -2355,11 +2356,11 @@ current Probe Timeout (PTO).
 
 Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
-processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ack-eliciting packet; see
-{{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been sent
-since last receiving a packet.  Restarting when sending packets ensures that
-connections do not prematurely time out when initiating new activity.
+processed successfully.  The timer is also restarted when sending an
+ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
+packets have been sent since last receiving a packet.  Restarting when sending
+packets ensures that connections do not prematurely time out when initiating new
+activity.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
@@ -2996,8 +2997,8 @@ valid frames? -->
 ## Generating Acknowledgements {#generating-acks}
 
 Endpoints acknowledge all packets they receive and process. However, only
-ack-eliciting packets (see {{QUIC-RECOVERY}}) trigger the sending of an ACK
-frame.  Packets that are not ack-eliciting are only acknowledged when an ACK
+ack-eliciting packets cause an ACK frame to be sent within the maximum ack
+delay.  Packets that are not ack-eliciting are only acknowledged when an ACK
 frame is sent for other reasons.
 
 When sending a packet for any reason, an endpoint should attempt to bundle an
