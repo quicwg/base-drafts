@@ -2743,10 +2743,9 @@ which is comprised of:
   the initial salt defined in section 5.2 of {{QUIC-TLS}}.
 
 A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
-The token MUST permit the server to recover at least the alternative version
-number being associated to the token.  This property can be achieved for example
-by embedding the alternative version number in the encrypted token.  Other
-elements of the alternative initial set MAY also be associated with the token.
+The token MUST permit the server to recover this alternative initial set.  This
+property can be achieved for example by embedding the alternative version number
+in the encrypted token.
 
 For the alternative initial set to work, all the servers within the scope of a
 NEW_TOKEN token are required to have a shared knowledge of the alternative
