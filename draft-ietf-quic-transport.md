@@ -2744,8 +2744,8 @@ which is comprised of:
 
 A server advertises these values using a NEW_TOKEN frame {{frame-new-token}}.
 The token MUST permit the server to recover this alternative initial set.  This
-property can be achieved for example by embedding the alternative version number
-in the encrypted token.
+property can be achieved for example by embedding the alternative initial set in
+the encrypted token.
 
 For the alternative initial set to work, all the servers within the scope of a
 NEW_TOKEN token are required to have a shared knowledge of the alternative
