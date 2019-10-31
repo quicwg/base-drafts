@@ -2794,14 +2794,14 @@ following steps:
   alternative initial salt that is to be used for unprotecting the packet
   payload.
 
-Instead of associating a new alternative initial salt with every NEW_TOKEN token,
-a server might map a fixed salt to each of the alternative version numbers it
-issues.  Such design is not recommended, as an active attacker might build a
-list of known alternative version numbers and their initial salts and use that
-list to decrypt the payload of Initial packets using those alternative version
-numbers.  But still, having a set of version numbers and initial salts used
-concurrently is considered better than just using the default values of QUIC in
-terms of preventing ossification.
+Instead of associating a new alternative initial salt with every NEW_TOKEN
+token, a server might map a fixed salt to each of the alternative version
+numbers it issues.  Such design is not recommended, as an active attacker might
+build a list of known alternative version numbers and their initial salts and
+use that list to decrypt the payload of Initial packets using those alternative
+version numbers.  But still, having a set of version numbers and initial salts
+used concurrently is considered better than just using the default values of
+QUIC in terms of preventing ossification.
 
 A server MUST NOT send a Version Negotitation packet in response to a long
 header packet with an alternative version number it has advertised.
