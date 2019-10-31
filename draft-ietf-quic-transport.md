@@ -2775,7 +2775,7 @@ following steps:
   token will be encrypted using a key known only to the server, thereby
   conforming to the requirements in {{validate-future}}. After that, the server
   sends a NEW_TOKEN frame that contains the generated token and the seeds that
-  have been embedded to that token.
+  have been embedded into that token.
 
 * When the client reconnects to the server by using the provided token and the
   seeds, the server first checks if the version number field of the incoming
