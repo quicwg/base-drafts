@@ -2741,7 +2741,7 @@ which is comprised of:
 
 * Packet type modifier; a two-bit value that obfuscates the Long Packet Type of
   a long header packet ({{long-header}}).  The long packet type bits of a long
-  header packet is encoded as an bti-wise exclusive or (XOR) of the packet type
+  header packet is encoded as an bit-wise exclusive or (XOR) of the packet type
   modifier and the type numbers defined in {{long-packet-types}}.
 
 * Initial salt; a 16-byte binary blob that is to be used in place of the initial
@@ -2775,12 +2775,12 @@ following steps:
   modifier chosen at random.
 
 * When issuing a NEW_TOKEN token, the server generates the alternative initial
-  salt by calling a pseudo-random function.  Then it builds a token that
-  embeds the alternative seeds including the initial salt being generated.  The
-  token will be encrypted using a key known only to the server, thereby
-  conforming to the requirements in {{validate-future}}. After that, the server
-  sends a NEW_TOKEN frame that contains the generated token and the seeds that
-  have been embedded to that token.
+  salt using a cryptographically secure pseudo-random number generator.  Then it
+  builds a token that embeds the alternative seeds including the initial salt
+  being generated.  The  token will be encrypted using a key known only to the
+  server, thereby conforming to the requirements in {{validate-future}}.  After
+  that, the server sends a NEW_TOKEN frame that contains the generated token and
+  the seeds that have been embedded into that token.
 
 * When the client reconnects to the server by using the provided token and the
   seeds, the server first checks if the version number field of the incoming
@@ -2795,18 +2795,18 @@ following steps:
   version number, the server embeds the NEW_TOKEN token found in the Initial
   packet within the retry token it issues.  Once the server receives a response
   from the client carrying that retry token and the path is validated, it
-  decrypts the NEW_TOKEN token embedded in the retry token to recover the
+  decrypts the NEW_TOKEN token embedded within the retry token to recover the
   alternative initial salt that is to be used for unprotecting the packet
   payload.
 
-Instead of associating a new alternative initial salt to every NEW_TOKEN token,
-a server might map a fixed salt to each of the alternative version numbers it
-issues.  Such design is not recommended, as an active attacker might build a
-list of known alternative version numbers and their initial salts and use that
-list to decrypt the payload of Initial packets using those alternative version
-numbers.  But still, having a set of version numbers and initial salts used
-concurrently is considered better than just using the default values of QUIC in
-terms of preventing ossification.
+Instead of associating a new alternative initial salt with every NEW_TOKEN
+token, a server might map a fixed salt to each of the alternative version
+numbers it issues.  Such design is not recommended, as an active attacker might
+build a list of known alternative version numbers and their initial salts and
+use that list to decrypt the payload of Initial packets using those alternative
+version numbers.  But still, having a set of version numbers and initial salts
+used concurrently is considered better than just using the default values of
+QUIC in terms of preventing ossification.
 
 When sending a Retry packet in response to an Initial packet, the server MUST
 build the retry token in such way that the seeds that were associated with the
