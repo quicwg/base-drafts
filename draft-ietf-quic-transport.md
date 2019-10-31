@@ -2822,7 +2822,8 @@ In order to prevent corrupt Initial packets being misidentified as the client
 using an unusable token, a server MUST issue the tokens in such way that their
 accidental corruption can be detected, at least until those tokens expire (see
 {{frame-new-token}}).  One reasonable way of accomplishing this requirement is
-to embed a checksum obtained from an unkeyed hash function (e.g., SHA-256; {{?RFC6234}}) to every token.
+to embed a checksum obtained from an unkeyed hash function (e.g., SHA-256;
+{{?RFC6234}}) to every token.
 
 When the server receives an Initial packet containing a valid token, and the
 value of the version number field of that Initial packet does not match the
