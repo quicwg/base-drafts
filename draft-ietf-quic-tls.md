@@ -505,7 +505,7 @@ client could interleave ACK frames that are protected with Handshake keys with
 detect lost Handshake packets.
 
 A TLS implementation MUST NOT provide a 1-RTT decrypt secret to QUIC until it
-has received a Finished message from the peer.
+the TLS handshake is complete.
 
 QUIC also needs access to keys that might not ordinarily be available to a TLS
 implementation.  For instance, a client might need to acknowledge Handshake
