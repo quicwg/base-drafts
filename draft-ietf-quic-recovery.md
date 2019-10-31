@@ -473,7 +473,7 @@ A sender computes its PTO timer every time an ack-eliciting packet is sent.
 When ack-eliciting packets are in-flight in multiple packet number spaces,
 the timer MUST be set for the packet number space with the earliest timeout,
 except for ApplicationData, which MUST be ignored until the handshake
-completes (See Section 4.1.1 of {{QUIC-TLS}}).  Not arming the PTO for
+completes; see Section 4.1.1 of {{QUIC-TLS}}.  Not arming the PTO for
 ApplicationData prioritizes completing the handshake and prevents the server
 from sending a 1-RTT PTO packet before it has the keys to process a 1-RTT
 packet.  When probe packets from two different packet number spaces are sent
