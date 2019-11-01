@@ -932,6 +932,10 @@ max_ack_delay:
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
 
+timer_mode:
+: An enum with values of LOSS_DETECTION and PTO, indicating whether the timer
+  is set waiting for time threshold loss detection or sending a probe timeout.
+
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
@@ -1121,6 +1125,7 @@ SetLossDetectionTimer():
   if (loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(loss_time)
+    timer_mode = LOSS_DETECTION
     return
 
   if (no ack-eliciting packets in flight &&
@@ -1139,6 +1144,7 @@ SetLossDetectionTimer():
 
   loss_detection_timer.update(
     time_of_last_sent_ack_eliciting_packet + timeout)
+  timer_mode = PTO
 ~~~
 
 
@@ -1151,12 +1157,13 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  loss_time, pn_space = GetEarliestLossTime()
-  if (loss_time != 0):
-    // Time threshold loss Detection
-    DetectLostPackets(pn_space)
-    SetLossDetectionTimer()
-    return
+  if (timer_mode == LOSS_DETECTION):
+    loss_time, pn_space = GetEarliestLossTime()
+    if (loss_time != 0):
+      // Time threshold loss Detection
+      DetectLostPackets(pn_space)
+      SetLossDetectionTimer()
+      return
 
   if (endpoint is client without 1-RTT keys):
     // Client sends an anti-deadlock packet: Initial is padded
