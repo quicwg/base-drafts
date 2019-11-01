@@ -1641,12 +1641,12 @@ of connection establishment.  By giving the client a different connection ID to
 use, a server can cause the connection to be routed to a server instance with
 more resources available for new connections.
 
-If a server receives a client Initial with an invalid Retry token,
-it knows the client will not accept another Retry token.  It can either
-proceed with the handshake without verifying the token or immediately close
-({{immediate-close}}) the connection with an connection error of
-INVALID_TOKEN to cause the handshake to fail quickly instead of waiting
-for the client to timeout.
+If a server receives a client Initial that can be unprotected but contains an
+invalid Retry token, it knows the client will not accept another Retry token.
+It can either proceed with the handshake without verifying the token or
+immediately close ({{immediate-close}}) the connection with an connection
+error of INVALID_TOKEN to cause the handshake to fail quickly instead of
+waiting for the client to timeout.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
