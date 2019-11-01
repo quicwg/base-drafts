@@ -1236,10 +1236,10 @@ IV to protect all subsequent packets.
 An endpoint MUST NOT initiate a key update prior to having received an
 acknowledgment for a packet that it sent protected with keys from the current
 key phase.  This ensures that keys are available to both peers before another
-can be initiated.  This can be implemented by tracking the lowest packet number
-sent with each key phase, and the highest acknowledged packet number in the
-1-RTT space: once the latter is higher than or equal to the former, another key
-update can be initiated.
+key update can be initiated.  This can be implemented by tracking the lowest
+packet number sent with each key phase, and the highest acknowledged packet
+number in the 1-RTT space: once the latter is higher than or equal to the
+former, another key update can be initiated.
 
 Note:
 
@@ -1259,11 +1259,11 @@ as packet loss by the peer and could adversely affect performance.
 ## Responding to a Key Update
 
 A peer is permitted to initiate a key update after receiving an acknowledgement
-of a packet in the current key phase.  If a packet is received with a key phase
-that differs from the value the endpoint used to protect the last packet it
-sent, the endpoint uses the next packet protection keys for reading and the
-corresponding key and IV; see {{receive-key-generation}} for considerations
-about generating these keys.
+of a packet in the current key phase.  An endpoint detects a key update when
+processing a packet with a key phase that differs from the value last used to
+protect the last packet it sent.  To process this packet, the endpoint uses the
+next packet protection key and IV.  See {{receive-key-generation}} for
+considerations about generating these keys.
 
 If a packet is successfully processed using the next key and IV, then the peer
 has initiated a key update.  The endpoint MUST update its send keys to the
@@ -1295,10 +1295,10 @@ key update, but has not updated keys in response.
 Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
 {{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
-place of discarded keys when key updates are not yet permitted; using dummy keys
-will generate no variation in the timing signal produced by attempting to remove
-packet protection, but all packets with an invalid Key Phase bit will be
-rejected.
+place of discarded keys when key updates are not yet permitted.  Using dummy
+keys will generate no variation in the timing signal produced by attempting to
+remove packet protection, and results in all packets with an invalid Key Phase
+bit being rejected.
 
 The process of creating new packet protection keys for receiving packets could
 reveal that a key update has occurred.  An endpoint MAY perform this process as
