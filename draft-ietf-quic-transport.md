@@ -2361,7 +2361,7 @@ see {{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been
 sent since last receiving a packet.  Restarting when sending packets ensures
 that connections do not prematurely time out when initiating new activity.
 
-An endpoint that sends packets near the end of its peer's idle timeout period
+An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
 before the packets arrive.  If a peer could time out within an Probe Timeout
 (PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to test for
