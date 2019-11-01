@@ -1176,7 +1176,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 ~~~
 OnLossDetectionTimeout():
   earliest_loss_time, pn_space =
-    GetEarliestTimeAndSpace(loss_times)
+    GetEarliestTimeAndSpace(loss_time)
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     DetectLostPackets(pn_space)
