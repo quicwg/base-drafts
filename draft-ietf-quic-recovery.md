@@ -752,7 +752,9 @@ Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
 Implementations MUST either use pacing or limit such bursts to the initial
 congestion window, which is recommended to be the minimum of
-10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)).
+10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
+max_datagram_size is the current maximum size of a datagram for the connection,
+not including UDP or IP overhead.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
@@ -1230,20 +1232,15 @@ Constants used in congestion control are based on a combination of RFCs,
 papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
-kMaxDatagramSize:
-: The sender's maximum payload size. Does not include UDP or IP overhead.  The
-  max packet size is used for calculating initial and minimum congestion
-  windows. The RECOMMENDED value is 1200 bytes.
-
 kInitialWindow:
 : Default limit on the initial amount of data in flight, in bytes.  Taken from
   {{?RFC6928}}, but increased slightly to account for the smaller 8 byte
   overhead of UDP vs 20 bytes for TCP.  The RECOMMENDED value is the minimum
-  of 10 * kMaxDatagramSize and max(2* kMaxDatagramSize, 14720)).
+  of 10 * max_datagram_size and max(2 * max_datagram_size, 14720)).
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
-  2 * kMaxDatagramSize.
+  2 * max_datagram_size.
 
 kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
@@ -1263,6 +1260,13 @@ kPersistentCongestionThreshold:
 
 Variables required to implement the congestion control mechanisms
 are described in this section.
+
+max_datagram_size:
+: The sender's current maximum payload size. Does not include UDP or IP
+  overhead.  The max datagram size is used for congestion window
+  computations. An endpoint sets the value of this variable based on its
+  PMTU (see Section 14.1 of {{QUIC-TRANSPORT}}), with a minimum value of
+  1200 bytes.
 
 ecn_ce_counters\[kPacketNumberSpace]:
 : The highest value reported for the ECN-CE counter in the packet number space
@@ -1341,7 +1345,7 @@ acked_packet from sent_packets.
        congestion_window += acked_packet.size
      else:
        // Congestion avoidance.
-       congestion_window += kMaxDatagramSize * acked_packet.size
+       congestion_window += max_datagram_size * acked_packet.size
            / congestion_window
 ~~~
 
