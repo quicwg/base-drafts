@@ -465,7 +465,8 @@ acknowledgement of a sent packet.  This time period includes the estimated
 network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.  When the PTO is armed for Initial or
-Handshake packet number spaces, the max_ack_delay is 0.
+Handshake packet number spaces, the max_ack_delay is 0, as specified in
+13.2.5 of {{QUIC-TRANSPORT}}.
 
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
@@ -477,9 +478,9 @@ except for ApplicationData, which MUST be ignored until the handshake
 completes; see Section 4.1.1 of {{QUIC-TLS}}.  Not arming the PTO for
 ApplicationData prioritizes completing the handshake and prevents the server
 from sending a 1-RTT PTO packet before it has the keys to process a 1-RTT
-packet.  When probe packets from two different packet number spaces are sent
-when the PTO fires and both spaces have in-flight packets, this simplifies to
-setting the PTO on the lowest active packet number space.
+packet.  This simplifies to setting the PTO on the lowest active packet number
+space if packets from two different packet number spaces are sent when the PTO
+fires.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. This exponential reduction in the sender's rate is important because
