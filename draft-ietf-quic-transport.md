@@ -1643,10 +1643,12 @@ more resources available for new connections.
 
 If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
-It can either proceed with the handshake without verifying the token or
-immediately close ({{immediate-close}}) the connection with an INVALID_TOKEN
-error to cause the handshake to fail quickly instead of
-waiting for the client to timeout.
+It can proceed with the handshake without verifying the token, drop the Initial
+packet, or immediately close ({{immediate-close}}) the connection with an
+INVALID_TOKEN error to cause the handshake to fail quickly instead of waiting
+for the client to timeout. The server MAY close the connection without creating
+connection state, including not adding the connection to those in the closing
+state.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
