@@ -2350,7 +2350,7 @@ max_idle_timeout (see {{transport-parameter-definitions}}) and three times the
 current Probe Timeout (PTO).
 
 Each endpoint advertises a max_idle_timeout, but the effective value
-is determined by taking the minimum of the two advertised values. By announcing
+at an endpoint is computed as the minimum of the two advertised values. By announcing
 a max_idle_timeout, endpoints commit to initiating an immediate close
 ({{immediate-close}}) if it abandons a connection prior to the effective value.
 
