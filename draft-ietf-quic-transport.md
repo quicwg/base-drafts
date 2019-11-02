@@ -2345,7 +2345,7 @@ source address.
 ## Idle Timeout {#idle-timeout}
 
 If the idle timeout is enabled by either peer, a connection is silently closed
-and the state is discarded when it remains idle for longer than the
+and its state is discarded when it remains idle for longer than the
 max_idle_timeout (see {{transport-parameter-definitions}}) and three times the
 current Probe Timeout (PTO).
 
