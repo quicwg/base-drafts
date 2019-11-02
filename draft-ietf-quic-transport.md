@@ -1645,7 +1645,7 @@ If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
 It can either proceed with the handshake without verifying the token or
 immediately close ({{immediate-close}}) the connection with an INVALID_TOKEN
-error of INVALID_TOKEN to cause the handshake to fail quickly instead of
+error to cause the handshake to fail quickly instead of
 waiting for the client to timeout.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
