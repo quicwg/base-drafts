@@ -1643,12 +1643,6 @@ more resources available for new connections.
 
 If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
-
-
-
-If a server receives a client Initial that can be unprotected but contains an
-invalid Retry token, it knows the client will not accept another Retry token.
-
 The server can drop such a packet and allow the client to time out to detect
 handshake failure, but that is a significant latency penalty to the client.
 If possible, the server SHOULD either immediately close ({{immediate-close}}) 
