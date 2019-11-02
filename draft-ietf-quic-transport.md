@@ -2351,7 +2351,7 @@ current Probe Timeout (PTO).
 
 Each endpoint advertises a max_idle_timeout, but the effective value
 at an endpoint is computed as the minimum of the two advertised values. By announcing
-a max_idle_timeout, endpoints commit to initiating an immediate close
+a max_idle_timeout, an endpoint commits to initiating an immediate close
 ({{immediate-close}}) if it abandons a connection prior to the effective value.
 
 An endpoint restarts any timer it maintains when a packet from its peer is
