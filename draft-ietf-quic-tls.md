@@ -1168,8 +1168,8 @@ anticipation of receiving a ClientHello.
 
 # Key Update
 
-Once the handshake is confirmed (see {{handshake-confirmed}}), it is possible to
-update the keys used to protect packets.
+Once the handshake is confirmed (see {{handshake-confirmed}}), an endpoint MAY
+initiate a key update.
 
 The Key Phase bit indicates which packet protection keys are used to protect the
 packet.  The Key Phase bit is initially set to 0 for the first set of 1-RTT
@@ -1618,14 +1618,15 @@ During a key update, the time taken to generate new keys could reveal through
 timing side-channels that a key update has occurred.  Alternatively, where an
 attacker injects packets this side-channel could reveal the value of the Key
 Phase on injected packets.  After receiving a key update, an endpoint SHOULD
-generate and save the next set of receive packet protection keys.  By generating
-new keys before a key update is received, receipt of packets will not create
-timing signals that leak the value of the Key Phase.
+generate and save the next set of receive packet protection keys, as described
+in {{receive-key-generation}}.  By generating new keys before a key update is
+received, receipt of packets will not create timing signals that leak the value
+of the Key Phase.
 
 This depends on not doing this key generation during packet processing and it
 can require that endpoints maintain three sets of packet protection keys for
 receiving: for the previous key phase, for the current key phase, and for the
-next key phase.  Endpoints MAY instead choose to defer generation of the next
+next key phase.  Endpoints can instead choose to defer generation of the next
 receive packet protection keys until they discard old keys so that only two sets
 of receive keys need to be retained at any point in time.
 
