@@ -4444,8 +4444,8 @@ original_connection_id (0x0000):
 max_idle_timeout (0x0001):
 
 : The max idle timeout is a value in milliseconds that is encoded as an integer;
-  see ({{idle-timeout}}).  Idle timeout is disabled when this parameter is
-  absent or zero on both sides.
+  see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit this
+  transport parameteter or specify a value of 0.
 
 stateless_reset_token (0x0002):
 
