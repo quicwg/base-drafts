@@ -1272,13 +1272,14 @@ secret_<n+1> = HKDF-Expand-Label(secret_<n>, "quic ku",
 The endpoint toggles the value of the Key Phase bit and uses the updated key and
 IV to protect all subsequent packets.
 
-An endpoint MUST NOT initiate a key update prior to having received an
-acknowledgment for a packet that it sent protected with keys from the current
-key phase.  This ensures that keys are available to both peers before another
-key update can be initiated.  This can be implemented by tracking the lowest
-packet number sent with each key phase, and the highest acknowledged packet
-number in the 1-RTT space: once the latter is higher than or equal to the
-former, another key update can be initiated.
+An endpoint MUST NOT initiate a key update prior to having confirmed the
+handshake ({{handshake-confirmed}}).  An endpoint MUST NOT initiate a subsequent
+key update prior unless it has received an acknowledgment for a packet that was
+sent protected with keys from the current key phase.  This ensures that keys are
+available to both peers before another key update can be initiated.  This can be
+implemented by tracking the lowest packet number sent with each key phase, and
+the highest acknowledged packet number in the 1-RTT space: once the latter is
+higher than or equal to the former, another key update can be initiated.
 
 Note:
 
