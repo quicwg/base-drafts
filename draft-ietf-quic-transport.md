@@ -1625,8 +1625,8 @@ controller.  Clients are only constrained by the congestion controller.
 
 ### Token Construction
 
-Tokens sent in NEW_TOKEN frames or Retry packets MUST be constructed in a way
-that allows the server to identity how it was provided to a client.  These
+A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
+way that allows the server to identity how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
 
@@ -1692,10 +1692,10 @@ encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an on-path observer to the connection on which it was
-issued.  For example, it cannot include the previous connection ID or addressing
-information unless the values are encrypted.  Information that allows the server
-to distinguish between tokens from Retry and NEW_TOKEN MAY be accessible to
-entities other than the server.
+issued, unless the values are encrypted.  For example, it cannot include the
+previous connection ID or addressing information.  Information that allows the
+server to distinguish between tokens from Retry and NEW_TOKEN MAY be accessible
+to entities other than the server.
 
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
