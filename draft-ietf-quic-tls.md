@@ -142,33 +142,34 @@ TLS provides two endpoints with a way to establish a means of communication over
 an untrusted medium (that is, the Internet) that ensures that messages they
 exchange cannot be observed, modified, or forged.
 
-Internally, TLS is a layered protocol, with the structure shown below:
+Internally, TLS is a layered protocol, with the structure shown in
+{{tls-layers}}.
 
 ~~~~
-+--------------+--------------+--------------+
-|  Handshake   |    Alerts    |  Application |
-|    Layer     |              |     Data     |
-|              |              |              |
-+--------------+--------------+--------------+
-|                                            |
-|               Record Layer                 |
-|                                            |
-+--------------------------------------------+
+          +-------------+------------+--------------+---------+
+Handshake |             |            |  Application |         |
+Layer     |  Handshake  |   Alerts   |     Data     |   ...   |
+          |             |            |              |         |
+          +-------------+------------+--------------+---------+
+Record    |                                                   |
+Layer     |                      Records                      |
+          |                                                   |
+          +---------------------------------------------------+
 ~~~~
+{: #tls-layers title="TLS Layers"}
 
-Each upper layer (handshake, alerts, and application data) is carried as a
-series of typed TLS records. Records are individually cryptographically
-protected and then transmitted over a reliable transport (typically TCP) which
-provides sequencing and guaranteed delivery.
+Each Handshake layer message (e.g., Handshake, Alerts, and Application Data) is
+carried as a series of typed TLS records by the Record layer.  Records are
+individually cryptographically protected and then transmitted over a reliable
+transport (typically TCP) which provides sequencing and guaranteed delivery.
 
-Change Cipher Spec records cannot be sent in QUIC.
-
-The TLS authenticated key exchange occurs between two entities: client and
+The TLS authenticated key exchange occurs between two endpoints: client and
 server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
-TLS supports both pre-shared key (PSK) and Diffie-Hellman (DH) key exchanges.
-PSK is the basis for 0-RTT; the latter provides perfect forward secrecy (PFS)
-when the DH keys are destroyed.
+TLS supports both pre-shared key (PSK) and Diffie-Hellman over either finite
+fields or elliptic curves ((EC)DHE) key exchanges.  PSK is the basis for 0-RTT;
+the latter provides perfect forward secrecy (PFS) when the (EC)DHE keys are
+destroyed.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
@@ -180,18 +181,20 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake in which the client is able to send application data
+ * A full 1-RTT handshake in which the client is able to send Application Data
    after one round trip and the server immediately responds after receiving the
    first handshake message from the client.
 
  * A 0-RTT handshake in which the client uses information it has previously
-   learned about the server to send application data immediately.  This
-   application data can be replayed by an attacker so it MUST NOT carry a
+   learned about the server to send Application Data immediately.  This
+   Application Data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
 Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
-{{remove-eoed}}).
+{{remove-eoed}}).  Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
+used by QUIC; ChangeCipherSpec is redundant in TLS 1.3 and QUIC has defined its
+own key update mechanism {{key-update}}.
 
 ~~~
     Client                                             Server
@@ -206,10 +209,10 @@ Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
 
    [Application Data]        <------->      [Application Data]
 
-    () Indicates messages protected by early data (0-RTT) keys
-    {} Indicates messages protected using handshake keys
-    [] Indicates messages protected using application data
-       (1-RTT) keys
+    () Indicates messages protected by Early Data (0-RTT) Keys
+    {} Indicates messages protected using Handshake Keys
+    [] Indicates messages protected using Application Data
+       (1-RTT) Keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
 
@@ -220,12 +223,12 @@ Data is protected using a number of encryption levels:
 - Handshake Keys
 - Application Data (1-RTT) Keys
 
-Application data may appear only in the early data and application data
+Application Data may appear only in the Early Data and Application Data
 levels. Handshake and Alert messages may appear in any level.
 
 The 0-RTT handshake is only possible if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
-application data until it has received all of the handshake messages sent by the
+Application Data until it has received all of the Handshake messages sent by the
 server.
 
 
@@ -236,10 +239,9 @@ integrity protection of packets.  For this it uses keys derived from a TLS
 handshake {{!TLS13}}, but instead of carrying TLS records over QUIC (as with
 TCP), TLS Handshake and Alert messages are carried directly over the QUIC
 transport, which takes over the responsibilities of the TLS record layer, as
-shown below.
+shown in {{quic-layers}}.
 
 ~~~~
-
 +--------------+--------------+ +-------------+
 |     TLS      |     TLS      | |    QUIC     |
 |  Handshake   |    Alerts    | | Applications|
@@ -255,14 +257,14 @@ shown below.
 |                                             |
 +---------------------------------------------+
 ~~~~
-
+{: #quic-layers title="QUIC Layers"}
 
 QUIC also relies on TLS for authentication and negotiation of parameters that
 are critical to security and performance.
 
-Rather than a strict layering, these two protocols are co-dependent: QUIC uses
-the TLS handshake; TLS uses the reliability, ordered delivery, and record
-layer provided by QUIC.
+Rather than a strict layering, these two protocols cooperate: QUIC uses the TLS
+handshake; TLS uses the reliability, ordered delivery, and record layer provided
+by QUIC.
 
 At a high level, there are two main interactions between the TLS and QUIC
 components:
@@ -278,13 +280,14 @@ components:
 protection being called out specially.
 
 ~~~
-+------------+                        +------------+
-|            |<- Handshake Messages ->|            |
-|            |<---- 0-RTT Keys -------|            |
-|            |<--- Handshake Keys-----|            |
-|   QUIC     |<---- 1-RTT Keys -------|    TLS     |
-|            |<--- Handshake Done ----|            |
-+------------+                        +------------+
++------------+                               +------------+
+|            |<---- Handshake Messages ----->|            |
+|            |<- Validate 0-RTT parameters ->|            |
+|            |<--------- 0-RTT Keys ---------|            |
+|    QUIC    |<------- Handshake Keys -------|    TLS     |
+|            |<--------- 1-RTT Keys ---------|            |
+|            |<------- Handshake Done -------|            |
++------------+                               +------------+
  |         ^
  | Protect | Protected
  v         | Packet
@@ -323,7 +326,7 @@ establishing the connection can usually appear at any encryption level, whereas
 those associated with transferring data can only appear in the 0-RTT and 1-RTT
 encryption levels:
 
-- PADDING frames MAY appear in packets of any encryption level.
+- PADDING and PING frames MAY appear in packets of any encryption level.
 
 - CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
   level except 0-RTT.
@@ -358,10 +361,12 @@ levels fit into the handshake process.
 
 ## Interface to TLS
 
-As shown in {{schematic}}, the interface from QUIC to TLS consists of three
+As shown in {{schematic}}, the interface from QUIC to TLS consists of four
 primary functions:
 
 - Sending and receiving handshake messages
+- Processing stored transport and application state from a resumed session
+  and determining if it is valid to accept early data
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
@@ -570,11 +575,16 @@ older than 1.3 is negotiated.
 
 ## ClientHello Size {#clienthello-size}
 
-QUIC requires that the first Initial packet from a client contain an entire
-cryptographic handshake message, which for TLS is the ClientHello.  Though a
-packet larger than 1200 bytes might be supported by the path, a client improves
-the likelihood that a packet is accepted if it ensures that the first
-ClientHello message is small enough to stay within this limit.
+The first Initial packet from a client contains the start or all of its first
+cryptographic handshake message, which for TLS is the ClientHello.  Servers
+might need to parse the entire ClientHello (e.g., to access extensions such as
+Server Name Identification (SNI) or Application Layer Protocol Negotiation
+(ALPN)) in order to decide whether to accept the new incoming QUIC connection.
+If the ClientHello spans multiple Initial packets, such servers would need to
+buffer the first received fragments, which could consume excessive resources if
+the client's address has not yet been validated.  To avoid this, servers MAY
+use the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
+partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
 message.  That overhead increases if the client chooses a connection ID without
@@ -589,12 +599,9 @@ QUIC transport parameters, and other negotiable parameters and extensions could
 cause this message to grow.
 
 For servers, in addition to connection IDs and tokens, the size of TLS session
-tickets can have an effect on a client's ability to connect.  Minimizing the
-size of these values increases the probability that they can be successfully
-used by a client.
-
-A client is not required to fit the ClientHello that it sends in response to a
-HelloRetryRequest message into a single UDP datagram.
+tickets can have an effect on a client's ability to connect efficiently.
+Minimizing the size of these values increases the probability that clients can
+use them and still fit their ClientHello message in their first Initial packet.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
@@ -617,17 +624,24 @@ MAY refuse a connection if the client is unable to authenticate when requested.
 The requirements for client authentication vary based on application protocol
 and deployment.
 
-A server MUST NOT use post-handshake client authentication (see Section 4.6.2 of
-{{!TLS13}}).
+A server MUST NOT use post-handshake client authentication (as defined in
+Section 4.6.2 of {{!TLS13}}), because the multiplexing offered by QUIC prevents
+clients from correlating the certificate request with the application-level
+event that triggered it (see {{?HTTP2-TLS13=I-D.ietf-httpbis-http2-tls13}}).
+More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
+messages and clients MUST treat receipt of such messages as a connection error
+of type PROTOCOL_VIOLATION.
 
 
 ## Enabling 0-RTT {#enable-0rtt}
 
-In order to be usable for 0-RTT, TLS MUST provide a NewSessionTicket message
-that contains the "early_data" extension with a max_early_data_size of
-0xffffffff; the amount of data which the client can send in 0-RTT is controlled
-by the "initial_max_data" transport parameter supplied by the server.  A client
-MUST treat receipt of a NewSessionTicket that contains an "early_data" extension
+To communicate their willingness to process 0-RTT data, servers send a
+NewSessionTicket message that contains the "early_data" extension with a
+max_early_data_size of 0xffffffff; the amount of data which the client can send
+in 0-RTT is controlled by the "initial_max_data" transport parameter supplied
+by the server.  Servers MUST NOT send the "early_data" extension with a
+max_early_data_size set to any value other than 0xffffffff.  A client MUST
+treat receipt of a NewSessionTicket that contains an "early_data" extension
 with any other value as a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
@@ -655,6 +669,27 @@ the state of all streams, including application state bound to those streams.
 
 A client MAY attempt to send 0-RTT again if it receives a Retry or Version
 Negotiation packet.  These packets do not signify rejection of 0-RTT.
+
+
+## Validating 0-RTT Configuration
+
+When a server receives a ClientHello with the "early_data" extension, it has to
+decide whether to accept or reject early data from the client. Some of this
+decision is made by the TLS stack (e.g., checking that the cipher suite being
+resumed was included in the ClientHello; see Section 4.2.10 of {{!TLS13}}). Even
+when the TLS stack has no reason to reject early data, the QUIC stack or the
+application protocol using QUIC might reject early data because the
+configuration of the transport or application associated with the resumed
+session is not compatible with the server's current configuration.
+
+QUIC requires additional transport state to be associated with a 0-RTT session
+ticket. One common way to implement this is using stateless session tickets and
+storing this state in the session ticket. Application protocols that use QUIC
+might have similar requirements regarding associating or storing state. This
+associated state is used for deciding whether early data must be rejected. For
+example, HTTP/3 ({{QUIC-HTTP}}) settings determine how early data from the
+client is interpreted. Other applications using QUIC could have different
+requirements for determining whether to accept or reject early data.
 
 
 ## HelloRetryRequest
@@ -795,8 +830,7 @@ TLS 1.3 (see {{initial-secrets}}).
 ## Initial Secrets {#initial-secrets}
 
 Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's first Initial packet of the
-connection. Specifically:
+Connection ID field from the client's Initial packet. Specifically:
 
 ~~~
 initial_salt = 0xc3eef712c72ebb5a11a7d2432bb46365bef9f502
@@ -828,8 +862,10 @@ modifying the contents of packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-{{test-vectors-initial}} contains test vectors for the initial packet
-encryption.
+The secrets used for protecting Initial packets change when a server sends a
+Retry packet to use the connection ID value selected by the server.  The secrets
+do not change when a client changes the Destination Connection ID it uses in
+response to an Initial packet from the server.
 
 Note:
 
@@ -838,6 +874,9 @@ Note:
   ID field.  In this case, the Initial keys provide no assurance to the client
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
+
+{{test-vectors-initial}} contains test vectors for the initial packet
+encryption.
 
 
 ## AEAD Usage {#aead}
@@ -1442,7 +1481,7 @@ protocol incompatible with the protocol version being used.
 ## QUIC Transport Parameters Extension {#quic_parameters}
 
 QUIC transport parameters are carried in a TLS extension. Different versions of
-QUIC might define a different format for this struct.
+QUIC might define a different method for negotiating transport configuration.
 
 Including transport parameters in the TLS handshake provides integrity
 protection for these values.
@@ -1454,9 +1493,7 @@ protection for these values.
 ~~~
 
 The `extension_data` field of the quic_transport_parameters extension contains a
-value that is defined by the version of QUIC that is in use.  The
-quic_transport_parameters extension carries a TransportParameters struct when
-the version of QUIC defined in {{QUIC-TRANSPORT}} is used.
+value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake. Endpoints MUST send the
@@ -1911,7 +1948,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - TLS provides an AEAD and KDF function (#2046)
   - Clarify that the TLS KDF is used with TLS (#1997)
   - Change the labels for calculation of QUIC keys (#1845, #1971, #1991)
-- Initial keys are discarded once Handshake are avaialble (#1951, #2045)
+- Initial keys are discarded once Handshake keys are available (#1951, #2045)
 
 
 ## Since draft-ietf-quic-tls-13
