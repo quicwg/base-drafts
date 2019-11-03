@@ -1417,6 +1417,15 @@ Invoked from DetectLostPackets when packets are deemed lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-23
+- Define under-utilizing the congestion window (#2630, #2686, #2675)
+- PTO MUST send data if possible (#3056, #3057)
+- Connection Close is not ack-eliciting (#3097, #3098)
+- MUST limit bursts to the initial congestion window (#3160)
+- Define the current max_datagram_size for congestion control
+  (#3041, #3167)
+- Separate PTO by packet number space (#3067, #3074, #3066)
+
 ## Since draft-ietf-quic-recovery-22
 
 - PTO should always send an ack-eliciting packet (#2895)
