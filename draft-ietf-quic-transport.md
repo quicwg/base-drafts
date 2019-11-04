@@ -6088,6 +6088,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - NEW_TOKEN cannot be empty (#2978, #2977)
 - PING can be sent at any encryption level (#3034, #3035)
 - CONNECTION_CLOSE is not ack-eliciting (#3097, #3098)
+- Frame encoding error conditions updated (#3027, #3042)
 - Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
   packets (#3100, #3104)
 
