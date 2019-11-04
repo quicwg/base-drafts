@@ -6066,6 +6066,24 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-23
+
+- Client Initial size constraints apply to UDP datagram payload (#3053, #3051)
+- Stateless reset changes (#2152, #2993)
+  - tokens need to be compared in constant time
+  - detection uses UDP datagrams, not packets
+  - tokens cannot be reused (#2785, #2968)
+- Clearer rules for sharing of UDP ports and use of connection IDs when doing so
+  (#2844, #2851)
+- A new connection ID is necessary when responding to migration (#2778, #2969)
+- Stronger requirements for connection ID retirement (#3046, #3096)
+- NEW_TOKEN cannot be empty (#2978, #2977)
+- PING can be sent at any encryption level (#3034, #3035)
+- CONNECTION_CLOSE is not ack-eliciting (#3097, #3098)
+- Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
+  packets (#3100, #3104)
+
+
 ## Since draft-ietf-quic-transport-22
 
 - Rules for preventing correlation by connection ID tightened (#2084, #2929)

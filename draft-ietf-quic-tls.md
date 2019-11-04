@@ -1749,6 +1749,15 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-23
+
+- Key update text update (#3050):
+  - Recommend constant-time key replacement (#2792)
+  - Provide explicit labels for key update key derivation (#3054)
+- Allow first Initial from a client to span multiple packets (#2928, #3045)
+- PING can be sent at any encryption level (#3034, #3035)
+
+
 ## Since draft-ietf-quic-tls-22
 
 - Update the salt used for Initial secrets (#2887, #2980)
