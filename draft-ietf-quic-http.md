@@ -2019,6 +2019,12 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-23
+
+- Removed `quic` Alt-Svc parameter (#3061,#3118)
+- Clients need not persist unknown settings for use in 0-RTT (#3110,#3113)
+- Clarify error cases around CANCEL_PUSH (#2819,#3083)
+
 ## Since draft-ietf-quic-http-22
 
 - Removed priority signaling (#2922,#2924)
@@ -2047,7 +2053,7 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 ## Since draft-ietf-quic-http-21
 
-- No changes
+No changes
 
 ## Since draft-ietf-quic-http-20
 
