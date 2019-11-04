@@ -5272,7 +5272,9 @@ STREAMS_BLOCKED frames contain the following fields:
 Stream Limit:
 
 : A variable-length integer indicating the stream limit at the time the frame
-  was sent.
+  was sent.  Stream IDs cannot exceed 2^62-1, as it is not possible to encode
+  stream IDs larger than this value.  Receipt of a frame that encodes a larger
+  stream ID MUST be treated as a STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
