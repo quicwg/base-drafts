@@ -4815,8 +4815,7 @@ subsequent ACK Range using the following formula:
 ~~~
 
 If any computed packet number is negative, an endpoint MUST generate a
-connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
-frame.
+connection error of type FRAME_ENCODING_ERROR.
 
 
 ### ECN Counts {#ack-ecn-counts}
@@ -4984,6 +4983,10 @@ There is a separate flow of cryptographic handshake data in each encryption
 level, each of which starts at an offset of 0. This implies that each encryption
 level is treated as a separate CRYPTO stream of data.
 
+The largest offset delivered on a stream - the sum of the offset and data
+length - cannot exceed 2^62-1.  Receipt of a frame that exceeds this limit MUST
+be treated as a connection error of type FRAME_ENCODING_ERROR.
+
 Unlike STREAM frames, which include a Stream ID indicating to which stream the
 data belongs, the CRYPTO frame carries data for a single stream per encryption
 level. The stream does not have an explicit end, so CRYPTO frames do not have a
@@ -5099,8 +5102,8 @@ the offset of the next byte that would be sent.
 The first byte in the stream has an offset of 0.  The largest offset delivered
 on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
 it is not possible to provide flow control credit for that data.  Receipt of a
-frame that exceeds this limit will be treated as a connection error of type
-FLOW_CONTROL_ERROR.
+frame that exceeds this limit MUST be treated as a connection error of type
+FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -5204,7 +5207,10 @@ MAX_STREAMS frames contain the following fields:
 Maximum Streams:
 
 : A count of the cumulative number of streams of the corresponding type that
-  can be opened over the lifetime of the connection.
+  can be opened over the lifetime of the connection.  Stream IDs cannot exceed
+  2^62-1, as it is not possible to encode stream IDs larger than this value.
+  Receipt of a frame that permits opening of a stream larger than this limit
+  MUST be treated as a FRAME_ENCODING_ERROR.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
@@ -5305,7 +5311,9 @@ STREAMS_BLOCKED frames contain the following fields:
 Stream Limit:
 
 : A variable-length integer indicating the stream limit at the time the frame
-  was sent.
+  was sent.  Stream IDs cannot exceed 2^62-1, as it is not possible to encode
+  stream IDs larger than this value.  Receipt of a frame that encodes a larger
+  stream ID MUST be treated as a STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
@@ -5354,7 +5362,7 @@ Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
   less than 1 and greater than 20 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
+  connection error of type FRAME_ENCODING_ERROR.
 
 Connection ID:
 
@@ -5392,7 +5400,7 @@ RETIRE_CONNECTION_ID frames in a timely manner.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type PROTOCOL_VIOLATION.
+connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
@@ -5436,7 +5444,7 @@ type PROTOCOL_VIOLATION.
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
 contained.  The peer MAY treat this as a connection error of type
-PROTOCOL_VIOLATION.
+FRAME_ENCODING_ERROR.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
