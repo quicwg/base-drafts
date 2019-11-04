@@ -4985,7 +4985,8 @@ level is treated as a separate CRYPTO stream of data.
 
 The largest offset delivered on a stream - the sum of the offset and data
 length - cannot exceed 2^62-1.  Receipt of a frame that exceeds this limit MUST
-be treated as a connection error of type FRAME_ENCODING_ERROR.
+be treated as a connection error of type FRAME_ENCODING_ERROR or
+CRYPTO_BUFFER_EXCEEDED.
 
 Unlike STREAM frames, which include a Stream ID indicating to which stream the
 data belongs, the CRYPTO frame carries data for a single stream per encryption
