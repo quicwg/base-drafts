@@ -6056,14 +6056,11 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    //
    // The following code calculates a candidate value and
    // makes sure it's within the packet number window.
+   // Note the extra checks to prevent overflow and underflow.
    candidate_pn = (expected_pn & ~pn_mask) | truncated_pn
-   // Note the extra check for overflow when candidate_pn
-   // is near MAX_PACKET_NUMBER
    if candidate_pn <= expected_pn - pn_hwin and
-      candidate_pn + pn_win < 1 << 62:
+      candidate_pn < (1 << 62) - pn_win:
       return candidate_pn + pn_win
-   // Note the extra check for underflow when candidate_pn
-   // is near zero.
    if candidate_pn > expected_pn + pn_hwin and
       candidate_pn >= pn_win:
       return candidate_pn - pn_win
