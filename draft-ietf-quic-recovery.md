@@ -477,10 +477,8 @@ the timer MUST be set for the packet number space with the earliest timeout,
 except for ApplicationData, which MUST be ignored until the handshake
 completes; see Section 4.1.1 of {{QUIC-TLS}}.  Not arming the PTO for
 ApplicationData prioritizes completing the handshake and prevents the server
-from sending a 1-RTT PTO packet before it has the keys to process a 1-RTT
-packet.  This simplifies to setting the PTO on the lowest active packet number
-space if packets from two different packet number spaces are sent when the PTO
-fires.
+from sending a 1-RTT packet on a PTO before before it has the keys to process
+a 1-RTT packet.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. This exponential reduction in the sender's rate is important because
