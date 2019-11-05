@@ -287,21 +287,17 @@ The Known Received Count is the total number of dynamic table insertions and
 duplications acknowledged by the decoder.  The encoder tracks the Known Received
 Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
-order to be able to send Insert Count Increment instructions (see
-{{insert-count-increment}}).
+order to be able to send Insert Count Increment instructions.
 
-If a header block was potentially blocking, the encoder infers from receiving a
-Header Acknowledgement instruction ({{header-acknowledgement}}) that the decoder
-has received all dynamic table state necessary to process that header block.  If
-the Required Insert Count of the acknowledged header block is greater than the
-current Known Received Count, the encoder updates the Known Received Count to
-the value of the Required Insert Count of the acknowledged header block.
+A Header Acknowledgement instruction ({{header-acknowledgement}}) implies that
+the decoder has received all dynamic table state necessary to process
+corresponding the header block.  If the Required Insert Count of the
+acknowledged header block is greater than the current Known Received Count,
+Known Received Count is updated to the value of the Required Insert Count.
 
-To acknowledge dynamic table entries which are not referenced by header blocks,
-for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends an Insert Count Increment instruction (see
-{{insert-count-increment}}).
-
+An Insert Count Increment instruction {{insert-count-increment}} increases the
+Known Received Count by its Increment parameter.  See {{new-table-entries}} for
+guidance.
 
 ## Decoder
 
@@ -786,6 +782,9 @@ stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
+The Header Acknowledgement instruction might increase the Known Received Count,
+see {{known-received-count}}.
+
 
 ### Stream Cancellation
 
@@ -807,13 +806,11 @@ This instruction is used as described in {{state-synchronization}}.
 ### Insert Count Increment
 
 The Insert Count Increment instruction begins with the '00' two-bit pattern,
-followed by the Increment encoded as a 6-bit prefix integer.  The value of the
-Increment is the total number of dynamic table insertions and duplications
-processed by the decoder since the last time it sent a Header Acknowledgement
-instruction that increased the Known Received Count (see
-{{known-received-count}}) or an Insert Count Increment instruction.  The encoder
-uses this value to update the Known Received Count, as described in
-{{state-synchronization}}.
+followed by the Increment encoded as a 6-bit prefix integer.  This instruction
+increases the Known Received Count (see {{known-received-count}}) by the value
+of the Increment parameter.  The decoder should send an Increment value that
+increases the Known Received Count to the total number of dynamic table
+insertions and duplications processed so far.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
