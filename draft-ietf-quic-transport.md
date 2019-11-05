@@ -6076,6 +6076,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-23
 
+- Allow ClientHello to span multiple packets (#2928, #3045)
 - Client Initial size constraints apply to UDP datagram payload (#3053, #3051)
 - Stateless reset changes (#2152, #2993)
   - tokens need to be compared in constant time
