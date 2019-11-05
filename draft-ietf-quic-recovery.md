@@ -1424,7 +1424,6 @@ Issue and pull request numbers are listed with a leading octothorp.
 - MUST limit bursts to the initial congestion window (#3160)
 - Define the current max_datagram_size for congestion control
   (#3041, #3167)
-- Separate PTO by packet number space (#3067, #3074, #3066)
 
 ## Since draft-ietf-quic-recovery-22
 
