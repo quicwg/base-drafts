@@ -224,7 +224,7 @@ endpoint:
 
 frame:
 : The smallest unit of communication on a stream in HTTP/3, consisting of a
-  header and a variable-length sequence of octets structured according to the
+  header and a variable-length sequence of bytes structured according to the
   frame type.
 
   Protocol elements called "frames" exist in both this document and
@@ -423,12 +423,14 @@ H3_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
-not been sent and received. When this is true, a server MAY abort reading the
-request stream with error code H3_EARLY_RESPONSE, send a complete response,
-and cleanly close the sending part of the stream. Clients MUST NOT discard
-complete responses as a result of having their request terminated abruptly,
-though clients can always discard responses at their discretion for other
-reasons.
+not been sent and received. When the server does not need to receive the
+remainder of the request, it MAY abort reading the request stream with error
+code H3_EARLY_RESPONSE, send a complete response, and cleanly close the
+sending part of the stream. Clients MUST NOT discard complete responses as a
+result of having their request terminated abruptly, though clients can always
+discard responses at their discretion for other reasons.  If the server sends a
+partial or complete response but does not abort reading, clients SHOULD continue
+sending the body of the request and close the stream normally.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -972,7 +974,8 @@ A frame includes the following fields:
   : A variable-length integer that identifies the frame type.
 
   Length:
-  : A variable-length integer that describes the length of the Frame Payload.
+  : A variable-length integer that describes the length in bytes of
+    the Frame Payload.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
@@ -1192,10 +1195,13 @@ A server MAY accept 0-RTT and subsequently provide different settings in its
 SETTINGS frame. If 0-RTT data is accepted by the server, its SETTINGS frame MUST
 NOT reduce any limits or alter any values that might be violated by the client
 with its 0-RTT data.  The server MUST include all settings which differ from
-their default values.  If a server accepts 0-RTT, but then sends a SETTINGS
-frame which reduces a setting the client understands or omits a value that was
-previously specified to have a non-default value, this MUST be treated as a
-connection error of type H3_SETTINGS_ERROR.
+their default values.  If a server accepts 0-RTT but then sends settings that
+are not compatible with the previously specified settings, this MUST be treated
+as a connection error of type H3_SETTINGS_ERROR. If a server accepts 0-RTT but
+then sends a SETTINGS frame that omits a setting value that the client
+understands (apart from reserved setting identifiers) that was previously
+specified to have a non-default value, this MUST be treated as a connection
+error of type H3_SETTINGS_ERROR.
 
 
 ### PUSH_PROMISE {#frame-push-promise}
@@ -1765,6 +1771,21 @@ considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
 are reached first, such as the limit on the connection flow control window.
 
+In contrast to HTTP/2, stream concurrency in HTTP/3 is managed by QUIC.  QUIC
+considers a stream closed when all data has been received and sent data has been
+acknowledged by the peer.  HTTP/2 considers a stream closed when the frame
+containing the END_STREAM bit has been committed to the transport. As a result,
+the stream for an equivalent exchange could remain "active" for a longer period
+of time.  HTTP/3 servers might choose to permit a larger number of concurrent
+client-initiated bidirectional streams to achieve equivalent concurrency to
+HTTP/2, depending on the expected usage patterns.
+
+Due to the presence of other unidirectional stream types, HTTP/3 does not rely
+exclusively on the number of concurrent unidirectional streams to control the
+number of concurrent in-flight pushes.  Instead, HTTP/3 clients use the
+MAX_PUSH_ID frame to control the number of pushes received from an HTTP/3
+server.
+
 ## HTTP Frame Types {#h2-frames}
 
 Many framing concepts from HTTP/2 can be elided on QUIC, because the transport
@@ -1998,6 +2019,12 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-23
+
+- Removed `quic` Alt-Svc parameter (#3061,#3118)
+- Clients need not persist unknown settings for use in 0-RTT (#3110,#3113)
+- Clarify error cases around CANCEL_PUSH (#2819,#3083)
+
 ## Since draft-ietf-quic-http-22
 
 - Removed priority signaling (#2922,#2924)
@@ -2026,7 +2053,7 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 ## Since draft-ietf-quic-http-21
 
-- No changes
+No changes
 
 ## Since draft-ietf-quic-http-20
 

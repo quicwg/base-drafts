@@ -188,27 +188,28 @@ input header list.
 QPACK is designed to contain the more complex state tracking to the encoder,
 while the decoder is relatively simple.
 
-### Blocked Dynamic Table Insertions {#blocked-insertion}
+### Limits on Dynamic Table Insertions {#blocked-insertion}
 
-A dynamic table entry is considered blocking and cannot be evicted until its
-insertion has been acknowledged and there are no outstanding unacknowledged
-references to the entry.  In particular, a dynamic table entry that has never
-been referenced can still be blocking.
+Inserting entries into the dynamic table might not be possible if the table
+contains entries which cannot be evicted.
 
-Note that references on the encoder stream do not make an entry blocking,
-because those are guaranteed to be processed before the instruction that evicts
-the entry.
+A dynamic table entry cannot be evicted immediately after insertion, even if it
+has never been referenced. Once the insertion of a dynamic table entry has been
+acknowledged and there are no outstanding references to the entry in
+unacknowledged header blocks, the entry becomes evictable.  Note that references
+on the encoder stream do not prevent an entry from being evictable, because
+those references are guaranteed to be processed before the instruction that
+evicts the entry.
 
-An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict a blocking entry.  In order to avoid
-this, the encoder needs to retain information about each header block that
-references the dynamic table until that header block is acknowledged by the
-decoder (see {{header-acknowledgement}}).
+If the dynamic table does not contain enough room for a new entry without
+evicting other entries, and the entries which would be evicted are not
+evictable, the encoder MUST NOT insert that entry into the dynamic table
+(including duplicates of existing entries). In order to avoid this, an encoder
+that uses the dynamic table has to keep track of each dynamic table referenced
+by each header block until that header block is acknowledged by the decoder (see
+{{header-acknowledgement}}).
 
-Note that a blocking entry is unrelated to a blocked stream, see
-{{blocked-streams}}.
-
-#### Avoiding Blocked Insertions
+#### Avoiding Prohibited Insertions
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -261,7 +262,7 @@ The decoder specifies an upper bound on the number of streams which can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting (see
 {{configuration}}). An encoder MUST limit the number of streams which could
 become blocked to the value of SETTINGS_QPACK_BLOCKED_STREAMS at all times.
-If an decoder encounters more blocked streams than it promised to support, it
+If a decoder encounters more blocked streams than it promised to support, it
 MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
 
 Note that the decoder might not become blocked on every stream which risks
@@ -282,21 +283,17 @@ The Known Received Count is the total number of dynamic table insertions and
 duplications acknowledged by the decoder.  The encoder tracks the Known Received
 Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
-order to be able to send Insert Count Increment instructions (see
-{{insert-count-increment}}).
+order to be able to send Insert Count Increment instructions.
 
-If a header block was potentially blocking, the encoder infers from receiving a
-Header Acknowledgement instruction ({{header-acknowledgement}}) that the decoder
-has received all dynamic table state necessary to process that header block.  If
-the Required Insert Count of the acknowledged header block is greater than the
-current Known Received Count, the encoder updates the Known Received Count to
-the value of the Required Insert Count of the acknowledged header block.
+A Header Acknowledgement instruction ({{header-acknowledgement}}) implies that
+the decoder has received all dynamic table state necessary to process
+corresponding the header block.  If the Required Insert Count of the
+acknowledged header block is greater than the current Known Received Count,
+Known Received Count is updated to the value of the Required Insert Count.
 
-To acknowledge dynamic table entries which are not referenced by header blocks,
-for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends an Insert Count Increment instruction (see
-{{insert-count-increment}}).
-
+An Insert Count Increment instruction {{insert-count-increment}} increases the
+Known Received Count by its Increment parameter.  See {{new-table-entries}} for
+guidance.
 
 ## Decoder
 
@@ -360,7 +357,7 @@ received.
 The Header Acknowledgement and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
 with absolute index lower than the Known Received Count has zero references,
-then it is no longer considered blocking (see {{blocked-insertion}}).
+then it is considered evictable (see {{blocked-insertion}}).
 
 #### New Table Entries
 
@@ -444,10 +441,11 @@ table.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (table capacity - size of new entry). The encoder MUST NOT cause a
-blocking dynamic table entry to be evicted (see {{blocked-insertion}}).  The new
-entry is then added to the table.  It is an error if the encoder attempts to add
-an entry that is larger than the dynamic table capacity; the decoder MUST treat
-this as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+dynamic table entry to be evicted unless that entry is evictable (see
+{{blocked-insertion}}).  The new entry is then added to the table.  It is an
+error if the encoder attempts to add an entry that is larger than the dynamic
+table capacity; the decoder MUST treat this as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -585,7 +583,8 @@ The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
 this document.  The format from [RFC7541] is used unmodified.  Note, however,
 that QPACK uses some prefix sizes not actually used in HPACK.
 
-QPACK implementations MUST be able to decode integers up to 62 bits long.
+QPACK implementations MUST be able to decode integers up to and including 62
+bits long.
 
 ### String Literals
 
@@ -671,9 +670,9 @@ that exceeds this limit as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
-{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
-acknowledged as this instruction does not insert an entry.
+{{eviction}}).  This MUST NOT cause the eviction of entries which are not
+evictable (see {{blocked-insertion}}).  Changing the capacity of the dynamic
+table is not acknowledged as this instruction does not insert an entry.
 
 ### Insert With Name Reference
 
@@ -779,6 +778,9 @@ stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
+The Header Acknowledgement instruction might increase the Known Received Count,
+see {{known-received-count}}.
+
 
 ### Stream Cancellation
 
@@ -800,13 +802,11 @@ This instruction is used as described in {{state-synchronization}}.
 ### Insert Count Increment
 
 The Insert Count Increment instruction begins with the '00' two-bit pattern,
-followed by the Increment encoded as a 6-bit prefix integer.  The value of the
-Increment is the total number of dynamic table insertions and duplications
-processed by the decoder since the last time it sent a Header Acknowledgement
-instruction that increased the Known Received Count (see
-{{known-received-count}}) or an Insert Count Increment instruction.  The encoder
-uses this value to update the Known Received Count, as described in
-{{state-synchronization}}.
+followed by the Increment encoded as a 6-bit prefix integer.  This instruction
+increases the Known Received Count (see {{known-received-count}}) by the value
+of the Increment parameter.  The decoder should send an Increment value that
+increases the Known Received Count to the total number of dynamic table
+insertions and duplications processed so far.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -953,7 +953,7 @@ the Delta Base will be set to zero.
 A header block that does not reference the dynamic table can use any value for
 the Base; setting Delta Base to zero is one of the most efficient encodings.
 
-For example, with a Required Insert Count of 9, a decoder receives a S bit of 1
+For example, with a Required Insert Count of 9, a decoder receives an S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
 for three entries.  In this example, a relative index of 1 refers to the 5th
 entry that was added to the table; a post-base index of 1 refers to the 8th
@@ -962,9 +962,8 @@ entry.
 
 ### Indexed Header Field
 
-An indexed header field representation identifies an entry in either the static
-table or the dynamic table and causes that header field to be added to the
-decoded header list.
+An indexed header field representation identifies an entry in the static table,
+or an entry in the dynamic table with an absolute index less than the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -974,22 +973,18 @@ decoded header list.
 ~~~~~~~~~~
 {: title="Indexed Header Field"}
 
-If the entry is in the static table, or in the dynamic table with an absolute
-index less than the Base, this representation starts with the '1' 1-bit pattern,
-followed by the 'T' bit indicating whether the reference is into the static or
-dynamic table.  The 6-bit prefix integer (see {{prefixed-integers}}) that
-follows is used to locate the table entry for the header field.  When T=1, the
-number represents the static table index; when T=0, the number is the relative
-index of the entry in the dynamic table.
+This representation starts with the '1' 1-bit pattern, followed by the 'T' bit
+indicating whether the reference is into the static or dynamic table.  The 6-bit
+prefix integer (see {{prefixed-integers}}) that follows is used to locate the
+table entry for the header field.  When T=1, the number represents the static
+table index; when T=0, the number is the relative index of the entry in the
+dynamic table.
 
 
 ### Indexed Header Field With Post-Base Index
 
-If the entry is in the dynamic table with an absolute index greater than or
-equal to the Base, the representation starts with the '0001' 4-bit pattern,
-followed by the post-base index (see {{post-base}}) of the matching header
-field, represented as an integer with a 4-bit prefix (see
-{{prefixed-integers}}).
+An indexed header field with post-base index representation identifies an entry
+in the dynamic table with an absolute index greater than or equal to the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -999,25 +994,17 @@ field, represented as an integer with a 4-bit prefix (see
 ~~~~~~~~~~
 {: title="Indexed Header Field with Post-Base Index"}
 
+This representation starts with the '0001' 4-bit pattern.  This is followed by
+the post-base index (see {{post-base}}) of the matching header field,
+represented as an integer with a 4-bit prefix (see {{prefixed-integers}}).
+
 
 ### Literal Header Field With Name Reference {#literal-name-reference}
 
-A literal header field with name reference represents a header field where the
-header field name matches the header field name of an entry stored in the static
-table or the dynamic table.
-
-If the entry is in the static table, or in the dynamic table with an absolute
-index less than the Base, this representation starts with the '01' two-bit
-pattern.
-
-The following bit, 'N', indicates whether an intermediary is permitted to add
-this header to the dynamic header table on subsequent hops. When the 'N' bit is
-set, the encoded header MUST always be encoded with a literal representation. In
-particular, when a peer sends a header field that it received represented as a
-literal header field with the 'N' bit set, it MUST use a literal representation
-to forward this header field.  This bit is intended for protecting header field
-values that are not to be put at risk by compressing them (see
-{{security-considerations}} for more details).
+A literal header field with name reference representation encodes a header field
+where the header field name matches the header field name of an entry in the
+static table, or the header field name of an entry in the dynamic table with an
+absolute index less than the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1030,6 +1017,16 @@ values that are not to be put at risk by compressing them (see
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field With Name Reference"}
+
+This representation starts with the '01' two-bit pattern.  The following bit,
+'N', indicates whether an intermediary is permitted to add this header to the
+dynamic header table on subsequent hops. When the 'N' bit is set, the encoded
+header MUST always be encoded with a literal representation. In particular, when
+a peer sends a header field that it received represented as a literal header
+field with the 'N' bit set, it MUST use a literal representation to forward this
+header field.  This bit is intended for protecting header field values that are
+not to be put at risk by compressing them (see {{security-considerations}} for
+more details).
 
 The fourth ('T') bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer (see {{prefixed-integers}}) that follows is
@@ -1044,18 +1041,9 @@ field value is encoded as an 8-bit prefix string literal (see
 
 ### Literal Header Field With Post-Base Name Reference
 
-A literal header field with post-base name reference represents a header field
-where the name matches the header field name of a dynamic table entry with an
-absolute index greater than or equal to the Base.
-
-This representation starts with the '0000' four-bit pattern.  The fifth bit is
-the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
-post-base index of the dynamic table entry (see {{post-base}}) encoded as an
-integer with a 3-bit prefix (see {{prefixed-integers}}).
-
-Only the header field name is taken from the dynamic table entry; the header
-field value is encoded as an 8-bit prefix string literal (see
-{{string-literals}}).
+A literal header field with post-base name reference representation encodes a
+header field where the header field name matches the header field name of a
+dynamic table entry with an absolute index greater than or equal to the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1069,16 +1057,20 @@ field value is encoded as an 8-bit prefix string literal (see
 ~~~~~~~~~~
 {: title="Literal Header Field With Post-Base Name Reference"}
 
+This representation starts with the '0000' four-bit pattern.  The fifth bit is
+the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
+post-base index of the dynamic table entry (see {{post-base}}) encoded as an
+integer with a 3-bit prefix (see {{prefixed-integers}}).
+
+Only the header field name is taken from the dynamic table entry; the header
+field value is encoded as an 8-bit prefix string literal (see
+{{string-literals}}).
+
 
 ### Literal Header Field Without Name Reference
 
 The literal header field without name reference representation encodes a header
-field name and header field value as string literals.
-
-This representation begins with the '001' three-bit pattern.  The fourth bit is
-the 'N' bit as described in {{literal-name-reference}}.  The name follows,
-represented as a 4-bit prefix string literal, then the value, represented as an
-8-bit prefix string literal (see {{string-literals}}).
+field name and a header field value as string literals.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1093,6 +1085,11 @@ represented as a 4-bit prefix string literal, then the value, represented as an
    +-------------------------------+
 ~~~~~~~~~~
 {: title="Literal Header Field Without Name Reference"}
+
+This representation begins with the '001' three-bit pattern.  The fourth bit is
+the 'N' bit as described in {{literal-name-reference}}.  The name follows,
+represented as a 4-bit prefix string literal, then the value, represented as an
+8-bit prefix string literal (see {{string-literals}}).
 
 
 #  Configuration
@@ -1341,6 +1338,10 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-10
+
+Editorial changes
 
 ## Since draft-ietf-quic-qpack-09
 
