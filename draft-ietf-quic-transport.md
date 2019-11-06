@@ -192,8 +192,9 @@ QUIC packet:
 
 Ack-eliciting Packet:
 
-: A QUIC packet that contains frames other than ACK and PADDING. These cause a
-  recipient to send an acknowledgment (see {{sending-acknowledgements}}).
+: A QUIC packet that contains frames other than ACK, PADDING, and
+  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment (see
+  {{sending-acknowledgements}}).
 
 Endpoint:
 
@@ -1030,18 +1031,21 @@ packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
-An endpoint can request that its peer retire connection IDs by sending a
+An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer SHOULD retire the corresponding connection IDs and send the
-corresponding RETIRE_CONNECTION_ID frames in a timely manner.  Failing to do so
-can cause packets to be delayed, lost, or cause the original endpoint to send a
-stateless reset in response to a connection ID it can no longer route correctly.
+the peer MUST retire the corresponding connection IDs and send corresponding
+RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within
+approximately one PTO can cause packets to be delayed, lost, or cause the
+original endpoint to send a stateless reset in response to a connection ID it
+can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
-received for the NEW_CONNECTION_ID frame requesting that retirement.  Subsequent
-incoming packets using that connection ID could elicit a response with the
-corresponding stateless reset token.
+received for the NEW_CONNECTION_ID frame requesting that retirement.  Until
+then, the endpoint SHOULD be prepared to receive packets that contain the
+connection ID that it has requested be retired.  Subsequent incoming packets
+using that connection ID could elicit a response with the corresponding
+stateless reset token.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -1230,7 +1234,7 @@ versions of QUIC react to Version Negotiation packets when attempting to
 establish a connection using this version.  How to perform version negotiation
 is left as future work defined by future versions of QUIC.  In particular,
 that future work will need to ensure robustness against version downgrade
-attacks {{version-downgrade}}.
+attacks; see {{version-downgrade}}.
 
 
 ### Version Negotiation Between Draft Versions
@@ -1239,7 +1243,7 @@ attacks {{version-downgrade}}.
 
 When a draft implementation receives a Version Negotiation packet, it MAY use
 it to attempt a new connection with one of the versions listed in the packet,
-instead of abandoning the current connection attempt {{handle-vn}}.
+instead of abandoning the current connection attempt; see {{handle-vn}}.
 
 The client MUST check that the Destination and Source Connection ID fields
 match the Source and Destination Connection ID fields in a packet that the
@@ -1302,15 +1306,6 @@ properties:
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
-
-The first CRYPTO frame from a client MUST be sent in a single packet.  Any
-second attempt that is triggered by address validation (see
-{{validate-handshake}}) MUST also be sent within a single packet. This avoids
-having to reassemble a message from multiple packets.
-
-The first client packet of the cryptographic handshake protocol MUST fit within
-a 1232 byte QUIC packet payload.  This includes overheads that reduce the space
-available to the cryptographic handshake protocol.
 
 An endpoint can verify support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-validation}}.
@@ -2355,11 +2350,11 @@ current Probe Timeout (PTO).
 
 Each endpoint advertises its own idle timeout to its peer.  An endpoint
 restarts any timer it maintains when a packet from its peer is received and
-processed successfully.  The timer is also restarted when sending a packet
-containing frames other than ACK or PADDING (an ack-eliciting packet; see
-{{QUIC-RECOVERY}}), but only if no other ack-eliciting packets have been sent
-since last receiving a packet.  Restarting when sending packets ensures that
-connections do not prematurely time out when initiating new activity.
+processed successfully.  The timer is also restarted when sending an
+ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
+packets have been sent since last receiving a packet.  Restarting when sending
+packets ensures that connections do not prematurely time out when initiating new
+activity.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
@@ -2562,20 +2557,38 @@ the packet other than the last 16 bytes for carrying data.
 
 ### Detecting a Stateless Reset
 
-An endpoint detects a potential stateless reset when an incoming packet either
-cannot be associated with a connection, cannot be decrypted, or is marked as a
-duplicate packet.  The endpoint MUST then compare the last 16 bytes of the
-packet with all Stateless Reset Tokens corresponding to active connection IDs
-that the endpoint has used for sending packets to the IP address and port on
-which the datagram is received.  This includes Stateless Reset Tokens from
-NEW_CONNECTION_ID frames and the server's transport parameters.  An endpoint
-MUST NOT check for any Stateless Reset Tokens associated with connection IDs it
-has not used or for connection IDs that have been retired.
+An endpoint detects a potential stateless reset using the trailing 16 bytes of
+the UDP datagram.  An endpoint remembers all Stateless Reset Tokens associated
+with the connection IDs and remote addresses for datagrams it has recently sent.
+This includes Stateless Reset Tokens from NEW_CONNECTION_ID frames and the
+server's transport parameters but excludes Stateless Reset Tokens associated
+with connection IDs that are either unused or retired.  The endpoint identifies
+a received datagram as a stateless reset by comparing the last 16 bytes of the
+datagram with all Stateless Reset Tokens associated with the remote address on
+which the datagram was received.
 
-If the last 16 bytes of the packet values are identical to a Stateless Reset
+This comparison can be performed for every inbound datagram.  Endpoints MAY skip
+this check if any packet from a datagram is successfully processed.  However,
+the comparison MUST be performed when the first packet in an incoming datagram
+either cannot be associated with a connection, or cannot be decrypted.
+
+An endpoint MUST NOT check for any Stateless Reset Tokens associated with
+connection IDs it has not used or for connection IDs that have been retired.
+
+When comparing a datagram to Stateless Reset Token values, endpoints MUST
+perform the comparison without leaking information about the value of the token.
+For example, performing this comparison in constant time protects the value of
+individual Stateless Reset Tokens from information leakage through timing side
+channels.  Another approach would be to store and compare the transformed values
+of Stateless Reset Tokens instead of the raw token values, where the
+transformation is defined as a cryptographically-secure pseudo-random function
+using a secret key (e.g., block cipher, HMAC {{?RFC2104}}). An endpoint is not
+expected to protect information about whether a packet was successfully
+decrypted, or the number of valid Stateless Reset Tokens.
+
+If the last 16 bytes of the datagram are identical in value to a Stateless Reset
 Token, the endpoint MUST enter the draining period and not send any further
-packets on this connection.  If the comparison fails, the packet can be
-discarded.
+packets on this connection.
 
 
 ### Calculating a Stateless Reset Token {#reset-token}
@@ -2996,8 +3009,8 @@ valid frames? -->
 ## Generating Acknowledgements {#generating-acks}
 
 Endpoints acknowledge all packets they receive and process. However, only
-ack-eliciting packets (see {{QUIC-RECOVERY}}) trigger the sending of an ACK
-frame.  Packets that are not ack-eliciting are only acknowledged when an ACK
+ack-eliciting packets cause an ACK frame to be sent within the maximum ack
+delay.  Packets that are not ack-eliciting are only acknowledged when an ACK
 frame is sent for other reasons.
 
 When sending a packet for any reason, an endpoint should attempt to bundle an
@@ -3562,10 +3575,10 @@ version negotiation to be exercised.  That is, any version number where the low
 four bits of all bytes is 1010 (in binary).  A client or server MAY advertise
 support for any of these reserved versions.
 
-Reserved version numbers will probably never represent a real protocol; a client
-MAY use one of these version numbers with the expectation that the server will
-initiate version negotiation; a server MAY advertise support for one of these
-versions and can expect that clients ignore the value.
+Reserved version numbers will never represent a real protocol; a client MAY use
+one of these version numbers with the expectation that the server will initiate
+version negotiation; a server MAY advertise support for one of these versions
+and can expect that clients ignore the value.
 
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
@@ -3956,16 +3969,15 @@ Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
-the entirety of the first cryptographic handshake message.  This packet, and the
-cryptographic handshake message, MUST fit in a single UDP datagram (see
-{{handshake}}).  The first CRYPTO frame sent always begins at an offset of 0
-(see {{handshake}}).
+the start or all of the first cryptographic handshake message.  The first
+CRYPTO frame sent always begins at an offset of 0 (see {{handshake}}).
 
-Note that if the server sends a HelloRetryRequest, the client will send a second
-Initial packet.  This Initial packet will continue the cryptographic handshake
-and will contain a CRYPTO frame with an offset matching the size of the CRYPTO
-frame sent in the first Initial packet.  Cryptographic handshake messages
-subsequent to the first do not need to fit within a single UDP datagram.
+Note that if the server sends a HelloRetryRequest, the client will send another
+series of Initial packets.  These Initial packets will continue the
+cryptographic handshake and will contain CRYPTO frames starting at an offset
+matching the size of the CRYPTO frames sent in the first flight of Initial
+packets.
+
 
 #### Abandoning Initial Packets {#discard-initial}
 
@@ -4803,8 +4815,7 @@ subsequent ACK Range using the following formula:
 ~~~
 
 If any computed packet number is negative, an endpoint MUST generate a
-connection error of type FRAME_ENCODING_ERROR indicating an error in an ACK
-frame.
+connection error of type FRAME_ENCODING_ERROR.
 
 
 ### ECN Counts {#ack-ecn-counts}
@@ -4972,6 +4983,10 @@ There is a separate flow of cryptographic handshake data in each encryption
 level, each of which starts at an offset of 0. This implies that each encryption
 level is treated as a separate CRYPTO stream of data.
 
+The largest offset delivered on a stream - the sum of the offset and data
+length - cannot exceed 2^62-1.  Receipt of a frame that exceeds this limit MUST
+be treated as a connection error of type FRAME_ENCODING_ERROR.
+
 Unlike STREAM frames, which include a Stream ID indicating to which stream the
 data belongs, the CRYPTO frame carries data for a single stream per encryption
 level. The stream does not have an explicit end, so CRYPTO frames do not have a
@@ -5087,8 +5102,8 @@ the offset of the next byte that would be sent.
 The first byte in the stream has an offset of 0.  The largest offset delivered
 on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
 it is not possible to provide flow control credit for that data.  Receipt of a
-frame that exceeds this limit will be treated as a connection error of type
-FLOW_CONTROL_ERROR.
+frame that exceeds this limit MUST be treated as a connection error of type
+FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
 ## MAX_DATA Frame {#frame-max-data}
@@ -5192,7 +5207,10 @@ MAX_STREAMS frames contain the following fields:
 Maximum Streams:
 
 : A count of the cumulative number of streams of the corresponding type that
-  can be opened over the lifetime of the connection.
+  can be opened over the lifetime of the connection.  Stream IDs cannot exceed
+  2^62-1, as it is not possible to encode stream IDs larger than this value.
+  Receipt of a frame that permits opening of a stream larger than this limit
+  MUST be treated as a FRAME_ENCODING_ERROR.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
@@ -5293,7 +5311,9 @@ STREAMS_BLOCKED frames contain the following fields:
 Stream Limit:
 
 : A variable-length integer indicating the stream limit at the time the frame
-  was sent.
+  was sent.  Stream IDs cannot exceed 2^62-1, as it is not possible to encode
+  stream IDs larger than this value.  Receipt of a frame that encodes a larger
+  stream ID MUST be treated as a STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
@@ -5342,7 +5362,7 @@ Length:
 
 : An 8-bit unsigned integer containing the length of the connection ID.  Values
   less than 1 and greater than 20 are invalid and MUST be treated as a
-  connection error of type PROTOCOL_VIOLATION.
+  connection error of type FRAME_ENCODING_ERROR.
 
 Connection ID:
 
@@ -5380,7 +5400,7 @@ RETIRE_CONNECTION_ID frames in a timely manner.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type PROTOCOL_VIOLATION.
+connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
@@ -5418,13 +5438,13 @@ Sequence Number:
   {{retiring-cids}}.
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
-than any previously sent to the peer MAY be treated as a connection error of
+than any previously sent to the peer MUST be treated as a connection error of
 type PROTOCOL_VIOLATION.
 
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
 contained.  The peer MAY treat this as a connection error of type
-PROTOCOL_VIOLATION.
+FRAME_ENCODING_ERROR.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
@@ -6036,13 +6056,13 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    //
    // The following code calculates a candidate value and
    // makes sure it's within the packet number window.
+   // Note the extra checks to prevent overflow and underflow.
    candidate_pn = (expected_pn & ~pn_mask) | truncated_pn
-   if candidate_pn <= expected_pn - pn_hwin:
+   if candidate_pn <= expected_pn - pn_hwin and
+      candidate_pn < (1 << 62) - pn_win:
       return candidate_pn + pn_win
-   // Note the extra check for underflow when candidate_pn
-   // is near zero.
    if candidate_pn > expected_pn + pn_hwin and
-      candidate_pn > pn_win:
+      candidate_pn >= pn_win:
       return candidate_pn - pn_win
    return candidate_pn
 ~~~
@@ -6053,6 +6073,26 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-23
+
+- Allow ClientHello to span multiple packets (#2928, #3045)
+- Client Initial size constraints apply to UDP datagram payload (#3053, #3051)
+- Stateless reset changes (#2152, #2993)
+  - tokens need to be compared in constant time
+  - detection uses UDP datagrams, not packets
+  - tokens cannot be reused (#2785, #2968)
+- Clearer rules for sharing of UDP ports and use of connection IDs when doing so
+  (#2844, #2851)
+- A new connection ID is necessary when responding to migration (#2778, #2969)
+- Stronger requirements for connection ID retirement (#3046, #3096)
+- NEW_TOKEN cannot be empty (#2978, #2977)
+- PING can be sent at any encryption level (#3034, #3035)
+- CONNECTION_CLOSE is not ack-eliciting (#3097, #3098)
+- Frame encoding error conditions updated (#3027, #3042)
+- Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
+  packets (#3100, #3104)
+
 
 ## Since draft-ietf-quic-transport-22
 
