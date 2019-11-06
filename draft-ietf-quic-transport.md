@@ -3575,10 +3575,10 @@ version negotiation to be exercised.  That is, any version number where the low
 four bits of all bytes is 1010 (in binary).  A client or server MAY advertise
 support for any of these reserved versions.
 
-Reserved version numbers will probably never represent a real protocol; a client
-MAY use one of these version numbers with the expectation that the server will
-initiate version negotiation; a server MAY advertise support for one of these
-versions and can expect that clients ignore the value.
+Reserved version numbers will never represent a real protocol; a client MAY use
+one of these version numbers with the expectation that the server will initiate
+version negotiation; a server MAY advertise support for one of these versions
+and can expect that clients ignore the value.
 
 \[\[RFC editor: please remove the remainder of this section before
 publication.]]
