@@ -1928,7 +1928,7 @@ local address.  Failure of path validation simply means that the new path is not
 usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
 
-An endpoint uses a new connection ID for probes sent from a new local address,
+An endpoint uses a new connection ID for probes sent from a new local address;
 see {{migration-linkability}} for further discussion. An endpoint that uses
 a new local address needs to ensure that at least one new connection ID is
 available at the peer. That can be achieved by including a NEW_CONNECTION_ID

@@ -782,7 +782,7 @@ stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
-The Header Acknowledgement instruction might increase the Known Received Count,
+The Header Acknowledgement instruction might increase the Known Received Count;
 see {{known-received-count}}.
 
 
