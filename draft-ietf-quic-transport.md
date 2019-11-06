@@ -5898,7 +5898,6 @@ Status:
 : "Permanent" or "Provisional".
 
 Specification:
-
 : A reference to a publicly available specification for the value.
 
 Date:
@@ -5933,7 +5932,7 @@ especially sensitive to having a longer encoding.
 
 Applications to register codepoints in QUIC registries MAY include a codepoint
 as part of the registration.  IANA MUST allocate the selected codepoint unless
-that codepoint is already assigned or the codepoints is the first unallocated
+that codepoint is already assigned or the codepoint is the first unallocated
 codepoint in the registry.
 
 
@@ -5950,7 +5949,7 @@ The expert(s) MUST attempt to determine whether the codepoint is still in use.
 Experts are advised to contact the listed contacts for the registration, plus as
 wide a set of protocol implementers as possible in order to determine whether
 any use of the codepoint is known.  The expert(s) are advised to allow at least
-four weeks for this search.
+four weeks for responses.
 
 If any use of the codepoints is identified by this search or a request to update
 the registration is made, the codepoint MUST NOT be reclaimed.  Instead, the
@@ -5968,7 +5967,7 @@ accurate representation of any deployed usage.
 
 ### Permanent Registrations {#iana-permanent}
 
-Permanent registrations in QUIC registries require Specification Required policy
+Permanent registrations in QUIC registries use the Specification Required policy
 {{!RFC8126}}, unless otherwise specified.  The designated expert(s) verify that
 a specification exists and is readily accessible.  Expert(s) are encouraged to
 be biased towards approving registrations unless they are abusive, frivolous, or
