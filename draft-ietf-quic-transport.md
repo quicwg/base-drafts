@@ -5398,6 +5398,10 @@ and preferred_address transport parameter connection IDs.  The peer SHOULD
 retire the corresponding connection IDs and send the corresponding
 RETIRE_CONNECTION_ID frames in a timely manner.
 
+An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
+smaller than the Retire Prior To field of a NEW_CONNECTION_ID frame received
+before, it MUST immediately send a corresponding RETIRE_CONNECTION_ID frame.
+
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
