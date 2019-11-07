@@ -1000,7 +1000,9 @@ An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
 and advertise the number of connection IDs they are willing to store with the
 active_connection_id_limit transport parameter.  An endpoint MUST NOT provide
-more connection IDs than the peer's limit.
+more connection IDs than the peer's limit.  An endpoint that receives more
+connection IDs than its advertised active_connection_id_limit MUST close the
+connection with an error of type CONNECTION_ID_LIMIT_ERROR.
 
 An endpoint SHOULD supply a new connection ID when it receives a packet with a
 previously unused connection ID or when the peer retires one, unless providing
@@ -5629,6 +5631,11 @@ TRANSPORT_PARAMETER_ERROR (0x8):
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
+CONNECTION_ID_LIMIT_ERROR (0x9):
+
+: The number of connection IDs provided by the peer exceeds the advertised
+  active_connection_id_limit.
+
 PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
@@ -6028,6 +6035,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
