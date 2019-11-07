@@ -999,7 +999,7 @@ retired are considered active; any active connection ID can be used.
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
 and advertise the number of connection IDs they are willing to store with the
-active_connection_id_limit transport parameter.  An endpoint SHOULD NOT provide
+active_connection_id_limit transport parameter.  An endpoint MUST NOT provide
 more connection IDs than the peer's limit.
 
 An endpoint SHOULD supply a new connection ID when it receives a packet with a
