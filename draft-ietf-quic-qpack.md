@@ -196,10 +196,10 @@ contains entries which cannot be evicted.
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
 acknowledged and there are no outstanding references to the entry in
-unacknowledged header blocks, the entry becomes evictable.  Note that references
-on the encoder stream do not prevent an entry from being evictable, because
-those references are guaranteed to be processed before the instruction that
-evicts the entry.
+unacknowledged header blocks, the entry becomes evictable.  Note that
+unacknowledged references on the encoder stream do not preclude the eviction of
+an entry, because those references are guaranteed to be processed before the
+instruction evicting the entry.
 
 If the dynamic table does not contain enough room for a new entry without
 evicting other entries, and the entries which would be evicted are not
