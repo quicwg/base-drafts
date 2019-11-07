@@ -205,9 +205,9 @@ If the dynamic table does not contain enough room for a new entry without
 evicting other entries, and the entries which would be evicted are not
 evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
-that uses the dynamic table has to keep track of each dynamic table referenced
-by each header block until that header block is acknowledged by the decoder (see
-{{header-acknowledgement}}).
+that uses the dynamic table has to keep track of each dynamic table entry
+referenced by each header block until that header block is acknowledged by the
+decoder (see {{header-acknowledgement}}).
 
 #### Avoiding Prohibited Insertions
 
