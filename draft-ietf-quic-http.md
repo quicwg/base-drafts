@@ -1685,9 +1685,9 @@ Specification:
 
 The entries in the following table are registered by this document.
 
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| Name                                | Code       | Description                              | Specification          |
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| Name                              | Code       | Description                              | Specification          |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | H3_NO_ERROR                       | 0x0100     | No error                                 | {{http-error-codes}}   |
 | H3_GENERAL_PROTOCOL_ERROR         | 0x0101     | General protocol error                   | {{http-error-codes}}   |
 | H3_INTERNAL_ERROR                 | 0x0102     | Internal error                           | {{http-error-codes}}   |
@@ -1705,7 +1705,7 @@ The entries in the following table are registered by this document.
 | H3_EARLY_RESPONSE                 | 0x010E     | Remainder of request not needed          | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 
 ## Stream Types {#iana-stream-types}
 
@@ -2018,6 +2018,8 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-24
 
 ## Since draft-ietf-quic-http-23
 
