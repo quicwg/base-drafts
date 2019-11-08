@@ -1033,11 +1033,10 @@ longer plans to use that address.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST retire the corresponding connection IDs and send corresponding
-RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+the peer MUST retire the corresponding connection IDs via RETIRE_CONNECTION_ID
+frames.  Failure to retire the connection IDs within approximately one PTO can
+cause packets to be delayed, lost, or cause the original endpoint to send a
+stateless reset in response to a connection ID it can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
@@ -5392,15 +5391,10 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field is a request for the peer to retire all connection IDs
-with a sequence number less than the specified value.  This includes the initial
-and preferred_address transport parameter connection IDs.  The peer SHOULD
-retire the corresponding connection IDs and send the corresponding
-RETIRE_CONNECTION_ID frames in a timely manner.
-
-The Retire Prior To field MUST be less than or equal to the Sequence Number
-field.  Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type FRAME_ENCODING_ERROR.
+The Retire Prior To field (see {{retiring-cids}}) includes the initial and
+preferred_address transport parameter connection IDs and MUST be less than or
+equal to the Sequence Number field.  Receiving a value greater than the Sequence
+Number MUST be treated as a connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
