@@ -4593,7 +4593,8 @@ active_connection_id_limit (0x000e):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
-  frames. If this parameter is absent, a default of 0 is assumed.
+  frames. If this parameter is absent, a default of 2 is assumed. Values below 2
+  are invalid.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
