@@ -5399,8 +5399,9 @@ retire the corresponding connection IDs and send the corresponding
 RETIRE_CONNECTION_ID frames in a timely manner.
 
 An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
-smaller than the Retire Prior To field of a NEW_CONNECTION_ID frame received
-before, MUST immediately send a corresponding RETIRE_CONNECTION_ID frame.
+smaller than the Retire Prior To field of a previously received
+NEW_CONNECTION_ID frame, MUST immediately send a corresponding
+RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
 
 The Retire Prior To field MUST be less than or equal to the Sequence Number
 field.  Receiving a value greater than the Sequence Number MUST be treated as a
