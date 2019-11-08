@@ -1486,7 +1486,7 @@ Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
 layout of the HEADERS frame cannot be used until the peer has given a positive
 signal that this is acceptable.  Coordinating when such a revised layout comes
-into effect could prove complex.  As such, allocating a new identifiers for
+into effect could prove complex.  As such, allocating new identifiers for
 alternate versions of existing protocol elements is likely to be more effective.
 
 This document doesn't mandate a specific method for negotiating the use of an
