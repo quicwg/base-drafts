@@ -1050,6 +1050,9 @@ OnAckReceived(ack, pn_space):
   if (ACK frame contains ECN information):
       ProcessECN(ack, pn_space)
 
+  // Initialize congestion state per ACK frame received
+  OnAckReceivedCCStart()
+
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
@@ -1356,6 +1359,9 @@ acked_packet from sent_packets.
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
+   OnAckReceivedCCStart():
+     cwnd_increase = 0
+
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
@@ -1368,7 +1374,16 @@ acked_packet from sent_packets.
        return
      if (congestion_window < ssthresh):
        // Slow start.
-       congestion_window += acked_packet.size
+       if (pacing):
+         // If the implementation supports pacing, increase
+         // by the number of bytes acked
+         congestion_window += acked_packet.size
+       else:
+         // Limit the increase to 2*max_datagram_size per ACK as
+         // described in {{?RFC3465}}
+         if (cwnd_increase < 2 * max_datagram_size):
+           cwnd_increase += bytes_acked
+           congestion_window += bytes_acked
      else:
        // Congestion avoidance.
        congestion_window += max_datagram_size * acked_packet.size
