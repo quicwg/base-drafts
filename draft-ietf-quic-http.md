@@ -1270,8 +1270,8 @@ ID for a client-initiated bidirectional stream encoded as a variable-length
 integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
 of any other type as a connection error of type H3_ID_ERROR.
 
-Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
-stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
+Clients do not send GOAWAY to initiate a graceful shutdown; they simply stop
+making new requests.  A server MUST treat receipt of a GOAWAY frame on any
 stream as a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
