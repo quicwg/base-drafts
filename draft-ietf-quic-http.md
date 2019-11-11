@@ -142,7 +142,7 @@ and DATA frames form the basis of HTTP requests and responses
 ({{request-response}}).
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
-described in Section 2 of {{QUIC-TRANSPORT}}.  Each request and response
+described in Section 2 of {{QUIC-TRANSPORT}}.  Each request-response pair
 consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
