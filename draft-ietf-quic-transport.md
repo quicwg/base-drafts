@@ -6088,6 +6088,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Frame encoding error conditions updated (#3027, #3042)
 - Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
   packets (#3100, #3104)
+- Servers have to change connection IDs in Retry (#2837, #3147)
 
 
 ## Since draft-ietf-quic-transport-22
