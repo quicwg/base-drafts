@@ -217,7 +217,7 @@ not available.
 
 ### Clearer Loss Epoch
 
-QUIC ends a loss epoch when a packet sent after loss is declared is
+A loss epoch ends when a packet sent after loss is first declared is
 acknowledged. TCP waits for the gap in the sequence number space to be filled,
 and so if a segment is lost multiple times in a row, the loss epoch may not
 end for several round trips. Because both should reduce their congestion windows
