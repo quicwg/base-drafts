@@ -943,7 +943,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 | Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
-{: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
+{: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
 these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
@@ -966,7 +966,7 @@ All frames have the following format:
 |                       Frame Payload (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-frame title="HTTP/3 frame format"}
+{: #fig-frame title="HTTP/3 Frame Format"}
 
 A frame includes the following fields:
 
@@ -1009,7 +1009,7 @@ connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 |                         Payload (*)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-data title="DATA frame payload"}
+{: #fig-data title="DATA Frame Payload"}
 
 ### HEADERS {#frame-headers}
 
@@ -1023,7 +1023,7 @@ QPACK. See [QPACK] for more details.
 |                       Header Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-headers title="HEADERS frame payload"}
+{: #fig-headers title="HEADERS Frame Payload"}
 
 HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
@@ -1064,7 +1064,7 @@ error of type H3_FRAME_UNEXPECTED.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-cancel-push title="CANCEL_PUSH frame payload"}
+{: #fig-cancel-push title="CANCEL_PUSH Frame Payload"}
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
@@ -1125,7 +1125,7 @@ variable-length integers.
 |                           Value (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS parameter format"}
+{: #fig-ext-settings title="SETTINGS Parameter Format"}
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
@@ -1218,7 +1218,7 @@ set from server to client on a request stream, as in HTTP/2.
 |                       Header Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-push-promise title="PUSH_PROMISE frame payload"}
+{: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
 
 The payload consists of:
 
@@ -1263,7 +1263,7 @@ close a connection.
 |                          Stream ID (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-goaway title="GOAWAY frame payload"}
+{: #fig-goaway title="GOAWAY Frame Payload"}
 
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
@@ -1307,7 +1307,7 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-max-push title="MAX_PUSH_ID frame payload"}
+{: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
@@ -1334,7 +1334,7 @@ of a DUPLICATE_PUSH frame as a connection error of type H3_FRAME_UNEXPECTED.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-duplicate-push title="DUPLICATE_PUSH frame payload"}
+{: #fig-duplicate-push title="DUPLICATE_PUSH Frame Payload"}
 
 The DUPLICATE_PUSH frame carries a single variable-length integer that
 identifies the Push ID of a resource that the server has previously promised
