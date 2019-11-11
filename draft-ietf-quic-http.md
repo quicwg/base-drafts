@@ -1940,8 +1940,7 @@ SETTINGS_MAX_HEADER_LIST_SIZE:
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
 long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
 produce a shorter encoding, but can produce a longer encoding for settings which
-use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
-the format of their settings to avoid using the 62-bit encoding.
+use the full 32-bit space.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
 settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
