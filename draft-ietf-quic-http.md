@@ -350,10 +350,9 @@ obtain a valid `http-opportunistic` response for the origin as described in
 {{!RFC8164}} prior to making any such requests.  Other schemes might define
 other mechanisms.
 
-A server that does not wish clients to reuse connections for a particular origin
-can indicate that it is not authoritative for a request by sending a 421
-(Misdirected Request) status code in response to the request (see Section 9.1.2
-of {{!HTTP2}}).
+A server can indicate that it is not authoritative for a request by sending a
+421 (Misdirected Request) status code in response to the request (see Section
+9.1.2 of {{!HTTP2}}).
 
 The considerations discussed in Section 9.1 of {{!HTTP2}} also apply to the
 management of HTTP/3 connections.
