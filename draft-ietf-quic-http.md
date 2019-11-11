@@ -162,8 +162,8 @@ modifying it.
 
 ## Document Organization
 
-The HTTP/3 specification is split into seven parts.  The document begins
-with a detailed overview of the connection lifecycle and key concepts:
+The following sections provide a detailed overview of the connection lifecycle
+and key concepts:
 
 - Connection Setup and Management ({{connection-setup}}) covers how an HTTP/3
   endpoint is discovered and a connection is established.
