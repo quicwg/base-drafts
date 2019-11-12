@@ -2720,7 +2720,7 @@ connection in a recoverable state, the endpoint can send a RESET_STREAM frame
 ({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-RESET_STREAM MUST be instigated by the application protocol that uses QUIC.
+RESET_STREAM MUST only be instigated by the application protocol that uses QUIC.
 RESET_STREAM carries an application error code, for which the semantics are
 defined by the application protocol.  Only the application protocol is able to
 cause a stream to be terminated.  A local instance of the application protocol
