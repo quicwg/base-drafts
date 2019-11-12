@@ -2709,9 +2709,6 @@ frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 use the stateless reset process ({{stateless-reset}}).
 
-An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
-existence of the error to its peer.
-
 
 ## Stream Errors
 
