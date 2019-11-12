@@ -1135,10 +1135,10 @@ Servers MUST drop incoming packets under all other circumstances.
 
 A QUIC connection is a stateful interaction between a client and server, the
 primary purpose of which is to support the exchange of data by an application
-protocol.  Streams ({{streams}}) is the primary mechanism by which an
-application protocol exchanges information.
+protocol.  Streams ({{streams}}) are the primary means by which an application
+protocol exchanges information.
 
-Each connection starts with an handshake phase, during which client and server
+Each connection starts with a handshake phase, during which client and server
 establish a shared secret using the cryptographic handshake protocol
 {{QUIC-TLS}} and negotiate the application protocol.  The handshake
 ({{handshake}}) confirms that endpoints are willing to communicate
