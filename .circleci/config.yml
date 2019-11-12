@@ -6,6 +6,38 @@ jobs:
     working_directory: ~/draft
 
     steps:
+      - run:
+          name: "Print Configuration"
+          command: |
+            xml2rfc --version
+            gem list -q kramdown-rfc2629
+            echo -n 'mmark '; mmark --version
+
+      - restore_cache:
+          name: "Restoring cache - Git"
+          keys:
+            - v2-cache-git-{{ .Branch }}-{{ .Revision }}
+            - v2-cache-git-{{ .Branch }}
+            - v2-cache-git-master
+            - v2-cache-git-
+
+      - restore_cache:
+          name: "Restoring cache - References"
+          keys:
+            - v1-cache-references-{{ epoch }}
+            - v1-cache-references-
+
+      # Workaround for https://discuss.circleci.com/t/22437
+      - run:
+          name: Tag Checkout
+          command: |
+            if [ -n "$CIRCLE_TAG" ] && [ -d .git ]; then
+              remote=$(echo "$CIRCLE_REPOSITORY_URL" | \
+                       sed -e 's,/^git.github.com:,https://github.com/,')
+              git fetch -f "$remote" "refs/tags/$CIRCLE_TAG:refs/tags/$CIRCLE_TAG" || \
+                (echo 'Removing .git cache for tag build'; rm -rf .git)
+            fi
+
       - checkout
 
       # Build txt and html versions of drafts
@@ -17,7 +49,7 @@ jobs:
       - run:
           name: "Update GitHub Pages"
           command: |
-            if [ "${CIRCLE_TAG#draft-}" == "${CIRCLE_TAG}" ]; then
+            if [ "${CIRCLE_TAG#draft-}" == "$CIRCLE_TAG" ]; then
               make gh-pages
             fi
 
@@ -25,7 +57,7 @@ jobs:
       - deploy:
           name: "Upload to Datatracker"
           command: |
-            if [ "${CIRCLE_TAG#draft-}" != "${CIRCLE_TAG}" ]; then
+            if [ "${CIRCLE_TAG#draft-}" != "$CIRCLE_TAG" ]; then
               make upload
             fi
 
@@ -41,6 +73,22 @@ jobs:
 
       - store_artifacts:
           path: /tmp/artifacts
+
+      - run:
+          name: "Prepare for Caching"
+          command: "git gc --auto"
+
+      - save_cache:
+          name: "Saving Cache - Git"
+          key: v2-cache-git-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ~/draft/.git
+
+      - save_cache:
+          name: "Saving Cache - Drafts"
+          key: v1-cache-references-{{ epoch }}
+          paths:
+            - ~/.cache/xml2rfc
 
 
 workflows:
