@@ -775,7 +775,10 @@ Implementations MUST either use pacing or limit such bursts to the initial
 congestion window, which is recommended to be the minimum of
 10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
 max_datagram_size is the current maximum size of a datagram for the connection,
-not including UDP or IP overhead.
+not including UDP or IP overhead. Implementations not using a pacer SHOULD
+limit the congestion window increase during slow start to
+2 * max_datagram_size per ACK frame received in order to limit bursts, as
+specified by {{?RFC3465}}.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
@@ -1024,6 +1027,9 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
+  // Initialize congestion state per ACK frame received
+  OnAckReceivedCC()
+
   if (largest_acked_packet[pn_space] == infinite):
     largest_acked_packet[pn_space] = ack.largest_acked
   else:
@@ -1049,9 +1055,6 @@ OnAckReceived(ack, pn_space):
   // Process ECN information if present.
   if (ACK frame contains ECN information):
       ProcessECN(ack, pn_space)
-
-  // Initialize congestion state per ACK frame received
-  OnAckReceivedCCStart()
 
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
@@ -1359,7 +1362,7 @@ acked_packet from sent_packets.
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
-   OnAckReceivedCCStart():
+   OnAckReceivedCC():
      cwnd_increase = 0
 
    OnPacketAckedCC(acked_packet):
@@ -1375,12 +1378,10 @@ acked_packet from sent_packets.
      if (congestion_window < ssthresh):
        // Slow start.
        if (pacing):
-         // If the implementation supports pacing, increase
-         // by the number of bytes acked
          congestion_window += acked_packet.size
        else:
-         // Limit the increase to 2*max_datagram_size per ACK as
-         // described in {{?RFC3465}}
+         // If pacing is not used, limit the increase to
+         // 2*max_datagram_size per ACK as described in {{?RFC3465}}
          if (cwnd_increase < 2 * max_datagram_size):
            cwnd_increase += bytes_acked
            congestion_window += bytes_acked
