@@ -1473,7 +1473,7 @@ fails.
 
 An application-layer protocol MAY restrict the QUIC versions that it can operate
 over.  Servers MUST select an application protocol compatible with the QUIC
-version that the client has selected.  If the server MUST treat the inability to
+version that the client has selected.  The server MUST treat the inability to
 select a compatible application protocol as a connection error of type 0x178
 (no_application_protocol).  Similarly, a client MUST treat the selection of an
 incompatible application protocol by a server as a connection error of type
