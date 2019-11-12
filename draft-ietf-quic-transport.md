@@ -2397,12 +2397,13 @@ transmission of CONNECTION_CLOSE frames to validated addresses or drop packets
 without response if the response would be more than three times larger than the
 received packet.
 
-After receiving a CONNECTION_CLOSE frame, endpoints enter the draining state.
-An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
-containing a CONNECTION_CLOSE frame before entering the draining state, using a
-CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
-send further packets, which could result in a constant exchange of
-CONNECTION_CLOSE frames until the closing period on either peer ended.
+After receiving a CONNECTION_CLOSE frame, or an invalid packet that appears to
+contain a CONNECTION_CLOSE frame, endpoints enter the draining state.  An
+endpoint MAY then send a single packet containing a CONNECTION_CLOSE frame
+before entering the draining state, using a CONNECTION_CLOSE frame and a
+NO_ERROR code if appropriate.  An endpoint MUST NOT send further packets, which
+could result in a constant exchange of CONNECTION_CLOSE frames until the closing
+period on either peer ended.
 
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
@@ -2709,8 +2710,10 @@ frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 use the stateless reset process ({{stateless-reset}}).
 
-An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
-existence of the error to its peer.
+An endpoint that receives an invalid CONNECTION_CLOSE frame MUST treat the
+message as being equivalent to a CONNECTION_CLOSE with the INTERNAL_ERROR error
+code.  The endpoint MAY send a single CONNECTION_CLOSE in response, but it MUST
+then enter the draining period; see {{draining}}.
 
 
 ## Stream Errors
