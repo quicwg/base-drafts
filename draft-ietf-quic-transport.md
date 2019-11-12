@@ -1161,7 +1161,7 @@ change in a middlebox.  {{migration}} describes how a migration can be performed
 securely without adversely affecting privacy.
 
 For connections that are no longer needed or desired, there are several ways for
-a client and server to agree to remove connection state ({{termination}}).
+a client and server to terminate a connection ({{termination}}).
 
 
 ## Required Operations on Connections
