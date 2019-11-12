@@ -1187,12 +1187,12 @@ handshake messages from a client, it is missing assurances on the client state:
   attack.
 
 Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
-the handshake is complete.  A server MUST NOT process data from incoming 1-RTT
-protected packets before the TLS handshake is complete.  Because sending
-acknowledgments indicates that all frames in a packet have been processed, a
-server cannot send acknowledgments for 1-RTT packets until the TLS handshake is
-complete.  Received packets protected with 1-RTT keys MAY be stored and later
-decrypted and used once the handshake is complete.
+the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+packets before the TLS handshake is complete.  Because sending acknowledgments
+indicates that all frames in a packet have been processed, a server cannot send
+acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
+packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.
 
 Note:
 
