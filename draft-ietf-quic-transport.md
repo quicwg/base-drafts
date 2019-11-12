@@ -1141,7 +1141,7 @@ protocol exchanges information.
 Each connection starts with a handshake phase, during which client and server
 establish a shared secret using the cryptographic handshake protocol
 {{QUIC-TLS}} and negotiate the application protocol.  The handshake
-({{handshake}}) confirms that endpoints are willing to communicate
+({{handshake}}) confirms that both endpoints are willing to communicate
 ({{validate-handshake}}) and establishes parameters for the connection
 ({{transport-parameters}}).
 
@@ -1153,7 +1153,7 @@ attacks in 0-RTT; see {{QUIC-TLS}}.  Separately, a server can also send
 application data to a client before it receives the final cryptographic
 handshake messages that allow it to confirm the identity and liveness of the
 client.  These capabilities allow an application protocol to offer the option to
-trade some security guarantees for improved latency.
+trade some security guarantees for reduced latency.
 
 The use of connection IDs ({{connection-id}}) allows connections to migrate to a
 new network path, both as a direct choice of an endpoint and when forced by a
