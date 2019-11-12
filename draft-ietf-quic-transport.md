@@ -2720,19 +2720,18 @@ connection in a recoverable state, the endpoint can send a RESET_STREAM frame
 ({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
 
-RESET_STREAM MUST only be instigated by the application protocol that uses QUIC.
+Resetting a stream without the involvement of the application protocol could
+cause the application protocol to enter an unrecoverable state.  RESET_STREAM
+MUST only be instigated by the application protocol that uses QUIC.
+
 RESET_STREAM carries an application error code, for which the semantics are
 defined by the application protocol.  Only the application protocol is able to
 cause a stream to be terminated.  A local instance of the application protocol
 uses a direct API call and a remote instance uses the STOP_SENDING frame, which
 triggers an automatic RESET_STREAM.
 
-Resetting a stream without the involvement of the application protocol could
-cause the application protocol to enter an unrecoverable state.  Application
-protocols might require certain streams to be reliably delivered in order to
-guarantee consistent state between endpoints.  Application protocols SHOULD
-define rules for handling streams that are prematurely cancelled by either
-endpoint.
+Application protocols SHOULD define rules for handling streams that are
+prematurely cancelled by either endpoint.
 
 
 # Packets and Frames {#packets-frames}
