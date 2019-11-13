@@ -1157,8 +1157,8 @@ trade some security guarantees for reduced latency.
 
 The use of connection IDs ({{connection-id}}) allows connections to migrate to a
 new network path, both as a direct choice of an endpoint and when forced by a
-change in a middlebox.  {{migration}} describes how a migration can be performed
-securely without adversely affecting privacy.
+change in a middlebox.  {{migration}} describes mitigations for the security and
+privacy issues associated with migration.
 
 For connections that are no longer needed or desired, there are several ways for
 a client and server to terminate a connection ({{termination}}).
