@@ -379,10 +379,11 @@ An HTTP message (request or response) consists of:
 3. optionally, trailing headers, if present (see {{!RFC7230}}, Section 4.1.2),
    sent as a single HEADERS frame.
 
-A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
-before, after, or interleaved with the frames of a response message. These
-PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.
+A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) and/or
+DUPLICATE_PUSH (see {{frame-duplicate-push}}) frames before, after, or
+interleaved with the frames of a response message. These PUSH_PROMISE and
+DUPLICATE_PUSH frames are not part of the response; see {{server-push}} for
+more details.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
