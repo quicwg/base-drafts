@@ -97,9 +97,9 @@ described in {{QUIC-TRANSPORT}}.
 
 QUIC implements the spirit of existing TCP congestion control and loss recovery
 mechanisms, described in RFCs, various Internet-drafts, and also those prevalent
-in the Linux TCP implementation.  This document describes QUIC congestion control
-and loss recovery, and where applicable, attributes the TCP equivalent in RFCs,
-Internet-drafts, academic papers, and/or TCP implementations.
+in the Linux TCP implementation.  This document describes QUIC congestion
+control and loss recovery, and where applicable, attributes the TCP equivalent
+in RFCs, Internet-drafts, academic papers, and/or TCP implementations.
 
 
 # Conventions and Definitions
