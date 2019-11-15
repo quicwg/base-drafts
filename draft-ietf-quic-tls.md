@@ -1209,7 +1209,7 @@ anticipation of receiving a ClientHello.
 
 Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
 Retry Integrity Tag that provides two properties: it allows discarding
-packets that have accidentally been corrupted by the network, and it mitigates
+packets that have accidentally been corrupted by the network, and it diminishes
 off-path attackers' ability to send valid Retry packets.
 
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
