@@ -5905,10 +5905,10 @@ restrict the amplification to a factor of three.
 
 Computing the server's first flight for a full handshake is
 potentially expensive, requiring both a signature and a key exchange
-computation. In order to prevent computaitonal DoS attacks, QUIC
+computation. In order to prevent computational DoS attacks, QUIC
 incorporates a cheap token exchange mechanism which allows servers to
 validate a client's IP address prior to doing any expensive
-computations ad the cost of a single round trip.  After a successful
+computations at the cost of a single round trip.  After a successful
 handshake, servers can issue new tokens to a client which will allow
 new connection establishment without incurring this cost.
 
@@ -5922,8 +5922,8 @@ either the client or server Initial messages with invalid ones. An
 off-path attacker can also mount this attack by racing the Initials.
 Once valid Initial messages have been exchanged, the remaining
 handshake messages are protected with the handshake keys and an
-on-path attacker cannot force handshake failure, though can
-produce handshake timeout by dropping packets.
+on-path attacker cannot force handshake failure, though they can
+produce a handshake timeout by dropping packets.
 
 An on-path attacker can also replace the addresses of packets on
 either side and therefore cause the client or server to have an
@@ -5942,7 +5942,7 @@ attacker can observe the client's transport parameters
 observe the server's transport paramaters and cannot influence
 parameter negotiation.
 
-The connection IDs are unencrypted but integrity protected
+Connection IDs are unencrypted but integrity protected
 in all messages. They are not incorporated in the TLS
 handshake transcript.
 
