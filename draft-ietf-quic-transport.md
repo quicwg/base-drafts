@@ -5889,27 +5889,25 @@ considered separately.
 The QUIC handshake incorporates the TLS 1.3 handshake and enjoys the
 cryptographic properties described in {{?RFC8446}}; Appendix E.1.
 
-In addition to those properties, the QUIC handshake is intended to provide
-some defense against DoS attacks on the handshake, as described below.
+In addition to those properties, the QUIC handshake is intended to provide some
+defense against DoS attacks on the handshake, as described below.
 
 #### Anti-Amplification
 
-Because the QUIC handshake can occur without a transport-level
-round-trip, the QUIC server's first flight may be sent to a client
-whose address it cannot validate. This flight may be long and
-therefore potentially allows the server to be used as a DoS
-reflector/amplifier. The mechanisms described in {{validate-handshake}}
-restrict the amplification to a factor of three.
+Because the QUIC handshake can occur without a transport-level round-trip, the
+QUIC server's first flight may be sent to a client whose address it cannot
+validate.  This flight may be long and therefore potentially allows the server
+to be used as a DoS reflector/amplifier.  The mechanisms described in
+{{validate-handshake}} restrict the amplification to a factor of three.
 
 #### Server-Side DoS
 
-Computing the server's first flight for a full handshake is
-potentially expensive, requiring both a signature and a key exchange
-computation. In order to prevent computational DoS attacks, QUIC
-incorporates a cheap token exchange mechanism which allows servers to
-validate a client's IP address prior to doing any expensive
-computations at the cost of a single round trip.  After a successful
-handshake, servers can issue new tokens to a client which will allow
+Computing the server's first flight for a full handshake is potentially
+expensive, requiring both a signature and a key exchange computation.  In order
+to prevent computational DoS attacks, QUIC incorporates a cheap token exchange
+mechanism which allows servers to validate a client's IP address prior to doing
+any expensive computations at the cost of a single round trip.  After a
+successful handshake, servers can issue new tokens to a client which will allow
 new connection establishment without incurring this cost.
 
 
@@ -5917,38 +5915,34 @@ new connection establishment without incurring this cost.
 
 [[TODO: Move the definitions upward after the other PR lands.]]
 
-An on-path attacker can force the QUIC handshake to fail by replacing
-either the client or server Initial messages with invalid ones. An
-off-path attacker can also mount this attack by racing the Initials.
-Once valid Initial messages have been exchanged, the remaining
-handshake messages are protected with the handshake keys and an
-on-path attacker cannot force handshake failure, though they can
-produce a handshake timeout by dropping packets.
+An on-path attacker can force the QUIC handshake to fail by replacing either the
+client or server Initial messages with invalid ones.  An off-path attacker can
+also mount this attack by racing the Initials.  Once valid Initial messages have
+been exchanged, the remaining handshake messages are protected with the
+handshake keys and an on-path attacker cannot force handshake failure, though
+they can produce a handshake timeout by dropping packets.
 
-An on-path attacker can also replace the addresses of packets on
-either side and therefore cause the client or server to have an
-incorrect view of the remote addresses.
+An on-path attacker can also replace the addresses of packets on either side and
+therefore cause the client or server to have an incorrect view of the remote
+addresses.
 
 #### Parameter Negotiation
 
-The entire handshake is cryptographically protected, with the
-Initial packets being encrypted with per-version keys and the
-Handshake and later packets being encrypted with keys derived
-from the TLS key exchange. Further, parameter negotiation is
-folded into the TLS transcript and thus provides the same
-security guarantees as ordinary TLS negotiation. Thus, an
-attacker can observe the client's transport parameters
-(as long as it knows the QUIC version-specific salt) but cannot
-observe the server's transport paramaters and cannot influence
+The entire handshake is cryptographically protected, with the Initial packets
+being encrypted with per-version keys and the Handshake and later packets being
+encrypted with keys derived from the TLS key exchange.  Further, parameter
+negotiation is folded into the TLS transcript and thus provides the same
+security guarantees as ordinary TLS negotiation.  Thus, an attacker can observe
+the client's transport parameters (as long as it knows the QUIC version-specific
+salt) but cannot observe the server's transport parameters and cannot influence
 parameter negotiation.
 
-Connection IDs are unencrypted but integrity protected
-in all messages. They are not incorporated in the TLS
-handshake transcript.
+Connection IDs are unencrypted but integrity protected in all messages.  They
+are not incorporated in the TLS handshake transcript.
 
-This version of QUIC does not incorporate a version negotiation
-mechanism; implementations of QUIC with incompatible versions
-will simply fail to negotiate.
+This version of QUIC does not incorporate a version negotiation mechanism;
+implementations of QUIC with incompatible versions will simply fail to
+negotiate.
 
 
 ### Short Headers {#short-headers-properties}
