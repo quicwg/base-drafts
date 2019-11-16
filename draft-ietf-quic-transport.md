@@ -5942,6 +5942,10 @@ attacker can observe the client's transport parameters
 observe the server's transport paramaters and cannot influence
 parameter negotiation.
 
+The connection IDs are unencrypted but integrity protected
+in all messages. They are not incorporated in the TLS
+handshake transcript.
+
 This version of QUIC does not incorporate a version negotiation
 mechanism; implementations of QUIC with incompatible versions
 will simply fail to negotiate.
