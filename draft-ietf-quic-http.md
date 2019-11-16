@@ -1384,7 +1384,7 @@ connection error.
 
 Because new error codes can be defined without negotiation (see {{extensions}}),
 receipt of an unknown error code or use of an error code in an unexpected
-context MUST NOT be treated as an error.  However, closing a stream can
+context MUST NOT be treated as a further error.  However, closing a stream can
 constitute an error regardless of the error code (see {{request-response}}).
 
 This section describes HTTP/3-specific error codes which can be used to express
