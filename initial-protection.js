@@ -252,7 +252,7 @@ function test(role, cid, hdr, pn, body) {
   }
 }
 
-var version = 'ff000017'
+var version = 'ff000018'
 var cid = '8394c8f03e515708';
 
 var dcidl = '0' + (cid.length / 2).toString(16);
