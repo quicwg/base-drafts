@@ -1,0 +1,12 @@
+{
+    "group": "quic",
+    "group_info": {
+        "name": "QUIC",
+        "type": "wg",
+        "email": "quic@ietf.org",
+        "activity_exclude_labels": ["editorial"]
+    },
+    "repo_type": "specs",
+    "revisions_tagged": true,
+    "activity_summary_to": ["group_email"]
+}
