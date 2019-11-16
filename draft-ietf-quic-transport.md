@@ -5979,12 +5979,14 @@ An on-path attacker can:
 - Modify IP and UDP packet headers
 - Inject new packets
 - Delay packets
+- Reorder packets
 - Drop packets
 - Split and merge datagrams along packet boundaries
 
 An on-path attacker cannot:
 
-- Modify authenticated portions of a packet
+- Modify an authenticated and encrypted portion of a packet and cause the
+ recipient to accept that packet
 
 An on-path attacker has the opportunity to modify the packets that it observes,
 however any modifications to an authenticated portion of a packet will cause it
@@ -6023,12 +6025,14 @@ An off-path attacker can:
 
 - Inspect packets
 - Inject new packets
+- Reorder injected packets
 
 An off-path attacker cannot:
 
 - Modify any part of a packet
 - Delay packets
 - Drop packets
+- Reorder original packets
 
 An off-path attacker can, however, modify packets that it has observed and
 inject them back into the network, potentially with spoofed source and
@@ -6086,12 +6090,14 @@ A limited on-path attacker can:
 - Inspect packets
 - Inject new packets
 - Modify unencrypted packet headers
+- Reorder packets
 
 A limited on-path attacker cannot:
 
 - Delay packets beyond the original packet duration
 - Drop packets
-- Modify encrypted packet payloads
+- Modify the authenticated and encrypted portion of a packet and cause the
+ recipient to accept that packet
 
 A limited on-path attacker can only delay packets up to the point that the
 original packets arrive before the duplicate packets, meaning that it cannot
