@@ -655,11 +655,10 @@ to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If a path has been verified to support ECN, QUIC treats a Congestion Experienced
-codepoint in the IP header as a signal of congestion. This document specifies an
-endpoint's response when its peer receives packets with the Congestion
-Experienced codepoint.  As discussed in {{!RFC8311}}, endpoints are permitted to
-experiment with other response functions.
+If a path has been verified to support ECN {{?RFC3168}} {{?RFC8311}}, QUIC
+treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
+congestion. This document specifies an endpoint's response when its peer
+receives packets with the Congestion Experienced codepoint.
 
 ## Slow Start
 
