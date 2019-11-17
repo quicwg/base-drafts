@@ -412,7 +412,7 @@ early, this time threshold MUST be set to at least kGranularity.  The time
 threshold is:
 
 ~~~
-kTimeThreshold * max(smoothed_rtt, latest_rtt, kGranularity)
+max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
 ~~~
 
 If packets sent prior to the largest acknowledged packet cannot yet be declared
