@@ -1004,9 +1004,10 @@ more connection IDs than the peer's limit.  An endpoint that receives more
 connection IDs than its advertised active_connection_id_limit MUST close the
 connection with an error of type CONNECTION_ID_LIMIT_ERROR.
 
-An endpoint SHOULD supply a new connection ID when it receives a packet with a
-previously unused connection ID or when the peer retires one, unless providing
-the new connection ID would exceed the peer's limit.  An endpoint MAY limit the
+An endpoint SHOULD supply a new connection ID when the peer retires a connection
+ID. If an endpoint provided fewer connection IDs than the peer's
+active_connection_id_limit, it MAY supply a new connection ID when it receives
+a packet with a previously unused connection ID.  An endpoint MAY limit the
 frequency or the total number of connection IDs issued for each connection to
 avoid the risk of running out of connection IDs; see {{reset-token}}.
 
