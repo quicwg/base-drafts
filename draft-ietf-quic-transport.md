@@ -968,10 +968,10 @@ failures in the presence of peer connection migration, NAT rebinding, and client
 port reuse; and therefore MUST NOT be done unless an endpoint is certain that
 those protocol features are not in use.
 
-When an endpoint has requested a non-zero-length connection ID, it needs to
-ensure that the peer has a supply of connection IDs from which to choose for
-packets sent to the endpoint.  These connection IDs are supplied by the endpoint
-using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+When an endpoint uses a non-zero-length connection ID, it needs to ensure that
+the peer has a supply of connection IDs from which to choose for packets sent to
+the endpoint.  These connection IDs are supplied by the endpoint using the
+NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
 ### Issuing Connection IDs {#issue-cid}
