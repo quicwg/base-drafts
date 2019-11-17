@@ -826,9 +826,9 @@ sender.  Suppressing reports of ECN-CE markings could cause a sender to
 increase their send rate.  This increase could result in congestion and loss.
 
 A sender MAY attempt to detect suppression of reports by marking occasional
-packets that they send with ECN-CE.  If a packet marked with ECN-CE is not
-reported as having been marked when the packet is acknowledged, the sender
-SHOULD then disable ECN for that path.
+packets that they send with ECN-CE.  If a packet sent with ECN-CE is not
+reported as having been CE marked when the packet is acknowledged, then the
+sender SHOULD disable ECN for that path.
 
 Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
