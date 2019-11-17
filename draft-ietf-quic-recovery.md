@@ -532,7 +532,7 @@ keys are available to the client, it MUST send a Handshake packet, and
 otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
 bytes.
 
-Initial packets and Handshake packets may never be acknowledged, but they are
+Initial packets and Handshake packets could never be acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
