@@ -1363,7 +1363,7 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppOrFowControlLimited()):
+     if (IsAppOrFlowControlLimited()):
        // Do not increase congestion_window if application
        // limited or flow control limited.
        return
