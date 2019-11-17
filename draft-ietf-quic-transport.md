@@ -4593,9 +4593,11 @@ preferred_address (0x000d):
 active_connection_id_limit (0x000e):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
-  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
-  frames. If this parameter is absent, a default of 2 is assumed. Values below 2
-  are invalid.
+  to store. This value includes connection IDs sent in NEW_CONNECTION_ID frames,
+  the connection ID used during the handshake as well as the connection ID
+  provided in the preferred_address transport parameter.
+  If the active_connection_id_limit parameter is absent, a default of 2 is
+  assumed. Values below 2 are invalid.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
