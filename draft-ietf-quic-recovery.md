@@ -507,9 +507,10 @@ connection's initial RTT.  If no previous RTT is available, the initial RTT
 SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
 in {{?RFC6298}}.
 
-A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
-a PATH_RESPONSE to seed the initial RTT for a new path, but the delay
-SHOULD NOT be considered an RTT sample.
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in
+{{ld-consts-of-interest}}) for a new path, but the delay SHOULD NOT be
+considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
