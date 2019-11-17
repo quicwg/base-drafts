@@ -392,7 +392,7 @@ perspective of the endpoint in question.
 
 In this document, the TLS handshake is considered confirmed at the server when
 the handshake completes. At the client, the handshake is considered confirmed
-when the HANDSHAKE_DONE frame is received.
+when a HANDSHAKE_DONE frame is received.
 
 
 ### Sending and Receiving Handshake Messages
