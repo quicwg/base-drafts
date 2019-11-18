@@ -647,7 +647,7 @@ window in bytes.
 
 An endpoint MUST NOT send a packet if it would cause bytes_in_flight (see
 {{vars-of-interest}}) to be larger than the congestion window, unless the packet
-is a probe sent on a PTO timer expiration (see {{pto}}).
+is sent on a PTO timer expiration (see {{pto}}).
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
