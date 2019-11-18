@@ -4598,8 +4598,11 @@ active_connection_id_limit (0x000e):
   to store. This value includes connection IDs sent in NEW_CONNECTION_ID frames,
   the connection ID used during the handshake as well as the connection ID
   provided in the preferred_address transport parameter.
-  If the active_connection_id_limit parameter is absent, a default of 2 is
-  assumed. Values below 2 are invalid.
+  Unless a zero-length connection ID is being used, the value of the
+  active_connection_id_limit parameter MUST be no less than 2. If this
+  transport parameter is absent, a default of 2 is assumed.
+  When a zero-length connection ID is being used, the active_connection_id_limit
+  parameter MUST NOT be sent.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
