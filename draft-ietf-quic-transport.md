@@ -2349,16 +2349,17 @@ max_idle_timeout (see {{transport-parameter-definitions}}) and three times the
 current Probe Timeout (PTO).
 
 Each endpoint advertises a max_idle_timeout, but the effective value
-at an endpoint is computed as the minimum of the two advertised values. By announcing
-a max_idle_timeout, an endpoint commits to initiating an immediate close
-({{immediate-close}}) if it abandons the connection prior to the effective value.
+at an endpoint is computed as the minimum of the two advertised values. By
+announcing a max_idle_timeout, an endpoint commits to initiating an immediate
+close ({{immediate-close}}) if it abandons the connection prior to the effective
+value.
 
 An endpoint restarts any timer it maintains when a packet from its peer is
-received and processed successfully.  The timer is also restarted when sending an
-ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
-packets have been sent since last receiving a packet.  Restarting when sending
-packets ensures that connections do not prematurely time out when initiating new
-activity.
+received and processed successfully.  The timer is also restarted when sending
+an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
+ack-eliciting packets have been sent since last receiving a packet.  Restarting
+when sending packets ensures that connections do not prematurely time out when
+initiating new activity.
 
 An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
@@ -4444,8 +4445,8 @@ original_connection_id (0x0000):
 max_idle_timeout (0x0001):
 
 : The max idle timeout is a value in milliseconds that is encoded as an integer;
-  see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit this
-  transport parameteter or specify a value of 0.
+  see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit
+  this transport parameteter or specify a value of 0.
 
 stateless_reset_token (0x0002):
 
