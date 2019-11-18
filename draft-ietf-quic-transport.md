@@ -1037,7 +1037,7 @@ longer plans to use that address.
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
 the peer MUST first retire the corresponding connection IDs using
-NEW_CONNECTION_ID frames and then add the newly provided connection ID to the
+RETIRE_CONNECTION_ID frames and then add the newly provided connection ID to the
 set of active connection IDs.  Failure to retire the connection IDs within
 approximately one PTO can cause packets to be delayed, lost, or cause the
 original endpoint to send a stateless reset in response to a connection ID it
