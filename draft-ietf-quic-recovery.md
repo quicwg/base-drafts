@@ -1383,10 +1383,11 @@ acked_packet from sent_packets.
          // If pacing is not used, limit the increase to
          // 2*max_datagram_size per ACK as described in
          // {{?RFC3465}}
-         if (cwnd_increase + acked_packet.size <=
-             2 * max_datagram_size):
-           cwnd_increase += acked_packet.size
-           congestion_window += acked_packet.size
+         if (cwnd_increase < 2 * max_datagram_size):
+           old_cwnd_increase = cwnd_increase
+           cwnd_increase = min(cwnd_increase + acked_packet.size,
+                               2 * max_datagram_size)
+           congestion_window += cwnd_increase - old_cwnd_increase
      else:
        // Congestion avoidance.
        congestion_window += max_datagram_size * acked_packet.size
