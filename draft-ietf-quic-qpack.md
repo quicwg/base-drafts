@@ -158,10 +158,10 @@ x ...
 # Compression Process Overview
 
 Like HPACK, QPACK uses two tables for associating header fields to indices.  The
-static table (see {{table-static}}) is predefined and contains common header
-fields (some of them with an empty value).  The dynamic table (see
-{{table-dynamic}}) is built up over the course of the connection and can be used
-by the encoder to index header fields in the encoded header lists.
+static table (see {{header-table-static}}) is predefined and contains common
+header fields (some of them with an empty value).  The dynamic table (see
+{{header-table-dynamic}}) is built up over the course of the connection and can
+be used by the encoder to index header fields in the encoded header lists.
 
 QPACK defines unidirectional streams for sending instructions from encoder to
 decoder and vice versa.
@@ -395,7 +395,7 @@ Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
 separately.  The following sections describe how entries in each table are
 addressed.
 
-## Static Table {#table-static}
+## Static Table {#header-table-static}
 
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
@@ -413,7 +413,7 @@ representation it MUST treat this as a connection error of type
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
-## Dynamic Table {#table-dynamic}
+## Dynamic Table {#header-table-dynamic}
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order. Each HTTP/3 endpoint holds a dynamic table that is initially
@@ -1101,7 +1101,7 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
-  : The default value is zero.  See {{table-dynamic}} for usage.  This is
+  : The default value is zero.  See {{header-table-dynamic}} for usage.  This is
     the equivalent of the SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):

@@ -148,8 +148,8 @@ All transmissions in QUIC are sent with a packet-level header, which indicates
 the encryption level and includes a packet sequence number (referred to below as
 a packet number).  The encryption level indicates the packet number space, as
 described in {{QUIC-TRANSPORT}}.  Packet numbers never repeat within a packet
-number space for the lifetime of a connection.  Packet numbers monotonically
-increase within a space, preventing ambiguity.
+number space for the lifetime of a connection.  Packet numbers are sent in
+monotonically increasing order within a space, preventing ambiguity.
 
 This design obviates the need for disambiguating between transmissions and
 retransmissions and eliminates significant complexity from QUIC's interpretation
@@ -217,12 +217,13 @@ not available.
 
 ### Clearer Loss Epoch
 
-QUIC ends a loss epoch when a packet sent after loss is declared is
-acknowledged. TCP waits for the gap in the sequence number space to be filled,
-and so if a segment is lost multiple times in a row, the loss epoch may not
-end for several round trips. Because both should reduce their congestion windows
-only once per epoch, QUIC will do it correctly once for every round trip that
-experiences loss, while TCP may only do it once across multiple round trips.
+QUIC starts a loss epoch when a packet is lost and ends one when any packet
+sent after the epoch starts is acknowledged.  TCP waits for the gap in the
+sequence number space to be filled, and so if a segment is lost multiple times
+in a row, the loss epoch may not end for several round trips. Because both
+should reduce their congestion windows only once per epoch, QUIC will do it
+once for every round trip that experiences loss, while TCP may only do it
+once across multiple round trips.
 
 ### No Reneging
 
@@ -247,7 +248,7 @@ more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays (see Section 13.2 of
+RTT samples and peer-reported ACK delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
 RTT. An endpoint computes the following three values: the minimum value
 observed over the lifetime of the connection (min_rtt), an
@@ -271,8 +272,8 @@ latest_rtt = ack_time - send_time_of_largest_acked
 ~~~
 
 An RTT sample is generated using only the largest acknowledged packet in the
-received ACK frame.  This is because a peer reports host delays for only the
-largest acknowledged packet in an ACK frame.  While the reported host delay is
+received ACK frame.  This is because a peer reports ACK delays for only the
+largest acknowledged packet in an ACK frame.  While the reported ACK delay is
 not used by the RTT sample measurement, it is used to adjust the RTT sample in
 subsequent computations of smoothed_rtt and rttvar {{smoothed-rtt}}.
 
@@ -299,7 +300,7 @@ min_rtt is set to the latest_rtt on the first sample in a connection, and to the
 lesser of min_rtt and latest_rtt on subsequent samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for host delays reported by the peer.  Doing so allows the endpoint
+not adjust for ACK delays reported by the peer.  Doing so allows the endpoint
 to set a lower bound for the smoothed_rtt based entirely on what it observes
 (see {{smoothed-rtt}}), and limits potential underestimation due to
 erroneously-reported delays by the peer.
@@ -310,7 +311,7 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the endpoint's estimated variance in the RTT samples.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for host delays.  For packets sent in the ApplicationData packet number space,
+for ACK delays.  For packets sent in the ApplicationData packet number space,
 a peer limits any delay in sending an acknowledgement for an ack-eliciting
 packet to no greater than the value it advertised in the max_ack_delay transport
 parameter.  Consequently, when a peer reports an Ack Delay that is greater than
@@ -382,7 +383,7 @@ A packet is declared lost if it meets all the following conditions:
   packet ({{packet-threshold}}), or it was sent long enough in the past
   ({{time-threshold}}).
 
-The acknowledgement indicates that a packet sent later was delivered, while the
+The acknowledgement indicates that a packet sent later was delivered, and the
 packet and time thresholds provide some tolerance for packet reordering.
 
 Spuriously declaring packets as lost leads to unnecessary retransmissions and
@@ -411,7 +412,7 @@ early, this time threshold MUST be set to at least kGranularity.  The time
 threshold is:
 
 ~~~
-kTimeThreshold * max(smoothed_rtt, latest_rtt, kGranularity)
+max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
 ~~~
 
 If packets sent prior to the largest acknowledged packet cannot yet be declared
@@ -506,9 +507,10 @@ connection's initial RTT.  If no previous RTT is available, the initial RTT
 SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
 in {{?RFC6298}}.
 
-A connection MAY use the delay between sending a PATH_CHALLENGE and receiving
-a PATH_RESPONSE to seed initial_rtt for a new path, but the delay SHOULD NOT
-be considered an RTT sample.
+A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in
+{{ld-consts-of-interest}}) for a new path, but the delay SHOULD NOT be
+considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
@@ -531,7 +533,7 @@ keys are available to the client, it MUST send a Handshake packet, and
 otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
 bytes.
 
-Initial packets and Handshake packets may never be acknowledged, but they are
+Initial packets and Handshake packets could never be acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
@@ -654,16 +656,15 @@ to support different algorithms.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If a path has been verified to support ECN, QUIC treats a Congestion Experienced
-codepoint in the IP header as a signal of congestion. This document specifies an
-endpoint's response when its peer receives packets with the Congestion
-Experienced codepoint.  As discussed in {{!RFC8311}}, endpoints are permitted to
-experiment with other response functions.
+If a path has been verified to support ECN {{?RFC3168}} {{?RFC8311}}, QUIC
+treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
+congestion. This document specifies an endpoint's response when its peer
+receives packets with the Congestion Experienced codepoint.
 
 ## Slow Start
 
 QUIC begins every connection in slow start and exits slow start upon loss or
-upon increase in the ECN-CE counter. QUIC re-enters slow start anytime the
+upon increase in the ECN-CE counter. QUIC re-enters slow start any time the
 congestion window is less than ssthresh, which only occurs after persistent
 congestion is declared. While in slow start, QUIC increases the congestion
 window by the number of bytes acknowledged when each acknowledgment is
@@ -739,13 +740,13 @@ illustrate persistent congestion:
   t=7 | Send Pkt #4 (PTO 3)
   t=8 | Recv ACK of Pkt #4
 
-The first three packets are determined to be lost when the ACK of packet 4 is
-received at t=8.  The congestion period is calculated as the time between the
-oldest and newest lost packets: (3 - 0) = 3.  The duration for persistent
-congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.  Because the
-threshold was reached and because none of the packets between the oldest and the
-newest packets are acknowledged, the network is considered to have experienced
-persistent congestion.
+The first three packets are determined to be lost when the acknowlegement of
+packet 4 is received at t=8.  The congestion period is calculated as the time
+between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
+persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
+Because the threshold was reached and because none of the packets between the
+oldest and the newest packets are acknowledged, the network is considered to
+have experienced persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -828,9 +829,9 @@ sender.  Suppressing reports of ECN-CE markings could cause a sender to
 increase their send rate.  This increase could result in congestion and loss.
 
 A sender MAY attempt to detect suppression of reports by marking occasional
-packets that they send with ECN-CE.  If a packet marked with ECN-CE is not
-reported as having been marked when the packet is acknowledged, the sender
-SHOULD then disable ECN for that path.
+packets that they send with ECN-CE.  If a packet sent with ECN-CE is not
+reported as having been CE marked when the packet is acknowledged, then the
+sender SHOULD disable ECN for that path.
 
 Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
@@ -951,7 +952,7 @@ max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
   acknowledgments for packets in the ApplicationData packet number space. The
   actual ack_delay in a received ACK frame may be larger due to late timers,
-  reordering, or lost ACKs.
+  reordering, or lost ACK frames.
 
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
@@ -1371,9 +1372,9 @@ acked_packet from sent_packets.
      if (InCongestionRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
-     if (IsAppLimited()):
+     if (IsAppOrFlowControlLimited()):
        // Do not increase congestion_window if application
-       // limited.
+       // limited or flow control limited.
        return
      if (congestion_window < ssthresh):
        // Slow start.

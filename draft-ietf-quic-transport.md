@@ -968,10 +968,10 @@ failures in the presence of peer connection migration, NAT rebinding, and client
 port reuse; and therefore MUST NOT be done unless an endpoint is certain that
 those protocol features are not in use.
 
-When an endpoint has requested a non-zero-length connection ID, it needs to
-ensure that the peer has a supply of connection IDs from which to choose for
-packets sent to the endpoint.  These connection IDs are supplied by the endpoint
-using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+When an endpoint uses a non-zero-length connection ID, it needs to ensure that
+the peer has a supply of connection IDs from which to choose for packets sent to
+the endpoint.  These connection IDs are supplied by the endpoint using the
+NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
 ### Issuing Connection IDs {#issue-cid}
@@ -1033,11 +1033,10 @@ longer plans to use that address.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST retire the corresponding connection IDs and send corresponding
-RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+the peer MUST retire the corresponding connection IDs using RETIRE_CONNECTION_ID
+frames.  Failure to retire the connection IDs within approximately one PTO can
+cause packets to be delayed, lost, or cause the original endpoint to send a
+stateless reset in response to a connection ID it can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
@@ -3963,7 +3962,7 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING and
+a cryptographic handshake message, ACK frames, or both.  PING, PADDING, and
 CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
 Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
@@ -4099,9 +4098,10 @@ includes the connection ID that the sender of the packet wishes to use (see
 Handshake packets are their own packet number space, and thus the first
 Handshake packet sent by a server contains a packet number of 0.
 
-The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
-MUST treat receipt of Handshake packets with other frames as a connection error.
+The payload of this packet contains CRYPTO frames and could contain PING,
+PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.
+Endpoints MUST treat receipt of Handshake packets with other frames as a
+connection error.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
 Handshake encryption level is discarded - and no longer retransmitted - when
@@ -5392,14 +5392,10 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field is a request for the peer to retire all connection IDs
-with a sequence number less than the specified value.  This includes the initial
-and preferred_address transport parameter connection IDs.  The peer SHOULD
-retire the corresponding connection IDs and send the corresponding
-RETIRE_CONNECTION_ID frames in a timely manner.
-
-The Retire Prior To field MUST be less than or equal to the Sequence Number
-field.  Receiving a value greater than the Sequence Number MUST be treated as a
+The Retire Prior To field counts connection IDs established during connection
+setup and the preferred_address transport parameter (see {{retiring-cids}}). The
+Retire Prior To field MUST be less than or equal to the Sequence Number field.
+Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
@@ -6092,6 +6088,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Frame encoding error conditions updated (#3027, #3042)
 - Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
   packets (#3100, #3104)
+- Servers have to change connection IDs in Retry (#2837, #3147)
 
 
 ## Since draft-ietf-quic-transport-22
