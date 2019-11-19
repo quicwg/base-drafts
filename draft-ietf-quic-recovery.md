@@ -1031,7 +1031,9 @@ OnAckReceived(ack, pn_space):
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
   DetectLostPackets(pn_space)
-  SendPacketsAsCongestionControllerAllows()
+  // Immediately attempt to send, but never more than the
+  // initial window in a single burst.
+  SendUpToIWPacketsAsCongestionControllerAllows()
   pto_count = 0
   SetLossDetectionTimer()
 
