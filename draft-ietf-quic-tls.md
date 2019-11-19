@@ -1171,8 +1171,10 @@ Note:
 ## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
-before the final TLS handshake messages are received.  Each endpoint MUST NOT
-decrypt 1-RTT packets from its peer prior to completing the handshake.
+before the final TLS handshake messages are received.  A client will be unable
+to decrypt 1-RTT packets from the server, whereas a server will be able to
+decrypt 1-RTT packets from the client.  Endpoints in either role MUST NOT
+decrypt 1-RTT packets from their peer prior to completing the handshake.
 
 Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the client state:
