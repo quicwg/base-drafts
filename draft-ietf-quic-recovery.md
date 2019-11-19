@@ -775,8 +775,8 @@ Implementations MUST either use pacing or limit such bursts to the initial
 congestion window, which is recommended to be the minimum of
 10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
 max_datagram_size is the current maximum size of a datagram for the connection,
-not including UDP or IP overhead. An implementation that does not use pacing SHOULD
-limit the congestion window increase during slow start to
+not including UDP or IP overhead. An implementation that does not use pacing
+SHOULD limit the congestion window increase during slow start to
 2 * max_datagram_size per ACK frame received in order to limit bursts, as
 specified by {{?RFC3465}}.
 
