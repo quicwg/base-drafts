@@ -785,13 +785,12 @@ flow control limits.
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
-control limits.  These frames are expected to be sent infrequently in common
-cases, but they are considered useful for debugging and monitoring purposes.
-
-A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED or DATA_BLOCKED frames
-for the same data limit, unless the original frame is determined to be lost.
-Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be sent after the data
-limit is increased.
+control limits.  If a sender is blocked for long enough it is possible for the
+connection to idle timeout, even though the data is actively queued to be sent.
+To prevent this idle timeout from occurring, the sender SHOULD continue to
+periodically send the STREAM_DATA_BLOCKED or DATA_BLOCKED frame.  One method is
+to immediately resend the frame on acknowledgment of the previous one if the
+sender is still blocked.
 
 
 ## Flow Credit Increments {#fc-credit}
