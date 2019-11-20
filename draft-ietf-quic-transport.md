@@ -789,8 +789,8 @@ control limits.  If a sender is blocked for long enough it is possible for the
 connection to idle timeout, even though the data is actively queued to be sent.
 To prevent this idle timeout from occurring, the sender SHOULD continue to
 periodically send the STREAM_DATA_BLOCKED or DATA_BLOCKED frame.  One method is
-to immediately resend the frame on acknowledgment of the previous one if the
-sender is still blocked.
+to resend a DATA_BLOCKED or STREAM_DATA_BLOCKED frame when there are no
+ack-eliciting packets in flight.
 
 
 ## Flow Credit Increments {#fc-credit}
