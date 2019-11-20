@@ -635,9 +635,9 @@ sooner, as soon as handshake keys are available (see Section 4.9.1 of
 
 This document specifies a Reno congestion controller for QUIC {{?RFC6582}}.
 
-Endpoints can unilaterally choose a different algorithm to use, such as Cubic
-{{?RFC8312}}.  The signals QUIC provides for congestion control are generic and
-are designed to support different algorithms.
+The signals QUIC provides for congestion control are generic and are designed to
+support different algorithms. Endpoints can unilaterally choose a different
+algorithm to use, such as Cubic {{?RFC8312}}.
 
 If an endpoint uses a different controller than that specified in this document,
 it MUST conform to the congestion control guidelines specified in {{!RFC8085}}.
