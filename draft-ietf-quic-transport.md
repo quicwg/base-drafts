@@ -5919,11 +5919,12 @@ date the registration is created or updated.
 
 New uses of codepoints from QUIC registries SHOULD use a randomly selected
 codepoint that excludes both existing allocations and the first unallocated
-codepoint in the selected space.  This minimizes the risk that differing
-semantics are attributed to the same codepoint by different implementations.
-Use of the first codepoint in a range is intended for use by specifications that
-are developed through the standards process {{?STD=RFC2026}} and its allocation
-MUST be negotiated with IANA before use.
+codepoint in the selected space.  Requests for multiple codepoints MAY use a
+contiguous range.  This minimizes the risk that differing semantics are
+attributed to the same codepoint by different implementations.  Use of the first
+codepoint in a range is intended for use by specifications that are developed
+through the standards process {{?STD=RFC2026}} and its allocation MUST be
+negotiated with IANA before use.
 
 For codepoints that are encoded in variable-length integers
 ({{integer-encoding}}), such as frame types, codepoints that encode to four or
