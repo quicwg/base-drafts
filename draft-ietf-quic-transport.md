@@ -787,9 +787,9 @@ and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
 control limits.  If a sender is blocked for a period longer than the idle
 timeout ({{idle-timeout}}), the connection might get closed even when data is
-available for transmission.  To keep the connection from closing, a sender
-SHOULD periodically send a STREAM_DATA_BLOCKED or DATA_BLOCKED frame when there
-are no ack-eliciting packets in flight.
+available for transmission.  To keep the connection from closing, a sender that
+is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 
 ## Flow Credit Increments {#fc-credit}
