@@ -210,6 +210,11 @@ Server:
 
 : The endpoint accepting incoming QUIC connections.
 
+Address:
+
+: When used without qualification, the tuple of IP version, IP address, UDP
+  protocol, and UDP port number that represents one end of a network path.
+
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
@@ -223,7 +228,7 @@ Stream:
 
 Application:
 
- : An entity that uses QUIC to send and receive data.
+: An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
@@ -1053,13 +1058,13 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate a packet with an existing connection. If the packet has a
-non-zero-length Destination Connection ID corresponding to an existing
+Endpoints try to associate a packet with an existing connection. If the packet
+has a non-zero-length Destination Connection ID corresponding to an existing
 connection, QUIC processes that packet accordingly. Note that more than one
 connection ID can be associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
-local address and port of a connection where the host used zero-length
+local address and port of a connection where the endpoint used zero-length
 connection IDs, QUIC processes the packet as part of that connection.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
