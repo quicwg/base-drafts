@@ -1696,13 +1696,13 @@ secrets.
 This document does not create any new IANA registries, but it registers the
 values in the following registries:
 
-* TLS ExtensionsType Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}}.  The
-  Recommended column is to be marked Yes.  The TLS 1.3 Column is to include CH
-  and EE.
+* TLS ExtensionType Values Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to
+  register the quic_transport_parameters extension found in {{quic_parameters}}.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column is to include
+  CH and EE.
 
-* QUIC Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register the
-  KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
 
 
 --- back

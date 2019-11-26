@@ -86,11 +86,6 @@ When a new draft is published, the design issues that have been closed since the
 
 When a design issue is `closed`, it implies that the issue has a proposed resolution that is reflected in the drafts; if a `closed` design issue is labeled with `has-consensus`, it means that the incorporated resolution has Working Group consensus.
 
-The drafts currently in the early stage are:
-
-* HTTP/3
-* QPACK
-* Recovery
 
 
 ### Late-Stage Process
@@ -106,6 +101,9 @@ The drafts currently in the late stage are:
 * Invariants
 * Transport
 * TLS
+* HTTP/3
+* QPACK
+* Recovery
 
 ![diagram of the late stage workflow](workflow.png "Late Stage Workflow")
 

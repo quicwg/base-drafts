@@ -95,11 +95,11 @@ of transport and security experience, and implements mechanisms that make it
 attractive as a modern general-purpose transport.  The QUIC protocol is
 described in {{QUIC-TRANSPORT}}.
 
-QUIC implements the spirit of existing TCP loss recovery mechanisms, described
-in RFCs, various Internet-drafts, and also those prevalent in the Linux TCP
-implementation.  This document describes QUIC congestion control and loss
-recovery, and where applicable, attributes the TCP equivalent in RFCs,
-Internet-drafts, academic papers, and/or TCP implementations.
+QUIC implements the spirit of existing TCP congestion control and loss recovery
+mechanisms, described in RFCs, various Internet-drafts, and also those prevalent
+in the Linux TCP implementation.  This document describes QUIC congestion
+control and loss recovery, and where applicable, attributes the TCP equivalent
+in RFCs, Internet-drafts, academic papers, and/or TCP implementations.
 
 
 # Conventions and Definitions
@@ -130,11 +130,6 @@ Ack-eliciting Packets:
 
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
   within the maximum ack delay and are called ack-eliciting packets.
-
-Crypto Packets:
-
-: Packets containing CRYPTO data sent in Initial or Handshake
-  packets.
 
 Out-of-order Packets:
 
@@ -277,7 +272,7 @@ largest acknowledged packet in an ACK frame.  While the reported ACK delay is
 not used by the RTT sample measurement, it is used to adjust the RTT sample in
 subsequent computations of smoothed_rtt and rttvar {{smoothed-rtt}}.
 
-To avoid generating multiple RTT samples using the same packet, an ACK frame
+To avoid generating multiple RTT samples for a single packet, an ACK frame
 SHOULD NOT be used to update RTT estimates if it does not newly acknowledge the
 largest acknowledged packet.
 
@@ -359,8 +354,9 @@ rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 
 # Loss Detection {#loss-detection}
 
-QUIC senders use both ack information and timeouts to detect lost packets, and
-this section provides a description of these algorithms.
+QUIC senders use acknowledgements to detect lost packets, and a probe
+time out {{pto}} to ensure acknowledgements are received. This section
+provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
@@ -405,11 +401,10 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 
 ### Time Threshold {#time-threshold}
 
-Once a later packet packet within the same packet number space has been
-acknowledged, an endpoint SHOULD declare an earlier packet lost if it was sent
-a threshold amount of time in the past. To avoid declaring packets as lost too
-early, this time threshold MUST be set to at least kGranularity.  The time
-threshold is:
+Once a later packet within the same packet number space has been acknowledged,
+an endpoint SHOULD declare an earlier packet lost if it was sent a threshold
+amount of time in the past. To avoid declaring packets as lost too early, this
+time threshold MUST be set to at least kGranularity.  The time threshold is:
 
 ~~~
 max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
@@ -483,12 +478,12 @@ a 1-RTT packet.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. This exponential reduction in the sender's rate is important because
-the PTOs might be caused by loss of packets or acknowledgements due to severe
-congestion.  Even when there are ack-eliciting packets in-flight in multiple
-packet number spaces, the exponential increase in probe timeout occurs across
-all spaces to prevent excess load on the network.  For example, a timeout in
-the Initial packet number space doubles the length of the timeout in the
-Handshake packet number space.
+consecutive PTOs might be caused by loss of packets or acknowledgements due to
+severe congestion.  Even when there are ack-eliciting packets in-flight in
+multiple packet number spaces, the exponential increase in probe timeout
+occurs across all spaces to prevent excess load on the network.  For example,
+a timeout in the Initial packet number space doubles the length of the timeout
+in the Handshake packet number space.
 
 The life of a connection that is experiencing consecutive PTOs is limited by
 the endpoint's idle timeout.
@@ -533,7 +528,7 @@ keys are available to the client, it MUST send a Handshake packet, and
 otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
 bytes.
 
-Initial packets and Handshake packets could never be acknowledged, but they are
+Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
@@ -549,9 +544,7 @@ expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent.  Data that was previously sent with Initial encryption
-MUST be sent before Handshake data and data previously sent at Handshake
-encryption MUST be sent before any ApplicationData data.
+data, it MUST be sent.
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
