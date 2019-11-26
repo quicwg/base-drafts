@@ -3410,15 +3410,15 @@ later time in the connection.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-The payload of a UDP datagram carrying Initial packets from a client MUST be
-expanded to at least 1200 bytes, by adding PADDING frames to the Initial packet
-and/or by coalescing the Initial packet (see {{packet-coalesce}}). Sending a UDP
-datagram of this size ensures that the network path supports a reasonable
-Maximum Transmission Unit (MTU), and helps reduce the amplitude of amplification
-attacks caused by server responses toward an unverified client address; see
-{{address-validation}}.
+A client MUST expand the payload of all UDP datagrams carrying Initial packets
+to at least 1200 bytes, by adding PADDING frames to the Initial packet or by
+coalescing the Initial packet (see {{packet-coalesce}}). Sending a UDP datagram
+of this size ensures that the network path from the client to the server
+supports a reasonable Maximum Transmission Unit (MTU).  Padding datagrams also
+helps reduce the amplitude of amplification attacks caused by server responses
+toward an unverified client address; see {{address-validation}}.
 
-These datagrams containing Initial packets MAY exceed 1200 bytes if the client
+Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the Path Maximum Transmission Unit (PMTU) supports the size that
 it chooses.
 
