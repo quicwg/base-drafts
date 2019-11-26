@@ -1028,9 +1028,6 @@ Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
 OnAckReceived(ack, pn_space):
-  // Initialize congestion state per ACK frame received
-  OnAckReceivedCC()
-
   if (largest_acked_packet[pn_space] == infinite):
     largest_acked_packet[pn_space] = ack.largest_acked
   else:
@@ -1363,9 +1360,6 @@ acked_packet from sent_packets.
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
-   OnAckReceivedCC():
-     cwnd_increase = 0
-
    OnPacketAckedCC(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
@@ -1378,17 +1372,7 @@ acked_packet from sent_packets.
        return
      if (congestion_window < ssthresh):
        // Slow start.
-       if (pacing):
-         congestion_window += acked_packet.size
-       else:
-         // If pacing is not used, limit the increase to
-         // 2 * max_datagram_size per ACK as described in
-         // {{?RFC3465}}
-         if (cwnd_increase < 2 * max_datagram_size):
-           old_cwnd_increase = cwnd_increase
-           cwnd_increase = min(cwnd_increase + acked_packet.size,
-                               2 * max_datagram_size)
-           congestion_window += cwnd_increase - old_cwnd_increase
+       congestion_window += acked_packet.size
      else:
        // Congestion avoidance.
        congestion_window += max_datagram_size * acked_packet.size
