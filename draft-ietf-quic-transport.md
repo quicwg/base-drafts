@@ -210,6 +210,11 @@ Server:
 
 : The endpoint accepting incoming QUIC connections.
 
+Address:
+
+: When used without qualification, the tuple of IP version, IP address, UDP
+  protocol, and UDP port number that represents one end of a network path.
+
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
@@ -223,7 +228,7 @@ Stream:
 
 Application:
 
- : An entity that uses QUIC to send and receive data.
+: An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
@@ -968,10 +973,10 @@ failures in the presence of peer connection migration, NAT rebinding, and client
 port reuse; and therefore MUST NOT be done unless an endpoint is certain that
 those protocol features are not in use.
 
-When an endpoint has requested a non-zero-length connection ID, it needs to
-ensure that the peer has a supply of connection IDs from which to choose for
-packets sent to the endpoint.  These connection IDs are supplied by the endpoint
-using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+When an endpoint uses a non-zero-length connection ID, it needs to ensure that
+the peer has a supply of connection IDs from which to choose for packets sent to
+the endpoint.  These connection IDs are supplied by the endpoint using the
+NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 
 ### Issuing Connection IDs {#issue-cid}
@@ -1033,11 +1038,10 @@ longer plans to use that address.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST retire the corresponding connection IDs and send corresponding
-RETIRE_CONNECTION_ID frames.  Failing to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+the peer MUST retire the corresponding connection IDs using RETIRE_CONNECTION_ID
+frames.  Failure to retire the connection IDs within approximately one PTO can
+cause packets to be delayed, lost, or cause the original endpoint to send a
+stateless reset in response to a connection ID it can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
@@ -1054,13 +1058,13 @@ Incoming packets are classified on receipt.  Packets can either be associated
 with an existing connection, or - for servers - potentially create a new
 connection.
 
-Hosts try to associate a packet with an existing connection. If the packet has a
-non-zero-length Destination Connection ID corresponding to an existing
+Endpoints try to associate a packet with an existing connection. If the packet
+has a non-zero-length Destination Connection ID corresponding to an existing
 connection, QUIC processes that packet accordingly. Note that more than one
 connection ID can be associated with a connection; see {{connection-id}}.
 
 If the Destination Connection ID is zero length and the packet matches the
-local address and port of a connection where the host used zero-length
+local address and port of a connection where the endpoint used zero-length
 connection IDs, QUIC processes the packet as part of that connection.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
@@ -1618,6 +1622,14 @@ also constrained in what they can send by the limits set by the congestion
 controller.  Clients are only constrained by the congestion controller.
 
 
+### Token Construction
+
+A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
+way that allows the server to identity how it was provided to a client.  These
+tokens are carried in the same field, but require different handling from
+servers.
+
+
 ### Address Validation using Retry Packets {#validate-retry}
 
 Upon receiving the client's Initial packet, the server can request address
@@ -1674,15 +1686,6 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-A token SHOULD be constructed in a way that allows the server to distinguish it
-from tokens that are sent in Retry packets as they are carried in the same
-field.
-
-The token MUST NOT include information that would allow it to be linked by an
-on-path observer to the connection on which it was issued.  For example, it
-cannot include the connection ID or addressing information unless the values are
-encrypted.
-
 Unlike the token that is created for a Retry packet, there might be some time
 between when the token is created and when the token is subsequently used.
 Thus, a token SHOULD have an expiration time, which could be either an explicit
@@ -1690,28 +1693,40 @@ expiration time or an issued timestamp that can be used to dynamically calculate
 the expiration time.  A server can store the expiration time or include it in an
 encrypted form in the token.
 
+A token issued with NEW_TOKEN MUST NOT include information that would allow
+values to be linked by an on-path observer to the connection on which it was
+issued, unless the values are encrypted.  For example, it cannot include the
+previous connection ID or addressing information.  Information that allows the
+server to distinguish between tokens from Retry and NEW_TOKEN MAY be accessible
+to entities other than the server.
+
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
 
-If the client has a token received in a NEW_TOKEN frame on a previous connection
-to what it believes to be the same server, it SHOULD include that value in the
-Token field of its Initial packet.  Including a token might allow the server to
-validate the client address without an additional round trip.
+A token received in a NEW_TOKEN frame is applicable to any server that the
+connection is considered authoritative for (e.g., server names included in the
+certificate).  When connecting to a server for which the client retains an
+applicable and unused token, it SHOULD include that token in the Token field of
+its Initial packet.  Including a token might allow the server to validate the
+client address without an additional round trip.  A client MUST NOT include a
+token that is not applicable to the server that it is connecting to, unless the
+client has the knowledge that the server that issued the token and the server
+the client is connecting to are jointly managing the tokens.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
 break continuity of identity with a server MAY discard tokens provided using the
-NEW_TOKEN frame.  A token obtained in a Retry packet MUST be used immediately
-during the connection attempt and cannot be used in subsequent connection
-attempts.
+NEW_TOKEN frame.  In comparison, a token obtained in a Retry packet MUST be used
+immediately during the connection attempt and cannot be used in subsequent
+connection attempts.
 
-A client SHOULD NOT reuse a token in different connections.  Reusing a token
-allows connections to be linked by entities on the network path; see
-{{migration-linkability}}.  A client MUST NOT reuse a token if it believes that
-its point of network attachment has changed since the token was last used; that
-is, if there is a change in its local IP address or network interface.  A client
-needs to start the connection process over if there is any change in its local
-address prior to completing the handshake.
+A client SHOULD NOT reuse a NEW_TOKEN token for different connection attempts.
+Reusing a token allows connections to be linked by entities on the network path;
+see {{migration-linkability}}.  A client MUST NOT reuse a token if it believes
+that its point of network attachment has changed since the token was last used;
+that is, if there is a change in its local IP address or network interface.  A
+client needs to start the connection process over if there is any change in its
+local address prior to completing the handshake.
 
 Clients might receive multiple tokens on a single connection.  Aside from
 preventing linkability, any token can be used in any connection attempt.
@@ -2374,15 +2389,24 @@ terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
-After sending a CONNECTION_CLOSE frame, endpoints immediately enter the closing
-state.  During the closing period, an endpoint that sends a CONNECTION_CLOSE
-frame SHOULD respond to any packet that it receives with another packet
-containing a CONNECTION_CLOSE frame.  To minimize the state that an endpoint
-maintains for a closing connection, endpoints MAY send the exact same packet.
-However, endpoints SHOULD limit the number of packets they generate containing a
-CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
-the number of packets that it receives before sending additional packets or
-increase the time between packets.
+After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
+closing state.
+
+During the closing period, an endpoint that sends a CONNECTION_CLOSE frame
+SHOULD respond to any incoming packet that can be decrypted with another packet
+containing a CONNECTION_CLOSE frame.  Such an endpoint SHOULD limit the number
+of packets it generates containing a CONNECTION_CLOSE frame.  For instance, an
+endpoint could progressively increase the number of packets that it receives
+before sending additional packets or increase the time between packets.
+
+An endpoint is allowed to drop the packet protection keys when entering the
+closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
+response to any UDP datagram that is received.  However, an endpoint without the
+packet protection keys cannot identify and discard invalid packets.  To avoid
+creating an unwitting amplification attack, such endpoints MUST reduce the
+frequency with which it sends packets containing a CONNECTION_CLOSE frame.  To
+minimize the state that an endpoint maintains for a closing connection,
+endpoints MAY send the exact same packet.
 
 Note:
 
@@ -2709,9 +2733,6 @@ An endpoint that chooses not to retransmit packets containing a CONNECTION_CLOSE
 frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 use the stateless reset process ({{stateless-reset}}).
-
-An endpoint that receives an invalid CONNECTION_CLOSE frame MUST NOT signal the
-existence of the error to its peer.
 
 
 ## Stream Errors
@@ -3411,27 +3432,22 @@ later time in the connection.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-Clients MUST ensure they send the first Initial packet in a single IP packet.
-Similarly, the first Initial packet sent after receiving a Retry packet MUST be
-sent in a single IP packet.
-
-The payload of a UDP datagram carrying the first Initial packet MUST be expanded
-to at least 1200 bytes, by adding PADDING frames to the Initial packet and/or by
+A client MUST expand the payload of all UDP datagrams carrying Initial packets
+to at least 1200 bytes, by adding PADDING frames to the Initial packet or by
 coalescing the Initial packet (see {{packet-coalesce}}). Sending a UDP datagram
-of this size ensures that the network path supports a reasonable Maximum
-Transmission Unit (MTU), and helps reduce the amplitude of amplification attacks
-caused by server responses toward an unverified client address; see
-{{address-validation}}.
+of this size ensures that the network path from the client to the server
+supports a reasonable Maximum Transmission Unit (MTU).  Padding datagrams also
+helps reduce the amplitude of amplification attacks caused by server responses
+toward an unverified client address; see {{address-validation}}.
 
-The datagram containing the first Initial packet from a client MAY exceed 1200
-bytes if the client believes that the Path Maximum Transmission Unit (PMTU)
-supports the size that it chooses.
+Datagrams containing Initial packets MAY exceed 1200 bytes if the client
+believes that the Path Maximum Transmission Unit (PMTU) supports the size that
+it chooses.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to the first Initial packet it receives from a client if the UDP
-datagram is smaller than 1200 bytes. It MUST NOT send any other frame type in
-response, or otherwise behave as if any part of the offending packet was
-processed as valid.
+response to an Initial packet it receives from a client if the UDP datagram is
+smaller than 1200 bytes. It MUST NOT send any other frame type in response, or
+otherwise behave as if any part of the offending packet was processed as valid.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
@@ -3963,7 +3979,7 @@ server may send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, or both.  PADDING and
+a cryptographic handshake message, ACK frames, or both.  PING, PADDING, and
 CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
 Initial packet containing other frames can either discard the packet as spurious
 or treat it as a connection error.
@@ -4099,9 +4115,10 @@ includes the connection ID that the sender of the packet wishes to use (see
 Handshake packets are their own packet number space, and thus the first
 Handshake packet sent by a server contains a packet number of 0.
 
-The payload of this packet contains CRYPTO frames and could contain PADDING, or
-ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.  Endpoints
-MUST treat receipt of Handshake packets with other frames as a connection error.
+The payload of this packet contains CRYPTO frames and could contain PING,
+PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.
+Endpoints MUST treat receipt of Handshake packets with other frames as a
+connection error.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
 Handshake encryption level is discarded - and no longer retransmitted - when
@@ -5392,25 +5409,21 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field is a request for the peer to retire all connection IDs
-with a sequence number less than the specified value.  This includes the initial
-and preferred_address transport parameter connection IDs.  The peer SHOULD
-retire the corresponding connection IDs and send the corresponding
-RETIRE_CONNECTION_ID frames in a timely manner.
-
-An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
-smaller than the Retire Prior To field of a previously received
-NEW_CONNECTION_ID frame MUST immediately send a corresponding
-RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
-
-The Retire Prior To field MUST be less than or equal to the Sequence Number
-field.  Receiving a value greater than the Sequence Number MUST be treated as a
+The Retire Prior To field counts connection IDs established during connection
+setup and the preferred_address transport parameter (see {{retiring-cids}}). The
+Retire Prior To field MUST be less than or equal to the Sequence Number field.
+Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
 Retire Prior To fields that do not increase the largest received Retire Prior To
 value.
+
+An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
+smaller than the Retire Prior To field of a previously received
+NEW_CONNECTION_ID frame MUST immediately send a corresponding
+RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
 
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
@@ -5554,6 +5567,12 @@ Reason Phrase:
 : A human-readable explanation for why the connection was closed.  This can be
   zero length if the sender chooses to not give details beyond the Error Code.
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+
+The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
+sent using an 1-RTT packet ({{QUIC-TLS}}, Section 4).  When an application
+wishes to abandon a connection during the handshake, an endpoint can send a
+CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
+alert; see {{?TLS13}}) in an Initial or a Handshake packet.
 
 
 ## Extension Frames
@@ -6097,6 +6116,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Frame encoding error conditions updated (#3027, #3042)
 - Non-ack-eliciting packets cannot be sent in response to non-ack-eliciting
   packets (#3100, #3104)
+- Servers have to change connection IDs in Retry (#2837, #3147)
 
 
 ## Since draft-ietf-quic-transport-22

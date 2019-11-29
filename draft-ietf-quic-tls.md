@@ -328,8 +328,11 @@ encryption levels:
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
-- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
-  level except 0-RTT.
+- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
+  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+
+- CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
+  sent in packets at the 1-RTT encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
@@ -1696,13 +1699,13 @@ secrets.
 This document does not create any new IANA registries, but it registers the
 values in the following registries:
 
-* TLS ExtensionsType Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}}.  The
-  Recommended column is to be marked Yes.  The TLS 1.3 Column is to include CH
-  and EE.
+* TLS ExtensionType Values Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to
+  register the quic_transport_parameters extension found in {{quic_parameters}}.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column is to include
+  CH and EE.
 
-* QUIC Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register the
-  KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
 
 
 --- back
