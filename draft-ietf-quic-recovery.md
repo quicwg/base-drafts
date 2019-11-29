@@ -771,8 +771,7 @@ congestion window, which is recommended to be the minimum of
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead. An implementation that does not use pacing
 SHOULD limit the congestion window increase during slow start to
-2 * max_datagram_size per ACK frame received in order to limit bursts, as
-specified by {{?RFC3465}}.
+2 * max_datagram_size per ACK frame received {{?RFC3465}}.
 
 As an example of a well-known and publicly available implementation of a flow
 pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
