@@ -5420,6 +5420,11 @@ subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
 Retire Prior To fields that do not increase the largest received Retire Prior To
 value.
 
+An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
+smaller than the Retire Prior To field of a previously received
+NEW_CONNECTION_ID frame MUST immediately send a corresponding
+RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
+
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
