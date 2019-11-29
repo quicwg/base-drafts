@@ -328,8 +328,11 @@ encryption levels:
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
-- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
-  level except 0-RTT.
+- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
+  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+
+- CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
+  sent in packets at the 1-RTT encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
