@@ -2378,15 +2378,24 @@ terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
 streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
-After sending a CONNECTION_CLOSE frame, endpoints immediately enter the closing
-state.  During the closing period, an endpoint that sends a CONNECTION_CLOSE
-frame SHOULD respond to any packet that it receives with another packet
-containing a CONNECTION_CLOSE frame.  To minimize the state that an endpoint
-maintains for a closing connection, endpoints MAY send the exact same packet.
-However, endpoints SHOULD limit the number of packets they generate containing a
-CONNECTION_CLOSE frame.  For instance, an endpoint could progressively increase
-the number of packets that it receives before sending additional packets or
-increase the time between packets.
+After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
+closing state.
+
+During the closing period, an endpoint that sends a CONNECTION_CLOSE frame
+SHOULD respond to any incoming packet that can be decrypted with another packet
+containing a CONNECTION_CLOSE frame.  Such an endpoint SHOULD limit the number
+of packets it generates containing a CONNECTION_CLOSE frame.  For instance, an
+endpoint could progressively increase the number of packets that it receives
+before sending additional packets or increase the time between packets.
+
+An endpoint is allowed to drop the packet protection keys when entering the
+closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
+response to any UDP datagram that is received.  However, an endpoint without the
+packet protection keys cannot identify and discard invalid packets.  To avoid
+creating an unwitting amplification attack, such endpoints MUST reduce the
+frequency with which it sends packets containing a CONNECTION_CLOSE frame.  To
+minimize the state that an endpoint maintains for a closing connection,
+endpoints MAY send the exact same packet.
 
 Note:
 
