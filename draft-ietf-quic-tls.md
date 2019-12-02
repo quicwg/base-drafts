@@ -1818,7 +1818,7 @@ mask = AES-ECB(hp, sample)[0..4]
 
 header[0] ^= mask[0] & 0x0f
      = c0
-header[17..20] ^= mask[1..4]
+header[18..21] ^= mask[1..4]
      = 3b343aa8
 header = c0ff000017088394c8f03e5157080000449e3b343aa8
 ~~~
