@@ -356,7 +356,7 @@ the relative priority of streams.  When deciding which streams to dedicate
 resources to, the implementation SHOULD use the information provided by the
 application.
 
-## Required Operations on Streams
+## Required Operations on Streams {#stream-operations}
 
 There are certain operations which an application MUST be able to perform when
 interacting with QUIC streams.  This document does not specify an API, but
@@ -1138,23 +1138,35 @@ Servers MUST drop incoming packets under all other circumstances.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
 
-TBD.
+A QUIC connection is a stateful interaction between a client and server, the
+primary purpose of which is to support the exchange of data by an application
+protocol.  Streams ({{streams}}) are the primary means by which an application
+protocol exchanges information.
 
-<!-- Goes into how the next few sections are connected. Specifically, one goal
-is to combine the address validation section that shows up below with path
-validation that shows up later, and explain why these two mechanisms are
-required here.
+Each connection starts with a handshake phase, during which client and server
+establish a shared secret using the cryptographic handshake protocol
+{{QUIC-TLS}} and negotiate the application protocol.  The handshake
+({{handshake}}) confirms that both endpoints are willing to communicate
+({{validate-handshake}}) and establishes parameters for the connection
+({{transport-parameters}}).
 
-suggested structure:
+An application protocol can also operate in a limited fashion during the
+handshake phase.  0-RTT allows application messages to be sent by a client
+before receiving any messages from the server.  However, 0-RTT lacks certain key
+security guarantees. In particular, there is no protection against replay
+attacks in 0-RTT; see {{QUIC-TLS}}.  Separately, a server can also send
+application data to a client before it receives the final cryptographic
+handshake messages that allow it to confirm the identity and liveness of the
+client.  These capabilities allow an application protocol to offer the option to
+trade some security guarantees for reduced latency.
 
- - establishment
-   - VN
-   - Retry
-   - Crypto
- - use (include migration)
- - shutdown
+The use of connection IDs ({{connection-id}}) allows connections to migrate to a
+new network path, both as a direct choice of an endpoint and when forced by a
+change in a middlebox.  {{migration}} describes mitigations for the security and
+privacy issues associated with migration.
 
--->
+For connections that are no longer needed or desired, there are several ways for
+a client and server to terminate a connection ({{termination}}).
 
 
 ## Required Operations on Connections
