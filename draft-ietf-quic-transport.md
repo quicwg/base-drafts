@@ -4184,7 +4184,7 @@ wishes to perform a retry (see {{validate-handshake}}).
 
 A Retry packet (shown in {{retry-format}}) does not contain any protected
 fields. The value in the Unused field is selected randomly by the server. In
- addition to the long header, it contains these additional fields:
+addition to the long header, it contains these additional fields:
 
 ODCID Len:
 
@@ -4231,7 +4231,8 @@ from the server, it MUST discard any subsequent Retry packets that it receives.
 Clients MUST discard Retry packets that contain an Original Destination
 Connection ID field that does not match the Destination Connection ID from its
 Initial packet.  This prevents an off-path attacker from injecting a Retry
-packet.
+packet.  A client MUST discard a Retry packet with a zero-length Retry Token
+field.
 
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
