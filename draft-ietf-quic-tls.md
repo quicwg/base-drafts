@@ -1465,21 +1465,22 @@ parameters and allows a server to perform return routability checks on clients.
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
-{{!RFC7301}} to select an application protocol.  Unless another mechanism is
-used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  When using ALPN, endpoints MUST immediately close a connection (see
-Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
-see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
-alert, QUIC clients MUST also use it to terminate a connection when ALPN
-negotiation fails.
+{{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
+is used for agreeing on an application protocol, endpoints MUST use ALPN for
+this purpose.  When using ALPN, endpoints MUST immediately close a connection
+(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
+{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
+QUIC clients MUST also use it to terminate a connection when ALPN negotiation
+fails.
 
-An application-layer protocol MAY restrict the QUIC versions that it can operate
-over.  Servers MUST select an application protocol compatible with the QUIC
-version that the client has selected.  If the server cannot select a compatible
-combination of application protocol and QUIC version, it MUST abort the
-connection.  A client MUST abort a connection if the server picks an application
-protocol incompatible with the protocol version being used.
+An application protocol MAY restrict the QUIC versions that it can operate over.
+Servers MUST select an application protocol compatible with the QUIC version
+that the client has selected.  The server MUST treat the inability to select a
+compatible application protocol as a connection error of type 0x178
+(no_application_protocol).  Similarly, a client MUST treat the selection of an
+incompatible application protocol by a server as a connection error of type
+0x178.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
