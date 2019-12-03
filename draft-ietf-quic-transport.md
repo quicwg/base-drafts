@@ -2007,7 +2007,10 @@ to verify the peer's ownership of the unvalidated address.
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
 against potential attacks as described in {{address-spoofing}} and
 {{on-path-spoofing}}.  An endpoint MAY skip validation of a peer address if that
-address has been seen recently.
+address has been seen recently.  In particular, if an endpoint returns to a
+previously-validated path after detecting some form of spurious migration,
+skipping address validation and restoring loss detection and congestion state
+can reduce the performance impact of the attack.
 
 An endpoint only changes the address that it sends packets to in response to the
 highest-numbered non-probing packet. This ensures that an endpoint does not send
