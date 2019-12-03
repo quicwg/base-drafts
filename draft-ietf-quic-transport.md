@@ -1719,9 +1719,11 @@ encrypted form in the token.
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an on-path observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
-previous connection ID or addressing information.  Information that allows the
-server to distinguish between tokens from Retry and NEW_TOKEN MAY be accessible
-to entities other than the server.
+previous connection ID or addressing information.  Each NEW_TOKEN frame MUST
+include a globally unique value, unless the frame is sent to repair loss of a
+packet containing the same value.  Information that allows the server to
+distinguish between tokens from Retry and NEW_TOKEN MAY be accessible to
+entities other than the server.
 
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
@@ -5067,8 +5069,9 @@ Token:
   an empty Token field as a connection error of type FRAME_ENCODING_ERROR.
 
 An endpoint might receive multiple NEW_TOKEN frames that contain the same token
-value.  Endpoints are responsible for discarding duplicate values, which might
-be used to link connection attempts; see {{validate-future}}.
+value if packets containing the frame are incorrectly determined to be lost.
+Endpoints are responsible for discarding duplicate values, which might be used
+to link connection attempts; see {{validate-future}}.
 
 Clients MUST NOT send NEW_TOKEN frames.  Servers MUST treat receipt of a
 NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
