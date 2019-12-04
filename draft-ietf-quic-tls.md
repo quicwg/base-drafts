@@ -2070,3 +2070,22 @@ many others.
 {:numbered="false"}
 
 Ryan Hamilton was originally an author of this specification.
+
+The IETF QUIC Working Group received an enormous amount of support from many
+people. The following people provided substantive contributions:
+Alessandro Ghedini,
+Christian Huitema,
+Christopher Wood,
+David Schinazi,
+Eric Rescorla,
+Ian Swett,
+<u format="char-ascii" ascii="Kazuho Oku">?</u>,
+Marten Seemann,
+Martin Duke,
+Mike Bishop,
+<u format="char">Mikkel Fahnøe Jørgensen</u>,
+Nick Banks,
+Nick Harper,
+Rui Paulo,
+Ryan Hamilton,
+and Victor Vasiliev.
