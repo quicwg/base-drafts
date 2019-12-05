@@ -2422,8 +2422,8 @@ During the closing period, an endpoint that sends a CONNECTION_CLOSE frame
 SHOULD respond to any incoming packet that can be decrypted with another packet
 containing a CONNECTION_CLOSE frame.  Such an endpoint SHOULD limit the number
 of packets it generates containing a CONNECTION_CLOSE frame.  For instance, an
-endpoint could progressively increase the number of packets that it receives
-before sending additional packets or increase the time between packets.
+endpoint could wait for a progressively increasing number of received packets or
+amount of time before responding to a received packet.
 
 An endpoint is allowed to drop the packet protection keys when entering the
 closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
