@@ -3473,7 +3473,6 @@ it chooses.
 
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
-Endpoints SHOULD discard fragmented IP packets.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to an Initial packet it receives from a client if the UDP datagram is
