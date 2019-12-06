@@ -719,10 +719,12 @@ as follows:
 
 For example, assume:
 
+~~~
   smoothed_rtt = 1
   rttvar = 0
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
+~~~
 
 If an ack-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
