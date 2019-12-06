@@ -1253,7 +1253,7 @@ papers, and common practice.  Some may need to be changed or negotiated
 in order to better suit a variety of environments.
 
 kInitialWindow:
-: Default limit on the initial amount of data in flight, in bytes. 
+: Default limit on the initial amount of data in flight, in bytes.
   This follows the analysis and recommendations in {{?RFC6928}}, increasing the
   byte limit to account for the smaller 8 byte overhead of UDP compared to the
   20 byte overhead for TCP.  The RECOMMENDED value is the minimum of
