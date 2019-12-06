@@ -719,10 +719,12 @@ as follows:
 
 For example, assume:
 
+~~~
   smoothed_rtt = 1
   rttvar = 0
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
+~~~
 
 If an ack-eliciting packet is sent at time = 0, the following scenario would
 illustrate persistent congestion:
@@ -735,7 +737,7 @@ illustrate persistent congestion:
 
 The first three packets are determined to be lost when the acknowlegement of
 packet 4 is received at t=8.  The congestion period is calculated as the time
-between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
+between the oldest and newest lost packets: (7 - 0) = 7.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
 Because the threshold was reached and because none of the packets between the
 oldest and the newest packets are acknowledged, the network is considered to
