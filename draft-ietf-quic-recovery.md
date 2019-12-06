@@ -1409,26 +1409,33 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked from DetectLostPackets when packets are deemed lost.
 
 ~~~
-   InPersistentCongestion(earliest_lost_packet, largest_lost_packet):
+   InPersistentCongestion(lost_packets):
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
+
+     earliest_lost_packet = lost_packets.first()
+     largest_lost_packet = lost_packets.last()
+
      // Determine if all packets in the time period before the
      // newest lost packet, including the edges, are marked
      // lost
-     return congestion_period >
+     all_packets_lost =
+       lost_packets.length() == (lost_packets.last().packet_number -
+                                 lost_packets.first().packet_number + 1)
+
+     return all_packets_lost && congestion_period >
        largest_lost_packet.time_sent - earliest_lost_packet.time_sent
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     earliest_lost_packet = lost_packets.first()
      largest_lost_packet = lost_packets.last()
      CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(earliest_lost_packet, largest_lost_packet)):
+     if (InPersistentCongestion(lost_packets)):
        congestion_window = kMinimumWindow
 ~~~
 
