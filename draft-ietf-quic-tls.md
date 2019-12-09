@@ -1176,25 +1176,34 @@ Note:
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
-decrypt 1-RTT packets from the client.
+decrypt 1-RTT packets from the client.  Endpoints in either role MUST NOT
+decrypt 1-RTT packets from their peer prior to completing the handshake.
 
 Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the client state:
 
 - The client is not authenticated, unless the server has chosen to use a
-pre-shared key and validated the client's pre-shared key binder; see
-Section 4.2.11 of {{!TLS13}}.
-- The client has not demonstrated liveness, unless a RETRY packet was used.
-- Any received 0-RTT data that the server responds to might be due to a replay
-attack.
+  pre-shared key and validated the client's pre-shared key binder; see Section
+  4.2.11 of {{!TLS13}}.
 
-Therefore, the server's use of 1-RTT keys is limited before the handshake is
-complete.  A server MUST NOT process data from incoming 1-RTT
-protected packets before the TLS handshake is complete.  Because
-sending acknowledgments indicates that all frames in a packet have been
-processed, a server cannot send acknowledgments for 1-RTT packets until the
-TLS handshake is complete.  Received packets protected with 1-RTT keys MAY be
-stored and later decrypted and used once the handshake is complete.
+- The client has not demonstrated liveness, unless a RETRY packet was used.
+
+- Any received 0-RTT data that the server responds to might be due to a replay
+  attack.
+
+Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
+the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+packets before the TLS handshake is complete.  Because sending acknowledgments
+indicates that all frames in a packet have been processed, a server cannot send
+acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
+packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.
+
+Note:
+
+: TLS implementations might provide all 1-RTT secrets prior to handshake
+  completion.  Even where QUIC implementations have 1-RTT read keys, those keys
+  cannot be used prior to completing the handshake.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
