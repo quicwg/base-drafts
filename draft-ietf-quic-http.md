@@ -424,13 +424,14 @@ H3_REQUEST_INCOMPLETE.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When the server does not need to receive the
-remainder of the request, it MAY abort reading the request stream with error
-code H3_EARLY_RESPONSE, send a complete response, and cleanly close the
-sending part of the stream. Clients MUST NOT discard complete responses as a
-result of having their request terminated abruptly, though clients can always
-discard responses at their discretion for other reasons.  If the server sends a
-partial or complete response but does not abort reading, clients SHOULD continue
-sending the body of the request and close the stream normally.
+remainder of the request, it MAY abort reading the request stream, send a
+complete response, and cleanly close the sending part of the stream.  The error
+code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on
+the request stream.  Clients MUST NOT discard complete responses as a result of
+having their request terminated abruptly, though clients can always discard
+responses at their discretion for other reasons.  If the server sends a partial
+or complete response but does not abort reading, clients SHOULD continue sending
+the body of the request and close the stream normally.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -1443,10 +1444,6 @@ H3_REQUEST_CANCELLED (0x10C):
 H3_REQUEST_INCOMPLETE (0x10D):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_EARLY_RESPONSE (0x10E):
-: The remainder of the client's request is not needed to produce a response.
-  For use in STOP_SENDING only.
-
 H3_CONNECT_ERROR (0x10F):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
@@ -1702,7 +1699,6 @@ The entries in the following table are registered by this document.
 | H3_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
 | H3_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
-| H3_EARLY_RESPONSE                 | 0x010E     | Remainder of request not needed          | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
@@ -2021,6 +2017,9 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > final version of this document.
 
 ## Since draft-ietf-quic-http-24
+
+- Removed H3_EARLY_RESPONSE error code; H3_NO_ERROR is recommended instead
+  (#3130,#3208)
 
 ## Since draft-ietf-quic-http-23
 
