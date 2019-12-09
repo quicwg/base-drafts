@@ -142,7 +142,7 @@ and DATA frames form the basis of HTTP requests and responses
 ({{request-response}}).
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
-described in Section 2 of {{QUIC-TRANSPORT}}.  Each request and response
+described in Section 2 of {{QUIC-TRANSPORT}}.  Each request-response pair
 consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
@@ -162,8 +162,8 @@ modifying it.
 
 ## Document Organization
 
-The HTTP/3 specification is split into seven parts.  The document begins
-with a detailed overview of the connection lifecycle and key concepts:
+The following sections provide a detailed overview of the connection lifecycle
+and key concepts:
 
 - Connection Setup and Management ({{connection-setup}}) covers how an HTTP/3
   endpoint is discovered and a connection is established.
@@ -224,7 +224,7 @@ endpoint:
 
 frame:
 : The smallest unit of communication on a stream in HTTP/3, consisting of a
-  header and a variable-length sequence of octets structured according to the
+  header and a variable-length sequence of bytes structured according to the
   frame type.
 
   Protocol elements called "frames" exist in both this document and
@@ -943,7 +943,7 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
 | DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 | Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
-{: #stream-frame-mapping title="HTTP/3 frames and stream type overview"}
+{: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
 Certain frames can only occur as the first frame of a particular stream type;
 these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
@@ -966,7 +966,7 @@ All frames have the following format:
 |                       Frame Payload (*)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-frame title="HTTP/3 frame format"}
+{: #fig-frame title="HTTP/3 Frame Format"}
 
 A frame includes the following fields:
 
@@ -974,7 +974,8 @@ A frame includes the following fields:
   : A variable-length integer that identifies the frame type.
 
   Length:
-  : A variable-length integer that describes the length of the Frame Payload.
+  : A variable-length integer that describes the length in bytes of
+    the Frame Payload.
 
   Frame Payload:
   : A payload, the semantics of which are determined by the Type field.
@@ -1008,7 +1009,7 @@ connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 |                         Payload (*)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-data title="DATA frame payload"}
+{: #fig-data title="DATA Frame Payload"}
 
 ### HEADERS {#frame-headers}
 
@@ -1022,7 +1023,7 @@ QPACK. See [QPACK] for more details.
 |                       Header Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-headers title="HEADERS frame payload"}
+{: #fig-headers title="HEADERS Frame Payload"}
 
 HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
@@ -1063,7 +1064,7 @@ error of type H3_FRAME_UNEXPECTED.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-cancel-push title="CANCEL_PUSH frame payload"}
+{: #fig-cancel-push title="CANCEL_PUSH Frame Payload"}
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
@@ -1124,7 +1125,7 @@ variable-length integers.
 |                           Value (i)                         ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS parameter format"}
+{: #fig-ext-settings title="SETTINGS Parameter Format"}
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
@@ -1217,7 +1218,7 @@ set from server to client on a request stream, as in HTTP/2.
 |                       Header Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-push-promise title="PUSH_PROMISE frame payload"}
+{: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
 
 The payload consists of:
 
@@ -1262,7 +1263,7 @@ close a connection.
 |                          Stream ID (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-goaway title="GOAWAY frame payload"}
+{: #fig-goaway title="GOAWAY Frame Payload"}
 
 The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
 ID for a client-initiated bidirectional stream encoded as a variable-length
@@ -1306,7 +1307,7 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-max-push title="MAX_PUSH_ID frame payload"}
+{: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use (see
@@ -1333,7 +1334,7 @@ of a DUPLICATE_PUSH frame as a connection error of type H3_FRAME_UNEXPECTED.
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
-{: #fig-duplicate-push title="DUPLICATE_PUSH frame payload"}
+{: #fig-duplicate-push title="DUPLICATE_PUSH Frame Payload"}
 
 The DUPLICATE_PUSH frame carries a single variable-length integer that
 identifies the Push ID of a resource that the server has previously promised
@@ -1686,9 +1687,9 @@ Description:
 
 The entries in the {{iana-error-table}} are registered by this document.
 
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| Name                                | Value      | Description                              | Specification          |
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| Name                              | Value      | Description                              | Specification          |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | H3_NO_ERROR                       | 0x0100     | No error                                 | {{http-error-codes}}   |
 | H3_GENERAL_PROTOCOL_ERROR         | 0x0101     | General protocol error                   | {{http-error-codes}}   |
 | H3_INTERNAL_ERROR                 | 0x0102     | Internal error                           | {{http-error-codes}}   |
@@ -1706,7 +1707,7 @@ The entries in the {{iana-error-table}} are registered by this document.
 | H3_EARLY_RESPONSE                 | 0x010E     | Remainder of request not needed          | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
-| ----------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+| --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
 ### Stream Types {#iana-stream-types}
@@ -1940,7 +1941,8 @@ In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
 long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
 produce a shorter encoding, but can produce a longer encoding for settings which
 use the full 32-bit space.  Settings ported from HTTP/2 might choose to redefine
-the format of their settings to avoid using the 62-bit encoding.
+their value to limit it to 30 bits for more efficient encoding, or to make use
+of the 62-bit space if more than 30 bits are required.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
 settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
@@ -2018,6 +2020,14 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-24
+
+## Since draft-ietf-quic-http-23
+
+- Removed `quic` Alt-Svc parameter (#3061,#3118)
+- Clients need not persist unknown settings for use in 0-RTT (#3110,#3113)
+- Clarify error cases around CANCEL_PUSH (#2819,#3083)
+
 ## Since draft-ietf-quic-http-22
 
 - Removed priority signaling (#2922,#2924)
@@ -2046,7 +2056,7 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 ## Since draft-ietf-quic-http-21
 
-- No changes
+No changes
 
 ## Since draft-ietf-quic-http-20
 

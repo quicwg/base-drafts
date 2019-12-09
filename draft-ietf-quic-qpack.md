@@ -158,10 +158,10 @@ x ...
 # Compression Process Overview
 
 Like HPACK, QPACK uses two tables for associating header fields to indices.  The
-static table (see {{table-static}}) is predefined and contains common header
-fields (some of them with an empty value).  The dynamic table (see
-{{table-dynamic}}) is built up over the course of the connection and can be used
-by the encoder to index header fields in the encoded header lists.
+static table (see {{header-table-static}}) is predefined and contains common
+header fields (some of them with an empty value).  The dynamic table (see
+{{header-table-dynamic}}) is built up over the course of the connection and can
+be used by the encoder to index header fields in the encoded header lists.
 
 QPACK defines unidirectional streams for sending instructions from encoder to
 decoder and vice versa.
@@ -196,22 +196,24 @@ evicted.  Hence the encoder needs to retain information about each compressed
 header block that references the dynamic table until that header block is
 acknowledged by the decoder (see {{header-acknowledgement}}).
 
-### Blocked Dynamic Table Insertions {#blocked-insertion}
+### Limits on Dynamic Table Insertions {#blocked-insertion}
 
-A dynamic table entry is considered blocking and cannot be evicted until its
-insertion has been acknowledged and there are no outstanding unacknowledged
-references to the entry.  In particular, a dynamic table entry that has never
-been referenced can still be blocking.
+Inserting entries into the dynamic table might not be possible if the table
+contains entries which cannot be evicted.
 
-An encoder MUST NOT insert an entry into the dynamic table (or duplicate an
-existing entry) if doing so would evict a blocking entry.  In order to avoid
-this, an encoder that uses the dynamic table has to keep track of blocking
-entries.
+A dynamic table entry cannot be evicted immediately after insertion, even if it
+has never been referenced. Once the insertion of a dynamic table entry has been
+acknowledged and there are no outstanding unacknowledged references to the
+entry, the entry becomes evictable.
 
-Note:
-: A blocking entry is unrelated to a blocked stream, see {{blocked-streams}}.
+If the dynamic table does not contain enough room for a new entry without
+evicting other entries, and the entries which would be evicted are not
+evictable, the encoder MUST NOT insert that entry into the dynamic table
+(including duplicates of existing entries). In order to avoid this, an encoder
+that uses the dynamic table has to keep track of whether each entry is currently
+evictable or not.
 
-#### Avoiding Blocked Insertions
+#### Avoiding Prohibited Insertions
 
 To ensure that the encoder is not prevented from adding new entries, the encoder
 can avoid referencing entries that are close to eviction.  Rather than
@@ -285,21 +287,17 @@ The Known Received Count is the total number of dynamic table insertions and
 duplications acknowledged by the decoder.  The encoder tracks the Known Received
 Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
-order to be able to send Insert Count Increment instructions (see
-{{insert-count-increment}}).
+order to be able to send Insert Count Increment instructions.
 
-If a header block was potentially blocking, the encoder infers from receiving a
-Header Acknowledgement instruction ({{header-acknowledgement}}) that the decoder
-has received all dynamic table state necessary to process that header block.  If
-the Required Insert Count of the acknowledged header block is greater than the
-current Known Received Count, the encoder updates the Known Received Count to
-the value of the Required Insert Count of the acknowledged header block.
+A Header Acknowledgement instruction ({{header-acknowledgement}}) implies that
+the decoder has received all dynamic table state necessary to process
+corresponding the header block.  If the Required Insert Count of the
+acknowledged header block is greater than the current Known Received Count,
+Known Received Count is updated to the value of the Required Insert Count.
 
-To acknowledge dynamic table entries which are not referenced by header blocks,
-for example because the encoder or the decoder have chosen not to risk blocked
-streams, the decoder sends an Insert Count Increment instruction (see
-{{insert-count-increment}}).
-
+An Insert Count Increment instruction {{insert-count-increment}} increases the
+Known Received Count by its Increment parameter.  See {{new-table-entries}} for
+guidance.
 
 ## Decoder
 
@@ -363,7 +361,7 @@ received.
 The Header Acknowledgement and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
 with absolute index lower than the Known Received Count has zero references,
-then it is no longer considered blocking (see {{blocked-insertion}}).
+then it is considered evictable (see {{blocked-insertion}}).
 
 #### New Table Entries
 
@@ -397,7 +395,7 @@ Unlike in HPACK, entries in the QPACK static and dynamic tables are addressed
 separately.  The following sections describe how entries in each table are
 addressed.
 
-## Static Table {#table-static}
+## Static Table {#header-table-static}
 
 The static table consists of a predefined static list of header fields, each of
 which has a fixed index over time.  Its entries are defined in {{static-table}}.
@@ -415,7 +413,7 @@ representation it MUST treat this as a connection error of type
 stream, this MUST be treated as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
-## Dynamic Table {#table-dynamic}
+## Dynamic Table {#header-table-dynamic}
 
 The dynamic table consists of a list of header fields maintained in first-in,
 first-out order. Each HTTP/3 endpoint holds a dynamic table that is initially
@@ -447,10 +445,11 @@ table.
 Before a new entry is added to the dynamic table, entries are evicted from the
 end of the dynamic table until the size of the dynamic table is less than or
 equal to (table capacity - size of new entry). The encoder MUST NOT cause a
-blocking dynamic table entry to be evicted (see {{blocked-insertion}}).  The new
-entry is then added to the table.  It is an error if the encoder attempts to add
-an entry that is larger than the dynamic table capacity; the decoder MUST treat
-this as a connection error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+dynamic table entry to be evicted unless that entry is evictable (see
+{{blocked-insertion}}).  The new entry is then added to the table.  It is an
+error if the encoder attempts to add an entry that is larger than the dynamic
+table capacity; the decoder MUST treat this as a connection error of type
+`HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -675,9 +674,9 @@ that exceeds this limit as a connection error of type
 `HTTP_QPACK_ENCODER_STREAM_ERROR`.
 
 Reducing the dynamic table capacity can cause entries to be evicted (see
-{{eviction}}).  This MUST NOT cause the eviction of blocking entries (see
-{{blocked-insertion}}).  Changing the capacity of the dynamic table is not
-acknowledged as this instruction does not insert an entry.
+{{eviction}}).  This MUST NOT cause the eviction of entries which are not
+evictable (see {{blocked-insertion}}).  Changing the capacity of the dynamic
+table is not acknowledged as this instruction does not insert an entry.
 
 ### Insert With Name Reference
 
@@ -783,6 +782,9 @@ stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 `HTTP_QPACK_DECODER_STREAM_ERROR`.
 
+The Header Acknowledgement instruction might increase the Known Received Count;
+see {{known-received-count}}.
+
 
 ### Stream Cancellation
 
@@ -804,13 +806,11 @@ This instruction is used as described in {{state-synchronization}}.
 ### Insert Count Increment
 
 The Insert Count Increment instruction begins with the '00' two-bit pattern,
-followed by the Increment encoded as a 6-bit prefix integer.  The value of the
-Increment is the total number of dynamic table insertions and duplications
-processed by the decoder since the last time it sent a Header Acknowledgement
-instruction that increased the Known Received Count (see
-{{known-received-count}}) or an Insert Count Increment instruction.  The encoder
-uses this value to update the Known Received Count, as described in
-{{state-synchronization}}.
+followed by the Increment encoded as a 6-bit prefix integer.  This instruction
+increases the Known Received Count (see {{known-received-count}}) by the value
+of the Increment parameter.  The decoder should send an Increment value that
+increases the Known Received Count to the total number of dynamic table
+insertions and duplications processed so far.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1101,7 +1101,7 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
-  : The default value is zero.  See {{table-dynamic}} for usage.  This is
+  : The default value is zero.  See {{header-table-dynamic}} for usage.  This is
     the equivalent of the SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
   SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
@@ -1342,6 +1342,10 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-10
+
+Editorial changes
 
 ## Since draft-ietf-quic-qpack-09
 
