@@ -1347,7 +1347,7 @@ The process of creating new packet protection keys for receiving packets could
 reveal that a key update has occurred.  An endpoint MAY perform this process as
 part of packet processing, but this creates a timing signal that can be used by
 an attacker to learn when key updates happen and thus the value of the Key Phase
-bit in certain packets.  Endpoints SHOULD instead defer the creation of the next
+bit in certain packets.  Endpoints MAY instead defer the creation of the next
 set of receive packet protection keys until some time after a key update
 completes, up to three times the PTO; see {{old-keys-recv}}.
 
