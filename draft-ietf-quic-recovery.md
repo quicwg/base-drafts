@@ -393,7 +393,8 @@ latency.
 
 The RECOMMENDED initial value for the packet reordering threshold
 (kPacketThreshold) is 3, based on best practices for TCP loss detection
-{{?RFC5681}} {{?RFC6675}}.
+{{?RFC5681}} {{?RFC6675}}.  Implementations SHOULD NOT use a packet threshold
+less than 3, to keep in line with TCP {{?RFC5681}}.
 
 Some networks may exhibit higher degrees of reordering, causing a sender to
 detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
