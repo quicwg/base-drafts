@@ -1004,12 +1004,15 @@ retired are considered active; any active connection ID can be used.
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
 and advertise the number of connection IDs they are willing to store with the
-active_connection_id_limit transport parameter.  An endpoint SHOULD NOT provide
-more connection IDs than the peer's limit.
+active_connection_id_limit transport parameter.  An endpoint MUST NOT provide
+more connection IDs than the peer's limit.  An endpoint that receives more
+connection IDs than its advertised active_connection_id_limit MUST close the
+connection with an error of type CONNECTION_ID_LIMIT_ERROR.
 
-An endpoint SHOULD supply a new connection ID when it receives a packet with a
-previously unused connection ID or when the peer retires one, unless providing
-the new connection ID would exceed the peer's limit.  An endpoint MAY limit the
+An endpoint SHOULD supply a new connection ID when the peer retires a connection
+ID. If an endpoint provided fewer connection IDs than the peer's
+active_connection_id_limit, it MAY supply a new connection ID when it receives
+a packet with a previously unused connection ID.  An endpoint MAY limit the
 frequency or the total number of connection IDs issued for each connection to
 avoid the risk of running out of connection IDs; see {{reset-token}}.
 
@@ -1038,10 +1041,12 @@ longer plans to use that address.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST retire the corresponding connection IDs using RETIRE_CONNECTION_ID
-frames.  Failure to retire the connection IDs within approximately one PTO can
-cause packets to be delayed, lost, or cause the original endpoint to send a
-stateless reset in response to a connection ID it can no longer route correctly.
+the peer MUST first retire the corresponding connection IDs using
+RETIRE_CONNECTION_ID frames and then add the newly provided connection ID to the
+set of active connection IDs.  Failure to retire the connection IDs within
+approximately one PTO can cause packets to be delayed, lost, or cause the
+original endpoint to send a stateless reset in response to a connection ID it
+can no longer route correctly.
 
 An endpoint MAY discard a connection ID for which retirement has been requested
 once an interval of no less than 3 PTO has elapsed since an acknowledgement is
@@ -4635,8 +4640,14 @@ preferred_address (0x000d):
 active_connection_id_limit (0x000e):
 
 : The maximum number of connection IDs from the peer that an endpoint is willing
-  to store. This value includes only connection IDs sent in NEW_CONNECTION_ID
-  frames. If this parameter is absent, a default of 0 is assumed.
+  to store. This value includes the connection ID received during the handshake,
+  that received in the preferred_address transport parameter, and those received
+  in NEW_CONNECTION_ID frames.
+  Unless a zero-length connection ID is being used, the value of the
+  active_connection_id_limit parameter MUST be no less than 2. If this
+  transport parameter is absent, a default of 2 is assumed.
+  When a zero-length connection ID is being used, the active_connection_id_limit
+  parameter MUST NOT be sent.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
@@ -5681,6 +5692,11 @@ TRANSPORT_PARAMETER_ERROR (0x8):
   an invalid value, was absent even though it is mandatory, was present though
   it is forbidden, or is otherwise in error.
 
+CONNECTION_ID_LIMIT_ERROR (0x9):
+
+: The number of connection IDs provided by the peer exceeds the advertised
+  active_connection_id_limit.
+
 PROTOCOL_VIOLATION (0xA):
 
 : An endpoint detected an error with protocol compliance that was not covered by
@@ -6083,6 +6099,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xB   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
 | 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
