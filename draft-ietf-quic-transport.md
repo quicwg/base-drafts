@@ -2481,12 +2481,15 @@ have 1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a
 Handshake packet.  If the endpoint does not have Handshake keys, it SHOULD send
 CONNECTION_CLOSE frames in an Initial packet.
 
-A client will always know whether the server has Handshake keys
-(see {{discard-initial}}), but it is possible that a server does not know
-whether the client has Handshake keys.  Under these circumstances, a server
-SHOULD send a CONNECTION_CLOSE frame in both Handshake and Initial packets
-to ensure that at least one of them is processable by the client.  These
-packets can be coalesced into a single UDP datagram (see {{packet-coalesce}}).
+A client will always know whether the server has Handshake keys (see
+{{discard-initial}}), but it is possible that a server does not know whether the
+client has Handshake keys.  Under these circumstances, a server SHOULD send a
+CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure that at
+least one of them is processable by the client.  Similarly, a peer might be
+unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
+Handshake packets prior to confirming the handshake; see Section 4.1.2 of
+{{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
+{{packet-coalesce}}.
 
 
 ## Stateless Reset {#stateless-reset}
