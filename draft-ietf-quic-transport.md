@@ -2488,9 +2488,9 @@ SHOULD send a CONNECTION_CLOSE frame in both Handshake and Initial packets
 to ensure that at least one of them is processable by the client.  These
 packets can be coalesced into a single UDP datagram; see {{packet-coalesce}}.
 
-A CONNECTION_CLOSE frame that is sent in an Initial packet in response to
-unauthenticated information - the content of Initial or Handshake packets
-primarily - might result in denial of service for a legitimate connection.  QUIC
+A CONNECTION_CLOSE frame might be sent in an Initial packet or in response to
+unauthenticated information received in Initial or Handshake packets. Such a
+response might result in a denial of service for a legitimate connection.  QUIC
 does not include defensive measures for on-path attacks during the handshake
 (see {{handshake-dos}}).  However, at the cost of reducing feedback about errors
 for legitimate peers, some forms of denial of service can be made more difficult
@@ -3490,7 +3490,7 @@ packet that is carried in a UDP datagram that is smaller than 1200 bytes.  Other
 packets in the datagram SHOULD also be discarded.  A server MAY send a
 CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in addition to
 discarding a packet if that does not affect a connection for which the server
-has established state; see {{immediate-close}}.
+has previously established state; see {{immediate-close}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
