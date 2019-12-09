@@ -2492,7 +2492,7 @@ A CONNECTION_CLOSE frame that is sent in an Initial packet in response to
 unauthenticated information - the content of Initial or Handshake packets
 primarily - might result in denial of service for a legitimate connection.  QUIC
 does not include defensive measures for on-path attacks during the handshake
-(see {{handshake-dos}}). However, at the cost of reducing feedback about errors
+(see {{handshake-dos}}).  However, at the cost of reducing feedback about errors
 for legitimate peers, some forms of denial of service can be made more difficult
 for an attacker if endpoints discard illegal packets rather than terminating a
 connection with CONNECTION_CLOSE.
@@ -5767,11 +5767,15 @@ During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
 recipient saw a preceding packet from its peer.
 
-The first mechanism used is the source and destination connection IDs, which are
-required to match those set by a peer.  Except for an Initial and stateless
-reset packets, an endpoint only accepts packets that include a destination
-connection that matches a connection ID the endpoint previously chose.  This is
-the only protection offered for Version Negotiation packets.
+Addresses cannot change during the handshake, so endpoints can discard packets
+that are received on a different network path.
+
+The source and destination connection IDs are the primary means of protection
+against off-path attack during the handshake.  These are required to match those
+set by a peer.  Except for an Initial and stateless reset packets, an endpoint
+only accepts packets that include a destination connection that matches a
+connection ID the endpoint previously chose.  This is the only protection
+offered for Version Negotiation packets.
 
 The destination connection ID in an Initial packet is selected by a client to be
 unpredictable, which serves an additional purpose.  The packets that carry the
