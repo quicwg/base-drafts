@@ -2486,7 +2486,16 @@ A client will always know whether the server has Handshake keys
 whether the client has Handshake keys.  Under these circumstances, a server
 SHOULD send a CONNECTION_CLOSE frame in both Handshake and Initial packets
 to ensure that at least one of them is processable by the client.  These
-packets can be coalesced into a single UDP datagram (see {{packet-coalesce}}).
+packets can be coalesced into a single UDP datagram; see {{packet-coalesce}}.
+
+A CONNECTION_CLOSE frame that is sent in an Initial packet in response to
+unauthenticated information - the content of Initial or Handshake packets
+primarily - might result in denial of service for a legitimate connection.  QUIC
+does not include defensive measures for on-path attacks during the handshake
+(see {{handshake-dos}}). However, at the cost of reducing feedback about errors
+for legitimate peers, some forms of denial of service can be made more difficult
+for an attacker if endpoints discard illegal packets rather than terminating a
+connection with CONNECTION_CLOSE.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -3476,10 +3485,12 @@ Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the Path Maximum Transmission Unit (PMTU) supports the size that
 it chooses.
 
-A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to an Initial packet it receives from a client if the UDP datagram is
-smaller than 1200 bytes. It MUST NOT send any other frame type in response, or
-otherwise behave as if any part of the offending packet was processed as valid.
+A server that has no existing state for a connection MUST discard an Initial
+packet that is carried in a UDP datagram that is smaller than 1200 bytes.  Other
+packets in the datagram SHOULD also be discarded.  A server MAY send a
+CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in addition to
+discarding a packet if that does not affect a connection for which the server
+has established state; see {{immediate-close}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
@@ -5739,7 +5750,7 @@ the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 # Security Considerations
 
-## Handshake Denial of Service
+## Handshake Denial of Service {#handshake-dos}
 
 As an encrypted and authenticated transport QUIC provides a range of protections
 against denial of service.  Once the cryptographic handshake is complete, QUIC
