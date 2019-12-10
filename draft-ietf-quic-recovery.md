@@ -640,8 +640,8 @@ support different algorithms. Endpoints can unilaterally choose a different
 algorithm to use, such as Cubic {{?RFC8312}}.
 
 If an endpoint uses a different controller than that specified in this document,
-it MUST conform to the congestion control guidelines specified in Section 3.1 of
-{{!RFC8085}}.
+the chosen controller MUST conform to the congestion control guidelines
+specified in Section 3.1 of {{!RFC8085}}.
 
 The algorithm in this document specifies and uses the controller's congestion
 window in bytes.
