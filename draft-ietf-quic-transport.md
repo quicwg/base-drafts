@@ -2351,8 +2351,9 @@ processed successfully.  The timer is also restarted when sending an
 ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
 packets have been sent since last receiving a packet.  Restarting when sending
 packets ensures that connections do not prematurely time out when initiating new
-activity.  An endpoint should be careful to avoid an idle timeout if it is idle
-because of flow control (see {{data-flow-control}}).
+activity.  An endpoint might need to send packets to avoid an idle timeout if it
+is unable to send application data due to being blocked on flow control limits;
+see {{flow-control}}.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
