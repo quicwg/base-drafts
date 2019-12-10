@@ -2475,12 +2475,6 @@ the handshake, it is possible that more advanced packet protection keys are not
 available to the peer, so the frame MAY be replicated in a packet that uses a
 lower packet protection level.
 
-After the handshake is confirmed, an endpoint MUST send any CONNECTION_CLOSE
-frames in a 1-RTT packet.  Prior to handshake confirmation, the peer might not
-have 1-RTT keys, so the endpoint SHOULD send CONNECTION_CLOSE frames in a
-Handshake packet.  If the endpoint does not have Handshake keys, it SHOULD send
-CONNECTION_CLOSE frames in an Initial packet.
-
 A client will always know whether the server has Handshake keys (see
 {{discard-initial}}), but it is possible that a server does not know whether the
 client has Handshake keys.  Under these circumstances, a server SHOULD send a
@@ -2489,7 +2483,8 @@ least one of them is processable by the client.  Similarly, a peer might be
 unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
 Handshake and 1-RTT packets prior to confirming the handshake; see Section 4.1.2
 of {{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
-{{packet-coalesce}}.
+{{packet-coalesce}}.  After the handshake is confirmed, an endpoint MUST send
+any CONNECTION_CLOSE frames in a 1-RTT packet.
 
 
 ## Stateless Reset {#stateless-reset}
