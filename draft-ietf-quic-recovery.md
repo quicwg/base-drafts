@@ -1254,10 +1254,11 @@ in order to better suit a variety of environments.
 
 kInitialWindow:
 : Default limit on the initial amount of data in flight, in bytes.
-  This follows the analysis and recommendations in {{?RFC6928}}, increasing the
-  byte limit to account for the smaller 8 byte overhead of UDP compared to the
-  20 byte overhead for TCP.  The RECOMMENDED value is the minimum of
-  10 * max_datagram_size and max(2 * max_datagram_size, 14720)).
+  The RECOMMENDED value is the minimum of 10 * max_datagram_size and
+  max(2 * max_datagram_size, 14720)).  This follows the analysis and
+  recommendations in {{?RFC6928}}, increasing the byte limit to account
+  for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
+  for TCP.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
