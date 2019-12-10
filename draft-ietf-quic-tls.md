@@ -2058,14 +2058,6 @@ No significant changes.
 - Added status note
 
 
-# Acknowledgments
-{:numbered="false"}
-
-This document has benefited from input from Dragana Damjanovic, Christian
-Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
-many others.
-
-
 # Contributors
 {:numbered="false"}
 
@@ -2078,6 +2070,7 @@ Alessandro Ghedini,
 Christian Huitema,
 Christopher Wood,
 David Schinazi,
+Dragana Damjanovic,
 Eric Rescorla,
 Ian Swett,
 <u format="char-ascii" ascii="Kazuho Oku">?</u>,
@@ -2087,6 +2080,7 @@ Mike Bishop,
 <u format="char">Mikkel Fahnøe Jørgensen</u>,
 Nick Banks,
 Nick Harper,
+Roberto Peon,
 Rui Paulo,
 Ryan Hamilton,
 and Victor Vasiliev.
