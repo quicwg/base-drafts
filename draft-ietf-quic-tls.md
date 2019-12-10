@@ -2061,8 +2061,6 @@ No significant changes.
 # Contributors
 {:numbered="false"}
 
-Ryan Hamilton was originally an author of this specification.
-
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions:
 Adam Langley,
