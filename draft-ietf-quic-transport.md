@@ -3490,7 +3490,10 @@ packet that is carried in a UDP datagram that is smaller than 1200 bytes.  Other
 packets in the datagram SHOULD also be discarded.  A server MAY send a
 CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in addition to
 discarding a packet if that does not affect a connection for which the server
-has previously established state; see {{immediate-close}}.
+has previously established state.  Sending CONNECTION_CLOSE will not affect
+server state in the same way as an immediate close ({{immediate-close}}) as the
+server has no state, but it will cause any client to terminate a connection
+attempt.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
