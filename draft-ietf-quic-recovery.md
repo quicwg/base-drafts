@@ -251,8 +251,9 @@ RTT samples and peer-reported host delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
 RTT. An endpoint computes the following three values: the minimum value
 observed over the lifetime of the connection (min_rtt), an
-exponentially-weighted moving average (smoothed_rtt), and the mean deviation (referred to as "variation" in the rest of this document)
-in the observed RTT samples (rttvar).
+exponentially-weighted moving average (smoothed_rtt), and the mean deviation
+(referred to as "variation" in the rest of this document) in the observed RTT
+samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
