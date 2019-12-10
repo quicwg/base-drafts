@@ -2487,8 +2487,8 @@ client has Handshake keys.  Under these circumstances, a server SHOULD send a
 CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure that at
 least one of them is processable by the client.  Similarly, a peer might be
 unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
-Handshake packets prior to confirming the handshake; see Section 4.1.2 of
-{{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
+Handshake and 1-RTT packets prior to confirming the handshake; see Section 4.1.2
+of {{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
 {{packet-coalesce}}.
 
 
