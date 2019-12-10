@@ -1719,11 +1719,11 @@ encrypted form in the token.
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an on-path observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
-previous connection ID or addressing information.  Each NEW_TOKEN frame MUST
-be unique among all connections to that server, unless the frame is sent to
-repair the loss of a previously sent NEW_TOKEN frame.  Information that allows
-the server to distinguish between tokens from Retry and NEW_TOKEN MAY be
-accessible to entities other than the server.
+previous connection ID or addressing information.  A server MUST ensure that
+every NEW_TOKEN frame it sends is unique across all clients, with the exception
+of those sent to repair loss of a previously sent NEW_TOKEN frame.  Information
+that allows the server to distinguish between tokens from Retry and NEW_TOKEN
+MAY be accessible to entities other than the server.
 
 It is unlikely that the client port number is the same on two different
 connections; validating the port is therefore unlikely to be successful.
