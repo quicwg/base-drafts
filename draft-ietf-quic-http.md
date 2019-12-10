@@ -424,13 +424,14 @@ H3_REQUEST_INCOMPLETE.
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
 not been sent and received. When the server does not need to receive the
-remainder of the request, it MAY abort reading the request stream with error
-code H3_EARLY_RESPONSE, send a complete response, and cleanly close the
-sending part of the stream. Clients MUST NOT discard complete responses as a
-result of having their request terminated abruptly, though clients can always
-discard responses at their discretion for other reasons.  If the server sends a
-partial or complete response but does not abort reading, clients SHOULD continue
-sending the body of the request and close the stream normally.
+remainder of the request, it MAY abort reading the request stream, send a
+complete response, and cleanly close the sending part of the stream.  The error
+code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on
+the request stream.  Clients MUST NOT discard complete responses as a result of
+having their request terminated abruptly, though clients can always discard
+responses at their discretion for other reasons.  If the server sends a partial
+or complete response but does not abort reading, clients SHOULD continue sending
+the body of the request and close the stream normally.
 
 
 ### Header Formatting and Compression {#header-formatting}
@@ -1443,10 +1444,6 @@ H3_REQUEST_CANCELLED (0x10C):
 H3_REQUEST_INCOMPLETE (0x10D):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_EARLY_RESPONSE (0x10E):
-: The remainder of the client's request is not needed to produce a response.
-  For use in STOP_SENDING only.
-
 H3_CONNECT_ERROR (0x10F):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
@@ -1540,7 +1537,10 @@ accept that the original address might change.
 
 # IANA Considerations
 
-## Registration of HTTP/3 Identification String
+This document registers a new ALPN protocol ID ({{iana-alpn}}) and creates new
+registries that manage the assignment of codepoints in HTTP/3.
+
+## Registration of HTTP/3 Identification String {#iana-alpn}
 
 This document creates a new registration for the identification of
 HTTP/3 in the "Application Layer Protocol Negotiation (ALPN)
@@ -1557,14 +1557,24 @@ The "h3" string identifies HTTP/3:
   Specification:
   : This document
 
-## Frame Types {#iana-frames}
+## New Registries {#iana-policy}
+
+New registries created in this document operate under the QUIC registration
+policy documented in Section 22.1 of {{QUIC-TRANSPORT}}.  These registries all
+include the common set of fields listed in Section 22.1.1 of {{QUIC-TRANSPORT}}.
+
+The initial allocations in these registries created in this document are all
+assigned permanent status and list as contact both the IESG (iesg@ietf.org) and
+the HTTP working group (ietf-http-wg@w3.org).
+
+### Frame Types {#iana-frames}
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
-Frame Type" registry governs a 62-bit space. This space is split into three
-spaces that are governed by different policies. Values between `0x00` and `0x3f`
-(in hexadecimal) are assigned via the Standards Action or IESG Review policies
-{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
-Required policy {{!RFC8126}}. All other values are assigned to Private Use
+Frame Type" registry governs a 62-bit space.  This registry follows the QUIC
+registry policy; see {{iana-policy}}.  Permanent registrations in this registry
+are assigned using the Specification Required policy {{!RFC8126}}, except for
+values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
+using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
@@ -1573,23 +1583,19 @@ code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
 operation.
 
-New entries in this registry require the following information:
+In addition to common fields as described in {{iana-policy}}, permanent
+registrations in this registry MUST include the following field:
 
 Frame Type:
 : A name or label for the frame type.
 
-Code:
-: The 62-bit code assigned to the frame type.
+Specifications of frame types MUST include a description of the frame layout and
+its semantics, including any parts of the frame that are conditionally present.
 
-Specification:
-: A reference to a specification that includes a description of the frame layout
-  and its semantics, including any parts of the frame that are conditionally
-  present.
-
-The entries in the following table are registered by this document.
+The entries in {{iana-frame-table}} are registered by this document.
 
 | ---------------- | ------ | -------------------------- |
-| Frame Type       |  Code  | Specification              |
+| Frame Type       | Value  | Specification              |
 | ---------------- | :----: | -------------------------- |
 | DATA             |  0x0   | {{frame-data}}             |
 | HEADERS          |  0x1   | {{frame-headers}}          |
@@ -1604,47 +1610,41 @@ The entries in the following table are registered by this document.
 | MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
 | DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
+{: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
 (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
-## Settings Parameters {#iana-settings}
+### Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
-registry governs a 62-bit space. This space is split into three spaces that are
-governed by different policies. Values between `0x00` and `0x3f` (in
-hexadecimal) are assigned via the Standards Action or IESG Review policies
-{{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the Specification
-Required policy {{!RFC8126}}. All other values are assigned to Private Use
-{{!RFC8126}}.  The designated experts are the same as those for the "HTTP/2
-Settings" registry defined in {{!HTTP2}}.
+registry governs a 62-bit space.  This registry follows the QUIC registry
+policy; see {{iana-policy}}.  Permanent registrations in this registry are
+assigned using the Specification Required policy {{!RFC8126}}, except for values
+between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned using
+Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
+{{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
 {{!HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
 assigning the corresponding value to an unrelated operation.
 
-New registrations are advised to provide the following information:
+In addition to common fields as described in {{iana-policy}}, permanent
+registrations in this registry MUST include the following fields:
 
-Name:
+Setting Name:
 : A symbolic name for the setting.  Specifying a setting name is optional.
 
-Code:
-: The 62-bit code assigned to the setting.
-
-Specification:
-: An optional reference to a specification that describes the use of the
-  setting.
-
 Default:
-: The value of the setting unless otherwise indicated. SHOULD be the most
-  restrictive possible value.
+: The value of the setting unless otherwise indicated. A default SHOULD be the
+  most restrictive possible value.
 
-The entries in the following table are registered by this document.
+The entries in {{iana-setting-table}} are registered by this document.
 
 | ---------------------------- | ------ | ------------------------- | --------- |
-| Setting Name                 |  Code  | Specification             | Default   |
+| Setting Name                 |  Value | Specification             | Default   |
 | ---------------------------- | :----: | ------------------------- | --------- |
 | Reserved                     |  0x2   | N/A                       | N/A       |
 | Reserved                     |  0x3   | N/A                       | N/A       |
@@ -1652,41 +1652,40 @@ The entries in the following table are registered by this document.
 | Reserved                     |  0x5   | N/A                       | N/A       |
 | MAX_HEADER_LIST_SIZE         |  0x6   | {{settings-parameters}}   | Unlimited |
 | ---------------------------- | ------ | ------------------------- | --------- |
+{: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
 (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
 assigned by IANA.
 
-## Error Codes {#iana-error-codes}
+### Error Codes {#iana-error-codes}
 
 This document establishes a registry for HTTP/3 error codes. The "HTTP/3 Error
-Code" registry manages a 62-bit space.  The "HTTP/3 Error Code" registry
-operates under the "Expert Review" policy {{?RFC8126}}.
+Code" registry manages a 62-bit space.  This registry follows the QUIC registry
+policy; see {{iana-policy}}.  Permanent registrations in this registry are
+assigned using the Specification Required policy {{!RFC8126}}, except for values
+between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned using
+Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
+{{!RFC8126}}.
 
 Registrations for error codes are required to include a description
 of the error code.  An expert reviewer is advised to examine new
 registrations for possible duplication with existing error codes.
 Use of existing registrations is to be encouraged, but not mandated.
 
-New registrations are advised to provide the following information:
+In addition to common fields as described in {{iana-policy}}, permanent
+registrations in this registry MUST include the following fields:
 
 Name:
 : A name for the error code.  Specifying an error code name is optional.
 
-Code:
-: The 62-bit error code value.
-
 Description:
-: A brief description of the error code semantics, longer if no detailed
-  specification is provided.
+: A brief description of the error code semantics.
 
-Specification:
-: An optional reference for a specification that defines the error code.
-
-The entries in the following table are registered by this document.
+The entries in the {{iana-error-table}} are registered by this document.
 
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| Name                              | Code       | Description                              | Specification          |
+| Name                              | Value      | Description                              | Specification          |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | H3_NO_ERROR                       | 0x0100     | No error                                 | {{http-error-codes}}   |
 | H3_GENERAL_PROTOCOL_ERROR         | 0x0101     | General protocol error                   | {{http-error-codes}}   |
@@ -1702,41 +1701,38 @@ The entries in the following table are registered by this document.
 | H3_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
 | H3_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
-| H3_EARLY_RESPONSE                 | 0x010E     | Remainder of request not needed          | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
+{: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
-## Stream Types {#iana-stream-types}
+### Stream Types {#iana-stream-types}
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
-"HTTP/3 Stream Type" registry governs a 62-bit space. This space is split into
-three spaces that are governed by different policies. Values between `0x00` and
-0x3f (in hexadecimal) are assigned via the Standards Action or IESG Review
-policies {{!RFC8126}}. Values from `0x40` to `0x3fff` operate on the
-Specification Required policy {{!RFC8126}}. All other values are assigned to
-Private Use {{!RFC8126}}.
+"HTTP/3 Stream Type" registry governs a 62-bit space.  This registry follows the
+QUIC registry policy; see {{iana-policy}}.  Permanent registrations in this
+registry are assigned using the Specification Required policy {{!RFC8126}},
+except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
+assigned using Standards Action or IESG Approval as defined in Section 4.9 and
+4.10 of {{!RFC8126}}.
 
-New entries in this registry require the following information:
+In addition to common fields as described in {{iana-policy}}, permanent
+registrations in this registry MUST include the following fields:
 
 Stream Type:
 : A name or label for the stream type.
-
-Code:
-: The 62-bit code assigned to the stream type.
-
-Specification:
-: A reference to a specification that includes a description of the stream type,
-  including the layout semantics of its payload.
 
 Sender:
 : Which endpoint on a connection may initiate a stream of this type. Values are
   "Client", "Server", or "Both".
 
+Specifications for permanent registrations MUST include a description of the
+stream type, including the layout semantics of the stream contents.
+
 The entries in the following table are registered by this document.
 
 | ---------------- | ------ | -------------------------- | ------ |
-| Stream Type      |  Code  | Specification              | Sender |
+| Stream Type      | Value  | Specification              | Sender |
 | ---------------- | :----: | -------------------------- | ------ |
 | Control Stream   |  0x00  | {{control-streams}}        | Both   |
 | Push Stream      |  0x01  | {{server-push}}            | Server |
@@ -2021,6 +2017,9 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > final version of this document.
 
 ## Since draft-ietf-quic-http-24
+
+- Removed H3_EARLY_RESPONSE error code; H3_NO_ERROR is recommended instead
+  (#3130,#3208)
 
 ## Since draft-ietf-quic-http-23
 
