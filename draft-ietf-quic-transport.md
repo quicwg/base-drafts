@@ -2413,7 +2413,7 @@ that it is likely that only applications or application protocols will
 know what information can be retried.
 
 
-## Immediate Close
+## Immediate Close {#immediate-close}
 
 An endpoint sends a CONNECTION_CLOSE frame ({{frame-connection-close}}) to
 terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
@@ -2468,6 +2468,9 @@ the application requests that the connection be closed.  The application
 protocol can use a CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
+
+### Immediate Close During the Handshake {#immediate-close-hs}
+
 When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
 the frame.  Generally, this means sending the frame in a packet with the highest
 level of packet protection to avoid the packet being discarded.  However, during
@@ -2492,13 +2495,20 @@ of {{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
 {{packet-coalesce}}.
 
 A CONNECTION_CLOSE frame might be sent in an Initial packet or in response to
-unauthenticated information received in Initial or Handshake packets. Such a
-response might result in a denial of service for a legitimate connection.  QUIC
-does not include defensive measures for on-path attacks during the handshake
-(see {{handshake-dos}}).  However, at the cost of reducing feedback about errors
-for legitimate peers, some forms of denial of service can be made more difficult
-for an attacker if endpoints discard illegal packets rather than terminating a
-connection with CONNECTION_CLOSE.
+unauthenticated information received in Initial or Handshake packets.  An
+immediate close in response might result in a denial of service for a legitimate
+connection.  QUIC does not include defensive measures for on-path attacks during
+the handshake; see {{handshake-dos}}.  However, at the cost of reducing feedback
+about errors for legitimate peers, some forms of denial of service can be made
+more difficult for an attacker if endpoints discard illegal packets rather than
+terminating a connection with CONNECTION_CLOSE.  For this reason, endpoints MAY
+discard packets rather than immediately close if errors are detected in packets
+that lack authentication.
+
+An endpoint that has not established state, such as a server that detects an
+error in an Initial packet, does not enter the closing state.  An endpoint that
+has no state for the connection sends a CONNECTION_CLOSE frame without entering
+a closing or draining period.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -3488,15 +3498,10 @@ Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the Path Maximum Transmission Unit (PMTU) supports the size that
 it chooses.
 
-A server that has no existing state for a connection MUST discard an Initial
-packet that is carried in a UDP datagram that is smaller than 1200 bytes.  Other
-packets in the datagram SHOULD also be discarded.  A server MAY send a
-CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in addition to
-discarding a packet if that does not affect a connection for which the server
-has previously established state.  Sending CONNECTION_CLOSE will not affect
-server state in the same way as an immediate close ({{immediate-close}}) as the
-server has no state, but it will cause any client to terminate a connection
-attempt.
+A server MUST discard an Initial packet that is carried in a UDP datagram that
+is smaller than 1200 bytes.  A server MAY also immediately close the connection
+by sending a CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION;
+see {{immediate-close}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
