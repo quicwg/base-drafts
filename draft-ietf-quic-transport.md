@@ -2354,8 +2354,8 @@ announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
-An endpoint restarts any timer it maintains when a packet from its peer is
-received and processed successfully.  The timer is also restarted when sending
+An endpoint restarts its idle timer when a packet from its peer is
+received and processed successfully.  The idle timer is also restarted when sending
 an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
 ack-eliciting packets have been sent since last receiving a packet.  Restarting
 when sending packets ensures that connections do not prematurely time out when
