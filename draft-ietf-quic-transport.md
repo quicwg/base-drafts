@@ -1721,7 +1721,7 @@ values to be linked by an on-path observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
 previous connection ID or addressing information.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
-of those sent to repair loss of a previously sent NEW_TOKEN frame.  Information
+of those sent to repair losses of previously sent NEW_TOKEN frames.  Information
 that allows the server to distinguish between tokens from Retry and NEW_TOKEN
 MAY be accessible to entities other than the server.
 
