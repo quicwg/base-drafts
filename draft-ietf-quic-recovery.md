@@ -308,8 +308,8 @@ erroneously-reported delays by the peer.
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
 smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
-samples, and rttvar is the variation in the RTT samples, which estimates the
-RTT variation.
+samples, and rttvar is the variation in the RTT samples, estimated using a
+mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for host delays.  For packets sent in the ApplicationData packet number space,
