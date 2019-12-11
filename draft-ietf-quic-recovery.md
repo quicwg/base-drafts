@@ -247,8 +247,9 @@ RTT samples and peer-reported ACK delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the connection's
 RTT. An endpoint computes the following three values: the minimum value
 observed over the lifetime of the connection (min_rtt), an
-exponentially-weighted moving average (smoothed_rtt), and the variance in the
-observed RTT samples (rttvar).
+exponentially-weighted moving average (smoothed_rtt), and the mean deviation
+(referred to as "variation" in the rest of this document) in the observed RTT
+samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -303,7 +304,8 @@ erroneously-reported delays by the peer.
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
 smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
-samples, and rttvar is the endpoint's estimated variance in the RTT samples.
+samples, and rttvar is the variation in the RTT samples, estimated using a
+mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for ACK delays.  For packets sent in the ApplicationData packet number space,
@@ -427,7 +429,7 @@ The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
 multiplier, is 9/8.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
-previous connections, adaptive thresholds, or including RTT variance.  Smaller
+previous connections, adaptive thresholds, or including RTT variation.  Smaller
 thresholds reduce reordering resilience and increase spurious retransmissions,
 and larger thresholds increase loss detection delay.
 
@@ -459,7 +461,7 @@ kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
 
 The PTO period is the amount of time that a sender ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
-network roundtrip-time (smoothed_rtt), the variance in the estimate (4*rttvar),
+network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.  When the PTO is armed for Initial or
 Handshake packet number spaces, the max_ack_delay is 0, as specified in
@@ -934,7 +936,7 @@ smoothed_rtt:
   {{?RFC6298}}
 
 rttvar:
-: The RTT variance, computed as described in {{?RFC6298}}
+: The RTT variation, computed as described in {{?RFC6298}}
 
 min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay.
