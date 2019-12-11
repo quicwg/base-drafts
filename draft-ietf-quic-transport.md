@@ -5781,16 +5781,16 @@ recipient saw a preceding packet from its peer.
 Addresses cannot change during the handshake, so endpoints can discard packets
 that are received on a different network path.
 
-The source and destination connection IDs are the primary means of protection
-against off-path attack during the handshake.  These are required to match those
-set by a peer.  Except for an Initial and stateless reset packets, an endpoint
-only accepts packets that include a destination connection that matches a
-connection ID the endpoint previously chose.  This is the only protection
+The Source and Destination Connection ID fields are the primary means of
+protection against off-path attack during the handshake.  These are required to
+match those set by a peer.  Except for an Initial and stateless reset packets,
+an endpoint only accepts packets that include a Destination Connection ID field
+that matches a value the endpoint previously chose.  This is the only protection
 offered for Version Negotiation packets.
 
-The destination connection ID in an Initial packet is selected by a client to be
-unpredictable, which serves an additional purpose.  The packets that carry the
-cryptographic handshake are protected with a key that is derived from this
+The Destination Connection ID field in an Initial packet is selected by a client
+to be unpredictable, which serves an additional purpose.  The packets that carry
+the cryptographic handshake are protected with a key that is derived from this
 connection ID and salt specific to the QUIC version.  This allows endpoints to
 use the same process for authenticating packets that they receive as they use
 after the cryptographic handshake completes.  Packets that cannot be
