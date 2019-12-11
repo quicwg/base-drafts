@@ -2494,21 +2494,21 @@ Handshake and 1-RTT packets prior to confirming the handshake; see Section 4.1.2
 of {{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
 {{packet-coalesce}}.
 
-An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in response to
-unauthenticated information received in Initial or Handshake packets.
-Such an immediate close might expose legitimate connections to a denial of service.
-QUIC does not include defensive measures for on-path attacks during
-the handshake; see {{handshake-dos}}.  However, at the cost of reducing feedback
-about errors for legitimate peers, some forms of denial of service can be made
-more difficult for an attacker if endpoints discard illegal packets rather than
-terminating a connection with CONNECTION_CLOSE.  For this reason, endpoints MAY
-discard packets rather than immediately close if errors are detected in packets
-that lack authentication.
+An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
+response to unauthenticated information received in Initial or Handshake
+packets.  Such an immediate close might expose legitimate connections to a
+denial of service.  QUIC does not include defensive measures for on-path attacks
+during the handshake; see {{handshake-dos}}.  However, at the cost of reducing
+feedback about errors for legitimate peers, some forms of denial of service can
+be made more difficult for an attacker if endpoints discard illegal packets
+rather than terminating a connection with CONNECTION_CLOSE.  For this reason,
+endpoints MAY discard packets rather than immediately close if errors are
+detected in packets that lack authentication.
 
 An endpoint that has not established state, such as a server that detects an
 error in an Initial packet, does not enter the closing state.  An endpoint that
-has no state for the connection does not enter a closing or draining period
-on sending a CONNECTION_CLOSE frame.
+has no state for the connection does not enter a closing or draining period on
+sending a CONNECTION_CLOSE frame.
 
 
 ## Stateless Reset {#stateless-reset}
