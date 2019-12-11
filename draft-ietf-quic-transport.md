@@ -2494,10 +2494,10 @@ Handshake and 1-RTT packets prior to confirming the handshake; see Section 4.1.2
 of {{QUIC-TLS}}.  These packets can be coalesced into a single UDP datagram; see
 {{packet-coalesce}}.
 
-A CONNECTION_CLOSE frame might be sent in an Initial packet or in response to
-unauthenticated information received in Initial or Handshake packets.  An
-immediate close in response might result in a denial of service for a legitimate
-connection.  QUIC does not include defensive measures for on-path attacks during
+An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in response to
+unauthenticated information received in Initial or Handshake packets.
+Such an immediate close might expose legitimate connections to a denial of service.
+QUIC does not include defensive measures for on-path attacks during
 the handshake; see {{handshake-dos}}.  However, at the cost of reducing feedback
 about errors for legitimate peers, some forms of denial of service can be made
 more difficult for an attacker if endpoints discard illegal packets rather than
@@ -2507,8 +2507,8 @@ that lack authentication.
 
 An endpoint that has not established state, such as a server that detects an
 error in an Initial packet, does not enter the closing state.  An endpoint that
-has no state for the connection sends a CONNECTION_CLOSE frame without entering
-a closing or draining period.
+has no state for the connection does not enter a closing or draining period
+on sending a CONNECTION_CLOSE frame.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -3501,7 +3501,7 @@ it chooses.
 A server MUST discard an Initial packet that is carried in a UDP datagram that
 is smaller than 1200 bytes.  A server MAY also immediately close the connection
 by sending a CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION;
-see {{immediate-close}}.
+see {{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
