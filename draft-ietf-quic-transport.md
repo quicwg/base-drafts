@@ -5658,12 +5658,6 @@ HANDSHAKE_DONE frame before completing the handshake.  A server MUST treat
 receipt of a HANDSHAKE_DONE frame as a connection error of type
 PROTOCOL_VIOLATION.
 
-A client MAY consider the handshake to be confirmed when it receives an
-acknowledgement for a 1-RTT packet.  This can be implemented by recording
-the lowest packet number sent with 1-RTT keys, and the highest value of the
-Largest Acknowledged field in any received 1-RTT ACK frame: once the latter is
-higher than or equal to the former, the handshake can be confirmed.
-
 
 ## Extension Frames
 

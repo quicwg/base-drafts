@@ -391,8 +391,14 @@ perspective of the endpoint in question.
 ### Handshake Confirmed {#handshake-confirmed}
 
 In this document, the TLS handshake is considered confirmed at the server when
-the handshake completes. At the client, the handshake is considered confirmed
+the handshake completes.  At the client, the handshake is considered confirmed
 when a HANDSHAKE_DONE frame is received.
+
+A client MAY consider the handshake to be confirmed when it receives an
+acknowledgement for a 1-RTT packet.  This can be implemented by recording the
+lowest packet number sent with 1-RTT keys, and the highest value of the Largest
+Acknowledged field in any received 1-RTT ACK frame: once the latter is higher
+than or equal to the former, the handshake can be confirmed.
 
 
 ### Sending and Receiving Handshake Messages
