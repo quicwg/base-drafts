@@ -2994,6 +2994,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
+| 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
@@ -5647,7 +5648,7 @@ CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
 alert; see {{?TLS13}}) in an Initial or a Handshake packet.
 
 
-## HANDSHAKE_DONE frame {#handshake-done-frame}
+## HANDSHAKE_DONE frame {#frame-handshake-done}
 
 The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
 the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
