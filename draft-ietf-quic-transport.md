@@ -6608,7 +6608,7 @@ Eric Rescorla,
 Gorry Fairhurst,
 Ian Swett,
 Igor Lubashev, <contact
- asciiFullname="Kazuho Oku" fullname="Kazuho's real name"/>,
+ asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
 Lucas Pardue,
 Magnus Westerlund,
 Marten Seemann,
