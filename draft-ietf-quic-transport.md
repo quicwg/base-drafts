@@ -2962,10 +2962,14 @@ H:
 
 : 1-RTT ({{short-header}})
 
+*:
+
+: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake, and
+1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only appear in a
+1-RTT packet.
+
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
-that all frames can appear in 1-RTT packets.  Note that a CONNECTION_CLOSE frame
-of type 0x1c can appear in Initial, Handshake, and 1-RTT packets, whereas a
-CONNECTION_CLOSE of type 0x1d can only appear in a 1-RTT packet.
+that all frames can appear in 1-RTT packets.
 
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
 error of type FRAME_ENCODING_ERROR.
