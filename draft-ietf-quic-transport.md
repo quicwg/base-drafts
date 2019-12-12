@@ -2973,28 +2973,57 @@ CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
 other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
-| Type Value  | Frame Type Name      | Definition                     |
-|:------------|:---------------------|:-------------------------------|
-| 0x00        | PADDING              | {{frame-padding}}              |
-| 0x01        | PING                 | {{frame-ping}}                 |
-| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  |
-| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         |
-| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         |
-| 0x06        | CRYPTO               | {{frame-crypto}}               |
-| 0x07        | NEW_TOKEN            | {{frame-new-token}}            |
-| 0x08 - 0x0f | STREAM               | {{frame-stream}}               |
-| 0x10        | MAX_DATA             | {{frame-max-data}}             |
-| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      |
-| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          |
-| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         |
-| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  |
-| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      |
-| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    |
-| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} |
-| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       |
-| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     |
+| Type Value  | Frame Type Name      | Definition                     | Packets |
+|:------------|:---------------------|:-------------------------------|---------|
+| 0x00        | PADDING              | {{frame-padding}}              | IH01    |
+| 0x01        | PING                 | {{frame-ping}}                 | IH01    |
+| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  | IH_1    |
+| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         | __01    |
+| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         | __01    |
+| 0x06        | CRYPTO               | {{frame-crypto}}               | IH_1    |
+| 0x07        | NEW_TOKEN            | {{frame-new-token}}            | ___1    |
+| 0x08 - 0x0f | STREAM               | {{frame-stream}}               | __01    |
+| 0x10        | MAX_DATA             | {{frame-max-data}}             | __01    |
+| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      | __01    |
+| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          | __01    |
+| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         | __01    |
+| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  | __01    |
+| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      | __01    |
+| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    | __01    |
+| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |
+| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
+| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
 {: #frame-types title="Frame Types"}
+
+The "Packets" column in {{frame-types}} does not form part of the IANA registry
+(see {{iana-frames}}).  This column summarizes the types of packets that each
+frame type can appear in, indicated as up to four characters indicating:
+
+I:
+
+: Initial ({{packet-initial}})
+
+H:
+
+: Handshake ({{packet-handshake}})
+
+0:
+
+: 0-RTT ({{packet-0rtt}})
+
+1:
+
+: 1-RTT ({{short-header}})
+
+*:
+
+: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake, and
+1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only appear in a
+1-RTT packet.
+
+Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
+that all frames can appear in 1-RTT packets.
 
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
 error of type FRAME_ENCODING_ERROR.
