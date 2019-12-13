@@ -6621,8 +6621,8 @@ Nick Harper,
 Patrick McManus,
 Roberto Peon,
 Ryan Hamilton,
-Subodh Iyengar, <contact
- asciiFullname="Tatsuhiro Tsujikawa" fullname="xxx"/>,
+Subodh Iyengar,
+Tatsuhiro Tsujikawa,
 Ted Hardie,
 Tom Jones,
 and Victor Vasiliev.
