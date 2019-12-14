@@ -801,33 +801,42 @@ limit is increased.
 
 ## Flow Credit Increments {#fc-credit}
 
-This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
-or MAX_DATA frame to implementations, but offers a few considerations.  These
-frames contribute to connection overhead.  Therefore frequently sending frames
-with small changes is undesirable.  At the same time, larger increments to
-limits are necessary to avoid blocking if updates are less frequent, requiring
-larger resource commitments at the receiver.  Thus there is a trade-off between
-resource commitment and overhead when determining how large a limit is
-advertised.
+Implementations decide when and how many bytes to advertise in MAX_STREAM_DATA
+and MAX_DATA frames. This section describes one requirement and offers a few
+considerations.
+
+A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
+sending a MAX_STREAM_DATA or MAX_DATA frame, since doing so will mean that a
+sender could be blocked for the rest of the connection if the peer chooses to
+not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames. Even if the peer sent these
+frames, waiting for them means that a sender will be blocked for at least an
+entire round trip.
+
+If a sender runs out of flow control credit, it will be unable to send new data
+and is considered blocked, resulting in degraded performance. To avoid blocking
+a sender, and to reasonably account for the possibility of loss, a receiver can
+send a MAX_STREAM_DATA or MAX_DATA frame multiple times within a round trip or
+send it early enough to allow for recovery from potential loss before the sender
+becomes blocked.
+
+Control frames contribute to connection overhead. Therefore, frequently sending
+MAX_STREAM_DATA and MAX_DATA frames with small changes is undesirable.  At the
+same time, larger increments to limits are necessary to avoid blocking if
+updates are less frequent, requiring larger resource commitments at the
+receiver.  There is a trade-off between resource commitment and overhead when
+determining how large a limit is advertised.
 
 A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
-implementations.  As an optimization, sending frames related to flow control
-only when there are other frames to send or when a peer is blocked ensures that
-flow control doesn't cause extra packets to be sent.
+implementations.  As an optimization, an endpoint could send frames related to
+flow control only when there are other frames to send or when a peer is blocked,
+ensuring that flow control does not cause extra packets to be sent.
 
-If a sender runs out of flow control credit, it will be unable to send new data
-and is considered blocked.  It is generally considered best to not let the
-sender become blocked.  To avoid blocking a sender, and to reasonably account
-for the possibility of loss, a receiver should send a MAX_DATA or
-MAX_STREAM_DATA frame at least two round trips before it expects the sender to
-get blocked.
-
-A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
-sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
-be blocked for at least an entire round trip, and potentially for longer if the
-peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
+When a sender receives credit after being blocked, it might send a large amount
+of data in response. As is recommended in {{QUIC-RECOVERY}}, implementations
+should pace this data to avoid sending it in a burst and causing short-term
+network congestion.
 
 
 ## Handling Stream Cancellation {#stream-cancellation}
