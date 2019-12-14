@@ -812,12 +812,12 @@ not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames. Even if the peer sent these
 frames, waiting for them means that a sender will be blocked for at least an
 entire round trip.
 
-If a sender runs out of flow control credit, it will be unable to send new data
-and is considered blocked, resulting in degraded performance. To avoid blocking
-a sender, and to reasonably account for the possibility of loss, a receiver can
-send a MAX_STREAM_DATA or MAX_DATA frame multiple times within a round trip or
-send it early enough to allow for recovery from potential loss before the sender
-becomes blocked.
+A sender that runs out of flow control credit will be unable to send new data
+and is considered blocked, resulting in degraded performance for the
+connection. To avoid blocking a sender and to reasonably account for the
+possibility of loss, a receiver can send a MAX_STREAM_DATA or MAX_DATA frame
+multiple times within a round trip or send it early enough to allow for recovery
+from potential loss.
 
 Control frames contribute to connection overhead. Therefore, frequently sending
 MAX_STREAM_DATA and MAX_DATA frames with small changes is undesirable.  At the
@@ -832,11 +832,6 @@ which the receiving application consumes data, similar to common TCP
 implementations.  As an optimization, an endpoint could send frames related to
 flow control only when there are other frames to send or when a peer is blocked,
 ensuring that flow control does not cause extra packets to be sent.
-
-When a sender receives credit after being blocked, it might send a large amount
-of data in response. As is recommended in {{QUIC-RECOVERY}}, implementations
-should pace this data to avoid sending it in a burst and causing short-term
-network congestion.
 
 
 ## Handling Stream Cancellation {#stream-cancellation}
