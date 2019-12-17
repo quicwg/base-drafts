@@ -833,6 +833,10 @@ implementations.  As an optimization, an endpoint could send frames related to
 flow control only when there are other frames to send or when a peer is blocked,
 ensuring that flow control does not cause extra packets to be sent.
 
+When a sender receives credit after being blocked, it can send a large amount of
+data in response resulting in short-term congestion; see Section 6.9 in
+{{QUIC-RECOVERY}} for a discussion of how a sender could avoid this congestion.
+
 
 ## Handling Stream Cancellation {#stream-cancellation}
 
