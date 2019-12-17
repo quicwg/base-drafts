@@ -2062,7 +2062,8 @@ No significant changes.
 {:numbered="false"}
 
 The IETF QUIC Working Group received an enormous amount of support from many
-people. The following people provided substantive contributions:
+people. The following people provided substantive contributions to this
+document:
 Adam Langley,
 Alessandro Ghedini,
 Christian Huitema,
