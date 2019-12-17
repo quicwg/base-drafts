@@ -6594,7 +6594,8 @@ The original design and rationale behind this protocol draw significantly from
 work by Jim Roskind {{EARLY-DESIGN}}.
 
 The IETF QUIC Working Group received an enormous amount of support from many
-people. The following people provided substantive contributions:
+people. The following people provided substantive contributions to this
+document:
 Alessandro Ghedini,
 Alyssa Wilk,
 Antoine Delignat-Lavaud,
