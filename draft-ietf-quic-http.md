@@ -542,6 +542,15 @@ these requirements are intended to protect against several types of common
 attacks against HTTP; they are deliberately strict because being permissive can
 expose implementations to these vulnerabilities.
 
+When receiving a malformed HTTP message from upstream, an HTTP/3 intermediary
+acting as a tunnel MUST either transmit a malformed HTTP message to downstream,
+or reset the stream.  Specifically, when an HTTP message received from upstream
+terminates abruptly, a tunnel MAY send an incomplete DATA frame and then close
+the stream normally.  Doing so guarantees the delivery of the partial response
+that the tunnel received to downstream, at the same time forwarding the fact
+that the HTTP message is malformed.  A client MUST NOT handle the receipt of an
+incomplete DATA frame at the end of the stream as a connection-level error.
+
 
 ## The CONNECT Method
 
