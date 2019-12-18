@@ -1752,11 +1752,7 @@ connection attempts.
 
 A client SHOULD NOT reuse a NEW_TOKEN token for different connection attempts.
 Reusing a token allows connections to be linked by entities on the network path;
-see {{migration-linkability}}.  A client MUST NOT reuse a token if it believes
-that its point of network attachment has changed since the token was last used;
-that is, if there is a change in its local IP address or network interface.  A
-client needs to start the connection process over if there is any change in its
-local address prior to completing the handshake.
+see {{migration-linkability}}.
 
 Clients might receive multiple tokens on a single connection.  Aside from
 preventing linkability, any token can be used in any connection attempt.
