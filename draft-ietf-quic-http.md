@@ -536,10 +536,12 @@ not acting as a tunnel) MUST NOT forward a malformed request or response.
 Malformed requests or responses that are detected MUST be treated as a stream
 error ({{errors}}) of type H3_GENERAL_PROTOCOL_ERROR.
 
-An intermediary acting as a tunnel could carry HTTP messages from multiple endpoints on one side to a single endpoint on the other side within a single HTTP/3 connection. Such an intermediary might forward malformed HTTP messages as well. To limit the scope of damage to the offending endpoint, an endpoint that detects a malformed request or response MUST NOT escalate this error to a  connection-level error unless specified otherwise.
-malformed HTTP message from one of those endpoints on a coalesced connection.
-Therefore, an endpoint that detects a malformed request or response MUST NOT
-escalate the error to a connection-level error unless specified otherwise.
+An intermediary acting as a tunnel could carry HTTP messages from multiple
+endpoints on one side to a single endpoint on the other side within a single
+HTTP/3 connection.  Such an intermediary might forward malformed HTTP messages
+as well.  To limit the scope of damage to the offending endpoint, an endpoint
+that detects a malformed request or response MUST NOT escalate this error to a
+connection-level error unless specified otherwise.
 
 For malformed requests, a server MAY send an HTTP response prior to closing or
 resetting the stream.  Clients MUST NOT accept a malformed response.  Note that
