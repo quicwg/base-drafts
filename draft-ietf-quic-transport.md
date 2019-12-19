@@ -801,22 +801,12 @@ limit is increased.
 
 ## Flow Credit Increments {#fc-credit}
 
-Implementations decide when and how many bytes to advertise in MAX_STREAM_DATA
-and MAX_DATA frames. This section describes one requirement and offers a few
-considerations.
+Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
+and MAX_DATA frames, but this section offers a few considerations.
 
-A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
-sending a MAX_STREAM_DATA or MAX_DATA frame, since doing so means that a sender
-will be blocked for the rest of the connection if the peer chooses to not send
-STREAM_DATA_BLOCKED or DATA_BLOCKED frames. Even if the peer sent these frames,
-waiting for them means that a sender will be blocked for at least an entire
-round trip.
-
-A sender that runs out of flow control credit will be unable to send new data
-and is considered blocked, resulting in degraded performance for the
-connection. To avoid blocking a sender, a receiver can send a MAX_STREAM_DATA or
-MAX_DATA frame multiple times within a round trip or send it early enough to
-allow for recovery from loss of the frame.
+To avoid blocking a sender, a receiver can send a MAX_STREAM_DATA or MAX_DATA
+frame multiple times within a round trip or send it early enough to allow for
+recovery from loss of the frame.
 
 Control frames contribute to connection overhead. Therefore, frequently sending
 MAX_STREAM_DATA and MAX_DATA frames with small changes is undesirable.  On the
@@ -831,6 +821,13 @@ which the receiving application consumes data, similar to common TCP
 implementations.  As an optimization, an endpoint could send frames related to
 flow control only when there are other frames to send or when a peer is blocked,
 ensuring that flow control does not cause extra packets to be sent.
+
+A sender that is blocked could choose to not send STREAM_DATA_BLOCKED or
+DATA_BLOCKED frames. Therefore, a receiver MUST NOT wait for a
+STREAM_DATA_BLOCKED or DATA_BLOCKED frame before sending a MAX_STREAM_DATA or
+MAX_DATA frame; doing so could result in the sender being blocked for the rest
+of the connection. Even if the sender sent these frames, waiting for them will
+result in the sender being blocked for at least an entire round trip.
 
 When a sender receives credit after being blocked, it can send a large amount of
 data in response, resulting in short-term congestion; see Section 6.9 in
