@@ -151,7 +151,7 @@ Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
 client making the indicated request.  This trades off network usage against a
 potential latency gain.  Several HTTP/3 frames are used to manage server push,
-such as PUSH_PROMISE, DUPLICATE_PUSH, MAX_PUSH_ID, and CANCEL_PUSH.
+such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response headers are compressed for transmission.
 Because HPACK {{?HPACK=RFC7541}} relies on in-order transmission of compressed
@@ -387,10 +387,9 @@ An HTTP message (request or response) consists of:
 3. optionally, trailing headers, if present (see Section 4.1.2 of {{!RFC7230}}),
    sent as a single HEADERS frame.
 
-A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) or
-DUPLICATE_PUSH (see {{frame-duplicate-push}}) frames before, after, or
-interleaved with the frames of a response message. These PUSH_PROMISE and
-DUPLICATE_PUSH frames are not part of the response; see {{server-push}} for
+A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) frames
+frames before, after, or interleaved with the frames of a response message.
+These PUSH_PROMISE frames are not part of the response; see {{server-push}} for
 more details.
 
 Frames of unknown types ({{extensions}}), including reserved frames
@@ -612,11 +611,10 @@ client making the indicated request.  This trades off network usage against a
 potential latency gain.  HTTP/3 server push is similar to what is described in
 HTTP/2 {{!HTTP2}}, but uses different mechanisms.
 
-Each server push is identified by a unique Push ID. This Push ID is used in a
-single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
-headers, possibly included in one or more DUPLICATE_PUSH frames (see
-{{frame-duplicate-push}}), then included with the push stream which ultimately
-fulfills those promises.
+Each server push is identified by a unique Push ID. This Push ID is used in all
+PUSH_PROMISE frames (see {{frame-push-promise}}) which carries the request
+headers, then included with the push stream which ultimately fulfills those
+promises.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push until it
@@ -633,33 +631,30 @@ requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
 received.  The same server push can be associated with additional client
-requests using a DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  These
-associations do not affect the operation of the protocol, but MAY be used by
-user agents when deciding how to use pushed resources.
+requests using a PUSH_PROMISE frame with the same push id on multiple request
+stream.  These associations do not affect the operation of the protocol, but MAY
+be used by user agents when deciding how to use pushed resources.
 
-Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
-response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
-frames prior to sending HEADERS or DATA frames that reference the promised
-responses.  This reduces the chance that a client requests a resource that will
-be pushed by the server.
+Ordering of a PUSH_PROMISE in relation to certain parts of the response is
+important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
+or DATA frames that reference the promised responses.  This reduces the chance
+that a client requests a resource that will be pushed by the server.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
 using the same format described for responses in {{request-response}}.
 
-Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
-the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
-frame for an as-yet-unknown Push ID, the request headers of the push are not
-immediately available.  The client can either delay generating new requests for
-content referenced following the DUPLICATE_PUSH frame until the request headers
-become available, or can initiate requests for discovered resources and cancel
-the requests if the requested resource is already being pushed. When a client
-receives a new push stream with an as-yet-unknown Push ID, both the associated
-client request and the pushed request headers are unknown.  The client can
-buffer the stream data in expectation of the matching PUSH_PROMISE. The client
-can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
-amount of data a server may commit to the pushed stream.
+Due to reordering, push stream data can arrive before the corresponding
+PUSH_PROMISE frame.  When a client receives a new push stream with an
+as-yet-unknown Push ID, both the associated client request and the pushed request
+headers are unknown.  The client can buffer the stream data in expectation of the
+matching PUSH_PROMISE. The client can use stream flow control (see section 4.1 of
+{{QUIC-TRANSPORT}}) to limit the amount of data a server may commit to the pushed
+stream.
+
+If the same Push ID is promised on multiple request streams, the decompressed
+request headers MUST be byte-for-byte idential.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
@@ -960,7 +955,6 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
-| DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 | Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
 {: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
@@ -1244,7 +1238,7 @@ The payload consists of:
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
-  ({{frame-cancel-push}}), and DUPLICATE_PUSH frames ({{frame-duplicate-push}}).
+  ({{frame-cancel-push}}).
 
 Header Block:
 : QPACK-compressed request header fields for the promised response.  See [QPACK]
@@ -1255,9 +1249,10 @@ MAX_PUSH_ID frame ({{frame-max-push-id}}). A client MUST treat receipt of a
 PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
 as a connection error of H3_ID_ERROR.
 
-A server MUST NOT use the same Push ID in multiple PUSH_PROMISE frames. A client
-MUST treat receipt of a Push ID which has already been promised as a connection
-error of type H3_ID_ERROR.
+A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
+decompressed request headers MUST be idential.  A client MUST treat receipt of a
+Push ID which has already been promised with different headers than the previous
+promise as a connection error of type H3_ID_ERROR.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
@@ -1333,48 +1328,6 @@ the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
 MUST be treated as a connection error of type H3_ID_ERROR.
-
-### DUPLICATE_PUSH {#frame-duplicate-push}
-
-The DUPLICATE_PUSH frame (type=0xE) is used by servers to indicate that an
-existing pushed resource is related to multiple client requests.
-
-The DUPLICATE_PUSH frame is always sent on a request stream.  Receipt of a
-DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
-of type H3_FRAME_UNEXPECTED.
-
-A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type H3_FRAME_UNEXPECTED.
-
-~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-duplicate-push title="DUPLICATE_PUSH Frame Payload"}
-
-The DUPLICATE_PUSH frame carries a single variable-length integer that
-identifies the Push ID of a resource that the server has previously promised
-(see {{frame-push-promise}}), though that promise might not be received before
-this frame.  A server MUST NOT use a Push ID that is larger than the client has
-provided in a MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat
-receipt of a DUPLICATE_PUSH that contains a larger Push ID than the client has
-advertised as a connection error of type H3_ID_ERROR.
-
-This frame allows the server to use the same server push in response to multiple
-concurrent requests.  Referencing the same server push ensures that a promise
-can be made in relation to every response in which server push might be needed
-without duplicating request headers or pushed responses.
-
-Allowing duplicate references to the same Push ID is primarily to reduce
-duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
-ID over a long period.  Clients are likely to consume server push responses and
-not retain them for reuse over time.  Clients that see a DUPLICATE_PUSH that
-uses a Push ID that they have since consumed and discarded are forced to ignore
-the DUPLICATE_PUSH.
-
 
 ### Reserved Frame Types {#frame-reserved}
 
@@ -1635,7 +1588,6 @@ The entries in {{iana-frame-table}} are registered by this document.
 | Reserved         |  0x8   | N/A                        |
 | Reserved         |  0x9   | N/A                        |
 | MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
-| DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
