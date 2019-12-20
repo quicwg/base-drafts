@@ -822,16 +822,17 @@ implementations.  As an optimization, an endpoint could send frames related to
 flow control only when there are other frames to send or when a peer is blocked,
 ensuring that flow control does not cause extra packets to be sent.
 
-A sender that is blocked could choose to not send STREAM_DATA_BLOCKED or
-DATA_BLOCKED frames. Therefore, a receiver MUST NOT wait for a
-STREAM_DATA_BLOCKED or DATA_BLOCKED frame before sending a MAX_STREAM_DATA or
-MAX_DATA frame; doing so could result in the sender being blocked for the rest
-of the connection. Even if the sender sent these frames, waiting for them will
-result in the sender being blocked for at least an entire round trip.
+A blocked sender is not required to send STREAM_DATA_BLOCKED or DATA_BLOCKED
+frames. Therefore, a receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame before sending a MAX_STREAM_DATA or MAX_DATA frame; doing so
+could result in the sender being blocked for the rest of the connection. Even if
+the sender sends these frames, waiting for them will result in the sender being
+blocked for at least an entire round trip.
 
-When a sender receives credit after being blocked, it can send a large amount of
-data in response, resulting in short-term congestion; see Section 6.9 in
-{{QUIC-RECOVERY}} for a discussion of how a sender can avoid this congestion.
+When a sender receives credit after being blocked, it might be able to send a
+large amount of data in response, resulting in short-term congestion; see
+Section 6.9 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
+congestion.
 
 
 ## Handling Stream Cancellation {#stream-cancellation}
