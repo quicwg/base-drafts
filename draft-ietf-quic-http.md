@@ -611,10 +611,11 @@ client making the indicated request.  This trades off network usage against a
 potential latency gain.  HTTP/3 server push is similar to what is described in
 HTTP/2 {{!HTTP2}}, but uses different mechanisms.
 
-Each server push is identified by a unique Push ID. This Push ID is used in all
-PUSH_PROMISE frames (see {{frame-push-promise}}) which carries the request
+Each server push is identified by a unique Push ID. This Push ID is used in one
+or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
 headers, then included with the push stream which ultimately fulfills those
-promises.
+promises. When the same Push ID is promised on multiple request streams, the
+decompressed request header fields MUST be byte-for-byte identical.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push until it
