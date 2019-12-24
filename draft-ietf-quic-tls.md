@@ -396,7 +396,7 @@ when a HANDSHAKE_DONE frame is received.
 
 A client MAY consider the handshake to be confirmed when it receives an
 acknowledgement for a 1-RTT packet.  This can be implemented by recording the
-lowest packet number sent with 1-RTT keys, and the highest value of the Largest
+lowest packet number sent with 1-RTT keys, and comparing it to the Largest
 Acknowledged field in any received 1-RTT ACK frame: once the latter is higher
 than or equal to the former, the handshake can be confirmed.
 
