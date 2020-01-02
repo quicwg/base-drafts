@@ -4748,7 +4748,7 @@ acknowledged, even if it does not appear in a future ACK frame.  This is unlike
 TCP SACKs ({{?RFC2018}}).
 
 An ACK frame acknowledges packets in the same packet number space as the packet
-in which it is contained.  As such, the same packet number can be acknowledged
+in which it is contained.  Packets from different packet number spaces can be identified using the same numeric value.
 in different packet number spaces.
 
 Version Negotiation and Retry packets cannot be acknowledged because they do not
