@@ -5986,13 +5986,13 @@ A complete security analysis of QUIC is outside the scope of this document.
 This section provides an informal description of the desired security properties
 as an aid to implementors and to help guide protocol analysis.
 
-QUIC provides protection against various types of attacks, as described in more
-detail by {{?RFC3552}}.
+QUIC provides protection against various types of attacks, which are described
+in more detail by {{?RFC3552}}.
 
-For this purpose, attacks are divided into passive and active attacks. Passive
+For this purpose, attacks are divided into passive and active attacks.  Passive
 attackers have the capability to read packets from the network, while active
-attackers also have the capability to write packets into the network.  However, a
-passive attack may involve an attacker with the ability to cause a routing
+attackers also have the capability to write packets into the network.  However,
+a passive attack may involve an attacker with the ability to cause a routing
 change or other modification in the path taken by packets that comprise a QUIC
 connection.
 
@@ -6036,15 +6036,16 @@ new connection establishment without incurring this cost.
 #### On-Path Handshake Termination
 
 An on-path attacker can force the QUIC handshake to fail by replacing either the
-client or server Initial messages with invalid ones.  An off-path attacker can
-also mount this attack by racing the Initials.  Once valid Initial messages have
-been exchanged, the remaining handshake messages are protected with the
+client or server Initial messages with invalid messages.  An off-path attacker
+can also mount this attack by racing the Initials.  Once valid Initial messages
+have been exchanged, the remaining handshake messages are protected with the
 handshake keys and an on-path attacker cannot force handshake failure, though
 they can produce a handshake timeout by dropping packets.
 
 An on-path attacker can also replace the addresses of packets on either side and
 therefore cause the client or server to have an incorrect view of the remote
-addresses.
+addresses. Such an attack is indistinguishable from the functions performed by a
+NAT.
 
 #### Parameter Negotiation
 
