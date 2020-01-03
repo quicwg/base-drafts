@@ -328,8 +328,11 @@ encryption levels:
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
-- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
-  level except 0-RTT.
+- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
+  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+
+- CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
+  sent in packets at the 1-RTT encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
@@ -1173,25 +1176,34 @@ Note:
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
-decrypt 1-RTT packets from the client.
+decrypt 1-RTT packets from the client.  Endpoints in either role MUST NOT
+decrypt 1-RTT packets from their peer prior to completing the handshake.
 
 Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the client state:
 
 - The client is not authenticated, unless the server has chosen to use a
-pre-shared key and validated the client's pre-shared key binder; see
-Section 4.2.11 of {{!TLS13}}.
-- The client has not demonstrated liveness, unless a RETRY packet was used.
-- Any received 0-RTT data that the server responds to might be due to a replay
-attack.
+  pre-shared key and validated the client's pre-shared key binder; see Section
+  4.2.11 of {{!TLS13}}.
 
-Therefore, the server's use of 1-RTT keys is limited before the handshake is
-complete.  A server MUST NOT process data from incoming 1-RTT
-protected packets before the TLS handshake is complete.  Because
-sending acknowledgments indicates that all frames in a packet have been
-processed, a server cannot send acknowledgments for 1-RTT packets until the
-TLS handshake is complete.  Received packets protected with 1-RTT keys MAY be
-stored and later decrypted and used once the handshake is complete.
+- The client has not demonstrated liveness, unless a RETRY packet was used.
+
+- Any received 0-RTT data that the server responds to might be due to a replay
+  attack.
+
+Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
+the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+packets before the TLS handshake is complete.  Because sending acknowledgments
+indicates that all frames in a packet have been processed, a server cannot send
+acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
+packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.
+
+Note:
+
+: TLS implementations might provide all 1-RTT secrets prior to handshake
+  completion.  Even where QUIC implementations have 1-RTT read keys, those keys
+  cannot be used prior to completing the handshake.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1344,7 +1356,7 @@ The process of creating new packet protection keys for receiving packets could
 reveal that a key update has occurred.  An endpoint MAY perform this process as
 part of packet processing, but this creates a timing signal that can be used by
 an attacker to learn when key updates happen and thus the value of the Key Phase
-bit in certain packets.  Endpoints SHOULD instead defer the creation of the next
+bit in certain packets.  Endpoints MAY instead defer the creation of the next
 set of receive packet protection keys until some time after a key update
 completes, up to three times the PTO; see {{old-keys-recv}}.
 
@@ -1462,21 +1474,22 @@ parameters and allows a server to perform return routability checks on clients.
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
-{{!RFC7301}} to select an application protocol.  Unless another mechanism is
-used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  When using ALPN, endpoints MUST immediately close a connection (see
-Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
-see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
-alert, QUIC clients MUST also use it to terminate a connection when ALPN
-negotiation fails.
+{{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
+is used for agreeing on an application protocol, endpoints MUST use ALPN for
+this purpose.  When using ALPN, endpoints MUST immediately close a connection
+(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
+{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
+QUIC clients MUST also use it to terminate a connection when ALPN negotiation
+fails.
 
-An application-layer protocol MAY restrict the QUIC versions that it can operate
-over.  Servers MUST select an application protocol compatible with the QUIC
-version that the client has selected.  If the server cannot select a compatible
-combination of application protocol and QUIC version, it MUST abort the
-connection.  A client MUST abort a connection if the server picks an application
-protocol incompatible with the protocol version being used.
+An application protocol MAY restrict the QUIC versions that it can operate over.
+Servers MUST select an application protocol compatible with the QUIC version
+that the client has selected.  The server MUST treat the inability to select a
+compatible application protocol as a connection error of type 0x178
+(no_application_protocol).  Similarly, a client MUST treat the selection of an
+incompatible application protocol by a server as a connection error of type
+0x178.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1696,13 +1709,13 @@ secrets.
 This document does not create any new IANA registries, but it registers the
 values in the following registries:
 
-* TLS ExtensionsType Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}}.  The
-  Recommended column is to be marked Yes.  The TLS 1.3 Column is to include CH
-  and EE.
+* TLS ExtensionType Values Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to
+  register the quic_transport_parameters extension found in {{quic_parameters}}.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column is to include
+  CH and EE.
 
-* QUIC Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register the
-  KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
 
 
 --- back
@@ -1800,7 +1813,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000017088394c8f03e5157080000449e00000002
+c3ff000019088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1815,15 +1828,15 @@ mask = AES-ECB(hp, sample)[0..4]
 
 header[0] ^= mask[0] & 0x0f
      = c0
-header[17..20] ^= mask[1..4]
+header[18..21] ^= mask[1..4]
      = 3b343aa8
-header = c0ff000017088394c8f03e5157080000449e3b343aa8
+header = c0ff000019088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff000017088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+c0ff000019088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
 9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
 4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
 b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
@@ -1860,7 +1873,7 @@ eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
 cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
 acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-c9be6c7803567321829dd85853396269
+aebe13f98ec51170a4aad0a8324bb768
 ~~~
 
 ## Server Initial
@@ -1879,7 +1892,7 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff0000170008f067a5502a4262b50040740001
+c1ff0000190008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
@@ -1888,17 +1901,17 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c9ff0000170008f067a5502a4262b5004074168b
+header = c9ff0000190008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff0000170008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+c9ff0000190008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
-432348a2c413
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
+20d61e68cf5f
 ~~~
 
 
