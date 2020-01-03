@@ -5989,9 +5989,9 @@ as an aid to implementors and to help guide protocol analysis.
 QUIC provides protection against various types of attacks, as described in more
 detail by {{?RFC3552}}.
 
-For this purpose, attacks are divided into passive and active attacks, passive
-attackers having the capability to read packets from the network and active
-attackers having the capability to write packets into the network.  However, a
+For this purpose, attacks are divided into passive and active attacks. Passive
+attackers have the capability to read packets from the network, while active
+attackers also have the capability to write packets into the network.  However, a
 passive attack may involve an attacker with the ability to cause a routing
 change or other modification in the path taken by packets that comprise a QUIC
 connection.
@@ -6129,7 +6129,7 @@ An on-path attacker can:
 
 An on-path attacker cannot:
 
-- Modify an authenticated and encrypted portion of a packet and cause the
+- Modify an authenticated portion of a packet and cause the
  recipient to accept that packet
 
 An on-path attacker has the opportunity to modify the packets that it observes,
