@@ -388,7 +388,7 @@ An HTTP message (request or response) consists of:
    sent as a single HEADERS frame.
 
 A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) frames
-frames before, after, or interleaved with the frames of a response message.
+before, after, or interleaved with the frames of a response message.
 These PUSH_PROMISE frames are not part of the response; see {{server-push}} for
 more details.
 
@@ -632,7 +632,7 @@ requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
 received.  The same server push can be associated with additional client
-requests using a PUSH_PROMISE frame with the same push id on multiple request
+requests using a PUSH_PROMISE frame with the same Push ID on multiple request
 stream.  These associations do not affect the operation of the protocol, but MAY
 be used by user agents when deciding how to use pushed resources.
 
