@@ -615,7 +615,9 @@ Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
 headers, then included with the push stream which ultimately fulfills those
 promises. When the same Push ID is promised on multiple request streams, the
-decompressed request header fields MUST be byte-for-byte identical.
+decompressed request header set MUST contains the same set of fields in the
+same order, and in each field both the name and and value MUST be byte-for-byte
+matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push until it
@@ -653,9 +655,6 @@ request headers are unknown.  The client can buffer the stream data in
 expectation of the matching PUSH_PROMISE. The client can use stream flow control
 (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
 commit to the pushed stream.
-
-If the same Push ID is promised on multiple request streams, the decompressed
-request headers MUST be byte-for-byte idential.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
@@ -1251,9 +1250,12 @@ PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
 as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
-decompressed request headers MUST be idential.  A client MUST treat receipt of a
-Push ID which has already been promised with different headers than the previous
-promise as a connection error of type H3_ID_ERROR.
+decompressed request header set MUST contain the same set of fields in the same
+order, and in each field both the name and and value MUST be byte-for-byte
+matches. When a client receives a Push ID which has alread been promised, if the
+client detects a mismatch, it MUST response with a connection error of type
+H3_GENERAL_PROTOCOL_ERROR. Otherwise it MUST ignore the PUSH_PROMISE frame if no
+mismatch is detected.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
