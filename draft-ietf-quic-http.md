@@ -615,8 +615,8 @@ Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
 headers, then included with the push stream which ultimately fulfills those
 promises. When the same Push ID is promised on multiple request streams, the
-decompressed request header set MUST contains the same set of fields in the
-same order, and in each field both the name and and value MUST be byte-for-byte
+decompressed request header set MUST contain the same set of fields in the
+same order, and in each field both the name and value MUST be byte-for-byte
 matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
