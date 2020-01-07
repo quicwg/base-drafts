@@ -5974,13 +5974,14 @@ be influenced by an attacker.
 
 ## Version Downgrade {#version-downgrade}
 
-This document defines QUIC Version Negotiation packets in {{version-negotiation}},
-which can be used to negotiate the QUIC version used between two endpoints.
-However, this document does not specify how this negotiation will be performed
-between this version and subsequent future versions.  In particular, Version
-Negotiation packets do not contain any mechanism to prevent version downgrade
-attacks.  Future versions of QUIC that use Version Negotiation packets MUST
-define a mechanism that is robust against version downgrade attacks.
+This document defines QUIC Version Negotiation packets in
+{{version-negotiation}}, which can be used to negotiate the QUIC version used
+between two endpoints. However, this document does not specify how this
+negotiation will be performed between this version and subsequent future
+versions.  In particular, Version Negotiation packets do not contain any
+mechanism to prevent version downgrade attacks.  Future versions of QUIC that
+use Version Negotiation packets MUST define a mechanism that is robust against
+version downgrade attacks.
 
 
 ## Targeted Attacks by Routing
