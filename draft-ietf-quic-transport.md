@@ -4409,12 +4409,11 @@ support the spin bit MUST implement it as specified in this section.
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
 to disable the spin bit either globally or on a per-connection basis. Even when
-the spin bit is not disabled by the administrator, implementations MUST disable
-the spin bit for a given connection with a certain likelihood. The random
-selection process SHOULD be designed such that on average the spin bit is
-disabled for at least one eighth of network paths. The selection process
-performed at the beginning of the connection SHOULD be applied for all paths
-used by the connection.
+the spin bit is not disabled by the administrator, endpoints MUST disable their
+use of the spin bit for a random selection of at least one in every 16 network
+paths, or for one in every 16 connection IDs.  As each endpoint disables the
+spin bit independently, this ensures that the spin bit signal is disabled on
+approximately one in eight network paths.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
