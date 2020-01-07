@@ -132,7 +132,7 @@ incurring a dependency on middleboxes.
 
 ## Document Structure
 
-This document describes the core QUIC protocol and is structured as follows.
+This document describes the core QUIC protocol and is structured as follows:
 
 * Streams are the basic service abstraction that QUIC provides.
   - {{streams}} describes core concepts related to streams,
@@ -4756,7 +4756,7 @@ Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
 implicitly acknowledged by the next Initial packet sent by the client.
 
-An ACK frame is as follows:
+An ACK frame is shown in {{ack-format}}.
 
 ~~~
  0                   1                   2                   3
@@ -4829,7 +4829,7 @@ descending packet number order.  The number of Gap and ACK Range values is
 determined by the ACK Range Count field; one of each value is present for each
 value in the ACK Range Count field.
 
-ACK Ranges are structured as follows:
+ACK Ranges are structured as shown in {{ack-range-format}}.
 
 ~~~
  0                   1                   2                   3
@@ -4911,7 +4911,7 @@ of ECT(0), ECT(1), or CE in the packet's IP header.  ECN Counts are only present
 when the ACK frame type is 0x03.
 
 ECN Counts are only parsed when the ACK frame type is 0x03.  There are 3 ECN
-counts, as follows:
+counts, as shown in {{ecn-count-format}}.
 
 ~~~
  0                   1                   2                   3
@@ -4924,6 +4924,7 @@ counts, as follows:
 |                        ECN-CE Count (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #ecn-count-format title="ECN Count Format"}
 
 The three ECN Counts are:
 
@@ -4954,7 +4955,7 @@ discard any data that it already received on that stream.
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
 terminate the connection with error STREAM_STATE_ERROR.
 
-The RESET_STREAM frame is as follows:
+The RESET_STREAM frame is shown in {{fig-reset-stream}}.
 
 ~~~
  0                   1                   2                   3
@@ -4967,6 +4968,7 @@ The RESET_STREAM frame is as follows:
 |                        Final Size (i)                       ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-reset-stream title="RESET_STREAM Frame Format"}
 
 RESET_STREAM frames contain the following fields:
 
@@ -5000,7 +5002,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 STOP_SENDING frame for a receive-only stream MUST terminate the connection with
 error STREAM_STATE_ERROR.
 
-The STOP_SENDING frame is as follows:
+The STOP_SENDING frame is shown in {{fig-stop-sending}}.
 
 ~~~
  0                   1                   2                   3
@@ -5011,6 +5013,7 @@ The STOP_SENDING frame is as follows:
 |                  Application Error Code (i)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-stop-sending title="STOP_SENDING Frame Format"}
 
 STOP_SENDING frames contain the following fields:
 
@@ -5033,7 +5036,7 @@ are functionally identical to STREAM frames, except that they do not bear a
 stream identifier; they are not flow controlled; and they do not carry markers
 for optional offset, optional length, and the end of the stream.
 
-The CRYPTO frame is as follows:
+The CRYPTO frame is shown in {{fig-crypto}}.
 
 ~~~
  0                   1                   2                   3
@@ -5046,7 +5049,7 @@ The CRYPTO frame is as follows:
 |                        Crypto Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #crypto-format title="CRYPTO Frame Format"}
+{: #fig-crypto title="CRYPTO Frame Format"}
 
 CRYPTO frames contain the following fields:
 
@@ -5084,7 +5087,7 @@ FIN bit.
 A server sends a NEW_TOKEN frame (type=0x07) to provide the client with a token
 to send in the header of an Initial packet for a future connection.
 
-The NEW_TOKEN frame is as follows:
+The NEW_TOKEN frame is shown in {{fig-new-token}}.
 
 ~~~
  0                   1                   2                   3
@@ -5095,6 +5098,7 @@ The NEW_TOKEN frame is as follows:
 |                            Token (*)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-new-token title="NEW_TOKEN Frame Format"}
 
 NEW_TOKEN frames contain the following fields:
 
@@ -5142,7 +5146,7 @@ are present in the frame.
 An endpoint that receives a STREAM frame for a send-only stream MUST terminate
 the connection with error STREAM_STATE_ERROR.
 
-The STREAM frames are as follows:
+The STREAM frames are shown in {{fig-stream}}.
 
 ~~~
  0                   1                   2                   3
@@ -5157,7 +5161,7 @@ The STREAM frames are as follows:
 |                        Stream Data (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
-{: #stream-format title="STREAM Frame Format"}
+{: #fig-stream title="STREAM Frame Format"}
 
 STREAM frames contain the following fields:
 
@@ -5198,7 +5202,7 @@ FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 The MAX_DATA frame (type=0x10) is used in flow control to inform the peer of
 the maximum amount of data that can be sent on the connection as a whole.
 
-The MAX_DATA frame is as follows:
+The MAX_DATA frame is shown in {{fig-max-data}}.
 
 ~~~
  0                   1                   2                   3
@@ -5207,6 +5211,7 @@ The MAX_DATA frame is as follows:
 |                        Maximum Data (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-max-data title="MAX_DATA Frame Format"}
 
 MAX_DATA frames contain the following fields:
 
@@ -5235,7 +5240,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
 with error STREAM_STATE_ERROR.
 
-The MAX_STREAM_DATA frame is as follows:
+The MAX_STREAM_DATA frame is shown in {{fig-max-stream-data}}.
 
 ~~~
  0                   1                   2                   3
@@ -5246,6 +5251,7 @@ The MAX_STREAM_DATA frame is as follows:
 |                    Maximum Stream Data (i)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-max-stream-data title="MAX_STREAM_DATA Frame Format"}
 
 MAX_STREAM_DATA frames contain the following fields:
 
@@ -5279,7 +5285,7 @@ number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
 with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
 with a type of 0x13 applies to unidirectional streams.
 
-The MAX_STREAMS frames are as follows:
+The MAX_STREAMS frames are shown in {{fig-max-streams}};
 
 ~~~
  0                   1                   2                   3
@@ -5288,6 +5294,7 @@ The MAX_STREAMS frames are as follows:
 |                     Maximum Streams (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-max-streams title="MAX_STREAMS Frame Format"}
 
 MAX_STREAMS frames contain the following fields:
 
@@ -5321,7 +5328,7 @@ data, but is unable to due to connection-level flow control (see
 {{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
 control algorithms (see {{fc-credit}}).
 
-The DATA_BLOCKED frame is as follows:
+The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.
 
 ~~~
  0                   1                   2                   3
@@ -5330,6 +5337,7 @@ The DATA_BLOCKED frame is as follows:
 |                       Data Limit (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-data-blocked title="DATA_BLOCKED Frame Format"}
 
 DATA_BLOCKED frames contain the following fields:
 
@@ -5348,7 +5356,7 @@ analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
 MUST terminate the connection with error STREAM_STATE_ERROR.
 
-The STREAM_DATA_BLOCKED frame is as follows:
+The STREAM_DATA_BLOCKED frame is shown in {{fig-stream-data-blocked}}.
 
 ~~~
  0                   1                   2                   3
@@ -5359,6 +5367,7 @@ The STREAM_DATA_BLOCKED frame is as follows:
 |                    Stream Data Limit (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-stream-data-blocked title="STREAM_DATA_BLOCKED Frame Format"}
 
 STREAM_DATA_BLOCKED frames contain the following fields:
 
@@ -5383,7 +5392,7 @@ of type 0x17 indicates reaching the unidirectional stream limit.
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
 
-The STREAMS_BLOCKED frames are as follows:
+The STREAMS_BLOCKED frames are shown in {{fig-streams-blocked}}.
 
 ~~~
  0                   1                   2                   3
@@ -5392,6 +5401,7 @@ The STREAMS_BLOCKED frames are as follows:
 |                        Stream Limit (i)                     ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-streams-blocked title="STREAMS_BLOCKED Frame Format"}
 
 STREAMS_BLOCKED frames contain the following fields:
 
@@ -5409,7 +5419,7 @@ An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
 alternative connection IDs that can be used to break linkability when migrating
 connections (see {{migration-linkability}}).
 
-The NEW_CONNECTION_ID frame is as follows:
+The NEW_CONNECTION_ID frame is shown in {{fig-new-connection-id}}.
 
 ~~~
  0                   1                   2                   3
@@ -5432,6 +5442,7 @@ The NEW_CONNECTION_ID frame is as follows:
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-new-connection-id title="NEW_CONNECTION_ID Frame Format"}
 
 NEW_CONNECTION_ID frames contain the following fields:
 
@@ -5508,7 +5519,7 @@ peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 Retiring a connection ID invalidates the stateless reset token associated with
 that connection ID.
 
-The RETIRE_CONNECTION_ID frame is as follows:
+The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
 
 ~~~
  0                   1                   2                   3
@@ -5517,6 +5528,7 @@ The RETIRE_CONNECTION_ID frame is as follows:
 |                      Sequence Number (i)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-retire-connection-id title="RETIRE_CONNECTION_ID Frame Format"}
 
 RETIRE_CONNECTION_ID frames contain the following fields:
 
@@ -5545,7 +5557,7 @@ type PROTOCOL_VIOLATION.
 Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
 peer and for path validation during connection migration.
 
-The PATH_CHALLENGE frames are as follows:
+The PATH_CHALLENGE frame is shown in {{fig-path-challenge}}.
 
 ~~~
  0                   1                   2                   3
@@ -5556,6 +5568,7 @@ The PATH_CHALLENGE frames are as follows:
 |                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-path-challenge title="PATH_CHALLENGE Frame Format"}
 
 PATH_CHALLENGE frames contain the following fields:
 
@@ -5593,7 +5606,7 @@ is used to signal an error with the application that uses QUIC.
 If there are open streams that haven't been explicitly closed, they are
 implicitly closed when the connection is closed.
 
-The CONNECTION_CLOSE frames are as follows:
+The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
 
 ~~~
  0                   1                   2                   3
@@ -5608,6 +5621,7 @@ The CONNECTION_CLOSE frames are as follows:
 |                        Reason Phrase (*)                    ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
+{: #fig-connection-close title="CONNECTION_CLOSE Frame Format"}
 
 CONNECTION_CLOSE frames contain the following fields:
 
@@ -6233,8 +6247,8 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
-The following pseudo-code shows how an implementation can decode packet
-numbers after header protection has been removed.
+The pseudo-code in {{alg-decode-pn}} shows how an implementation can decode
+packet numbers after header protection has been removed.
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
@@ -6262,6 +6276,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
       return candidate_pn - pn_win
    return candidate_pn
 ~~~
+{: #alg-decode-pn title="Sample Packet Number Decoding Algorithm"}
 
 # Change Log
 
