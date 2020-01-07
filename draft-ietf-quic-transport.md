@@ -3183,7 +3183,7 @@ ACK frames SHOULD always acknowledge the most recently received packets, and the
 more out-of-order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
 spuriously retransmitting the frames it contains.  The ACK frame is expected
-will be much smaller than a QUIC packet.  However, if the entire ACK frame
+to fit within a single QUIC packet.  If it does not, then older ranges
 (those with the smallest packet numbers) are omitted.
 
 {{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for
