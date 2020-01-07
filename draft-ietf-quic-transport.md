@@ -3182,7 +3182,9 @@ caused by losing previously sent ACK frames, at the cost of larger ACK frames.
 ACK frames SHOULD always acknowledge the most recently received packets, and the
 more out-of-order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriously retransmitting the frames it contains.
+spuriously retransmitting the frames it contains.  An ACK frame is expected
+to fit within a single QUIC packet.  If it does not, then older ranges
+(those with the smallest packet numbers) are omitted.
 
 {{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for
 determining what packets to acknowledge in each ACK frame.
