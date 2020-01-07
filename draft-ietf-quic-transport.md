@@ -3182,7 +3182,7 @@ caused by losing previously sent ACK frames, at the cost of larger ACK frames.
 ACK frames SHOULD always acknowledge the most recently received packets, and the
 more out-of-order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
-spuriously retransmitting the frames it contains.  It's expected the ACK frame
+spuriously retransmitting the frames it contains.  The ACK frame is expected
 will be much smaller than a QUIC packet.  However, if the entire ACK frame
 does not fit into a single QUIC packet, older ranges (that is, those with the
 smallest packet numbers) SHOULD be omitted.
