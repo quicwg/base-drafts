@@ -1021,6 +1021,7 @@ SHOULD ensure that the pool of connection IDs available to its peer allows the
 peer to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
 
+
 ### Consuming and Retiring Connection IDs {#retiring-cids}
 
 An endpoint can change the connection ID it uses for a peer to another available
@@ -1068,9 +1069,12 @@ has a non-zero-length Destination Connection ID corresponding to an existing
 connection, QUIC processes that packet accordingly. Note that more than one
 connection ID can be associated with a connection; see {{connection-id}}.
 
-If the Destination Connection ID is zero length and the packet matches the
-local address and port of a connection where the endpoint used zero-length
-connection IDs, QUIC processes the packet as part of that connection.
+If the Destination Connection ID is zero length and the addressing information
+in the packet matches the addressing information the endpoint uses to identify a
+connection with a zero-length connection ID, QUIC processes the packet as part
+of that connection.  An endpoint can use just destination IP and port or both
+source and destination addresses for identification, subject to the limitations
+described in {{connection-id}}.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
