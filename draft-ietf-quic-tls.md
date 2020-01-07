@@ -80,7 +80,7 @@ informative:
       ISBN: 978-1466570269
 
   QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
+    title: "Hypertext Transfer Protocol Version 3 (HTTP/3)"
     date: {DATE}
     seriesinfo:
       Internet-Draft: draft-ietf-quic-http-latest
@@ -88,7 +88,7 @@ informative:
       -
         ins: M. Bishop
         name: Mike Bishop
-        org: Microsoft
+        org: Akamai Technologies
         role: editor
 
 
