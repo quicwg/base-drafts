@@ -4748,10 +4748,11 @@ QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
 TCP SACKs ({{?RFC2018}}).
 
-It is expected that a sender will reuse the same packet number across different
-packet number spaces.  ACK frames only acknowledge the packet numbers that were
-transmitted by the sender in the same packet number space of the packet that the
-ACK was received in.
+Packets from different packet number spaces can be identified using the same
+numeric value. An acknowledgment for a packet needs to indicate both a packet
+number and a packet number space. This is accomplished by having each ACK frame
+only acknowledge packet numbers in the same space as the packet in which the
+ACK frame is contained.
 
 Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
