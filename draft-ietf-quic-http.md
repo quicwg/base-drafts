@@ -387,7 +387,7 @@ An HTTP message (request or response) consists of:
 3. optionally, trailing headers, if present (see Section 4.1.2 of {{!RFC7230}}),
    sent as a single HEADERS frame.
 
-A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) frames
+A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message.
 These PUSH_PROMISE frames are not part of the response; see {{server-push}} for
 more details.
@@ -615,8 +615,8 @@ Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
 headers, then included with the push stream which ultimately fulfills those
 promises. When the same Push ID is promised on multiple request streams, the
-decompressed request header set MUST contain the same set of fields in the
-same order, and in each field both the name and value MUST be byte-for-byte
+decompressed request header sets MUST contain the same fields in the
+same order, and both the name and the value in each field MUST be exact
 matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
@@ -1250,12 +1250,12 @@ PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
 as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
-decompressed request header set MUST contain the same set of fields in the same
-order, and in each field both the name and and value MUST be byte-for-byte
-matches. When a client receives a Push ID which has alread been promised, if the
-client detects a mismatch, it MUST response with a connection error of type
-H3_GENERAL_PROTOCOL_ERROR. Otherwise it MUST ignore the PUSH_PROMISE frame if no
-mismatch is detected.
+decompressed request header sets MUST contain the same fields in the same
+order, and both the name and and value in each field MUST be exact
+matches. If a client receives a Push ID that has already been promised
+and detects a mismatch, it MUST respond with a connection error of type
+H3_GENERAL_PROTOCOL_ERROR. If the decompressed header sets match exactly, the
+client MUST ignore the duplicate PUSH_PROMISE frame.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
