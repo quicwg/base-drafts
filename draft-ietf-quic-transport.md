@@ -1829,10 +1829,13 @@ tokens that would be accepted by the server.  Only the server requires access to
 the integrity protection key for tokens.
 
 There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.
+server that generates the token also consumes it.  Tokens sent in Retry packets
+SHOULD include information that allows the server to verify that the source IP
+address and port in client packets remains constant.  Servers MUST ensure that
+replay of tokens is prevented or limited.  For instance, servers might limit the
+time over which a token is accepted.  Tokens sent in NEW_TOKEN frames MAY omit
+the client port and allow for use over a longer period.  Tokens MAY include
+additional information about clients to further narrow applicability or reuse.
 
 
 ## Path Validation {#migrate-validate}
