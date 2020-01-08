@@ -1073,8 +1073,8 @@ If the Destination Connection ID is zero length and the addressing information
 in the packet matches the addressing information the endpoint uses to identify a
 connection with a zero-length connection ID, QUIC processes the packet as part
 of that connection.  An endpoint can use just destination IP and port or both
-source and destination addresses for identification, subject to the limitations
-described in {{connection-id}}.
+source and destination addresses for identification, though this makes
+connections fragile as described in {{connection-id}}.
 
 Endpoints can send a Stateless Reset ({{stateless-reset}}) for any packets that
 cannot be attributed to an existing connection. A stateless reset allows a peer
