@@ -635,8 +635,8 @@ Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
 received.  The same server push can be associated with additional client
 requests using a PUSH_PROMISE frame with the same Push ID on multiple request
-stream.  These associations do not affect the operation of the protocol, but MAY
-be used by user agents when deciding how to use pushed resources.
+streams.  These associations do not affect the operation of the protocol, but
+MAY be used by user agents when deciding how to use pushed resources.
 
 Ordering of a PUSH_PROMISE in relation to certain parts of the response is
 important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
@@ -1252,7 +1252,8 @@ as a connection error of H3_ID_ERROR.
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
 decompressed request header sets MUST contain the same fields in the same
 order, and both the name and and value in each field MUST be exact
-matches. If a client receives a Push ID that has already been promised
+matches. Clients SHOULD compare the request header sets for resources promised
+multiple times. If a client receives a Push ID that has already been promised
 and detects a mismatch, it MUST respond with a connection error of type
 H3_GENERAL_PROTOCOL_ERROR. If the decompressed header sets match exactly, the
 client MUST ignore the duplicate PUSH_PROMISE frame.
@@ -1261,7 +1262,7 @@ Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
 ID over a long period.  Clients are likely to consume server push responses and
 not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
-a Push ID that they have since consumed and discarded are forced to ignore the
+a Push ID that they have already consumed and discarded are forced to ignore the
 PUSH_PROMISE.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
