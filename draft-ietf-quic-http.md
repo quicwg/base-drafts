@@ -1256,7 +1256,8 @@ matches. Clients SHOULD compare the request header sets for resources promised
 multiple times. If a client receives a Push ID that has already been promised
 and detects a mismatch, it MUST respond with a connection error of type
 H3_GENERAL_PROTOCOL_ERROR. If the decompressed header sets match exactly, the
-client MUST ignore the duplicate PUSH_PROMISE frame.
+client SHOULD associate the pushed content with each stream on which
+a PUSH_PROMISE was received.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
