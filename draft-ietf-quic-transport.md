@@ -6272,7 +6272,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 Each time an endpoint commences sending on a new network path, it determines
 whether the path supports ECN; see {{ecn}}.  If the path supports ECN, the goal
 is to use ECN.  Endpoints might also periodically reassess a path that was
-determined not support ECN.
+determined to not support ECN.
 
 This section describes one method for testing new paths.  This algorithm is
 intended to show how a path might be tested for ECN support.  Endpoints can
