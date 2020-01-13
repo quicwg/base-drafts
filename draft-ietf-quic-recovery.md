@@ -291,7 +291,7 @@ retain sufficient history is an open research question.
 
 ## Estimating min_rtt {#min-rtt}
 
-min_rtt is the minimum RTT observed for a given path.  min_rtt is set to the
+min_rtt is the minimum RTT observed for a given network path.  min_rtt is set to the
 latest_rtt on the first RTT sample, and to the lesser of min_rtt and latest_rtt
 on subsequent samples.  In this document, min_rtt is used by loss detection to
 reject implausibly small rtt samples.
