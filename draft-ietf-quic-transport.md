@@ -3515,6 +3515,10 @@ A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to an Initial packet it receives from a client if the UDP datagram is
 smaller than 1200 bytes. It MUST NOT send any other frame type in response, or
 otherwise behave as if any part of the offending packet was processed as valid.
+Note that a middlebox might modify datagram boundaries when multiple QUIC
+packets have been coalesced into a single UDP datagram, causing the handshake to
+fail. This is considered a failure of the path to support datagrams of the size
+that QUIC requires.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
