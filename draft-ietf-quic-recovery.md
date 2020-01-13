@@ -250,9 +250,9 @@ At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the path's RTT.
-An endpoint computes the following three values observed during the congestion
-control context: the minimum value (min_rtt), an exponentially-weighted moving
-average (smoothed_rtt), and the variance in the observed RTT samples (rttvar).
+An endpoint computes the following three values for each path: the minimum
+value (min_rtt), an exponentially-weighted moving average (smoothed_rtt),
+and the variance in the observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -294,11 +294,10 @@ retain sufficient history is an open research question.
 
 ## Estimating min_rtt {#min-rtt}
 
-min_rtt is the minimum RTT observed for a given congestion control context.
-min_rtt is set to the latest_rtt on the first RTT sample, and to the lesser
-of min_rtt and latest_rtt on subsequent samples.  min_rtt is used to reject
-implausible RTT samples, but is not used directly in congestion control or
-loss recovery.
+min_rtt is the minimum RTT observed for a given path.  min_rtt is set to the
+latest_rtt on the first RTT sample, and to the lesser of min_rtt and latest_rtt
+on subsequent samples.  min_rtt is used to reject implausible RTT samples, but
+is not used directly in congestion control or loss recovery.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
 not adjust for host delays reported by the peer.  Doing so allows the endpoint
@@ -339,11 +338,10 @@ endpoint:
   min_rtt.  This limits the underestimation that a misreporting peer can cause
   to the smoothed_rtt.
 
-On the first RTT sample in a congestion control context, the smoothed_rtt is
-set to the latest_rtt.
+On the first RTT sample for a path, the smoothed_rtt is set to the latest_rtt.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
-the first RTT sample in a congestion control context:
+the first RTT sample for a path:
 
 ~~~
 smoothed_rtt = latest_rtt
