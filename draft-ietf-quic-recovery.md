@@ -303,7 +303,7 @@ to set a lower bound for the smoothed_rtt based entirely on what it observes
 erroneously-reported delays by the peer.
 
 The RTT for a network path may change over time.  If a path's actual RTT decreases,
-the min_rtt will adapt immediately on the first low sample.  If the path's
+the min_rtt will adapt immediately on the first low sample.  If the network path's
 actual RTT increases, the min_rtt will not adapt to it, allowing future
 RTT samples that are smaller than the new RTT be included in smoothed_rtt.
 
