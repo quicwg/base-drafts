@@ -739,7 +739,7 @@ ensures that a connection can be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
-continue fulfilling pushes promised while fulfilling outstanding requests, and
+continue fulfilling pushes promised while processing outstanding requests, and
 the client can continue granting push credit as needed (see
 {{frame-max-push-id}}). A smaller value indicates the client will reject pushes
 with Push IDs greater than or equal to this value.  Like the server, the client
