@@ -244,7 +244,7 @@ more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays (see Section 13.2 of
-{{QUIC-TRANSPORT}}) to generate a statistical description of the path's RTT.
+{{QUIC-TRANSPORT}}) to generate a statistical description of the network path's RTT.
 An endpoint computes the following three values for each path: the minimum
 value observed over the lifetime of the path (min_rtt), an
 exponentially-weighted moving average (smoothed_rtt), and the mean deviation
