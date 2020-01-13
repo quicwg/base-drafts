@@ -696,18 +696,18 @@ requests or pushes were accepted prior to the connection shutdown.  Endpoints
 SHOULD abruptly terminate any requests or pushes that have identifiers greater
 than or equal to the smallest identifier sent in a GOAWAY frame.
 
-Endpoints MUST NOT initiate new requests or pushes on the connection with an
-identifier greater than or equal to the smallest identifier received in a GOAWAY
-frame.  Clients MAY establish a new connection to send additional requests.
+Endpoints MUST NOT initiate new requests or promise new pushes on the
+connection.  Clients MAY establish a new connection to send additional requests.
 
 Some requests or pushes might already be in transit. If the endpoint has already
-sent requests or pushes with an identifier greater than or equal to that
-received in a GOAWAY frame, those requests or pushes will not be processed;
+sent requests or promised pushes with an identifier greater than or equal to
+that received in a GOAWAY frame, those requests or pushes will not be processed;
 requests MAY be retried by the client on a different connection.  The endpoint
 that initiated these requests or pushes MAY cancel them.  It is RECOMMENDED that
 the receiving endpoint explicitly reject such requests (see
 {{request-cancellation}}) or pushes (see {{frame-cancel-push}}) in order to
-clean up transport state for the affected streams.
+clean up transport state for the affected streams.  Pushes which have been
+promised MAY still be fulfilled by the server.
 
 Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the server
 might have been processed; their status cannot be known until a response is
@@ -738,12 +738,12 @@ ensures that a connection can be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
-continue initiating pushes to complete outstanding requests, and the client can
-continue granting push credit as needed (see {{frame-max-push-id}}).  A smaller
-value indicates the client will reject pushes with Push IDs greater than or
-equal to this value.  Like the server, the client MAY send subsequent GOAWAY
-frames so long as the specified Push ID is strictly smaller than all previously
-sent values.
+continue fulfilling pushes promised while fulfilling outstanding requests, and
+the client can continue granting push credit as needed (see
+{{frame-max-push-id}}). A smaller value indicates the client will reject pushes
+with Push IDs greater than or equal to this value.  Like the server, the client
+MAY send subsequent GOAWAY frames so long as the specified Push ID is strictly
+smaller than all previously sent values.
 
 Once all accepted requests and pushes have been processed, the endpoint can
 permit the connection to become idle, or MAY initiate an immediate closure of
