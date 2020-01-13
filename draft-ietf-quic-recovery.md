@@ -244,9 +244,9 @@ more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 At a high level, an endpoint measures the time from when a packet was sent to
 when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays (see Section 13.2 of
-{{QUIC-TRANSPORT}}) to generate a statistical description of the network path's RTT.
-An endpoint computes the following three values for each path: the minimum
-value observed over the lifetime of the path (min_rtt), an
+{{QUIC-TRANSPORT}}) to generate a statistical description of the network
+path's RTT. An endpoint computes the following three values for each path:
+the minimum value observed over the lifetime of the path (min_rtt), an
 exponentially-weighted moving average (smoothed_rtt), and the mean deviation
 (referred to as "variation" in the rest of this document) in the observed RTT
 samples (rttvar).
@@ -291,10 +291,10 @@ retain sufficient history is an open research question.
 
 ## Estimating min_rtt {#min-rtt}
 
-min_rtt is the minimum RTT observed for a given network path.  min_rtt is set to the
-latest_rtt on the first RTT sample, and to the lesser of min_rtt and latest_rtt
-on subsequent samples.  In this document, min_rtt is used by loss detection to
-reject implausibly small rtt samples.
+min_rtt is the minimum RTT observed for a given network path.  min_rtt is set
+to the latest_rtt on the first RTT sample, and to the lesser of min_rtt and
+latest_rtt on subsequent samples.  In this document, min_rtt is used by loss
+detection to reject implausibly small rtt samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
 not adjust for ACK delays reported by the peer.  Doing so allows the endpoint
@@ -302,10 +302,11 @@ to set a lower bound for the smoothed_rtt based entirely on what it observes
 (see {{smoothed-rtt}}), and limits potential underestimation due to
 erroneously-reported delays by the peer.
 
-The RTT for a network path may change over time.  If a path's actual RTT decreases,
-the min_rtt will adapt immediately on the first low sample.  If the network path's
-actual RTT increases, the min_rtt will not adapt to it, allowing future
-RTT samples that are smaller than the new RTT be included in smoothed_rtt.
+The RTT for a network path may change over time.  If a path's actual RTT
+decreases, the min_rtt will adapt immediately on the first low sample.  If
+the path's actual RTT increases, the min_rtt will not adapt to it, allowing
+future RTT samples that are smaller than the new RTT be included in
+smoothed_rtt.
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
