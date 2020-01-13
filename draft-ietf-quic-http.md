@@ -403,7 +403,7 @@ response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
 If an endpoint receives an invalid sequence of frames on either a request or
-a push stream, it MUST respond with a connection error of type
+a push stream, it MUST respond with a stream error of type
 H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
 HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
 considered invalid.
@@ -571,7 +571,7 @@ map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
 Once the CONNECT method has completed, only DATA frames are permitted
 to be sent on the stream.  Extension frames MAY be used if specifically
 permitted by the definition of the extension.  Receipt of any other frame type
-MUST be treated as a connection error of type H3_FRAME_UNEXPECTED.
+MUST be treated as a stream error of type H3_FRAME_UNEXPECTED.
 
 The TCP connection can be closed by either peer. When the client ends the
 request stream (that is, the receive stream at the proxy enters the "Data Recvd"
@@ -985,13 +985,11 @@ A frame includes the following fields:
 Each frame's payload MUST contain exactly the fields identified in its
 description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
-identified fields MUST be treated as a connection error of type
-H3_FRAME_ERROR.
+identified fields MUST be treated as a stream error of type H3_FRAME_ERROR.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
-this MUST be treated as a connection error ({{errors}}) of type
-H3_FRAME_ERROR. Streams which terminate abruptly may be reset at any point in
-a frame.
+this MUST be treated as a stream error ({{errors}}) of type H3_FRAME_ERROR.
+Streams which terminate abruptly may be reset at any point in a frame.
 
 ## Frame Definitions {#frames}
 
@@ -1056,7 +1054,7 @@ corresponding push stream, and a client SHOULD NOT send a CANCEL_PUSH when it
 has already received a corresponding push stream.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
-frame on a stream other than the control stream MUST be treated as a connection
+frame on a stream other than the control stream MUST be treated as a stream
 error of type H3_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~  drawing
@@ -1097,7 +1095,7 @@ MUST respond with a connection error of type H3_FRAME_UNEXPECTED.
 
 SETTINGS frames MUST NOT be sent on any stream other than the control stream.
 If an endpoint receives a SETTINGS frame on a different stream, the endpoint
-MUST respond with a connection error of type H3_FRAME_UNEXPECTED.
+MUST respond with a stream error of type H3_FRAME_UNEXPECTED.
 
 SETTINGS parameters are not negotiated; they describe characteristics of the
 sending peer, which can be used by the receiving peer. However, a negotiation
@@ -1278,7 +1276,7 @@ stream as a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
-connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
+stream error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
@@ -1291,8 +1289,8 @@ Consequently, this also limits the number of push streams that the server can
 initiate in addition to the limit maintained by the QUIC transport.
 
 The MAX_PUSH_ID frame is always sent on the control stream.  Receipt of a
-MAX_PUSH_ID frame on any other stream MUST be treated as a connection error of
-type H3_FRAME_UNEXPECTED.
+MAX_PUSH_ID frame on any other stream MUST be treated as a stream error of type
+H3_FRAME_UNEXPECTED.
 
 A server MUST NOT send a MAX_PUSH_ID frame.  A client MUST treat the receipt of
 a MAX_PUSH_ID frame as a connection error of type H3_FRAME_UNEXPECTED.
@@ -1323,7 +1321,7 @@ The DUPLICATE_PUSH frame (type=0xE) is used by servers to indicate that an
 existing pushed resource is related to multiple client requests.
 
 The DUPLICATE_PUSH frame is always sent on a request stream.  Receipt of a
-DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
+DUPLICATE_PUSH frame on any other stream MUST be treated as a stream error
 of type H3_FRAME_UNEXPECTED.
 
 A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
@@ -1373,7 +1371,7 @@ implementation chooses.
 
 Frame types which were used in HTTP/2 where there is no corresponding HTTP/3
 frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
-sent, and receipt MAY be treated as an error of type H3_FRAME_UNEXPECTED.
+sent, and receipt MAY be treated as a stream error of type H3_FRAME_UNEXPECTED.
 
 
 # Error Handling {#errors}
