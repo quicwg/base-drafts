@@ -2176,9 +2176,10 @@ path is no longer needed (such as the case in {{off-path-forward}}).
 A sender can make exceptions for probe packets so that their loss detection is
 independent and does not unduly cause the congestion controller to reduce its
 sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
-sent, which is cancelled when the corresponding PATH_RESPONSE is received and a
-new PATH_CHALLENGE is sent when it expires.  This timer SHOULD be set as
-described in section 5.7 of {{QUIC-RECOVERY}} and MUST NOT be more aggressive.
+sent, which is cancelled if the corresponding PATH_RESPONSE is received or a
+new PATH_CHALLENGE is sent if it expires before receiving a PATH_RESPONSE.
+This timer SHOULD be set as described in section 5.3 of {{QUIC-RECOVERY}} and
+MUST NOT be more aggressive.
 
 
 ## Privacy Implications of Connection Migration {#migration-linkability}
