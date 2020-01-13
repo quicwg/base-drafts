@@ -339,7 +339,7 @@ endpoint:
 On the first RTT sample for a network path, the smoothed_rtt is set to the latest_rtt.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
-the first RTT sample for a path:
+the first RTT sample for a network path:
 
 ~~~
 smoothed_rtt = latest_rtt
