@@ -296,8 +296,8 @@ retain sufficient history is an open research question.
 
 min_rtt is the minimum RTT observed for a given path.  min_rtt is set to the
 latest_rtt on the first RTT sample, and to the lesser of min_rtt and latest_rtt
-on subsequent samples.  min_rtt is used to reject implausible RTT samples, but
-is not used directly in congestion control or loss recovery.
+on subsequent samples.  In this document, min_rtt is used by loss detection to
+reject implausibly small rtt samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
 not adjust for host delays reported by the peer.  Doing so allows the endpoint
