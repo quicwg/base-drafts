@@ -696,8 +696,9 @@ requests or pushes were accepted prior to the connection shutdown.  Endpoints
 SHOULD abruptly terminate any requests or pushes that have identifiers greater
 than or equal to the smallest identifier sent in a GOAWAY frame.
 
-Endpoints MUST NOT initiate new requests or promise new pushes on the
-connection.  Clients MAY establish a new connection to send additional requests.
+Endpoints MUST NOT initiate new requests or promise new pushes on the connection
+after receipt of a GOAWAY from the peer.  Clients MAY establish a new connection
+to send additional requests.
 
 Some requests or pushes might already be in transit. If the endpoint has already
 sent requests or promised pushes with an identifier greater than or equal to
