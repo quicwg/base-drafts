@@ -739,12 +739,12 @@ ensures that a connection can be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
-continue fulfilling pushes promised while processing outstanding requests, and
-the client can continue granting push credit as needed (see
-{{frame-max-push-id}}). A smaller value indicates the client will reject pushes
-with Push IDs greater than or equal to this value.  Like the server, the client
-MAY send subsequent GOAWAY frames so long as the specified Push ID is strictly
-smaller than all previously sent values.
+continue fulfilling pushes which have already been promised, and the client can
+continue granting push credit as needed (see {{frame-max-push-id}}). A smaller
+value indicates the client will reject pushes with Push IDs greater than or
+equal to this value.  Like the server, the client MAY send subsequent GOAWAY
+frames so long as the specified Push ID is strictly smaller than all previously
+sent values.
 
 Once all accepted requests and pushes have been processed, the endpoint can
 permit the connection to become idle, or MAY initiate an immediate closure of
