@@ -691,14 +691,14 @@ ID.  Requests or pushes with the indicated identifier or greater are rejected by
 the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
 were processed.
 
-The information in the GOAWAY enables a client and server to agree on which
-requests or pushes were accepted prior to the connection shutdown.  Endpoints
-SHOULD abruptly terminate any requests or pushes that have identifiers greater
-than or equal to the smallest identifier sent in a GOAWAY frame.
+The information in the GOAWAY frame enables a client and server to agree on
+which requests or pushes were accepted prior to the connection shutdown.
+Endpoints SHOULD abruptly terminate any requests or pushes that have identifiers
+greater than or equal to the smallest identifier sent in a GOAWAY frame.
 
 Endpoints MUST NOT initiate new requests or promise new pushes on the connection
-after receipt of a GOAWAY from the peer.  Clients MAY establish a new connection
-to send additional requests.
+after receipt of a GOAWAY frame from the peer.  Clients MAY establish a new
+connection to send additional requests.
 
 Some requests or pushes might already be in transit. If the endpoint has already
 sent requests or promised pushes with an identifier greater than or equal to
@@ -762,8 +762,8 @@ This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
 code in this frame indicates to the peer why the connection is being closed.
 See {{errors}} for error codes which can be used when closing a connection.
 
-Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
-some requests.  Including the GOAWAY frame in the same packet as the QUIC
+Before closing the connection, a GOAWAY frame MAY be sent to allow the client to
+retry some requests.  Including the GOAWAY frame in the same packet as the QUIC
 CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
