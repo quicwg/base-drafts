@@ -2178,7 +2178,7 @@ independent and does not unduly cause the congestion controller to reduce its
 sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
 sent, which is cancelled if the corresponding PATH_RESPONSE is received or a
 new PATH_CHALLENGE is sent if it expires before receiving a PATH_RESPONSE.
-This timer SHOULD be set as described in section 5.3 of {{QUIC-RECOVERY}} and
+This timer SHOULD be set as described in Section 5.3 of {{QUIC-RECOVERY}} and
 MUST NOT be more aggressive.
 
 
