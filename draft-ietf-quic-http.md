@@ -727,12 +727,14 @@ indicating different stream IDs, but MUST NOT increase the value they send in
 the last Stream ID, since clients might already have retried unprocessed
 requests on another connection.  A server that is attempting to gracefully shut
 down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the maximum value allowed by QUIC's MAX_STREAMS and SHOULD NOT increase
-the MAX_STREAMS limit thereafter.  This signals to the client that a shutdown is
-imminent and that initiating further requests is prohibited.  After allowing
-time for any in-flight requests (at least one round-trip time), the server MAY
-send another GOAWAY frame with an updated last Stream ID.  This ensures that a
-connection can be cleanly shut down without losing requests.
+set to the maximum value allowed by the concurrency control of QUIC for the
+client-initiated, bidirectional streams (see section 4.5 of {{QUIC-TRANSPORT}})
+or any value above that, and SHOULD forbid the QUIC transport from granting
+additional concurrency credits thereafter.  This signals to the client that a
+shutdown is imminent and that initiating further requests is prohibited.  After
+allowing time for any in-flight requests (at least one round-trip time), the
+server MAY send another GOAWAY frame with an updated last Stream ID.  This
+ensures that a connection can be cleanly shut down without losing requests.
 
 Once all accepted requests have been processed, the server can permit the
 connection to become idle, or MAY initiate an immediate closure of the
