@@ -618,8 +618,8 @@ initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}), all
-packets that were sent with those keys can no longer be acknowledged because
+When packet protection keys are discarded (see Section 4.10 of {{QUIC-TLS}}),
+all packets that were sent with those keys can no longer be acknowledged because
 their acknowledgements cannot be processed anymore. The sender MUST discard
 all recovery state associated with those packets and MUST remove them from
 the count of bytes in flight.
@@ -637,7 +637,7 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.9.1 of
+sooner, as soon as handshake keys are available (see Section 4.10.1 of
 {{QUIC-TLS}}).
 
 # Congestion Control {#congestion-control}
