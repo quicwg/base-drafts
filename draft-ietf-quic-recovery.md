@@ -759,11 +759,11 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 ## Pacing {#pacing}
 
-This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all in-flight packets based on input from the congestion
-controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, and a pacer might use
-the rate estimate of a rate-based controller.
+It is RECOMMENDED that a sender paces sending of all in-flight packets based
+on input from the congestion controller. For example, if a sender uses
+window-based controller, a pacer might distribute the congestion window
+over the smoothed RTT. If a sender uses a rate-based controller, a pacer
+might use the corresponding rate estimate.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
@@ -775,15 +775,28 @@ their delivery to the peer.
 
 Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or limit such bursts to the initial
-congestion window, which is recommended to be the minimum of
-10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
-max_datagram_size is the current maximum size of a datagram for the connection,
-not including UDP or IP overhead.
+Implementations SHOULD limit such bursts to the initial congestion window,
+which is recommended to be the minimum of 10 * max_datagram_size and max(2*
+max_datagram_size, 14720)), where max_datagram_size is the current maximum
+size of a datagram for the connection, not including UDP or IP overhead.
 
-As an example of a well-known and publicly available implementation of a flow
-pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
-in Linux (3.11 onwards).
+To effectively avoid creating these large packet bursts, a sender SHOULD also
+enforce a minimum time between sending the above mentioned bursts. To
+achieve high throughput while at the same time minimizing the bursts it is
+considered safe to wait for (RTT * maximum_burst_size / (cwnd * 2)) seconds
+between each burst (multiplying the congestion window by two allows the
+the rate to increase during slow-start). To achieve the pacing
+functionality, an implementation would need to arm a timer to wait for this
+time to elapse.
+
+If an implementation does not set a timer specifically for pacing sending of
+bursts, it still needs to respect the above specified time-interval and
+maximum burst-size to avoid causing excessive packet loss and congestion.
+Thus, at each opportunity to send, the implementation needs to check
+whether the required interval has elapsed and only transmit up to the maximum
+burst size at that point. These implementations are at risk of underutilizing
+the network if the next "event" comes long after the intended time-interval
+between bursts.
 
 ## Under-utilizing the Congestion Window
 
