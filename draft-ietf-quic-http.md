@@ -734,7 +734,8 @@ additional concurrency credits thereafter.  This signals to the client that a
 shutdown is imminent and that initiating further requests is prohibited.  After
 allowing time for any in-flight requests (at least one round-trip time), the
 server MAY send another GOAWAY frame with an updated last Stream ID.  This
-ensures that a connection can be cleanly shut down without losing requests.
+ensures that a connection can be cleanly shut down without causing requests to
+fail.
 
 Once all accepted requests have been processed, the server can permit the
 connection to become idle, or MAY initiate an immediate closure of the
