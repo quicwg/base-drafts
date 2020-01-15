@@ -1451,11 +1451,11 @@ client's first Initial packet.
 
 Upon first receiving an Initial or Retry packet from the server, the client uses
 the SCID supplied by the server as the DCID for subsequent packets, including
-all subsequent Handshake and 0-RTT packets. This means that a client might
-change the DCID twice during connection establishment, once in response to a
-Retry and once in response to an Initial packet from the server. Once a client
-has received an Initial packet from the server, it MUST discard any subsequent
-packet it receives with a different Source Connection ID.
+all subsequent 0-RTT packets. This means that a client might change the DCID
+twice during connection establishment, once in response to a Retry and once in
+response to an Initial packet from the server. Once a client has received an
+Initial packet from the server, it MUST discard any subsequent packet it
+receives with a different Source Connection ID.
 
 A client MUST change the DCID value it sends in response to only the first
 received Initial or Retry packet.  A server MUST set its DCID value based on the
