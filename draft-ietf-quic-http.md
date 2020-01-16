@@ -725,16 +725,18 @@ A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  A server MAY send multiple GOAWAY frames
 indicating different stream IDs, but MUST NOT increase the value they send in
 the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.  A server that is attempting to gracefully shut
-down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the maximum value currently allowed by the concurrency control of QUIC
-for the client-initiated, bidirectional streams (see Section 4.5 of
-{{QUIC-TRANSPORT}}) or any value above that, and SHOULD NOT grant any more
-concurrency credit at the transport layer thereafter.  This signals to the
-client that a shutdown is imminent and that initiating further requests is
-prohibited.  After allowing time for any in-flight requests (at least one
-round-trip time), the server MAY send another GOAWAY frame with an updated last
-Stream ID.  This ensures that a connection can be cleanly shut down without
+requests on another connection.
+
+A server that is attempting to gracefully shut down a connection SHOULD send an
+initial GOAWAY frame with the last Stream ID set to the maximum value currently
+allowed by the concurrency control of QUIC for the client-initiated,
+bidirectional streams (see Section 4.5 of {{QUIC-TRANSPORT}}) or any value above
+that.  This GOAWAY frame signals to the client that shutdown is imminent and
+that initiating further requests is prohibited.  In addition to sending this
+GOAWAY frame, the server SHOULD stop granting additional concurrency credits at
+the transport layer.  After allowing time for any in-flight requests (at least
+one round-trip time), the server MAY send another GOAWAY frame with an updated
+last Stream ID.  This ensures that a connection can be cleanly shut down without
 causing requests to fail.
 
 Once all accepted requests have been processed, the server can permit the
