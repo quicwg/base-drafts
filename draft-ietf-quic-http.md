@@ -520,9 +520,9 @@ The following pseudo-header fields are defined for requests:
     accurately, this pseudo-header field MUST be omitted when
     translating from an HTTP/1.1 request that has a request target in
     origin or asterisk form (see [RFC7230], Section 5.3).  Clients
-    that generate HTTP/2 requests directly SHOULD use the ":authority"
+    that generate HTTP/3 requests directly SHOULD use the ":authority"
     pseudo-header field instead of the Host header field.  An
-    intermediary that converts an HTTP/2 request to HTTP/1.1 MUST
+    intermediary that converts an HTTP/3 request to HTTP/1.1 MUST
     create a Host header field if one is not present in a request by
     copying the value of the ":authority" pseudo-header field.
 
