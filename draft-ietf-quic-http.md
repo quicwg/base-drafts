@@ -376,6 +376,10 @@ A client MUST send only a single request on a given stream. A server sends zero
 or more non-final HTTP responses on the same stream as the request, followed by
 a single final HTTP response, as detailed below.
 
+On a given stream, receipt of multiple requests or receipt of an additional HTTP
+response following a final HTTP response MUST be treated as malformed
+({{malformed}}).
+
 An HTTP message (request or response) consists of:
 
 1. the message header (see Section 3.2 of {{!RFC7230}}), sent as a single
@@ -621,8 +625,8 @@ permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 
 A malformed request or response is one that is an otherwise valid sequence of
 frames but is invalid due to the presence of prohibited header fields, the
-absence of mandatory header fields, or the inclusion of uppercase header field
-names.
+absence of mandatory header fields, an invalid sequence of HTTP messages, or the
+inclusion of uppercase header field names.
 
 A request or response that includes a payload body can include a
 `content-length` header field.  A request or response is also malformed if the
