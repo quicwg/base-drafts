@@ -417,10 +417,10 @@ considered invalid.
 
 An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
 After sending a request, a client MUST close the stream for sending.  Unless
-using the CONNECT method (see {{the-connect-method}}), clients MUST NOT make
-stream closure dependent on receiving a response to their request. After sending
-a final response, the server MUST close the stream for sending. At this point,
-the QUIC stream is fully closed.
+using the CONNECT method (see {{connect}}), clients MUST NOT make stream closure
+dependent on receiving a response to their request. After sending a final
+response, the server MUST close the stream for sending. At this point, the QUIC
+stream is fully closed.
 
 When a stream is closed, this indicates the end of an HTTP message. Because some
 messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
@@ -457,15 +457,103 @@ field names MUST be converted to lowercase prior to their encoding.  A request
 or response containing uppercase header field names MUST be treated as
 malformed ({{malformed}}).
 
+Like HTTP/2, HTTP/3 does not use the Connection header field to indicate
+connection-specific header fields; in this protocol, connection- specific
+metadata is conveyed by other means.  An endpoint MUST NOT generate an HTTP/3
+message containing connection-specific header fields; any message containing
+connection-specific header fields MUST be treated as malformed ({{malformed}}).
+
+The only exception to this is the TE header field, which MAY be present in an
+HTTP/3 request; when it is, it MUST NOT contain any value other than "trailers".
+
+This means that an intermediary transforming an HTTP/1.x message to HTTP/3 will
+need to remove any header fields nominated by the Connection header field, along
+with the Connection header field itself.  Such intermediaries SHOULD also remove
+other connection-specific header fields, such as Keep-Alive, Proxy-Connection,
+Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection
+header field.
+
+#### Pseudo-Header Fields
+
 As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
-the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
-header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2 of {{!HTTP2}} also apply to HTTP/3.  Messages which
-are considered malformed under these restrictions are handled as described in
-{{malformed}}.
+the status code for the response.
+
+Pseudo-header fields are not HTTP header fields.  Endpoints MUST NOT generate
+pseudo-header fields other than those defined in this document, except as
+negotiated via an extension; see {{extensions}}.
+
+Pseudo-header fields are only valid in the context in which they are defined.
+Pseudo-header fields defined for requests MUST NOT appear in responses;
+pseudo-header fields defined for responses MUST NOT appear in requests.
+Pseudo-header fields MUST NOT appear in trailers.  Endpoints MUST treat a
+request or response that contains undefined or invalid pseudo-header fields as
+malformed ({{malformed}}).
+
+All pseudo-header fields MUST appear in the header block before regular header
+fields.  Any request or response that contains a pseudo-header field that
+appears in a header block after a regular header field MUST be treated as
+malformed ({{malformed}}).
+
+The following pseudo-header fields are defined for requests:
+
+  ":method":
+  : Contains the HTTP method ({{!RFC7231}}, Section 4)
+
+  ":scheme":
+  : Contains the scheme portion of the target URI ({{!RFC3986}}, Section 3.1)
+
+    ":scheme" is not restricted to "http" and "https" schemed URIs.  A
+    proxy or gateway can translate requests for non-HTTP schemes,
+    enabling the use of HTTP to interact with non-HTTP services.
+
+  ":authority":
+
+  : Contains the authority portion of the target URI ([RFC3986], Section 3.2).
+    The authority MUST NOT include the deprecated "userinfo" subcomponent for
+    "http" or "https" schemed URIs.
+
+  : To ensure that the HTTP/1.1 request line can be reproduced
+    accurately, this pseudo-header field MUST be omitted when
+    translating from an HTTP/1.1 request that has a request target in
+    origin or asterisk form (see [RFC7230], Section 5.3).  Clients
+    that generate HTTP/2 requests directly SHOULD use the ":authority"
+    pseudo-header field instead of the Host header field.  An
+    intermediary that converts an HTTP/2 request to HTTP/1.1 MUST
+    create a Host header field if one is not present in a request by
+    copying the value of the ":authority" pseudo-header field.
+
+  ":path":
+
+  : Contains the path and query parts of the target URI (the "path-absolute"
+    production and optionally a '?' character followed by the "query"
+    production (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk
+    form includes the value '*' for the ":path" pseudo-header field.
+
+  : This pseudo-header field MUST NOT be empty for "http" or "https"
+    URIs; "http" or "https" URIs that do not contain a path component
+    MUST include a value of '/'.  The exception to this rule is an
+    OPTIONS request for an "http" or "https" URI that does not include
+    a path component; these MUST include a ":path" pseudo-header field
+    with a value of '*' (see [RFC7230], Section 5.3.4).
+
+All HTTP/3 requests MUST include exactly one valid value for the ":method",
+":scheme", and ":path" pseudo-header fields, unless it is a CONNECT request
+({{connect}}).  An HTTP request that omits mandatory pseudo-header fields is
+malformed ({{malformed}}).
+
+HTTP/3 does not define a way to carry the version identifier that is included in
+the HTTP/1.1 request line.
+
+For responses, a single ":status" pseudo-header field is defined that carries
+the HTTP status code field (see [RFC7231], Section 6).  This pseudo-header field
+MUST be included in all responses; otherwise, the response is malformed (Section
+8.1.2.6).
+
+HTTP/3 does not define a way to carry the version or reason phrase that is
+included in an HTTP/1.1 status line.
+
+#### Header Compression
 
 HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
@@ -476,6 +564,8 @@ MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
 header fields, these MUST be concatenated before being passed into a non-HTTP/2,
 non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
+
+#### Header Size Constraints
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
@@ -550,7 +640,7 @@ attacks against HTTP; they are deliberately strict because being permissive can
 expose implementations to these vulnerabilities.
 
 
-## The CONNECT Method
+## The CONNECT Method {#connect}
 
 The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
 HTTP proxies to establish a TLS session with an origin server for the purposes
