@@ -506,7 +506,7 @@ The following pseudo-header fields are defined for requests:
   ":scheme":
   : Contains the scheme portion of the target URI ({{!RFC3986}}, Section 3.1)
 
-    ":scheme" is not restricted to "http" and "https" schemed URIs.  A
+  : ":scheme" is not restricted to "http" and "https" schemed URIs.  A
     proxy or gateway can translate requests for non-HTTP schemes,
     enabling the use of HTTP to interact with non-HTTP services.
 
