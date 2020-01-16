@@ -1381,8 +1381,11 @@ sent, and receipt MAY be treated as an error of type H3_FRAME_UNEXPECTED.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-{{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
-connection error.
+{{QUIC-TRANSPORT}}.
+
+An endpoint MAY choose to treat a stream error as a connection error under
+certain circumstances.  Implementations need to consider the impact on
+outstanding requests before making this choice.
 
 Because new error codes can be defined without negotiation (see {{extensions}}),
 use of an error code in an unexpected context or receipt of an unknown error
