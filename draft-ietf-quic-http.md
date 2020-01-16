@@ -728,7 +728,7 @@ the last Stream ID, since clients might already have retried unprocessed
 requests on another connection.  A server that is attempting to gracefully shut
 down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
 set to the maximum value allowed by the concurrency control of QUIC for the
-client-initiated, bidirectional streams (see section 4.5 of {{QUIC-TRANSPORT}})
+client-initiated, bidirectional streams (see Section 4.5 of {{QUIC-TRANSPORT}})
 or any value above that, and SHOULD NOT grant any more concurrency credit at the
 transport layer thereafter.  This signals to the client that a shutdown is
 imminent and that initiating further requests is prohibited.  After allowing
