@@ -376,6 +376,11 @@ A client MUST send only a single request on a given stream. A server sends zero
 or more non-final HTTP responses on the same stream as the request, followed by
 a single final HTTP response, as detailed below.
 
+Pushed responses are sent on a server-initiated unidirectional QUIC stream (see
+{{push-streams}}).  A server sends zero or more non-final HTTP responses,
+followed by a single final HTTP response, in the same manner as a standard
+response.  Push is described in more detail in {{server-push}}.
+
 On a given stream, receipt of multiple requests or receipt of an additional HTTP
 response following a final HTTP response MUST be treated as malformed
 ({{malformed}}).
@@ -397,7 +402,7 @@ connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.
+details.  These frames are not permitted in pushed responses.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
@@ -422,12 +427,12 @@ H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
 HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
 considered invalid.
 
-An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client MUST close the stream for sending.  Unless
-using the CONNECT method (see {{connect}}), clients MUST NOT make stream closure
-dependent on receiving a response to their request. After sending a final
-response, the server MUST close the stream for sending. At this point, the QUIC
-stream is fully closed.
+An HTTP request/response exchange fully consumes a client-initiated
+bidirectional QUIC stream. After sending a request, a client MUST close the
+stream for sending.  Unless using the CONNECT method (see {{connect}}), clients
+MUST NOT make stream closure dependent on receiving a response to their request.
+After sending a final response, the server MUST close the stream for sending. At
+this point, the QUIC stream is fully closed.
 
 When a stream is closed, this indicates the end of an HTTP message. Because some
 messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
@@ -465,7 +470,7 @@ or response containing uppercase header field names MUST be treated as
 malformed ({{malformed}}).
 
 Like HTTP/2, HTTP/3 does not use the Connection header field to indicate
-connection-specific header fields; in this protocol, connection- specific
+connection-specific header fields; in this protocol, connection-specific
 metadata is conveyed by other means.  An endpoint MUST NOT generate an HTTP/3
 message containing connection-specific header fields; any message containing
 connection-specific header fields MUST be treated as malformed ({{malformed}}).
@@ -544,10 +549,10 @@ The following pseudo-header fields are defined for requests:
     a path component; these MUST include a ":path" pseudo-header field
     with a value of '*' (see [RFC7230], Section 5.3.4).
 
-All HTTP/3 requests MUST include exactly one valid value for the ":method",
-":scheme", and ":path" pseudo-header fields, unless it is a CONNECT request
-({{connect}}).  An HTTP request that omits mandatory pseudo-header fields is
-malformed ({{malformed}}).
+All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
+and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+An HTTP request that omits mandatory pseudo-header fields or contains invalid
+values for those fields is malformed ({{malformed}}).
 
 HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
@@ -624,9 +629,13 @@ permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 ### Malformed Requests and Responses {#malformed}
 
 A malformed request or response is one that is an otherwise valid sequence of
-frames but is invalid due to the presence of prohibited header fields, the
-absence of mandatory header fields, an invalid sequence of HTTP messages, or the
-inclusion of uppercase header field names.
+frames but is invalid due to:
+
+- the presence of prohibited header fields or pseudo-header fields
+- the absence of mandatory pseudo-header fields
+- invalid values for pseudo-header fields
+- an invalid sequence of HTTP messages, or
+- the inclusion of uppercase header field names.
 
 A request or response that includes a payload body can include a
 `content-length` header field.  A request or response is also malformed if the
