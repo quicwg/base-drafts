@@ -2176,8 +2176,9 @@ path is no longer needed (such as the case in {{off-path-forward}}).
 A sender can make exceptions for probe packets so that their loss detection is
 independent and does not unduly cause the congestion controller to reduce its
 sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
-sent, which is cancelled if the corresponding PATH_RESPONSE is received or a
-new PATH_CHALLENGE is sent if it expires before receiving a PATH_RESPONSE.
+sent, which is cancelled if the corresponding PATH_RESPONSE is received. If
+the timer fires before the PATH_RESPONSE is received, the endpoint might send a
+new PATH_CHALLENGE, and restart the timer for a longer period of time. 
 This timer SHOULD be set as described in Section 5.3 of {{QUIC-RECOVERY}} and
 MUST NOT be more aggressive.
 
