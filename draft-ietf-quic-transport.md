@@ -2253,13 +2253,13 @@ IPv6) to allow clients to pick the one most suited to their network attachment.
 
 Once the handshake is confirmed, the client SHOULD select one of the two
 server's preferred addresses and initiate path validation (see
-{{migrate-validate}}) of that address using the connection ID provided in the
-preferred_address transport parameter.
+{{migrate-validate}}) of that address using an active unused connection ID that
+it retains.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
-future packets to the new server address using the new connection ID and
-discontinue use of the old server address.  If path validation fails, the client
-MUST continue sending all future packets to the server's original IP address.
+future packets to the new server and discontinue use of the old server address.
+If path validation fails, the client MUST continue sending all future packets to
+the server's original IP address.
 
 
 ### Responding to Connection Migration
