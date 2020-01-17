@@ -3512,6 +3512,9 @@ Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the Path Maximum Transmission Unit (PMTU) supports the size that
 it chooses.
 
+UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
+{{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
+
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to an Initial packet it receives from a client if the UDP datagram is
 smaller than 1200 bytes. It MUST NOT send any other frame type in response, or
