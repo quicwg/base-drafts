@@ -3241,15 +3241,14 @@ received packets in preference to packets received in the past.
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
-An endpoint measures the delays intentionally introduced between when an
-ack-eliciting packet is received and the corresponding acknowledgment is sent.
-The endpoint encodes this delay for the largest acknowledged packet in the Ack
-Delay field of an ACK frame (see {{frame-ack}}). This allows the receiver of the
-ACK to adjust for any intentional delays, which is important for getting a
-better estimate of the path RTT when acknowledgments are delayed. A packet might
-be held in the OS kernel or elsewhere on the host before being processed.  An
-endpoint MUST NOT include delays that is does not control when populating the
-Ack Delay field in an ACK frame.
+An endpoint measures the delays intentionally introduced between when the largest
+packet is received and an acknowledgment is sent. The endpoint encodes this delay
+in the Ack Delay field of an ACK frame (see {{frame-ack}}). This allows the
+receiver of the ACK to adjust for any intentional delays, which is important for
+getting a better estimate of the path RTT when acknowledgments are delayed.
+A packet might be held in the OS kernel or elsewhere on the host before being
+processed.  An endpoint MUST NOT include delays that is does not control when
+populating the Ack Delay field in an ACK frame.
 
 ### ACK Frames and Packet Protection
 
