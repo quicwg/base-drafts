@@ -642,20 +642,22 @@ sooner, as soon as handshake keys are available (see Section 4.10.1 of
 
 # Congestion Control {#congestion-control}
 
-QUIC's congestion control is based on TCP NewReno {{?RFC6582}}.  NewReno is a
-congestion window based congestion control.  QUIC specifies the congestion
-window in bytes rather than packets due to finer control and the ease of
-appropriate byte counting {{?RFC3465}}.
+This document specifies a Reno congestion controller for QUIC {{?RFC6582}}.
 
-QUIC hosts MUST NOT send packets if they would increase bytes_in_flight (defined
-in {{vars-of-interest}}) beyond the available congestion window, unless the
-packet is a probe packet sent after a PTO timer expires, as described in
-{{pto}}.
+The signals QUIC provides for congestion control are generic and are designed to
+support different algorithms. Endpoints can unilaterally choose a different
+algorithm to use, such as Cubic {{?RFC8312}}.
 
-Implementations MAY use other congestion control algorithms, such as
-Cubic {{?RFC8312}}, and endpoints MAY use different algorithms from one another.
-The signals QUIC provides for congestion control are generic and are designed
-to support different algorithms.
+If an endpoint uses a different controller than that specified in this document,
+the chosen controller MUST conform to the congestion control guidelines
+specified in Section 3.1 of {{!RFC8085}}.
+
+The algorithm in this document specifies and uses the controller's congestion
+window in bytes.
+
+An endpoint MUST NOT send a packet if it would cause bytes_in_flight (see
+{{vars-of-interest}}) to be larger than the congestion window, unless the packet
+is sent on a PTO timer expiration (see {{pto}}).
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -897,8 +899,7 @@ time_sent:
 ## Constants of interest {#ld-consts-of-interest}
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
-common practice.  Some may need to be changed or negotiated in order to better
-suit a variety of environments.
+common practice.
 
 kPacketThreshold:
 : Maximum reordering in packets before packet threshold loss detection
@@ -1258,9 +1259,8 @@ in {{congestion-control}}.
 
 ## Constants of interest {#cc-consts-of-interest}
 
-Constants used in congestion control are based on a combination of RFCs,
-papers, and common practice.  Some may need to be changed or negotiated
-in order to better suit a variety of environments.
+Constants used in congestion control are based on a combination of RFCs, papers,
+and common practice.
 
 kInitialWindow:
 : Default limit on the initial amount of data in flight, in bytes.  Taken from
