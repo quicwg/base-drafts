@@ -3006,6 +3006,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
+| 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
@@ -3354,6 +3355,8 @@ containing that information is acknowledged.
 
 * PING and PADDING frames contain no information, so lost PING or PADDING frames
   do not require repair.
+
+* The HANDSHAKE_DONE frame MUST be retransmitted until it is acknowledged.
 
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
@@ -5667,6 +5670,18 @@ sent using an 1-RTT packet ({{QUIC-TLS}}, Section 4).  When an application
 wishes to abandon a connection during the handshake, an endpoint can send a
 CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
 alert; see {{?TLS13}}) in an Initial or a Handshake packet.
+
+
+## HANDSHAKE_DONE frame {#frame-handshake-done}
+
+The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
+the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
+fields.
+
+This frame can only be sent by the server. Servers MUST NOT send a
+HANDSHAKE_DONE frame before completing the handshake.  A server MUST treat
+receipt of a HANDSHAKE_DONE frame as a connection error of type
+PROTOCOL_VIOLATION.
 
 
 ## Extension Frames
