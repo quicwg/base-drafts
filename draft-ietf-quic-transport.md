@@ -4637,7 +4637,7 @@ preferred_address (0x000d):
   network byte order. The Connection ID field and the Stateless Reset Token
   field contain the alternative connection ID that is assigned the sequence
   number of one ({{issue-cid}}). Having them bundled with the preferred address
-  ensures that there would be at least one unused active connection ID when the
+  ensures that there will be at least one unused active connection ID when the
   client initiates migration to the preferred address. The CID Length field
   contains the length of the Connection ID field.
 
