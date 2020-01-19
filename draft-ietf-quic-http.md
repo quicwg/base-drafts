@@ -1450,11 +1450,11 @@ H3_REQUEST_CANCELLED (0x10C):
 H3_REQUEST_INCOMPLETE (0x10D):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_CONNECT_ERROR (0x10F):
+H3_CONNECT_ERROR (0x10E):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
-H3_VERSION_FALLBACK (0x110):
+H3_VERSION_FALLBACK (0x10F):
 : The requested operation cannot be served over HTTP/3.  The peer should
   retry over HTTP/1.1.
 
@@ -1708,8 +1708,8 @@ The entries in the {{iana-error-table}} are registered by this document.
 | H3_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
 | H3_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
-| H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
+| H3_CONNECT_ERROR                  | 0x010E     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| H3_VERSION_FALLBACK               | 0x010F     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
