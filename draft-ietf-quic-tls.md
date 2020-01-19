@@ -1223,11 +1223,15 @@ off-path attackers' ability to send valid Retry packets.
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
 AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
 
-- The secret key, K, is 128 bits equal to 0xf5ed4642e0e4c8d878bbbc8a828821c9.
-- The nonce, N, is 96 bits all set to zero.
+- The secret key, K, is 128 bits equal to 0x4d32ecdb2a2133c841e4043df27d4430.
+- The nonce, N, is 96 bits equal to 0x4d1611d05513a552c587d575.
 - The plaintext, P, is empty.
 - The associated data, A, is the contents of the Retry Pseudo-Packet, as
   illustrated in {{retry-pseudo}}:
+
+The secret key and the nonce are values derived by calling HKDF-Expand-Label
+using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
+secret, with labels being "quic key" and "quic iv".
 
 ~~~
  0                   1                   2                   3
