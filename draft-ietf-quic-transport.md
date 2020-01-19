@@ -2264,7 +2264,7 @@ When the client finishes migrating to the preferred address, it retires the
 connection ID that was used for the original path ({{retiring-cids}}).
 Similarly, a client that continues using the original server address SHOULD
 retire the connection ID provided by the preferred_address transport parameter.
-Retirement of either of these connection IDs notifies the server the server
+Retirement of either of these connection IDs notifies the server of the
 address the client has chosen.
 
 ### Responding to Connection Migration
