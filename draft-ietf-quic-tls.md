@@ -1231,7 +1231,7 @@ AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
 
 The secret key and the nonce are values derived by calling HKDF-Expand-Label
 using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
-secret, with labels being "quic key" and "quic iv".
+secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
 
 ~~~
  0                   1                   2                   3
