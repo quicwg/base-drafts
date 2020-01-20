@@ -2259,16 +2259,12 @@ validation (see {{migrate-validate}}) of that address using an active unused
 connection ID.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
-future packets to the new server and discontinue use of the old server address.
-If path validation fails, the client MUST continue sending all future packets to
-the server's original IP address.
-
-When the client finishes migrating to the preferred address, it retires the
-connection ID that was used for the original path ({{retiring-cids}}).
-Similarly, a client that continues using the original server address SHOULD
-retire the connection ID provided by the preferred_address transport parameter.
-Retirement of either of these connection IDs notifies the server of the
-address the client has chosen.
+future packets to the new server and discontinue use of the old server address,
+and retire the connection ID that was used for the original path
+({{retiring-cids}}).  If path validation fails, or if the client decides not to
+migrate to the preferred address, it MUST continue sending all future packets to
+the server's original IP address, and retire the connection ID provided by the
+preferred_address transport parameter.  Retirement of either of these connection IDs notifies the server of the address the client has chosen.
 
 ### Responding to Connection Migration
 
