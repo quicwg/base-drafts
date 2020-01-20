@@ -1461,9 +1461,9 @@ H3_VERSION_FALLBACK (0x110):
   retry over HTTP/1.1.
 
 Error codes of the format `0x1f * N + 0x21` for integer values of N are reserved
-to exercise the requirement that unknown error codes be ignored
-({{extensions}}). Implementations SHOULD select an error code from this space
-with some probability when they would have sent H3_NO_ERROR.
+to exercise the requirement that unknown error codes be treated as equivalent to
+H3_NO_ERROR ({{extensions}}). Implementations SHOULD select an error code from
+this space with some probability when they would have sent H3_NO_ERROR.
 
 # Extensions to HTTP/3 {#extensions}
 
