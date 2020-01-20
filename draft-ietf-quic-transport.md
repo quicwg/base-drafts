@@ -2194,11 +2194,13 @@ linked by any other entity.
 At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
-An endpoint MUST use a new connection ID if it initiates connection migration as
-described in {{initiating-migration}} or probes a new network path as described
-in {{probing}}.  An endpoint MUST use a new connection ID in response to a
-change in the address of a peer if the packet with the new peer address uses an
-active connection ID that has not been previously used by the peer.
+An endpoint MUST use a new connection ID when it initiates connection migration
+as described in {{initiating-migration}} or {{preferred-address}}, or when it
+probes a new network path as described in {{probing}}, and MUST NOT reuse
+connection IDs used on the existing network paths for packets being sent on the
+new path.  An endpoint MUST use a new connection ID in response to a change in
+the address of a peer if the packet with the new peer address uses an active
+connection ID that has not been previously used by the peer.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
