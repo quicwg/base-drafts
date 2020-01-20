@@ -732,7 +732,7 @@ initial GOAWAY frame with the last Stream ID set to the maximum possible value
 for a client-initiated, bidirectional stream (i.e. 2^62-4 in case of QUIC
 version 1).  This GOAWAY frame signals to the client that shutdown is imminent
 and that initiating further requests is prohibited.  After allowing time for any
-in-flight requests to reach the server, the server MAY send another GOAWAY frame
+in-flight requests to reach the server, the server can send another GOAWAY frame
 indicating which requests it will accept before the end of the connection. This
 ensures that a connection can be cleanly shut down without causing requests to
 fail.
