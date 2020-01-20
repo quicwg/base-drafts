@@ -3242,7 +3242,7 @@ received packets in preference to packets received in the past.
 ### Measuring and Reporting Host Delay {#host-delay}
 
 An endpoint measures the delays intentionally introduced between when the
-largest packet is received and an acknowledgment is sent. The endpoint encodes
+packet with the largest packet number is received and an acknowledgment is sent. The endpoint encodes
 this delay in the Ack Delay field of an ACK frame (see {{frame-ack}}). This
 allows the receiver of the ACK to adjust for any intentional delays, which is
 important for getting a better estimate of the path RTT when acknowledgments are
