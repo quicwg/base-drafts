@@ -402,7 +402,9 @@ connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.  These frames are not permitted in pushed responses.
+details.  These frames are not permitted in pushed responses; a pushed response
+is malformed ({{malformed}}) if it includes PUSH_PROMISE or DUPLICATE_PUSH
+frames.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
@@ -510,44 +512,45 @@ malformed ({{malformed}}).
 The following pseudo-header fields are defined for requests:
 
   ":method":
+
   : Contains the HTTP method ({{!RFC7231}}, Section 4)
 
   ":scheme":
+
   : Contains the scheme portion of the target URI ({{!RFC3986}}, Section 3.1)
 
-  : ":scheme" is not restricted to "http" and "https" schemed URIs.  A
-    proxy or gateway can translate requests for non-HTTP schemes,
-    enabling the use of HTTP to interact with non-HTTP services.
+  : ":scheme" is not restricted to "http" and "https" schemed URIs.  A proxy or
+    gateway can translate requests for non-HTTP schemes, enabling the use of
+    HTTP to interact with non-HTTP services.
 
   ":authority":
 
-  : Contains the authority portion of the target URI ([RFC3986], Section 3.2).
+  : Contains the authority portion of the target URI (Section 3.2 of [RFC3986]).
     The authority MUST NOT include the deprecated "userinfo" subcomponent for
     "http" or "https" schemed URIs.
 
-  : To ensure that the HTTP/1.1 request line can be reproduced
-    accurately, this pseudo-header field MUST be omitted when
-    translating from an HTTP/1.1 request that has a request target in
-    origin or asterisk form (see [RFC7230], Section 5.3).  Clients
-    that generate HTTP/3 requests directly SHOULD use the ":authority"
-    pseudo-header field instead of the Host header field.  An
-    intermediary that converts an HTTP/3 request to HTTP/1.1 MUST
-    create a Host header field if one is not present in a request by
-    copying the value of the ":authority" pseudo-header field.
+  : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
+    pseudo-header field MUST be omitted when translating from an HTTP/1.1
+    request that has a request target in origin or asterisk form (see Section
+    5.3 of [RFC7230]).  Clients that generate HTTP/3 requests directly SHOULD
+    use the ":authority" pseudo-header field instead of the Host header field.
+    An intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a
+    Host header field if one is not present in a request by copying the value of
+    the ":authority" pseudo-header field.
 
   ":path":
 
   : Contains the path and query parts of the target URI (the "path-absolute"
-    production and optionally a '?' character followed by the "query"
-    production (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk
-    form includes the value '*' for the ":path" pseudo-header field.
+    production and optionally a '?' character followed by the "query" production
+    (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk form
+    includes the value '*' for the ":path" pseudo-header field.
 
-  : This pseudo-header field MUST NOT be empty for "http" or "https"
-    URIs; "http" or "https" URIs that do not contain a path component
-    MUST include a value of '/'.  The exception to this rule is an
-    OPTIONS request for an "http" or "https" URI that does not include
-    a path component; these MUST include a ":path" pseudo-header field
-    with a value of '*' (see [RFC7230], Section 5.3.4).
+  : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
+    "http" or "https" URIs that do not contain a path component MUST include a
+    value of '/'.  The exception to this rule is an OPTIONS request for an
+    "http" or "https" URI that does not include a path component; these MUST
+    include a ":path" pseudo-header field with a value of '*' (see Section 5.3.4
+    of [RFC7230]).
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
@@ -558,9 +561,9 @@ HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
 For responses, a single ":status" pseudo-header field is defined that carries
-the HTTP status code field (see [RFC7231], Section 6).  This pseudo-header field
-MUST be included in all responses; otherwise, the response is malformed (Section
-8.1.2.6).
+the HTTP status code field (see Section 6 of [RFC7231]).  This pseudo-header
+field MUST be included in all responses; otherwise, the response is malformed
+({{malformed}}).
 
 HTTP/3 does not define a way to carry the version or reason phrase that is
 included in an HTTP/1.1 status line.
@@ -631,9 +634,10 @@ permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 A malformed request or response is one that is an otherwise valid sequence of
 frames but is invalid due to:
 
-- the presence of prohibited header fields or pseudo-header fields
-- the absence of mandatory pseudo-header fields
-- invalid values for pseudo-header fields
+- the presence of prohibited header fields or pseudo-header fields,
+- the absence of mandatory pseudo-header fields,
+- invalid values for pseudo-header fields,
+- pseudo-header fields after header fields,
 - an invalid sequence of HTTP messages, or
 - the inclusion of uppercase header field names.
 
