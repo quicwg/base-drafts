@@ -2253,9 +2253,10 @@ transport parameter in the TLS handshake.
 Servers MAY communicate a preferred address of each address family (IPv4 and
 IPv6) to allow clients to pick the one most suited to their network attachment.
 
-Once the handshake is confirmed, the client SHOULD select one of the two
-server's preferred addresses and initiate path validation (see
-{{migrate-validate}}) of that address using an active unused connection ID.
+Once the handshake is confirmed (see Section 4.1.2 of {{QUIC-TLS}}), the client
+SHOULD select one of the two server's preferred addresses and initiate path
+validation (see {{migrate-validate}}) of that address using an active unused
+connection ID.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server and discontinue use of the old server address.
