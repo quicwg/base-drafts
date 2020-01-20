@@ -3247,7 +3247,7 @@ this delay in the Ack Delay field of an ACK frame (see {{frame-ack}}). This
 allows the receiver of the ACK to adjust for any intentional delays, which is
 important for getting a better estimate of the path RTT when acknowledgments are
 delayed. A packet might be held in the OS kernel or elsewhere on the host before
-being processed.  An endpoint MUST NOT include delays that is does not control
+being processed.  An endpoint MUST NOT include delays that it does not control
 when populating the Ack Delay field in an ACK frame.
 
 ### ACK Frames and Packet Protection
