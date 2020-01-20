@@ -1036,9 +1036,9 @@ be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, each connection ID MUST be used on
-packets sent from only one local address.  An endpoint that migrates away from a
-local address SHOULD retire all connection IDs used on that address once it no
-longer plans to use that address.
+packets sent from only one local address, and MUST NOT be used across multiple
+paths that are opened intentionally.  An endpoint SHOULD retire connection IDs
+as they become unusable.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
