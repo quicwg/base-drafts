@@ -316,7 +316,7 @@ mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for ACK delays. ACK delays are communicated in the ACK frame as an ack_delay
-field right shiften by the ack_delay_exponent transport parameter.  For packets
+field adjusted by the ack_delay_exponent transport parameter.  For packets
 sent in the ApplicationData packet number space, a peer limits any delay in
 sending an acknowledgement for an ack-eliciting packet to no greater than the
 value it advertised in the max_ack_delay transport parameter.  Consequently,
