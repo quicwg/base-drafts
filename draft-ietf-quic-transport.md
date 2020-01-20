@@ -2264,7 +2264,8 @@ and retire the connection ID that was used for the original path
 ({{retiring-cids}}).  If path validation fails, or if the client decides not to
 migrate to the preferred address, it MUST continue sending all future packets to
 the server's original IP address, and retire the connection ID provided by the
-preferred_address transport parameter.  Retirement of either of these connection IDs notifies the server of the address the client has chosen.
+preferred_address transport parameter.  Retirement of either of these connection
+IDs notifies the server of the address the client has chosen.
 
 ### Responding to Connection Migration
 
