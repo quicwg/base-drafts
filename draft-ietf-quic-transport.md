@@ -6315,6 +6315,29 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-24
+
+- Added HANDSHAKE_DONE to signal handshake confirmation (#2863, #3142, #3145)
+- Add integrity check to Retry packets (#3014, #3274, #3120)
+- Specify handling of reordered NEW_CONNECTION_ID frames (#3194, #3202)
+- Require checking of sequence numbers in RETIRE_CONNECTION_ID (#3037, #3036)
+- active_connection_id_limit is enforced (#3193, #3197, #3200, #3201)
+- Correct overflow in packet number decode algorithm (#3187, #3188)
+- Allow use of CRYPTO_BUFFER_EXCEEDED for CRYPTO frame errors (#3258, #3186)
+- Define applicability and scope of NEW_TOKEN (#3150, #3152, #3155, #3156)
+- Tokens from Retry and NEW_TOKEN must be differentiated (#3127, #3128)
+- Allow CONNECTION_CLOSE in response to invalid token (#3168, #3107)
+- Treat an invalid CONNECTION_CLOSE as an invalid frame (#2475, #3230, #3231)
+- Throttle when sending CONNECTION_CLOSE after discarding state (#3095, #3157)
+- Application-variant of CONNECTION_CLOSE can only be sent in 0-RTT or 1-RTT
+  packets (#3158, #3164)
+- Advise sending while blocked to avoid idle timeout (#2744, #3266)
+- Define error codes for invalid frames (#3027, #3042)
+- Idle timeout is symmetric (#2602, #3099)
+- Prohibit IP fragmentation (#3243, #3280)
+- Define the use of provisional registration for all registries (#3109, #3020,
+  #3102, #3170)
+
 ## Since draft-ietf-quic-transport-23
 
 - Allow ClientHello to span multiple packets (#2928, #3045)
