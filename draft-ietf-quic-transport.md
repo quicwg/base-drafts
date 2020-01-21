@@ -3618,10 +3618,10 @@ algorithm determines that the quoted packet has actually been lost.
 
 ## Datagram Packetization Layer PMTU Discovery
 
-Section 6.4 of {{!DPLPMTUD}} provides considerations for implementing Datagram
+Section 6.3 of {{!DPLPMTUD}} provides considerations for implementing Datagram
 Packetization Layer PMTUD (DPLPMTUD) with QUIC.
 
-When implementing the algorithm in Section 5.3 of {{!DPLPMTUD}}, the initial
+When implementing the algorithm in Section 5 of {{!DPLPMTUD}}, the initial
 value of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size (1232
 bytes for IPv6 and 1252 bytes for IPv4).
 
