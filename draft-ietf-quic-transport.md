@@ -196,6 +196,12 @@ Ack-eliciting Packet:
   CONNECTION_CLOSE. These cause a recipient to send an acknowledgment (see
   {{sending-acknowledgements}}).
 
+Out-of-order packet:
+
+: A packet that does not increase the largest received packet number for its
+  packet number space by exactly one. A packet can arrive out of order
+  if it is delayed or if earlier packets are lost or delayed.
+
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating,
@@ -790,13 +796,11 @@ flow control limits.
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
-control limits.  These frames are expected to be sent infrequently in common
-cases, but they are considered useful for debugging and monitoring purposes.
-
-A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED or DATA_BLOCKED frames
-for the same data limit, unless the original frame is determined to be lost.
-Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be sent after the data
-limit is increased.
+control limits.  If a sender is blocked for a period longer than the idle
+timeout ({{idle-timeout}}), the connection might be closed even when data is
+available for transmission.  To keep the connection from closing, a sender that
+is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 
 ## Flow Credit Increments {#fc-credit}
@@ -1745,7 +1749,8 @@ its Initial packet.  Including a token might allow the server to validate the
 client address without an additional round trip.  A client MUST NOT include a
 token that is not applicable to the server that it is connecting to, unless the
 client has the knowledge that the server that issued the token and the server
-the client is connecting to are jointly managing the tokens.
+the client is connecting to are jointly managing the tokens.  A client MAY use a
+token from any previous connection to that server.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
@@ -1795,6 +1800,12 @@ handshake and so they are not authenticated.  For instance, a client might be
 able to reuse a token.  To avoid attacks that exploit this property, a server
 can limit its use of tokens to only the information needed to validate client
 addresses.
+
+Clients MAY use tokens obtained on one connection for any connection attempt
+using the same version.  When selecting a token to use, clients do not need to
+consider other properties of the connection that is being attempted, including
+the choice of possible application protocols, session tickets, or other
+connection properties.
 
 Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
 protect against such attacks, servers SHOULD ensure that tokens sent in Retry
@@ -2395,28 +2406,33 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled, a connection is silently closed and the state is
-discarded when it remains idle for longer than both the advertised
-idle timeout (see {{transport-parameter-definitions}}) and three times the
-current Probe Timeout (PTO).
+If the idle timeout is enabled by either peer, a connection is silently closed
+and its state is discarded when it remains idle for longer than the minimum of
+the max_idle_timeouts (see {{transport-parameter-definitions}}) and three times
+the current Probe Timeout (PTO).
 
-Each endpoint advertises its own idle timeout to its peer.  An endpoint
-restarts any timer it maintains when a packet from its peer is received and
-processed successfully.  The timer is also restarted when sending an
-ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
-packets have been sent since last receiving a packet.  Restarting when sending
-packets ensures that connections do not prematurely time out when initiating new
-activity.
+Each endpoint advertises a max_idle_timeout, but the effective value
+at an endpoint is computed as the minimum of the two advertised values. By
+announcing a max_idle_timeout, an endpoint commits to initiating an immediate
+close ({{immediate-close}}) if it abandons the connection prior to the effective
+value.
 
-The value for an idle timeout can be asymmetric.  The value advertised by an
-endpoint is only used to determine whether the connection is live at that
-endpoint.  An endpoint that sends packets near the end of the idle timeout
-period of a peer risks having those packets discarded if its peer enters the
-draining state before the packets arrive.  If a peer could timeout within a
-Probe Timeout (PTO; see Section 6.3 of {{QUIC-RECOVERY}}), it is advisable to
-test for liveness before sending any data that cannot be retried safely.  Note
-that it is likely that only applications or application protocols will
-know what information can be retried.
+An endpoint restarts its idle timer when a packet from its peer is received
+and processed successfully.  The idle timer is also restarted when sending
+an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
+ack-eliciting packets have been sent since last receiving a packet.  Restarting
+when sending packets ensures that connections do not prematurely time out when
+initiating new activity.  An endpoint might need to send packets to avoid an
+idle timeout if it is unable to send application data due to being blocked on
+flow control limits; see {{flow-control}}.
+
+An endpoint that sends packets near the end of the idle timeout period
+risks having those packets discarded if its peer enters the draining state
+before the packets arrive.  If a peer could time out within a Probe Timeout
+(PTO; see Section 6.2.2 of {{QUIC-RECOVERY}}), it is advisable to test for
+liveness before sending any data that cannot be retried safely.  Note that it
+is likely that only applications or application protocols will know what
+information can be retried.
 
 
 ## Immediate Close
@@ -2810,10 +2826,11 @@ available.
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation and Retry packets use authenticated
+All QUIC packets except Version Negotiation packets use authenticated
 encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
-and integrity protection. Details of packet protection are found in
-{{QUIC-TLS}}; this section includes an overview of the process.
+and integrity protection.  Retry packets use an AEAD to provide integrity
+protection.  Details of packet protection are found in {{QUIC-TLS}}; this
+section includes an overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
 packet protection is not effective confidentiality protection.  Initial
@@ -2998,6 +3015,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
+| 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
@@ -3347,6 +3365,8 @@ containing that information is acknowledged.
 * PING and PADDING frames contain no information, so lost PING or PADDING frames
   do not require repair.
 
+* The HANDSHAKE_DONE frame MUST be retransmitted until it is acknowledged.
+
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
 priorities specified by the application indicate otherwise (see
 {{stream-prioritization}}).
@@ -3510,6 +3530,9 @@ toward an unverified client address; see {{address-validation}}.
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the Path Maximum Transmission Unit (PMTU) supports the size that
 it chooses.
+
+UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
+{{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
 A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
 response to an Initial packet it receives from a client if the UDP datagram is
@@ -4069,7 +4092,7 @@ first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.9.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
+Section 4.10.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state (see Section 6.5 of {{QUIC-RECOVERY}}).
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
@@ -4213,11 +4236,15 @@ wishes to perform a retry (see {{validate-handshake}}).
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                 Source Connection ID (0..160)               ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| ODCID Len (8) |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|          Original Destination Connection ID (0..160)        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++                                                               +
+|                                                               |
++                   Retry Integrity Tag (128)                   +
+|                                                               |
++                                                               +
+|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #retry-format title="Retry Packet"}
@@ -4226,23 +4253,13 @@ A Retry packet (shown in {{retry-format}}) does not contain any protected
 fields. The value in the Unused field is selected randomly by the server. In
 addition to the long header, it contains these additional fields:
 
-ODCID Len:
-
-: The ODCID Len contains the length in bytes of the Original Destination
-  Connection ID field that follows it.  This length is encoded as a 8-bit
-  unsigned integer. In QUIC version 1, this value MUST NOT exceed 20 bytes.
-  Clients that receive a version 1 Retry Packet with a value larger than 20 MUST
-  drop the packet.
-
-Original Destination Connection ID:
-
-: The Original Destination Connection ID contains the value of the Destination
-  Connection ID from the Initial packet that this Retry is in response to. The
-  length of this field is given in ODCID Len.
-
 Retry Token:
 
 : An opaque token that the server can use to validate the client's address.
+
+Retry Integrity Tag:
+
+: See the Retry Packet Integrity section of {{QUIC-TLS}}.
 
 <!-- Break this stuff up a little, maybe into "Sending Retry" and "Processing
 Retry" sections. -->
@@ -4268,11 +4285,11 @@ A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
 from the server, it MUST discard any subsequent Retry packets that it receives.
 
-Clients MUST discard Retry packets that contain an Original Destination
-Connection ID field that does not match the Destination Connection ID from its
-Initial packet.  This prevents an off-path attacker from injecting a Retry
-packet.  A client MUST discard a Retry packet with a zero-length Retry Token
-field.
+Clients MUST discard Retry packets that have a Retry Integrity Tag that cannot
+be validated, see the Retry Packet Integrity section of {{QUIC-TLS}}. This
+diminishes an off-path attacker's ability to inject a Retry packet and protects
+against accidental corruption of Retry packets.  A client MUST discard a Retry
+packet with a zero-length Retry Token field.
 
 The client responds to a Retry packet with an Initial packet that includes the
 provided Retry Token to continue connection establishment.
@@ -4303,9 +4320,8 @@ processing a Retry packet; {{packet-0rtt}} contains more information on this.
 A server acknowledges the use of a Retry packet for a connection using the
 original_connection_id transport parameter (see
 {{transport-parameter-definitions}}).  If the server sends a Retry packet, it
-MUST include the value of the Original Destination Connection ID field of the
-Retry packet (that is, the Destination Connection ID field from the client's
-first Initial packet) in the transport parameter.
+MUST include the Destination Connection ID field from the client's first
+Initial packet in the transport parameter.
 
 If the client received and processed a Retry packet, it MUST validate that the
 original_connection_id transport parameter is present and correct; otherwise, it
@@ -4523,11 +4539,11 @@ original_connection_id (0x0000):
   Retry packet (see {{packet-retry}}).  A server MUST include the
   original_connection_id transport parameter if it sent a Retry packet.
 
-idle_timeout (0x0001):
+max_idle_timeout (0x0001):
 
-: The idle timeout is a value in milliseconds that is encoded as an integer; see
-  ({{idle-timeout}}).  If this parameter is absent or zero then the idle
-  timeout is disabled.
+: The max idle timeout is a value in milliseconds that is encoded as an integer;
+  see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit
+  this transport parameteter or specify a value of 0.
 
 stateless_reset_token (0x0002):
 
@@ -4731,11 +4747,12 @@ endpoints send PING frames without coordination can produce an excessive number
 of packets and poor performance.
 
 A connection will time out if no packets are sent or received for a period
-longer than the time specified in the idle_timeout transport parameter (see
-{{termination}}).  However, state in middleboxes might time out earlier than
-that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
-experience shows that sending packets every 15 to 30 seconds is necessary to
-prevent the majority of middleboxes from losing state for UDP flows.
+longer than the time negotiated using the max_idle_timeout transport parameter
+(see {{termination}}).  However, state in middleboxes might time out earlier
+than that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout
+interval, experience shows that sending packets every 15 to 30 seconds is
+necessary to prevent the majority of middleboxes from losing state for UDP
+flows.
 
 
 ## ACK Frames {#frame-ack}
@@ -5665,6 +5682,18 @@ CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
 alert; see {{?TLS13}}) in an Initial or a Handshake packet.
 
 
+## HANDSHAKE_DONE frame {#frame-handshake-done}
+
+The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
+the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
+fields.
+
+This frame can only be sent by the server. Servers MUST NOT send a
+HANDSHAKE_DONE frame before completing the handshake.  A server MUST treat
+receipt of a HANDSHAKE_DONE frame as a connection error of type
+PROTOCOL_VIOLATION.
+
+
 ## Extension Frames
 
 QUIC frames do not use a self-describing encoding.  An endpoint therefore needs
@@ -6157,7 +6186,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | Value  | Parameter Name              | Specification                       |
 |:-------|:----------------------------|:------------------------------------|
 | 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
-| 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
+| 0x0001 | max_idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
 | 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
 | 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
