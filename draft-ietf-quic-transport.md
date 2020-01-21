@@ -196,6 +196,12 @@ Ack-eliciting Packet:
   CONNECTION_CLOSE. These cause a recipient to send an acknowledgment (see
   {{sending-acknowledgements}}).
 
+Out-of-order packet:
+
+: A packet that does not increase the largest received packet number for its
+  packet number space by exactly one. A packet can arrive out of order
+  if it is delayed or if earlier packets are lost or delayed.
+
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating,
