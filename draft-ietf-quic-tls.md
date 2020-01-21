@@ -2125,15 +2125,29 @@ No significant changes.
 - Added status note
 
 
-# Acknowledgments
-{:numbered="false"}
-
-This document has benefited from input from Dragana Damjanovic, Christian
-Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
-many others.
-
-
 # Contributors
 {:numbered="false"}
 
-Ryan Hamilton was originally an author of this specification.
+The IETF QUIC Working Group received an enormous amount of support from many
+people. The following people provided substantive contributions to this
+document:
+Adam Langley,
+Alessandro Ghedini,
+Christian Huitema,
+Christopher Wood,
+David Schinazi,
+Dragana Damjanovic,
+Eric Rescorla,
+Ian Swett,
+Jana Iyengar, <contact
+ asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
+Marten Seemann,
+Martin Duke,
+Mike Bishop, <contact
+ fullname="Mikkel Fahnøe Jørgensen"/>,
+Nick Banks,
+Nick Harper,
+Roberto Peon,
+Rui Paulo,
+Ryan Hamilton,
+and Victor Vasiliev.

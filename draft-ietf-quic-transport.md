@@ -6778,28 +6778,43 @@ Substantial editorial reorganization; no technical changes.
 - Moved Contributors and Acknowledgments to appendices
 
 
-# Acknowledgments
-{:numbered="false"}
-
-Special thanks are due to the following for helping shape pre-IETF QUIC and its
-deployment: Chris Bentzel, Misha Efimov, Roberto Peon, Alistair Riddoch,
-Siddharth Vijayakrishnan, and Assar Westerlund.
-
-This document has benefited immensely from various private discussions and
-public ones on the quic@ietf.org and proto-quic@chromium.org mailing lists. Our
-thanks to all.
-
-
 # Contributors
 {:numbered="false"}
 
-The original authors of this specification were Ryan Hamilton, Jana Iyengar, Ian
-Swett, and Alyssa Wilk.
-
 The original design and rationale behind this protocol draw significantly from
-work by Jim Roskind {{EARLY-DESIGN}}. In alphabetical order, the contributors to
-the pre-IETF QUIC project at Google are: Britt Cyr, Jeremy Dorfman, Ryan
-Hamilton, Jana Iyengar, Fedor Kouranov, Charles Krasic, Jo Kulik, Adam Langley,
-Jim Roskind, Robbie Shade, Satyam Shekhar, Cherie Shi, Ian Swett, Raman Tenneti,
-Victor Vasiliev, Antonio Vicente, Patrik Westin, Alyssa Wilk, Dale Worley, Fan
-Yang, Dan Zhang, Daniel Ziegler.
+work by Jim Roskind {{EARLY-DESIGN}}.
+
+The IETF QUIC Working Group received an enormous amount of support from many
+people. The following people provided substantive contributions to this
+document:
+Alessandro Ghedini,
+Alyssa Wilk,
+Antoine Delignat-Lavaud,
+Brian Trammell,
+Christian Huitema,
+Colin Perkins,
+David Schinazi,
+Dmitri Tikhonov,
+Eric Kinnear,
+Eric Rescorla,
+Gorry Fairhurst,
+Ian Swett,
+Igor Lubashev, <contact
+ asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
+Lucas Pardue,
+Magnus Westerlund,
+Marten Seemann,
+Martin Duke,
+Mike Bishop, <contact
+ fullname="Mikkel Fahnøe Jørgensen"/>, <contact
+ fullname="Mirja Kühlewind"/>,
+Nick Banks,
+Nick Harper,
+Patrick McManus,
+Roberto Peon,
+Ryan Hamilton,
+Subodh Iyengar,
+Tatsuhiro Tsujikawa,
+Ted Hardie,
+Tom Jones,
+and Victor Vasiliev.
