@@ -80,7 +80,7 @@ informative:
       ISBN: 978-1466570269
 
   QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
+    title: "Hypertext Transfer Protocol Version 3 (HTTP/3)"
     date: {DATE}
     seriesinfo:
       Internet-Draft: draft-ietf-quic-http-latest
@@ -88,7 +88,7 @@ informative:
       -
         ins: M. Bishop
         name: Mike Bishop
-        org: Microsoft
+        org: Akamai Technologies
         role: editor
 
 
@@ -328,8 +328,11 @@ encryption levels:
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
-- CRYPTO and CONNECTION_CLOSE frames MAY appear in packets of any encryption
-  level except 0-RTT.
+- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
+  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+
+- CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
+  sent in packets at the 1-RTT encryption level.
 
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
@@ -387,13 +390,15 @@ perspective of the endpoint in question.
 
 ### Handshake Confirmed {#handshake-confirmed}
 
-In this document, the TLS handshake is considered confirmed at an endpoint when
-the following two conditions are met: the handshake is complete, and the
-endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
-This second condition can be implemented by recording the lowest packet number
-sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
-in any received 1-RTT ACK frame: once the latter is higher than or equal to the
-former, the handshake is confirmed.
+In this document, the TLS handshake is considered confirmed at the server when
+the handshake completes.  At the client, the handshake is considered confirmed
+when a HANDSHAKE_DONE frame is received.
+
+A client MAY consider the handshake to be confirmed when it receives an
+acknowledgement for a 1-RTT packet.  This can be implemented by recording the
+lowest packet number sent with 1-RTT keys, and comparing it to the Largest
+Acknowledged field in any received 1-RTT ACK frame: once the latter is greater
+than or equal to the former, the handshake is confirmed.
 
 
 ### Sending and Receiving Handshake Messages
@@ -764,15 +769,9 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys
 
-An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Most application protocols
-will send data after the handshake, resulting in acknowledgements that allow
-both endpoints to discard their handshake keys promptly.  Endpoints that do
-not have reason to send immediately after completing the handshake MAY send
-ack-eliciting frames, such as PING, which will cause the handshake to be
-confirmed when they are acknowledged.
-
+An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
+({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame as soon
+as it completes the handshake.
 
 ### Discarding 0-RTT Keys
 
@@ -1173,25 +1172,34 @@ Note:
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
 to decrypt 1-RTT packets from the server, whereas a server will be able to
-decrypt 1-RTT packets from the client.
+decrypt 1-RTT packets from the client.  Endpoints in either role MUST NOT
+decrypt 1-RTT packets from their peer prior to completing the handshake.
 
 Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the client state:
 
 - The client is not authenticated, unless the server has chosen to use a
-pre-shared key and validated the client's pre-shared key binder; see
-Section 4.2.11 of {{!TLS13}}.
-- The client has not demonstrated liveness, unless a RETRY packet was used.
-- Any received 0-RTT data that the server responds to might be due to a replay
-attack.
+  pre-shared key and validated the client's pre-shared key binder; see Section
+  4.2.11 of {{!TLS13}}.
 
-Therefore, the server's use of 1-RTT keys is limited before the handshake is
-complete.  A server MUST NOT process data from incoming 1-RTT
-protected packets before the TLS handshake is complete.  Because
-sending acknowledgments indicates that all frames in a packet have been
-processed, a server cannot send acknowledgments for 1-RTT packets until the
-TLS handshake is complete.  Received packets protected with 1-RTT keys MAY be
-stored and later decrypted and used once the handshake is complete.
+- The client has not demonstrated liveness, unless a RETRY packet was used.
+
+- Any received 0-RTT data that the server responds to might be due to a replay
+  attack.
+
+Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
+the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+packets before the TLS handshake is complete.  Because sending acknowledgments
+indicates that all frames in a packet have been processed, a server cannot send
+acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
+packets protected with 1-RTT keys MAY be stored and later decrypted and used
+once the handshake is complete.
+
+Note:
+
+: TLS implementations might provide all 1-RTT secrets prior to handshake
+  completion.  Even where QUIC implementations have 1-RTT read keys, those keys
+  cannot be used prior to completing the handshake.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1205,91 +1213,287 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 
+## Retry Packet Integrity {#retry-integrity}
+
+Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
+Retry Integrity Tag that provides two properties: it allows discarding
+packets that have accidentally been corrupted by the network, and it diminishes
+off-path attackers' ability to send valid Retry packets.
+
+The Retry Integrity Tag is a 128-bit field that is computed as the output of
+AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
+
+- The secret key, K, is 128 bits equal to 0xf5ed4642e0e4c8d878bbbc8a828821c9.
+- The nonce, N, is 96 bits all set to zero.
+- The plaintext, P, is empty.
+- The associated data, A, is the contents of the Retry Pseudo-Packet, as
+  illustrated in {{retry-pseudo}}:
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| ODCID Len (8) |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Original Destination Connection ID (0..160)        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1|1| 3 | Unused|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0..160)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| SCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0..160)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #retry-pseudo title="Retry Pseudo-Packet"}
+
+The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
+the transmitted Retry packet, removing the Retry Integrity Tag and prepending
+the two following fields:
+
+ODCID Len:
+
+: The ODCID Len contains the length in bytes of the Original Destination
+  Connection ID field that follows it, encoded as an 8-bit unsigned integer.
+
+Original Destination Connection ID:
+
+: The Original Destination Connection ID contains the value of the Destination
+  Connection ID from the Initial packet that this Retry is in response to. The
+  length of this field is given in ODCID Len. The presence of this field
+  mitigates an off-path attacker's ability to inject a Retry packet.
+
+
 # Key Update
 
-Once the handshake is confirmed, it is possible to update the keys. The
-KEY_PHASE bit in the short header is used to indicate whether key updates
-have occurred. The KEY_PHASE bit is initially set to 0 and then inverted
-with each key update.
+Once the handshake is confirmed (see {{handshake-confirmed}}), an endpoint MAY
+initiate a key update.
 
-The KEY_PHASE bit allows a recipient to detect a change in keying material
-without necessarily needing to receive the first packet that triggered the
-change.  An endpoint that notices a changed KEY_PHASE bit can update keys and
-decrypt the packet that contains the changed bit.
+The Key Phase bit indicates which packet protection keys are used to protect the
+packet.  The Key Phase bit is initially set to 0 for the first set of 1-RTT
+packets and toggled to signal each subsequent key update.
+
+The Key Phase bit allows a recipient to detect a change in keying material
+without needing to receive the first packet that triggered the change.  An
+endpoint that notices a changed Key Phase bit updates keys and decrypts the
+packet that contains the changed value.
 
 This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message as a connection error of type 0x10a, equivalent to a fatal TLS alert of
 unexpected_message (see {{tls-errors}}).
 
-An endpoint MUST NOT initiate the first key update until the handshake is
-confirmed ({{handshake-confirmed}}). An endpoint MUST NOT initiate a subsequent
-key update until it has received an acknowledgment for a packet sent at the
-current KEY_PHASE.  This can be implemented by tracking the lowest packet
-number sent with each KEY_PHASE, and the highest acknowledged packet number
-in the 1-RTT space: once the latter is higher than or equal to the former,
-another key update can be initiated.
-
-Endpoints MAY limit the number of keys they retain to two sets for removing
-packet protection and one set for protecting packets.  Older keys can be
-discarded.  Updating keys multiple times rapidly can cause packets to be
-effectively lost if packets are significantly reordered.  Therefore, an
-endpoint SHOULD NOT initiate a key update for some time after it has last
-updated keys; the RECOMMENDED time period is three times the PTO. This avoids
-valid reordered packets being dropped by the peer as a result of the peer
-discarding older keys.
-
-A receiving endpoint detects an update when the KEY_PHASE bit does not match
-what it is expecting.  It creates a new secret (see Section 7.2 of {{!TLS13}})
-and the corresponding read key and IV using the KDF function provided by TLS.
-The header protection key is not updated.
-
-If the packet can be decrypted and authenticated using the updated key and IV,
-then the keys the endpoint uses for packet protection are also updated.  The
-next packet sent by the endpoint MUST then use the new keys.  Once an endpoint
-has sent a packet encrypted with a given key phase, it MUST NOT send a packet
-encrypted with an older key phase.
-
-An endpoint does not always need to send packets when it detects that its peer
-has updated keys.  The next packet that it sends will simply use the new keys.
-If an endpoint detects a second update before it has sent any packets with
-updated keys, it indicates that its peer has updated keys twice without awaiting
-a reciprocal update.  An endpoint MUST treat consecutive key updates as a fatal
-error and abort the connection.
-
-An endpoint SHOULD retain old keys for a period of no more than three times the
-PTO.  After this period, old keys and their corresponding secrets SHOULD be
-discarded.  Retaining keys allow endpoints to process packets that were sent
-with old keys and delayed in the network.  Packets with higher packet numbers
-always use the updated keys and MUST NOT be decrypted with old keys.
-
-This ensures that once the handshake is complete, packets with the same
-KEY_PHASE will have the same packet protection keys, unless there are multiple
-key updates in a short time frame succession and significant packet reordering.
+{{ex-key-update}} shows a key update process, where the initial set of keys used
+(identified with @M) are replaced by updated keys (identified with @N).  The
+value of the Key Phase bit is indicated in brackets \[].
 
 ~~~
    Initiating Peer                    Responding Peer
 
-@M QUIC Frames
-               New Keys -> @N
-@N QUIC Frames
+@M [0] QUIC Packets
+
+... Update to @N
+@N [1] QUIC Packets
                       -------->
-                                          QUIC Frames @M
-                          New Keys -> @N
-                                          QUIC Frames @N
+                                         Update to @N ...
+                                      QUIC Packets [1] @N
                       <--------
+                                      QUIC Packets [1] @N
+                                    containing ACK
+                      <--------
+... Key Update Permitted
+
+@N [1] QUIC Packets
+         containing ACK for @N packets
+                      -------->
+                                 Key Update Permitted ...
 ~~~
 {: #ex-key-update title="Key Update"}
 
-A packet that triggers a key update could arrive after the receiving endpoint
-successfully processed a packet with a higher packet number.  This is only
-possible if there is a key compromise and an attack, or if the peer is
-incorrectly reverting to use of old keys.  Because the latter cannot be
-differentiated from an attack, an endpoint MUST immediately terminate the
-connection if it detects this condition.
 
-In deciding when to update keys, endpoints MUST NOT exceed the limits for use of
-specific keys, as described in Section 5.5 of {{!TLS13}}.
+## Initiating a Key Update {#key-update-initiate}
+
+Endpoints maintain separate read and write secrets for packet protection.  An
+endpoint initiates a key update by updating its packet protection write secret
+and using that to protect new packets.  The endpoint creates a new write secret
+from the existing write secret as performed in Section 7.2 of {{!TLS13}}.  This
+uses the KDF function provided by TLS with a label of "quic ku".  The
+corresponding key and IV are created from that secret as defined in
+{{protection-keys}}.  The header protection key is not updated.
+
+For example, to update write keys with TLS 1.3, HKDF-Expand-Label is used as:
+
+~~~
+secret_<n+1> = HKDF-Expand-Label(secret_<n>, "quic ku",
+                                 "", Hash.length)
+~~~
+
+The endpoint toggles the value of the Key Phase bit and uses the updated key and
+IV to protect all subsequent packets.
+
+An endpoint MUST NOT initiate a key update prior to having confirmed the
+handshake ({{handshake-confirmed}}).  An endpoint MUST NOT initiate a subsequent
+key update prior unless it has received an acknowledgment for a packet that was
+sent protected with keys from the current key phase.  This ensures that keys are
+available to both peers before another key update can be initiated.  This can be
+implemented by tracking the lowest packet number sent with each key phase, and
+the highest acknowledged packet number in the 1-RTT space: once the latter is
+higher than or equal to the former, another key update can be initiated.
+
+Note:
+
+: Keys of packets other than the 1-RTT packets are never updated; their keys are
+  derived solely from the TLS handshake state.
+
+The endpoint that initiates a key update also updates the keys that it uses for
+receiving packets.  These keys will be needed to process packets the peer sends
+after updating.
+
+An endpoint SHOULD retain old keys so that packets sent by its peer prior to
+receiving the key update can be processed.  Discarding old keys too early can
+cause delayed packets to be discarded.  Discarding packets will be interpreted
+as packet loss by the peer and could adversely affect performance.
+
+
+## Responding to a Key Update
+
+A peer is permitted to initiate a key update after receiving an acknowledgement
+of a packet in the current key phase.  An endpoint detects a key update when
+processing a packet with a key phase that differs from the value last used to
+protect the last packet it sent.  To process this packet, the endpoint uses the
+next packet protection key and IV.  See {{receive-key-generation}} for
+considerations about generating these keys.
+
+If a packet is successfully processed using the next key and IV, then the peer
+has initiated a key update.  The endpoint MUST update its send keys to the
+corresponding key phase in response, as described in {{key-update-initiate}}.
+Sending keys MUST be updated before sending an acknowledgement for the packet
+that was received with updated keys.  By acknowledging the packet that triggered
+the key update in a packet protected with the updated keys, the endpoint signals
+that the key update is complete.
+
+An endpoint can defer sending the packet or acknowledgement according to its
+normal packet sending behaviour; it is not necessary to immediately generate a
+packet in response to a key update.  The next packet sent by the endpoint will
+use the updated keys.  The next packet that contains an acknowledgement will
+cause the key update to be completed.  If an endpoint detects a second update
+before it has sent any packets with updated keys containing an
+acknowledgement for the packet that initiated the key update, it indicates that
+its peer has updated keys twice without awaiting confirmation.  An endpoint MAY
+treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
+
+An endpoint that receives an acknowledgement that is carried in a packet
+protected with old keys where any acknowledged packet was protected with newer
+keys MAY treat that as a connection error of type KEY_UPDATE_ERROR.  This
+indicates that a peer has received and acknowledged a packet that initiates a
+key update, but has not updated keys in response.
+
+
+## Timing of Receive Key Generation {#receive-key-generation}
+
+Endpoints responding to an apparent key update MUST NOT generate a timing
+side-channel signal that might indicate that the Key Phase bit was invalid (see
+{{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
+place of discarded keys when key updates are not yet permitted.  Using dummy
+keys will generate no variation in the timing signal produced by attempting to
+remove packet protection, and results in all packets with an invalid Key Phase
+bit being rejected.
+
+The process of creating new packet protection keys for receiving packets could
+reveal that a key update has occurred.  An endpoint MAY perform this process as
+part of packet processing, but this creates a timing signal that can be used by
+an attacker to learn when key updates happen and thus the value of the Key Phase
+bit in certain packets.  Endpoints MAY instead defer the creation of the next
+set of receive packet protection keys until some time after a key update
+completes, up to three times the PTO; see {{old-keys-recv}}.
+
+Once generated, the next set of packet protection keys SHOULD be retained, even
+if the packet that was received was subsequently discarded.  Packets containing
+apparent key updates are easy to forge and - while the process of key update
+does not require significant effort - triggering this process could be used by
+an attacker for DoS.
+
+For this reason, endpoints MUST be able to retain two sets of packet protection
+keys for receiving packets: the current and the next.  Retaining the previous
+keys in addition to these might improve performance, but this is not essential.
+
+
+## Sending with Updated Keys {#old-keys-send}
+
+An endpoint always sends packets that are protected with the newest keys.  Keys
+used for packet protection can be discarded immediately after switching to newer
+keys.
+
+Packets with higher packet numbers MUST be protected with either the same or
+newer packet protection keys than packets with lower packet numbers.  An
+endpoint that successfully removes protection with old keys when newer keys were
+used for packets with lower packet numbers MUST treat this as a connection error
+of type KEY_UPDATE_ERROR.
+
+
+## Receiving with Different Keys {#old-keys-recv}
+
+For receiving packets during a key update, packets protected with older keys
+might arrive if they were delayed by the network.  Retaining old packet
+protection keys allows these packets to be successfully processed.
+
+As packets protected with keys from the next key phase use the same Key Phase
+value as those protected with keys from the previous key phase, it can be
+necessary to distinguish between the two.  This can be done using packet
+numbers.  A recovered packet number that is lower than any packet number from
+the current key phase uses the previous packet protection keys; a recovered
+packet number that is higher than any packet number from the current key phase
+requires the use of the next packet protection keys.
+
+Some care is necessary to ensure that any process for selecting between
+previous, current, and next packet protection keys does not expose a timing side
+channel that might reveal which keys were used to remove packet protection.  See
+{{hp-side-channel}} for more information.
+
+Alternatively, endpoints can retain only two sets of packet protection keys,
+swapping previous for next after enough time has passed to allow for reordering
+in the network.  In this case, the Key Phase bit alone can be used to select
+keys.
+
+An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
+{{QUIC-RECOVERY}}) after a key update before it creates the next set of packet
+protection keys.  These updated keys MAY replace the previous keys at that time.
+With the caveat that PTO is a subjective measure - that is, a peer could have a
+different view of the RTT - this time is expected to be long enough that any
+reordered packets would be declared lost by a peer even if they were
+acknowledged and short enough to allow for subsequent key updates.
+
+Endpoints need to allow for the possibility that a peer might not be able to
+decrypt packets that initiate a key update during the period when it retains old
+keys.  Endpoints SHOULD wait three times the PTO before initiating a key update
+after receiving an acknowledgment that confirms that the previous key update was
+received.  Failing to allow sufficient time could lead to packets being
+discarded.
+
+An endpoint SHOULD retain old read keys for no more than three times the PTO.
+After this period, old read keys and their corresponding secrets SHOULD be
+discarded.
+
+
+## Key Update Frequency
+
+Key updates MUST be initiated before usage limits on packet protection keys are
+exceeded.  For the cipher suites mentioned in this document, the limits in
+Section 5.5 of {{!TLS13}} apply.  Other cipher suites MUST define usage limits
+in order to be used with QUIC.
+
+
+## Key Update Error Code {#key-update-error}
+
+The KEY_UPDATE_ERROR error code (0xE) is used to signal errors related to key
+updates.
 
 
 # Security of Initial Messages
@@ -1324,21 +1528,22 @@ parameters and allows a server to perform return routability checks on clients.
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
-{{!RFC7301}} to select an application protocol.  Unless another mechanism is
-used for agreeing on an application protocol, endpoints MUST use ALPN for this
-purpose.  When using ALPN, endpoints MUST immediately close a connection (see
-Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178,
-see {{tls-errors}}).  While {{!RFC7301}} only specifies that servers use this
-alert, QUIC clients MUST also use it to terminate a connection when ALPN
-negotiation fails.
+{{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
+is used for agreeing on an application protocol, endpoints MUST use ALPN for
+this purpose.  When using ALPN, endpoints MUST immediately close a connection
+(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
+negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
+{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
+QUIC clients MUST also use it to terminate a connection when ALPN negotiation
+fails.
 
-An application-layer protocol MAY restrict the QUIC versions that it can operate
-over.  Servers MUST select an application protocol compatible with the QUIC
-version that the client has selected.  If the server cannot select a compatible
-combination of application protocol and QUIC version, it MUST abort the
-connection.  A client MUST abort a connection if the server picks an application
-protocol incompatible with the protocol version being used.
+An application protocol MAY restrict the QUIC versions that it can operate over.
+Servers MUST select an application protocol compatible with the QUIC version
+that the client has selected.  The server MUST treat the inability to select a
+compatible application protocol as a connection error of type 0x178
+(no_application_protocol).  Similarly, a client MUST treat the selection of an
+incompatible application protocol by a server as a connection error of type
+0x178.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1497,19 +1702,38 @@ authenticated using packet protection; the entire packet header is part of the
 authenticated additional data.  Protected fields that are falsified or modified
 can only be detected once the packet protection is removed.
 
-An attacker could guess values for packet numbers and have an endpoint confirm
-guesses through timing side channels.  Similarly, guesses for the packet number
-length can be trialed and exposed.  If the recipient of a packet discards
-packets with duplicate packet numbers without attempting to remove packet
-protection they could reveal through timing side-channels that the packet number
-matches a received packet.  For authentication to be free from side-channels,
-the entire process of header protection removal, packet number recovery, and
-packet protection removal MUST be applied together without timing and other
-side-channels.
+
+## Header Protection Timing Side-Channels {#hp-side-channel}
+
+An attacker could guess values for packet numbers or Key Phase and have an
+endpoint confirm guesses through timing side channels.  Similarly, guesses for
+the packet number length can be trialed and exposed.  If the recipient of a
+packet discards packets with duplicate packet numbers without attempting to
+remove packet protection they could reveal through timing side-channels that the
+packet number matches a received packet.  For authentication to be free from
+side-channels, the entire process of header protection removal, packet number
+recovery, and packet protection removal MUST be applied together without timing
+and other side-channels.
 
 For the sending of packets, construction and protection of packet payloads and
 packet numbers MUST be free from side-channels that would reveal the packet
 number or its encoded size.
+
+During a key update, the time taken to generate new keys could reveal through
+timing side-channels that a key update has occurred.  Alternatively, where an
+attacker injects packets this side-channel could reveal the value of the Key
+Phase on injected packets.  After receiving a key update, an endpoint SHOULD
+generate and save the next set of receive packet protection keys, as described
+in {{receive-key-generation}}.  By generating new keys before a key update is
+received, receipt of packets will not create timing signals that leak the value
+of the Key Phase.
+
+This depends on not doing this key generation during packet processing and it
+can require that endpoints maintain three sets of packet protection keys for
+receiving: for the previous key phase, for the current key phase, and for the
+next key phase.  Endpoints can instead choose to defer generation of the next
+receive packet protection keys until they discard old keys so that only two sets
+of receive keys need to be retained at any point in time.
 
 
 ## Key Diversity
@@ -1539,10 +1763,13 @@ secrets.
 This document does not create any new IANA registries, but it registers the
 values in the following registries:
 
-* TLS ExtensionsType Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to register
-  the quic_transport_parameters extension found in {{quic_parameters}}.  The
-  Recommended column is to be marked Yes.  The TLS 1.3 Column is to include CH
-  and EE.
+* TLS ExtensionType Values Registry {{!TLS-REGISTRIES=RFC8447}} - IANA is to
+  register the quic_transport_parameters extension found in {{quic_parameters}}.
+  The Recommended column is to be marked Yes.  The TLS 1.3 Column is to include
+  CH and EE.
+
+* QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
+  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
 
 
 --- back
@@ -1640,7 +1867,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000017088394c8f03e5157080000449e00000002
+c3ff000019088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1655,15 +1882,15 @@ mask = AES-ECB(hp, sample)[0..4]
 
 header[0] ^= mask[0] & 0x0f
      = c0
-header[17..20] ^= mask[1..4]
+header[18..21] ^= mask[1..4]
      = 3b343aa8
-header = c0ff000017088394c8f03e5157080000449e3b343aa8
+header = c0ff000019088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff000017088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+c0ff000019088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
 9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
 4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
 b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
@@ -1700,7 +1927,7 @@ eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
 cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
 acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-c9be6c7803567321829dd85853396269
+aebe13f98ec51170a4aad0a8324bb768
 ~~~
 
 ## Server Initial
@@ -1719,7 +1946,7 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff0000170008f067a5502a4262b50040740001
+c1ff0000190008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
@@ -1728,17 +1955,17 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c9ff0000170008f067a5502a4262b5004074168b
+header = c9ff0000190008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff0000170008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+c9ff0000190008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
-432348a2c413
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
+20d61e68cf5f
 ~~~
 
 
@@ -1748,6 +1975,15 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b9cf9bb6d091ddfc8b32d
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-23
+
+- Key update text update (#3050):
+  - Recommend constant-time key replacement (#2792)
+  - Provide explicit labels for key update key derivation (#3054)
+- Allow first Initial from a client to span multiple packets (#2928, #3045)
+- PING can be sent at any encryption level (#3034, #3035)
+
 
 ## Since draft-ietf-quic-tls-22
 
