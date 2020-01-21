@@ -1342,9 +1342,13 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-11
+
+Editorial changes only
+
 ## Since draft-ietf-quic-qpack-10
 
-Editorial changes
+Editorial changes only
 
 ## Since draft-ietf-quic-qpack-09
 

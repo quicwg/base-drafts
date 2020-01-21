@@ -1980,6 +1980,13 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-24
+
+- Rewrite key updates (#3050)
+  - Allow but don't recommend deferring key updates (#2792, #3263)
+  - More completely define received behavior (#2791)
+  - Define the label used with HKDF-Expand-Label (#3054)
+
 ## Since draft-ietf-quic-tls-23
 
 - Key update text update (#3050):

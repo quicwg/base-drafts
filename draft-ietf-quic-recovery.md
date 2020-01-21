@@ -1443,7 +1443,14 @@ Invoked from DetectLostPackets when packets are deemed lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-24
+
+- Require congestion control of some sort (#3247, #3244, #3248)
+- Set a minimum reordering threshold (#3256, #3240)
+- PTO is specific to a packet number space (#3067, #3074, #3066)
+
 ## Since draft-ietf-quic-recovery-23
+
 - Define under-utilizing the congestion window (#2630, #2686, #2675)
 - PTO MUST send data if possible (#3056, #3057)
 - Connection Close is not ack-eliciting (#3097, #3098)
