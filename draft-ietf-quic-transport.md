@@ -3439,11 +3439,13 @@ errors are detected.
 Endpoints validate ECN for packets sent on each network path independently.  An
 endpoint thus validates ECN on new connection establishment, when switching to a
 new server preferred address, and on active connection migration to a new path.
+{{ecn-alg}} describes one possible algorithm for testing paths for ECN support.
 
 Even if an endpoint does not use ECN markings on packets it transmits, the
 endpoint MUST provide feedback about ECN markings received from the peer if they
 are accessible.  Failing to report ECN counts will cause the peer to disable ECN
 marking.
+
 
 #### Sending ECN Markings
 
@@ -3467,7 +3469,7 @@ marking strategies.  Implementations can also use the ECT(1) codepoint, as
 specified in {{?RFC8311}}.
 
 
-#### Receiving ACK Frames
+#### Receiving ACK Frames {#ecn-ack}
 
 An endpoint that sets ECT(0) or ECT(1) codepoints on packets it transmits MUST
 use the following steps on receiving an ACK frame to validate ECN.
@@ -3498,6 +3500,7 @@ It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
 to be greater than the number of packets acknowledged in an ACK frame.  When
 this happens, and if validation succeeds, the local reference counts MUST be
 increased to match the counts in the ACK frame.
+
 
 #### Validation Outcomes
 
@@ -6313,6 +6316,48 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    return candidate_pn
 ~~~
 {: #alg-decode-pn title="Sample Packet Number Decoding Algorithm"}
+
+
+# Sample ECN Validation Algorithm {#ecn-alg}
+
+Each time an endpoint commences sending on a new network path, it determines
+whether the path supports ECN; see {{ecn}}.  If the path supports ECN, the goal
+is to use ECN.  Endpoints might also periodically reassess a path that was
+determined to not support ECN.
+
+This section describes one method for testing new paths.  This algorithm is
+intended to show how a path might be tested for ECN support.  Endpoints can
+implement different methods.
+
+The path is assigned an ECN state that is one of "testing", "unknown", "failed",
+or "capable".  On paths with a "testing" or "capable" state the endpoint sends
+packets with an ECT marking, by default ECT(0); otherwise, the endpoint sends
+unmarked packets.
+
+To start testing a path, the ECN state is set to "testing" and existing ECN
+counts are remembered as a baseline.
+
+The testing period runs for a number of packets or round-trip times, as
+determined by the endpoint.  The goal is not to limit the duration of the
+testing period, but to ensure that enough marked packets are sent for received
+ECN counts to provide a clear indication of how the path treats marked packets.
+{{ecn-ack}} suggests limiting this to 10 packets or 3 round-trip times.
+
+After the testing period ends, the ECN state for the path becomes "unknown".
+From the "unknown" state, successful validation of the ECN counts an ACK frame
+(see {{ecn-ack}}) causes the ECN state for the path to become "capable", unless
+no marked packet has been acknowledged.
+
+If validation of ECN counts fails at any time, the ECN state for the affected
+path becomes "failed".  An endpoint can also mark the ECN state for a path as
+"failed" if marked packets are all declared lost or if they are all CE marked.
+
+Following this algorithm ensures that ECN is rarely disabled for paths that
+properly support ECN.  Any path that incorrectly modifies markings will cause
+ECN to be disabled.  For those rare cases where marked packets are discarded by
+the path, the short duration of the testing period limits the number of losses
+incurred.
+
 
 # Change Log
 
