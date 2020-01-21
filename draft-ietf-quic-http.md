@@ -696,23 +696,23 @@ the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
 were processed.
 
 The information in the GOAWAY frame enables a client and server to agree on
-which requests or pushes were accepted prior to the connection shutdown.
-Endpoints SHOULD abruptly terminate any requests or pushes that have identifiers
-greater than or equal to the smallest identifier sent in a GOAWAY frame.
+which requests or pushes were accepted prior to the connection shutdown. Upon
+sending a GOAWAY frame, the endpoint SHOULD explicitly cancel (see
+{{request-cancellation}} and {{frame-cancel-push}}) any requests or pushes that
+have identifiers greater than or equal to that indicated, in order to clean up
+transport state for the affected streams. The endpoint SHOULD continue to do so
+as more requests or pushes arrive.
 
 Endpoints MUST NOT initiate new requests or promise new pushes on the connection
 after receipt of a GOAWAY frame from the peer.  Clients MAY establish a new
 connection to send additional requests.
 
-Some requests or pushes might already be in transit. If the endpoint has already
-sent requests or promised pushes with an identifier greater than or equal to
-that received in a GOAWAY frame, those requests or pushes will not be processed;
-requests MAY be retried by the client on a different connection.  The endpoint
-that initiated these requests or pushes MAY cancel them.  It is RECOMMENDED that
-such requests be explicitly rejected (see {{request-cancellation}} and
-{{frame-cancel-push}}) upon receipt in order to clean up transport state for the
-affected streams.  Pushes which have been promised MAY still be fulfilled by the
-server.
+Some requests or pushes might already be in transit.  Upon receipt of a GOAWAY
+frame, if the endpoint has already sent requests or promised pushes with an
+identifier greater than or equal to that received in a GOAWAY frame, those
+requests or pushes will not be processed.  The endpoint that initiated these
+requests or pushes MAY cancel them.  Clients MAY retry such requests on a
+different connection.
 
 Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the server
 might have been processed; their status cannot be known until a response is
