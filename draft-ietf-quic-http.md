@@ -925,9 +925,9 @@ transferred. Endpoints MUST NOT consider these streams to have any meaning upon
 receipt.
 
 The payload and length of the stream are selected in any manner the
-implementation chooses.  Implementations MAY terminate these streams cleanly,
-or MAY abruptly terminate them with an error code of the implementation's
-choice, including reserved error codes ({{http-error-codes}}).
+implementation chooses.  Implementations MAY terminate these streams cleanly, or
+MAY abruptly terminate them.  When terminating abruptly, the error code
+H3_NO_ERROR or a reserved error code ({{http-error-codes}}) SHOULD be used.
 
 
 # HTTP Framing Layer {#http-framing-layer}
