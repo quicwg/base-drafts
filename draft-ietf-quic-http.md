@@ -1905,7 +1905,7 @@ PING (0x6):
 
 GOAWAY (0x7):
 : GOAWAY does not contain an error code.  In the client to server direction,
-it carries a Push ID instead of a server initiated stream ID.
+  it carries a Push ID instead of a server initiated stream ID.
   See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
