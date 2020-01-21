@@ -790,13 +790,11 @@ flow control limits.
 If a sender runs out of flow control credit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
-control limits.  These frames are expected to be sent infrequently in common
-cases, but they are considered useful for debugging and monitoring purposes.
-
-A sender SHOULD NOT send multiple STREAM_DATA_BLOCKED or DATA_BLOCKED frames
-for the same data limit, unless the original frame is determined to be lost.
-Another STREAM_DATA_BLOCKED or DATA_BLOCKED frame can be sent after the data
-limit is increased.
+control limits.  If a sender is blocked for a period longer than the idle
+timeout ({{idle-timeout}}), the connection might be closed even when data is
+available for transmission.  To keep the connection from closing, a sender that
+is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 
 ## Flow Credit Increments {#fc-credit}
@@ -2413,7 +2411,9 @@ processed successfully.  The timer is also restarted when sending an
 ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other ack-eliciting
 packets have been sent since last receiving a packet.  Restarting when sending
 packets ensures that connections do not prematurely time out when initiating new
-activity.
+activity.  An endpoint might need to send packets to avoid an idle timeout if it
+is unable to send application data due to being blocked on flow control limits;
+see {{flow-control}}.
 
 The value for an idle timeout can be asymmetric.  The value advertised by an
 endpoint is only used to determine whether the connection is live at that
