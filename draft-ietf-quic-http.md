@@ -370,13 +370,13 @@ a single final HTTP response, as detailed below.
 
 An HTTP message (request or response) consists of:
 
-1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
-   frame (see {{frame-headers}}),
+1. the message header (see Section 3.2 of {{!RFC7230}}), sent as a single
+   HEADERS frame (see {{frame-headers}}),
 
-2. optionally, the payload body, if present (see {{!RFC7230}}, Section 3.3),
+2. optionally, the payload body, if present (see Section 3.3 of {{!RFC7230}}),
    sent as a series of DATA frames (see {{frame-data}}),
 
-3. optionally, trailing headers, if present (see {{!RFC7230}}, Section 4.1.2),
+3. optionally, trailing headers, if present (see Section 4.1.2 of {{!RFC7230}}),
    sent as a single HEADERS frame.
 
 A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) or
@@ -398,7 +398,7 @@ The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
+informational responses (1xx; see Section 6.2 of {{!RFC7231}}) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
@@ -468,7 +468,7 @@ To allow for better compression efficiency, the cookie header field {{!RFC6265}}
 MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
 header fields, these MUST be concatenated before being passed into a non-HTTP/2,
-non-HTTP/3 context, as described in {{!HTTP2}}, Section 8.1.2.5.
+non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
@@ -545,7 +545,7 @@ expose implementations to these vulnerabilities.
 
 ## The CONNECT Method
 
-The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
+The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
 HTTP proxies to establish a TLS session with an origin server for the purposes
 of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
 an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
@@ -553,14 +553,14 @@ method is used to establish a tunnel over a single HTTP/2 stream to a remote
 host for similar purposes.
 
 A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
+request MUST be formatted as described in Section 8.3 of {{!HTTP2}}. A CONNECT
 request that does not conform to these restrictions is malformed (see
 {{malformed}}). The request stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
+series status code to the client, as defined in Section 4.3.6 of {{!RFC7231}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
 connection. Any DATA frame sent by the client is transmitted by the proxy to the
@@ -592,8 +592,9 @@ with the RST bit set.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism ([RFC7230], Section 6.7) or
-101 (Switching Protocols) informational status code ([RFC7231], Section 6.2.2).
+HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of [RFC7230]) or
+101 (Switching Protocols) informational status code (Section 6.2.2 of
+[RFC7231]).
 
 ## Server Push
 
