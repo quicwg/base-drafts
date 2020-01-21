@@ -619,12 +619,15 @@ with a Push ID that is greater than the maximum Push ID as a connection error of
 type H3_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
-{{frame-push-promise}}) on the request stream which generated the push. This
-allows the server push to be associated with a client request.  Promised
+{{frame-push-promise}}) on the request stream which generated the push. Promised
 requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 
-The same server push can be associated with additional client requests using a
-DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).
+Each pushed response is associated with one or more client requests.  The push
+is associated with the request stream on which the PUSH_PROMISE frame was
+received.  The same server push can be associated with additional client
+requests using a DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  These
+associations do not affect the operation of the protocol, but MAY be used by
+user agents when deciding how to use pushed resources.
 
 Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
 response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
