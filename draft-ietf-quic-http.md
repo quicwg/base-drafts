@@ -709,10 +709,10 @@ sent requests or promised pushes with an identifier greater than or equal to
 that received in a GOAWAY frame, those requests or pushes will not be processed;
 requests MAY be retried by the client on a different connection.  The endpoint
 that initiated these requests or pushes MAY cancel them.  It is RECOMMENDED that
-the receiving endpoint explicitly reject such requests (see
-{{request-cancellation}}) or pushes (see {{frame-cancel-push}}) in order to
-clean up transport state for the affected streams.  Pushes which have been
-promised MAY still be fulfilled by the server.
+such requests be explicitly rejected (see {{request-cancellation}} and
+{{frame-cancel-push}}) upon receipt in order to clean up transport state for the
+affected streams.  Pushes which have been promised MAY still be fulfilled by the
+server.
 
 Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the server
 might have been processed; their status cannot be known until a response is
