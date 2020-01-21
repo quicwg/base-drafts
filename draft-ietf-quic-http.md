@@ -734,16 +734,13 @@ frames indicating different identifiers, but MUST NOT increase the identifier
 value they send, since clients might already have retried unprocessed requests
 on another connection.
 
-A server that is attempting to gracefully shut down a connection can send an
-initial GOAWAY frame with the last Stream ID set to the maximum possible value
-for a client-initiated, bidirectional stream (i.e. 2^62-4 in case of QUIC
-version 1).  This GOAWAY frame signals to the client that a shutdown is imminent
-and that initiating further requests is prohibited. After allowing time for any
-in-flight requests to reach the server, the server can send another GOAWAY frame
-indicating which requests it will accept before the end of the connection. This
-ensures that a connection can be cleanly shut down without causing requests to
-fail.  This ensures that a connection can be cleanly shut down without losing
-requests.
+An endpoint that is attempting to gracefully shut down a connection can send a
+GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
+2^62-1 for clients). This ensures that the peer stops creating new requests or
+pushes. After allowing time for any in-flight requests or pushes to arrive, the
+endpoint can send another GOAWAY frame indicating which requests or pushes it
+will accept before the end of the connection. This ensures that a connection can
+be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
