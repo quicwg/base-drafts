@@ -2828,7 +2828,7 @@ available.
 
 All QUIC packets except Version Negotiation packets use authenticated
 encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
-and integrity protection.  Retry packets use an AEAD to provide integrity
+and integrity protection.  Retry packets use AEAD to provide integrity
 protection.  Details of packet protection are found in {{QUIC-TLS}}; this
 section includes an overview of the process.
 
