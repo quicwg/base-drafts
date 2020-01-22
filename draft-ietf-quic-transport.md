@@ -1722,7 +1722,7 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-Unlike the token that is created for a Retry packet, which is used immediatly,
+Unlike the token that is created for a Retry packet, which is used immediately,
 the token sent in the NEW_TOKEN frame might be used after some period of
 time has passed.  Thus, a token SHOULD have an expiration time, which could
 be either an explicit expiration time or an issued timestamp that can be
