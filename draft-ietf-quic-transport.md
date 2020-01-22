@@ -1722,12 +1722,12 @@ one.  The client MUST NOT use the token provided in a Retry for future
 connections. Servers MAY discard any Initial packet that does not carry the
 expected token.
 
-Unlike the token that is created for a Retry packet, there might be some time
-between when the token is created and when the token is subsequently used.
-Thus, a token SHOULD have an expiration time, which could be either an explicit
-expiration time or an issued timestamp that can be used to dynamically calculate
-the expiration time.  A server can store the expiration time or include it in an
-encrypted form in the token.
+Unlike the token that is created for a Retry packet, which is used immediately,
+the token sent in the NEW_TOKEN frame might be used after some period of
+time has passed.  Thus, a token SHOULD have an expiration time, which could
+be either an explicit expiration time or an issued timestamp that can be
+used to dynamically calculate the expiration time.  A server can store the
+expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an on-path observer to the connection on which it was
@@ -3250,15 +3250,15 @@ received packets in preference to packets received in the past.
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
-An endpoint measures the delays intentionally introduced between when the
-packet with the largest packet number is received and an acknowledgment is sent.
-The endpoint encodes this delay in the Ack Delay field of an ACK frame
-(see {{frame-ack}}). This allows the receiver of the ACK to adjust for any
-intentional delays, which is important for getting a better estimate of the path
-RTT when acknowledgments are delayed. A packet might be held in the OS kernel or
-elsewhere on the host before being processed.  An endpoint MUST NOT include
-delays that it does not control when populating the Ack Delay field in an
-ACK frame.
+An endpoint measures the delays intentionally introduced between the time
+the packet with the largest packet number is received and the time an
+acknowledgment is sent.  The endpoint encodes this delay in the Ack Delay
+field of an ACK frame (see {{frame-ack}}). This allows the receiver of the ACK
+to adjust for any intentional delays, which is important for getting a better
+estimate of the path RTT when acknowledgments are delayed. A packet might
+be held in the OS kernel or elsewhere on the host before being processed.
+An endpoint MUST NOT include delays that it does not control when populating
+the Ack Delay field in an ACK frame.
 
 ### ACK Frames and Packet Protection
 
