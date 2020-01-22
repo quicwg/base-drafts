@@ -111,16 +111,6 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-ACK-only:
-
-: Any packet containing only one or more ACK frame(s).
-
-In-flight:
-
-: Packets are considered in-flight when they have been sent and
-  are not ACK-only, and they are not acknowledged, declared lost,
-  or abandoned along with old keys.
-
 Ack-eliciting Frames:
 
 : All frames other than ACK, PADDING, and CONNECTION_CLOSE are considered
@@ -130,6 +120,12 @@ Ack-eliciting Packets:
 
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
   within the maximum ack delay and are called ack-eliciting packets.
+
+In-flight:
+
+: Packets are considered in-flight when they are ack-eliciting or contain a
+  PADDING frame, and they have been sent but are not acknowledged, declared
+  lost, or abandoned along with old keys.
 
 # Design of the QUIC Transmission Machinery
 
