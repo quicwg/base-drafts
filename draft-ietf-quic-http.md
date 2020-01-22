@@ -2044,6 +2044,7 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 - Removed H3_EARLY_RESPONSE error code; H3_NO_ERROR is recommended instead
   (#3130,#3208)
 - Unknown error codes are equivalent to H3_NO_ERROR (#3276,#3331)
+- Some error codes are reserved for greasing (#3325,#3360)
 
 ## Since draft-ietf-quic-http-23
 
