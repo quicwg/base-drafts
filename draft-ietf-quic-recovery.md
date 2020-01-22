@@ -123,9 +123,9 @@ Ack-eliciting Packets:
   
 In-flight:
 
-: Packets are considered in-flight when they have been sent and
-  are ack-eliciting, and they are not acknowledged, declared lost,
-  or abandoned along with old keys.
+: Packets are considered in-flight when they are ack-eliciting or contain a
+  PADDING frame, and they have been sent but are not acknowledged, declared
+  lost, or abandoned along with old keys.
 
 # Design of the QUIC Transmission Machinery
 
