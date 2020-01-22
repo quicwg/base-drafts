@@ -3250,7 +3250,7 @@ received packets in preference to packets received in the past.
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
-An endpoint measures the delays introduced intentionally between the time
+An endpoint measures the delays intentionally introduced between the time
 the packet with the largest packet number is received and the time an
 acknowledgment is sent.  The endpoint encodes this delay in the Ack Delay
 field of an ACK frame (see {{frame-ack}}). This allows the receiver of the ACK
