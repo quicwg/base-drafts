@@ -120,7 +120,7 @@ Ack-eliciting Packets:
 
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
   within the maximum ack delay and are called ack-eliciting packets.
-  
+
 In-flight:
 
 : Packets are considered in-flight when they are ack-eliciting or contain a
