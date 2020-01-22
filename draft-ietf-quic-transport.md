@@ -6039,18 +6039,18 @@ A complete security analysis of QUIC is outside the scope of this document.
 This section provides an informal description of the desired security properties
 as an aid to implementors and to help guide protocol analysis.
 
-QUIC provides protection against various types of attacks, which are described
-in more detail by {{?RFC3552}}.
+QUIC assumes the threat model described in {{?SEC-CONS=RFC3552}} and provides
+protections against many of the attacks that arise from that model.
 
 For this purpose, attacks are divided into passive and active attacks.  Passive
 attackers have the capability to read packets from the network, while active
 attackers also have the capability to write packets into the network.  However,
 a passive attack may involve an attacker with the ability to cause a routing
-change or other modification in the path taken by packets that comprise a QUIC
+change or other modification in the path taken by packets that comprise a
 connection.
 
 Attackers are additionally categorized as either on-path attackers or off-path
-attackers; see Section 3.5 of {{?RFC3552}}.  An on-path attacker can read,
+attackers; see Section 3.5 of {{?SEC-CONS}}.  An on-path attacker can read,
 modify, or remove any packet it observes such that it no longer reaches its
 destination, while an off-path attacker observes the packets, but cannot prevent
 the original packet from reaching its intended destination.  An off-path
@@ -6063,42 +6063,49 @@ considered separately.
 ### Handshake {#handshake-properties}
 
 The QUIC handshake incorporates the TLS 1.3 handshake and enjoys the
-cryptographic properties described in {{?RFC8446}}; Appendix E.1.
+cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}.
 
-In addition to those properties, the QUIC handshake is intended to provide some
+In addition to those properties, the handshake is intended to provide some
 defense against DoS attacks on the handshake, as described below.
+
 
 #### Anti-Amplification
 
-Because the QUIC handshake can occur without a transport-level round-trip, the
-QUIC server's first flight may be sent to a client whose address it cannot
-validate.  This flight may be long and therefore potentially allows the server
-to be used as a DoS reflector/amplifier.  The mechanisms described in
-{{validate-handshake}} restrict the amplification to a factor of three.
+Address validation ({{address-validation}}) is used to verify that an entity
+that claims a given address is able to receive packets at that address. Address
+validation limits amplification attack targets to addresses for which an
+attacker is either on-path or off-path.
+
+Prior to validation, endpoints are limited in what they are able to send.
+During the handshake, a server cannot send more than three times the data it
+receives; clients that initiate new connections or migrate to a new network
+path are limited.
+
 
 #### Server-Side DoS
 
 Computing the server's first flight for a full handshake is potentially
-expensive, requiring both a signature and a key exchange computation.  In order
-to prevent computational DoS attacks, QUIC incorporates a cheap token exchange
-mechanism which allows servers to validate a client's IP address prior to doing
-any expensive computations at the cost of a single round trip.  After a
+expensive, requiring both a signature and a key exchange computation. In order
+to prevent computational DoS attacks, the Retry packet provides a cheap token
+exchange mechanism which allows servers to validate a client's IP address prior
+to doing any expensive computations at the cost of a single round trip. After a
 successful handshake, servers can issue new tokens to a client which will allow
 new connection establishment without incurring this cost.
 
+
 #### On-Path Handshake Termination
 
-An on-path attacker can force the QUIC handshake to fail by replacing either the
-client or server Initial messages with invalid messages.  An off-path attacker
-can also mount this attack by racing the Initials.  Once valid Initial messages
-have been exchanged, the remaining handshake messages are protected with the
-handshake keys and an on-path attacker cannot force handshake failure, though
-they can produce a handshake timeout by dropping packets.
+An on-path or off-path attacker can force a handshake to fail by replacing or
+racing Initial packets. Once valid Initial packets have been exchanged,
+subsequent Handshake packets are protected with the handshake keys and an
+on-path attacker cannot force handshake failure other than by dropping packets
+to cause endpoints to abandon the attempt.
 
 An on-path attacker can also replace the addresses of packets on either side and
 therefore cause the client or server to have an incorrect view of the remote
 addresses. Such an attack is indistinguishable from the functions performed by a
 NAT.
+
 
 #### Parameter Negotiation
 
@@ -6107,49 +6114,50 @@ being encrypted with per-version keys and the Handshake and later packets being
 encrypted with keys derived from the TLS key exchange.  Further, parameter
 negotiation is folded into the TLS transcript and thus provides the same
 security guarantees as ordinary TLS negotiation.  Thus, an attacker can observe
-the client's transport parameters (as long as it knows the QUIC version-specific
+the client's transport parameters (as long as it knows the version-specific
 salt) but cannot observe the server's transport parameters and cannot influence
 parameter negotiation.
 
-Connection IDs are unencrypted but integrity protected in all messages.  They
-are not incorporated in the TLS handshake transcript.
+Connection IDs are unencrypted but integrity protected in all packets.
 
 This version of QUIC does not incorporate a version negotiation mechanism;
-implementations of QUIC with incompatible versions will simply fail to
-negotiate.
+implementations of incompatible versions will simply fail to establish a
+connection.
 
 
 ### Protected Packets {#protected-packet-properties}
 
 Packet protection ({{packet-protected}}) provides authentication and encryption
-of all QUIC packets except Version Negotiation and Retry packets, see
-{{QUIC-TLS}} for more details.  This section considers passive and active
-attacks against protected packets.
+of all packets except Version Negotiation packets, though Initial and Retry
+packets have limited encryption and authentication based on version-specific
+keys; see {{QUIC-TLS}} for more details. This section considers passive and
+active attacks against protected packets.
 
 Both on-path and off-path attackers can mount a passive attack in which they
-save observed QUIC packets for an offline attack against QUIC packet protection
-at a future time; this is true for any observer of any packet on any network.
+save observed packets for an offline attack against packet protection at a
+future time; this is true for any observer of any packet on any network.
 
 A blind attacker, one who injects packets without being able to observe valid
-packets for a QUIC connection, is unlikely to be successful, since packet
-protection ensures that valid packets are only generated by endpoints which
-possess the key material established during the handshake; see {{handshake}} and
-{{handshake-properties}}.  Similarly, any active attacker that observes QUIC
-packets and attempts to insert new data or modify existing data in those packets
-should not be able to generate packets deemed valid by the receiving endpoint.
+packets for a connection, is unlikely to be successful, since packet protection
+ensures that valid packets are only generated by endpoints which possess the
+key material established during the handshake; see {{handshake}} and
+{{handshake-properties}}. Similarly, any active attacker that observes packets
+and attempts to insert new data or modify existing data in those packets should
+not be able to generate packets deemed valid by the receiving endpoint.
 
 A spoofing attack, in which an active attacker rewrites unprotected parts of a
-QUIC packet that it forwards or injects, such as the source or destination
+packet that it forwards or injects, such as the source or destination
 address, is only effective if the attacker can forward packets to the original
 endpoint.  Packet protection ensures that the packet payloads can only be
-processed by the endpoints that completed the handshake, and invalid QUIC
+processed by the endpoints that completed the handshake, and invalid
 packets are ignored by those endpoints.
 
-An attacker can also modify the boundaries between QUIC packets and UDP
-datagrams, causing multiple packets to be coalesced into a single datagram, or
-splitting coalesced packets into multiple datagrams.  Such modification has no
-functional effect on a QUIC connection, although it might change the performance
-characteristics exhibited by the receiving endpoint.
+An attacker can also modify the boundaries between packets and UDP datagrams,
+causing multiple packets to be coalesced into a single datagram, or splitting
+coalesced packets into multiple datagrams. Aside from datagrams containing
+Initial packets, which require padding, modification of how packets are
+arranged in datagrams has no functional effect on a connection, although it
+might change some performance characteristics.
 
 
 ### Connection Migration {#migration-properties}
@@ -6164,12 +6172,13 @@ address spoofing by limiting the number of packets sent to a spoofed address.
 This section describes the intended security properties of connection migration
 when under various types of DoS attacks.
 
+
 #### On-Path Active Attacks
 
 An attacker that can cause a packet it observes to no longer reach its intended
-destination is considered an on-path attacker.  Such an attacker generally is
-present between the QUIC client and server, and a QUIC endpoint is required to
-send packets through this attacker to establish connectivity on a given path.
+destination is considered an on-path attacker. When an attacker is present
+between a client and server, endpoints are required to send packets through the
+attacker to establish connectivity on a given path.
 
 An on-path attacker can:
 
@@ -6183,39 +6192,40 @@ An on-path attacker can:
 
 An on-path attacker cannot:
 
-- Modify an authenticated portion of a packet and cause the
- recipient to accept that packet
+- Modify an authenticated portion of a packet and cause the recipient to accept
+  that packet
 
 An on-path attacker has the opportunity to modify the packets that it observes,
 however any modifications to an authenticated portion of a packet will cause it
-to be dropped by the receiving endpoint as invalid, as QUIC payloads are both
+to be dropped by the receiving endpoint as invalid, as packet payloads are both
 authenticated and encrypted.
 
 In the presence of an on-path attacker, QUIC aims to provide the following
 properties:
 
-1. An on-path attacker can prevent use of a path for a QUIC connection, causing
-it to fail if it cannot migrate to a new path that does not contain the
-attacker.  This can be achieved by dropping all packets, modifying them so that
-they fail to decrypt, or other methods.
+1. An on-path attacker can prevent use of a path for a connection, causing
+   it to fail if it cannot use a different path that does not contain the
+   attacker. This can be achieved by dropping all packets, modifying them so
+   that they fail to decrypt, or other methods.
 
 2. An on-path attacker can prevent migration to a new path for which the
-attacker is also on-path by causing path validation to fail on the new path.
+   attacker is also on-path by causing path validation to fail on the new path.
 
 3. An on-path attacker cannot prevent a client from migrating to a path for
-which the attacker is not on-path.
+   which the attacker is not on-path.
 
 4. An on-path attacker can reduce the throughput of a connection by delaying
-packets or dropping them.
+   packets or dropping them.
 
 5. An on-path attacker cannot cause an endpoint to accept a packet for which it
-has modified an authenticated portion of that packet.
+   has modified an authenticated portion of that packet.
+
 
 #### Off-Path Active Attacks
 
-An off-path attacker is not directly on the path between the QUIC client and
-server, but may be able to obtain copies of some or all packets sent between the
-client and the server.  It is also able to send copies of those packets to
+An off-path attacker is not directly on the path between a client and server,
+but could be able to obtain copies of some or all packets sent between the
+client and the server. It is also able to send copies of those packets to
 either endpoint.
 
 An off-path attacker can:
@@ -6231,14 +6241,14 @@ An off-path attacker cannot:
 - Drop packets
 - Reorder original packets
 
-An off-path attacker can, however, modify packets that it has observed and
-inject them back into the network, potentially with spoofed source and
-destination addresses.
+An off-path attacker can modify packets that it has observed and inject them
+back into the network, potentially with spoofed source and destination
+addresses.
 
-For the purposes of this discussion, it is assumed that an off-path attacker has
-the ability to observe, modify, and re-inject a packet into the network that
-will reach the destination endpoint prior to the arrival of the original packet
-observed by the attacker.  In other words, an attacker has the ability to
+For the purposes of this discussion, it is assumed that an off-path attacker
+has the ability to observe, modify, and re-inject a packet into the network
+that will reach the destination endpoint prior to the arrival of the original
+packet observed by the attacker. In other words, an attacker has the ability to
 consistently "win" a race with the legitimate packets between the endpoints,
 potentially causing the original packet to be ignored by the recipient.
 
@@ -6250,23 +6260,25 @@ In the presence of an off-path attacker, QUIC aims to provide the following
 properties:
 
 1. An off-path attacker can race packets and attempt to become a "limited"
-on-path attacker.
+   on-path attacker.
 
 2. An off-path attacker can cause path validation to succeed for forwarded
-packets with the source address listed as the off-path attacker as long as it
-can provide improved connectivity between the client and the server.
+   packets with the source address listed as the off-path attacker as long as
+   it can provide improved connectivity between the client and the server.
 
-3. An off-path attacker cannot cause a connection to close.
+3. An off-path attacker cannot cause a connection to close once the handshake
+   has completed.
 
 4. An off-path attacker cannot cause migration to a new path to fail if it
-cannot observe the new path.
+   cannot observe the new path.
 
 5. An off-path attacker can become a limited on-path attacker during migration
-to a new path for which it is also an off-path attacker.
+   to a new path for which it is also an off-path attacker.
 
 6. An off-path attacker can become a limited on-path attacker by affecting
-shared NAT state such that it sends packets to the server from the same IP
-address and port that the client originally used.
+   shared NAT state such that it sends packets to the server from the same IP
+   address and port that the client originally used.
+
 
 #### Limited On-Path Active Attacks
 
@@ -6304,13 +6316,14 @@ endpoint.
 In the presence of a limited on-path attacker, QUIC aims to provide the
 following properties:
 
-1. A limited on-path attacker cannot cause an active connection to close.
+1. A limited on-path attacker cannot cause a connection to close once the
+   handshake has completed.
 
 2. A limited on-path attacker cannot cause an idle connection to close if the
-client is first to resume activity.
+   client is first to resume activity.
 
 3. A limited on-path attacker can cause an idle connection to be deemed lost if
-the server is the first to resume activity.
+   the server is the first to resume activity.
 
 Note that these guarantees are the same guarantees provided for any NAT, for the
 same reasons.
