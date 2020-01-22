@@ -346,9 +346,7 @@ On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
 ack_delay = min(Ack Delay in ACK Frame, max_ack_delay)
-adjusted_rtt = latest_rtt
-if (min_rtt + ack_delay < latest_rtt):
-  adjusted_rtt = latest_rtt - ack_delay
+adjusted_rtt = max(latest_rtt - ack_delay, min_rtt)
 smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
