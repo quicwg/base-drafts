@@ -358,7 +358,7 @@ rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 # Loss Detection {#loss-detection}
 
 QUIC senders use acknowledgements to detect lost packets, and a probe
-time out {{pto}} to ensure acknowledgements are received. This section
+time out (see {{pto}}) to ensure acknowledgements are received. This section
 provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
