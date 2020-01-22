@@ -3019,8 +3019,8 @@ frames are explained in more detail in {{frame-formats}}.
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
-(see {{iana-frames}}).  This column summarizes the types of packets that each
-frame type can appear in, indicated as up to four characters indicating:
+(see {{iana-frames}}).  This column lists the types of packets that each
+frame type can appear in, indicated by the following characters:
 
 I:
 
