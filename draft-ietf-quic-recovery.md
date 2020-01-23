@@ -453,9 +453,6 @@ the PTO period as follows:
 PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 ~~~
 
-kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
-{{ld-consts-of-interest}} and {{ld-vars-of-interest}}.
-
 The PTO period is the amount of time that a sender ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
 network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
