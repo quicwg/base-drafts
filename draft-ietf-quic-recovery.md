@@ -184,7 +184,7 @@ measurement are unified across packet number spaces.
 TCP conflates transmission order at the sender with delivery order at the
 receiver, which results in retransmissions of the same data carrying the same
 sequence number, and consequently leads to "retransmission ambiguity".  QUIC
-separates the two: QUIC uses a packet number to indicate transmission order.
+separates the two. QUIC uses a packet number to indicate transmission order.
 Application data is sent in one or more streams and delivery order is
 determined by stream offsets encoded within STREAM frames.
 
