@@ -95,7 +95,7 @@ QUIC is a new multiplexed and secure transport protocol atop UDP, specified in
 recovery for QUIC. Mechanisms described in this document follow the spirit
 of existing TCP congestion control and loss recovery mechanisms, described in
 RFCs, various Internet-drafts, or academic papers, and also those prevalent in
-the Linux TCP implementation. Where applicable, this document attributes the TCP
+the Linux TCP implementation.
 equivalent.
 
 # Conventions and Definitions
