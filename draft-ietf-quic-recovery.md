@@ -92,7 +92,7 @@ code and issues list for this draft can be found at
 
 QUIC is a new multiplexed and secure transport protocol atop UDP, specified in
 {{QUIC-TRANSPORT}}. This document describes congestion control and loss
-recovery for QUIC. Mechanisms described in this documnet follow the spirit
+recovery for QUIC. Mechanisms described in this document follow the spirit
 of existing TCP congestion control and loss recovery mechanisms, described in
 RFCs, various Internet-drafts, or academic papers, and also those prevalent in
 the Linux TCP implementation. Where applicable, this document attributes the TCP
