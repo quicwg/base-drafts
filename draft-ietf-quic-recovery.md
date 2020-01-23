@@ -275,7 +275,7 @@ An RTT sample MUST NOT be generated on receiving an ACK frame that does not
 newly acknowledge at least one ack-eliciting packet. A peer usually does not
 send an ACK frame when only non-ack-eliciting packets are received. Therefore
 an ACK frame that only contains acknowledgements for non-ack-eliciting packets
-can subsequently include an arbitrarily large Ack Delay value.  Ignoring
+could include an arbitrarily large Ack Delay value.  Ignoring
 such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
 computations.
 
