@@ -410,8 +410,9 @@ time threshold MUST be set to at least kGranularity.  The time threshold is:
 max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
 ~~~
 
-If packets sent prior to the largest acknowledged packet cannot yet be declared
-lost, then a timer SHOULD be set for the remaining time.
+When an ACK frame is received and unacknowledged packets sent prior to the
+largest acknowledged packet cannot yet be declared lost, then a timer SHOULD
+be set for the remaining time.
 
 Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
 
