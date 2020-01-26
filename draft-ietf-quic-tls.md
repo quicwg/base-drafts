@@ -1977,7 +1977,7 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
 
 This shows a Retry packet that might be sent in response to the Initial packet
 in {{sample-client-initial}}. The integrity check includes the client-chosen
-connection ID value of 0x8394c8f03e515708, but that value is not transmitted
+connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
