@@ -6685,6 +6685,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Prohibit IP fragmentation (#3243, #3280)
 - Define the use of provisional registration for all registries (#3109, #3020,
   #3102, #3170)
+- Packets on one path must not adjust values for a different path (#2909,
+  #3139)
 
 ## Since draft-ietf-quic-transport-23
 
