@@ -707,18 +707,24 @@ Endpoints MUST NOT initiate new requests or promise new pushes on the connection
 after receipt of a GOAWAY frame from the peer.  Clients MAY establish a new
 connection to send additional requests.
 
-Some requests or pushes might already be in transit.  Upon receipt of a GOAWAY
-frame, if the endpoint has already sent requests or promised pushes with an
-identifier greater than or equal to that received in a GOAWAY frame, those
-requests or pushes will not be processed.  The endpoint that initiated these
-requests or pushes MAY cancel them.  Clients MAY retry such requests on a
-different connection.
+Some requests or pushes might already be in transit:
 
-Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the server
-might have been processed; their status cannot be known until a response is
-received, the stream is reset individually, or the connection terminates.
-Servers MAY reject individual requests on streams below the indicated ID if
-these requests were not processed.
+  - Upon receipt of a GOAWAY frame, if the client has already sent requests with
+    a Stream ID greater than or equal to the identifier received in a GOAWAY
+    frame, those requests will not be processed.  Clients can safely retry
+    unprocessed requests on a different connection.
+
+    Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
+    server might have been processed; their status cannot be known until a
+    response is received, the stream is reset individually, or the connection
+    terminates.
+
+    Servers MAY reject individual requests on streams below the indicated ID if
+    these requests were not processed.
+
+  - If a server receives a GOAWAY frame after having promised pushes with a Push
+    ID greater than or equal to the identifier received in a GOAWAY frame, those
+    pushes will not be accepted.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -750,6 +756,11 @@ value indicates the client will reject pushes with Push IDs greater than or
 equal to this value.  Like the server, the client MAY send subsequent GOAWAY
 frames so long as the specified Push ID is strictly smaller than all previously
 sent values.
+
+Even when a GOAWAY indicates that a given request or push will not be processed
+or accepted upon receipt, the underlying transport resources still exist.  The
+endpoint that initiated these requests can cancel them to clean up transport
+state.
 
 Once all accepted requests and pushes have been processed, the endpoint can
 permit the connection to become idle, or MAY initiate an immediate closure of
