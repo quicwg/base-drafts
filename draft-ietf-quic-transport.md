@@ -3057,13 +3057,14 @@ than once.
 The Frame Type field uses a variable length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
-encoding.  Though a two-, four- or eight-byte encoding of the frame types
-defined in this document is possible, the Frame Type field for these frames is
-encoded on a single byte.  For instance, though 0x4001 is a legitimate two-byte
-encoding for a variable-length integer with a value of 1, PING frames are always
-encoded as a single byte with the value 0x01.  An endpoint MAY treat the receipt
-of a frame type that uses a longer encoding than necessary as a connection error
-of type PROTOCOL_VIOLATION.
+encoding.  For frame types defined in this document, this means a single-byte
+encoding, even though it is possible to encode these values as a two-, four-
+or eight-byte variable length integer.  For instance, though 0x4001 is
+a legitimate two-byte encoding for a variable-length integer with a value
+of 1, PING frames are always encoded as a single byte with the value 0x01.
+This rule applies to all current and future QUIC frame types.  An endpoint
+MAY treat the receipt of a frame type that uses a longer encoding than
+necessary as a connection error of type PROTOCOL_VIOLATION.
 
 # Packetization and Reliability {#packetization}
 
