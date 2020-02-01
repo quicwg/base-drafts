@@ -3811,8 +3811,8 @@ Example pseudo-code for packet number decoding can be found in
 {: #fig-long-header title="Long Header Packet Format"}
 
 Long headers are used for packets that are sent prior to the establishment
-of 1-RTT keys. Once both conditions are
-met, a sender switches to sending packets using the short header
+of 1-RTT keys. Once 1-RTT keys are available,
+a sender switches to sending packets using the short header
 ({{short-header}}).  The long form allows for special packets - such as the
 Version Negotiation packet - to be represented in this uniform fixed-length
 packet format. Packets that use the long header contain the following fields:
