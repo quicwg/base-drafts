@@ -199,8 +199,8 @@ Ack-eliciting Packet:
 Out-of-order packet:
 
 : A packet that does not increase the largest received packet number for its
-  packet number space by exactly one. A packet can arrive out of order
-  if it is delayed or if earlier packets are lost or delayed.
+  packet number space ({{packet-numbers}}) by exactly one. A packet can arrive
+  out of order if it is delayed or if earlier packets are lost or delayed.
 
 Endpoint:
 
@@ -1339,9 +1339,10 @@ properties:
 An endpoint can verify support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-validation}}.
 
-The CRYPTO frame can be sent in different packet number spaces.  The sequence
-numbers used by CRYPTO frames to ensure ordered delivery of cryptographic
-handshake data start from zero in each packet number space.
+The CRYPTO frame can be sent in different packet number spaces
+({{packet-numbers}}).  The sequence numbers used by CRYPTO frames to ensure
+ordered delivery of cryptographic handshake data start from zero in each
+packet number space.
 
 Endpoints MUST explicitly negotiate an application protocol.  This avoids
 situations where there is a disagreement about the protocol that is in use.
