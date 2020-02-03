@@ -4694,7 +4694,8 @@ preferred_address (0x000d):
 
 active_connection_id_limit (0x000e):
 
-: The maximum number of connection IDs from the peer that an endpoint is willing
+: The active connection ID limit is an integer value specifying the
+  maximum number of connection IDs from the peer that an endpoint is willing
   to store. This value includes the connection ID received during the handshake,
   that received in the preferred_address transport parameter, and those received
   in NEW_CONNECTION_ID frames.
