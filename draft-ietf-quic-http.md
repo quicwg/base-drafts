@@ -716,8 +716,8 @@ Some requests or pushes might already be in transit:
 
     Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
     server might have been processed; their status cannot be known until a
-    response is received, the stream is reset individually, or the connection
-    terminates.
+    response is received, the stream is reset individually, another GOAWAY is
+    received, or the connection terminates.
 
     Servers MAY reject individual requests on streams below the indicated ID if
     these requests were not processed.
