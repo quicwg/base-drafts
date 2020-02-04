@@ -460,8 +460,8 @@ allocating a stream ID to a stream until it sends the first STREAM frame and
 enters this state, which can allow for better stream prioritization.
 
 The sending part of a bidirectional stream initiated by a peer (type 0 for a
-server, type 1 for a client) starts the "Ready" state when the receiving part is
-created.
+server, type 1 for a client) starts in the "Ready" state when the receiving part
+is created.
 
 In the "Send" state, an endpoint transmits - and retransmits as necessary -
 stream data in STREAM frames.  The endpoint respects the flow control limits set
