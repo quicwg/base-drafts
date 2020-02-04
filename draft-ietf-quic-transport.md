@@ -1629,9 +1629,9 @@ constrained by the amplification restriction.
 Packet loss, in particular loss of a Handshake packet from the server, can cause
 a situation in which the server cannot send when the client has no data to send
 and the anti-amplification limit is reached. In order to avoid this causing a
-handshake deadlock, clients SHOULD send a packet upon a probe timeout, as
+handshake deadlock, clients MUST send a packet upon a probe timeout, as
 described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
-not have Handshake keys, it SHOULD send an Initial packet in a UDP datagram of
+not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
 at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
 Handshake packet.
 
