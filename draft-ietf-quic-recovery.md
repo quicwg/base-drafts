@@ -489,7 +489,7 @@ in the Handshake packet number space.
 The life of a connection that is experiencing consecutive PTOs is limited by
 the endpoint's idle timeout.
 
-The probe timer is not set if the time threshold {{time-threshold}} loss
+The probe timer MUST NOT be set if the time threshold {{time-threshold}} loss
 detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
