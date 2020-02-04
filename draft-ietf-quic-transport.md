@@ -2406,33 +2406,30 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled by either peer, a connection is silently closed
+If a max_idle_timeout is specified by either peer in transport parameters
+(see {{transport-parameter-definitions}}), a connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-the max_idle_timeouts (see {{transport-parameter-definitions}}) and three times
-the current Probe Timeout (PTO).
+the max_idle_timeouts and three times the current Probe Timeout (PTO).
 
-Each endpoint advertises a max_idle_timeout, but the effective value
-at an endpoint is computed as the minimum of the two advertised values. By
-announcing a max_idle_timeout, an endpoint commits to initiating an immediate
+By announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
-An endpoint restarts its idle timer when a packet from its peer is received
-and processed successfully.  The idle timer is also restarted when sending
-an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
-ack-eliciting packets have been sent since last receiving a packet.  Restarting
-when sending packets ensures that connections do not prematurely time out when
-initiating new activity.  An endpoint might need to send packets to avoid an
-idle timeout if it is unable to send application data due to being blocked on
-flow control limits; see {{flow-control}}.
+An endpoint restarts its idle timer when sending an ack-eliciting packet if no
+other ack-eliciting packets have been sent since last receiving a packet.
+Restarting when sending packets ensures that connections do not prematurely time
+out when initiating new activity.  An endpoint might need to send ack-eliciting
+packets to avoid an idle timeout if it is unable to send application data due to
+being blocked on flow control limits (see {{flow-control}}) or is application
+limited, but expecting response data.
 
 An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
 before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to test for
-liveness before sending any data that cannot be retried safely.  Note that it
-is likely that only applications or application protocols will know what
-information can be retried.
+(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to send a PING or
+other ack-eliciting frames to test for liveness before sending any data that
+cannot be retried safely.  Note that it is likely that only applications or
+application protocols will know what information can be retried.
 
 
 ## Immediate Close
