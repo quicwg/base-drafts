@@ -263,11 +263,11 @@ than its own Insert Count, the stream cannot be processed immediately, and is
 considered "blocked"; see {{blocked-decoding}}.
 
 The decoder specifies an upper bound on the number of streams which can be
-blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting; see
-{{configuration}}. An encoder MUST limit the number of streams which could
-become blocked to the value of SETTINGS_QPACK_BLOCKED_STREAMS at all times.
-If a decoder encounters more blocked streams than it promised to support, it
-MUST treat this as a connection error of type HTTP_QPACK_DECOMPRESSION_FAILED.
+blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting; see {{configuration}}.
+An encoder MUST limit the number of streams which could become blocked to the
+value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. If a decoder encounters
+more blocked streams than it promised to support, it MUST treat this as a
+connection error of type QPACK_DECOMPRESSION_FAILED.
 
 Note that the decoder might not become blocked on every stream which risks
 becoming blocked.
@@ -326,9 +326,9 @@ decoder has started reading from the stream.
 When processing header blocks, the decoder expects the Required Insert Count to
 exactly match the value defined in {{blocked-streams}}. If it encounters a
 smaller value than expected, it MUST treat this as a connection error of type
-HTTP_QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it encounters a
+QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it encounters a
 larger value than expected, it MAY treat this as a connection error of type
-HTTP_QPACK_DECOMPRESSION_FAILED.
+QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -381,11 +381,11 @@ If the decoder encounters a reference in a header block representation to a
 dynamic table entry which has already been evicted or which has an absolute
 index greater than or equal to the declared Required Insert Count
 ({{header-prefix}}), it MUST treat this as a connection error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED`.
+QPACK_DECOMPRESSION_FAILED.
 
 If the decoder encounters a reference in an encoder instruction to a dynamic
 table entry which has already been evicted, it MUST treat this as a connection
-error of type `HTTP_QPACK_ENCODER_STREAM_ERROR`.
+error of type QPACK_ENCODER_STREAM_ERROR.
 
 
 # Header Tables
@@ -408,9 +408,8 @@ table is indexed from 1.
 
 When the decoder encounters an invalid static table index in a header block
 representation it MUST treat this as a connection error of type
-`HTTP_QPACK_DECOMPRESSION_FAILED`.  If this index is received on the encoder
-stream, this MUST be treated as a connection error of type
-`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+QPACK_DECOMPRESSION_FAILED.  If this index is received on the encoder stream,
+this MUST be treated as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 
 ## Dynamic Table {#header-table-dynamic}
 
@@ -448,7 +447,7 @@ dynamic table entry to be evicted unless that entry is evictable; see
 {{blocked-insertion}}.  The new entry is then added to the table.  It is an
 error if the encoder attempts to add an entry that is larger than the dynamic
 table capacity; the decoder MUST treat this as a connection error of type
-`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+QPACK_ENCODER_STREAM_ERROR.
 
 A new entry can reference an entry in the dynamic table that will be evicted
 when adding this new entry into the dynamic table.  Implementations are
@@ -476,10 +475,10 @@ For clients using 0-RTT data in HTTP/3, the server's maximum table capacity is
 the remembered value of the setting, or zero if the value was not previously
 sent.  When the client's 0-RTT value of the SETTING is zero, the server MAY set
 it to a non-zero value in its SETTINGS frame. If the remembered value is
-non-zero, the server MUST send the same non-zero value in its SETTINGS frame.
-If it specifies any other value, or omits SETTINGS_QPACK_MAX_TABLE_CAPACITY from
+non-zero, the server MUST send the same non-zero value in its SETTINGS frame. If
+it specifies any other value, or omits SETTINGS_QPACK_MAX_TABLE_CAPACITY from
 SETTINGS, the encoder must treat this as a connection error of type
-`HTTP_QPACK_DECODER_STREAM_ERROR`.
+QPACK_DECODER_STREAM_ERROR.
 
 For HTTP/3 servers and HTTP/3 clients when 0-RTT is not attempted or is
 rejected, the maximum table capacity is 0 until the encoder processes a SETTINGS
@@ -667,10 +666,9 @@ see {{prefixed-integers}}.
 
 The new capacity MUST be lower than or equal to the limit described in
 {{maximum-dynamic-table-capacity}}.  In HTTP/3, this limit is the value of the
-SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter ({{configuration}}) received
-from the decoder.  The decoder MUST treat a new dynamic table capacity value
-that exceeds this limit as a connection error of type
-`HTTP_QPACK_ENCODER_STREAM_ERROR`.
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter ({{configuration}}) received from
+the decoder.  The decoder MUST treat a new dynamic table capacity value that
+exceeds this limit as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 
 Reducing the dynamic table capacity can cause entries to be evicted; see
 {{eviction}}.  This MUST NOT cause the eviction of entries which are not
@@ -779,7 +777,7 @@ in {{state-synchronization}}.
 If an encoder receives a Header Acknowledgement instruction referring to a
 stream on which every header block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
-`HTTP_QPACK_DECODER_STREAM_ERROR`.
+QPACK_DECODER_STREAM_ERROR.
 
 The Header Acknowledgement instruction might increase the Known Received Count;
 see {{known-received-count}}.
@@ -821,7 +819,7 @@ insertions and duplications processed so far.
 
 An encoder that receives an Increment field equal to zero, or one that increases
 the Known Received Count beyond what the encoder has sent MUST treat this as a
-connection error of type `HTTP_QPACK_DECODER_STREAM_ERROR`.
+connection error of type QPACK_DECODER_STREAM_ERROR.
 
 
 ## Header Block Representations
@@ -885,7 +883,7 @@ This encoding limits the length of the prefix on long-lived connections.
 The decoder can reconstruct the Required Insert Count using an algorithm such as
 the following.  If the decoder encounters a value of EncodedInsertCount that
 could not have been produced by a conformant encoder, it MUST treat this as a
-connection error of type `HTTP_QPACK_DECOMPRESSION_FAILED`.
+connection error of type QPACK_DECOMPRESSION_FAILED.
 
 TotalNumberOfInserts is the total number of inserts into the decoder's dynamic
 table.
@@ -1115,15 +1113,15 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the connection from continuing:
 
-HTTP_QPACK_DECOMPRESSION_FAILED (0x200):
+QPACK_DECOMPRESSION_FAILED (0x200):
 : The decoder failed to interpret a header block and is not able to continue
   decoding that header block.
 
-HTTP_QPACK_ENCODER_STREAM_ERROR (0x201):
+QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
   encoder stream.
 
-HTTP_QPACK_DECODER_STREAM_ERROR (0x202):
+QPACK_DECODER_STREAM_ERROR (0x202):
 : The encoder failed to interpret a decoder instruction received on the
   decoder stream.
 
@@ -1175,9 +1173,9 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| HTTP_QPACK_DECOMPRESSION_FAILED   | 0x200 | Decompression of a header block failed   | {{error-handling}}     |
-| HTTP_QPACK_ENCODER_STREAM_ERROR   | 0x201 | Error on the encoder stream              | {{error-handling}}     |
-| HTTP_QPACK_DECODER_STREAM_ERROR   | 0x202 | Error on the decoder stream              | {{error-handling}}     |
+| QPACK_DECOMPRESSION_FAILED        | 0x200 | Decompression of a header block failed   | {{error-handling}}     |
+| QPACK_ENCODER_STREAM_ERROR        | 0x201 | Error on the encoder stream              | {{error-handling}}     |
+| QPACK_DECODER_STREAM_ERROR        | 0x202 | Error on the decoder stream              | {{error-handling}}     |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 
 
