@@ -370,19 +370,20 @@ a single final HTTP response, as detailed below.
 
 An HTTP message (request or response) consists of:
 
-1. the message header (see {{!RFC7230}}, Section 3.2), sent as a single HEADERS
-   frame (see {{frame-headers}}),
+1. the message header (see Section 3.2 of {{!RFC7230}}), sent as a single
+   HEADERS frame (see {{frame-headers}}),
 
-2. optionally, the payload body, if present (see {{!RFC7230}}, Section 3.3),
+2. optionally, the payload body, if present (see Section 3.3 of {{!RFC7230}}),
    sent as a series of DATA frames (see {{frame-data}}),
 
-3. optionally, trailing headers, if present (see {{!RFC7230}}, Section 4.1.2),
+3. optionally, trailing headers, if present (see Section 4.1.2 of {{!RFC7230}}),
    sent as a single HEADERS frame.
 
-A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
-before, after, or interleaved with the frames of a response message. These
-PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.
+A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) or
+DUPLICATE_PUSH (see {{frame-duplicate-push}}) frames before, after, or
+interleaved with the frames of a response message. These PUSH_PROMISE and
+DUPLICATE_PUSH frames are not part of the response; see {{server-push}} for
+more details.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
@@ -397,7 +398,7 @@ The "chunked" transfer encoding defined in Section 4.1 of {{!RFC7230}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see {{!RFC7231}}, Section 6.2) precede a final
+informational responses (1xx; see Section 6.2 of {{!RFC7231}}) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
@@ -467,7 +468,7 @@ To allow for better compression efficiency, the cookie header field {{!RFC6265}}
 MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
 header fields, these MUST be concatenated before being passed into a non-HTTP/2,
-non-HTTP/3 context, as described in {{!HTTP2}}, Section 8.1.2.5.
+non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
@@ -544,7 +545,7 @@ expose implementations to these vulnerabilities.
 
 ## The CONNECT Method
 
-The pseudo-method CONNECT ({{!RFC7231}}, Section 4.3.6) is primarily used with
+The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
 HTTP proxies to establish a TLS session with an origin server for the purposes
 of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
 an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
@@ -552,14 +553,14 @@ method is used to establish a tunnel over a single HTTP/2 stream to a remote
 host for similar purposes.
 
 A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in {{!HTTP2}}, Section 8.3. A CONNECT
+request MUST be formatted as described in Section 8.3 of {{!HTTP2}}. A CONNECT
 request that does not conform to these restrictions is malformed (see
 {{malformed}}). The request stream MUST NOT be closed at the end of the request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in {{!RFC7231}}, Section 4.3.6.
+series status code to the client, as defined in Section 4.3.6 of {{!RFC7231}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
 connection. Any DATA frame sent by the client is transmitted by the proxy to the
@@ -591,8 +592,9 @@ with the RST bit set.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism ([RFC7230], Section 6.7) or
-101 (Switching Protocols) informational status code ([RFC7231], Section 6.2.2).
+HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of [RFC7230]) or
+101 (Switching Protocols) informational status code (Section 6.2.2 of
+[RFC7231]).
 
 ## Server Push
 
@@ -617,12 +619,15 @@ with a Push ID that is greater than the maximum Push ID as a connection error of
 type H3_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
-{{frame-push-promise}}) on the request stream which generated the push. This
-allows the server push to be associated with a client request.  Promised
+{{frame-push-promise}}) on the request stream which generated the push. Promised
 requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 
-The same server push can be associated with additional client requests using a
-DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).
+Each pushed response is associated with one or more client requests.  The push
+is associated with the request stream on which the PUSH_PROMISE frame was
+received.  The same server push can be associated with additional client
+requests using a DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  These
+associations do not affect the operation of the protocol, but MAY be used by
+user agents when deciding how to use pushed resources.
 
 Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
 response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
@@ -724,14 +729,17 @@ A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  A server MAY send multiple GOAWAY frames
 indicating different stream IDs, but MUST NOT increase the value they send in
 the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.  A server that is attempting to gracefully shut
-down a connection SHOULD send an initial GOAWAY frame with the last Stream ID
-set to the maximum value allowed by QUIC's MAX_STREAMS and SHOULD NOT increase
-the MAX_STREAMS limit thereafter.  This signals to the client that a shutdown is
-imminent and that initiating further requests is prohibited.  After allowing
-time for any in-flight requests (at least one round-trip time), the server MAY
-send another GOAWAY frame with an updated last Stream ID.  This ensures that a
-connection can be cleanly shut down without losing requests.
+requests on another connection.
+
+A server that is attempting to gracefully shut down a connection can send an
+initial GOAWAY frame with the last Stream ID set to the maximum possible value
+for a client-initiated, bidirectional stream (i.e. 2^62-4 in case of QUIC
+version 1).  This GOAWAY frame signals to the client that shutdown is imminent
+and that initiating further requests is prohibited.  After allowing time for any
+in-flight requests to reach the server, the server can send another GOAWAY frame
+indicating which requests it will accept before the end of the connection. This
+ensures that a connection can be cleanly shut down without causing requests to
+fail.
 
 Once all accepted requests have been processed, the server can permit the
 connection to become idle, or MAY initiate an immediate closure of the
@@ -922,7 +930,9 @@ transferred. Endpoints MUST NOT consider these streams to have any meaning upon
 receipt.
 
 The payload and length of the stream are selected in any manner the
-implementation chooses.
+implementation chooses.  Implementations MAY terminate these streams cleanly, or
+MAY abruptly terminate them.  When terminating abruptly, the error code
+H3_NO_ERROR or a reserved error code ({{http-error-codes}}) SHOULD be used.
 
 
 # HTTP Framing Layer {#http-framing-layer}
@@ -1380,13 +1390,16 @@ sent, and receipt MAY be treated as an error of type H3_FRAME_UNEXPECTED.
 QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection when an error is encountered.  These are referred to as
 "stream errors" or "connection errors" and are described in more detail in
-{{QUIC-TRANSPORT}}.  An endpoint MAY choose to treat a stream error as a
-connection error.
+{{QUIC-TRANSPORT}}.
+
+An endpoint MAY choose to treat a stream error as a connection error under
+certain circumstances.  Implementations need to consider the impact on
+outstanding requests before making this choice.
 
 Because new error codes can be defined without negotiation (see {{extensions}}),
-receipt of an unknown error code or use of an error code in an unexpected
-context MUST NOT be treated as an error.  However, closing a stream can
-constitute an error regardless of the error code (see {{request-response}}).
+use of an error code in an unexpected context or receipt of an unknown error
+code MUST be treated as equivalent to H3_NO_ERROR.  However, closing a stream
+can have other effects regardless of the error code (see {{request-response}}).
 
 This section describes HTTP/3-specific error codes which can be used to express
 the cause of a connection or stream error.
@@ -1452,6 +1465,11 @@ H3_VERSION_FALLBACK (0x110):
 : The requested operation cannot be served over HTTP/3.  The peer should
   retry over HTTP/1.1.
 
+Error codes of the format `0x1f * N + 0x21` for integer values of N are reserved
+to exercise the requirement that unknown error codes be treated as equivalent to
+H3_NO_ERROR ({{extensions}}). Implementations SHOULD select an error code from
+this space with some probability when they would have sent H3_NO_ERROR.
+
 # Extensions to HTTP/3 {#extensions}
 
 HTTP/3 permits extension of the protocol.  Within the limitations described in
@@ -1482,8 +1500,9 @@ requirement and SHOULD be treated as an error.
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
 layout of the HEADERS frame cannot be used until the peer has given a positive
-signal that this is acceptable. In this case, it could also be necessary to
-coordinate when the revised layout comes into effect.
+signal that this is acceptable.  Coordinating when such a revised layout comes
+into effect could prove complex.  As such, allocating new identifiers for
+new definitions of existing protocol elements is likely to be more effective.
 
 This document doesn't mandate a specific method for negotiating the use of an
 extension but notes that a setting ({{settings-parameters}}) could be used for
@@ -1705,6 +1724,10 @@ The entries in the {{iana-error-table}} are registered by this document.
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
+
+Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
+(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
+assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
 
@@ -2020,6 +2043,8 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 - Removed H3_EARLY_RESPONSE error code; H3_NO_ERROR is recommended instead
   (#3130,#3208)
+- Unknown error codes are equivalent to H3_NO_ERROR (#3276,#3331)
+- Some error codes are reserved for greasing (#3325,#3360)
 
 ## Since draft-ietf-quic-http-23
 

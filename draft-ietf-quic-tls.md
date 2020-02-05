@@ -80,7 +80,7 @@ informative:
       ISBN: 978-1466570269
 
   QUIC-HTTP:
-    title: "Hypertext Transfer Protocol (HTTP) over QUIC"
+    title: "Hypertext Transfer Protocol Version 3 (HTTP/3)"
     date: {DATE}
     seriesinfo:
       Internet-Draft: draft-ietf-quic-http-latest
@@ -88,7 +88,7 @@ informative:
       -
         ins: M. Bishop
         name: Mike Bishop
-        org: Microsoft
+        org: Akamai Technologies
         role: editor
 
 
@@ -340,7 +340,8 @@ encryption levels:
 - All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
 Note that it is not possible to send the following frames in 0-RTT for various
-reasons: ACK, CRYPTO, NEW_TOKEN, PATH_RESPONSE, and RETIRE_CONNECTION_ID.
+reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -390,13 +391,15 @@ perspective of the endpoint in question.
 
 ### Handshake Confirmed {#handshake-confirmed}
 
-In this document, the TLS handshake is considered confirmed at an endpoint when
-the following two conditions are met: the handshake is complete, and the
-endpoint has received an acknowledgment for a packet sent with 1-RTT keys.
-This second condition can be implemented by recording the lowest packet number
-sent with 1-RTT keys, and the highest value of the Largest Acknowledged field
-in any received 1-RTT ACK frame: once the latter is higher than or equal to the
-former, the handshake is confirmed.
+In this document, the TLS handshake is considered confirmed at the server when
+the handshake completes.  At the client, the handshake is considered confirmed
+when a HANDSHAKE_DONE frame is received.
+
+A client MAY consider the handshake to be confirmed when it receives an
+acknowledgement for a 1-RTT packet.  This can be implemented by recording the
+lowest packet number sent with 1-RTT keys, and comparing it to the Largest
+Acknowledged field in any received 1-RTT ACK frame: once the latter is greater
+than or equal to the former, the handshake is confirmed.
 
 
 ### Sending and Receiving Handshake Messages
@@ -767,15 +770,9 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys
 
-An endpoint MUST NOT discard its handshake keys until the TLS handshake is
-confirmed ({{handshake-confirmed}}).  An endpoint SHOULD discard its handshake
-keys as soon as it has confirmed the handshake.  Most application protocols
-will send data after the handshake, resulting in acknowledgements that allow
-both endpoints to discard their handshake keys promptly.  Endpoints that do
-not have reason to send immediately after completing the handshake MAY send
-ack-eliciting frames, such as PING, which will cause the handshake to be
-confirmed when they are acknowledged.
-
+An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
+({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame as soon
+as it completes the handshake.
 
 ### Discarding 0-RTT Keys
 
@@ -878,8 +875,7 @@ Note:
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
-{{test-vectors-initial}} contains test vectors for the initial packet
-encryption.
+{{test-vectors}} contains test vectors for packet encryption.
 
 
 ## AEAD Usage {#aead}
@@ -1215,6 +1211,68 @@ acknowledged.  This enables immediate server processing for those packets.
 A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
+
+
+## Retry Packet Integrity {#retry-integrity}
+
+Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
+Retry Integrity Tag that provides two properties: it allows discarding
+packets that have accidentally been corrupted by the network, and it diminishes
+off-path attackers' ability to send valid Retry packets.
+
+The Retry Integrity Tag is a 128-bit field that is computed as the output of
+AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
+
+- The secret key, K, is 128 bits equal to 0x4d32ecdb2a2133c841e4043df27d4430.
+- The nonce, N, is 96 bits equal to 0x4d1611d05513a552c587d575.
+- The plaintext, P, is empty.
+- The associated data, A, is the contents of the Retry Pseudo-Packet, as
+  illustrated in {{retry-pseudo}}:
+
+The secret key and the nonce are values derived by calling HKDF-Expand-Label
+using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
+secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
+
+~~~
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| ODCID Len (8) |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Original Destination Connection ID (0..160)        ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|1|1| 3 | Unused|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Version (32)                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| DCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Destination Connection ID (0..160)            ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| SCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0..160)               ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Retry Token (*)                      ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~~~
+{: #retry-pseudo title="Retry Pseudo-Packet"}
+
+The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
+the transmitted Retry packet, removing the Retry Integrity Tag and prepending
+the two following fields:
+
+ODCID Len:
+
+: The ODCID Len contains the length in bytes of the Original Destination
+  Connection ID field that follows it, encoded as an 8-bit unsigned integer.
+
+Original Destination Connection ID:
+
+: The Original Destination Connection ID contains the value of the Destination
+  Connection ID from the Initial packet that this Retry is in response to. The
+  length of this field is given in ODCID Len. The presence of this field
+  mitigates an off-path attacker's ability to inject a Retry packet.
 
 
 # Key Update
@@ -1720,13 +1778,13 @@ values in the following registries:
 
 --- back
 
-# Sample Initial Packet Protection {#test-vectors-initial}
+# Sample Packet Protection {#test-vectors}
 
-This section shows examples of packet protection for Initial packets so that
-implementations can be verified incrementally.  These packets use an 8-byte
-client-chosen Destination Connection ID of 0x8394c8f03e515708.  Values for both
-server and client packet protection are shown together with values in
-hexadecimal.
+This section shows examples of packet protection so that implementations can be
+verified incrementally. Samples of Initial packets from both client and server,
+plus a Retry packet are defined. These packets use an 8-byte client-chosen
+Destination Connection ID of 0x8394c8f03e515708. Some intermediate values are
+included. All values are shown in hexadecimal.
 
 
 ## Keys
@@ -1793,7 +1851,7 @@ hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
 ~~~
 
 
-## Client Initial
+## Client Initial {#sample-client-initial}
 
 The client sends an Initial packet.  The unprotected payload of this packet
 contains the following CRYPTO frame, plus enough PADDING frames to make a 1162
@@ -1876,6 +1934,7 @@ acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 aebe13f98ec51170a4aad0a8324bb768
 ~~~
 
+
 ## Server Initial
 
 The server sends the following payload in response, including an ACK frame, a
@@ -1915,12 +1974,32 @@ cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
 ~~~
 
 
+## Retry
+
+This shows a Retry packet that might be sent in response to the Initial packet
+in {{sample-client-initial}}. The integrity check includes the client-chosen
+connection ID value of 0x8394c8f03e515708, but that value is not
+included in the final Retry packet:
+
+~~~
+ffff0000190008f067a5502a4262b574 6f6b656e1e5ec5b014cbb1f0fd93df40
+48c446a6
+~~~
+
+
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-24
+
+- Rewrite key updates (#3050)
+  - Allow but don't recommend deferring key updates (#2792, #3263)
+  - More completely define received behavior (#2791)
+  - Define the label used with HKDF-Expand-Label (#3054)
 
 ## Since draft-ietf-quic-tls-23
 
@@ -2067,15 +2146,29 @@ No significant changes.
 - Added status note
 
 
-# Acknowledgments
-{:numbered="false"}
-
-This document has benefited from input from Dragana Damjanovic, Christian
-Huitema, Jana Iyengar, Adam Langley, Roberto Peon, Eric Rescorla, Ian Swett, and
-many others.
-
-
 # Contributors
 {:numbered="false"}
 
-Ryan Hamilton was originally an author of this specification.
+The IETF QUIC Working Group received an enormous amount of support from many
+people. The following people provided substantive contributions to this
+document:
+Adam Langley,
+Alessandro Ghedini,
+Christian Huitema,
+Christopher Wood,
+David Schinazi,
+Dragana Damjanovic,
+Eric Rescorla,
+Ian Swett,
+Jana Iyengar, <contact
+ asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
+Marten Seemann,
+Martin Duke,
+Mike Bishop, <contact
+ fullname="Mikkel Fahnøe Jørgensen"/>,
+Nick Banks,
+Nick Harper,
+Roberto Peon,
+Rui Paulo,
+Ryan Hamilton,
+and Victor Vasiliev.
