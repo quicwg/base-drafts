@@ -5710,10 +5710,10 @@ that a peer is able to understand the frame.  An endpoint can use a transport
 parameter to signal its willingness to receive one or more extension frame types
 with the one transport parameter.
 
-Extensions that modify core frame types or define alternatives to replace core
-frame types will be difficult to combine with other extensions which modify or
-replace the same frame(s) unless the behavior of the combination is explicitly
-defined.  Such extensions SHOULD define their interaction with
+Extensions that modify or replace core protocol functionality (including frame
+types) will be difficult to combine with other extensions which modify or
+replace the same functionality unless the behavior of the combination is
+explicitly defined.  Such extensions SHOULD define their interaction with
 previously-defined extensions modifying the same protocol components.
 
 Extension frames MUST be congestion controlled and MUST cause an ACK frame to
