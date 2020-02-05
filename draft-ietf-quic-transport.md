@@ -3701,6 +3701,8 @@ flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.10 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state (see Sections 5.3.1.2 and 6.9 of {{QUIC-RECOVERY}}).
+(This can be safely done because of the protection against loss of
+Handshake packet specified in {{validate-handshake}}.)
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
