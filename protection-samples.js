@@ -10,10 +10,12 @@ var buffer = require('buffer');
 var crypto = require('crypto');
 var assert = require('assert');
 
-var INITIAL_SALT = Buffer.from('7fbcdb0e7c66bbe9193a96cd21519ebd7a02644a', 'hex');
+var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
 var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
+
+var version = 'ff000019';
 
 function log(m, k) {
   console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
@@ -186,8 +188,9 @@ class InitialProtection {
     if (data[0] & 0x80 === 0) {
       throw new Error('short header unsupported');
     }
-    var hdr_len = 1 + 4 + 1 +
-        this.cidLen(data[5]&0xf) + this.cidLen(data[5]>>4);
+    var hdr_len = 1 + 4;
+    hdr_len += 1 + data[hdr_len]; // DCID
+    hdr_len += 1 + data[hdr_len]; // SCID
     if ((data[0] & 0x30) === 0) { // Initial packet: token.
       if ((data[hdr_len] & 0xc0) !== 0) {
         throw new Error('multi-byte token length unsupported');
@@ -251,10 +254,32 @@ function test(role, cid, hdr, pn, body) {
   }
 }
 
-var version = 'ff000015'
+function hex_cid(cid) {
+  return '0' + (cid.length / 2).toString(16) + cid;
+}
+
+function retry(dcid, scid, odcid) {
+  var pfx = Buffer.from(hex_cid(odcid), 'hex');
+  var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
+  var token = Buffer.from('token', 'ascii');
+  var header = Buffer.concat([encoded, token]);
+  log('retry header', header);
+  var aad = Buffer.concat([pfx, header]);
+  log('retry aad', aad);
+
+  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
+  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
+
+  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
+  gcm.setAAD(aad);
+  gcm.update('');
+  gcm.final();
+  log('retry', Buffer.concat([header, gcm.getAuthTag()]));
+}
+
 var cid = '8394c8f03e515708';
 
-var ci_hdr = 'c3' + version + '50' + cid + '00';
+var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
 // This is a client Initial.  Unfortunately, the ClientHello currently omits
 // the transport_parameters extension.
 var crypto_frame = '060040c4' +
@@ -274,5 +299,8 @@ var frames = '0d0000000018410a' +
     '5a1200130100002e00330024001d00209d3c940d89' +
     '690b84d08a60993c144eca684d1081287c834d5311' +
     'bcf32bb9da1a002b00020304';
-var si_hdr = 'c1' + version + '05' + 'f067a5502a4262b5' + '00';
+var scid = 'f067a5502a4262b5';
+var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
+
+retry('', scid, cid);

@@ -143,11 +143,13 @@ version-specific semantics are marked with an X.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                         Version (32)                          |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|DCIL(4)|SCIL(4)|
+| DCID Len (8)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/32..144)         ...
+|               Destination Connection ID (0..2040)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/32..144)            ...
+| SCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0..2040)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -159,21 +161,15 @@ All other bits in that byte are version specific.
 
 The next four bytes include a 32-bit Version field (see {{version}}).
 
-The next byte contains the length in bytes of the two Connection IDs (see
-{{connection-id}}) that follow.  Each length is encoded as a 4-bit unsigned
-integer.  The length of the Destination Connection ID (DCIL) occupies the high
-bits of the byte and the length of the Source Connection ID (SCIL) occupies the
-low bits of the byte.  An encoded length of 0 indicates that the connection ID
-is also 0 bytes in length.  Non-zero encoded lengths are increased by 3 to get
-the full length of the connection ID; the final value is therefore either 0 or
-between 4 and 18 bytes in length (inclusive).  For example, an byte with the
-value 0xe0 describes a 17 byte Destination Connection ID and a zero byte Source
-Connection ID.
+The next byte contains the length in bytes of the Destination Connection ID (see
+{{connection-id}}) field that follows it.  This length is encoded as an 8-bit
+unsigned integer.  The Destination Connection ID field follows the DCID Len
+field and is between 0 and 255 bytes in length.
 
-The connection ID lengths are followed by two connection IDs.  The connection
-ID associated with the recipient of the packet (the Destination Connection ID)
-is followed by the connection ID associated with the sender of the packet (the
-Source Connection ID).
+The next byte contains the length in bytes
+of the Source Connection ID field that follows it.  This length is encoded as
+a 8-bit unsigned integer.  The Source Connection ID field follows the SCID Len
+field and is between 0 and 255 bytes in length.
 
 The remainder of the packet contains version-specific content.
 
@@ -198,9 +194,11 @@ version-specific semantics are marked with an X.
 
 A QUIC packet with a short header has the high bit of the first byte set to 0.
 
-A QUIC packet with a short header includes a Destination Connection ID.  The
-short header does not include the Connection ID Lengths, Source Connection ID,
-or Version fields.
+A QUIC packet with a short header includes a Destination Connection ID
+immediately following the first byte.  The short header does not include the
+Connection ID Lengths, Source Connection ID, or Version fields.  The length of
+the Destination Connection ID is not specified in packets with a short header
+and is not constrained by this specification.
 
 The remainder of the packet has version-specific semantics.
 
@@ -252,11 +250,13 @@ Version field, which is set to 0x00000000.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                       Version (32) = 0                        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|DCIL(4)|SCIL(4)|
+| DCID Len (8)  |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/32..144)         ...
+|               Destination Connection ID (0..2040)           ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0/32..144)            ...
+| SCID Len (8)  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                 Source Connection ID (0..2040)              ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                    Supported Version 1 (32)                   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
