@@ -337,11 +337,11 @@ encryption levels:
 - ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
   can only acknowledge packets which appeared in that packet number space.
 
-- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
+- It is not possible to send HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+  RETIRE_CONNECTION_ID frames in 0-RTT, and therefore MUST only be sent at the
+  1-RTT encryption level.
 
-Note that it is not possible to send the following frames in 0-RTT for various
-reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
-RETIRE_CONNECTION_ID.
+- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
