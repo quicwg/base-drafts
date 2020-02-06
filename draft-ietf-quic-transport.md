@@ -4701,7 +4701,8 @@ active_connection_id_limit (0x000e):
   than 2. If this transport parameter is absent, a default of 2 is assumed.
   If an endpoint uses a zero-length connection ID, the
   active_connection_id_limit value received from its peer is ignored and
-  not used.
+  not used, as NEW_CONNECTION_ID frames cannot be sent by an endpoint that
+  opts for a zero-length connection ID.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
