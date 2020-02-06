@@ -2497,16 +2497,25 @@ handshake is confirmed (see Section 4.1.2 of {{QUIC-TLS}}), an endpoint MUST
 send any CONNECTION_CLOSE frames in a 1-RTT packet.  However, prior to
 confirming the handshake, it is possible that more advanced packet protection
 keys are not available to the peer, so the frame MAY be replicated in a packet
-that uses a lower packet protection level.
+that uses a lower packet protection level.  More specifically:
 
-A client will always know whether the server has Handshake keys (see
-{{discard-initial}}), but it is possible that a server does not know whether the
-client has Handshake keys.  Under these circumstances, a server SHOULD send a
-CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure that at
-least one of them is processable by the client.  Similarly, a peer might be
-unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
-Handshake and 1-RTT packets prior to confirming the handshake.  These packets
-can be coalesced into a single UDP datagram; see {{packet-coalesce}}.
+* A client will always know whether the server has Handshake keys (see
+  {{discard-initial}}), but it is possible that a server does not know whether
+  the client has Handshake keys.  Under these circumstances, a server SHOULD
+  send a CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure
+  that at least one of them is processable by the client.
+
+* A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured of
+  the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame of type
+  0x1c in an Initial packet makes it more likely that the server can receive
+  the close signal, even if the application error code might not be received.
+
+* A peer might be unable to read 1-RTT packets, so an endpoint SHOULD send
+  CONNECTION_CLOSE in Handshake and 1-RTT packets prior to confirming the
+  handshake.
+
+CONNECTION_CLOSE frames that are sent in multiple packets can be coalesced into
+a single UDP datagram; see {{packet-coalesce}}.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -3014,13 +3023,13 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH01*   |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
 (see {{iana-frames}}).  This column lists the types of packets that each
-frame type can appear in, indicated by the following characters:
+frame type could appear in, indicated by the following characters:
 
 I:
 
@@ -3040,9 +3049,9 @@ H:
 
 *:
 
-: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake, and
-1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only appear in a
-1-RTT packet.
+: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake,
+  0-RTT, and 1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only
+  appear in 0-RTT and 1-RTT packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
 that all frames can appear in 1-RTT packets.
@@ -5680,10 +5689,10 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using an 1-RTT packet ({{QUIC-TLS}}, Section 4).  When an application
-wishes to abandon a connection during the handshake, an endpoint can send a
-CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
-alert; see {{?TLS13}}) in an Initial or a Handshake packet.
+sent using 0-RTT or 1-RTT packets ({{QUIC-TLS}}, Section 4).  When an
+application wishes to abandon a connection during the handshake, an endpoint
+can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a
+("user_canceled" alert; see {{?TLS13}}) in an Initial or a Handshake packet.
 
 
 ## HANDSHAKE_DONE frame {#frame-handshake-done}

@@ -328,8 +328,7 @@ encryption levels:
 
 - PADDING and PING frames MAY appear in packets of any encryption level.
 
-- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
-  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+- CRYPTO frames MAY appear in packets of any encryption level except 0-RTT.
 
 - CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
   sent in packets at the 1-RTT encryption level.
@@ -717,7 +716,7 @@ Section 6 of {{!TLS13}}.
 A TLS alert is turned into a QUIC connection error by converting the one-byte
 alert description into a QUIC error code.  The alert description is added to
 0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
+The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
