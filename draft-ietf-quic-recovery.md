@@ -1245,7 +1245,6 @@ DetectLostPackets(pn_space):
     OnPacketsLost(lost_packets)
 ~~~
 
-
 # Congestion Control Pseudocode
 
 We now describe an example implementation of the congestion controller described
@@ -1435,6 +1434,26 @@ Invoked from DetectLostPackets when packets are deemed lost.
        congestion_window = kMinimumWindow
 ~~~
 
+## Upon dropping Initial or Handshake keys
+
+When Initial or Handshake keys are discarded, packets from the space
+are discarded and loss detection state is updated.
+
+Pseudocode for OnPacketNumberSpaceDiscarded follows:
+
+~~~
+OnPacketNumberSpaceDiscarded(pn_space):
+  assert(pn_space != 1RTT)
+  // Remove any unacknowledged packets from flight.
+  foreach packet in sent_packets[pn_space]:
+    if packet.in_flight
+      bytes_in_flight -= size
+      packet.in_flight = false
+  // Reset the loss detection and PTO timer
+  time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
+  loss_time[pn_space] = 0
+  SetLossDetectionTimer()  
+~~~
 
 # Change Log
 
