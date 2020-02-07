@@ -230,7 +230,7 @@ more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 ### Probe Timeout Replaces RTO and TLP
 
-QUIC uses a probe timeout (see {{pto}}), which uses a timer based on TCP's
+QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's
 RTO timeout.  Unlike TCP's RTO, which collapses the congestion window upon
 expiry, QUIC does not change the congestion window and instead allows sending
 probe packets whenever the timer expires.  This is similar to TCP with F-RTO,
