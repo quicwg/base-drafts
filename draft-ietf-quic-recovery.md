@@ -228,6 +228,18 @@ QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
+### Probe Timeout Replaces RTO and TLP
+
+QUIC uses a probe timeout (see {{pto}}), which uses a timer based on TCP's
+RTO timeout.  Unlike TCP's RTO, which collapses the congestion window upon
+timeout, QUIC does not change the congestion window and allows sending a
+probe timeout whenever the timer fires.  This is similar to TCP with F-RTO,
+but it does allow more packets to be sent in the case when the congestion
+window was not fully utilized when the probe timeout expires. In this case,
+sending was not congestion controller limited, so though this is slightly
+more aggressive than TCP is, it's less aggressive than the congestion
+controller allowed.
+
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
