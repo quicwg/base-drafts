@@ -1835,10 +1835,12 @@ address and port in client packets remains constant.
 
 Tokens sent in NEW_TOKEN frames MUST include information that allows the server
 to verify that the client IP address has not changed from when the token was
-issued. Servers might use tokens from NEW_TOKEN in deciding not to send a Retry
-packet, even if the client address has changed. However, if the address has
+issued. Servers can use tokens from NEW_TOKEN in deciding not to send a Retry
+packet, even if the client address has changed. If the client IP address has
 changed, the server MUST adhere to the anti-amplification limits found in
-{{validate-handshake}}.
+{{validate-handshake}}.  Note that in the presence of NAT, this requirement
+might be insufficient to protect other hosts that share the NAT from
+amplification attack.
 
 Servers MUST ensure that replay of tokens is prevented or limited.  For
 instance, servers might limit the time over which a token is accepted.  Tokens
