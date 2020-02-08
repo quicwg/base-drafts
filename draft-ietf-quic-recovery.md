@@ -235,9 +235,9 @@ RTO timeout.  Unlike TCP's RTO, which collapses the congestion window upon
 expiry, QUIC does not change the congestion window and instead allows sending
 probe packets whenever the timer expires.  This is similar to TCP with F-RTO,
 but it does allow more packets to be sent when the congestion window was not
-fully utilized when the probe timeout expires. In this case, sending was not
-congestion controller limited, so though this is slightly more aggressive than
-TCP RTO is, it's less aggressive than the congestion controller allowed.
+fully utilized when the probe timeout expires. Though this is slightly more
+aggressive than TCP RTO is, it's less aggressive than the congestion controller
+allowed.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
