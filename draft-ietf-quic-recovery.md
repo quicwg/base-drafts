@@ -722,7 +722,7 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-## Persistent Congestion
+## Persistent Congestion {#persistent-congestion}
 
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
