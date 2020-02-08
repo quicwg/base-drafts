@@ -1833,19 +1833,12 @@ server that generates the token also consumes it.  Tokens sent in Retry packets
 SHOULD include information that allows the server to verify that the source IP
 address and port in client packets remains constant.
 
-Servers might use tokens from NEW_TOKEN in deciding not to send a Retry packet,
-even if the client address has changed. Tokens sent in NEW_TOKEN frames MUST
-include information that allows the server to verify that the client IP address
-has not changed from when the token was issued.
-
-Note:
-
-: The intent of this requirement is to verify that the same client is present on
-  the same network path, which is not always verifiable by a server.  For
-  instance, a NAT might cause the same IP address and port to be routed to a
-  different client, or cause the same client to use a different IP address and
-  port.  Servers might use heuristics or other information to determine when to
-  request address validation.
+Tokens sent in NEW_TOKEN frames MUST include information that allows the server
+to verify that the client IP address has not changed from when the token was
+issued. Servers might use tokens from NEW_TOKEN in deciding not to send a Retry
+packet, even if the client address has changed. However, if the address has
+changed, the server MUST adhere to the anti-amplification limits found in
+{{validate-handshake}}.
 
 Servers MUST ensure that replay of tokens is prevented or limited.  For
 instance, servers might limit the time over which a token is accepted.  Tokens
