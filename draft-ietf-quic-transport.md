@@ -1626,8 +1626,8 @@ payloads of at least 1200 bytes, adding padding to packets in the datagram as
 necessary. Sending padded datagrams ensures that the server is not overly
 constrained by the amplification restriction.
 
-Packet loss, in particular loss of a Handshake packet from the server, can cause
-a situation in which the server cannot send due to the anti-amplification limit
+Loss of an Initial or Handshake packet from the server can cause a situation in
+which the server cannot send due to the anti-amplification limit
 and the client has no data to send because client Initial packets have been
 acknowledged and it does not yet have Handshake data to send. In order to avoid
 this causing a handshake deadlock, clients MUST send a packet upon a probe
