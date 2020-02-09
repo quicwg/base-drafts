@@ -2510,12 +2510,12 @@ that uses a lower packet protection level.  More specifically:
   0x1c in an Initial packet makes it more likely that the server can receive
   the close signal, even if the application error code might not be received.
 
-* A peer might be unable to read 1-RTT packets, so an endpoint SHOULD send
-  CONNECTION_CLOSE in Handshake and 1-RTT packets prior to confirming the
-  handshake.
+* Prior to confirming the handshake, a peer might be unable to process 1-RTT
+  packets, so an endpoint SHOULD send CONNECTION_CLOSE in both Handshake and
+  1-RTT packets.
 
-CONNECTION_CLOSE frames that are sent in multiple packets can be coalesced into
-a single UDP datagram; see {{packet-coalesce}}.
+CONNECTION_CLOSE frames sent in multiple packets can be coalesced into a single
+UDP datagram; see {{packet-coalesce}}.
 
 
 ## Stateless Reset {#stateless-reset}
