@@ -2420,20 +2420,21 @@ close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
 An endpoint restarts its idle timer when a packet from its peer is received
-and processed successfully.  The idle timer is also restarted when sending
-an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
-ack-eliciting packets have been sent since last receiving a packet.  Restarting
-when sending packets ensures that connections do not prematurely time out when
-initiating new activity.  An endpoint might need to send packets to avoid an
-idle timeout if it is unable to send application data due to being blocked on
-flow control limits; see {{flow-control}}.
+and processed successfully.  The idle timer is also restarted when sending the
+first ack-eliciting packet (see {{QUIC-RECOVERY}}) after receiving a packet.
+Only restarting when sending after receipt of a packet ensures the idle timeout
+is not excessively lengthened past the time the peer's timeout has expired.
+An endpoint might need to send packets to avoid an idle timeout if it is unable
+to send application data due to being blocked on flow control limits;
+see {{flow-control}}.
 
 An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
 before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to test for
-liveness before sending any data that cannot be retried safely.  Note that it
-is likely that only applications or application protocols will know what
+(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to probe the path
+with an ack-eliciting packet to ensure the connection is still responsive
+before sending any data that cannot be retried safely.  Note that it is
+likely that only applications or application protocols will know what
 information can be retried.
 
 
