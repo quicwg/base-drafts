@@ -1633,7 +1633,7 @@ acknowledged and it does not yet have Handshake data to send. In order to avoid
 this causing a handshake deadlock, clients MUST send a packet upon a probe
 timeout, as described in {{QUIC-RECOVERY}}. If the client has no data to
 retransmit, it MUST send an Initial packet in a UDP datagram of at least 1200
-bytes if it does not have Handshake keys and otherwise send a Handshake packet.
+bytes if it does not have Handshake keys, and otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
