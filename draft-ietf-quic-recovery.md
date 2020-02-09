@@ -687,6 +687,12 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+When entering recovery, a single packet MAY be sent even if bytes in flight
+now exceeds the recently reduced congestion window.  This speeds up loss
+recovery if the data in the lost packet is retransmitted and is similar to TCP
+as described in Section 5 of {{?RFC6675}}.  If further packets are lost after
+already in recovery, the congestion window MUST be observed as normal.
+
 ## Probe Timeout
 
 Probe packets MUST NOT be blocked by the congestion controller.  A sender MUST
