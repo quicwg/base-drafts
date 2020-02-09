@@ -1635,7 +1635,7 @@ constrained by the amplification restriction.
 
 Loss of an Initial or Handshake packet from the server can cause a situation in
 which the server cannot send due to the anti-amplification limit
-and the client has no data to send because client Initial packets have been
+and the client has no data to send because client Initial data has been
 acknowledged and it does not yet have Handshake data to send. In order to avoid
 this causing a handshake deadlock, clients MUST send a packet upon a probe
 timeout, as described in {{QUIC-RECOVERY}}. If the client has no data to
