@@ -1385,6 +1385,8 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+       // A packet can be sent immediately to speed loss recovery.
+       MaybeSendOnePacket()
 ~~~
 
 
