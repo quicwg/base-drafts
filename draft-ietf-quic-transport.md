@@ -3375,7 +3375,7 @@ priorities specified by the application indicate otherwise (see
 Even though a sender is encouraged to assemble frames containing up-to-date
 information every time it sends a packet, it is not forbidden to retransmit
 copies of frames from lost packets.  A sender that retransmits copies of frames
-must deal with decreases in available payload size due to change in packet
+needs to handle decreases in available payload size due to change in packet
 number length, connection ID length, and path MTU.  A receiver MUST accept
 packets containing an outdated frame, such as a MAX_DATA frame carrying a
 smaller maximum data than one found in an older packet.
