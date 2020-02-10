@@ -237,8 +237,8 @@ the congestion window upon expiry, QUIC does not change the congestion window
 and instead allows sending probe packets whenever the timer expires.  This is
 similar to TCP with F-RTO, but it does allow more packets to be sent when the
 congestion window was not fully utilized when the probe timeout expires. Though
-this is slightly more aggressive than TCP RTO, it's less aggressive than the
-congestion controller allowed.
+this is slightly more aggressive than TCP RTO, it's less aggressive than if the
+connection was not application limited.
 
 A single packet loss at the tail does not indicate persistent congestion, so
 QUIC defines a time-based definition (see {{persistent-congestion}}) to
