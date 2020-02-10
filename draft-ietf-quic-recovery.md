@@ -1245,6 +1245,7 @@ DetectLostPackets(pn_space):
     OnPacketsLost(lost_packets)
 ~~~
 
+
 # Congestion Control Pseudocode
 
 We now describe an example implementation of the congestion controller described
@@ -1443,12 +1444,12 @@ Pseudocode for OnPacketNumberSpaceDiscarded follows:
 
 ~~~
 OnPacketNumberSpaceDiscarded(pn_space):
-  assert(pn_space != 1RTT)
+  assert(pn_space != ApplicationData)
   // Remove any unacknowledged packets from flight.
   foreach packet in sent_packets[pn_space]:
     if packet.in_flight
       bytes_in_flight -= size
-      packet.in_flight = false
+  sent_packets[pn_space].clear()
   // Reset the loss detection and PTO timer
   time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
   loss_time[pn_space] = 0
