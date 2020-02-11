@@ -403,8 +403,8 @@ A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.  These frames are not permitted in pushed responses; a pushed response
-which includes PUSH_PROMISE or DUPLICATE_PUSH frames MUST be treated as a
-connection error of type H3_FRAME_UNEXPECTED.
+which includes PUSH_PROMISE frames MUST be treated as a connection error of type
+H3_FRAME_UNEXPECTED.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
