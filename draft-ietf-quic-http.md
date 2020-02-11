@@ -636,7 +636,7 @@ is associated with the request stream on which the PUSH_PROMISE frame was
 received.  The same server push can be associated with additional client
 requests using a PUSH_PROMISE frame with the same Push ID on multiple request
 streams.  These associations do not affect the operation of the protocol, but
-MAY be used by user agents when deciding how to use pushed resources.
+MAY be considered by user agents when deciding how to use pushed resources.
 
 Ordering of a PUSH_PROMISE in relation to certain parts of the response is
 important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
