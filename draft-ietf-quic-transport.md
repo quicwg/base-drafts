@@ -804,33 +804,38 @@ DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 ## Flow Credit Increments {#fc-credit}
 
-This document leaves when and how many bytes to advertise in a MAX_STREAM_DATA
-or MAX_DATA frame to implementations, but offers a few considerations.  These
-frames contribute to connection overhead.  Therefore frequently sending frames
-with small changes is undesirable.  At the same time, larger increments to
-limits are necessary to avoid blocking if updates are less frequent, requiring
-larger resource commitments at the receiver.  Thus there is a trade-off between
-resource commitment and overhead when determining how large a limit is
-advertised.
+Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
+and MAX_DATA frames, but this section offers a few considerations.
+
+To avoid blocking a sender, a receiver can send a MAX_STREAM_DATA or MAX_DATA
+frame multiple times within a round trip or send it early enough to allow for
+recovery from loss of the frame.
+
+Control frames contribute to connection overhead. Therefore, frequently sending
+MAX_STREAM_DATA and MAX_DATA frames with small changes is undesirable.  On the
+other hand, if updates are less frequent, larger increments to limits are
+necessary to avoid blocking a sender, requiring larger resource commitments at
+the receiver.  There is a trade-off between resource commitment and overhead
+when determining how large a limit is advertised.
 
 A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
-implementations.  As an optimization, sending frames related to flow control
-only when there are other frames to send or when a peer is blocked ensures that
-flow control doesn't cause extra packets to be sent.
+implementations.  As an optimization, an endpoint could send frames related to
+flow control only when there are other frames to send or when a peer is blocked,
+ensuring that flow control does not cause extra packets to be sent.
 
-If a sender runs out of flow control credit, it will be unable to send new data
-and is considered blocked.  It is generally considered best to not let the
-sender become blocked.  To avoid blocking a sender, and to reasonably account
-for the possibility of loss, a receiver should send a MAX_DATA or
-MAX_STREAM_DATA frame at least two round trips before it expects the sender to
-get blocked.
+A blocked sender is not required to send STREAM_DATA_BLOCKED or DATA_BLOCKED
+frames. Therefore, a receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
+DATA_BLOCKED frame before sending a MAX_STREAM_DATA or MAX_DATA frame; doing so
+could result in the sender being blocked for the rest of the connection. Even if
+the sender sends these frames, waiting for them will result in the sender being
+blocked for at least an entire round trip.
 
-A receiver MUST NOT wait for a STREAM_DATA_BLOCKED or DATA_BLOCKED frame before
-sending MAX_STREAM_DATA or MAX_DATA, since doing so will mean that a sender will
-be blocked for at least an entire round trip, and potentially for longer if the
-peer chooses to not send STREAM_DATA_BLOCKED or DATA_BLOCKED frames.
+When a sender receives credit after being blocked, it might be able to send a
+large amount of data in response, resulting in short-term congestion; see
+Section 6.9 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
+congestion.
 
 
 ## Handling Stream Cancellation {#stream-cancellation}
