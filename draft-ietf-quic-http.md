@@ -276,6 +276,11 @@ Implementations of draft versions of the protocol MUST add the string "-" and
 the corresponding draft number to the identifier. For example,
 draft-ietf-quic-http-01 is identified using the string "h3-01".
 
+Draft versions MUST use the corresponding draft transport version as their
+transport. For example, the application protocol defined in
+draft-ietf-quic-http-25 uses the transport defined in
+draft-ietf-quic-transport-25.
+
 Non-compatible experiments that are based on these draft versions MUST append
 the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 which reserves an
@@ -312,11 +317,13 @@ an explicit port.
 
 ## Connection Establishment {#connection-establishment}
 
-HTTP/3 relies on QUIC as the underlying transport.  The QUIC version being used
-MUST use TLS version 1.3 or greater as its handshake protocol.  HTTP/3 clients
-MUST indicate the target domain name during the TLS handshake. This may be done
-using the Server Name Indication (SNI) {{!RFC6066}} extension to TLS or using
-some other mechanism.
+HTTP/3 relies on QUIC version 1 as the underlying transport.  The use of other
+QUIC transport versions with HTTP/3 MAY be defined by future specifications.
+
+QUIC version 1 uses TLS version 1.3 or greater as its handshake protocol.
+HTTP/3 clients MUST indicate the target domain name during the TLS handshake.
+This may be done using the Server Name Indication (SNI) {{!RFC6066}} extension
+to TLS or using some other mechanism.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
