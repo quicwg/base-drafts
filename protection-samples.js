@@ -15,6 +15,8 @@ var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
 
+var version = 'ff000019';
+
 function log(m, k) {
   console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
 };
@@ -252,11 +254,32 @@ function test(role, cid, hdr, pn, body) {
   }
 }
 
-var version = 'ff000019'
+function hex_cid(cid) {
+  return '0' + (cid.length / 2).toString(16) + cid;
+}
+
+function retry(dcid, scid, odcid) {
+  var pfx = Buffer.from(hex_cid(odcid), 'hex');
+  var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
+  var token = Buffer.from('token', 'ascii');
+  var header = Buffer.concat([encoded, token]);
+  log('retry header', header);
+  var aad = Buffer.concat([pfx, header]);
+  log('retry aad', aad);
+
+  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
+  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
+
+  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
+  gcm.setAAD(aad);
+  gcm.update('');
+  gcm.final();
+  log('retry', Buffer.concat([header, gcm.getAuthTag()]));
+}
+
 var cid = '8394c8f03e515708';
 
-var dcidl = '0' + (cid.length / 2).toString(16);
-var ci_hdr = 'c3' + version + dcidl + cid + '0000';
+var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
 // This is a client Initial.  Unfortunately, the ClientHello currently omits
 // the transport_parameters extension.
 var crypto_frame = '060040c4' +
@@ -277,6 +300,7 @@ var frames = '0d0000000018410a' +
     '690b84d08a60993c144eca684d1081287c834d5311' +
     'bcf32bb9da1a002b00020304';
 var scid = 'f067a5502a4262b5';
-var scidl = '0' + (scid.length / 2).toString(16);
-var si_hdr = 'c1' + version + '00' + scidl + scid + '00';
+var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
+
+retry('', scid, cid);
