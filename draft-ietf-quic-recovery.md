@@ -677,11 +677,10 @@ congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC does not retransmit packets,
-it defines the end of recovery as a packet sent after the start of recovery
-being acknowledged. This is slightly different from TCP's definition of
-recovery, which ends when the lost packet that started recovery is acknowledged.
+A recovery period is entered when loss or ECN-CE marking of a packet is
+detected.  A recovery period ends when a packet sent during the recovery period
+is acknowledged.  This is slightly different from TCP's definition of recovery,
+which ends when the lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
