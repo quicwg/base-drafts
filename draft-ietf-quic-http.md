@@ -679,25 +679,27 @@ expose implementations to these vulnerabilities.
 
 ## The CONNECT Method {#connect}
 
-The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
-HTTP proxies to establish a TLS session with an origin server for the purposes
-of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
-an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
-method is used to establish a tunnel over a single HTTP/2 stream to a remote
-host for similar purposes.
+The CONNECT method requests that the recipient establish a tunnel to the
+destination origin server identified by the request-target (Section 4.3.6 of
+{{!RFC7231}}).  It is primarily used with HTTP proxies to establish a TLS
+session with an origin server for the purposes of interacting with "https"
+resources.
 
-A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2.
-The request MUST be constructed as follows:
+In HTTP/1.x, CONNECT is used to convert an entire HTTP connection into a tunnel
+to a remote host. In HTTP/2 and HTTP/3, the CONNECT method is used to establish
+a tunnel over a single stream.
+
+A CONNECT request MUST be constructed as follows:
 
 - The ":method" pseudo-header field is set to "CONNECT"
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests
   (see Section 5.3 of [RFC7230]))
-- The request stream is not closed at the end of the request
 
 A CONNECT request that does not conform to these restrictions is malformed (see
-{{malformed}}).
+{{malformed}}).  The request stream MUST NOT be closed at the end of the
+request.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -740,11 +742,11 @@ HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of [RFC7230]) or
 
 ## Server Push
 
-Server push is an interaction mode introduced in HTTP/2 {{?HTTP2}} which permits
-a server to push a request-response exchange to a client in anticipation of the
-client making the indicated request.  This trades off network usage against a
-potential latency gain.  HTTP/3 server push is similar to what is described in
-HTTP/2 {{?HTTP2}}, but uses different mechanisms.
+Server push is an interaction mode which permits a server to push a
+request-response exchange to a client in anticipation of the client making the
+indicated request.  This trades off network usage against a potential latency
+gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
+but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
