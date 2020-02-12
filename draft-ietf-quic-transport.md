@@ -2444,7 +2444,7 @@ is likely that only applications or application protocols will know what
 information can be retried.
 
 
-## Immediate Close
+## Immediate Close {#immediate-close}
 
 An endpoint sends a CONNECTION_CLOSE frame ({{frame-connection-close}}) to
 terminate the connection immediately.  A CONNECTION_CLOSE frame causes all
@@ -2499,6 +2499,9 @@ the application requests that the connection be closed.  The application
 protocol can use a CONNECTION_CLOSE frame with an appropriate error code to
 signal closure.
 
+
+### Immediate Close During the Handshake {#immediate-close-hs}
+
 When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
 the frame.  Generally, this means sending the frame in a packet with the highest
 level of packet protection to avoid the packet being discarded.  After the
@@ -2516,6 +2519,22 @@ least one of them is processable by the client.  Similarly, a peer might be
 unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
 Handshake and 1-RTT packets prior to confirming the handshake.  These packets
 can be coalesced into a single UDP datagram; see {{packet-coalesce}}.
+
+An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
+response to unauthenticated information received in Initial or Handshake
+packets.  Such an immediate close might expose legitimate connections to a
+denial of service.  QUIC does not include defensive measures for on-path attacks
+during the handshake; see {{handshake-dos}}.  However, at the cost of reducing
+feedback about errors for legitimate peers, some forms of denial of service can
+be made more difficult for an attacker if endpoints discard illegal packets
+rather than terminating a connection with CONNECTION_CLOSE.  For this reason,
+endpoints MAY discard packets rather than immediately close if errors are
+detected in packets that lack authentication.
+
+An endpoint that has not established state, such as a server that detects an
+error in an Initial packet, does not enter the closing state.  An endpoint that
+has no state for the connection does not enter a closing or draining period on
+sending a CONNECTION_CLOSE frame.
 
 
 ## Stateless Reset {#stateless-reset}
@@ -3547,10 +3566,10 @@ it chooses.
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
-A server MAY send a CONNECTION_CLOSE frame with error code PROTOCOL_VIOLATION in
-response to an Initial packet it receives from a client if the UDP datagram is
-smaller than 1200 bytes. It MUST NOT send any other frame type in response, or
-otherwise behave as if any part of the offending packet was processed as valid.
+A server MUST discard an Initial packet that is carried in a UDP datagram that
+is smaller than 1200 bytes.  A server MAY also immediately close the connection
+by sending a CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION;
+see {{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
@@ -5838,7 +5857,7 @@ the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 # Security Considerations
 
-## Handshake Denial of Service
+## Handshake Denial of Service {#handshake-dos}
 
 As an encrypted and authenticated transport QUIC provides a range of protections
 against denial of service.  Once the cryptographic handshake is complete, QUIC
@@ -5855,15 +5874,19 @@ During the creation of a connection, QUIC only provides protection against
 attack from off the network path.  All QUIC packets contain proof that the
 recipient saw a preceding packet from its peer.
 
-The first mechanism used is the source and destination connection IDs, which are
-required to match those set by a peer.  Except for an Initial and stateless
-reset packets, an endpoint only accepts packets that include a destination
-connection that matches a connection ID the endpoint previously chose.  This is
-the only protection offered for Version Negotiation packets.
+Addresses cannot change during the handshake, so endpoints can discard packets
+that are received on a different network path.
 
-The destination connection ID in an Initial packet is selected by a client to be
-unpredictable, which serves an additional purpose.  The packets that carry the
-cryptographic handshake are protected with a key that is derived from this
+The Source and Destination Connection ID fields are the primary means of
+protection against off-path attack during the handshake.  These are required to
+match those set by a peer.  Except for an Initial and stateless reset packets,
+an endpoint only accepts packets that include a Destination Connection ID field
+that matches a value the endpoint previously chose.  This is the only protection
+offered for Version Negotiation packets.
+
+The Destination Connection ID field in an Initial packet is selected by a client
+to be unpredictable, which serves an additional purpose.  The packets that carry
+the cryptographic handshake are protected with a key that is derived from this
 connection ID and salt specific to the QUIC version.  This allows endpoints to
 use the same process for authenticating packets that they receive as they use
 after the cryptographic handshake completes.  Packets that cannot be
