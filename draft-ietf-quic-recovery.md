@@ -690,8 +690,9 @@ losses or increases in the ECN-CE counter.
 When entering recovery, a single packet MAY be sent even if bytes in flight
 now exceeds the recently reduced congestion window.  This speeds up loss
 recovery if the data in the lost packet is retransmitted and is similar to TCP
-as described in Section 5 of {{?RFC6675}}.  If further packets are lost after
-already in recovery, the congestion window MUST be observed as normal.
+as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
+the sender is in recovery, sending any packets in response MUST obey the
+congestion window limit.
 
 ## Probe Timeout
 
