@@ -1831,11 +1831,19 @@ the integrity protection key for tokens.
 There is no need for a single well-defined format for the token because the
 server that generates the token also consumes it.  Tokens sent in Retry packets
 SHOULD include information that allows the server to verify that the source IP
-address and port in client packets remains constant.  Servers MUST ensure that
-replay of tokens is prevented or limited.  For instance, servers might limit the
-time over which a token is accepted.  Tokens sent in NEW_TOKEN frames MAY omit
-the client port and allow for use over a longer period.  Tokens MAY include
-additional information about clients to further narrow applicability or reuse.
+address and port in client packets remains constant.
+
+Servers might use tokens from NEW_TOKEN in deciding not to send a Retry packet,
+even if the client address has changed.  A token that was provided in
+NEW_TOKEN cannot be used for address validation if the client address is not the
+same, though servers MAY allow for the possibility of changes arising from new
+mappings at a NAT.
+
+Servers MUST ensure that replay of tokens is prevented or limited.  For
+instance, servers might limit the time over which a token is accepted.  Tokens
+provided in NEW_TOKEN frames might need to allow longer validity periods.
+Tokens MAY include additional information about clients to further narrow
+applicability or reuse.
 
 
 ## Path Validation {#migrate-validate}
