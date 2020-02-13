@@ -306,11 +306,13 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for ACK delays.  For packets sent in the ApplicationData packet number space,
-a peer limits any delay in sending an acknowledgement for an ack-eliciting
-packet to no greater than the value it advertised in the max_ack_delay transport
-parameter.  Consequently, when a peer reports an Ack Delay that is greater than
-its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+for acknowledgement delays. These delays are computed using the ACK Delay
+field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+For packets sent in the ApplicationData packet number space, a peer limits
+any delay in sending an acknowledgement for an ack-eliciting packet to no
+greater than the value it advertised in the max_ack_delay transport parameter.
+Consequently, when a peer reports an Ack Delay that is greater than its
+max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
 part of path delay and incorporated into the smoothed_rtt estimate.
