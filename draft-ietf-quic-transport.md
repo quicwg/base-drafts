@@ -2506,13 +2506,19 @@ that uses a lower packet protection level.  More specifically:
   that at least one of them is processable by the client.
 
 * A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured of
-  the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame of type
-  0x1c in an Initial packet makes it more likely that the server can receive
-  the close signal, even if the application error code might not be received.
+  the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame in an
+  Initial packet makes it more likely that the server can receive the close
+  signal, even if the application error code might not be received.
 
 * Prior to confirming the handshake, a peer might be unable to process 1-RTT
   packets, so an endpoint SHOULD send CONNECTION_CLOSE in both Handshake and
-  1-RTT packets.
+  1-RTT packets.  A server SHOULD also send CONNECTION_CLOSE in an Initial
+  packet.
+
+An CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
+1c when sending the frame in Initial packets. Otherwise, information about the
+application state might be revealed. Endpoints SHOULD use the APPLICATION_ERROR
+code when performing this conversion.
 
 CONNECTION_CLOSE frames sent in multiple packets can be coalesced into a single
 UDP datagram; see {{packet-coalesce}}.
@@ -5691,8 +5697,8 @@ Reason Phrase:
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
 sent using 0-RTT or 1-RTT packets ({{QUIC-TLS}}, Section 4).  When an
 application wishes to abandon a connection during the handshake, an endpoint
-can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a
-("user_canceled" alert; see {{?TLS13}}) in an Initial or a Handshake packet.
+can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
+APPLICATION_ERROR in an Initial or a Handshake packet.
 
 
 ## HANDSHAKE_DONE frame {#frame-handshake-done}
@@ -5797,6 +5803,10 @@ PROTOCOL_VIOLATION (0xA):
 
 INVALID_TOKEN (0xB):
 : A server received a Retry Token in a client Initial that is invalid.
+
+APPLICATION_ERROR (0xC):
+
+: The application or application protocol caused the connection to be closed.
 
 CRYPTO_BUFFER_EXCEEDED (0xD):
 
@@ -6584,6 +6594,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xB   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0xC   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
 | 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
