@@ -306,11 +306,13 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for ACK delays.  For packets sent in the ApplicationData packet number space,
-a peer limits any delay in sending an acknowledgement for an ack-eliciting
-packet to no greater than the value it advertised in the max_ack_delay transport
-parameter.  Consequently, when a peer reports an Ack Delay that is greater than
-its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+for acknowledgement delays. These delays are computed using the ACK Delay
+field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+For packets sent in the ApplicationData packet number space, a peer limits
+any delay in sending an acknowledgement for an ack-eliciting packet to no
+greater than the value it advertised in the max_ack_delay transport parameter.
+Consequently, when a peer reports an Ack Delay that is greater than its
+max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
 part of path delay and incorporated into the smoothed_rtt estimate.
@@ -677,11 +679,10 @@ congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC does not retransmit packets,
-it defines the end of recovery as a packet sent after the start of recovery
-being acknowledged. This is slightly different from TCP's definition of
-recovery, which ends when the lost packet that started recovery is acknowledged.
+A recovery period is entered when loss or ECN-CE marking of a packet is
+detected.  A recovery period ends when a packet sent during the recovery period
+is acknowledged.  This is slightly different from TCP's definition of recovery,
+which ends when the lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
@@ -689,14 +690,14 @@ losses or increases in the ECN-CE counter.
 
 ## Ignoring Loss of Undecryptable Packets	
 
-During the handshake, some packet protection keys might not be	
-available when a packet arrives and the receiver can choose to drop the packet.
-In particular, Handshake and 0-RTT packets cannot be processed until the
-Initial packets arrive, and 1-RTT packets	cannot be processed until the
-handshake completes.  Endpoints MAY	ignore the loss of Handshake, 0-RTT, and
-1-RTT packets that might arrive before the peer has packet protection keys to
-process those packets.  Endpoints SHOULD NOT ignore the loss of packets that
-were sent after the earliest acknowledged packet in a given packet number space.
+During the handshake, some packet protection keys might not be available when
+a packet arrives and the receiver can choose to drop the packet. In particular,
+Handshake and 0-RTT packets cannot be processed until the Initial packets
+arrive, and 1-RTT packets	cannot be processed until the handshake completes.
+Endpoints MAY	ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might
+have arrived before the peer has packet protection keys to process those packets.
+Endpoints MUST NOT ignore the loss of packets that were sent after the earliest
+acknowledged packet in a given packet number space.
 
 ## Probe Timeout
 
