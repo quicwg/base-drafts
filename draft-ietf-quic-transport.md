@@ -3517,6 +3517,13 @@ use the following steps on receiving an ACK frame to validate ECN.
   corresponding ECT codepoint that are newly acknowledged in this ACK frame.
   This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
   vice versa).
+  
+Another special case is when all packets are indicatd as CE marked,
+independtly of the initial codepode used, including Not-ECT. In this case
+it could be a network element overwriting the ECN field of all packets and
+thereby potentially concealing actual congestion information. Especially, 
+when it is recognized that Not-ECT packets get remarked to CE, ECN marking
+should be disabled and any received CE feedback should be treated with caution.
 
 Processing ECN counts out of order can result in validation failure.  An
 endpoint SHOULD NOT perform this validation if this ACK frame does not advance
