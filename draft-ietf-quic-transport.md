@@ -1364,12 +1364,11 @@ by the frames that are typically contained in those packets. So, for instance
 the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
-Note that multiple QUIC packets -- even of different encryption levels -- may be
+Note that multiple QUIC packets -- even of different packet types -- can be
 coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
 handshake may consist of as few as 4 UDP datagrams, or any number more. For
-instance, the server's first flight contains packets from the Initial encryption
-level (obfuscation), the Handshake level, and "0.5-RTT data" from the server at
-the 1-RTT encryption level.
+instance, the server's first flight contains Initial packets (obfuscation),
+Handshake packets, and "0.5-RTT data" in packets with a short header.
 
 ~~~~
 Client                                                  Server
@@ -1390,9 +1389,9 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
 {{tls-0rtt-handshake}} shows an example of a connection with a 0-RTT handshake
-and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
-the server acknowledges 0-RTT data at the 1-RTT encryption level, and the
-client sends 1-RTT packets in the same packet number space.
+and a single packet of 0-RTT data. Note that as described in
+{{packet-numbers}}, the server acknowledges 0-RTT data in 1-RTT packets, and
+the client sends 1-RTT packets in the same packet number space.
 
 ~~~~
 Client                                                  Server
@@ -2856,11 +2855,10 @@ successfully authenticated.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
-short header are used to identify which encryption level - and therefore the
-keys - that are used. Packets protected with 0-RTT and 1-RTT keys are expected
-to have confidentiality and data origin authentication; the cryptographic
-handshake ensures that only the communicating endpoints receive the
-corresponding keys.
+short header are used to identify which encryption keys are used. Packets
+protected with 0-RTT and 1-RTT keys are expected to have confidentiality and
+data origin authentication; the cryptographic handshake ensures that only the
+communicating endpoints receive the corresponding keys.
 
 The packet number field contains a packet number, which has additional
 confidentiality protection that is applied after packet protection is applied
@@ -2885,10 +2883,11 @@ construct PMTU probes (see {{pmtu-probes-src-cid}}).  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
-Handshake, 1-RTT) makes it more likely the receiver will be able to process all
-the packets in a single pass.  A packet with a short header does not include a
-length, so it can only be the last packet included in a UDP datagram.  An
-endpoint SHOULD NOT coalesce multiple packets at the same encryption level.
+Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
+receiver will be able to process all the packets in a single pass. A packet
+with a short header does not include a length, so it can only be the last
+packet included in a UDP datagram. An endpoint SHOULD NOT coalesce multiple
+packets at the same encryption level.
 
 Senders MUST NOT coalesce QUIC packets for different connections into a single
 UDP datagram. Receivers SHOULD ignore any subsequent packets with a different
@@ -3303,7 +3302,7 @@ containing that information is acknowledged.
 * Data sent in CRYPTO frames is retransmitted according to the rules in
   {{QUIC-RECOVERY}}, until all data has been acknowledged.  Data in CRYPTO
   frames for Initial and Handshake packets is discarded when keys for the
-  corresponding encryption level are discarded.
+  corresponding packet number space are discarded.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
@@ -4227,9 +4226,9 @@ PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.
 Endpoints MUST treat receipt of Handshake packets with other frames as a
 connection error.
 
-Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
-Handshake encryption level is discarded - and no longer retransmitted - when
-Handshake protection keys are discarded.
+Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
+Handshake packets is discarded - and no longer retransmitted - when Handshake
+protection keys are discarded.
 
 ### Retry Packet {#packet-retry}
 
