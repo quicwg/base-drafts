@@ -3029,7 +3029,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH01*   |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | iH01    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
@@ -3053,11 +3053,9 @@ H:
 
 : 1-RTT ({{short-header}})
 
-*:
+i:
 
-: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake,
-  0-RTT, and 1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only
-  appear in 0-RTT and 1-RTT packets.
+: A CONNECTION_CLOSE frame of type 0x1d cannot appear in Initial packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
 that all frames can appear in 1-RTT packets.
