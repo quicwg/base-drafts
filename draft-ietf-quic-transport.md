@@ -1836,7 +1836,7 @@ address and port in client packets remains constant.
 Servers might use tokens from NEW_TOKEN in deciding not to send a Retry packet,
 even if the client address has changed. Tokens sent in NEW_TOKEN frames SHOULD
 include information that allows the server to verify if the client address is
-stable.
+stable, but might allow for different NAT bindings or ephemeral port selection.
 
 Servers MUST ensure that replay of tokens is prevented or limited.  For
 instance, servers might limit the time over which a token is accepted.  Tokens
