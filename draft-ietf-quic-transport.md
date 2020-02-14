@@ -3487,7 +3487,7 @@ packets on a new path to a peer:
 
 During the initial deployment of ECN an implementation bug was observed that
 led to black-holing of ECN-marked packet (mostly in home router equipment).
-While this case if unlikely in the Internet today, if this is as a concern for
+While this case is unlikely in the Internet today, if this is as a concern for
 a certain network, an endpoint could set the ECT(0) codepoint only in, e.g., the
 first ten outgoing packets on a path, or for a period of, e.g., three RTTs,
 whichever occurs first, to reduce the chances of misinterpreting congestive
