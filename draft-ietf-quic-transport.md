@@ -1834,10 +1834,9 @@ SHOULD include information that allows the server to verify that the source IP
 address and port in client packets remains constant.
 
 Servers might use tokens from NEW_TOKEN in deciding not to send a Retry packet,
-even if the client address has changed.  A token that was provided in
-NEW_TOKEN cannot be used for address validation if the client address is not the
-same, though servers MAY allow for the possibility of changes arising from new
-mappings at a NAT.
+even if the client address has changed. Tokens sent in NEW_TOKEN frames SHOULD
+include information that allows the server to verify if the client address is
+stable.
 
 Servers MUST ensure that replay of tokens is prevented or limited.  For
 instance, servers might limit the time over which a token is accepted.  Tokens
