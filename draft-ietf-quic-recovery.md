@@ -1179,7 +1179,13 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (endpoint is client without 1-RTT keys):
+  if (bytes_in_flight > 0):
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
+    _, pn_space = GetEarliestTimeAndSpace(
+      time_of_last_sent_ack_eliciting_packet)
+    SendOneOrTwoAckElicitingPackets(pn_space)
+  else:
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
@@ -1187,12 +1193,6 @@ OnLossDetectionTimeout():
       SendOneAckElicitingHandshakePacket()
     else:
       SendOneAckElicitingPaddedInitialPacket()
-  else:
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
-    SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
   SetLossDetectionTimer()
