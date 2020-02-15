@@ -522,7 +522,7 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 ### Speeding Up Handshake Completion
 
 When a server receives duplicate Initial CRYPTO data, it can assume the client
-did not receive all Initial CRYPTO data or the client's estimated RTT is too
+did not receive all of the server's CRYPTO data sent in Initial packets, or the client's estimated RTT is too
 small. When a client receives Handshake or 1-RTT packets prior to obtaining
 Handshake keys it may assume some or all of the server's Initial packets were
 lost.
