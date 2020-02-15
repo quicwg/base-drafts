@@ -527,7 +527,7 @@ small. When a client receives Handshake or 1-RTT packets prior to obtaining
 Handshake keys it may assume some or all of the server's Initial packets were
 lost.
 
-To speed handshake completion, either peer MAY send a packet containing
+To speed up handshake completion under these conditions, an endpoint MAY send a packet containing
 unacknowledged Initial CRYPTO data subject to the path validation limits, as
 though the PTO expired. The PTO MUST only be shortened once in this way.
 Subsequently, the PTO uses the normal calculation with exponential backoff.
