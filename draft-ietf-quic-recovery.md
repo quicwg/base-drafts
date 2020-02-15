@@ -381,10 +381,11 @@ packet and time thresholds provide some tolerance for packet reordering.
 
 Spuriously declaring packets as lost leads to unnecessary retransmissions and
 may result in degraded performance due to the actions of the congestion
-controller upon detecting loss.  Implementations that detect spurious
-retransmissions and increase the reordering threshold in packets or time MAY
-choose to start with smaller initial reordering thresholds to minimize recovery
-latency.
+controller upon detecting loss.  Implementations can detect spurious
+retransmissions and increase the reordering threshold in packets or time to
+reduce future spurious retransmissions and loss events. Implementations with
+adaptive time thresholds MAY choose to start with smaller initial reordering
+thresholds to minimize recovery latency.
 
 ### Packet Threshold
 
