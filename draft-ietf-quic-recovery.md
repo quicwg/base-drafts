@@ -528,14 +528,12 @@ Handshake keys it may assume some or all of the server's Initial packets were
 lost.
 
 To speed up handshake completion under these conditions, an endpoint MAY send a packet containing
-unacknowledged Initial CRYPTO data subject to the path validation limits, as
-though the PTO expired. The PTO MUST only be shortened once in this way.
-Subsequently, the PTO uses the normal calculation with exponential backoff.
+unacknowledged CRYPTO data, subject to path validation limits, earlier than the PTO period.
 
-Peers can also use coalesced packets to ensure each datagram elicits at least
+Peers can also use coalesced packets to ensure that each datagram elicits at least
 one acknowledgement.  For example, clients can coalesce an Initial packet
-containing a PING and PADDING with 0-RTT data packets and a server can
-coalesce an Initial packet containing a PING with one or more packets in
+containing PING and PADDING frames with a 0-RTT data packet and a server can
+coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
 
 ### Sending Probe Packets
