@@ -519,7 +519,7 @@ bytes.
 Initial packets and Handshake packets may never be acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
 
-### Speeding Handshake Completion
+### Speeding Up Handshake Completion
 
 When a server receives duplicate Initial CRYPTO data, it can assume the client
 did not receive all Initial CRYPTO data or the client's estimated RTT is too
