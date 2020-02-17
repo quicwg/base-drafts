@@ -1141,6 +1141,10 @@ SetLossDetectionTimer():
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
     return
+    
+  if (IsServerWhichReachedAddressValidationLimit()):
+    loss_detection_timer.cancel()
+    return
 
   if (no ack-eliciting packets in flight &&
       PeerNotAwaitingAddressValidation()):
