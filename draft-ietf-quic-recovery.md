@@ -536,25 +536,11 @@ removed from bytes in flight when the Initial and Handshake keys are discarded.
 
 ### Sending Probe Packets
 
-When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
+When a PTO timer expires, a sender sends at least one ack-eliciting packet
 in the packet number space as a probe, unless there is no data available to
-send.  An endpoint MAY send up to two full-sized datagrams containing
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single lost datagram or transmit data from multiple packet number spaces.
-
-In addition to sending data in the packet number space for which the timer
+send. In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
-
-When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent.
-
-It is possible the sender has no new or previously-sent data to send.
-As an example, consider the following sequence of events: new application data
-is sent in a STREAM frame, deemed lost, then retransmitted in a new packet,
-and then the original transmission is acknowledged.  When there is no data to
-send, the sender SHOULD send a PING or other ack-eliciting frame in a single
-packet, re-arming the PTO timer.
 
 Alternatively, instead of sending an ack-eliciting packet, the sender MAY mark
 any packets still in flight as lost.  Doing so avoids sending an additional
