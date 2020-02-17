@@ -1186,6 +1186,7 @@ OnLossDetectionTimeout():
       time_of_last_sent_ack_eliciting_packet)
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
+    assert(endpoint is client without 1-RTT keys) 
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
