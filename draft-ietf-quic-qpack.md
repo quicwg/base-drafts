@@ -281,6 +281,25 @@ table entries which have been acknowledged, but this could mean using
 literals. Since literals make the header block larger, this can result in the
 encoder becoming blocked on congestion or flow control limits.
 
+### Avoiding Flow Control Deadlocks
+
+Writing instructions on streams that are limited by flow control can produce
+deadlocks.
+
+A decoder might stop issuing flow control credit on the stream that carries a
+header block until the necessary updates are received on the encoder
+stream. If the granting of flow control credit on the encoder stream (or the
+connection as a whole) depends on the consumption and release of data on the
+stream carrying the header block, a deadlock might result.
+
+More generally, a stream containing a large instruction can become deadlocked if
+the decoder withholds flow control credit until the instruction is completely
+received.
+
+To avoid these deadlocks, an encoder SHOULD avoid writing an instruction unless
+sufficient stream and connection flow control credit is available for the entire
+instruction.
+
 ### Known Received Count
 
 The Known Received Count is the total number of dynamic table insertions and
