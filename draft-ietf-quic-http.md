@@ -324,7 +324,7 @@ QUIC version 1 uses TLS version 1.3 or greater as its handshake protocol.
 HTTP/3 clients MUST support a mechanism to indicate the target host to the
 server during the TLS handshake.  If the server is identified by a DNS name,
 clients MUST send the Server Name Indication (SNI) {{!RFC6066}} TLS extension
-unless an alternative mechanism for indicate the target host is used.
+unless an alternative mechanism to indicate the target host is used.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
