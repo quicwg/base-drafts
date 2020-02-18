@@ -1625,8 +1625,11 @@ consider the client address to have been validated.
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
 magnitude of any amplification attack that can be mounted using spoofed source
-addresses.  In determining this limit, servers only count the size of
-successfully processed packets.
+addresses.  For the purposes of avoiding amplification prior to address
+validation, servers MUST count all of the payload bytes received in datagrams
+that are uniquely attributed to a single connection. This includes datagrams
+that contain packets that are successfully processed and datagrams that contain
+packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
 payloads of at least 1200 bytes, adding padding to packets in the datagram as
