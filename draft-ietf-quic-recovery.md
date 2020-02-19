@@ -660,14 +660,22 @@ treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
 receives packets with the Congestion Experienced codepoint.
 
-## Slow Start
+## Initial and Minimum Congestion Window {#initial-cwnd}
 
 QUIC begins every connection in slow start with the congestion window set to
 an initial value.  The RECOMMENDED initial value is the minimum of
 10 * max_datagram_size and max(2 * max_datagram_size, 14720)).  This follows
 the analysis and recommendations in {{?RFC6928}}, increasing the byte limit to
 account for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
-for TCP. While in slow start, QUIC increases the congestion window by the
+for TCP.
+
+The minimum congestion window is the smallest value the congestion window can
+decrease to as a response to loss, ECN-CE, or persistent congestion.
+The RECOMMENDED value is 2 * max_datagram_size.
+
+## Slow Start
+
+While in slow start, QUIC increases the congestion window by the
 number of bytes acknowledged when each acknowledgment is processed, resulting
 in exponential growth of the congestion window.
 
@@ -1266,10 +1274,7 @@ and common practice.
 kInitialWindow:
 : Default limit on the initial amount of data in flight, in bytes.
   The RECOMMENDED value is the minimum of 10 * max_datagram_size and
-  max(2 * max_datagram_size, 14720)).  This follows the analysis and
-  recommendations in {{?RFC6928}}, increasing the byte limit to account
-  for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
-  for TCP.
+  max(2 * max_datagram_size, 14720)), see {{initial-cwnd}}.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
