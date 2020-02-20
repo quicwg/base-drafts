@@ -111,16 +111,6 @@ when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
-ACK-only:
-
-: Any packet containing only one or more ACK frame(s).
-
-In-flight:
-
-: Packets are considered in-flight when they have been sent and
-  are not ACK-only, and they are not acknowledged, declared lost,
-  or abandoned along with old keys.
-
 Ack-eliciting Frames:
 
 : All frames other than ACK, PADDING, and CONNECTION_CLOSE are considered
@@ -130,6 +120,12 @@ Ack-eliciting Packets:
 
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
   within the maximum ack delay and are called ack-eliciting packets.
+
+In-flight:
+
+: Packets are considered in-flight when they are ack-eliciting or contain a
+  PADDING frame, and they have been sent but are not acknowledged, declared
+  lost, or abandoned along with old keys.
 
 # Design of the QUIC Transmission Machinery
 
@@ -184,8 +180,8 @@ measurement are unified across packet number spaces.
 TCP conflates transmission order at the sender with delivery order at the
 receiver, which results in retransmissions of the same data carrying the same
 sequence number, and consequently leads to "retransmission ambiguity".  QUIC
-separates the two: QUIC uses a packet number to indicate transmission order,
-and any application data is sent in one or more streams, with delivery order
+separates the two. QUIC uses a packet number to indicate transmission order.
+Application data is sent in one or more streams and delivery order is
 determined by stream offsets encoded within STREAM frames.
 
 QUIC's packet number is strictly increasing within a packet number space,
@@ -272,9 +268,10 @@ SHOULD NOT be used to update RTT estimates if it does not newly acknowledge the
 largest acknowledged packet.
 
 An RTT sample MUST NOT be generated on receiving an ACK frame that does not
-newly acknowledge at least one ack-eliciting packet.  A peer does not send an
-ACK frame on receiving only non-ack-eliciting packets, so an ACK frame that is
-subsequently sent can include an arbitrarily large Ack Delay field.  Ignoring
+newly acknowledge at least one ack-eliciting packet. A peer usually does not
+send an ACK frame when only non-ack-eliciting packets are received. Therefore
+an ACK frame that contains acknowledgements for only non-ack-eliciting packets
+could include an arbitrarily large Ack Delay value.  Ignoring
 such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
 computations.
 
@@ -309,11 +306,13 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for ACK delays.  For packets sent in the ApplicationData packet number space,
-a peer limits any delay in sending an acknowledgement for an ack-eliciting
-packet to no greater than the value it advertised in the max_ack_delay transport
-parameter.  Consequently, when a peer reports an Ack Delay that is greater than
-its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+for acknowledgement delays. These delays are computed using the ACK Delay
+field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+For packets sent in the ApplicationData packet number space, a peer limits
+any delay in sending an acknowledgement for an ack-eliciting packet to no
+greater than the value it advertised in the max_ack_delay transport parameter.
+Consequently, when a peer reports an Ack Delay that is greater than its
+max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
 part of path delay and incorporated into the smoothed_rtt estimate.
@@ -358,7 +357,7 @@ rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 # Loss Detection {#loss-detection}
 
 QUIC senders use acknowledgements to detect lost packets, and a probe
-time out {{pto}} to ensure acknowledgements are received. This section
+time out (see {{pto}}) to ensure acknowledgements are received. This section
 provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
@@ -466,7 +465,7 @@ network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.  When the PTO is armed for Initial or
 Handshake packet number spaces, the max_ack_delay is 0, as specified in
-13.2.5 of {{QUIC-TRANSPORT}}.
+13.2.1 of {{QUIC-TRANSPORT}}.
 
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
@@ -492,7 +491,7 @@ in the Handshake packet number space.
 The life of a connection that is experiencing consecutive PTOs is limited by
 the endpoint's idle timeout.
 
-The probe timer is not set if the time threshold {{time-threshold}} loss
+The probe timer MUST NOT be set if the time threshold {{time-threshold}} loss
 detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
@@ -680,24 +679,23 @@ congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC does not retransmit packets,
-it defines the end of recovery as a packet sent after the start of recovery
-being acknowledged. This is slightly different from TCP's definition of
-recovery, which ends when the lost packet that started recovery is acknowledged.
+A recovery period is entered when loss or ECN-CE marking of a packet is
+detected.  A recovery period ends when a packet sent during the recovery period
+is acknowledged.  This is slightly different from TCP's definition of recovery,
+which ends when the lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
-## Ignoring Loss of Undecryptable Packets
+## Ignoring Loss of Undecryptable Packets	
 
-During the handshake, some packet protection keys might not be
-available when a packet arrives. In particular, Handshake and 0-RTT packets
-cannot be processed until the Initial packets arrive, and 1-RTT packets
-cannot be processed until the handshake completes.  Endpoints MAY
-ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
-the peer has packet protection keys to process those packets.
+During the handshake, some packet protection keys might not be	
+available when a packet arrives. In particular, Handshake and 0-RTT packets	
+cannot be processed until the Initial packets arrive, and 1-RTT packets	
+cannot be processed until the handshake completes.  Endpoints MAY	
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before	
+the peer has packet protection keys to process those packets.	
 
 ## Probe Timeout
 

@@ -340,7 +340,8 @@ encryption levels:
 - All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
 
 Note that it is not possible to send the following frames in 0-RTT for various
-reasons: ACK, CRYPTO, NEW_TOKEN, PATH_RESPONSE, and RETIRE_CONNECTION_ID.
+reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which level a given packet was encrypted under, as shown in
@@ -874,8 +875,7 @@ Note:
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
-{{test-vectors-initial}} contains test vectors for the initial packet
-encryption.
+{{test-vectors}} contains test vectors for packet encryption.
 
 
 ## AEAD Usage {#aead}
@@ -1778,13 +1778,13 @@ values in the following registries:
 
 --- back
 
-# Sample Initial Packet Protection {#test-vectors-initial}
+# Sample Packet Protection {#test-vectors}
 
-This section shows examples of packet protection for Initial packets so that
-implementations can be verified incrementally.  These packets use an 8-byte
-client-chosen Destination Connection ID of 0x8394c8f03e515708.  Values for both
-server and client packet protection are shown together with values in
-hexadecimal.
+This section shows examples of packet protection so that implementations can be
+verified incrementally. Samples of Initial packets from both client and server,
+plus a Retry packet are defined. These packets use an 8-byte client-chosen
+Destination Connection ID of 0x8394c8f03e515708. Some intermediate values are
+included. All values are shown in hexadecimal.
 
 
 ## Keys
@@ -1851,7 +1851,7 @@ hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
 ~~~
 
 
-## Client Initial
+## Client Initial {#sample-client-initial}
 
 The client sends an Initial packet.  The unprotected payload of this packet
 contains the following CRYPTO frame, plus enough PADDING frames to make a 1162
@@ -1934,6 +1934,7 @@ acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 aebe13f98ec51170a4aad0a8324bb768
 ~~~
 
+
 ## Server Initial
 
 The server sends the following payload in response, including an ACK frame, a
@@ -1970,6 +1971,19 @@ c9ff0000190008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
 cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
 20d61e68cf5f
+~~~
+
+
+## Retry
+
+This shows a Retry packet that might be sent in response to the Initial packet
+in {{sample-client-initial}}. The integrity check includes the client-chosen
+connection ID value of 0x8394c8f03e515708, but that value is not
+included in the final Retry packet:
+
+~~~
+ffff0000190008f067a5502a4262b574 6f6b656e1e5ec5b014cbb1f0fd93df40
+48c446a6
 ~~~
 
 
