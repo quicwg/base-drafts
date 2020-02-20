@@ -4433,10 +4433,10 @@ max_udp_size (0x0003):
 
 : The maximum udp size parameter is an integer value that limits the size of
   UDP payloads that the endpoint is willing to receive.  This indicates that
-  packets larger than this limit are likely not to be processed by the receiver
-  be dropped.  The default for this parameter is the maximum permitted UDP
-  payload of 65527.  Values below 1200 are invalid.  This limit only applies to
-  protected packets ({{packet-protected}}).
+  packets larger than this limit are likely not to be processed by the receiver.
+  The default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 1200 are invalid.  This limit only applies to protected packets
+  ({{packet-protected}}).
 
 initial_max_data (0x0004):
 
