@@ -2123,6 +2123,12 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-25
+
+- Require QUICv1 for HTTP/3 (#3117, #3323)
+- Remove DUPLICATE_PUSH and allow duplicate PUSH_PROMISE (#3275, #3309)
+- Clarify the definition of "malformed" (#3352, #3345)
+
 ## Since draft-ietf-quic-http-24
 
 - Removed H3_EARLY_RESPONSE error code; H3_NO_ERROR is recommended instead
