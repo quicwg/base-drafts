@@ -4532,7 +4532,6 @@ length, value) tuple, as shown in {{transport-parameter-encoding-fig}}:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Transport Parameter Value (*)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
 ~~~
 {: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
 
