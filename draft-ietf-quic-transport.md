@@ -4356,7 +4356,7 @@ language from Section 3 of {{!TLS13=RFC8446}}.
       original_connection_id(0),
       idle_timeout(1),
       stateless_reset_token(2),
-      max_packet_size(3),
+      max_udp_size(3),
       initial_max_data(4),
       initial_max_stream_data_bidi_local(5),
       initial_max_stream_data_bidi_remote(6),
@@ -4429,13 +4429,14 @@ stateless_reset_token (0x0002):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_packet_size (0x0003):
+max_udp_size (0x0003):
 
-: The maximum packet size parameter is an integer value that limits the size of
-  packets that the endpoint is willing to receive.  This indicates that packets
-  larger than this limit will be dropped.  The default for this parameter is the
-  maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
-  limit only applies to protected packets ({{packet-protected}}).
+: The maximum udp size parameter is an integer value that limits the size of
+  UDP payloads that the endpoint is willing to receive.  This indicates that
+  packets larger than this limit are likely not to be processed by the receiver
+  be dropped.  The default for this parameter is the maximum permitted UDP
+  payload of 65527.  Values below 1200 are invalid.  This limit only applies to
+  protected packets ({{packet-protected}}).
 
 initial_max_data (0x0004):
 
@@ -5862,7 +5863,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
 | 0x0001 | idle_timeout                | {{transport-parameter-definitions}} |
 | 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0003 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x0003 | max_udp_size                | {{transport-parameter-definitions}} |
 | 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
 | 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
 | 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
