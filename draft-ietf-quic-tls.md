@@ -1994,6 +1994,10 @@ ffff0000190008f067a5502a4262b574 6f6b656e1e5ec5b014cbb1f0fd93df40
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-25
+
+- No changes
+
 ## Since draft-ietf-quic-tls-24
 
 - Rewrite key updates (#3050)
