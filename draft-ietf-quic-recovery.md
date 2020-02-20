@@ -1441,6 +1441,10 @@ Invoked from DetectLostPackets when packets are deemed lost.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-25
+
+No significant changes.
+
 ## Since draft-ietf-quic-recovery-24
 
 - Require congestion control of some sort (#3247, #3244, #3248)
