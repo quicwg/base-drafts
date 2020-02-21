@@ -1050,22 +1050,19 @@ packets sent from only one local address.  An endpoint that migrates away from a
 local address SHOULD retire all connection IDs used on that address once it no
 longer plans to use that address.
 
-An endpoint can cause its peer to retire connection IDs by sending a
-NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST first retire the corresponding connection IDs using
-RETIRE_CONNECTION_ID frames and then add the newly provided connection ID to the
-set of active connection IDs.  Failure to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+An endpoint might need to stop accepting previously issued connection IDs in
+certain circumstances.  Such an endpoint can cause its peer to retire connection
+IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
+field.  The endpoint SHOULD continue to accept the previously issued connection
+IDs until they are retired by the peer.  If the endpoint can no longer process
+the indicated connection IDs, it MAY close the connection.
 
-An endpoint MAY discard a connection ID for which retirement has been requested
-once an interval of no less than 3 PTO has elapsed since an acknowledgement is
-received for the NEW_CONNECTION_ID frame requesting that retirement.  Until
-then, the endpoint SHOULD be prepared to receive packets that contain the
-connection ID that it has requested be retired.  Subsequent incoming packets
-using that connection ID could elicit a response with the corresponding
-stateless reset token.
+Upon receipt of an increased Retire Prior To field, the peer MUST first stop
+using the corresponding connection IDs using RETIRE_CONNECTION_ID frames and
+then add the newly provided connection ID to the set of active connection IDs.
+Failure to retire the connection IDs promptly can cause failure of the
+connection, either because the endpoint closed the connection or can no longer
+associate these connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
