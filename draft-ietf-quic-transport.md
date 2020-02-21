@@ -4549,7 +4549,6 @@ values of N are reserved to exercise the requirement that unknown transport
 parameters be ignored.  These transport parameters have no semantics, and may
 carry arbitrary values.
 
-
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
 This section details the transport parameters defined in this document.
@@ -4584,14 +4583,15 @@ stateless_reset_token (0x0002):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_udp_size (0x0003):
+max_udp_payload_size (0x0003):
 
-: The maximum udp size parameter is an integer value that limits the size of
-  UDP payloads that the endpoint is willing to receive.  This indicates that
-  packets larger than this limit are likely not to be processed by the receiver.
+: The maximum UDP payload size parameter is an integer value that limits the
+  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  with payloads larger than this limit are not likely to be processed by the
+  receiver.
+
   The default for this parameter is the maximum permitted UDP payload of 65527.
-  Values below 1200 are invalid.  This limit only applies to protected packets
-  ({{packet-protected}}).
+  Values below 1200 are invalid.
 
 initial_max_data (0x0004):
 
@@ -6526,7 +6526,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
 | 0x0001 | max_idle_timeout            | {{transport-parameter-definitions}} |
 | 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0003 | max_udp_size                | {{transport-parameter-definitions}} |
+| 0x0003 | max_udp_payload_size        | {{transport-parameter-definitions}} |
 | 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
 | 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
 | 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
