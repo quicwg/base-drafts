@@ -6699,6 +6699,18 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-26
+
+- Change format of transport paramters to use varints (#3294, #3169)
+
+## Since draft-ietf-quic-transport-25
+
+- Define the use of CONNECTION_CLOSE prior to establishing connection state
+  (#3269, #3297, #3292)
+- Allow use of address validation tokens after client address changes (#3307,
+  #3308)
+- Define the timer for address validation (#2910, #3339)
+
 ## Since draft-ietf-quic-transport-24
 
 - Added HANDSHAKE_DONE to signal handshake confirmation (#2863, #3142, #3145)
