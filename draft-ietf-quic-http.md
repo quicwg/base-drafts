@@ -554,8 +554,11 @@ The following pseudo-header fields are defined for requests:
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
-An HTTP request that omits mandatory pseudo-header fields or contains invalid
-values for those fields is malformed ({{malformed}}).
+If the ":scheme" pseudo-header field identifies a scheme which has a mandatory
+authority component (including "http" and "https"), the request MUST contain
+either an ":authority" pseudo-header field or a "Host" header field; these
+fields MUST NOT be empty. An HTTP request that omits mandatory pseudo-header
+fields or contains invalid values for those fields is malformed ({{malformed}}).
 
 HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
