@@ -1478,16 +1478,16 @@ of their transport parameters.  Endpoints are required to comply with the
 restrictions implied by these parameters; the description of each parameter
 includes rules for its handling.
 
+Transport parameters are declarations that are made unilaterally by each
+endpoint.  Each endpoint can choose values for transport parameters independent
+of the values chosen by its peer.
+
 The encoding of the transport parameters is detailed in
 {{transport-parameter-encoding}}.
 
 QUIC includes the encoded transport parameters in the cryptographic handshake.
 Once the handshake completes, the transport parameters declared by the peer are
 available.  Each endpoint validates the value provided by its peer.
-
-Transport parameters are declarations that are made unilaterally by each
-endpoint.  Each endpoint can choose values for transport parameters independent
-of the values chosen by its peer.
 
 Definitions for each of the defined transport parameters are included in
 {{transport-parameter-definitions}}.
