@@ -2423,20 +2423,22 @@ close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
 An endpoint restarts its idle timer when a packet from its peer is received
-and processed successfully.  The idle timer is also restarted when sending
-an ack-eliciting packet (see {{QUIC-RECOVERY}}), but only if no other
-ack-eliciting packets have been sent since last receiving a packet.  Restarting
-when sending packets ensures that connections do not prematurely time out when
-initiating new activity.  An endpoint might need to send packets to avoid an
-idle timeout if it is unable to send application data due to being blocked on
+and processed successfully.  The idle timer is also restarted when sending the
+first ack-eliciting packet (see {{QUIC-RECOVERY}}) after receiving a packet.
+Restarting when sending packets ensures that connections do not prematurely time
+out when initiating new activity.  Only restarting when sending after receipt of
+a packet ensures the idle timeout is not excessively lengthened past the time
+the peer's timeout has expired.  An endpoint might need to send packets to avoid
+an idle timeout if it is unable to send application data due to being blocked on
 flow control limits; see {{flow-control}}.
 
 An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
 before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to test for
-liveness before sending any data that cannot be retried safely.  Note that it
-is likely that only applications or application protocols will know what
+(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to probe the path
+with an ack-eliciting packet to ensure the connection is still responsive
+before sending any data that cannot be retried safely.  Note that it is
+likely that only applications or application protocols will know what
 information can be retried.
 
 
@@ -4500,14 +4502,11 @@ connection.
 
 The `extension_data` field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
-length-prefixed sequence of transport parameters, as shown in
-{{transport-parameter-sequence}}:
+sequence of transport parameters, as shown in {{transport-parameter-sequence}}:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|      Sequence Length (16)     |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                  Transport Parameter 1 (*)                  ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4520,15 +4519,16 @@ length-prefixed sequence of transport parameters, as shown in
 ~~~
 {: #transport-parameter-sequence title="Sequence of Transport Parameters"}
 
-The Sequence Length field contains the length of the sequence of transport
-parameters, in bytes. Each transport parameter is encoded as an (identifier,
-length, value) tuple, as shown in {{transport-parameter-encoding-fig}}:
+Each transport parameter is encoded as an (identifier, length, value) tuple,
+as shown in {{transport-parameter-encoding-fig}}:
 
 ~~~
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|  Transport Parameter ID (16)  |  Transport Param Length (16)  |
+|                 Transport Parameter ID (i)                  ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Transport Parameter Length (i)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                Transport Parameter Value (*)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -4560,7 +4560,7 @@ transport parameter is absent, unless otherwise stated.
 
 The following transport parameters are defined:
 
-original_connection_id (0x0000):
+original_connection_id (0x00):
 
 : The value of the Destination Connection ID field from the first Initial packet
   sent by the client.  This transport parameter is only sent by a server.  This
@@ -4568,13 +4568,13 @@ original_connection_id (0x0000):
   Retry packet (see {{packet-retry}}).  A server MUST include the
   original_connection_id transport parameter if it sent a Retry packet.
 
-max_idle_timeout (0x0001):
+max_idle_timeout (0x01):
 
 : The max idle timeout is a value in milliseconds that is encoded as an integer;
   see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit
   this transport parameter or specify a value of 0.
 
-stateless_reset_token (0x0002):
+stateless_reset_token (0x02):
 
 : A stateless reset token is used in verifying a stateless reset; see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
@@ -4583,7 +4583,7 @@ stateless_reset_token (0x0002):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_udp_payload_size (0x0003):
+max_udp_payload_size (0x03):
 
 : The maximum UDP payload size parameter is an integer value that limits the
   size of UDP payloads that the endpoint is willing to receive.  UDP packets
@@ -4593,14 +4593,14 @@ max_udp_payload_size (0x0003):
   The default for this parameter is the maximum permitted UDP payload of 65527.
   Values below 1200 are invalid.
 
-initial_max_data (0x0004):
+initial_max_data (0x04):
 
 : The initial maximum data parameter is an integer value that contains the
   initial value for the maximum amount of data that can be sent on the
   connection.  This is equivalent to sending a MAX_DATA ({{frame-max-data}}) for
   the connection immediately after completing the handshake.
 
-initial_max_stream_data_bidi_local (0x0005):
+initial_max_stream_data_bidi_local (0x05):
 
 : This parameter is an integer value specifying the initial flow control limit
   for locally-initiated bidirectional streams.  This limit applies to newly
@@ -4610,7 +4610,7 @@ initial_max_stream_data_bidi_local (0x0005):
   parameters, this applies to streams with the least significant two bits set to
   0x1.
 
-initial_max_stream_data_bidi_remote (0x0006):
+initial_max_stream_data_bidi_remote (0x06):
 
 : This parameter is an integer value specifying the initial flow control limit
   for peer-initiated bidirectional streams.  This limit applies to newly created
@@ -4620,7 +4620,7 @@ initial_max_stream_data_bidi_remote (0x0006):
   parameters, this applies to streams with the least significant two bits set to
   0x0.
 
-initial_max_stream_data_uni (0x0007):
+initial_max_stream_data_uni (0x07):
 
 : This parameter is an integer value specifying the initial flow control limit
   for unidirectional streams.  This limit applies to newly created
@@ -4630,7 +4630,7 @@ initial_max_stream_data_uni (0x0007):
   parameters, this applies to streams with the least significant two bits set to
   0x2.
 
-initial_max_streams_bidi (0x0008):
+initial_max_streams_bidi (0x08):
 
 : The initial maximum bidirectional streams parameter is an integer value that
   contains the initial maximum number of bidirectional streams the peer may
@@ -4639,7 +4639,7 @@ initial_max_streams_bidi (0x0008):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-initial_max_streams_uni (0x0009):
+initial_max_streams_uni (0x09):
 
 : The initial maximum unidirectional streams parameter is an integer value that
   contains the initial maximum number of unidirectional streams the peer may
@@ -4648,14 +4648,14 @@ initial_max_streams_uni (0x0009):
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
-ack_delay_exponent (0x000a):
+ack_delay_exponent (0x0a):
 
 : The ACK delay exponent is an integer value indicating an
   exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
   If this value is absent, a default value of 3 is assumed (indicating a
   multiplier of 8). Values above 20 are invalid.
 
-max_ack_delay (0x000b):
+max_ack_delay (0x0b):
 
 : The maximum ACK delay is an integer value indicating the
   maximum amount of time in milliseconds by which the endpoint will delay
@@ -4665,7 +4665,7 @@ max_ack_delay (0x000b):
   of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
   Values of 2^14 or greater are invalid.
 
-disable_active_migration (0x000c):
+disable_active_migration (0x0c):
 
 : The disable active migration transport parameter is included if the endpoint
   does not support active connection migration ({{migration}}). Peers of an
@@ -4674,7 +4674,7 @@ disable_active_migration (0x000c):
   than that used to perform the handshake.  This parameter is a zero-length
   value.
 
-preferred_address (0x000d):
+preferred_address (0x0d):
 
 : The server's preferred address is used to effect a change in server address at
   the end of the handshake, as described in {{preferred-address}}.  The format
@@ -4718,7 +4718,7 @@ preferred_address (0x000d):
 ~~~
 {: #fig-preferred-address title="Preferred Address format"}
 
-active_connection_id_limit (0x000e):
+active_connection_id_limit (0x0e):
 
 : The active connection ID limit is an integer value specifying the
   maximum number of connection IDs from the peer that an endpoint is willing
@@ -6507,7 +6507,7 @@ contact both the IESG (ietf@ietf.org) and the QUIC working group
 IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
 "QUIC" heading.
 
-The "QUIC Transport Parameters" registry governs a 16-bit space.  This registry
+The "QUIC Transport Parameters" registry governs a 62-bit space.  This registry
 follows the registration policy from {{iana-policy}}.  Permanent registrations
 in this registry are assigned using the Specification Required policy
 {{!RFC8126}}.
@@ -6521,23 +6521,23 @@ Parameter Name:
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
-| Value  | Parameter Name              | Specification                       |
-|:-------|:----------------------------|:------------------------------------|
-| 0x0000 | original_connection_id      | {{transport-parameter-definitions}} |
-| 0x0001 | max_idle_timeout            | {{transport-parameter-definitions}} |
-| 0x0002 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x0003 | max_udp_payload_size        | {{transport-parameter-definitions}} |
-| 0x0004 | initial_max_data            | {{transport-parameter-definitions}} |
-| 0x0005 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
-| 0x0006 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
-| 0x0007 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
-| 0x0008 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
-| 0x0009 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
-| 0x000a | ack_delay_exponent          | {{transport-parameter-definitions}} |
-| 0x000b | max_ack_delay               | {{transport-parameter-definitions}} |
-| 0x000c | disable_active_migration    | {{transport-parameter-definitions}} |
-| 0x000d | preferred_address           | {{transport-parameter-definitions}} |
-| 0x000e | active_connection_id_limit  | {{transport-parameter-definitions}} |
+| Value| Parameter Name              | Specification                       |
+|:-----|:----------------------------|:------------------------------------|
+| 0x00 | original_connection_id      | {{transport-parameter-definitions}} |
+| 0x01 | max_idle_timeout            | {{transport-parameter-definitions}} |
+| 0x02 | stateless_reset_token       | {{transport-parameter-definitions}} |
+| 0x03 | max_udp_payload_size        | {{transport-parameter-definitions}} |
+| 0x04 | initial_max_data            | {{transport-parameter-definitions}} |
+| 0x05 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+| 0x06 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+| 0x07 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x08 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
+| 0x09 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
+| 0x0a | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x0b | max_ack_delay               | {{transport-parameter-definitions}} |
+| 0x0c | disable_active_migration    | {{transport-parameter-definitions}} |
+| 0x0d | preferred_address           | {{transport-parameter-definitions}} |
+| 0x0e | active_connection_id_limit  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
@@ -6701,6 +6701,18 @@ incurred.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-26
+
+- Change format of transport paramters to use varints (#3294, #3169)
+
+## Since draft-ietf-quic-transport-25
+
+- Define the use of CONNECTION_CLOSE prior to establishing connection state
+  (#3269, #3297, #3292)
+- Allow use of address validation tokens after client address changes (#3307,
+  #3308)
+- Define the timer for address validation (#2910, #3339)
 
 ## Since draft-ietf-quic-transport-24
 

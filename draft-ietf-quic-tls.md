@@ -633,7 +633,7 @@ and deployment.
 A server MUST NOT use post-handshake client authentication (as defined in
 Section 4.6.2 of {{!TLS13}}), because the multiplexing offered by QUIC prevents
 clients from correlating the certificate request with the application-level
-event that triggered it (see {{?HTTP2-TLS13=I-D.ietf-httpbis-http2-tls13}}).
+event that triggered it (see {{?HTTP2-TLS13=RFC8740}}).
 More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
 messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
@@ -1871,7 +1871,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000019088394c8f03e5157080000449e00000002
+c3ff00001b088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1888,13 +1888,13 @@ header[0] ^= mask[0] & 0x0f
      = c0
 header[18..21] ^= mask[1..4]
      = 3b343aa8
-header = c0ff000019088394c8f03e5157080000449e3b343aa8
+header = c0ff00001b088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff000019088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+c0ff00001b088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
 9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
 4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
 b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
@@ -1931,7 +1931,7 @@ eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
 cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
 acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-aebe13f98ec51170a4aad0a8324bb768
+38d3b779d72edc00c5cd088eff802b05
 ~~~
 
 
@@ -1951,7 +1951,7 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff0000190008f067a5502a4262b50040740001
+c1ff00001b0008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
@@ -1960,17 +1960,17 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c9ff0000190008f067a5502a4262b5004074168b
+header = c9ff00001b0008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff0000190008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+c9ff00001b0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92b99c8ae5833225cb51855
-20d61e68cf5f
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bd8c3a9528d2b6aca20f0
+8047d9f017f0
 ~~~
 
 
@@ -1982,8 +1982,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff0000190008f067a5502a4262b574 6f6b656e1e5ec5b014cbb1f0fd93df40
-48c446a6
+ffff00001b0008f067a5502a4262b574 6f6b656ea523cb5ba524695f6569f293
+a1359d8e
 ~~~
 
 
@@ -1993,6 +1993,10 @@ ffff0000190008f067a5502a4262b574 6f6b656e1e5ec5b014cbb1f0fd93df40
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-26
+
+- Updated examples
 
 ## Since draft-ietf-quic-tls-25
 

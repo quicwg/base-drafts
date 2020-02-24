@@ -866,9 +866,11 @@ further requests.
 ## Immediate Application Closure
 
 An HTTP/3 implementation can immediately close the QUIC connection at any time.
-This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
+This results in sending a QUIC CONNECTION_CLOSE frame to the peer indicating
+that the application layer has terminated the connection.  The application error
 code in this frame indicates to the peer why the connection is being closed.
-See {{errors}} for error codes which can be used when closing a connection.
+See {{errors}} for error codes which can be used when closing a connection in
+HTTP/3.
 
 Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
 some requests.  Including the GOAWAY frame in the same packet as the QUIC
@@ -2122,6 +2124,10 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-26
+
+- No changes
 
 ## Since draft-ietf-quic-http-25
 
