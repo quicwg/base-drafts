@@ -1007,9 +1007,10 @@ When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).  Connection IDs that are issued and not
-retired are considered active; any active connection ID is valid for use at any
-time, in any packet type.  This includes the connection ID issued by the server
-via the preferred_address transport parameter.
+retired are considered active; any active connection ID is valid for use with
+the current connection at any time, in any packet type.  This includes the
+connection ID issued by the server via the preferred_address transport
+parameter.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
