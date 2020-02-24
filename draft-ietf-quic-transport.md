@@ -6712,7 +6712,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-26
 
-- Change format of transport paramters to use varints (#3294, #3169)
+- Change format of transport parameters to use varints (#3294, #3169)
 
 ## Since draft-ietf-quic-transport-25
 
