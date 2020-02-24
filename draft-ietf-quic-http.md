@@ -1363,7 +1363,7 @@ as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
 decompressed request header sets MUST contain the same fields in the same
-order, and both the name and and value in each field MUST be exact
+order, and both the name and the value in each field MUST be exact
 matches. Clients SHOULD compare the request header sets for resources promised
 multiple times. If a client receives a Push ID that has already been promised
 and detects a mismatch, it MUST respond with a connection error of type
