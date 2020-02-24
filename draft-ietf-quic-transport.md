@@ -1057,12 +1057,15 @@ field.  The endpoint SHOULD continue to accept the previously issued connection
 IDs until they are retired by the peer.  If the endpoint can no longer process
 the indicated connection IDs, it MAY close the connection.
 
-Upon receipt of an increased Retire Prior To field, the peer MUST first stop
-using the corresponding connection IDs using RETIRE_CONNECTION_ID frames and
-then add the newly provided connection ID to the set of active connection IDs.
-Failure to retire the connection IDs promptly can cause failure of the
-connection, either because the endpoint closed the connection or can no longer
-associate these connection IDs with the active connection.
+Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
+corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
+before adding the newly provided connection ID to the set of active connection
+IDs. This ordering allows an endpoint that has already supplied its peer with as
+many connection IDs as allowed by the active_connection_id_limit transport
+parameter to replace those connection IDs with new ones as necessary.  Failure
+to retire the connection IDs promptly when requested can result in connection
+failures, as the issuing endpoint might be unable to continue using the
+connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
