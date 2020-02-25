@@ -188,14 +188,6 @@ input header list.
 QPACK is designed to contain the more complex state tracking to the encoder,
 while the decoder is relatively simple.
 
-### Reference Tracking
-
-An encoder MUST ensure that a header block which references a dynamic table
-entry is not processed by the decoder after the referenced entry has been
-evicted.  Hence the encoder needs to retain information about each compressed
-header block that references the dynamic table until that header block is
-acknowledged by the decoder; see {{header-acknowledgement}}.
-
 ### Limits on Dynamic Table Insertions {#blocked-insertion}
 
 Inserting entries into the dynamic table might not be possible if the table
@@ -203,15 +195,19 @@ contains entries which cannot be evicted.
 
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
-acknowledged and there are no outstanding unacknowledged references to the
-entry, the entry becomes evictable.
+acknowledged and there are no outstanding references to the entry in
+unacknowledged header blocks, the entry becomes evictable.  Note that
+references on the encoder stream never preclude the eviction of an entry,
+because those references are guaranteed to be processed before the instruction
+evicting the entry.
 
 If the dynamic table does not contain enough room for a new entry without
 evicting other entries, and the entries which would be evicted are not
 evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
-that uses the dynamic table has to keep track of whether each entry is currently
-evictable or not.
+that uses the dynamic table has to keep track of each dynamic table entry
+referenced by each header block until that header block is acknowledged by the
+decoder (see {{header-acknowledgement}}).
 
 #### Avoiding Prohibited Insertions
 
