@@ -339,10 +339,11 @@ respective HTTP control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
-HTTP/3 connections are persistent.  For best performance, it is expected that
-clients will not close connections until it is determined that no further
-communication with a server is necessary (for example, when a user navigates
-away from a particular web page) or until the server closes the connection.
+HTTP/3 connections are persistent across multiple requests.  For best
+performance, it is expected that clients will not close connections until it is
+determined that no further communication with a server is necessary (for
+example, when a user navigates away from a particular web page) or until the
+server closes the connection.
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  The client MAY send
@@ -371,7 +372,7 @@ other mechanisms.
 
 Servers are encouraged to maintain open connections for as long as possible but
 are permitted to terminate idle connections if necessary.  When either endpoint
-chooses to close the QUIC connection, the terminating endpoint SHOULD first send
+chooses to close the HTTP/3 session, the terminating endpoint SHOULD first send
 a GOAWAY frame ({{connection-shutdown}}) so that both endpoints can reliably
 determine whether previously sent frames have been processed and gracefully
 complete or terminate any necessary remaining tasks.
