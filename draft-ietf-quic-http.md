@@ -112,7 +112,7 @@ The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
-a TCP mapping.  QUIC also incorporates TLS 1.3 {{?RFC8446}} at the transport
+a TCP mapping.  QUIC also incorporates TLS 1.3 {{?TLS13=RFC8446}} at the transport
 layer, offering comparable security to running TLS over TCP, with the improved
 connection setup latency of TCP Fast Open {{?RFC7413}}.
 
