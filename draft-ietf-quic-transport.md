@@ -1474,10 +1474,13 @@ response to connection migration ({{migration}}); see {{issue-cid}} for details.
 ## Transport Parameters {#transport-parameters}
 
 During connection establishment, both endpoints make authenticated declarations
-of their transport parameters.  These declarations are made unilaterally by each
-endpoint.  Endpoints are required to comply with the restrictions implied by
-these parameters; the description of each parameter includes rules for its
-handling.
+of their transport parameters.  Endpoints are required to comply with the
+restrictions implied by these parameters; the description of each parameter
+includes rules for its handling.
+
+Transport parameters are declarations that are made unilaterally by each
+endpoint.  Each endpoint can choose values for transport parameters independent
+of the values chosen by its peer.
 
 The encoding of the transport parameters is detailed in
 {{transport-parameter-encoding}}.
