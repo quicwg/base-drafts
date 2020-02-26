@@ -1530,7 +1530,7 @@ in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
 different results in terms of the granularity of padding, how padding is
 arranged in relation to the information that is being protected, whether
 padding is applied in the case of packet loss, and how an implementation might
-control padding. See {{?SITE-FP=I-D.draft-wood-pearg-website-fingerprinting}} for
+control padding. See {{?SITE-FP=I-D.wood-pearg-website-fingerprinting}} for
 more information on the use of traffic analysis for website fingerprinting.
 
 ## Frame Parsing
