@@ -698,9 +698,9 @@ A CONNECT request MUST be constructed as follows:
   (equivalent to the authority-form of the request-target of CONNECT requests
   (see Section 5.3 of [RFC7230]))
 
-A CONNECT request that does not conform to these restrictions is malformed (see
-{{malformed}}).  The request stream MUST NOT be closed at the end of the
-request.
+The request stream remains open at the end of the request to carry the data to
+be transferred.  A CONNECT request that does not conform to these restrictions
+is malformed (see {{malformed}}).
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
