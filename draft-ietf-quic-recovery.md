@@ -663,11 +663,11 @@ receives packets with the Congestion Experienced codepoint.
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
 QUIC begins every connection in slow start with the congestion window set to
-an initial value.  The RECOMMENDED initial value is the minimum of
-10 * max_datagram_size and max(2 * max_datagram_size, 14720)).  This follows
-the analysis and recommendations in {{?RFC6928}}, increasing the byte limit to
-account for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
-for TCP.
+an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
+the maximum datagram size (max_datagram_size), limited to the larger of 14720 or
+twice the maximum datagram size. This follows the analysis and recommendations
+in {{?RFC6928}}, increasing the byte limit to account for the smaller 8 byte
+overhead of UDP compared to the 20 byte overhead for TCP.
 
 The minimum congestion window is the smallest value the congestion window can
 decrease to as a response to loss, ECN-CE, or persistent congestion.
@@ -1272,9 +1272,8 @@ Constants used in congestion control are based on a combination of RFCs, papers,
 and common practice.
 
 kInitialWindow:
-: Default limit on the initial amount of data in flight, in bytes.
-  The RECOMMENDED value is the minimum of 10 * max_datagram_size and
-  max(2 * max_datagram_size, 14720)), see {{initial-cwnd}}.
+: Default limit on the initial amount of byte in flight as described in
+  {{initial-cwnd}}.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
