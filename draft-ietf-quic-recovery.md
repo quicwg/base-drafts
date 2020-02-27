@@ -1272,8 +1272,7 @@ Constants used in congestion control are based on a combination of RFCs, papers,
 and common practice.
 
 kInitialWindow:
-: Default limit on the initial amount of byte in flight as described in
-  {{initial-cwnd}}.
+: Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
