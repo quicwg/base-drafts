@@ -1627,16 +1627,16 @@ necessary. Sending padded datagrams ensures that the server is not overly
 constrained by the amplification restriction.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
-the client does not send additional Initial or Handshake packets. This can happen
-because the server can reach its anti-amplification limit, and if the client has
-received acknowledgements for all the data it has sent, it has no reason to send
-more packets. In this case, where the client would otherwise not send any
-additional packets, the server will be unable to send more data because it has
-not received enough bytes from the client or validated the client's address.
-To prevent this deadlock, clients MUST send a packet on a probe timeout (PTO,
-see Section 5.3 of {{QUIC-RECOVERY}}). Specifically, the client MUST send an
-Initial packet in a UDP datagram of at least 1200 bytes if it does not have
-Handshake keys, and otherwise send a Handshake packet.
+the client does not send additional Initial or Handshake packets. This happens
+when the server reaches its anti-amplification limit and the client has
+received acknowledgements for all the data it has sent.  In this case, when
+the client has no reason to send additional packets, the server will be unable
+to send more data because it has not validated the client's address or received
+enough bytes from the client. To prevent this deadlock, clients MUST send a
+packet on a probe timeout (PTO, see Section 5.3 of {{QUIC-RECOVERY}}).
+Specifically, the client MUST send an Initial packet in a UDP datagram of at
+least 1200 bytes if it does not have Handshake keys, and otherwise send a
+Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
