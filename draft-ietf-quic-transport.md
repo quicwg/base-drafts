@@ -1631,12 +1631,11 @@ the client does not send additional Initial or Handshake packets. A deadlock
 could occur when the server reaches its anti-amplification limit and the client
 has received acknowledgements for all the data it has sent.  In this case, when
 the client has no reason to send additional packets, the server will be unable
-to send more data because it has not validated the client's address or received
-enough bytes from the client. To prevent this deadlock, clients MUST send a
-packet on a probe timeout (PTO, see Section 5.3 of {{QUIC-RECOVERY}}).
-Specifically, the client MUST send an Initial packet in a UDP datagram of at
-least 1200 bytes if it does not have Handshake keys, and otherwise send a
-Handshake packet.
+to send more data because it has not validated the client's address. To prevent
+this deadlock, clients MUST send a packet on a probe timeout
+(PTO, see Section 5.3 of {{QUIC-RECOVERY}}). Specifically, the client MUST send
+an Initial packet in a UDP datagram of at least 1200 bytes if it does not have
+Handshake keys, and otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
