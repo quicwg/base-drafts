@@ -1639,8 +1639,8 @@ constrained by the amplification restriction.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
-occurs when the server reaches its anti-amplification limit and the client has
-received acknowledgements for all the data it has sent.  In this case, when
+could occur when the server reaches its anti-amplification limit and the client
+has received acknowledgements for all the data it has sent.  In this case, when
 the client has no reason to send additional packets, the server will be unable
 to send more data because it has not validated the client's address or received
 enough bytes from the client. To prevent this deadlock, clients MUST send a
