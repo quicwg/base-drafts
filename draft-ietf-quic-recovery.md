@@ -529,7 +529,7 @@ it may assume some or all of the server's Initial packets were lost.
 
 To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
-subject to address validation limits. (see Section 8.1 of {{QUIC-TRANSPORT}})
+subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 Peers can also use coalesced packets to ensure that each datagram elicits at least
 one acknowledgement.  For example, clients can coalesce an Initial packet
