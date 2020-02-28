@@ -339,11 +339,12 @@ greater than or equal to the Required Insert Count for all header blocks the
 decoder has started reading from the stream.
 
 When processing header blocks, the decoder expects the Required Insert Count to
-exactly match the value defined in {{blocked-streams}}. If it encounters a
-smaller value than expected, it MUST treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it encounters a
-larger value than expected, it MAY treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED.
+equal the lowest possible value for the Insert Count with which the header block
+can be decoded, as prescribed in {{blocked-streams}}. If it encounters a
+Required Insert Count smaller than expected, it MUST treat this as a connection
+error of type QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it
+encounters a Required Insert Count larger than expected, it MAY treat this as a
+connection error of type QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
