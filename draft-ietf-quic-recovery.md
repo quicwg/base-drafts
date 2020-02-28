@@ -306,11 +306,13 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for ACK delays.  For packets sent in the ApplicationData packet number space,
-a peer limits any delay in sending an acknowledgement for an ack-eliciting
-packet to no greater than the value it advertised in the max_ack_delay transport
-parameter.  Consequently, when a peer reports an Ack Delay that is greater than
-its max_ack_delay, the delay is attributed to reasons out of the peer's control,
+for acknowledgement delays. These delays are computed using the ACK Delay
+field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+For packets sent in the ApplicationData packet number space, a peer limits
+any delay in sending an acknowledgement for an ack-eliciting packet to no
+greater than the value it advertised in the max_ack_delay transport parameter.
+Consequently, when a peer reports an Ack Delay that is greater than its
+max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
 part of path delay and incorporated into the smoothed_rtt estimate.
@@ -384,10 +386,11 @@ packet and time thresholds provide some tolerance for packet reordering.
 
 Spuriously declaring packets as lost leads to unnecessary retransmissions and
 may result in degraded performance due to the actions of the congestion
-controller upon detecting loss.  Implementations that detect spurious
-retransmissions and increase the reordering threshold in packets or time MAY
-choose to start with smaller initial reordering thresholds to minimize recovery
-latency.
+controller upon detecting loss.  Implementations can detect spurious
+retransmissions and increase the reordering threshold in packets or time to
+reduce future spurious retransmissions and loss events. Implementations with
+adaptive time thresholds MAY choose to start with smaller initial reordering
+thresholds to minimize recovery latency.
 
 ### Packet Threshold
 
@@ -463,7 +466,7 @@ network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
 and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.  When the PTO is armed for Initial or
 Handshake packet number spaces, the max_ack_delay is 0, as specified in
-13.2.5 of {{QUIC-TRANSPORT}}.
+13.2.1 of {{QUIC-TRANSPORT}}.
 
 The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
@@ -633,7 +636,8 @@ sooner, as soon as handshake keys are available (see Section 4.10.1 of
 
 # Congestion Control {#congestion-control}
 
-This document specifies a Reno congestion controller for QUIC {{?RFC6582}}.
+This document specifies a congestion controller for QUIC similar to
+TCP NewReno {{?RFC6582}}.
 
 The signals QUIC provides for congestion control are generic and are designed to
 support different algorithms. Endpoints can unilaterally choose a different
@@ -657,31 +661,46 @@ treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
 receives packets with the Congestion Experienced codepoint.
 
+## Initial and Minimum Congestion Window {#initial-cwnd}
+
+QUIC begins every connection in slow start with the congestion window set to
+an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
+the maximum datagram size (max_datagram_size), limited to the larger of 14720 or
+twice the maximum datagram size. This follows the analysis and recommendations
+in {{?RFC6928}}, increasing the byte limit to account for the smaller 8 byte
+overhead of UDP compared to the 20 byte overhead for TCP.
+
+The minimum congestion window is the smallest value the congestion window can
+decrease to as a response to loss, ECN-CE, or persistent congestion.
+The RECOMMENDED value is 2 * max_datagram_size.
+
 ## Slow Start
 
-QUIC begins every connection in slow start and exits slow start upon loss or
-upon increase in the ECN-CE counter. QUIC re-enters slow start any time the
-congestion window is less than ssthresh, which only occurs after persistent
-congestion is declared. While in slow start, QUIC increases the congestion
-window by the number of bytes acknowledged when each acknowledgment is
-processed.
+While in slow start, QUIC increases the congestion window by the
+number of bytes acknowledged when each acknowledgment is processed, resulting
+in exponential growth of the congestion window.
+
+QUIC exits slow start upon loss or upon increase in the ECN-CE counter.
+When slow start is exited, the congestion window halves and the slow start
+threshold is set to the new congestion window.  QUIC re-enters slow start
+any time the congestion window is less than the slow start threshold,
+which only occurs after persistent congestion is declared.
 
 ## Congestion Avoidance
 
-Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
-uses an additive increase multiplicative decrease (AIMD) approach that
-increases the congestion window by one maximum packet size per
-congestion window acknowledged.  When a loss is detected, NewReno halves
+Slow start exits to congestion avoidance.  Congestion avoidance uses an
+additive increase multiplicative decrease (AIMD) approach that increases
+the congestion window by one maximum packet size per congestion window
+acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
 the congestion window and sets the slow start threshold to the new
 congestion window.
 
 ## Recovery Period
 
-Recovery is a period of time beginning with detection of a lost packet or an
-increase in the ECN-CE counter. Because QUIC does not retransmit packets,
-it defines the end of recovery as a packet sent after the start of recovery
-being acknowledged. This is slightly different from TCP's definition of
-recovery, which ends when the lost packet that started recovery is acknowledged.
+A recovery period is entered when loss or ECN-CE marking of a packet is
+detected.  A recovery period ends when a packet sent during the recovery period
+is acknowledged.  This is slightly different from TCP's definition of recovery,
+which ends when the lost packet that started recovery is acknowledged.
 
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
@@ -693,6 +712,15 @@ recovery if the data in the lost packet is retransmitted and is similar to TCP
 as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
 the sender is in recovery, sending any packets in response MUST obey the
 congestion window limit.
+
+## Ignoring Loss of Undecryptable Packets
+
+During the handshake, some packet protection keys might not be
+available when a packet arrives. In particular, Handshake and 0-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
+cannot be processed until the handshake completes.  Endpoints MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
+the peer has packet protection keys to process those packets.
 
 ## Probe Timeout
 
@@ -1252,12 +1280,7 @@ Constants used in congestion control are based on a combination of RFCs, papers,
 and common practice.
 
 kInitialWindow:
-: Default limit on the initial amount of data in flight, in bytes.
-  The RECOMMENDED value is the minimum of 10 * max_datagram_size and
-  max(2 * max_datagram_size, 14720)).  This follows the analysis and
-  recommendations in {{?RFC6928}}, increasing the byte limit to account
-  for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
-  for TCP.
+: Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
@@ -1439,6 +1462,14 @@ Invoked from DetectLostPackets when packets are deemed lost.
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-26
+
+No changes.
+
+## Since draft-ietf-quic-recovery-25
+
+No significant changes.
 
 ## Since draft-ietf-quic-recovery-24
 

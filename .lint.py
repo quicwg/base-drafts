@@ -29,6 +29,11 @@ for inputfile in args.files:
             linenumber = linecounter
             linecounter += 1
 
+            if line.find('\t') >= 0:
+                foundError = True
+                sys.stderr.write("{0}: Line contains HTAB\n".format(linenumber))
+                sys.stderr.write("{0}\n".format(line))
+
             # Skip everything before abstract
             if beforeAbstract:
                 matchObj = abstract.match(line)
