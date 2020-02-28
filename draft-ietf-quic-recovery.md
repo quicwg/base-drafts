@@ -90,17 +90,12 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC is a new multiplexed and secure transport atop UDP.  QUIC builds on decades
-of transport and security experience, and implements mechanisms that make it
-attractive as a modern general-purpose transport.  The QUIC protocol is
-described in {{QUIC-TRANSPORT}}.
-
-QUIC implements the spirit of existing TCP congestion control and loss recovery
-mechanisms, described in RFCs, various Internet-drafts, and also those prevalent
-in the Linux TCP implementation.  This document describes QUIC congestion
-control and loss recovery, and where applicable, attributes the TCP equivalent
-in RFCs, Internet-drafts, academic papers, and/or TCP implementations.
-
+QUIC is a new multiplexed and secure transport protocol atop UDP, specified in
+{{QUIC-TRANSPORT}}. This document describes congestion control and loss
+recovery for QUIC. Mechanisms described in this document follow the spirit
+of existing TCP congestion control and loss recovery mechanisms, described in
+RFCs, various Internet-drafts, or academic papers, and also those prevalent in
+TCP implementations.
 
 # Conventions and Definitions
 
