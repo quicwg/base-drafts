@@ -636,7 +636,8 @@ sooner, as soon as handshake keys are available (see Section 4.10.1 of
 
 # Congestion Control {#congestion-control}
 
-This document specifies a Reno congestion controller for QUIC {{?RFC6582}}.
+This document specifies a congestion controller for QUIC similar to
+TCP NewReno {{?RFC6582}}.
 
 The signals QUIC provides for congestion control are generic and are designed to
 support different algorithms. Endpoints can unilaterally choose a different
@@ -660,21 +661,37 @@ treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
 receives packets with the Congestion Experienced codepoint.
 
+## Initial and Minimum Congestion Window {#initial-cwnd}
+
+QUIC begins every connection in slow start with the congestion window set to
+an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
+the maximum datagram size (max_datagram_size), limited to the larger of 14720 or
+twice the maximum datagram size. This follows the analysis and recommendations
+in {{?RFC6928}}, increasing the byte limit to account for the smaller 8 byte
+overhead of UDP compared to the 20 byte overhead for TCP.
+
+The minimum congestion window is the smallest value the congestion window can
+decrease to as a response to loss, ECN-CE, or persistent congestion.
+The RECOMMENDED value is 2 * max_datagram_size.
+
 ## Slow Start
 
-QUIC begins every connection in slow start and exits slow start upon loss or
-upon increase in the ECN-CE counter. QUIC re-enters slow start any time the
-congestion window is less than ssthresh, which only occurs after persistent
-congestion is declared. While in slow start, QUIC increases the congestion
-window by the number of bytes acknowledged when each acknowledgment is
-processed.
+While in slow start, QUIC increases the congestion window by the
+number of bytes acknowledged when each acknowledgment is processed, resulting
+in exponential growth of the congestion window.
+
+QUIC exits slow start upon loss or upon increase in the ECN-CE counter.
+When slow start is exited, the congestion window halves and the slow start
+threshold is set to the new congestion window.  QUIC re-enters slow start
+any time the congestion window is less than the slow start threshold,
+which only occurs after persistent congestion is declared.
 
 ## Congestion Avoidance
 
-Slow start exits to congestion avoidance.  Congestion avoidance in NewReno
-uses an additive increase multiplicative decrease (AIMD) approach that
-increases the congestion window by one maximum packet size per
-congestion window acknowledged.  When a loss is detected, NewReno halves
+Slow start exits to congestion avoidance.  Congestion avoidance uses an
+additive increase multiplicative decrease (AIMD) approach that increases
+the congestion window by one maximum packet size per congestion window
+acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
 the congestion window and sets the slow start threshold to the new
 congestion window.
 
@@ -1256,12 +1273,7 @@ Constants used in congestion control are based on a combination of RFCs, papers,
 and common practice.
 
 kInitialWindow:
-: Default limit on the initial amount of data in flight, in bytes.
-  The RECOMMENDED value is the minimum of 10 * max_datagram_size and
-  max(2 * max_datagram_size, 14720)).  This follows the analysis and
-  recommendations in {{?RFC6928}}, increasing the byte limit to account
-  for the smaller 8 byte overhead of UDP compared to the 20 byte overhead
-  for TCP.
+: Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
 : Minimum congestion window in bytes. The RECOMMENDED value is
