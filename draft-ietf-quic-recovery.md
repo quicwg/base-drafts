@@ -822,6 +822,11 @@ loss and ECN codepoints -- from unauthenticated entities.  On-path attackers can
 spoof or alter these signals.  An attacker can cause endpoints to reduce their
 sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 
+Congestion control is essential to to avoid an congestion collapse of
+the Internet. {{?RFC2914}} deescribes principles for congestion control
+that should be followed when a different congestion is used than specfied in
+this document.
+
 ## Traffic Analysis
 
 Packets that carry only ACK frames can be heuristically identified by observing
