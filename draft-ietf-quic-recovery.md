@@ -777,7 +777,7 @@ work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
 might pace out packets handed to it by the congestion controller. Timely
 delivery of ACK frames is important for efficient loss recovery. Packets
-containing only ACK frames should therefore not be paced, to avoid delaying
+containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
 Sending multiple packets into the network without any delay between them
@@ -805,7 +805,7 @@ to determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
-should not consider itself application limited if it would have fully
+SHOULD NOT consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
 A sender MAY implement alternative mechanisms to update its congestion window
