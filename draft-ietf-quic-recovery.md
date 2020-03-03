@@ -629,6 +629,15 @@ be acknowledged or declared lost.  Initial secrets however might be destroyed
 sooner, as soon as handshake keys are available (see Section 4.10.1 of
 {{QUIC-TLS}}).
 
+## Ignoring Loss of Undecryptable Packets
+
+During the handshake, some packet protection keys might not be
+available when a packet arrives. In particular, Handshake and 0-RTT packets
+cannot be processed until the Initial packets arrive, and 1-RTT packets
+cannot be processed until the handshake completes.  Endpoints MAY
+ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
+the peer has packet protection keys to process those packets.
+
 # Congestion Control {#congestion-control}
 
 This document specifies a congestion controller for QUIC similar to
@@ -700,15 +709,6 @@ which ends when the lost packet that started recovery is acknowledged.
 The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
-
-## Ignoring Loss of Undecryptable Packets
-
-During the handshake, some packet protection keys might not be
-available when a packet arrives. In particular, Handshake and 0-RTT packets
-cannot be processed until the Initial packets arrive, and 1-RTT packets
-cannot be processed until the handshake completes.  Endpoints MAY
-ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
-the peer has packet protection keys to process those packets.
 
 ## Probe Timeout
 
