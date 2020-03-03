@@ -341,7 +341,8 @@ packet number space:
 
 Note that it is not possible to send the following frames in 0-RTT packets for
 various reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
-RETIRE_CONNECTION_ID.
+RETIRE_CONNECTION_ID.  A server MAY treat receipt of these frames in 0-RTT
+packets as a connection error of type PROTOCOL_VIOLATION.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in
