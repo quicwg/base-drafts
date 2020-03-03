@@ -1046,10 +1046,10 @@ Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
 be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
-As discussed in {{migration-linkability}}, each connection ID MUST be used on
-packets sent from only one local address.  An endpoint that migrates away from a
-local address SHOULD retire all connection IDs used on that address once it no
-longer plans to use that address.
+As discussed in {{migration-linkability}}, endpoints limit the use of a
+connection ID to a single network path where possible. Endpoints SHOULD retire
+connection IDs when no longer actively using the network path on which the
+connection ID was used.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
@@ -4687,8 +4687,13 @@ preferred_address (0x0d):
   transport parameter is only sent by a server. Servers MAY choose to only send
   a preferred address of one address family by sending an all-zero address and
   port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
-  network byte order. The CID Length field contains the length of the
-  Connection ID field.
+  network byte order.
+
+: The Connection ID field and the Stateless Reset Token field contain an
+  alternative connection ID that has a sequence number of 1 ({{issue-cid}}).
+  Having these values bundled with the preferred address ensures that there will
+  be at least one unused active connection ID when the client initiates
+  migration to the preferred address.
 
 ~~~
  0                   1                   2                   3
