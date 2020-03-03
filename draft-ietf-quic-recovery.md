@@ -946,13 +946,14 @@ latest_rtt:
 
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
-  {{?RFC6298}}
+  Section {{smoothed-rtt}}
 
 rttvar:
-: The RTT variation, computed as described in {{?RFC6298}}
+: The RTT variation, computed as described in Section {{smoothed-rtt}}
 
 min_rtt:
-: The minimum RTT seen in the connection, ignoring ack delay.
+: The minimum RTT seen in the connection, ignoring ack delay, as described
+  in Section {{min-rtt}}
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
