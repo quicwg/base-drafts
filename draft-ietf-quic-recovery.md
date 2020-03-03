@@ -243,9 +243,9 @@ more aggressive than TCP RTO, it's less aggressive than if the connection was
 not application limited.
 
 A single packet loss at the tail does not indicate persistent congestion, so
-QUIC specifies a time-based definition (see {{persistent-congestion}}) to
-ensure one or more packets are sent prior to a dramatic decrease in
-congestion window.
+QUIC specifies a time-based definition to ensure one or more packets are sent
+prior to a dramatic decrease in congestion window; see
+{{persistent-congestion}}.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
