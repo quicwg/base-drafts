@@ -777,7 +777,7 @@ the rate estimate of a rate-based controller.
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller. 
+might pace out packets handed to it by the congestion controller.
 
 Timely delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames should therefore not be paced, to avoid delaying
