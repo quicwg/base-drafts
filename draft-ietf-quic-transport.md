@@ -1534,8 +1534,7 @@ If 0-RTT data is accepted by the server, the server MUST NOT reduce any
 limits or alter any values that might be violated by the client with its
 0-RTT data.  In particular, a server that accepts 0-RTT data MUST NOT set
 values for the following parameters ({{transport-parameter-definitions}})
-that are smaller than the remembered value of the parameters.
-
+that are smaller than the remembered value of the parameters:
 
 * initial_max_data
 * initial_max_stream_data_bidi_local
@@ -1543,6 +1542,7 @@ that are smaller than the remembered value of the parameters.
 * initial_max_stream_data_uni
 * initial_max_streams_bidi
 * initial_max_streams_uni
+* max_udp_payload_size
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
