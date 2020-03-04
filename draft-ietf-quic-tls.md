@@ -416,17 +416,18 @@ acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
 At any time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. Encryption levels correspond
-roughly to packet number spaces and determine the packet type and keys that are
-used for protecting data.
+encryption level and receiving encryption level. Encryption levels determine
+the packet type and keys that are used for protecting data.
 
 Each encryption level is associated with a different flow of bytes, which is
 reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
-bytes to be sent, they are appended to the current flow and any packet that
+bytes to be sent, they are appended to the current flow. Any packet that
 includes the CRYPTO frame is protected using keys from the corresponding
 encryption level. Four encryption levels are used, producing keys for Initial,
 0-RTT, Handshake, and 1-RTT packets. CRYPTO frames are carried in just three of
-these levels, omitting the 0-RTT level.
+these levels, omitting the 0-RTT level. These four levels correspond to three packet
+number spaces: Initial and Handshake encrypted packets use their own separate
+spaces; 0-RTT and 1-RTT packets use the application data packet number space. 
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles

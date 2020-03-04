@@ -1367,8 +1367,8 @@ frame carrying the ClientHello.
 Note that multiple QUIC packets -- even of different packet types -- can be
 coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
 handshake may consist of as few as 4 UDP datagrams, or any number more. For
-instance, the server's first flight contains Initial packets (obfuscation),
-Handshake packets, and "0.5-RTT data" in packets with a short header.
+instance, the server's first flight contains Initial packets,
+Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short header.
 
 ~~~~
 Client                                                  Server
