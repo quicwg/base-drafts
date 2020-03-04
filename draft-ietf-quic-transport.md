@@ -1453,11 +1453,11 @@ Source Connection ID values as the client's first Initial packet.
 
 Upon first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets, including all subsequent 0-RTT packets.  This means that
-a client might have to change the connection ID it sets in the Destination
-Connection ID field twice during connection establishment: once in response to a
-Retry, and once in response to an Initial packet from the server. Once a client
-has received an Initial packet from the server, it MUST discard any subsequent
+for subsequent packets, including any 0-RTT packets.  This means that a client
+might have to change the connection ID it sets in the Destination Connection ID
+field twice during connection establishment: once in response to a Retry, and
+once in response to an Initial packet from the server. Once a client has
+received an Initial packet from the server, it MUST discard any subsequent
 packet it receives with a different Source Connection ID.
 
 A client MUST change the Destination Connection ID it uses for sending packets
@@ -1473,6 +1473,44 @@ Initial packets with different Source Connection IDs.
 The Destination Connection ID that an endpoint sends can change over the
 lifetime of a connection, especially in response to connection migration
 ({{migration}}); see {{issue-cid}} for details.
+
+
+## Authenticating Connection IDs
+
+The choice each endpoint makes about connection IDs during the handshake is
+authenticated by including all values in transport parameters; see
+{{transport-parameters}}. This ensures that all connection IDs are authenticated
+by the cryptographic handshake.
+
+Each endpoint includes the value of the Source Connection ID field from Initial
+packets it sends in the handshake_connection_id transport parameter; see
+{{transport-parameter-definitions}}. A server includes the Destination
+Connection ID field it receives in the original Initial packet from the client
+in the original_connection_id transport parameter. After sending a Retry
+packet, a server also includes the Source Connection ID field from the Retry
+packet in the retry_connection_id transport parameter.
+
+Each endpoint ensures that the values of transport parameters matches the
+values. The values provided by a peer for these transport parameters MUST match
+values that an endpoint used in the Destination Connection ID field of an
+Initial packet. Including connection ID values in transport parameters and
+verifying them ensures that the choice of connection ID cannot be influenced by
+an attacker. An endpoint MUST treat any of the following as a connection error
+of type PROTOCOL_VIOLATION:
+
+* absence of the handshake_connection_id transport parameter from either
+  endpoint,
+
+* absence of the original_connection_id transport parameter from the server,
+
+* absence of the retry_connection_id transport parameter from the server after
+  receiving a Retry packet,
+
+* presence of the retry_connection_id transport parameter when no Retry packet
+  was received, or
+
+* a mismatch between values of these transport parameters and the Destination
+  Connection ID fields an endpoint used.
 
 
 ## Transport Parameters {#transport-parameters}
@@ -1522,9 +1560,10 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token, and
-ack_delay_exponent. The client MUST use the server's new values in the
-handshake instead, and absent new values from the server, the default value.
+ack_delay_exponent, handshake_connection_id, original_connection_id,
+preferred_address, retry_connection_id, and stateless_reset_token. The client
+MUST use the server's new values in the handshake instead and, absent new
+values from the server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1538,14 +1577,13 @@ limits or alter any values that might be violated by the client with its
 values for the following parameters ({{transport-parameter-definitions}})
 that are smaller than the remembered value of the parameters.
 
-
+* active_connection_id_limit
 * initial_max_data
 * initial_max_stream_data_bidi_local
 * initial_max_stream_data_bidi_remote
 * initial_max_stream_data_uni
 * initial_max_streams_bidi
 * initial_max_streams_uni
-* active_connection_id_limit
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
@@ -4357,13 +4395,15 @@ A client MUST NOT reset the packet number for any packet number space after
 processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
-original_connection_id transport parameter (see
-{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
+retry_connection_id transport parameter; see
+{{transport-parameter-definitions}}. If the server sends a Retry packet, it
 MUST include the Destination Connection ID field from the client's first
-Initial packet in the transport parameter.
+Initial packet in the original_connection_id transport parameter and include a
+retry_connection_id transport parameter that contains the value of the Source
+Connection ID field from the Retry packet.
 
 If the client received and processed a Retry packet, it MUST validate that the
-original_connection_id transport parameter is present and correct; otherwise, it
+retry_connection_id transport parameter is present and correct; otherwise, it
 MUST validate that the transport parameter is absent.  A client MUST treat a
 failed validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
@@ -4572,9 +4612,8 @@ original_connection_id (0x00):
 
 : The value of the Destination Connection ID field from the first Initial packet
   sent by the client.  This transport parameter is only sent by a server.  This
-  is the same value sent in the "Original Destination Connection ID" field of a
-  Retry packet (see {{packet-retry}}).  A server MUST include the
-  original_connection_id transport parameter if it sent a Retry packet.
+  is the same value sent in the "Original Destination Connection ID" field that
+  is used to construct a Retry packet (see {{packet-retry}}).
 
 max_idle_timeout (0x01):
 
@@ -4742,6 +4781,22 @@ active_connection_id_limit (0x0e):
   When a zero-length connection ID is being used, the active_connection_id_limit
   parameter MUST NOT be sent.
 
+handshake_connection_id (0x0f):
+
+: The value that the endpoint included in the Source Connection ID field of the
+  first Initial packet it sends during the handshake. Endpoints MUST validate
+  that this transport parameter is present and that it matches the value that
+  was received in Initial packets. Authenticating this value ensures that an
+  attacker is unable to influence the selection of connection IDs during the
+  handshake.
+
+retry_connection_id (0x10):
+
+: The value that the the server included in the Source Connection ID field of a
+  Retry packet.  This transport parameter is only sent by a server.  A server
+  MUST include the retry_connection_id transport parameter if it sent a Retry
+  packet.  This transport parameter MUST be absent if no Retry packet was sent.
+
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
 initial_max_stream_data_uni) are equivalent to sending a MAX_STREAM_DATA frame
@@ -4750,9 +4805,9 @@ immediately after opening.  If the transport parameter is absent, streams of
 that type start with a flow control limit of 0.
 
 A client MUST NOT include server-only transport parameters
-(original_connection_id, stateless_reset_token, or preferred_address).  A server
-MUST treat receipt of any of these transport parameters as a connection error of
-type TRANSPORT_PARAMETER_ERROR.
+(original_connection_id, preferred_address, retry_connection_id, and
+stateless_reset_token). A server MUST treat receipt of any of these transport
+parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
 
 # Frame Types and Formats {#frame-formats}
@@ -6549,6 +6604,8 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0c | disable_active_migration    | {{transport-parameter-definitions}} |
 | 0x0d | preferred_address           | {{transport-parameter-definitions}} |
 | 0x0e | active_connection_id_limit  | {{transport-parameter-definitions}} |
+| 0x0f | handshake_connection_id     | {{transport-parameter-definitions}} |
+| 0x10 | retry_connection_id         | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
