@@ -1519,10 +1519,9 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and active_connection_id_limit. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+original_connection_id, preferred_address, stateless_reset_token, and
+ack_delay_exponent. The client MUST use the server's new values in the
+handshake instead, and absent new values from the server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1543,6 +1542,7 @@ that are smaller than the remembered value of the parameters.
 * initial_max_stream_data_uni
 * initial_max_streams_bidi
 * initial_max_streams_uni
+* active_connection_id_limit
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
