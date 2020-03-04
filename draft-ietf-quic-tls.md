@@ -427,7 +427,7 @@ encryption level. Four encryption levels are used, producing keys for Initial,
 0-RTT, Handshake, and 1-RTT packets. CRYPTO frames are carried in just three of
 these levels, omitting the 0-RTT level. These four levels correspond to three packet
 number spaces: Initial and Handshake encrypted packets use their own separate
-spaces; 0-RTT and 1-RTT packets use the application data packet number space. 
+spaces; 0-RTT and 1-RTT packets use the application data packet number space.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
