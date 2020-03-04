@@ -330,8 +330,8 @@ packet number space:
 
 - CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
   appear in any packet number space. CONNECTION_CLOSE frames signaling
-  application errors (type 0x1d) MAY appear in every packet number space other
-  than Initial.
+  application errors (type 0x1d) MUST only appear in the Application packet
+  number space.
 
 - ACK frames MAY appear in any packet number space, but can only acknowledge
   packets which appeared in that packet number space.

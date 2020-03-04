@@ -2514,11 +2514,11 @@ that uses a lower packet protection level.  More specifically:
   1-RTT packets.  A server SHOULD also send CONNECTION_CLOSE in an Initial
   packet.
 
-An CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
-0x1c when sending the frame in Initial packets. Otherwise, information about
-the application state might be revealed. Endpoints MUST clear the value of the
-Reason Phrase field and SHOULD use the APPLICATION_ERROR code when converting
-to a CONNECTION_CLOSE of type 0x1c.
+A CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
+0x1c when sending the frame in Initial or Handshake packets. Otherwise,
+information about the application state might be revealed. Endpoints MUST clear
+the value of the Reason Phrase field and SHOULD use the APPLICATION_ERROR code
+when converting to a CONNECTION_CLOSE of type 0x1c.
 
 CONNECTION_CLOSE frames sent in multiple packets can be coalesced into a single
 UDP datagram; see {{packet-coalesce}}.
@@ -3029,7 +3029,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | iH01    |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
@@ -3053,9 +3053,10 @@ H:
 
 : 1-RTT ({{short-header}})
 
-i:
+ih:
 
-: A CONNECTION_CLOSE frame of type 0x1d cannot appear in Initial packets.
+: A CONNECTION_CLOSE frame of type 0x1d cannot appear in Initial or Handshake
+  packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
 that all frames can appear in 1-RTT packets.
