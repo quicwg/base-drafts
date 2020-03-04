@@ -324,7 +324,7 @@ Some frames are prohibited in different packet number spaces. The rules here
 generalize those of TLS, in that frames associated with establishing the
 connection can usually appear in packets in any packet number space, whereas
 those associated with transferring data can only appear in the application
-packet number space:
+data packet number space:
 
 - PADDING, PING, and CRYPTO frames MAY appear in any packet number space.
 
@@ -336,7 +336,7 @@ packet number space:
 - ACK frames MAY appear in any packet number space, but can only acknowledge
   packets which appeared in that packet number space.
 
-- All other frame types MUST only be sent in the application packet number
+- All other frame types MUST only be sent in the application data packet number
   space.
 
 Note that it is not possible to send the following frames in 0-RTT packets for

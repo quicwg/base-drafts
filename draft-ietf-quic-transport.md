@@ -2514,14 +2514,16 @@ that uses a lower packet protection level.  More specifically:
   1-RTT packets.  A server SHOULD also send CONNECTION_CLOSE in an Initial
   packet.
 
-A CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
+Sending a CONNECTION_CLOSE of type 0x1d in an Initial or Handshake packet could
+expose application state or be used to alter application state. A
+CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
 0x1c when sending the frame in Initial or Handshake packets. Otherwise,
 information about the application state might be revealed. Endpoints MUST clear
 the value of the Reason Phrase field and SHOULD use the APPLICATION_ERROR code
 when converting to a CONNECTION_CLOSE of type 0x1c.
 
-CONNECTION_CLOSE frames sent in multiple packets can be coalesced into a single
-UDP datagram; see {{packet-coalesce}}.
+CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
+single UDP datagram; see {{packet-coalesce}}.
 
 
 ## Stateless Reset {#stateless-reset}
