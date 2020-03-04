@@ -330,7 +330,7 @@ data packet number space:
 
 - CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
   appear in any packet number space. CONNECTION_CLOSE frames signaling
-  application errors (type 0x1d) MUST only appear in the Application packet
+  application errors (type 0x1d) MUST only appear in the application data packet
   number space.
 
 - ACK frames MAY appear in any packet number space, but can only acknowledge
@@ -349,14 +349,14 @@ indicate which keys were used to protect a given packet, as shown in
 {{packet-types-keys}}. When packets of different types need to be sent,
 endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 
-| Packet Type         | Encryption Keys | PN Space    |
-|:--------------------|:----------------|:------------|
-| Initial             | Initial secrets | Initial     |
-| 0-RTT Protected     | 0-RTT           | Application |
-| Handshake           | Handshake       | Handshake   |
-| Retry               | Retry           | N/A         |
-| Version Negotiation | N/A             | N/A         |
-| Short Header        | 1-RTT           | Application |
+| Packet Type         | Encryption Keys | PN Space         |
+|:--------------------|:----------------|:-----------------|
+| Initial             | Initial secrets | Initial          |
+| 0-RTT Protected     | 0-RTT           | Application data |
+| Handshake           | Handshake       | Handshake        |
+| Retry               | Retry           | N/A              |
+| Version Negotiation | N/A             | N/A              |
+| Short Header        | 1-RTT           | Application data |
 {: #packet-types-keys title="Encryption Keys by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
