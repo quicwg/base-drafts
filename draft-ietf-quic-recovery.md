@@ -707,6 +707,13 @@ The recovery period limits congestion window reduction to once per round trip.
 During recovery, the congestion window remains unchanged irrespective of new
 losses or increases in the ECN-CE counter.
 
+When entering recovery, a single packet MAY be sent even if bytes in flight
+now exceeds the recently reduced congestion window.  This speeds up loss
+recovery if the data in the lost packet is retransmitted and is similar to TCP
+as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
+the sender is in recovery, sending any packets in response MUST obey the
+congestion window limit.
+
 ## Ignoring Loss of Undecryptable Packets
 
 During the handshake, some packet protection keys might not be
@@ -1403,6 +1410,8 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+       // A packet can be sent to speed up loss recovery.
+       MaybeSendOnePacket()
 ~~~
 
 
