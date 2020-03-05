@@ -3170,11 +3170,21 @@ delayed retransmissions from the peer. For Initial and Handshake packets,
 a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
+The max_ack_delay needs to be set so that at least several samples can
+be generated per RTT to estimate the path RTT.
 
-An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
-This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+A QUIC receiver can generate one ACK frame for every received
+ack-eliciting packet.  TCP recommends
+that a receiver generates an ACK corresponding to every second MSS of
+received data, Section 4.2 of {{?RFC5681}}, however {{?RFC3449}} also
+notes the need for, and deployment of, methods to further
+reduce the number of TCP ACKs in networks with asymmetric paths.
 
-In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
+An ACK frame SHOULD be generated for at least every tenth ack-eliciting
+packet. The maximum of receiving not more than 10 ack-eliciting packets
+is derived from the recommended TCP Initial Window {{?RFC6928}}.
+
+To assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
 endpoint MAY continue sending ACK frames immediately on each subsequently
 received packet, but the endpoint SHOULD return to acknowledging every other
