@@ -1694,12 +1694,10 @@ If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
 The server can discard such a packet and allow the client to time out to
 detect handshake failure, but that could impose a significant latency penalty on
-the client.  A server MAY proceed with the connection without verifying the
-token, though the server MUST NOT consider the client address validated.  If a
-server chooses not to proceed with the handshake, it SHOULD immediately close
-({{immediate-close}}) the connection with an INVALID_TOKEN error.  Note that a
-server has not established any state for the connection at this point and so
-does not enter the closing period.
+the client.  Instead, the server SHOULD immediately close ({{immediate-close}})
+the connection with an INVALID_TOKEN error.  Note that a server has not
+established any state for the connection at this point and so does not enter the
+closing period.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
