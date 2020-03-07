@@ -112,9 +112,9 @@ The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
-a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
-comparable security to running TLS over TCP, with the improved connection setup
-latency of TCP Fast Open {{?RFC7413}}.
+a TCP mapping.  QUIC also incorporates TLS 1.3 {{?TLS13=RFC8446}} at the
+transport layer, offering comparable security to running TLS over TCP, with
+the improved connection setup latency of TCP Fast Open {{?TFO=RFC7413}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -324,7 +324,7 @@ QUIC version 1 uses TLS version 1.3 or greater as its handshake protocol.
 HTTP/3 clients MUST support a mechanism to indicate the target host to the
 server during the TLS handshake.  If the server is identified by a DNS name,
 clients MUST send the Server Name Indication (SNI) {{!RFC6066}} TLS extension
-unless an alternative mechanism for indicate the target host is used.
+unless an alternative mechanism to indicate the target host is used.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
@@ -866,9 +866,11 @@ further requests.
 ## Immediate Application Closure
 
 An HTTP/3 implementation can immediately close the QUIC connection at any time.
-This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
+This results in sending a QUIC CONNECTION_CLOSE frame to the peer indicating
+that the application layer has terminated the connection.  The application error
 code in this frame indicates to the peer why the connection is being closed.
-See {{errors}} for error codes which can be used when closing a connection.
+See {{errors}} for error codes which can be used when closing a connection in
+HTTP/3.
 
 Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
 some requests.  Including the GOAWAY frame in the same packet as the QUIC
@@ -1361,7 +1363,7 @@ as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
 decompressed request header sets MUST contain the same fields in the same
-order, and both the name and and value in each field MUST be exact
+order, and both the name and the value in each field MUST be exact
 matches. Clients SHOULD compare the request header sets for resources promised
 multiple times. If a client receives a Push ID that has already been promised
 and detects a mismatch, it MUST respond with a connection error of type
@@ -2122,6 +2124,16 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-26
+
+- No changes
+
+## Since draft-ietf-quic-http-25
+
+- Require QUICv1 for HTTP/3 (#3117, #3323)
+- Remove DUPLICATE_PUSH and allow duplicate PUSH_PROMISE (#3275, #3309)
+- Clarify the definition of "malformed" (#3352, #3345)
 
 ## Since draft-ietf-quic-http-24
 
