@@ -236,9 +236,9 @@ delay instead of using a fixed minimum timeout. Unlike TCP, which collapses
 the congestion window upon expiry of an RTO, QUIC does not collapse the
 congestion window until persistent congestion ({{persistent-congestion}}) is
 declared and instead allows probe packets to temporarily exceed the congestion
-window whenever the timer expires.  In practice, this is similar to TCP with
-F-RTO, but it does allow more packets to be sent when the congestion window was
-not fully utilized prior to the probe timeout expiring. Though this is slightly
+window whenever the timer expires.  In comparison to TCP with F-RTO
+{{!RFC5682}}, which corrects an unnecessary collapse of the congestion window,
+this design aims to prevent the window from collapsing. Though this is slightly
 more aggressive than TCP RTO, it's less aggressive than if the connection was
 not application limited.
 
