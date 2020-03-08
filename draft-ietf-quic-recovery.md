@@ -1162,7 +1162,8 @@ PeerNotAwaitingAddressValidation():
   # Servers complete address validation when a
   # protected packet is received.
   return has received Handshake ACK ||
-         has received 1-RTT ACK or a HANDSHAKE_DONE frame
+       has received 1-RTT ACK ||
+       has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
   earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
