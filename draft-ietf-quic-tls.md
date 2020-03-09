@@ -334,7 +334,8 @@ data packet number space:
   number space.
 
 - ACK frames MAY appear in any packet number space, but can only acknowledge
-  packets which appeared in that packet number space.
+  packets which appeared in that packet number space.  However, as noted below,
+  0-RTT packets cannot contain ACK frames.
 
 - All other frame types MUST only be sent in the application data packet number
   space.
