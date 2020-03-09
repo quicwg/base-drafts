@@ -1426,15 +1426,15 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 
 A connection ID is used to ensure consistent routing of packets, as described in
 {{connection-id}}.  The long header contains two connection IDs: the Destination
-Connection ID (DCID) is chosen by the recipient of the packet and is used to
-provide consistent routing; the Source Connection ID (SCID) is used to set the
-Destination Connection ID used by the peer.
+Connection ID is chosen by the recipient of the packet and is used to provide
+consistent routing; the Source Connection ID is used to set the Destination
+Connection ID used by the peer.
 
 During the handshake, packets with the long header ({{long-header}}) are used to
-establish the connection IDs in each direction. Each endpoint uses the SCID
-field to specify the connection ID that is used in the DCID field of packets
-being sent to them. Upon receiving a packet, each endpoint sets the DCID it
-sends to match the value of the SCID that it receives.
+establish the connection IDs in each direction. Each endpoint uses the Source
+Connection ID field to specify the connection ID that is used in the DCID field
+of packets being sent to them. Upon receiving a packet, each endpoint sets the
+DCID it sends to match the value of the Source Connection ID that it receives.
 
 When an Initial packet is sent by a client that has not previously received an
 Initial or Retry packet from the server, the client populates the DCID field
@@ -1443,30 +1443,34 @@ Until a packet is received from the server, the client MUST use the same DCID
 value on all packets in this connection. This DCID is used to determine packet
 protection keys for Initial packets.
 
-The client populates the SCID field with a value of its choosing and sets the
-SCID Len field to indicate the length.
+The client populates the Source Connection ID field with a value of its choosing
+and sets the SCID Len field to indicate the length.
 
-The first flight of 0-RTT packets use the same DCID and SCID values as the
-client's first Initial packet.
+The first flight of 0-RTT packets use the same Destination Connection ID and
+Source Connection ID values as the client's first Initial packet.
 
 Upon first receiving an Initial or Retry packet from the server, the client uses
-the SCID supplied by the server as the DCID for subsequent packets, including
-all subsequent 0-RTT packets. This means that a client might change the DCID
-twice during connection establishment, once in response to a Retry and once in
-response to an Initial packet from the server. Once a client has received an
-Initial packet from the server, it MUST discard any subsequent packet it
-receives with a different Source Connection ID.
+the Source Connection ID supplied by the server as the Destination Connection ID
+for subsequent packets, including all subsequent 0-RTT packets.  This means that
+a client might have to change the connection ID it sets in the Destination
+Connection ID field twice during connection establishment: once in response to a
+Retry, and once in response to an Initial packet from the server. Once a client
+has received an Initial packet from the server, it MUST discard any subsequent
+packet it receives with a different Source Connection ID.
 
-A client MUST change the DCID value it sends in response to only the first
-received Initial or Retry packet.  A server MUST set its DCID value based on the
-first received Initial packet. Any further changes to the DCID are not
-permitted; if subsequent Initial packets include a different SCID, they MUST be
-discarded.  This avoids unpredictable outcomes that might otherwise result from
-stateless processing of multiple Initial packets with different SCIDs.
+A client MUST change the Destination Connection ID it uses for sending packets
+in response to only the first received Initial or Retry packet.  A server MUST
+set the Destination Connection ID it uses for sending packets based on the first
+received Initial packet. Any further changes to the Destination Connection ID
+are are only permitted if the values are taken from any received
+NEW_CONNECTION_ID frames; if subsequent Initial packets include a different
+Source Connection ID, they MUST be discarded.  This avoids unpredictable
+outcomes that might otherwise result from stateless processing of multiple
+Initial packets with different Source Connection IDs.
 
-The DCID that an endpoint sends can change over the lifetime of a connection,
-especially in response to connection migration ({{migration}}); see
-{{issue-cid}} for details.
+The Destination Connection ID that an endpoint sends can change over the
+lifetime of a connection, especially in response to connection migration
+({{migration}}); see {{issue-cid}} for details.
 
 
 ## Transport Parameters {#transport-parameters}
