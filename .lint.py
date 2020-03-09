@@ -16,8 +16,10 @@ foundError = False
 for inputfile in args.files:
     insideFigure = False
     beforeAbstract = True
+
+
     with open(inputfile, mode='rt', newline=None, encoding='utf-8') as draft:
-        linecounter = 1
+        linenumber = 0
         lines = draft.readlines()
 
         abstract = re.compile('^--- abstract')
@@ -26,13 +28,14 @@ for inputfile in args.files:
 
         for line in lines:
             line = line.rstrip('\r\n')
-            linenumber = linecounter
-            linecounter += 1
+            linenumber += 1
+            def err(msg):
+                foundError = True
+                sys.stderr.write("{0}:{1}: {2}\n".format(inputfile, linenumber, msg))
+                sys.stderr.write("{0}\n".format(line))
 
             if line.find('\t') >= 0:
-                foundError = True
-                sys.stderr.write("{0}: Line contains HTAB\n".format(linenumber))
-                sys.stderr.write("{0}\n".format(line))
+                err("Line contains HTAB");
 
             # Skip everything before abstract
             if beforeAbstract:
@@ -56,9 +59,6 @@ for inputfile in args.files:
             length = len(line)
             limit = args.maxFigureLineLength if insideFigure else args.maxLineLength
             if length > limit:
-                foundError = True
-                sys.stderr.write("{0}: Line is {1} characters; limit is {2}\n".format(
-                    linenumber, length, limit))
-                sys.stderr.write("{0}\n".format(line))
+                err("Line is {0} characters; limit is {1}".format(length, limit))
 
 sys.exit(1 if foundError else 0)
