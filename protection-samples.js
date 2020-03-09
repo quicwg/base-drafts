@@ -9,13 +9,50 @@
 const buffer = require('buffer');
 const crypto = require('crypto');
 const assert = require('assert');
+const util = require('util');
 
 const INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
 const SHA256 = 'sha256';
 const AES_GCM = 'aes-128-gcm';
 const AES_ECB = 'aes-128-ecb';
+const CHACHA20_POLY1305 = 'ChaCha20-Poly1305';
+const CHACHA20 = 'ChaCha20';
 
 const version = 'ff00001b';
+
+function aes_128_hp_mask(hp, sample) {
+  // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
+  // var mask = ctr.update(Buffer.alloc(5));
+  let ecb = crypto.createCipheriv(AES_ECB, hp, Buffer.alloc(0));
+  return ecb.update(sample);
+}
+
+function chacha20_hp_mask(hp, sample) {
+  let chacha = crypto.createCipheriv(CHACHA20, hp, sample);
+  return chacha.update(Buffer.alloc(5));
+}
+
+const AEAD_OPTIONS = {
+  'AEAD_AES_128_GCM': {
+    id: AES_GCM,
+    key_len: 16,
+    iv_len: 12,
+    tag_len: 16,
+    hp_mask: aes_128_hp_mask,
+    retry_key: Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex'),
+    retry_nonce: Buffer.from('4d1611d05513a552c587d575', 'hex'),
+  },
+  'AEAD_CHACHA20_POLY1305': {
+    id: CHACHA20_POLY1305,
+    key_len: 32,
+    iv_len: 12,
+    tag_len: 16,
+    hp_algo: 'ChaCha20',
+    hp_mask: chacha20_hp_mask,
+    retry_key: Buffer.from('59bdff7a5bcdaacf319d99646c6273ad96687d2c74ace678f15a1c710675bb23', 'hex'),
+    retry_nonce: Buffer.from('88b4ab7d830dcd052aef9f3c', 'hex'),
+  }
+};
 
 function log(m, k) {
   console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
@@ -75,16 +112,17 @@ class QHKDF {
 }
 
 class InitialProtection {
-  constructor(label, cid) {
+  constructor(label, cid, aead) {
     var qhkdf = QHKDF.extract(SHA256, INITIAL_SALT, cid);
     log('initial_secret', qhkdf.prk);
     qhkdf = new QHKDF(qhkdf.hmac, qhkdf.expand_label(label, 32));
     log(label + ' secret', qhkdf.prk);
-    this.key = qhkdf.expand_label("quic key", 16);
+    this.aead_options = AEAD_OPTIONS[aead];
+    this.key = qhkdf.expand_label("quic key", this.aead_options.key_len);
     log(label + ' key', this.key);
-    this.iv = qhkdf.expand_label("quic iv", 12);
+    this.iv = qhkdf.expand_label("quic iv", this.aead_options.iv_len);
     log(label + ' iv', this.iv);
-    this.hp = qhkdf.expand_label("quic hp", 16);
+    this.hp = qhkdf.expand_label("quic hp", this.aead_options.key_len);
     log(label + ' hp', this.hp);
   }
 
@@ -104,11 +142,12 @@ class InitialProtection {
     log('encipher aad', aad);
     log('encipher data', data);
     var nonce = this.generateNonce(pn);
-    var gcm = crypto.createCipheriv(AES_GCM, this.key, nonce);
-    gcm.setAAD(aad);
-    var e = gcm.update(data);
-    gcm.final();
-    e = Buffer.concat([e, gcm.getAuthTag()]);
+    let options = { authTagLength: this.aead_options.tag_len };
+    var cipher = crypto.createCipheriv(this.aead_options.id, this.key, nonce, options);
+    cipher.setAAD(aad);
+    var e = cipher.update(data);
+    cipher.final();
+    e = Buffer.concat([e, cipher.getAuthTag()]);
     log('enciphered', e);
     return e;
   }
@@ -118,11 +157,12 @@ class InitialProtection {
     log('decipher aad', aad);
     log('decipher data', data);
     var nonce = this.generateNonce(pn);
-    var gcm = crypto.createDecipheriv(AES_GCM, this.key, nonce);
-    gcm.setAAD(aad);
-    gcm.setAuthTag(data.slice(data.length - 16));
-    var d = gcm.update(data.slice(0, data.length - 16));
-    gcm.final();
+    let options = { authTagLength: this.aead_options.tag_len };
+    var cipher = crypto.createDecipheriv(this.aead_options.id, this.key, nonce, options);
+    cipher.setAAD(aad);
+    cipher.setAuthTag(data.slice(data.length - this.aead_options.tag_len));
+    var d = cipher.update(data.slice(0, data.length - this.aead_options.tag_len));
+    cipher.final();
     log('deciphered', d);
     return d;
   }
@@ -130,10 +170,7 @@ class InitialProtection {
   // Calculates the header protection mask.  Returns 16 bytes of output.
   hpMask(sample) {
     log('hp sample', sample);
-    // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
-    // var mask = ctr.update(Buffer.alloc(5));
-    var ecb = crypto.createCipheriv(AES_ECB, this.hp, Buffer.alloc(0));
-    var mask = ecb.update(sample);
+    let mask = this.aead_options.hp_mask(this.hp, sample);
     log('hp mask', mask);
     return mask;
   }
@@ -230,7 +267,7 @@ function pad(hdr, body) {
   return padded;
 }
 
-function test(role, cid, hdr, pn, body) {
+function test(role, cid, hdr, pn, body, aead) {
   cid = Buffer.from(cid, 'hex');
   log('connection ID', cid);
   hdr = Buffer.from(hdr, 'hex');
@@ -243,7 +280,7 @@ function test(role, cid, hdr, pn, body) {
     body = pad(hdr, body);
   }
 
-  var endpoint = new InitialProtection(role + ' in', cid);
+  var endpoint = new InitialProtection(role + ' in', cid, aead);
   var packet = endpoint.encrypt(hdr, pn, body);
   log('encrypted packet', packet);
 
@@ -258,7 +295,7 @@ function hex_cid(cid) {
   return '0' + (cid.length / 2).toString(16) + cid;
 }
 
-function retry(dcid, scid, odcid) {
+function retry(dcid, scid, odcid, aead) {
   var pfx = Buffer.from(hex_cid(odcid), 'hex');
   var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
   var token = Buffer.from('token', 'ascii');
@@ -267,14 +304,45 @@ function retry(dcid, scid, odcid) {
   var aad = Buffer.concat([pfx, header]);
   log('retry aad', aad);
 
-  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
-  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
+  let aead_options = AEAD_OPTIONS[aead];
+  let options = { authTagLength: aead_options.tag_len };
+  let cipher = crypto.createCipheriv(aead_options.id,
+				     aead_options.retry_key,
+				     aead_options.retry_nonce,
+				     options);
 
-  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
-  gcm.setAAD(aad);
-  gcm.update('');
-  gcm.final();
-  log('retry', Buffer.concat([header, gcm.getAuthTag()]));
+  cipher.setAAD(aad);
+  cipher.update('');
+  cipher.final();
+  log('retry', Buffer.concat([header, cipher.getAuthTag()]));
+}
+
+var args = process.argv.slice(2);
+var aead = 'AEAD_AES_128_GCM';
+while (true) {
+  let arg = args.shift();
+  if (!arg) {
+    break;
+  }
+  switch (arg) {
+  case '-c':
+    aead = args.shift();
+    if (!(aead in AEAD_OPTIONS)) {
+      console.error(util.format('Unknown algorithm: %s', aead));
+      process.exit(1);
+    }
+    break;
+  case '-h':
+    console.log('Usage: protection-samples.js [-c AEAD]');
+    console.log('  where available AEAD algorithms are:');
+    for (let algo in AEAD_OPTIONS) {
+      console.log('    ' + algo);
+    }
+    process.exit(0);
+  default:
+    console.error(util.format('Unknown option: %s', arg));
+    process.exit(1);
+  }
 }
 
 var cid = '8394c8f03e515708';
@@ -290,7 +358,7 @@ var crypto_frame = '060040c4' +
     '5ff183d7bb1495207236647037002b0003020304000d0020001e040305030603' +
     '020308040805080604010501060102010402050206020202002d00020101001c' +
     '00024001';
-test('client', cid, ci_hdr, 2, crypto_frame);
+test('client', cid, ci_hdr, 2, crypto_frame, aead);
 
 // This should be a valid server Initial.
 var frames = '0d0000000018410a' +
@@ -301,6 +369,6 @@ var frames = '0d0000000018410a' +
     'bcf32bb9da1a002b00020304';
 var scid = 'f067a5502a4262b5';
 var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
-test('server', cid, si_hdr, 1, frames);
+test('server', cid, si_hdr, 1, frames, aead);
 
-retry('', scid, cid);
+retry('', scid, cid, aead);
