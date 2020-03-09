@@ -6,16 +6,16 @@
 
 
 'use strict';
-var buffer = require('buffer');
-var crypto = require('crypto');
-var assert = require('assert');
+const buffer = require('buffer');
+const crypto = require('crypto');
+const assert = require('assert');
 
-var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
-var SHA256 = 'sha256';
-var AES_GCM = 'aes-128-gcm';
-var AES_ECB = 'aes-128-ecb';
+const INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
+const SHA256 = 'sha256';
+const AES_GCM = 'aes-128-gcm';
+const AES_ECB = 'aes-128-ecb';
 
-var version = 'ff00001b';
+const version = 'ff00001b';
 
 function log(m, k) {
   console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
@@ -132,7 +132,7 @@ class InitialProtection {
     log('hp sample', sample);
     // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
     // var mask = ctr.update(Buffer.alloc(5));
-    var ecb = crypto.createCipheriv('aes-128-ecb', this.hp, Buffer.alloc(0));
+    var ecb = crypto.createCipheriv(AES_ECB, this.hp, Buffer.alloc(0));
     var mask = ecb.update(sample);
     log('hp mask', mask);
     return mask;
