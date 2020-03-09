@@ -1432,15 +1432,17 @@ Connection ID used by the peer.
 
 During the handshake, packets with the long header ({{long-header}}) are used to
 establish the connection IDs in each direction. Each endpoint uses the Source
-Connection ID field to specify the connection ID that is used in the DCID field
-of packets being sent to them. Upon receiving a packet, each endpoint sets the
-DCID it sends to match the value of the Source Connection ID that it receives.
+Connection ID field to specify the connection ID that is used in the Destination
+Connection ID field of packets being sent to them. Upon receiving a packet, each
+endpoint sets the Destination Connection ID it sends to match the value of the
+Source Connection ID that it receives.
 
 When an Initial packet is sent by a client that has not previously received an
-Initial or Retry packet from the server, the client populates the DCID field
-with an unpredictable value.  This DCID MUST be at least 8 bytes in length.
-Until a packet is received from the server, the client MUST use the same DCID
-value on all packets in this connection. This DCID is used to determine packet
+Initial or Retry packet from the server, the client populates the Destination
+Connection ID field with an unpredictable value.  This Destination Connection ID
+MUST be at least 8 bytes in length.  Until a packet is received from the server,
+the client MUST use the same Destination Connection ID value on all packets in
+this connection. This Destination Connection ID is used to determine packet
 protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
