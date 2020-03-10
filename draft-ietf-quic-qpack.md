@@ -638,9 +638,9 @@ QPACK defines two unidirectional stream types:
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
 initiate at most one encoder stream and at most one decoder stream. Receipt of a
 second instance of either stream type MUST be treated as a connection error of
-type HTTP_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
+type H3_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
 either unidirectional stream type MUST be treated as a connection error of type
-HTTP_CLOSED_CRITICAL_STREAM.
+H3_CLOSED_CRITICAL_STREAM.
 
 An endpoint MAY avoid creating an encoder stream if it's not going to be used
 (for example if its encoder doesn't wish to use the dynamic table, or if the
