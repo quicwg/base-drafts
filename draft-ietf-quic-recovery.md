@@ -768,7 +768,7 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 ## Pacing {#pacing}
 
-This document does not specify a pacer, but it is RECOMMENDED that a sender paces
+This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
 the smoothed RTT when used with a window-based controller, or a pacer might use
