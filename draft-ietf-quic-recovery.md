@@ -529,6 +529,9 @@ bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
+When Initial or Handshake keys are discarded, the PTO and loss detection timers
+MUST be reset, because discarding keys indicates forward progress and the loss
+detection timer may have been set for a now discarded packet number space.
 
 ### Sending Probe Packets
 
@@ -642,6 +645,12 @@ If an endpoint uses a different controller than that specified in this document,
 the chosen controller MUST conform to the congestion control guidelines
 specified in Section 3.1 of {{!RFC8085}}.
 
+Similar to TCP, packets containing only ACK frames do not count towards bytes
+in flight and are not congestion controlled.  Unlike TCP, QUIC can detect the
+loss of these packets and MAY use that information to adjust the congestion
+controller or the rate of ACK-only packets being sent, but this document does
+not describe a mechanism for doing so.
+
 The algorithm in this document specifies and uses the controller's congestion
 window in bytes.
 
@@ -703,14 +712,23 @@ The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during recovery, the congestion window remains unchanged
 irrespective of new losses or increases in the ECN-CE counter.
 
+When entering recovery, a single packet MAY be sent even if bytes in flight
+now exceeds the recently reduced congestion window.  This speeds up loss
+recovery if the data in the lost packet is retransmitted and is similar to TCP
+as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
+the sender is in recovery, sending any packets in response MUST obey the
+congestion window limit.
+
 ## Ignoring Loss of Undecryptable Packets
 
-During the handshake, some packet protection keys might not be
-available when a packet arrives. In particular, Handshake and 0-RTT packets
-cannot be processed until the Initial packets arrive, and 1-RTT packets
-cannot be processed until the handshake completes.  Endpoints MAY
-ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
-the peer has packet protection keys to process those packets.
+During the handshake, some packet protection keys might not be available when
+a packet arrives and the receiver can choose to drop the packet. In particular,
+Handshake and 0-RTT packets cannot be processed until the Initial packets
+arrive and 1-RTT packets cannot be processed until the handshake completes.
+Endpoints MAY ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might
+have arrived before the peer had packet protection keys to process those
+packets. Endpoints MUST NOT ignore the loss of packets that were sent after
+the earliest acknowledged packet in a given packet number space.
 
 ## Probe Timeout
 
@@ -780,7 +798,7 @@ controller and control the availability of the congestion window, or a pacer
 might pace out packets handed to it by the congestion controller.
 
 Timely delivery of ACK frames is important for efficient loss recovery. Packets
-containing only ACK frames should therefore not be paced, to avoid delaying
+containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
 Sending multiple packets into the network without any delay between them
@@ -808,7 +826,7 @@ to determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
-should not consider itself application limited if it would have fully
+SHOULD NOT consider itself application limited if it would have fully
 utilized the congestion window without pacing delay.
 
 A sender MAY implement alternative mechanisms to update its congestion window
@@ -1400,6 +1418,8 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+       // A packet can be sent to speed up loss recovery.
+       MaybeSendOnePacket()
 ~~~
 
 
@@ -1444,6 +1464,26 @@ Invoked from DetectLostPackets when packets are deemed lost.
        congestion_window = kMinimumWindow
 ~~~
 
+## Upon dropping Initial or Handshake keys
+
+When Initial or Handshake keys are discarded, packets from the space
+are discarded and loss detection state is updated.
+
+Pseudocode for OnPacketNumberSpaceDiscarded follows:
+
+~~~
+OnPacketNumberSpaceDiscarded(pn_space):
+  assert(pn_space != ApplicationData)
+  // Remove any unacknowledged packets from flight.
+  foreach packet in sent_packets[pn_space]:
+    if packet.in_flight
+      bytes_in_flight -= size
+  sent_packets[pn_space].clear()
+  // Reset the loss detection and PTO timer
+  time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
+  loss_time[pn_space] = 0
+  SetLossDetectionTimer()
+~~~
 
 # Change Log
 
