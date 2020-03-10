@@ -542,7 +542,7 @@ client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets.
+Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -1192,7 +1192,8 @@ PeerNotAwaitingAddressValidation():
   # Servers complete address validation when a
   # protected packet is received.
   return has received Handshake ACK ||
-         has received 1-RTT ACK
+       has received 1-RTT ACK ||
+       has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
   earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
