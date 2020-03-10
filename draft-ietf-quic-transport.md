@@ -1464,7 +1464,7 @@ A client MUST change the Destination Connection ID it uses for sending packets
 in response to only the first received Initial or Retry packet.  A server MUST
 set the Destination Connection ID it uses for sending packets based on the first
 received Initial packet. Any further changes to the Destination Connection ID
-are are only permitted if the values are taken from any received
+are only permitted if the values are taken from any received
 NEW_CONNECTION_ID frames; if subsequent Initial packets include a different
 Source Connection ID, they MUST be discarded.  This avoids unpredictable
 outcomes that might otherwise result from stateless processing of multiple
