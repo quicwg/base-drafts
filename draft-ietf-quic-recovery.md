@@ -946,7 +946,7 @@ latest_rtt:
 
 smoothed_rtt:
 : The smoothed RTT of the connection, computed as described in
-  Section {{smoothed-rtt}}
+  {{smoothed-rtt}}.
 
 rttvar:
 : The RTT variation, computed as described in Section {{smoothed-rtt}}
