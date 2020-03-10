@@ -232,11 +232,11 @@ more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
 QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
-delay instead of using a fixed minimum timeout. Unlike TCP, which collapses
-the congestion window upon expiry of an RTO, QUIC does not collapse the
+delay instead of using a fixed minimum timeout. QUIC does not collapse the
 congestion window until persistent congestion ({{persistent-congestion}}) is
-declared and instead allows probe packets to temporarily exceed the congestion
-window whenever the timer expires.
+declared, unlike TCP, which collapses the congestion window upon expiry of an
+RTO.  Instead of collapsing the congestion window, QUIC allows probe packets
+to temporarily exceed the congestion window whenever the timer expires.
 
 In doing this, QUIC avoids unnecessary congestion window reductions, obviating
 the need for correcting mechanisms such as F-RTO {{!RFC5682}}. Since QUIC does
