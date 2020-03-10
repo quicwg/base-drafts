@@ -1046,10 +1046,10 @@ Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
 be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
-As discussed in {{migration-linkability}}, each connection ID MUST be used on
-packets sent from only one local address.  An endpoint that migrates away from a
-local address SHOULD retire all connection IDs used on that address once it no
-longer plans to use that address.
+As discussed in {{migration-linkability}}, endpoints limit the use of a
+connection ID to a single network path where possible. Endpoints SHOULD retire
+connection IDs when no longer actively using the network path on which the
+connection ID was used.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
@@ -1519,10 +1519,9 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and active_connection_id_limit. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+original_connection_id, preferred_address, stateless_reset_token, and
+ack_delay_exponent. The client MUST use the server's new values in the
+handshake instead, and absent new values from the server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1536,6 +1535,7 @@ limits or alter any values that might be violated by the client with its
 values for the following parameters ({{transport-parameter-definitions}})
 that are smaller than the remembered value of the parameters:
 
+* active_connection_id_limit
 * initial_max_data
 * initial_max_stream_data_bidi_local
 * initial_max_stream_data_bidi_remote
@@ -1694,12 +1694,10 @@ If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
 The server can discard such a packet and allow the client to time out to
 detect handshake failure, but that could impose a significant latency penalty on
-the client.  A server MAY proceed with the connection without verifying the
-token, though the server MUST NOT consider the client address validated.  If a
-server chooses not to proceed with the handshake, it SHOULD immediately close
-({{immediate-close}}) the connection with an INVALID_TOKEN error.  Note that a
-server has not established any state for the connection at this point and so
-does not enter the closing period.
+the client.  Instead, the server SHOULD immediately close ({{immediate-close}})
+the connection with an INVALID_TOKEN error.  Note that a server has not
+established any state for the connection at this point and so does not enter the
+closing period.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
@@ -4689,8 +4687,13 @@ preferred_address (0x0d):
   transport parameter is only sent by a server. Servers MAY choose to only send
   a preferred address of one address family by sending an all-zero address and
   port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
-  network byte order. The CID Length field contains the length of the
-  Connection ID field.
+  network byte order.
+
+: The Connection ID field and the Stateless Reset Token field contain an
+  alternative connection ID that has a sequence number of 1 ({{issue-cid}}).
+  Having these values bundled with the preferred address ensures that there will
+  be at least one unused active connection ID when the client initiates
+  migration to the preferred address.
 
 ~~~
  0                   1                   2                   3

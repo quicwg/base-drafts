@@ -223,6 +223,31 @@ QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
+### Probe Timeout Replaces RTO and TLP
+
+QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
+computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
+delay instead of using a fixed minimum timeout. QUIC does not collapse the
+congestion window until persistent congestion ({{persistent-congestion}}) is
+declared, unlike TCP, which collapses the congestion window upon expiry of an
+RTO.  Instead of collapsing the congestion window and declaring everything
+in-flight lost, QUIC allows probe packets to temporarily exceed the congestion
+window whenever the timer expires.
+
+In doing this, QUIC avoids unnecessary congestion window reductions, obviating
+the need for correcting mechanisms such as F-RTO {{!RFC5682}}. Since QUIC does
+not collapse the congestion window on a PTO expiration, a QUIC sender is not
+limited from sending more in-flight packets after a PTO expiration if it still
+has available congestion window. This occurs when a sender is
+application-limited and the PTO timer expires. This is more aggressive than
+TCP's RTO mechanism when application-limited, but identical when not
+application-limited.
+
+A single packet loss at the tail does not indicate persistent congestion, so
+QUIC specifies a time-based definition to ensure one or more packets are sent
+prior to a dramatic decrease in congestion window; see
+{{persistent-congestion}}.
+
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
@@ -517,7 +542,7 @@ client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets.
+Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -529,6 +554,9 @@ bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded.
+When Initial or Handshake keys are discarded, the PTO and loss detection timers
+MUST be reset, because discarding keys indicates forward progress and the loss
+detection timer may have been set for a now discarded packet number space.
 
 ### Sending Probe Packets
 
@@ -642,6 +670,12 @@ If an endpoint uses a different controller than that specified in this document,
 the chosen controller MUST conform to the congestion control guidelines
 specified in Section 3.1 of {{!RFC8085}}.
 
+Similar to TCP, packets containing only ACK frames do not count towards bytes
+in flight and are not congestion controlled.  Unlike TCP, QUIC can detect the
+loss of these packets and MAY use that information to adjust the congestion
+controller or the rate of ACK-only packets being sent, but this document does
+not describe a mechanism for doing so.
+
 The algorithm in this document specifies and uses the controller's congestion
 window in bytes.
 
@@ -652,9 +686,9 @@ is sent on a PTO timer expiration (see {{pto}}).
 ## Explicit Congestion Notification {#congestion-ecn}
 
 If a path has been verified to support ECN {{?RFC3168}} {{?RFC8311}}, QUIC
-treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
+treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
-receives packets with the Congestion Experienced codepoint.
+receives packets with the ECN-CE codepoint.
 
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
@@ -684,31 +718,42 @@ which only occurs after persistent congestion is declared.
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance uses an
-additive increase multiplicative decrease (AIMD) approach that increases
+Additive Increase Multiplicative Decrease (AIMD) approach that increases
 the congestion window by one maximum packet size per congestion window
 acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
-the congestion window and sets the slow start threshold to the new
-congestion window.
+the congestion window, sets the slow start threshold to the new
+congestion window, and then enters the recovery period.
 
 ## Recovery Period
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
-detected.  A recovery period ends when a packet sent during the recovery period
-is acknowledged.  This is slightly different from TCP's definition of recovery,
-which ends when the lost packet that started recovery is acknowledged.
+detected in congestion avoidance after the congestion window and slow start
+threshold have been decreased.  A recovery period ends when a packet sent
+during the recovery period is acknowledged.  This is slightly different from
+TCP's definition of recovery, which ends when the lost packet that started
+recovery is acknowledged.
 
-The recovery period limits congestion window reduction to once per round trip.
-During recovery, the congestion window remains unchanged irrespective of new
-losses or increases in the ECN-CE counter.
+The recovery period aims to limit congestion window reduction to once per round
+trip. Therefore during recovery, the congestion window remains unchanged
+irrespective of new losses or increases in the ECN-CE counter.
+
+When entering recovery, a single packet MAY be sent even if bytes in flight
+now exceeds the recently reduced congestion window.  This speeds up loss
+recovery if the data in the lost packet is retransmitted and is similar to TCP
+as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
+the sender is in recovery, sending any packets in response MUST obey the
+congestion window limit.
 
 ## Ignoring Loss of Undecryptable Packets
 
-During the handshake, some packet protection keys might not be
-available when a packet arrives. In particular, Handshake and 0-RTT packets
-cannot be processed until the Initial packets arrive, and 1-RTT packets
-cannot be processed until the handshake completes.  Endpoints MAY
-ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might arrive before
-the peer has packet protection keys to process those packets.
+During the handshake, some packet protection keys might not be available when
+a packet arrives and the receiver can choose to drop the packet. In particular,
+Handshake and 0-RTT packets cannot be processed until the Initial packets
+arrive and 1-RTT packets cannot be processed until the handshake completes.
+Endpoints MAY ignore the loss of Handshake, 0-RTT, and 1-RTT packets that might
+have arrived before the peer had packet protection keys to process those
+packets. Endpoints MUST NOT ignore the loss of packets that were sent after
+the earliest acknowledged packet in a given packet number space.
 
 ## Probe Timeout
 
@@ -719,7 +764,7 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-## Persistent Congestion
+## Persistent Congestion {#persistent-congestion}
 
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
@@ -741,7 +786,7 @@ For example, assume:
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
 
-If an ack-eliciting packet is sent at time = 0, the following scenario would
+If an ack-eliciting packet is sent at time t = 0, the following scenario would
 illustrate persistent congestion:
 
   t=0 | Send Pkt #1 (App Data)
@@ -769,14 +814,15 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, and a pacer might use
+the smoothed RTT when used with a window-based controller, or a pacer might use
 the rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller. Timely
-delivery of ACK frames is important for efficient loss recovery. Packets
+might pace out packets handed to it by the congestion controller.
+
+Timely delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
@@ -798,7 +844,7 @@ When bytes in flight is smaller than the congestion window and sending is not
 pacing limited, the congestion window is under-utilized.  When this occurs,
 the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
-or flow control credit.
+or flow control limits.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
@@ -1146,7 +1192,8 @@ PeerNotAwaitingAddressValidation():
   # Servers complete address validation when a
   # protected packet is received.
   return has received Handshake ACK ||
-         has received 1-RTT ACK
+       has received 1-RTT ACK ||
+       has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
   earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
@@ -1397,6 +1444,8 @@ window.
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
+       // A packet can be sent to speed up loss recovery.
+       MaybeSendOnePacket()
 ~~~
 
 
@@ -1441,6 +1490,26 @@ Invoked from DetectLostPackets when packets are deemed lost.
        congestion_window = kMinimumWindow
 ~~~
 
+## Upon dropping Initial or Handshake keys
+
+When Initial or Handshake keys are discarded, packets from the space
+are discarded and loss detection state is updated.
+
+Pseudocode for OnPacketNumberSpaceDiscarded follows:
+
+~~~
+OnPacketNumberSpaceDiscarded(pn_space):
+  assert(pn_space != ApplicationData)
+  // Remove any unacknowledged packets from flight.
+  foreach packet in sent_packets[pn_space]:
+    if packet.in_flight
+      bytes_in_flight -= size
+  sent_packets[pn_space].clear()
+  // Reset the loss detection and PTO timer
+  time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
+  loss_time[pn_space] = 0
+  SetLossDetectionTimer()
+~~~
 
 # Change Log
 

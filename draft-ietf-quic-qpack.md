@@ -339,11 +339,12 @@ greater than or equal to the Required Insert Count for all header blocks the
 decoder has started reading from the stream.
 
 When processing header blocks, the decoder expects the Required Insert Count to
-exactly match the value defined in {{blocked-streams}}. If it encounters a
-smaller value than expected, it MUST treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it encounters a
-larger value than expected, it MAY treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED.
+equal the lowest possible value for the Insert Count with which the header block
+can be decoded, as prescribed in {{blocked-streams}}. If it encounters a
+Required Insert Count smaller than expected, it MUST treat this as a connection
+error of type QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it
+encounters a Required Insert Count larger than expected, it MAY treat this as a
+connection error of type QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -638,9 +639,9 @@ QPACK defines two unidirectional stream types:
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
 initiate at most one encoder stream and at most one decoder stream. Receipt of a
 second instance of either stream type MUST be treated as a connection error of
-type HTTP_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
+type H3_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
 either unidirectional stream type MUST be treated as a connection error of type
-HTTP_CLOSED_CRITICAL_STREAM.
+H3_CLOSED_CRITICAL_STREAM.
 
 An endpoint MAY avoid creating an encoder stream if it's not going to be used
 (for example if its encoder doesn't wish to use the dynamic table, or if the
