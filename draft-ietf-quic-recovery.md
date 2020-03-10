@@ -661,9 +661,9 @@ is sent on a PTO timer expiration (see {{pto}}).
 ## Explicit Congestion Notification {#congestion-ecn}
 
 If a path has been verified to support ECN {{?RFC3168}} {{?RFC8311}}, QUIC
-treats a Congestion Experienced(CE) codepoint in the IP header as a signal of
+treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
-receives packets with the Congestion Experienced codepoint.
+receives packets with the ECN-CE codepoint.
 
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
@@ -693,22 +693,24 @@ which only occurs after persistent congestion is declared.
 ## Congestion Avoidance
 
 Slow start exits to congestion avoidance.  Congestion avoidance uses an
-additive increase multiplicative decrease (AIMD) approach that increases
+Additive Increase Multiplicative Decrease (AIMD) approach that increases
 the congestion window by one maximum packet size per congestion window
 acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
-the congestion window and sets the slow start threshold to the new
-congestion window.
+the congestion window, sets the slow start threshold to the new
+congestion window, and then enters the recovery period.
 
 ## Recovery Period
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
-detected.  A recovery period ends when a packet sent during the recovery period
-is acknowledged.  This is slightly different from TCP's definition of recovery,
-which ends when the lost packet that started recovery is acknowledged.
+detected in congestion avoidance but after the congestion window and slow
+start threshold has been adapted.  A recovery period ends when a packet sent
+during the recovery period is acknowledged.  This is slightly different from
+TCP's definition of recovery, which ends when the lost packet that started
+recovery is acknowledged.
 
-The recovery period limits congestion window reduction to once per round trip.
-During recovery, the congestion window remains unchanged irrespective of new
-losses or increases in the ECN-CE counter.
+The recovery period aims to limit congestion window reduction to once per round
+trip. Therefore during recovery, the congestion window remains unchanged
+irrespective of new losses or increases in the ECN-CE counter.
 
 When entering recovery, a single packet MAY be sent even if bytes in flight
 now exceeds the recently reduced congestion window.  This speeds up loss
@@ -759,7 +761,7 @@ For example, assume:
   max_ack_delay = 0
   kPersistentCongestionThreshold = 3
 
-If an ack-eliciting packet is sent at time = 0, the following scenario would
+If an ack-eliciting packet is sent at time t = 0, the following scenario would
 illustrate persistent congestion:
 
   t=0 | Send Pkt #1 (App Data)
@@ -787,14 +789,15 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
 controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, and a pacer might use
+the smoothed RTT when used with a window-based controller, or a pacer might use
 the rate estimate of a rate-based controller.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
 controller and control the availability of the congestion window, or a pacer
-might pace out packets handed to it by the congestion controller. Timely
-delivery of ACK frames is important for efficient loss recovery. Packets
+might pace out packets handed to it by the congestion controller.
+
+Timely delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
@@ -816,7 +819,7 @@ When bytes in flight is smaller than the congestion window and sending is not
 pacing limited, the congestion window is under-utilized.  When this occurs,
 the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
-or flow control credit.
+or flow control limits.
 
 A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
