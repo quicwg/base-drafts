@@ -694,7 +694,7 @@ congestion window, and then enters the recovery period.
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
 detected in congestion avoidance but after the congestion window and slow
-start threhold has been adapted.  A recovery period ends when a packet sent
+start threshold has been adapted.  A recovery period ends when a packet sent
 during the recovery period is acknowledged.  This is slightly different from
 TCP's definition of recovery, which ends when the lost packet that started
 recovery is acknowledged.
