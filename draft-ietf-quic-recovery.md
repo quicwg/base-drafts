@@ -953,7 +953,7 @@ rttvar:
 
 min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay, as described
-  in Section {{min-rtt}}
+  in {{min-rtt}}.
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
