@@ -223,6 +223,31 @@ QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
 
+### Probe Timeout Replaces RTO and TLP
+
+QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
+computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
+delay instead of using a fixed minimum timeout. QUIC does not collapse the
+congestion window until persistent congestion ({{persistent-congestion}}) is
+declared, unlike TCP, which collapses the congestion window upon expiry of an
+RTO.  Instead of collapsing the congestion window and declaring everything
+in-flight lost, QUIC allows probe packets to temporarily exceed the congestion
+window whenever the timer expires.
+
+In doing this, QUIC avoids unnecessary congestion window reductions, obviating
+the need for correcting mechanisms such as F-RTO {{!RFC5682}}. Since QUIC does
+not collapse the congestion window on a PTO expiration, a QUIC sender is not
+limited from sending more in-flight packets after a PTO expiration if it still
+has available congestion window. This occurs when a sender is
+application-limited and the PTO timer expires. This is more aggressive than
+TCP's RTO mechanism when application-limited, but identical when not
+application-limited.
+
+A single packet loss at the tail does not indicate persistent congestion, so
+QUIC specifies a time-based definition to ensure one or more packets are sent
+prior to a dramatic decrease in congestion window; see
+{{persistent-congestion}}.
+
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
@@ -739,7 +764,7 @@ packets might cause the sender's bytes in flight to exceed the congestion window
 until an acknowledgement is received that establishes loss or delivery of
 packets.
 
-## Persistent Congestion
+## Persistent Congestion {#persistent-congestion}
 
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
