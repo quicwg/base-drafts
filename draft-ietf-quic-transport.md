@@ -2409,7 +2409,7 @@ source address.
 If a max_idle_timeout is specified by either peer in transport parameters
 (see {{transport-parameter-definitions}}), a connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-the max_idle_timeouts and three times the current Probe Timeout (PTO).
+the max_idle_timeout values and three times the current Probe Timeout (PTO).
 
 By announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
