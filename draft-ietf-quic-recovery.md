@@ -555,10 +555,10 @@ bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
-as further described below in Section {{discarding-packets}}. When Initial or
-Handshake keys are discarded, the PTO and loss detection timers MUST be reset,
-because discarding keys indicates forward progress and the loss detection
-timer might have been set for a now discarded packet number space.
+as described below in Section {{discarding-packets}}. When Initial or Handshake
+keys are discarded, the PTO and loss detection timers MUST be reset, because
+discarding keys indicates forward progress and the loss detection timer might
+have been set for a now discarded packet number space.
 
 ### Sending Probe Packets
 
