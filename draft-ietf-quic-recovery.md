@@ -518,7 +518,7 @@ detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
 
-## Handshakes and New Paths
+### Handshakes and New Paths
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.  Resumed connections over the same network
@@ -554,10 +554,11 @@ otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
 bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
-removed from bytes in flight when the Initial and Handshake keys are discarded.
-When Initial or Handshake keys are discarded, the PTO and loss detection timers
-MUST be reset, because discarding keys indicates forward progress and the loss
-detection timer may have been set for a now discarded packet number space.
+removed from bytes in flight when the Initial and Handshake keys are discarded,
+as described below in Section {{discarding-packets}}. When Initial or Handshake
+keys are discarded, the PTO and loss detection timers MUST be reset, because
+discarding keys indicates forward progress and the loss detection timer might
+have been set for a now discarded packet number space.
 
 ### Sending Probe Packets
 
