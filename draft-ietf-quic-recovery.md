@@ -533,7 +533,7 @@ bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
-as further described below in section {{discarding-packets}}.
+as further described below in Section {{discarding-packets}}.
 
 ### Sending Probe Packets
 
