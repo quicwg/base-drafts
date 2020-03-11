@@ -1475,7 +1475,7 @@ lifetime of a connection, especially in response to connection migration
 ({{migration}}); see {{issue-cid}} for details.
 
 
-## Authenticating Connection IDs
+## Authenticating Connection IDs {#cid-auth}
 
 The choice each endpoint makes about connection IDs during the handshake is
 authenticated by including all values in transport parameters; see
@@ -4619,9 +4619,10 @@ The following transport parameters are defined:
 original_connection_id (0x00):
 
 : The value of the Destination Connection ID field from the first Initial packet
-  sent by the client.  This transport parameter is only sent by a server.  This
-  is the same value sent in the Original Destination Connection ID field that is
-  used to construct a Retry packet (see {{packet-retry}}).
+  sent by the client; see {{cid-auth}}.  This transport parameter is only sent
+  by a server.  This is the same value sent in the Original Destination
+  Connection ID field that is used to construct a Retry packet (see
+  {{packet-retry}}).
 
 max_idle_timeout (0x01):
 
@@ -4792,18 +4793,13 @@ active_connection_id_limit (0x0e):
 handshake_connection_id (0x0f):
 
 : The value that the endpoint included in the Source Connection ID field of the
-  first Initial packet it sends during the handshake. Endpoints MUST validate
-  that this transport parameter is present and that it matches the value that
-  was received in Initial packets. Authenticating this value ensures that an
-  attacker is unable to influence the selection of connection IDs during the
-  handshake.
+  first Initial packet it sends during the handshake; see {{cid-auth}}.
 
 retry_connection_id (0x10):
 
 : The value that the the server included in the Source Connection ID field of a
-  Retry packet.  This transport parameter is only sent by a server.  A server
-  MUST include the retry_connection_id transport parameter if it sent a Retry
-  packet.  This transport parameter MUST be absent if no Retry packet was sent.
+  Retry packet; see {{cid-auth}}.  This transport parameter is only sent by a
+  server.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
