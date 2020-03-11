@@ -188,14 +188,6 @@ input header list.
 QPACK is designed to contain the more complex state tracking to the encoder,
 while the decoder is relatively simple.
 
-### Reference Tracking
-
-An encoder MUST ensure that a header block which references a dynamic table
-entry is not processed by the decoder after the referenced entry has been
-evicted.  Hence the encoder needs to retain information about each compressed
-header block that references the dynamic table until that header block is
-acknowledged by the decoder; see {{header-acknowledgement}}.
-
 ### Limits on Dynamic Table Insertions {#blocked-insertion}
 
 Inserting entries into the dynamic table might not be possible if the table
@@ -203,15 +195,19 @@ contains entries which cannot be evicted.
 
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
-acknowledged and there are no outstanding unacknowledged references to the
-entry, the entry becomes evictable.
+acknowledged and there are no outstanding references to the entry in
+unacknowledged header blocks, the entry becomes evictable.  Note that
+references on the encoder stream never preclude the eviction of an entry,
+because those references are guaranteed to be processed before the instruction
+evicting the entry.
 
 If the dynamic table does not contain enough room for a new entry without
 evicting other entries, and the entries which would be evicted are not
 evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
-that uses the dynamic table has to keep track of whether each entry is currently
-evictable or not.
+that uses the dynamic table has to keep track of each dynamic table entry
+referenced by each header block until that header block is acknowledged by the
+decoder (see {{header-acknowledgement}}).
 
 #### Avoiding Prohibited Insertions
 
@@ -281,6 +277,25 @@ table entries which have been acknowledged, but this could mean using
 literals. Since literals make the header block larger, this can result in the
 encoder becoming blocked on congestion or flow control limits.
 
+### Avoiding Flow Control Deadlocks
+
+Writing instructions on streams that are limited by flow control can produce
+deadlocks.
+
+A decoder might stop issuing flow control credit on the stream that carries a
+header block until the necessary updates are received on the encoder
+stream. If the granting of flow control credit on the encoder stream (or the
+connection as a whole) depends on the consumption and release of data on the
+stream carrying the header block, a deadlock might result.
+
+More generally, a stream containing a large instruction can become deadlocked if
+the decoder withholds flow control credit until the instruction is completely
+received.
+
+To avoid these deadlocks, an encoder SHOULD avoid writing an instruction unless
+sufficient stream and connection flow control credit is available for the entire
+instruction.
+
 ### Known Received Count
 
 The Known Received Count is the total number of dynamic table insertions and
@@ -324,11 +339,12 @@ greater than or equal to the Required Insert Count for all header blocks the
 decoder has started reading from the stream.
 
 When processing header blocks, the decoder expects the Required Insert Count to
-exactly match the value defined in {{blocked-streams}}. If it encounters a
-smaller value than expected, it MUST treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it encounters a
-larger value than expected, it MAY treat this as a connection error of type
-QPACK_DECOMPRESSION_FAILED.
+equal the lowest possible value for the Insert Count with which the header block
+can be decoded, as prescribed in {{blocked-streams}}. If it encounters a
+Required Insert Count smaller than expected, it MUST treat this as a connection
+error of type QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it
+encounters a Required Insert Count larger than expected, it MAY treat this as a
+connection error of type QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
@@ -623,9 +639,9 @@ QPACK defines two unidirectional stream types:
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
 initiate at most one encoder stream and at most one decoder stream. Receipt of a
 second instance of either stream type MUST be treated as a connection error of
-type HTTP_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
+type H3_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
 either unidirectional stream type MUST be treated as a connection error of type
-HTTP_CLOSED_CRITICAL_STREAM.
+H3_CLOSED_CRITICAL_STREAM.
 
 An endpoint MAY avoid creating an encoder stream if it's not going to be used
 (for example if its encoder doesn't wish to use the dynamic table, or if the
@@ -1342,6 +1358,14 @@ return controlBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-13
+
+No changes
+
+## Since draft-ietf-quic-qpack-12
+
+Editorial changes only
 
 ## Since draft-ietf-quic-qpack-11
 
