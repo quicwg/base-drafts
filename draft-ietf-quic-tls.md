@@ -420,7 +420,7 @@ At any time, the TLS stack at an endpoint will have a current sending
 encryption level and receiving encryption level. Encryption levels determine
 the packet type and keys that are used for protecting data.
 
-Each encryption level is associated with a different flow of bytes, which is
+Each encryption level is associated with a different sequence of bytes, which is
 reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
 bytes to be sent, they are appended to the current flow. Any packet that
 includes the CRYPTO frame is protected using keys from the corresponding
