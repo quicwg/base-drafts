@@ -900,7 +900,7 @@ detect.
 
 # IANA Considerations
 
-This document has no IANA actions.  Yet.
+This document has no IANA actions.
 
 
 --- back
