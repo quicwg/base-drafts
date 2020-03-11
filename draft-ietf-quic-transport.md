@@ -200,7 +200,8 @@ Out-of-order packet:
 
 : A packet that does not increase the largest received packet number for its
   packet number space ({{packet-numbers}}) by exactly one. A packet can arrive
-  out of order if it is delayed or if earlier packets are lost or delayed.
+  out of order if it is delayed, if earlier packets are lost or delayed, or if
+  the sender intentionally skips a packet number.
 
 Endpoint:
 
