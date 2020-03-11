@@ -1509,8 +1509,12 @@ of type PROTOCOL_VIOLATION:
 * presence of the retry_connection_id transport parameter when no Retry packet
   was received, or
 
-* a mismatch between values of these transport parameters and the Destination
-  Connection ID fields an endpoint used.
+* a mismatch between values received from a peer in these transport parameters
+  and the value sent in the corresponding Destination Connection ID fields of
+  Initial packets.
+
+If a zero-length connection IDs is selected, the corresponding transport
+parameter is included with a zero-length value.
 
 
 ## Transport Parameters {#transport-parameters}
@@ -4396,11 +4400,15 @@ processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
 retry_connection_id transport parameter; see
-{{transport-parameter-definitions}}. If the server sends a Retry packet, it
-MUST include the Destination Connection ID field from the client's first
-Initial packet in the original_connection_id transport parameter and include a
-retry_connection_id transport parameter that contains the value of the Source
-Connection ID field from the Retry packet.
+{{transport-parameter-definitions}}.  If the server sends a Retry packet, the
+server adds a retry_connection_id transport parameter that contains the value of
+the Source Connection ID field from the Retry packet.
+
+A server always includes an original_connection_id transport parameter. If the
+server sends a Retry packet, it MUST include the Destination Connection ID field
+from the client's first Initial packet in the original_connection_id transport
+parameter; otherwise the original_connection_id transport parameter MUST be
+copied from the client Initial.
 
 If the client received and processed a Retry packet, it MUST validate that the
 retry_connection_id transport parameter is present and correct; otherwise, it
@@ -4612,8 +4620,8 @@ original_connection_id (0x00):
 
 : The value of the Destination Connection ID field from the first Initial packet
   sent by the client.  This transport parameter is only sent by a server.  This
-  is the same value sent in the "Original Destination Connection ID" field that
-  is used to construct a Retry packet (see {{packet-retry}}).
+  is the same value sent in the Original Destination Connection ID field that is
+  used to construct a Retry packet (see {{packet-retry}}).
 
 max_idle_timeout (0x01):
 
