@@ -15,7 +15,7 @@ var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
 
-var version = 'ff000019';
+var version = 'ff00001b';
 
 function log(m, k) {
   console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));

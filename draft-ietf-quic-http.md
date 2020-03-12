@@ -112,9 +112,9 @@ The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
-a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
-comparable security to running TLS over TCP, with the improved connection setup
-latency of TCP Fast Open {{?RFC7413}}.
+a TCP mapping.  QUIC also incorporates TLS 1.3 {{?TLS13=RFC8446}} at the
+transport layer, offering comparable security to running TLS over TCP, with
+the improved connection setup latency of TCP Fast Open {{?TFO=RFC7413}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -151,7 +151,7 @@ Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
 client making the indicated request.  This trades off network usage against a
 potential latency gain.  Several HTTP/3 frames are used to manage server push,
-such as PUSH_PROMISE, DUPLICATE_PUSH, MAX_PUSH_ID, and CANCEL_PUSH.
+such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response headers are compressed for transmission.
 Because HPACK {{?HPACK=RFC7541}} relies on in-order transmission of compressed
@@ -276,6 +276,11 @@ Implementations of draft versions of the protocol MUST add the string "-" and
 the corresponding draft number to the identifier. For example,
 draft-ietf-quic-http-01 is identified using the string "h3-01".
 
+Draft versions MUST use the corresponding draft transport version as their
+transport. For example, the application protocol defined in
+draft-ietf-quic-http-25 uses the transport defined in
+draft-ietf-quic-transport-25.
+
 Non-compatible experiments that are based on these draft versions MUST append
 the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 which reserves an
@@ -312,11 +317,14 @@ an explicit port.
 
 ## Connection Establishment {#connection-establishment}
 
-HTTP/3 relies on QUIC as the underlying transport.  The QUIC version being used
-MUST use TLS version 1.3 or greater as its handshake protocol.  HTTP/3 clients
-MUST indicate the target domain name during the TLS handshake. This may be done
-using the Server Name Indication (SNI) {{!RFC6066}} extension to TLS or using
-some other mechanism.
+HTTP/3 relies on QUIC version 1 as the underlying transport.  The use of other
+QUIC transport versions with HTTP/3 MAY be defined by future specifications.
+
+QUIC version 1 uses TLS version 1.3 or greater as its handshake protocol.
+HTTP/3 clients MUST support a mechanism to indicate the target host to the
+server during the TLS handshake.  If the server is identified by a DNS name,
+clients MUST send the Server Name Indication (SNI) {{!RFC6066}} TLS extension
+unless an alternative mechanism to indicate the target host is used.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
 connection establishment, HTTP/3 support is indicated by selecting the ALPN
@@ -368,6 +376,15 @@ A client MUST send only a single request on a given stream. A server sends zero
 or more non-final HTTP responses on the same stream as the request, followed by
 a single final HTTP response, as detailed below.
 
+Pushed responses are sent on a server-initiated unidirectional QUIC stream (see
+{{push-streams}}).  A server sends zero or more non-final HTTP responses,
+followed by a single final HTTP response, in the same manner as a standard
+response.  Push is described in more detail in {{server-push}}.
+
+On a given stream, receipt of multiple requests or receipt of an additional HTTP
+response following a final HTTP response MUST be treated as malformed
+({{malformed}}).
+
 An HTTP message (request or response) consists of:
 
 1. the message header (see Section 3.2 of {{!RFC7230}}), sent as a single
@@ -379,11 +396,15 @@ An HTTP message (request or response) consists of:
 3. optionally, trailing headers, if present (see Section 4.1.2 of {{!RFC7230}}),
    sent as a single HEADERS frame.
 
-A server MAY send one or more PUSH_PROMISE (see {{frame-push-promise}}) or
-DUPLICATE_PUSH (see {{frame-duplicate-push}}) frames before, after, or
-interleaved with the frames of a response message. These PUSH_PROMISE and
-DUPLICATE_PUSH frames are not part of the response; see {{server-push}} for
-more details.
+Receipt of DATA and HEADERS frames in any other sequence MUST be treated as a
+connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
+
+A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
+before, after, or interleaved with the frames of a response message. These
+PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
+details.  These frames are not permitted in pushed responses; a pushed response
+which includes PUSH_PROMISE frames MUST be treated as a connection error of type
+H3_FRAME_UNEXPECTED.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
@@ -408,12 +429,12 @@ H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
 HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
 considered invalid.
 
-An HTTP request/response exchange fully consumes a bidirectional QUIC stream.
-After sending a request, a client MUST close the stream for sending.  Unless
-using the CONNECT method (see {{the-connect-method}}), clients MUST NOT make
-stream closure dependent on receiving a response to their request. After sending
-a final response, the server MUST close the stream for sending. At this point,
-the QUIC stream is fully closed.
+An HTTP request/response exchange fully consumes a client-initiated
+bidirectional QUIC stream. After sending a request, a client MUST close the
+stream for sending.  Unless using the CONNECT method (see {{connect}}), clients
+MUST NOT make stream closure dependent on receiving a response to their request.
+After sending a final response, the server MUST close the stream for sending. At
+this point, the QUIC stream is fully closed.
 
 When a stream is closed, this indicates the end of an HTTP message. Because some
 messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
@@ -450,15 +471,104 @@ field names MUST be converted to lowercase prior to their encoding.  A request
 or response containing uppercase header field names MUST be treated as
 malformed ({{malformed}}).
 
+Like HTTP/2, HTTP/3 does not use the Connection header field to indicate
+connection-specific header fields; in this protocol, connection-specific
+metadata is conveyed by other means.  An endpoint MUST NOT generate an HTTP/3
+message containing connection-specific header fields; any message containing
+connection-specific header fields MUST be treated as malformed ({{malformed}}).
+
+The only exception to this is the TE header field, which MAY be present in an
+HTTP/3 request; when it is, it MUST NOT contain any value other than "trailers".
+
+This means that an intermediary transforming an HTTP/1.x message to HTTP/3 will
+need to remove any header fields nominated by the Connection header field, along
+with the Connection header field itself.  Such intermediaries SHOULD also remove
+other connection-specific header fields, such as Keep-Alive, Proxy-Connection,
+Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection
+header field.
+
+#### Pseudo-Header Fields
+
 As in HTTP/2, HTTP/3 uses special pseudo-header fields beginning with the ':'
 character (ASCII 0x3a) to convey the target URI, the method of the request, and
-the status code for the response.  These pseudo-header fields are defined in
-Section 8.1.2.3 and 8.1.2.4 of {{!HTTP2}}. Pseudo-header fields are not HTTP
-header fields.  Endpoints MUST NOT generate pseudo-header fields other than
-those defined in {{!HTTP2}}.  The restrictions on the use of pseudo-header
-fields in Section 8.1.2 of {{!HTTP2}} also apply to HTTP/3.  Messages which
-are considered malformed under these restrictions are handled as described in
-{{malformed}}.
+the status code for the response.
+
+Pseudo-header fields are not HTTP header fields.  Endpoints MUST NOT generate
+pseudo-header fields other than those defined in this document, except as
+negotiated via an extension; see {{extensions}}.
+
+Pseudo-header fields are only valid in the context in which they are defined.
+Pseudo-header fields defined for requests MUST NOT appear in responses;
+pseudo-header fields defined for responses MUST NOT appear in requests.
+Pseudo-header fields MUST NOT appear in trailers.  Endpoints MUST treat a
+request or response that contains undefined or invalid pseudo-header fields as
+malformed ({{malformed}}).
+
+All pseudo-header fields MUST appear in the header block before regular header
+fields.  Any request or response that contains a pseudo-header field that
+appears in a header block after a regular header field MUST be treated as
+malformed ({{malformed}}).
+
+The following pseudo-header fields are defined for requests:
+
+  ":method":
+
+  : Contains the HTTP method ({{!RFC7231}}, Section 4)
+
+  ":scheme":
+
+  : Contains the scheme portion of the target URI ({{!RFC3986}}, Section 3.1)
+
+  : ":scheme" is not restricted to "http" and "https" schemed URIs.  A proxy or
+    gateway can translate requests for non-HTTP schemes, enabling the use of
+    HTTP to interact with non-HTTP services.
+
+  ":authority":
+
+  : Contains the authority portion of the target URI (Section 3.2 of [RFC3986]).
+    The authority MUST NOT include the deprecated "userinfo" subcomponent for
+    "http" or "https" schemed URIs.
+
+  : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
+    pseudo-header field MUST be omitted when translating from an HTTP/1.1
+    request that has a request target in origin or asterisk form (see Section
+    5.3 of [RFC7230]).  Clients that generate HTTP/3 requests directly SHOULD
+    use the ":authority" pseudo-header field instead of the Host header field.
+    An intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a
+    Host header field if one is not present in a request by copying the value of
+    the ":authority" pseudo-header field.
+
+  ":path":
+
+  : Contains the path and query parts of the target URI (the "path-absolute"
+    production and optionally a '?' character followed by the "query" production
+    (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk form
+    includes the value '*' for the ":path" pseudo-header field.
+
+  : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
+    "http" or "https" URIs that do not contain a path component MUST include a
+    value of '/'.  The exception to this rule is an OPTIONS request for an
+    "http" or "https" URI that does not include a path component; these MUST
+    include a ":path" pseudo-header field with a value of '*' (see Section 5.3.4
+    of [RFC7230]).
+
+All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
+and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+An HTTP request that omits mandatory pseudo-header fields or contains invalid
+values for those fields is malformed ({{malformed}}).
+
+HTTP/3 does not define a way to carry the version identifier that is included in
+the HTTP/1.1 request line.
+
+For responses, a single ":status" pseudo-header field is defined that carries
+the HTTP status code field (see Section 6 of [RFC7231]).  This pseudo-header
+field MUST be included in all responses; otherwise, the response is malformed
+({{malformed}}).
+
+HTTP/3 does not define a way to carry the version or reason phrase that is
+included in an HTTP/1.1 status line.
+
+#### Header Compression
 
 HTTP/3 uses QPACK header compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid header-compression-induced
@@ -469,6 +579,8 @@ MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
 header fields, these MUST be concatenated before being passed into a non-HTTP/2,
 non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
+
+#### Header Size Constraints
 
 An HTTP/3 implementation MAY impose a limit on the maximum size of the message
 header it will accept on an individual HTTP message.  A server that receives a
@@ -520,9 +632,14 @@ permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 ### Malformed Requests and Responses {#malformed}
 
 A malformed request or response is one that is an otherwise valid sequence of
-frames but is invalid due to the presence of extraneous frames, prohibited
-header fields, the absence of mandatory header fields, or the inclusion of
-uppercase header field names.
+frames but is invalid due to:
+
+- the presence of prohibited header fields or pseudo-header fields,
+- the absence of mandatory pseudo-header fields,
+- invalid values for pseudo-header fields,
+- pseudo-header fields after header fields,
+- an invalid sequence of HTTP messages, or
+- the inclusion of uppercase header field names.
 
 A request or response that includes a payload body can include a
 `content-length` header field.  A request or response is also malformed if the
@@ -543,7 +660,7 @@ attacks against HTTP; they are deliberately strict because being permissive can
 expose implementations to these vulnerabilities.
 
 
-## The CONNECT Method
+## The CONNECT Method {#connect}
 
 The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
 HTTP proxies to establish a TLS session with an origin server for the purposes
@@ -604,11 +721,13 @@ client making the indicated request.  This trades off network usage against a
 potential latency gain.  HTTP/3 server push is similar to what is described in
 HTTP/2 {{!HTTP2}}, but uses different mechanisms.
 
-Each server push is identified by a unique Push ID. This Push ID is used in a
-single PUSH_PROMISE frame (see {{frame-push-promise}}) which carries the request
-headers, possibly included in one or more DUPLICATE_PUSH frames (see
-{{frame-duplicate-push}}), then included with the push stream which ultimately
-fulfills those promises.
+Each server push is identified by a unique Push ID. This Push ID is used in one
+or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
+headers, then included with the push stream which ultimately fulfills those
+promises. When the same Push ID is promised on multiple request streams, the
+decompressed request header sets MUST contain the same fields in the
+same order, and both the name and the value in each field MUST be exact
+matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame (see {{frame-max-push-id}}). A server cannot use server push until it
@@ -625,33 +744,27 @@ requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
 received.  The same server push can be associated with additional client
-requests using a DUPLICATE_PUSH frame (see {{frame-duplicate-push}}).  These
-associations do not affect the operation of the protocol, but MAY be used by
-user agents when deciding how to use pushed resources.
+requests using a PUSH_PROMISE frame with the same Push ID on multiple request
+streams.  These associations do not affect the operation of the protocol, but
+MAY be considered by user agents when deciding how to use pushed resources.
 
-Ordering of a PUSH_PROMISE or DUPLICATE_PUSH in relation to certain parts of the
-response is important. The server SHOULD send PUSH_PROMISE or DUPLICATE_PUSH
-frames prior to sending HEADERS or DATA frames that reference the promised
-responses.  This reduces the chance that a client requests a resource that will
-be pushed by the server.
+Ordering of a PUSH_PROMISE in relation to certain parts of the response is
+important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
+or DATA frames that reference the promised responses.  This reduces the chance
+that a client requests a resource that will be pushed by the server.
 
 When a server later fulfills a promise, the server push response is conveyed on
 a push stream (see {{push-streams}}). The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
 using the same format described for responses in {{request-response}}.
 
-Due to reordering, DUPLICATE_PUSH frames or push stream data can arrive before
-the corresponding PUSH_PROMISE frame.  When a client receives a DUPLICATE_PUSH
-frame for an as-yet-unknown Push ID, the request headers of the push are not
-immediately available.  The client can either delay generating new requests for
-content referenced following the DUPLICATE_PUSH frame until the request headers
-become available, or can initiate requests for discovered resources and cancel
-the requests if the requested resource is already being pushed. When a client
-receives a new push stream with an as-yet-unknown Push ID, both the associated
-client request and the pushed request headers are unknown.  The client can
-buffer the stream data in expectation of the matching PUSH_PROMISE. The client
-can use stream flow control (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the
-amount of data a server may commit to the pushed stream.
+Due to reordering, push stream data can arrive before the corresponding
+PUSH_PROMISE frame.  When a client receives a new push stream with an
+as-yet-unknown Push ID, both the associated client request and the pushed
+request headers are unknown.  The client can buffer the stream data in
+expectation of the matching PUSH_PROMISE. The client can use stream flow control
+(see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
+commit to the pushed stream.
 
 If a promised server push is not needed by the client, the client SHOULD send a
 CANCEL_PUSH frame. If the push stream is already open or opens after sending the
@@ -686,36 +799,45 @@ keep connections open.
 ## Connection Shutdown
 
 Even when a connection is not idle, either endpoint can decide to stop using the
-connection and let the connection close gracefully.  Since clients drive request
-generation, clients perform a connection shutdown by not sending additional
-requests on the connection; responses and pushed responses associated to
-previous requests will continue to completion.  Servers perform the same
-function by communicating with clients.
+connection and initiate a graceful connection close.  Endpoints initiate the
+graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
+The GOAWAY frame contains an identifier that indicates to the receiver the range
+of requests or pushes that were or might be processed in this connection.  The
+server sends a client-initiated bidirectional Stream ID; the client sends a Push
+ID.  Requests or pushes with the indicated identifier or greater are rejected by
+the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
+were processed.
 
-Servers initiate the shutdown of a connection by sending a GOAWAY frame
-({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
-on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were rejected. This enables
-client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be zero if no requests were processed.
-Servers SHOULD NOT permit additional QUIC streams after sending a GOAWAY frame.
+The information in the GOAWAY frame enables a client and server to agree on
+which requests or pushes were accepted prior to the connection shutdown. Upon
+sending a GOAWAY frame, the endpoint SHOULD explicitly cancel (see
+{{request-cancellation}} and {{frame-cancel-push}}) any requests or pushes that
+have identifiers greater than or equal to that indicated, in order to clean up
+transport state for the affected streams. The endpoint SHOULD continue to do so
+as more requests or pushes arrive.
 
-Clients MUST NOT send new requests on the connection after receiving GOAWAY;
-a new connection MAY be established to send additional requests.
+Endpoints MUST NOT initiate new requests or promise new pushes on the connection
+after receipt of a GOAWAY frame from the peer.  Clients MAY establish a new
+connection to send additional requests.
 
-Some requests might already be in transit. If the client has already sent
-requests on streams with a Stream ID greater than or equal to that indicated in
-the GOAWAY frame, those requests will not be processed and MAY be retried by the
-client on a different connection.  The client MAY cancel these requests.  It is
-RECOMMENDED that the server explicitly reject such requests (see
-{{request-cancellation}}) in order to clean up transport state for the affected
-streams.
+Some requests or pushes might already be in transit:
 
-Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until a response is received, the
-stream is reset individually, or the connection terminates.  Servers MAY reject
-individual requests on streams below the indicated ID if these requests were not
-processed.
+  - Upon receipt of a GOAWAY frame, if the client has already sent requests with
+    a Stream ID greater than or equal to the identifier received in a GOAWAY
+    frame, those requests will not be processed.  Clients can safely retry
+    unprocessed requests on a different connection.
+
+    Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
+    server might have been processed; their status cannot be known until a
+    response is received, the stream is reset individually, another GOAWAY is
+    received, or the connection terminates.
+
+    Servers MAY reject individual requests on streams below the indicated ID if
+    these requests were not processed.
+
+  - If a server receives a GOAWAY frame after having promised pushes with a Push
+    ID greater than or equal to the identifier received in a GOAWAY frame, those
+    pushes will not be accepted.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -726,25 +848,37 @@ request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
 A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server MAY send multiple GOAWAY frames
-indicating different stream IDs, but MUST NOT increase the value they send in
-the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.
+when the server closes the connection.  An endpoint MAY send multiple GOAWAY
+frames indicating different identifiers, but MUST NOT increase the identifier
+value they send, since clients might already have retried unprocessed requests
+on another connection.
 
-A server that is attempting to gracefully shut down a connection can send an
-initial GOAWAY frame with the last Stream ID set to the maximum possible value
-for a client-initiated, bidirectional stream (i.e. 2^62-4 in case of QUIC
-version 1).  This GOAWAY frame signals to the client that shutdown is imminent
-and that initiating further requests is prohibited.  After allowing time for any
-in-flight requests to reach the server, the server can send another GOAWAY frame
-indicating which requests it will accept before the end of the connection. This
-ensures that a connection can be cleanly shut down without causing requests to
-fail.
+An endpoint that is attempting to gracefully shut down a connection can send a
+GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
+2^62-1 for clients). This ensures that the peer stops creating new requests or
+pushes. After allowing time for any in-flight requests or pushes to arrive, the
+endpoint can send another GOAWAY frame indicating which requests or pushes it
+might accept before the end of the connection. This ensures that a connection
+can be cleanly shut down without losing requests.
 
-Once all accepted requests have been processed, the server can permit the
-connection to become idle, or MAY initiate an immediate closure of the
-connection.  An endpoint that completes a graceful shutdown SHOULD use the
-H3_NO_ERROR code when closing the connection.
+A client has more flexibility in the value it chooses for the Push ID in a
+GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
+continue fulfilling pushes which have already been promised, and the client can
+continue granting push credit as needed (see {{frame-max-push-id}}). A smaller
+value indicates the client will reject pushes with Push IDs greater than or
+equal to this value.  Like the server, the client MAY send subsequent GOAWAY
+frames so long as the specified Push ID is strictly smaller than all previously
+sent values.
+
+Even when a GOAWAY indicates that a given request or push will not be processed
+or accepted upon receipt, the underlying transport resources still exist.  The
+endpoint that initiated these requests can cancel them to clean up transport
+state.
+
+Once all accepted requests and pushes have been processed, the endpoint can
+permit the connection to become idle, or MAY initiate an immediate closure of
+the connection.  An endpoint that completes a graceful shutdown SHOULD use the
+HTTP_NO_ERROR code when closing the connection.
 
 If a client has consumed all available bidirectional stream IDs with requests,
 the server need not send a GOAWAY frame, since the client is unable to make
@@ -753,12 +887,14 @@ further requests.
 ## Immediate Application Closure
 
 An HTTP/3 implementation can immediately close the QUIC connection at any time.
-This results in sending a QUIC CONNECTION_CLOSE frame to the peer; the error
+This results in sending a QUIC CONNECTION_CLOSE frame to the peer indicating
+that the application layer has terminated the connection.  The application error
 code in this frame indicates to the peer why the connection is being closed.
-See {{errors}} for error codes which can be used when closing a connection.
+See {{errors}} for error codes which can be used when closing a connection in
+HTTP/3.
 
-Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
-some requests.  Including the GOAWAY frame in the same packet as the QUIC
+Before closing the connection, a GOAWAY frame MAY be sent to allow the client to
+retry some requests.  Including the GOAWAY frame in the same packet as the QUIC
 CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
@@ -952,7 +1088,6 @@ comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
 | GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
 | MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
-| DUPLICATE_PUSH | No             | Yes            | No          | {{frame-duplicate-push}} |
 | Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
 {: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
@@ -1236,7 +1371,7 @@ The payload consists of:
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
-  ({{frame-cancel-push}}), and DUPLICATE_PUSH frames ({{frame-duplicate-push}}).
+  ({{frame-cancel-push}}).
 
 Header Block:
 : QPACK-compressed request header fields for the promised response.  See [QPACK]
@@ -1247,9 +1382,22 @@ MAX_PUSH_ID frame ({{frame-max-push-id}}). A client MUST treat receipt of a
 PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
 as a connection error of H3_ID_ERROR.
 
-A server MUST NOT use the same Push ID in multiple PUSH_PROMISE frames. A client
-MUST treat receipt of a Push ID which has already been promised as a connection
-error of type H3_ID_ERROR.
+A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
+decompressed request header sets MUST contain the same fields in the same
+order, and both the name and the value in each field MUST be exact
+matches. Clients SHOULD compare the request header sets for resources promised
+multiple times. If a client receives a Push ID that has already been promised
+and detects a mismatch, it MUST respond with a connection error of type
+H3_GENERAL_PROTOCOL_ERROR. If the decompressed header sets match exactly, the
+client SHOULD associate the pushed content with each stream on which
+a PUSH_PROMISE was received.
+
+Allowing duplicate references to the same Push ID is primarily to reduce
+duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
+ID over a long period.  Clients are likely to consume server push responses and
+not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
+a Push ID that they have already consumed and discarded are forced to ignore the
+PUSH_PROMISE.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
@@ -1262,28 +1410,28 @@ See {{server-push}} for a description of the overall server push mechanism.
 ### GOAWAY {#frame-goaway}
 
 The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
-connection by a server.  GOAWAY allows a server to stop accepting new requests
-while still finishing processing of previously received requests.  This enables
-administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.
+connection by either endpoint.  GOAWAY allows an endpoint to stop accepting new
+requests or pushes while still finishing processing of previously received
+requests and pushes.  This enables administrative actions, like server
+maintenance.  GOAWAY by itself does not close a connection.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Stream ID (i)                      ...
+|                  Stream ID/Push ID (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY Frame Payload"}
 
-The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
-ID for a client-initiated bidirectional stream encoded as a variable-length
-integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type H3_ID_ERROR.
+The GOAWAY frame is always sent on the control stream.  In the server to client
+direction, it carries a QUIC Stream ID for a client-initiated bidirectional
+stream encoded as a variable-length integer.  A client MUST treat receipt of a
+GOAWAY frame containing a Stream ID of any other type as a connection error of
+type H3_ID_ERROR.
 
-Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
-stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
-stream as a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
+In the client to server direction, the GOAWAY frame carries a Push ID encoded as
+a variable-length integer.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
@@ -1325,48 +1473,6 @@ the maximum value for a Push ID that the server can use (see
 {{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
 MUST be treated as a connection error of type H3_ID_ERROR.
-
-### DUPLICATE_PUSH {#frame-duplicate-push}
-
-The DUPLICATE_PUSH frame (type=0xE) is used by servers to indicate that an
-existing pushed resource is related to multiple client requests.
-
-The DUPLICATE_PUSH frame is always sent on a request stream.  Receipt of a
-DUPLICATE_PUSH frame on any other stream MUST be treated as a connection error
-of type H3_FRAME_UNEXPECTED.
-
-A client MUST NOT send a DUPLICATE_PUSH frame.  A server MUST treat the receipt
-of a DUPLICATE_PUSH frame as a connection error of type H3_FRAME_UNEXPECTED.
-
-~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-~~~~~~~~~~
-{: #fig-duplicate-push title="DUPLICATE_PUSH Frame Payload"}
-
-The DUPLICATE_PUSH frame carries a single variable-length integer that
-identifies the Push ID of a resource that the server has previously promised
-(see {{frame-push-promise}}), though that promise might not be received before
-this frame.  A server MUST NOT use a Push ID that is larger than the client has
-provided in a MAX_PUSH_ID frame ({{frame-max-push-id}}).  A client MUST treat
-receipt of a DUPLICATE_PUSH that contains a larger Push ID than the client has
-advertised as a connection error of type H3_ID_ERROR.
-
-This frame allows the server to use the same server push in response to multiple
-concurrent requests.  Referencing the same server push ensures that a promise
-can be made in relation to every response in which server push might be needed
-without duplicating request headers or pushed responses.
-
-Allowing duplicate references to the same Push ID is primarily to reduce
-duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
-ID over a long period.  Clients are likely to consume server push responses and
-not retain them for reuse over time.  Clients that see a DUPLICATE_PUSH that
-uses a Push ID that they have since consumed and discarded are forced to ignore
-the DUPLICATE_PUSH.
-
 
 ### Reserved Frame Types {#frame-reserved}
 
@@ -1527,8 +1633,10 @@ Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
 transport-layer padding or employ the reserved frame and stream types discussed
 in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
-different results in terms of the granularity of padding, the effect of packet
-loss and recovery, and how an implementation might control padding.
+different results in terms of the granularity of padding, how padding is
+arranged in relation to the information that is being protected, whether
+padding is applied in the case of packet loss, and how an implementation might
+control padding.
 
 ## Frame Parsing
 
@@ -1627,7 +1735,6 @@ The entries in {{iana-frame-table}} are registered by this document.
 | Reserved         |  0x8   | N/A                        |
 | Reserved         |  0x9   | N/A                        |
 | MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
-| DUPLICATE_PUSH   |  0xE   | {{frame-duplicate-push}}   |
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
@@ -1905,7 +2012,8 @@ PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
 
 GOAWAY (0x7):
-: GOAWAY is sent only from server to client and does not contain an error code.
+: GOAWAY does not contain an error code.  In the client to server direction,
+  it carries a Push ID instead of a server initiated stream ID.
   See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
@@ -2038,6 +2146,16 @@ Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-26
+
+- No changes
+
+## Since draft-ietf-quic-http-25
+
+- Require QUICv1 for HTTP/3 (#3117, #3323)
+- Remove DUPLICATE_PUSH and allow duplicate PUSH_PROMISE (#3275, #3309)
+- Clarify the definition of "malformed" (#3352, #3345)
 
 ## Since draft-ietf-quic-http-24
 
