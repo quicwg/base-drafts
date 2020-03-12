@@ -591,12 +591,12 @@ HTTP/3 uses QPACK field compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid compression-induced head-of-line
 blocking.  See that document for additional details.
 
-To allow for better compression efficiency, the "Cookie" field {{!RFC6265}}
-MAY be split into separate field lines, each with one or more cookie-pairs,
-before compression. If a decompressed field list contains multiple cookie
-header fields, these MUST be concatenated into a single octet string using the
-two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
-into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
+To allow for better compression efficiency, the "Cookie" field {{!RFC6265}} MAY
+be split into separate field lines, each with one or more cookie-pairs, before
+compression. If a decompressed field list contains multiple cookie field lines,
+these MUST be concatenated into a single octet string using the two-octet
+delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed into a
+context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
 
 #### Header Size Constraints
@@ -1224,7 +1224,7 @@ using QPACK. See [QPACK] for more details.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Header Block (*)                      ...
+|                        Field Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS Frame Payload"}
@@ -1419,7 +1419,7 @@ field set from server to client on a request stream, as in HTTP/2.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Header Block (*)                      ...
+|                        Field Block (*)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
