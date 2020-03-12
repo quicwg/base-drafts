@@ -2432,7 +2432,7 @@ close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
 An endpoint restarts its idle timer when a packet from its peer is received and
-processed successfully. An endpoint restarts its idle timer when sending an
+processed successfully. An endpoint also restarts its idle timer when sending an
 ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
