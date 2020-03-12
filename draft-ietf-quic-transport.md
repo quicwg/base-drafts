@@ -2444,7 +2444,7 @@ An endpoint that sends packets close to the effective timeout risks having
 them be discarded at the peer, since the peer might enter its draining state
 before these packets arrive. An endpoint can send a PING or another
 ack-eliciting frame to test the connection for liveness if the peer could
-time out soon, such as within a PTO (see Section 6.6 of {{QUIC-RECOVERY}}).
+time out soon, such as within a PTO; see Section 6.6 of {{QUIC-RECOVERY}}.
 This is especially useful if any available application data cannot be safely
 retried. Note that the application determines what data is safe to retry.
 
