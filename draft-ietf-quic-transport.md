@@ -3140,10 +3140,6 @@ Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
 packet.
 
-<!-- TODO: Do we need to say anything about partial processing. And our
-expectations about what implementations do with packets that have errors after
-valid frames? -->
-
 
 ## Generating Acknowledgements {#generating-acks}
 
