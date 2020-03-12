@@ -2495,8 +2495,8 @@ level of packet protection to avoid the packet being discarded.  After the
 handshake is confirmed (see Section 4.1.2 of {{QUIC-TLS}}), an endpoint MUST
 send any CONNECTION_CLOSE frames in a 1-RTT packet.  However, prior to
 confirming the handshake, it is possible that more advanced packet protection
-keys are not available to the peer, so the frame MAY be replicated in a packet
-that uses a lower packet protection level.  More specifically:
+keys are not available to the peer, so another CONNECTION_CLOSE frame MAY be
+sent in a packet that uses a lower packet protection level.  More specifically:
 
 * A client will always know whether the server has Handshake keys (see
   {{discard-initial}}), but it is possible that a server does not know whether
