@@ -2436,6 +2436,7 @@ processed successfully. An endpoint also restarts its idle timer when sending an
 ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
+
 An endpoint might need to send ack-eliciting packets to avoid an idle timeout
 if it is expecting response data, but does not have or is unable to send
 application data.
