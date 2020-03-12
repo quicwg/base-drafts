@@ -3177,6 +3177,10 @@ Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+A receiver could decide to send an ACK frame less frequently than every other
+ack-eliciting packet if it has information about how frequently the sender's
+congestion controller needs feedback for optimal performance, or if the
+receiver is CPU or bandwidth constrained.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
