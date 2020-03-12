@@ -2406,10 +2406,10 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If a max_idle_timeout is specified by either peer in transport parameters
-(see {{transport-parameter-definitions}}), a connection is silently closed
+If a max_idle_timeout is specified by either peer in its transport parameters
+({{transport-parameter-definitions}}), the connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-the max_idle_timeout values and three times the current Probe Timeout (PTO).
+both max_idle_timeout values and three times the current Probe Timeout (PTO).
 
 By announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
@@ -2417,11 +2417,10 @@ value.
 
 An endpoint restarts its idle timer when sending an ack-eliciting packet if no
 other ack-eliciting packets have been sent since last receiving a packet.
-Restarting when sending packets ensures that connections do not prematurely time
-out when initiating new activity.  An endpoint might need to send ack-eliciting
-packets to avoid an idle timeout if it is unable to send application data due to
-being blocked on flow control limits (see {{flow-control}}) or is application
-limited, but expecting response data.
+Restarting this timer when sending a packet ensures that connections are not
+closed after new activity is initiated.  An endpoint might need to send ack-eliciting
+packets to avoid an idle timeout if it is expecting response data, but does
+not have or is unable to send application data.
 
 An endpoint that sends packets near the end of the idle timeout period
 risks having those packets discarded if its peer enters the draining state
