@@ -2420,15 +2420,15 @@ value.
 An endpoint restarts its idle timer when sending an ack-eliciting packet if no
 other ack-eliciting packets have been sent since last receiving a packet.
 Restarting this timer when sending a packet ensures that connections are not
-closed after new activity is initiated.  An endpoint might need to send ack-eliciting
-packets to avoid an idle timeout if it is expecting response data, but does
-not have or is unable to send application data.
+closed after new activity is initiated.  An endpoint might need to send
+ack-eliciting packets to avoid an idle timeout if it is expecting response data,
+but does not have or is unable to send application data.
 
-An endpoint that sends packets close to the effective timeout risks
-having them be discarded at the peer, since the peer might enter its
-draining state before these packets arrive. An endpoint can send a PING or
-another ack-eliciting frame to test the connection for liveness if the peer
-could time out soon, such as within a PTO (see Section 6.6 of {{QUIC-RECOVERY}}).
+An endpoint that sends packets close to the effective timeout risks having
+them be discarded at the peer, since the peer might enter its draining state
+before these packets arrive. An endpoint can send a PING or another
+ack-eliciting frame to test the connection for liveness if the peer could
+time out soon, such as within a PTO (see Section 6.6 of {{QUIC-RECOVERY}}).
 This is especially useful if any available application data cannot be safely
 retried. Note that the application determines what data is safe to retry.
 
