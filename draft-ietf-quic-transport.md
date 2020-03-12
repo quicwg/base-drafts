@@ -2431,12 +2431,14 @@ announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
-An endpoint restarts its idle timer when sending an ack-eliciting packet if no
-other ack-eliciting packets have been sent since last receiving and processing
-a packet. Restarting this timer when sending a packet ensures that connections
-are not closed after new activity is initiated.  An endpoint might need to send
-ack-eliciting packets to avoid an idle timeout if it is expecting response data,
-but does not have or is unable to send application data.
+An endpoint restarts its idle timer when a packet from its peer is received and
+processed successfully. An endpoint restarts its idle timer when sending an
+ack-eliciting packet if no other ack-eliciting packets have been sent since last
+receiving and processing a packet. Restarting this timer when sending a packet
+ensures that connections are not closed after new activity is initiated.
+An endpoint might need to send ack-eliciting packets to avoid an idle timeout
+if it is expecting response data, but does not have or is unable to send
+application data.
 
 An endpoint that sends packets close to the effective timeout risks having
 them be discarded at the peer, since the peer might enter its draining state
