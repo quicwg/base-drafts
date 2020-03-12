@@ -360,6 +360,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * QUIC stipulates that a client speaks first
 
+* QUIC packets always have the second bit of the first byte (0x40) set
+
 * A QUIC Version Negotiation packet is only sent by a server
 
 * A QUIC connection ID changes infrequently
