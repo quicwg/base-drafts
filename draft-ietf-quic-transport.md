@@ -2422,13 +2422,13 @@ closed after new activity is initiated.  An endpoint might need to send ack-elic
 packets to avoid an idle timeout if it is expecting response data, but does
 not have or is unable to send application data.
 
-An endpoint that sends packets near the end of the idle timeout period
-risks having those packets discarded if its peer enters the draining state
-before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to send a PING or
-other ack-eliciting frames to test for liveness before sending any data that
-cannot be retried safely.  Note that it is likely that only applications or
-application protocols will know what information can be retried.
+An endpoint that sends packets close to the effective timeout risks
+having them be discarded at the peer, since the peer might enter its
+draining state before these packets arrive. An endpoint can send a PING or
+another ack-eliciting frame to test the connection for liveness if the peer
+could time out soon, such as within a PTO (see Section 6.6 of {{QUIC-RECOVERY}}).
+This is especially useful if any available application data cannot be safely
+retried. Note that the application determines what data is safe to retry.
 
 
 ## Immediate Close
