@@ -352,7 +352,7 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
   exchanges during connection establishment
 
-* QUIC packet numbers appear after the Version field
+* QUIC packet numbers appear after the connection ID fields
 
 * QUIC packet numbers increase by one for every packet sent
 
