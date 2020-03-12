@@ -86,7 +86,7 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-HTTP semantics {{!Semantics=I-D.ietf-httpbis-semantics}} are used for a broad
+HTTP semantics {{!SEMANTICS=I-D.ietf-httpbis-semantics}} are used for a broad
 range of services on the Internet. These semantics have commonly been used with
 two different TCP mappings, HTTP/1.1 and HTTP/2.  HTTP/3 supports the same
 semantics over a new transport protocol, QUIC.
@@ -256,10 +256,10 @@ stream:
 stream error:
 : An error on the individual HTTP/3 stream.
 
-The term "payload body" is defined in Section 6.3.3 of {{!Semantics}}.
+The term "payload body" is defined in Section 6.3.3 of {{!SEMANTICS}}.
 
 Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
-in Section 2.2 of {{!Semantics}}.  Intermediaries act as both client and server
+in Section 2.2 of {{!SEMANTICS}}.  Intermediaries act as both client and server
 at different times.
 
 
@@ -289,7 +289,7 @@ the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 4.4.1.1 of {{!Semantics}}. Experimenters are
+syntax defined in Section 4.4.1.1 of {{!SEMANTICS}}. Experimenters are
 encouraged to coordinate their experiments on the quic@ietf.org mailing list.
 
 ## Discovering an HTTP/3 Endpoint {#discovery}
@@ -406,14 +406,14 @@ response following a final HTTP response MUST be treated as malformed
 
 An HTTP message (request or response) consists of:
 
-1. the header field section (see Section 4 of {{!Semantics}}), sent as a single
+1. the header field section (see Section 4 of {{!SEMANTICS}}), sent as a single
    HEADERS frame (see {{frame-headers}}),
 
 2. optionally, the payload body, if present (see Section 6.3.3 of
-   {{!Semantics}}), sent as a series of DATA frames (see {{frame-data}}),
+   {{!SEMANTICS}}), sent as a series of DATA frames (see {{frame-data}}),
 
 3. optionally, the trailer field section, if present (see Section 4.6 of
-   {{!Semantics}}), sent as a single HEADERS frame.
+   {{!SEMANTICS}}), sent as a single HEADERS frame.
 
 Receipt of DATA and HEADERS frames in any other sequence MUST be treated as a
 connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
@@ -438,7 +438,7 @@ The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see Section 9.2 of {{!Semantics}}) precede a final
+informational responses (1xx; see Section 9.2 of {{!SEMANTICS}}) precede a final
 response to the same request.  Non-final responses do not contain a payload body
 or trailers.
 
@@ -485,7 +485,7 @@ For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
 Just as in previous versions of HTTP, field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
 field names and values are discussed in more detail in Section 4.3 of
-{{!Semantics}}.  As in HTTP/2, field names MUST be converted to lowercase prior
+{{!SEMANTICS}}.  As in HTTP/2, field names MUST be converted to lowercase prior
 to their encoding.  A request or response containing uppercase field names MUST
 be treated as malformed ({{malformed}}).
 
@@ -530,7 +530,7 @@ The following pseudo-fields are defined for requests:
 
   ":method":
 
-  : Contains the HTTP method (Section 7 of {{!Semantics}})
+  : Contains the HTTP method (Section 7 of {{!SEMANTICS}})
 
   ":scheme":
 
@@ -578,7 +578,7 @@ HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
 For responses, a single ":status" pseudo-field is defined that carries the HTTP
-status code (see Section 9 of {{!Semantics}}).  This pseudo-field
+status code (see Section 9 of {{!SEMANTICS}}).  This pseudo-field
 MUST be included in all responses; otherwise, the response is malformed
 ({{malformed}}).
 
@@ -663,7 +663,7 @@ A request or response that includes a payload body can include a
 `content-length` field.  A request or response is also malformed if the value of
 a content-length field does not equal the sum of the DATA frame payload lengths
 that form the body.  A response that is defined to have no payload, as described
-in Section 6.3.3 of {{!Semantics}} can have a non-zero content-length field,
+in Section 6.3.3 of {{!SEMANTICS}} can have a non-zero content-length field,
 even though no content is included in DATA frames.
 
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
@@ -705,7 +705,7 @@ is malformed (see {{malformed}}).
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-field.  Once this connection is
 successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in Section 9.3 of {{!Semantics}}.
+series status code to the client, as defined in Section 9.3 of {{!SEMANTICS}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
 connection. Any DATA frame sent by the client is transmitted by the proxy to the
@@ -739,7 +739,7 @@ with the RST bit set.
 
 HTTP/3 does not support the HTTP Upgrade mechanism (Section 9.9 of {{?HTTP11}})
 or 101 (Switching Protocols) informational status code (Section 9.2.2 of
-{{!Semantics}}).
+{{!SEMANTICS}}).
 
 ## Server Push
 
@@ -772,8 +772,8 @@ This allows the server push to be associated with a client request.
 Not all requests can be pushed.  A server MAY push requests which have the
 following properties:
 
-- cacheable (see Section 7.2.3 of {{!Semantics}})
-- safe (see Section 7.2.1 of {{!Semantics}})
+- cacheable (see Section 7.2.3 of {{!SEMANTICS}})
+- safe (see Section 7.2.1 of {{!SEMANTICS}})
 - does not include a request body or trailer section
 
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
@@ -821,10 +821,10 @@ H3_REQUEST_CANCELLED. This asks the server not to transfer additional data and
 indicates that it will be discarded upon receipt.
 
 Pushed responses that are cacheable (see Section 3 of
-{{!Caching=I-D.ietf-httpbis-cache}}) can be stored by the client, if it
+{{!CACHING=I-D.ietf-httpbis-cache}}) can be stored by the client, if it
 implements an HTTP cache.  Pushed responses are considered successfully
 validated on the origin server (e.g., if the "no-cache" cache response directive
-is present (Section 5.2.2.3 of {{!Caching}})) at the time the pushed response is
+is present (Section 5.2.2.3 of {{!CACHING}})) at the time the pushed response is
 received.
 
 Pushed responses that are not cacheable MUST NOT be stored by any HTTP cache.
