@@ -392,13 +392,13 @@ of {{?HTTP2}}).
 
 A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
 A client MUST send only a single request on a given stream. A server sends zero
-or more non-final HTTP responses on the same stream as the request, followed by
-a single final HTTP response, as detailed below.
+or more interim HTTP responses on the same stream as the request, followed by a
+single final HTTP response, as detailed below.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream (see
-{{push-streams}}).  A server sends zero or more non-final HTTP responses,
-followed by a single final HTTP response, in the same manner as a standard
-response.  Push is described in more detail in {{server-push}}.
+{{push-streams}}).  A server sends zero or more interim HTTP responses, followed
+by a single final HTTP response, in the same manner as a standard response.
+Push is described in more detail in {{server-push}}.
 
 On a given stream, receipt of multiple requests or receipt of an additional HTTP
 response following a final HTTP response MUST be treated as malformed
@@ -439,7 +439,7 @@ be used.
 
 A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx; see Section 9.2 of {{!SEMANTICS}}) precede a final
-response to the same request.  Non-final responses do not contain a payload body
+response to the same request.  Interim responses do not contain a payload body
 or trailers.
 
 If an endpoint receives an invalid sequence of frames on either a request or
@@ -1091,7 +1091,7 @@ more details.
 A push stream is indicated by a stream type of `0x01`, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
 remaining data on this stream consists of HTTP/3 frames, as defined in
-{{frames}}, and fulfills a promised server push by zero or more non-final HTTP
+{{frames}}, and fulfills a promised server push by zero or more interim HTTP
 responses followed by a single final HTTP response, as defined in
 {{request-response}}.  Server push and Push IDs are described in
 {{server-push}}.
