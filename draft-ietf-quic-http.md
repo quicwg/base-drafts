@@ -295,13 +295,13 @@ encouraged to coordinate their experiments on the quic@ietf.org mailing list.
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
-the Alt-Svc HTTP response field or the HTTP/2 ALTSVC frame
+the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
 ({{!ALTSVC=RFC7838}}), using the ALPN token defined in
 {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
-field:
+header field:
 
 ~~~ example
 Alt-Svc: h3=":50781"
@@ -485,18 +485,19 @@ For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
 Just as in previous versions of HTTP, field names are strings of ASCII
 characters that are compared in a case-insensitive fashion.  Properties of HTTP
 field names and values are discussed in more detail in Section 4.3 of
-{{!SEMANTICS}}.  As in HTTP/2, field names MUST be converted to lowercase prior
-to their encoding.  A request or response containing uppercase field names MUST
-be treated as malformed ({{malformed}}).
+{{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
+lowercase prior to their encoding.  A request or response containing uppercase
+characters in field names MUST be treated as malformed ({{malformed}}).
 
-Like HTTP/2, HTTP/3 does not use the Connection field to indicate
+Like HTTP/2, HTTP/3 does not use the Connection header field to indicate
 connection-specific fields; in this protocol, connection-specific metadata is
-conveyed by other means.  An endpoint MUST NOT generate an HTTP/3 message
+conveyed by other means.  An endpoint MUST NOT generate an HTTP/3 field section
 containing connection-specific fields; any message containing
 connection-specific fields MUST be treated as malformed ({{malformed}}).
 
-The only exception to this is the TE field, which MAY be present in an HTTP/3
-request header; when it is, it MUST NOT contain any value other than "trailers".
+The only exception to this is the TE header field, which MAY be present in an
+HTTP/3 request header; when it is, it MUST NOT contain any value other than
+"trailers".
 
 This means that an intermediary transforming an HTTP/1.x message to HTTP/3 will
 need to remove any fields nominated by the Connection field, along with the
@@ -505,28 +506,28 @@ connection-specific fields, such as Keep-Alive, Proxy-Connection,
 Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection
 field.
 
-#### Pseudo-Fields
+#### Pseudo-Header Fields
 
-As in HTTP/2, HTTP/3 uses special pseudo-fields beginning with the ':' character
-(ASCII 0x3a) to convey the target URI, the method of the request, and the status
-code for the response.
+As in HTTP/2, HTTP/3 uses a series of pseudo-header field lines beginning with
+the ':' character (ASCII 0x3a) to convey the target URI, the method of the
+request, and the status code for the response.
 
-Pseudo-fields are not HTTP fields.  Endpoints MUST NOT generate pseudo-fields
-other than those defined in this document, except as negotiated via an
-extension; see {{extensions}}.
+Pseudo-header fields are not HTTP fields.  Endpoints MUST NOT generate
+pseudo-header fields other than those defined in this document, except as
+negotiated via an extension; see {{extensions}}.
 
 Pseudo-fields are only valid in the context in which they are defined.
-Pseudo-fields defined for requests MUST NOT appear in responses; pseudo-fields
-defined for responses MUST NOT appear in requests. Pseudo-fields MUST NOT appear
-in trailers.  Endpoints MUST treat a request or response that contains undefined
-or invalid pseudo-fields as malformed ({{malformed}}).
+Pseudo-fields defined for requests MUST NOT appear in responses; pseudo-header
+fields defined for responses MUST NOT appear in requests. Pseudo-fields MUST NOT
+appear in trailers.  Endpoints MUST treat a request or response that contains
+undefined or invalid pseudo-header fields as malformed ({{malformed}}).
 
-All pseudo-fields MUST appear in the header field section before regular header
-fields.  Any request or response that contains a pseudo-field that appears in a
-header field section after a regular header field MUST be treated as malformed
-({{malformed}}).
+All pseudo-header fields MUST appear in the header field section before regular
+header fields.  Any request or response that contains a pseudo-header field that
+appears in a header field section after a regular header field MUST be treated
+as malformed ({{malformed}}).
 
-The following pseudo-fields are defined for requests:
+The following pseudo-header fields are defined for requests:
 
   ":method":
 
@@ -547,39 +548,39 @@ The following pseudo-fields are defined for requests:
     subcomponent for "http" or "https" schemed URIs.
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
-    pseudo-field MUST be omitted when translating from an HTTP/1.1 request that
-    has a request target in origin or asterisk form (see Section 3.2 of
-    {{?HTTP11}}).  Clients that generate HTTP/3 requests directly SHOULD use the
-    ":authority" pseudo-field instead of the Host field. An intermediary that
-    converts an HTTP/3 request to HTTP/1.1 MUST create a Host field if one is
-    not present in a request by copying the value of the ":authority"
-    pseudo-field.
+    pseudo-header field MUST be omitted when translating from an HTTP/1.1
+    request that has a request target in origin or asterisk form (see Section
+    3.2 of {{?HTTP11}}).  Clients that generate HTTP/3 requests directly SHOULD
+    use the ":authority" pseudo-header field instead of the Host field. An
+    intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a Host
+    field if one is not present in a request by copying the value of the
+    ":authority" pseudo-header field.
 
   ":path":
 
   : Contains the path and query parts of the target URI (the "path-absolute"
     production and optionally a '?' character followed by the "query" production
     (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk form
-    includes the value '*' for the ":path" pseudo-field.
+    includes the value '*' for the ":path" pseudo-header field.
 
-  : This pseudo-field MUST NOT be empty for "http" or "https" URIs;
+  : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
     "http" or "https" URIs that do not contain a path component MUST include a
     value of '/'.  The exception to this rule is an OPTIONS request for an
     "http" or "https" URI that does not include a path component; these MUST
-    include a ":path" pseudo-field with a value of '*' (see Section 3.2.4
+    include a ":path" pseudo-header field with a value of '*' (see Section 3.2.4
     of {{?HTTP11}}).
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
-and ":path" pseudo-fields, unless it is a CONNECT request ({{connect}}).
-An HTTP request that omits mandatory pseudo-fields or contains invalid
-values for those pseudo-fields is malformed ({{malformed}}).
+and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+An HTTP request that omits mandatory pseudo-header fields or contains invalid
+values for those pseudo-header fields is malformed ({{malformed}}).
 
 HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
-For responses, a single ":status" pseudo-field is defined that carries the HTTP
-status code (see Section 9 of {{!SEMANTICS}}).  This pseudo-field
-MUST be included in all responses; otherwise, the response is malformed
+For responses, a single ":status" pseudo-header field is defined that carries
+the HTTP status code (see Section 9 of {{!SEMANTICS}}).  This pseudo-header
+field MUST be included in all responses; otherwise, the response is malformed
 ({{malformed}}).
 
 HTTP/3 does not define a way to carry the version or reason phrase that is
@@ -593,8 +594,8 @@ blocking.  See that document for additional details.
 
 To allow for better compression efficiency, the "Cookie" field {{!RFC6265}} MAY
 be split into separate field lines, each with one or more cookie-pairs, before
-compression. If a decompressed field list contains multiple cookie field lines,
-these MUST be concatenated into a single octet string using the two-octet
+compression. If a decompressed field section contains multiple cookie field
+lines, these MUST be concatenated into a single octet string using the two-octet
 delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed into a
 context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
@@ -652,19 +653,19 @@ permitted (e.g., idempotent actions like GET, PUT, or DELETE).
 A malformed request or response is one that is an otherwise valid sequence of
 frames but is invalid due to:
 
-- the presence of prohibited fields or pseudo-fields,
-- the absence of mandatory pseudo-fields,
-- invalid values for pseudo-fields,
-- pseudo-fields after fields,
+- the presence of prohibited fields or pseudo-header fields,
+- the absence of mandatory pseudo-header fields,
+- invalid values for pseudo-header fields,
+- pseudo-header fields after fields,
 - an invalid sequence of HTTP messages, or
 - the inclusion of uppercase field names.
 
 A request or response that includes a payload body can include a
-`content-length` field.  A request or response is also malformed if the value of
-a content-length field does not equal the sum of the DATA frame payload lengths
-that form the body.  A response that is defined to have no payload, as described
-in Section 6.3.3 of {{!SEMANTICS}} can have a non-zero content-length field,
-even though no content is included in DATA frames.
+`content-length` header field.  A request or response is also malformed if the
+value of a content-length header field does not equal the sum of the DATA frame
+payload lengths that form the body.  A response that is defined to have no
+payload, as described in Section 6.3.3 of {{!SEMANTICS}} can have a non-zero
+content-length field, even though no content is included in DATA frames.
 
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
 not acting as a tunnel) MUST NOT forward a malformed request or response.
@@ -692,9 +693,9 @@ a tunnel over a single stream.
 
 A CONNECT request MUST be constructed as follows:
 
-- The ":method" pseudo-field is set to "CONNECT"
-- The ":scheme" and ":path" pseudo-fields are omitted
-- The ":authority" pseudo-field contains the host and port to connect to
+- The ":method" pseudo-header field is set to "CONNECT"
+- The ":scheme" and ":path" pseudo-header fields are omitted
+- The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests
   (see Section 5.3 of {{?HTTP11}}))
 
@@ -703,8 +704,8 @@ be transferred.  A CONNECT request that does not conform to these restrictions
 is malformed (see {{malformed}}).
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
-server identified in the ":authority" pseudo-field.  Once this connection is
-successfully established, the proxy sends a HEADERS frame containing a 2xx
+server identified in the ":authority" pseudo-header field.  Once this connection
+is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in Section 9.3 of {{!SEMANTICS}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
@@ -782,10 +783,10 @@ indicates the presence of a request body.  If the pushed response arrives on a
 push stream, this MAY be treated as a stream error of type
 H3_STREAM_CREATION_ERROR.
 
-The server MUST include a value in the ":authority" pseudo-field for which the
-server is authoritative (see {{connection-reuse}}).  A client SHOULD send a
-CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request for
-which it does not consider the server authoritative.  If the pushed response
+The server MUST include a value in the ":authority" pseudo-header field for
+which the server is authoritative (see {{connection-reuse}}).  A client SHOULD
+send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request
+for which it does not consider the server authoritative.  If the pushed response
 arrives on a push stream, this MAY be treated as a stream error of type
 H3_STREAM_CREATION_ERROR.
 
@@ -809,7 +810,7 @@ using the same format described for responses in {{request-response}}.
 Due to reordering, push stream data can arrive before the corresponding
 PUSH_PROMISE frame.  When a client receives a new push stream with an
 as-yet-unknown Push ID, both the associated client request and the pushed
-request fields are unknown.  The client can buffer the stream data in
+request headerss are unknown.  The client can buffer the stream data in
 expectation of the matching PUSH_PROMISE. The client can use stream flow control
 (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
 commit to the pushed stream.
