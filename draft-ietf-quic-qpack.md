@@ -360,7 +360,7 @@ The decoder signals the following events by emitting decoder instructions
 #### Completed Processing of a Field Block
 
 After the decoder finishes decoding a field block containing dynamic table
-references, it MUST emit a Entry Acknowledgement instruction
+references, it MUST emit an Entry Acknowledgement instruction
 ({{entry-acknowledgement}}).  A stream may carry multiple field blocks in the
 case of intermediate responses, trailers, and pushed requests.  The encoder
 interprets each Entry Acknowledgement instruction as acknowledging the earliest
@@ -780,7 +780,7 @@ This section specifies the following decoder instructions.
 ### Entry Acknowledgement
 
 After processing a field block whose declared Required Insert Count is not
-zero, the decoder emits a Entry Acknowledgement instruction.  The instruction
+zero, the decoder emits an Entry Acknowledgement instruction.  The instruction
 begins with the '1' one-bit pattern which is followed by the field block's
 associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
@@ -796,7 +796,7 @@ in {{state-synchronization}}.
 ~~~~~~~~~~
 {:#fig-header-ack title="Entry Acknowledgement"}
 
-If an encoder receives a Entry Acknowledgement instruction referring to a
+If an encoder receives an Entry Acknowledgement instruction referring to a
 stream on which every field block with a non-zero Required Insert Count has
 already been acknowledged, that MUST be treated as a connection error of type
 QPACK_DECODER_STREAM_ERROR.
