@@ -557,6 +557,24 @@ keys are discarded, the PTO and loss detection timers MUST be reset, because
 discarding keys indicates forward progress and the loss detection timer might
 have been set for a now discarded packet number space.
 
+### Speeding Up Handshake Completion
+
+When a server receives an Initial packet containing duplicate CRYPTO data,
+it can assume the client did not receive all of the server's CRYPTO data sent
+in Initial packets, or the client's estimated RTT is too small. When a
+client receives Handshake or 1-RTT packets prior to obtaining Handshake keys,
+it may assume some or all of the server's Initial packets were lost.
+
+To speed up handshake completion under these conditions, an endpoint MAY send
+a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
+subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
+
+Peers can also use coalesced packets to ensure that each datagram elicits at least
+one acknowledgement.  For example, clients can coalesce an Initial packet
+containing PING and PADDING frames with a 0-RTT data packet and a server can
+coalesce an Initial packet containing a PING frame with one or more packets in
+its first flight.
+
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
