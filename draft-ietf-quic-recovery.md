@@ -1142,12 +1142,12 @@ SetLossDetectionTimer():
     loss_detection_timer.update(earliest_loss_time)
     return
     
-  if (IsServerWhichReachedAddressValidationLimit()):
+  if (server is at anti-amplification limit):
     loss_detection_timer.cancel()
     return
 
   if (no ack-eliciting packets in flight &&
-      PeerNotAwaitingAddressValidation()):
+      peer not awaiting address validation):
     loss_detection_timer.cancel()
     return
 
