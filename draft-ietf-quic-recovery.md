@@ -1143,11 +1143,14 @@ SetLossDetectionTimer():
     return
 
   if (server is at anti-amplification limit):
+    // The server's alarm is not set if nothing can be sent.
     loss_detection_timer.cancel()
     return
 
   if (no ack-eliciting packets in flight &&
       peer not awaiting address validation):
+    // There is nothing to detect lost and the server
+    // is not blocked by the anti-amplification limit.
     loss_detection_timer.cancel()
     return
 
