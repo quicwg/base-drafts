@@ -1141,7 +1141,7 @@ SetLossDetectionTimer():
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
     return
-    
+
   if (server is at anti-amplification limit):
     loss_detection_timer.cancel()
     return
