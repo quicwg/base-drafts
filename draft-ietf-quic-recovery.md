@@ -353,13 +353,16 @@ endpoint:
 On the first RTT sample for a network path, the smoothed_rtt is set to the
 latest_rtt.
 
-smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  On
-the first RTT sample for a network path:
+smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  When
+there is less than one sample for a network path:
 
 ~~~
-smoothed_rtt = latest_rtt
-rttvar = latest_rtt / 2
+smoothed_rtt = rtt_sample
+rttvar = rtt_sample / 2
 ~~~
+
+where rtt_sample is either the initial RTT when there is no sample, or the
+latest RTT when there is one.
 
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
@@ -517,12 +520,10 @@ data.
 
 ### Handshakes and New Paths
 
-The initial probe timeout for a new connection or new path SHOULD be
-set to twice the initial RTT.  Resumed connections over the same network
-SHOULD use the previous connection's final smoothed RTT value as the resumed
-connection's initial RTT.  If no previous RTT is available, the initial RTT
-SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
-in {{?RFC6298}}.
+When no previous RTT is available, the initial RTT SHOULD be set to 333ms,
+resulting in a 1 second initial timeout as recommended in {{?RFC6298}}. Resumed
+connections over the same network SHOULD use the previous connection's final
+smoothed RTT value as the resumed connection's initial RTT.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
 PATH_RESPONSE to set the initial RTT (see kInitialRtt in
@@ -1054,8 +1055,8 @@ follows:
    loss_detection_timer.reset()
    pto_count = 0
    latest_rtt = 0
-   smoothed_rtt = 0
-   rttvar = 0
+   smoothed_rtt = initial_rtt
+   rttvar = initial_rtt / 2
    min_rtt = 0
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1135,8 +1136,7 @@ OnAckReceived(ack, pn_space):
 
 
 UpdateRtt(ack_delay):
-  // First RTT sample.
-  if (smoothed_rtt == 0):
+  if (is first RTT sample):
     min_rtt = latest_rtt
     smoothed_rtt = latest_rtt
     rttvar = latest_rtt / 2
@@ -1225,13 +1225,8 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
-  // Use a default timeout if there are no RTT measurements
-  if (smoothed_rtt == 0):
-    timeout = 2 * kInitialRtt
-  else:
-    // Calculate PTO duration
-    timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
-      max_ack_delay
+  // Calculate PTO duration
+  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   sent_time, _ = GetEarliestTimeAndSpace(
