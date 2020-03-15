@@ -428,7 +428,7 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 Once a later packet within the same packet number space has been acknowledged,
 an endpoint SHOULD declare an earlier packet lost if it was sent a threshold
 amount of time in the past. To avoid declaring packets as lost too early, this
-time threshold MUST be set to at least the local alarm granularity, as
+time threshold MUST be set to at least the local timer granularity, as
 indicated by the kGranularity constant.  The time threshold is:
 
 ~~~
