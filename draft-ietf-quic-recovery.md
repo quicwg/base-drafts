@@ -1220,8 +1220,16 @@ SetLossDetectionTimer():
     loss_detection_timer.update(earliest_loss_time)
     return
 
+  if (server is at anti-amplification limit):
+    // The server's alarm is not set if nothing can be sent.
+    loss_detection_timer.cancel()
+    return
+
   if (no ack-eliciting packets in flight &&
-      PeerNotAwaitingAddressValidation()):
+      peer not awaiting address validation):
+    // There is nothing to detect lost, so no timer is set.
+    // However, the client needs to arm the timer if the
+    // server might be blocked by the anti-amplification limit.
     loss_detection_timer.cancel()
     return
 
@@ -1257,7 +1265,14 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (endpoint is client without 1-RTT keys):
+  if (bytes_in_flight > 0):
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
+    _, pn_space = GetEarliestTimeAndSpace(
+      time_of_last_sent_ack_eliciting_packet)
+    SendOneOrTwoAckElicitingPackets(pn_space)
+  else:
+    assert(endpoint is client without 1-RTT keys)
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
@@ -1265,12 +1280,6 @@ OnLossDetectionTimeout():
       SendOneAckElicitingHandshakePacket()
     else:
       SendOneAckElicitingPaddedInitialPacket()
-  else:
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
-    SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
   SetLossDetectionTimer()
