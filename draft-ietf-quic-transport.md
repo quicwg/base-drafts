@@ -5206,8 +5206,9 @@ are present in the frame.
   final size of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
-An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error STREAM_STATE_ERROR.
+An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
+receives a STREAM frame for a locally-initiated stream that has not yet been
+created, or for a send-only stream.
 
 The STREAM frames are shown in {{fig-stream}}.
 
