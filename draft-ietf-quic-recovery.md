@@ -569,8 +569,8 @@ To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
 subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
-Peers can also use coalesced packets to ensure that each datagram elicits at least
-one acknowledgement.  For example, clients can coalesce an Initial packet
+Peers can also use coalesced packets to ensure that each datagram elicits at
+least one acknowledgement.  For example, clients can coalesce an Initial packet
 containing PING and PADDING frames with a 0-RTT data packet and a server can
 coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
@@ -586,6 +586,9 @@ to a single lost datagram or transmit data from multiple packet number spaces.
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
+
+If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
+packet number to eliminate the ack delay.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
 data, it MUST be sent.
