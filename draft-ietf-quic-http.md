@@ -482,9 +482,9 @@ For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
 (HTTP) Field Name Registry" maintained at
 <https://www.iana.org/assignments/http-fields/>.
 
-Just as in previous versions of HTTP, field names are strings of ASCII
-characters that are compared in a case-insensitive fashion.  Properties of HTTP
-field names and values are discussed in more detail in Section 4.3 of
+As in previous versions of HTTP, field names are strings containing a subset of
+ASCII characters that are compared in a case-insensitive fashion.  Properties of
+HTTP field names and values are discussed in more detail in Section 4.3 of
 {{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
 lowercase prior to their encoding.  A request or response containing uppercase
 characters in field names MUST be treated as malformed ({{malformed}}).
