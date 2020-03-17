@@ -810,7 +810,7 @@ using the same format described for responses in {{request-response}}.
 Due to reordering, push stream data can arrive before the corresponding
 PUSH_PROMISE frame.  When a client receives a new push stream with an
 as-yet-unknown Push ID, both the associated client request and the pushed
-request headerss are unknown.  The client can buffer the stream data in
+request header fields are unknown.  The client can buffer the stream data in
 expectation of the matching PUSH_PROMISE. The client can use stream flow control
 (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
 commit to the pushed stream.
