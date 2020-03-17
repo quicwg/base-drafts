@@ -112,24 +112,24 @@ HTTP field value:
   that field name in that section, concatenated together and separated with
   commas.
 
-Field list:
+Field section:
 
 : An ordered collection of HTTP field lines associated with an HTTP message.  A
-  field list can contain multiple field lines with the same name.  It can
-  also contain duplicate field lines.  The header field and trailer field
-  sections of an HTTP message each contain a field list.
+  field section can contain multiple field lines with the same name.  It can
+  also contain duplicate field lines.  An HTTP message can include both header
+  field and trailer field sections.
 
 Field block:
 
-: The compressed representation of a field list.
+: The compressed representation of a field section.
 
 Encoder:
 
-: An implementation which transforms a field list into a field block.
+: An implementation which transforms a field section into a field block.
 
 Decoder:
 
-: An implementation which transforms a field block into a field list.
+: An implementation which transforms a field block into a field section.
 
 Absolute Index:
 
@@ -167,14 +167,14 @@ Like HPACK, QPACK uses two tables for associating field lines to indices.  The
 static table ({{header-table-static}}) is predefined and contains common field
 lines (some of them with an empty value).  The dynamic table
 ({{header-table-dynamic}}) is built up over the course of the connection and can
-be used by the encoder to index field lines in the encoded field lists.
+be used by the encoder to index field lines in the encoded field sections.
 
 QPACK defines unidirectional streams for sending instructions from encoder to
 decoder and vice versa.
 
 ## Encoder
 
-An encoder converts a field list into a field block by emitting either an
+An encoder converts a field section into a field block by emitting either an
 indexed or a literal representation for each field line in the list; see
 {{field-block-representations}}.  Indexed representations achieve high
 compression by replacing the literal name and possibly the value with an index
@@ -187,7 +187,7 @@ is available at the decoder.
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
 
-QPACK preserves the ordering of field lines within each field list.  An encoder
+QPACK preserves the ordering of field lines within each field section.  An encoder
 MUST emit field representations in the order they appear in the input field
 list.
 
@@ -323,8 +323,8 @@ guidance.
 ## Decoder
 
 As in HPACK, the decoder processes field blocks and emits the corresponding
-field lists. It also processes instructions received on the encoder stream that
-modify the dynamic table.  Note that field blocks and encoder stream
+field sections. It also processes instructions received on the encoder stream
+that modify the dynamic table.  Note that field blocks and encoder stream
 instructions arrive on separate streams.  This is unlike HPACK, where field
 blocks can contain instructions that modify the dynamic table, and there is no
 dedicated stream of HPACK instructions.
