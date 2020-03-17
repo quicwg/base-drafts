@@ -362,7 +362,7 @@ where rtt_sample is the initial RTT.
 
 On the first RTT sample for the network path, smoothed_rtt and rttvar are set to
 the values using the formula above, using that first RTT sample as rtt_sample.
-This ensures a measurement erases the history of any persisted or default value.
+This ensures that the first measurement erases the history of any persisted or default value.
 
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
