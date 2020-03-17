@@ -1667,7 +1667,7 @@ controller.  Clients are only constrained by the congestion controller.
 ### Token Construction
 
 A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
-way that allows the server to identity how it was provided to a client.  These
+way that allows the server to identify how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
 
@@ -1745,7 +1745,7 @@ used to dynamically calculate the expiration time.  A server can store the
 expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
-values to be linked by an on-path observer to the connection on which it was
+values to be linked by an observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
 previous connection ID or addressing information.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
