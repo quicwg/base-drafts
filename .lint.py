@@ -30,6 +30,7 @@ for inputfile in args.files:
             linenumber += 1
 
             def err(msg):
+                global foundError
                 foundError = True
                 sys.stderr.write("{0}:{1}: {2}\n".format(inputfile, linenumber, msg))
                 sys.stderr.write("{0}\n".format(line))
