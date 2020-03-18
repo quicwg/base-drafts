@@ -3260,16 +3260,26 @@ all subsequent ACK frames containing them could be lost. In this case, the
 loss recovery algorithm could cause spurious retransmits, but the sender will
 continue making forward progress.
 
-
 ### Limiting ACK Ranges {#ack-limiting}
 
-A receiver MAY limit the number of ACK Ranges it sends to limit receiver state
-and the size of ACK frames.  A receiver SHOULD track which ACK frames have been
-acknowledged by its peer, so that it can limit ACK Ranges ({{ack-ranges}}) to
-those not yet acknowledged by the sender.
+A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
+sends in ACK frames, both to limit the size of ACK frames and to avoid resource
+exhaustion. After receiving acknowledgments for an ACK frame, the receiver
+SHOULD stop tracking those acknowledged ACK Ranges.
+
+It is possible that retaining many ACK Ranges could cause an ACK frame to become
+too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
+size, at the cost of increased retransmissions from the sender. This is
+necessary if an ACK frame would be too large to fit in a packet, however
+receivers MAY also limit ACK frame size further to preserve space for other
+frames.
+
+When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
+received packet number. A receiver SHOULD retain ACK Ranges containing newly
+received packets or higher-numbered packets.
 
 It is possible that the ACK frame is too large, despite limiting ACK Ranges to
-those not yet acknowledged. A receiver can stop repeating unacknowledged ACK
+those not yet acknowledged. A receiver can discard an unacknowledged ACK
 Ranges to further limit the size of the ACK frame.  When doing so, a receiver
 SHOULD give preference to acknowledging newly received packets to those received
 earlier.  It is possible that such ACK Ranges are not received by the sender
