@@ -3262,25 +3262,33 @@ continue making forward progress.
 
 ### Limiting ACK Ranges {#ack-limiting}
 
-To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
-received by the sender, the receiver SHOULD track which ACK frames have been
-acknowledged by its peer. The receiver SHOULD exclude already acknowledged
-packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.  When the receiver is only sending
-non-ack-eliciting packets, it can bundle a PING or other small ack-eliciting
-frame with a fraction of them, such as once per round trip, to enable
-dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ack-eliciting frame, such as a PING, with all
-packets that would otherwise be non-ack-eliciting, in order to avoid an
-infinite feedback loop of acknowledgements.
+A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
+sends in ACK frames, both to limit the size of ACK frames and to avoid resource
+exhaustion. After receiving acknowledgments for an ACK frame, the receiver
+SHOULD stop tracking those acknowledged ACK Ranges.
 
-To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Ranges it sends.  A receiver can do this even without receiving
-acknowledgment of its ACK frames, with the knowledge this could cause the sender
-to unnecessarily retransmit some data.  Standard QUIC algorithms
-({{QUIC-RECOVERY}}) declare packets lost after sufficiently newer packets are
-acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
-received packets in preference to packets received in the past.
+It is possible that retaining many ACK Ranges could cause an ACK frame to become
+too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
+size, at the cost of increased retransmissions from the sender. This is
+necessary if an ACK frame would be too large to fit in a packet, however
+receivers MAY also limit ACK frame size further to preserve space for other
+frames.
+
+When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
+received packet number. A receiver SHOULD retain ACK Ranges containing newly
+received packets or higher-numbered packets.
+
+A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
+not receive an acknowledgement for a long period of time.  This could cause the
+receiver to maintain state for a large number of ACK frames for a long period of
+time, and ACK frames it sends could be unnecessarily large.  In such a case, a
+receiver could bundle a PING or other small ack-eliciting frame occasionally,
+such as once per round trip, to elicit an ACK from the peer.
+
+A receiver MUST NOT bundle an ack-eliciting frame with all packets that would
+otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
+acknowledgements.
+
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
