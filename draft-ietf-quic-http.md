@@ -64,7 +64,7 @@ informative:
   BREACH:
     title: "BREACH: Reviving the CRIME Attack"
     date: "July 2013"
-    url: http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf
+    target: http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf
     author:
       -
         ins: Y. Gluck
