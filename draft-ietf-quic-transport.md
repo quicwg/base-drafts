@@ -3278,19 +3278,12 @@ When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
 received packet number. A receiver SHOULD retain ACK Ranges containing newly
 received packets or higher-numbered packets.
 
-It is possible that the ACK frame is too large, despite limiting ACK Ranges to
-those not yet acknowledged. A receiver can discard an unacknowledged ACK
-Ranges to further limit the size of the ACK frame.  When doing so, a receiver
-SHOULD give preference to acknowledging newly received packets to those received
-earlier.  It is possible that such ACK Ranges are not received by the sender
-causing the sender to unnecessarily retransmit those packets.
-
 A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
 not receive an acknowledgement for a long period of time.  This could cause the
 receiver to maintain state for a large number of ACK frames for a long period of
 time, and ACK frames it sends could be unnecessarily large.  In such a case, a
 receiver could bundle a PING or other small ack-eliciting frame occasionally,
-such as once per round trip, to receive an ACK from the peer.
+such as once per round trip, to elicit an ACK from the peer.
 
 A receiver MUST NOT bundle an ack-eliciting frame with all packets that would
 otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
