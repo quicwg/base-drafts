@@ -1846,18 +1846,17 @@ arranged in relation to the information that is being protected, whether padding
 is applied in the case of packet loss, and how an implementation might control
 padding.  Redundant padding could even be counterproductive.
 
-To mitigate attacks that rely on compression, disabling or limiting
-compression might be preferable to padding as a countermeasure.
+To mitigate attacks that rely on compression, disabling or limiting compression
+might be preferable to padding as a countermeasure.
 
-Use of padding can result in less protection than might seem
-immediately obvious.  At best, padding only makes it more difficult
-for an attacker to infer length information by increasing the number
-of frames an attacker has to observe.  Incorrectly implemented
-padding schemes can be easily defeated.  In particular, randomized
-padding with a predictable distribution provides very little
-protection; similarly, padding payloads to a fixed size exposes
-information as payload sizes cross the fixed-sized boundary, which
-could be possible if an attacker can control plaintext.
+Use of padding can result in less protection than might seem immediately
+obvious.  At best, padding only makes it more difficult for an attacker to infer
+length information by increasing the number of frames an attacker has to
+observe.  Incorrectly implemented padding schemes can be easily defeated.  In
+particular, randomized padding with a predictable distribution provides very
+little protection; similarly, padding payloads to a fixed size exposes
+information as payload sizes cross the fixed-sized boundary, which could be
+possible if an attacker can control plaintext.
 
 ## Frame Parsing
 
