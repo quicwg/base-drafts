@@ -61,10 +61,10 @@ jobs:
               make upload
             fi
 
-      # Save GitHub issues
+      # Archive GitHub Issues
       - run:
-          name: "Save GitHub Issues"
-          command: "make issues || make issues DISABLE_ISSUE_FETCH=true && make gh-issues"
+          name: "Archive GitHub Issues"
+          command: "make archive || make archive DISABLE_ARCHIVE_FETCH=true && make gh-archive"
 
       # Create and store artifacts
       - run:
@@ -76,7 +76,7 @@ jobs:
 
       - run:
           name: "Prepare for Caching"
-          command: "git gc --auto"
+          command: "git gc --auto --prune=now"
 
       - save_cache:
           name: "Saving Cache - Git"
