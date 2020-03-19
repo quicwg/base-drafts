@@ -1713,8 +1713,8 @@ attack on a plaintext protocol.
 The HTTP/3 field encoding allows the expression of names that are not valid
 field names in the syntax used by HTTP (Section 4.3 of {{!SEMANTICS}}). Requests
 or responses containing invalid field names MUST be treated as malformed
-({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request or
-response containing an invalid field name into an HTTP/1.1 message.
+({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
+or response containing an invalid field name into an HTTP/1.1 message.
 
 Similarly, HTTP/3 allows header field values that are not valid. While most of
 the values that can be encoded will not alter header field parsing, carriage
@@ -1765,7 +1765,7 @@ legitimate, such as optional-to-understand extensions and padding to increase
 resistance to traffic analysis.
 
 Header compression also offers some opportunities to waste processing resources;
-see Section 7 of {{!QPACK}} for more details on potential abuses.
+see Section 7 of [QPACK] for more details on potential abuses.
 
 All these features -- i.e., server push, unknown protocol elements, header
 compression -- have legitimate uses.  These features become a burden only when
@@ -1818,9 +1818,10 @@ of fields ({{header-formatting}}); the following concerns also apply to the use
 of HTTP compressed content-codings; see Section 6.1.2 of {{!SEMANTICS}}.
 
 There are demonstrable attacks on compression that exploit the characteristics
-of the web (e.g., {{BREACH}}).  The attacker induces multiple requests containing
-varying plaintext, observing the length of the resulting ciphertext in each,
-which reveals a shorter length when a guess about the secret is correct.
+of the web (e.g., {{BREACH}}).  The attacker induces multiple requests
+containing varying plaintext, observing the length of the resulting ciphertext
+in each, which reveals a shorter length when a guess about the secret is
+correct.
 
 Implementations communicating on a secure channel MUST NOT compress content that
 includes both confidential and attacker-controlled data unless separate
