@@ -1270,10 +1270,11 @@ Version Negotiation packets when attempting to establish a connection using this
 version.
 
 A client that supports only this version of QUIC MUST abandon the current
-connection attempt if it receives a Version Negotiation packet.  However, a
-client MUST discard any Version Negotiation packet if is has received and
-successfully processed a packet.  In addition, a client MUST discard a Version
-Negotiation packet that lists the QUIC version selected by the client.
+connection attempt if it receives a Version Negotiation packet, with the
+following two exceptions. A client MUST discard any Version Negotiation packet
+if it has received and successfully processed any other packet, including an
+earlier Version Negotiation packet. A client MUST discard a Version Negotiation
+packet that lists the QUIC version selected by the client.
 
 How to perform version negotiation is left as future work defined by future
 versions of QUIC.  In particular, that future work will ensure robustness
