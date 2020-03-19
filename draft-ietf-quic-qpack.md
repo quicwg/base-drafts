@@ -119,17 +119,20 @@ Field section:
   also contain duplicate field lines.  An HTTP message can include both header
   field and trailer field sections.
 
-Field block:
+Representation:
 
-: The compressed representation of a field section.
+: An instruction which represents a field line, possibly by reference to the
+  dynamic and static tables.
 
 Encoder:
 
-: An implementation which transforms a field section into a field block.
+: An implementation which transforms a field section into a series of
+  representations.
 
 Decoder:
 
-: An implementation which transforms a field block into a field section.
+: An implementation which transforms a series of representations into a field
+  section.
 
 Absolute Index:
 
@@ -137,8 +140,8 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative and post-base indices.  References to dynamic
-  table entries in field blocks are relative to a Base.
+: A reference point for relative and post-base indices.  Representations which
+  reference dynamic table entries are relative to a Base.
 
 Insert Count:
 
@@ -174,9 +177,9 @@ decoder and vice versa.
 
 ## Encoder
 
-An encoder converts a field section into a field block by emitting either an
-indexed or a literal representation for each field line in the list; see
-{{field-block-representations}}.  Indexed representations achieve high
+An encoder converts a field section into a series of representations by emitting
+either an indexed or a literal representation for each field line in the list;
+see {{field-line-representations}}.  Indexed representations achieve high
 compression by replacing the literal name and possibly the value with an index
 to either the static or dynamic table.  References to the static table and
 literal representations do not require any dynamic state and never risk
@@ -187,9 +190,9 @@ is available at the decoder.
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
 
-QPACK preserves the ordering of field lines within each field section.  An encoder
-MUST emit field representations in the order they appear in the input field
-list.
+QPACK preserves the ordering of field lines within each field section.  An
+encoder MUST emit field representations in the order they appear in the input
+field list.
 
 QPACK is designed to contain the more complex state tracking to the encoder,
 while the decoder is relatively simple.
@@ -202,7 +205,7 @@ contains entries which cannot be evicted.
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
 acknowledged and there are no outstanding references to the entry in
-unacknowledged field blocks, the entry becomes evictable.  Note that
+unacknowledged representations, the entry becomes evictable.  Note that
 references on the encoder stream never preclude the eviction of an entry,
 because those references are guaranteed to be processed before the instruction
 evicting the entry.
@@ -212,8 +215,8 @@ evicting other entries, and the entries which would be evicted are not
 evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
 that uses the dynamic table has to keep track of each dynamic table entry
-referenced by each field block until that field block is acknowledged by the
-decoder (see {{entry-acknowledgement}}).
+referenced by each field section until those representations are acknowledged by
+the decoder (see {{entry-acknowledgement}}).
 
 #### Avoiding Prohibited Insertions
 
@@ -250,19 +253,19 @@ evicted.
 ### Blocked Streams
 
 Because QUIC does not guarantee order between data on different streams, a
-decoder might encounter a field block that references a dynamic table entry
+decoder might encounter a representation that references a dynamic table entry
 that it has not yet received.
 
-Each field block contains a Required Insert Count ({{header-prefix}}), the
-lowest possible value for the Insert Count with which the field block can be
-decoded. For a field block with references to the dynamic table, the Required
-Insert Count is one larger than the largest absolute index of all referenced
-dynamic table entries. For a field block with no references to the dynamic
-table, the Required Insert Count is zero.
+Each encoded field section contains a Required Insert Count ({{header-prefix}}),
+the lowest possible value for the Insert Count with which the field section can
+be decoded. For a field section encoded using references to the dynamic table,
+the Required Insert Count is one larger than the largest absolute index of all
+referenced dynamic table entries. For a field section encoded with no references
+to the dynamic table, the Required Insert Count is zero.
 
-When the decoder receives a field block with a Required Insert Count greater
-than its own Insert Count, the stream cannot be processed immediately, and is
-considered "blocked"; see {{blocked-decoding}}.
+When the decoder receives an encoded field section with a Required Insert Count
+greater than its own Insert Count, the stream cannot be processed immediately,
+and is considered "blocked"; see {{blocked-decoding}}.
 
 The decoder specifies an upper bound on the number of streams which can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting; see {{configuration}}.
@@ -279,20 +282,20 @@ permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
 can often be improved by referencing dynamic table entries that are still in
 transit, but if there is loss or reordering the stream can become blocked at the
 decoder.  An encoder can avoid the risk of blocking by only referencing dynamic
-table entries which have been acknowledged, but this could mean using
-literals. Since literals make the field block larger, this can result in the
-encoder becoming blocked on congestion or flow control limits.
+table entries which have been acknowledged, but this could mean using literals.
+Since literals make the encoding of the field section larger, this can result in
+the encoder becoming blocked on congestion or flow control limits.
 
 ### Avoiding Flow Control Deadlocks
 
 Writing instructions on streams that are limited by flow control can produce
 deadlocks.
 
-A decoder might stop issuing flow control credit on the stream that carries a
-field block until the necessary updates are received on the encoder
+A decoder might stop issuing flow control credit on the stream that carries an
+encoded field section until the necessary updates are received on the encoder
 stream. If the granting of flow control credit on the encoder stream (or the
 connection as a whole) depends on the consumption and release of data on the
-stream carrying the field block, a deadlock might result.
+stream carrying the field section, a deadlock might result.
 
 More generally, a stream containing a large instruction can become deadlocked if
 the decoder withholds flow control credit until the instruction is completely
@@ -311,10 +314,10 @@ potentially blocking a stream.  The decoder tracks the Known Received Count in
 order to be able to send Insert Count Increment instructions.
 
 An Entry Acknowledgement instruction ({{entry-acknowledgement}}) implies that
-the decoder has received all dynamic table state necessary to process
-corresponding the field block.  If the Required Insert Count of the
-acknowledged field block is greater than the current Known Received Count,
-Known Received Count is updated to the value of the Required Insert Count.
+the decoder has received all dynamic table state necessary to decode the field
+section.  If the Required Insert Count of the acknowledged field section is
+greater than the current Known Received Count, Known Received Count is updated
+to the value of the Required Insert Count.
 
 An Insert Count Increment instruction {{insert-count-increment}} increases the
 Known Received Count by its Increment parameter.  See {{new-table-entries}} for
@@ -322,62 +325,63 @@ guidance.
 
 ## Decoder
 
-As in HPACK, the decoder processes field blocks and emits the corresponding
-field sections. It also processes instructions received on the encoder stream
-that modify the dynamic table.  Note that field blocks and encoder stream
-instructions arrive on separate streams.  This is unlike HPACK, where field
-blocks can contain instructions that modify the dynamic table, and there is no
-dedicated stream of HPACK instructions.
+As in HPACK, the decoder processes a series of representations and emits the
+corresponding field sections. It also processes instructions received on the
+encoder stream that modify the dynamic table.  Note that encoded field sections
+and encoder stream instructions arrive on separate streams.  This is unlike
+HPACK, where field sections can contain instructions that modify the dynamic
+table, and there is no dedicated stream of HPACK instructions.
 
 The decoder MUST emit field lines in the order their representations appear in
-the input field block.
+the encoded field section.
 
 ### Blocked Decoding
 
-Upon receipt of a field block, the decoder examines the Required Insert Count.
-When the Required Insert Count is less than or equal to the decoder's Insert
-Count, the field block can be processed immediately.  Otherwise, the stream on
-which the field block was received becomes blocked.
+Upon receipt of an encoded field section, the decoder examines the Required
+Insert Count. When the Required Insert Count is less than or equal to the
+decoder's Insert Count, the field section can be processed immediately.
+Otherwise, the stream on which the field section was received becomes blocked.
 
-While blocked, field block data SHOULD remain in the blocked stream's flow
+While blocked, field section data SHOULD remain in the blocked stream's flow
 control window.  A stream becomes unblocked when the Insert Count becomes
-greater than or equal to the Required Insert Count for all field blocks the
+greater than or equal to the Required Insert Count for all field sections the
 decoder has started reading from the stream.
 
-When processing field blocks, the decoder expects the Required Insert Count to
-equal the lowest possible value for the Insert Count with which the field block
-can be decoded, as prescribed in {{blocked-streams}}. If it encounters a
-Required Insert Count smaller than expected, it MUST treat this as a connection
-error of type QPACK_DECOMPRESSION_FAILED; see {{invalid-references}}. If it
-encounters a Required Insert Count larger than expected, it MAY treat this as a
-connection error of type QPACK_DECOMPRESSION_FAILED.
+When processing encoded field sections, the decoder expects the Required Insert
+Count to equal the lowest possible value for the Insert Count with which the
+field section can be decoded, as prescribed in {{blocked-streams}}. If it
+encounters a Required Insert Count smaller than expected, it MUST treat this as
+a connection error of type QPACK_DECOMPRESSION_FAILED; see
+{{invalid-references}}. If it encounters a Required Insert Count larger than
+expected, it MAY treat this as a connection error of type
+QPACK_DECOMPRESSION_FAILED.
 
 ### State Synchronization
 
 The decoder signals the following events by emitting decoder instructions
 ({{decoder-instructions}}) on the decoder stream.
 
-#### Completed Processing of a Field Block
+#### Completed Processing of a Field Section
 
-After the decoder finishes decoding a field block containing dynamic table
-references, it MUST emit an Entry Acknowledgement instruction
-({{entry-acknowledgement}}).  A stream may carry multiple field blocks in the
-case of intermediate responses, trailers, and pushed requests.  The encoder
-interprets each Entry Acknowledgement instruction as acknowledging the earliest
-unacknowledged field block containing dynamic table references sent on the
-given stream.
+After the decoder finishes decoding a field section encoded using
+representations containing dynamic table references, it MUST emit an Entry
+Acknowledgement instruction ({{entry-acknowledgement}}).  A stream may carry
+multiple field sections in the case of intermediate responses, trailers, and
+pushed requests.  The encoder interprets each Entry Acknowledgement instruction
+as acknowledging the earliest unacknowledged field section containing dynamic
+table references sent on the given stream.
 
 #### Abandonment of a Stream
 
 When an endpoint receives a stream reset before the end of a stream or before
-all field blocks are processed on that stream, or when it abandons reading of a
-stream, it generates a Stream Cancellation instruction; see
+all field sections are processed on that stream, or when it abandons reading of
+a stream, it generates a Stream Cancellation instruction; see
 {{stream-cancellation}}.  This signals to the encoder that all references to the
 dynamic table on that stream are no longer outstanding.  A decoder with a
 maximum dynamic table capacity ({{maximum-dynamic-table-capacity}}) equal to
-zero MAY omit sending Stream Cancellations, because the encoder cannot have
-any dynamic table references.  An encoder cannot infer from this instruction
-that any updates to the dynamic table have been received.
+zero MAY omit sending Stream Cancellations, because the encoder cannot have any
+dynamic table references.  An encoder cannot infer from this instruction that
+any updates to the dynamic table have been received.
 
 The Entry Acknowledgement and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
@@ -399,7 +403,7 @@ acknowledged before using it.
 
 ### Invalid References
 
-If the decoder encounters a reference in a field block representation to a
+If the decoder encounters a reference in a field line representation to a
 dynamic table entry which has already been evicted or which has an absolute
 index greater than or equal to the declared Required Insert Count
 ({{header-prefix}}), it MUST treat this as a connection error of type
@@ -428,7 +432,7 @@ index.
 Note that the QPACK static table is indexed from 0, whereas the HPACK static
 table is indexed from 1.
 
-When the decoder encounters an invalid static table index in a field block
+When the decoder encounters an invalid static table index in a field line
 representation it MUST treat this as a connection error of type
 QPACK_DECOMPRESSION_FAILED.  If this index is received on the encoder stream,
 this MUST be treated as a connection error of type QPACK_ENCODER_STREAM_ERROR.
@@ -544,13 +548,13 @@ d = count of entries dropped
 ~~~~~
 {: title="Example Dynamic Table Indexing - Encoder Stream"}
 
-Unlike in encoder instructions, relative indices in field block representations
-are relative to the Base at the beginning of the field block; see
+Unlike in encoder instructions, relative indices in field line representations
+are relative to the Base at the beginning of the field section; see
 {{header-prefix}}. This ensures that references are stable even if field
-blocks and dynamic table updates are processed out of order.
+sections and dynamic table updates are processed out of order.
 
-In a field block a relative index of "0" refers to the entry with absolute
-index equal to Base - 1.
+In a field line representation, a relative index of "0" refers to the entry with
+absolute index equal to Base - 1.
 
 ~~~~~ drawing
                Base
@@ -566,19 +570,19 @@ n = count of entries inserted
 d = count of entries dropped
 In this example, Base = n - 2
 ~~~~~
-{: title="Example Dynamic Table Indexing - Relative Index in Field Block"}
+{: title="Example Dynamic Table Indexing - Relative Index in Representation"}
 
 
 ### Post-Base Indexing {#post-base}
 
-Post-Base indices are used in field block instructions for entries with
+Post-Base indices are used in field line representations for entries with
 absolute indices greater than or equal to Base, starting at 0 for the entry with
 absolute index equal to Base, and increasing in the same direction as the
 absolute index.
 
-Post-Base indices allow an encoder to process a field block in a single pass
+Post-Base indices allow an encoder to process a field section in a single pass
 and include references to entries added while processing this (or other) field
-blocks.
+sections.
 
 ~~~~~ drawing
                Base
@@ -594,7 +598,7 @@ n = count of entries inserted
 d = count of entries dropped
 In this example, Base = n - 2
 ~~~~~
-{: title="Example Dynamic Table Indexing - Post-Base Index in Field Block"}
+{: title="Example Dynamic Table Indexing - Post-Base Index in Representation"}
 
 
 # Wire Format
@@ -772,16 +776,16 @@ older entry, which might block inserting new entries.
 ## Decoder Instructions {#decoder-instructions}
 
 A decoder sends decoder instructions on the decoder stream to inform the encoder
-about the processing of field blocks and table updates to ensure consistency of
-the dynamic table.
+about the processing of field sections and table updates to ensure consistency
+of the dynamic table.
 
 This section specifies the following decoder instructions.
 
 ### Entry Acknowledgement
 
-After processing a field block whose declared Required Insert Count is not
+After processing a field section whose declared Required Insert Count is not
 zero, the decoder emits an Entry Acknowledgement instruction.  The instruction
-begins with the '1' one-bit pattern which is followed by the field block's
+begins with the '1' one-bit pattern which is followed by the field section's
 associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
 
@@ -797,9 +801,9 @@ in {{state-synchronization}}.
 {:#fig-header-ack title="Entry Acknowledgement"}
 
 If an encoder receives an Entry Acknowledgement instruction referring to a
-stream on which every field block with a non-zero Required Insert Count has
-already been acknowledged, that MUST be treated as a connection error of type
-QPACK_DECODER_STREAM_ERROR.
+stream on which every encoded field section with a non-zero Required Insert
+Count has already been acknowledged, that MUST be treated as a connection error
+of type QPACK_DECODER_STREAM_ERROR.
 
 The Entry Acknowledgement instruction might increase the Known Received Count;
 see {{known-received-count}}.
@@ -844,22 +848,22 @@ the Known Received Count beyond what the encoder has sent MUST treat this as a
 connection error of type QPACK_DECODER_STREAM_ERROR.
 
 
-## Field Block Representations
+## Field Line Representations
 
-A field block consists of a prefix and a possibly empty sequence of
+An encoded field section consists of a prefix and a possibly empty sequence of
 representations defined in this section.  Each representation corresponds to a
 single field line.  These representations reference the static table or the
 dynamic table in a particular state, but do not modify that state.
 
-Field blocks are carried in frames on streams defined by the enclosing
+Encoded field sections are carried in frames on streams defined by the enclosing
 protocol.
 
-### Field Block Prefix {#header-prefix}
+### Field Section Prefix {#header-prefix}
 
-Each field block is prefixed with two integers.  The Required Insert Count is
-encoded as an integer with an 8-bit prefix after the encoding described in
-{{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value with a
-7-bit prefix; see {{base}}.
+Each encoded field section is prefixed with two integers.  The Required Insert
+Count is encoded as an integer with an 8-bit prefix after the encoding described
+in {{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value
+with a 7-bit prefix; see {{base}}.
 
 ~~~~~~~~~~  drawing
   0   1   2   3   4   5   6   7
@@ -871,14 +875,14 @@ encoded as an integer with an 8-bit prefix after the encoding described in
 |      Encoded Field Lines    ...
 +-------------------------------+
 ~~~~~~~~~~
-{:#fig-base-index title="Field Block"}
+{:#fig-base-index title="Encoded Field Section"}
 
 
 #### Required Insert Count {#ric}
 
 Required Insert Count identifies the state of the dynamic table needed to
-process the field block.  Blocking decoders use the Required Insert Count to
-determine when it is safe to process the rest of the block.
+process the encoded field section.  Blocking decoders use the Required Insert
+Count to determine when it is safe to process the rest of the field section.
 
 The encoder transforms the Required Insert Count as follows before encoding:
 
@@ -938,7 +942,7 @@ table.
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
-value of 4 indicates that the Required Insert Count is 9 for the field block.
+value of 4 indicates that the Required Insert Count is 9 for the field section.
 
 #### Base {#base}
 
@@ -961,20 +965,22 @@ That is:
       Base = ReqInsertCount - DeltaBase - 1
 ~~~
 
-A single-pass encoder determines the Base before encoding a field block.  If
+A single-pass encoder determines the Base before encoding a field section.  If
 the encoder inserted entries in the dynamic table while encoding the field
-block, Required Insert Count will be greater than the Base, so the encoded
-difference is negative and the sign bit is set to 1.  If the field block did
-not reference the most recent entry in the table and did not insert any new
-entries, the Base will be greater than the Required Insert Count, so the delta
-will be positive and the sign bit is set to 0.
+section, Required Insert Count will be greater than the Base, so the encoded
+difference is negative and the sign bit is set to 1.  If the field section was
+not encoded using representations which reference the most recent entry in the
+table and did not insert any new entries, the Base will be greater than the
+Required Insert Count, so the delta will be positive and the sign bit is set to
+0.
 
-An encoder that produces table updates before encoding a field block might set
+An encoder that produces table updates before encoding a field section might set
 Base to the value of Required Insert Count.  In such case, both the sign bit and
 the Delta Base will be set to zero.
 
-A field block that does not reference the dynamic table can use any value for
-the Base; setting Delta Base to zero is one of the most efficient encodings.
+A field section that was encoded without references to the dynamic table can use
+any value for the Base; setting Delta Base to zero is one of the most efficient
+encodings.
 
 For example, with a Required Insert Count of 9, a decoder receives an S bit of 1
 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
@@ -1132,8 +1138,8 @@ The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the connection from continuing:
 
 QPACK_DECOMPRESSION_FAILED (0x200):
-: The decoder failed to interpret a field block and is not able to continue
-  decoding that field block.
+: The decoder failed to interpret a representation and is not able to continue
+  decoding that field section.
 
 QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
@@ -1191,7 +1197,7 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
 | Name                              | Code  | Description                              | Specification          |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| QPACK_DECOMPRESSION_FAILED        | 0x200 | Decompression of a field block failed    | {{error-handling}}     |
+| QPACK_DECOMPRESSION_FAILED        | 0x200 | Decoding of a field section failed       | {{error-handling}}     |
 | QPACK_ENCODER_STREAM_ERROR        | 0x201 | Error on the encoder stream              | {{error-handling}}     |
 | QPACK_DECODER_STREAM_ERROR        | 0x202 | Error on the decoder stream              | {{error-handling}}     |
 | --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
