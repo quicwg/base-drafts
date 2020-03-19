@@ -1713,7 +1713,7 @@ attack on a plaintext protocol.
 The HTTP/3 field encoding allows the expression of names that are not valid
 field names in the syntax used by HTTP (Section 4.3 of {{!SEMANTICS}}). Requests
 or responses containing invalid field names MUST be treated as malformed
-({{malformed}).  An intermediary therefore cannot translate an HTTP/3 request or
+({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request or
 response containing an invalid field name into an HTTP/1.1 message.
 
 Similarly, HTTP/3 allows header field values that are not valid. While most of
@@ -1722,7 +1722,7 @@ return (CR, ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL,
 ASCII 0x0) might be exploited by an attacker if they are translated verbatim.
 Any request or response that contains a character not permitted in a header
 field value MUST be treated as malformed ({{malformed}}).  Valid characters are
-defined by the "field-content" ABNF rule in 4.4 of {{!SEMANTICS}}.
+defined by the "field-content" ABNF rule in Section 4.4 of {{!SEMANTICS}}.
 
 ## Cacheability of Pushed Responses
 
@@ -1765,7 +1765,7 @@ legitimate, such as optional-to-understand extensions and padding to increase
 resistance to traffic analysis.
 
 Header compression also offers some opportunities to waste processing resources;
-see Section 7 of {{!QPACK} for more details on potential abuses.
+see Section 7 of {{!QPACK}} for more details on potential abuses.
 
 All these features -- i.e., server push, unknown protocol elements, header
 compression -- have legitimate uses.  These features become a burden only when
@@ -1774,7 +1774,7 @@ they are used unnecessarily or to excess.
 An endpoint that doesn't monitor this behavior exposes itself to a risk of
 denial-of-service attack.  Implementations SHOULD track the use of these
 features and set limits on their use.  An endpoint MAY treat activity that is
-suspicious as a connection error ({{errors}) of type H3_EXCESSIVE_LOAD.
+suspicious as a connection error ({{errors}}) of type H3_EXCESSIVE_LOAD.
 
 ### Limits on Field Section Size
 
@@ -1813,12 +1813,12 @@ resources consumed by CONNECT requests.
 ## Use of Compression
 
 Compression can allow an attacker to recover secret data when it is compressed
-in the same context as data under attacker control. HTTP/2 enables compression
+in the same context as data under attacker control. HTTP/3 enables compression
 of fields ({{header-formatting}}); the following concerns also apply to the use
-of HTTP compressed content- codings (Section 6.1.2 of {{!SEMANTICS}}).
+of HTTP compressed content-codings; see Section 6.1.2 of {{!SEMANTICS}}.
 
 There are demonstrable attacks on compression that exploit the characteristics
-of the web (e.g., [BREACH]).  The attacker induces multiple requests containing
+of the web (e.g., {{BREACH}}).  The attacker induces multiple requests containing
 varying plaintext, observing the length of the resulting ciphertext in each,
 which reveals a shorter length when a guess about the secret is correct.
 
@@ -1828,14 +1828,14 @@ compression dictionaries are used for each source of data.  Compression MUST NOT
 be used if the source of data cannot be reliably determined.
 
 Further considerations regarding the compression of header fields are
-described in [QPACK].
+described in {{QPACK}}.
 
 ## Padding and Traffic Analysis
 
 Padding can be used to obscure the exact size of frame content and is provided
 to mitigate specific attacks within HTTP, for example, attacks where compressed
 content includes both attacker-controlled plaintext and secret data (e.g.,
-[BREACH]).
+{{BREACH}}).
 
 Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
@@ -1893,7 +1893,7 @@ a basis for fingerprinting a specific client.
 
 HTTP/3's preference for using a single QUIC connection allows correlation of a
 user's activity on a site.  Reusing connections for different origins allows
-tracking across those origins.
+for correlation of activity across those origins.
 
 Several features of QUIC solicit immediate responses and can be used by an
 endpoint to measure latency to their peer; this might have privacy implications
