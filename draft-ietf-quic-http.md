@@ -1716,13 +1716,13 @@ or responses containing invalid field names MUST be treated as malformed
 ({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
 or response containing an invalid field name into an HTTP/1.1 message.
 
-Similarly, HTTP/3 allows header field values that are not valid. While most of
-the values that can be encoded will not alter header field parsing, carriage
-return (CR, ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL,
-ASCII 0x0) might be exploited by an attacker if they are translated verbatim.
-Any request or response that contains a character not permitted in a header
-field value MUST be treated as malformed ({{malformed}}).  Valid characters are
-defined by the "field-content" ABNF rule in Section 4.4 of {{!SEMANTICS}}.
+Similarly, HTTP/3 allows field values that are not valid. While most of the
+values that can be encoded will not alter field parsing, carriage return (CR,
+ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL, ASCII 0x0)
+might be exploited by an attacker if they are translated verbatim. Any request
+or response that contains a character not permitted in a field value MUST be
+treated as malformed ({{malformed}}).  Valid characters are defined by the
+"field-content" ABNF rule in Section 4.4 of {{!SEMANTICS}}.
 
 ## Cacheability of Pushed Responses
 
@@ -1746,7 +1746,7 @@ Pushed responses for which an origin server is not authoritative (see
 ## Denial-of-Service Considerations
 
 An HTTP/3 connection can demand a greater commitment of resources to operate
-than an HTTP/1.1 or HTTP/2 connection.  The use of header compression and flow
+than an HTTP/1.1 or HTTP/2 connection.  The use of field compression and flow
 control depend on a commitment of resources for storing a greater amount of
 state.  Settings for these features ensure that memory commitments for these
 features are strictly bounded.
@@ -1767,7 +1767,7 @@ resistance to traffic analysis.
 Header compression also offers some opportunities to waste processing resources;
 see Section 7 of [QPACK] for more details on potential abuses.
 
-All these features -- i.e., server push, unknown protocol elements, header
+All these features -- i.e., server push, unknown protocol elements, field
 compression -- have legitimate uses.  These features become a burden only when
 they are used unnecessarily or to excess.
 
@@ -1828,7 +1828,7 @@ includes both confidential and attacker-controlled data unless separate
 compression dictionaries are used for each source of data.  Compression MUST NOT
 be used if the source of data cannot be reliably determined.
 
-Further considerations regarding the compression of header fields are
+Further considerations regarding the compression of fields sections are
 described in {{QPACK}}.
 
 ## Padding and Traffic Analysis
