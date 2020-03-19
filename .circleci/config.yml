@@ -76,7 +76,7 @@ jobs:
 
       - run:
           name: "Prepare for Caching"
-          command: "git gc --auto --prune=now"
+          command: "git reflog expire --expire=now --all && git gc --prune=now"
 
       - save_cache:
           name: "Saving Cache - Git"
