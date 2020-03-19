@@ -5571,6 +5571,12 @@ Retire Prior To field MUST be less than or equal to the Sequence Number field.
 Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
 
+Endpoints that receive a NEW_CONNECTION_ID frame SHOULD NOT retire connection
+IDs with a sequence number equal to or greater than the Retire Prior To field
+solely as a result of receiving the frame. If the peer is trying to maintain a
+stock of provided CIDs, this can result in an infinite loop of
+NEW_CONNECTION_ID and RETIRE_CONNECTION_ID frames.
+
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
 Retire Prior To fields that do not increase the largest received Retire Prior To
@@ -5579,8 +5585,8 @@ value.
 An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
 smaller than the Retire Prior To field of a previously received
 NEW_CONNECTION_ID frame MUST immediately send a corresponding
-RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
-
+RETIRE_CONNECTION_ID frame that retires the newly received connection ID,
+unless it has already done so for that sequence number.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
