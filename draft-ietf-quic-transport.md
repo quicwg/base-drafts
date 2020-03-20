@@ -4591,7 +4591,7 @@ max_udp_payload_size (0x03):
   with payloads larger than this limit are not likely to be processed by the
   receiver.
 
-  The default for this parameter is the maximum permitted UDP payload of 65527.
+: The default for this parameter is the maximum permitted UDP payload of 65527.
   Values below 1200 are invalid.
 
 initial_max_data (0x04):
