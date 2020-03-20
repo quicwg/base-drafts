@@ -6409,7 +6409,7 @@ the 5-tuple based routers.
 
 * Servers MUST either use different Stateless Reset Token keys, or encode the
 client IP address and port in the Stateless Reset token. Doing neither will
-create a Reset Oracle (see {{reset_oracle}}).
+create a Reset Oracle (see {{reset-oracle}}).
 
 # IANA Considerations {#iana}
 
