@@ -4599,14 +4599,20 @@ stateless_reset_token (0x02):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_packet_size (0x03):
+max_udp_payload_size (0x03):
 
-: The maximum packet size parameter is an integer value that limits the size of
-  packets that the endpoint is willing to receive.  This indicates that packets
-  larger than this limit will be dropped.  The default for this parameter is the
-  maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
-  limit only applies to protected packets ({{packet-protected}}).
+: The maximum UDP payload size parameter is an integer value that limits the
+  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  with payloads larger than this limit are not likely to be processed by the
+  receiver.
 
+: The default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 1200 are invalid.
+
+: This limit does act as an additional constraint on datagram size in the same
+  way as the path MTU, but it is a property of the endpoint and not the path. It
+  is expected that this is the space an endpoint dedicates to holding incoming
+  packets.
 initial_max_data (0x04):
 
 : The initial maximum data parameter is an integer value that contains the
@@ -6546,7 +6552,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x00 | original_connection_id      | {{transport-parameter-definitions}} |
 | 0x01 | max_idle_timeout            | {{transport-parameter-definitions}} |
 | 0x02 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x03 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x03 | max_udp_payload_size        | {{transport-parameter-definitions}} |
 | 0x04 | initial_max_data            | {{transport-parameter-definitions}} |
 | 0x05 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
 | 0x06 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
