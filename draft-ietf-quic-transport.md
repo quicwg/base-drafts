@@ -200,7 +200,8 @@ Out-of-order packet:
 
 : A packet that does not increase the largest received packet number for its
   packet number space ({{packet-numbers}}) by exactly one. A packet can arrive
-  out of order if it is delayed or if earlier packets are lost or delayed.
+  out of order if it is delayed, if earlier packets are lost or delayed, or if
+  the sender intentionally skips a packet number.
 
 Endpoint:
 
@@ -1007,9 +1008,10 @@ When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).  Connection IDs that are issued and not
-retired are considered active; any active connection ID is valid for use at any
-time, in any packet type.  This includes the connection ID issued by the server
-via the preferred_address transport parameter.
+retired are considered active; any active connection ID is valid for use with
+the current connection at any time, in any packet type.  This includes the
+connection ID issued by the server via the preferred_address transport
+parameter.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
@@ -1045,10 +1047,10 @@ Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
 be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
-As discussed in {{migration-linkability}}, each connection ID MUST be used on
-packets sent from only one local address.  An endpoint that migrates away from a
-local address SHOULD retire all connection IDs used on that address once it no
-longer plans to use that address.
+As discussed in {{migration-linkability}}, endpoints limit the use of a
+connection ID to a single network path where possible. Endpoints SHOULD retire
+connection IDs when no longer actively using the network path on which the
+connection ID was used.
 
 An endpoint can cause its peer to retire connection IDs by sending a
 NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
@@ -1430,54 +1432,60 @@ consistent routing; the Source Connection ID is used to set the Destination
 Connection ID used by the peer.
 
 During the handshake, packets with the long header ({{long-header}}) are used to
-establish the connection ID that each endpoint uses.  Each endpoint uses the
-Source Connection ID field to specify the connection ID that is used in the
-Destination Connection ID field of packets being sent to them.  Upon receiving a
-packet, each endpoint sets the Destination Connection ID it sends to match the
-value of the Source Connection ID that they receive.
+establish the connection IDs in each direction. Each endpoint uses the Source
+Connection ID field to specify the connection ID that is used in the Destination
+Connection ID field of packets being sent to them. Upon receiving a packet, each
+endpoint sets the Destination Connection ID it sends to match the value of the
+Source Connection ID that it receives.
 
 When an Initial packet is sent by a client that has not previously received an
-Initial or Retry packet from the server, it populates the Destination Connection
-ID field with an unpredictable value.  This MUST be at least 8 bytes in length.
-Until a packet is received from the server, the client MUST use the same value
-unless it abandons the connection attempt and starts a new one. The initial
-Destination Connection ID is used to determine packet protection keys for
-Initial packets.
+Initial or Retry packet from the server, the client populates the Destination
+Connection ID field with an unpredictable value.  This Destination Connection ID
+MUST be at least 8 bytes in length.  Until a packet is received from the server,
+the client MUST use the same Destination Connection ID value on all packets in
+this connection. This Destination Connection ID is used to determine packet
+protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the SCID Len field to indicate the length.
 
-The first flight of 0-RTT packets use the same Destination and Source Connection
-ID values as the client's first Initial.
+The first flight of 0-RTT packets use the same Destination Connection ID and
+Source Connection ID values as the client's first Initial packet.
 
 Upon first receiving an Initial or Retry packet from the server, the client uses
 the Source Connection ID supplied by the server as the Destination Connection ID
-for subsequent packets, including any subsequent 0-RTT packets.  That means that
-a client might change the Destination Connection ID twice during connection
-establishment, once in response to a Retry and once in response to the first
-Initial packet from the server. Once a client has received an Initial packet
-from the server, it MUST discard any packet it receives with a different Source
-Connection ID.
+for subsequent packets, including all subsequent 0-RTT packets.  This means that
+a client might have to change the connection ID it sets in the Destination
+Connection ID field twice during connection establishment: once in response to a
+Retry, and once in response to an Initial packet from the server. Once a client
+has received an Initial packet from the server, it MUST discard any subsequent
+packet it receives with a different Source Connection ID.
 
-A client MUST only change the value it sends in the Destination Connection ID in
-response to the first packet of each type it receives from the server (Retry or
-Initial); a server MUST set its value based on the Initial packet.  Any
-additional changes are not permitted; if subsequent packets of those types
-include a different Source Connection ID, they MUST be discarded.  This avoids
-problems that might arise from stateless processing of multiple Initial packets
-producing different connection IDs.
+A client MUST change the Destination Connection ID it uses for sending packets
+in response to only the first received Initial or Retry packet.  A server MUST
+set the Destination Connection ID it uses for sending packets based on the first
+received Initial packet. Any further changes to the Destination Connection ID
+are only permitted if the values are taken from any received
+NEW_CONNECTION_ID frames; if subsequent Initial packets include a different
+Source Connection ID, they MUST be discarded.  This avoids unpredictable
+outcomes that might otherwise result from stateless processing of multiple
+Initial packets with different Source Connection IDs.
 
-The connection ID can change over the lifetime of a connection, especially in
-response to connection migration ({{migration}}); see {{issue-cid}} for details.
+The Destination Connection ID that an endpoint sends can change over the
+lifetime of a connection, especially in response to connection migration
+({{migration}}); see {{issue-cid}} for details.
 
 
 ## Transport Parameters {#transport-parameters}
 
 During connection establishment, both endpoints make authenticated declarations
-of their transport parameters.  These declarations are made unilaterally by each
-endpoint.  Endpoints are required to comply with the restrictions implied by
-these parameters; the description of each parameter includes rules for its
-handling.
+of their transport parameters.  Endpoints are required to comply with the
+restrictions implied by these parameters; the description of each parameter
+includes rules for its handling.
+
+Transport parameters are declarations that are made unilaterally by each
+endpoint.  Each endpoint can choose values for transport parameters independent
+of the values chosen by its peer.
 
 The encoding of the transport parameters is detailed in
 {{transport-parameter-encoding}}.
@@ -1515,10 +1523,9 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-original_connection_id, preferred_address, stateless_reset_token,
-ack_delay_exponent and active_connection_id_limit. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+original_connection_id, preferred_address, stateless_reset_token, and
+ack_delay_exponent. The client MUST use the server's new values in the
+handshake instead, and absent new values from the server, the default value.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1539,6 +1546,7 @@ that are smaller than the remembered value of the parameters.
 * initial_max_stream_data_uni
 * initial_max_streams_bidi
 * initial_max_streams_uni
+* active_connection_id_limit
 
 Omitting or setting a zero value for certain transport parameters can result in
 0-RTT data being enabled, but not usable.  The applicable subset of transport
@@ -1633,14 +1641,16 @@ payloads of at least 1200 bytes, adding padding to packets in the datagram as
 necessary. Sending padded datagrams ensures that the server is not overly
 constrained by the amplification restriction.
 
-Packet loss, in particular loss of a Handshake packet from the server, can cause
-a situation in which the server cannot send when the client has no data to send
-and the anti-amplification limit is reached. In order to avoid this causing a
-handshake deadlock, clients MUST send a packet upon a probe timeout, as
-described in {{QUIC-RECOVERY}}. If the client has no data to retransmit and does
-not have Handshake keys, it MUST send an Initial packet in a UDP datagram of
-at least 1200 bytes.  If the client has Handshake keys, it SHOULD send a
-Handshake packet.
+Loss of an Initial or Handshake packet from the server can cause a deadlock if
+the client does not send additional Initial or Handshake packets. A deadlock
+could occur when the server reaches its anti-amplification limit and the client
+has received acknowledgements for all the data it has sent.  In this case, when
+the client has no reason to send additional packets, the server will be unable
+to send more data because it has not validated the client's address. To prevent
+this deadlock, clients MUST send a packet on a probe timeout
+(PTO, see Section 5.3 of {{QUIC-RECOVERY}}). Specifically, the client MUST send
+an Initial packet in a UDP datagram of at least 1200 bytes if it does not have
+Handshake keys, and otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -1657,7 +1667,7 @@ controller.  Clients are only constrained by the congestion controller.
 ### Token Construction
 
 A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
-way that allows the server to identity how it was provided to a client.  These
+way that allows the server to identify how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
 
@@ -1688,12 +1698,10 @@ If a server receives a client Initial that can be unprotected but contains an
 invalid Retry token, it knows the client will not accept another Retry token.
 The server can discard such a packet and allow the client to time out to
 detect handshake failure, but that could impose a significant latency penalty on
-the client.  A server MAY proceed with the connection without verifying the
-token, though the server MUST NOT consider the client address validated.  If a
-server chooses not to proceed with the handshake, it SHOULD immediately close
-({{immediate-close}}) the connection with an INVALID_TOKEN error.  Note that a
-server has not established any state for the connection at this point and so
-does not enter the closing period.
+the client.  Instead, the server SHOULD immediately close ({{immediate-close}})
+the connection with an INVALID_TOKEN error.  Note that a server has not
+established any state for the connection at this point and so does not enter the
+closing period.
 
 A flow showing the use of a Retry packet is shown in {{fig-retry}}.
 
@@ -1737,7 +1745,7 @@ used to dynamically calculate the expiration time.  A server can store the
 expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
-values to be linked by an on-path observer to the connection on which it was
+values to be linked by an observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
 previous connection ID or addressing information.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
@@ -2411,10 +2419,11 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled by either peer, a connection is silently closed
+If a max_idle_timeout is specified by either peer in its transport parameters
+({{transport-parameter-definitions}}), the connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-the max_idle_timeouts (see {{transport-parameter-definitions}}) and three times
-the current Probe Timeout (PTO).
+both peers max_idle_timeout values and three times the current Probe Timeout
+(PTO).
 
 Each endpoint advertises a max_idle_timeout, but the effective value
 at an endpoint is computed as the minimum of the two advertised values. By
@@ -2422,24 +2431,23 @@ announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
-An endpoint restarts its idle timer when a packet from its peer is received
-and processed successfully.  The idle timer is also restarted when sending the
-first ack-eliciting packet (see {{QUIC-RECOVERY}}) after receiving a packet.
-Restarting when sending packets ensures that connections do not prematurely time
-out when initiating new activity.  Only restarting when sending after receipt of
-a packet ensures the idle timeout is not excessively lengthened past the time
-the peer's timeout has expired.  An endpoint might need to send packets to avoid
-an idle timeout if it is unable to send application data due to being blocked on
-flow control limits; see {{flow-control}}.
+An endpoint restarts its idle timer when a packet from its peer is received and
+processed successfully. An endpoint also restarts its idle timer when sending an
+ack-eliciting packet if no other ack-eliciting packets have been sent since last
+receiving and processing a packet. Restarting this timer when sending a packet
+ensures that connections are not closed after new activity is initiated.
 
-An endpoint that sends packets near the end of the idle timeout period
-risks having those packets discarded if its peer enters the draining state
-before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to probe the path
-with an ack-eliciting packet to ensure the connection is still responsive
-before sending any data that cannot be retried safely.  Note that it is
-likely that only applications or application protocols will know what
-information can be retried.
+An endpoint might need to send ack-eliciting packets to avoid an idle timeout
+if it is expecting response data, but does not have or is unable to send
+application data.
+
+An endpoint that sends packets close to the effective timeout risks having
+them be discarded at the peer, since the peer might enter its draining state
+before these packets arrive. An endpoint can send a PING or another
+ack-eliciting frame to test the connection for liveness if the peer could
+time out soon, such as within a PTO; see Section 6.6 of {{QUIC-RECOVERY}}.
+This is especially useful if any available application data cannot be safely
+retried. Note that the application determines what data is safe to retry.
 
 
 ## Immediate Close {#immediate-close}
@@ -3132,10 +3140,6 @@ Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
 packet.
 
-<!-- TODO: Do we need to say anything about partial processing. And our
-expectations about what implementations do with packets that have errors after
-valid frames? -->
-
 
 ## Generating Acknowledgements {#generating-acks}
 
@@ -3144,7 +3148,7 @@ ack-eliciting packets cause an ACK frame to be sent within the maximum ack
 delay.  Packets that are not ack-eliciting are only acknowledged when an ACK
 frame is sent for other reasons.
 
-When sending a packet for any reason, an endpoint should attempt to bundle an
+When sending a packet for any reason, an endpoint SHOULD attempt to bundle an
 ACK frame if one has not been sent recently. Doing so helps with timely loss
 detection at the peer.
 
@@ -3169,6 +3173,9 @@ Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+A receiver could decide to send an ACK frame less frequently if it has
+information about how frequently the sender's congestion controller
+needs feedback, or if the receiver is CPU or bandwidth constrained.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
@@ -3255,25 +3262,33 @@ continue making forward progress.
 
 ### Limiting ACK Ranges {#ack-limiting}
 
-To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
-received by the sender, the receiver SHOULD track which ACK frames have been
-acknowledged by its peer. The receiver SHOULD exclude already acknowledged
-packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.  When the receiver is only sending
-non-ack-eliciting packets, it can bundle a PING or other small ack-eliciting
-frame with a fraction of them, such as once per round trip, to enable
-dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ack-eliciting frame, such as a PING, with all
-packets that would otherwise be non-ack-eliciting, in order to avoid an
-infinite feedback loop of acknowledgements.
+A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
+sends in ACK frames, both to limit the size of ACK frames and to avoid resource
+exhaustion. After receiving acknowledgments for an ACK frame, the receiver
+SHOULD stop tracking those acknowledged ACK Ranges.
 
-To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Ranges it sends.  A receiver can do this even without receiving
-acknowledgment of its ACK frames, with the knowledge this could cause the sender
-to unnecessarily retransmit some data.  Standard QUIC algorithms
-({{QUIC-RECOVERY}}) declare packets lost after sufficiently newer packets are
-acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
-received packets in preference to packets received in the past.
+It is possible that retaining many ACK Ranges could cause an ACK frame to become
+too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
+size, at the cost of increased retransmissions from the sender. This is
+necessary if an ACK frame would be too large to fit in a packet, however
+receivers MAY also limit ACK frame size further to preserve space for other
+frames.
+
+When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
+received packet number. A receiver SHOULD retain ACK Ranges containing newly
+received packets or higher-numbered packets.
+
+A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
+not receive an acknowledgement for a long period of time.  This could cause the
+receiver to maintain state for a large number of ACK frames for a long period of
+time, and ACK frames it sends could be unnecessarily large.  In such a case, a
+receiver could bundle a PING or other small ack-eliciting frame occasionally,
+such as once per round trip, to elicit an ACK from the peer.
+
+A receiver MUST NOT bundle an ack-eliciting frame with all packets that would
+otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
+acknowledgements.
+
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
@@ -4683,8 +4698,13 @@ preferred_address (0x0d):
   transport parameter is only sent by a server. Servers MAY choose to only send
   a preferred address of one address family by sending an all-zero address and
   port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
-  network byte order. The CID Length field contains the length of the
-  Connection ID field.
+  network byte order.
+
+: The Connection ID field and the Stateless Reset Token field contain an
+  alternative connection ID that has a sequence number of 1 ({{issue-cid}}).
+  Having these values bundled with the preferred address ensures that there will
+  be at least one unused active connection ID when the client initiates
+  migration to the preferred address.
 
 ~~~
  0                   1                   2                   3
@@ -5199,8 +5219,9 @@ are present in the frame.
   final size of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
-An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error STREAM_STATE_ERROR.
+An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
+receives a STREAM frame for a locally-initiated stream that has not yet been
+created, or for a send-only stream.
 
 The STREAM frames are shown in {{fig-stream}}.
 
@@ -6705,7 +6726,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-26
 
-- Change format of transport paramters to use varints (#3294, #3169)
+- Change format of transport parameters to use varints (#3294, #3169)
 
 ## Since draft-ietf-quic-transport-25
 

@@ -112,9 +112,9 @@ The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
-a TCP mapping.  QUIC also incorporates TLS 1.3 at the transport layer, offering
-comparable security to running TLS over TCP, with the improved connection setup
-latency of TCP Fast Open {{?RFC7413}}.
+a TCP mapping.  QUIC also incorporates TLS 1.3 {{?TLS13=RFC8446}} at the
+transport layer, offering comparable security to running TLS over TCP, with
+the improved connection setup latency of TCP Fast Open {{?TFO=RFC7413}}.
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -123,7 +123,7 @@ each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
 implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
-{{!HTTP2=RFC7540}}.
+{{?HTTP2=RFC7540}}.
 
 # HTTP/3 Protocol Overview
 
@@ -147,7 +147,7 @@ consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
 
-Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
+Server push is an interaction mode introduced in HTTP/2 {{?HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
 client making the indicated request.  This trades off network usage against a
 potential latency gain.  Several HTTP/3 frames are used to manage server push,
@@ -339,6 +339,12 @@ respective HTTP control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
+HTTP/3 connections are persistent across multiple requests.  For best
+performance, it is expected that clients will not close connections until it is
+determined that no further communication with a server is necessary (for
+example, when a user navigates away from a particular web page) or until the
+server closes the connection.
+
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  The client MAY send
 any requests for which the client considers the server authoritative.
@@ -351,6 +357,12 @@ certificate for the origin before considering it authoritative. Clients MUST NOT
 assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
 
+Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
+pair, where the host is derived from a URI, a selected alternative service
+{{!ALTSVC}}, or a configured proxy.  A client MAY open multiple connections to
+the same IP address and UDP port using different transport or TLS configurations
+but SHOULD avoid creating multiple connections with the same configuration.
+
 Prior to making requests for an origin whose scheme is not "https," the client
 MUST ensure the server is willing to serve that scheme.  If the client intends
 to make requests for an origin whose scheme is "http", this means that it MUST
@@ -358,13 +370,17 @@ obtain a valid `http-opportunistic` response for the origin as described in
 {{!RFC8164}} prior to making any such requests.  Other schemes might define
 other mechanisms.
 
+Servers are encouraged to maintain open connections for as long as possible but
+are permitted to terminate idle connections if necessary.  When either endpoint
+chooses to close the HTTP/3 session, the terminating endpoint SHOULD first send
+a GOAWAY frame ({{connection-shutdown}}) so that both endpoints can reliably
+determine whether previously sent frames have been processed and gracefully
+complete or terminate any necessary remaining tasks.
+
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
-of {{!HTTP2}}).
-
-The considerations discussed in Section 9.1 of {{!HTTP2}} also apply to the
-management of HTTP/3 connections.
+of {{?HTTP2}}).
 
 
 # HTTP Request Lifecycle
@@ -577,8 +593,10 @@ head-of-line blocking.  See that document for additional details.
 To allow for better compression efficiency, the cookie header field {{!RFC6265}}
 MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
-header fields, these MUST be concatenated before being passed into a non-HTTP/2,
-non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
+header fields, these MUST be concatenated into a single octet string using the
+two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
+into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
+generic HTTP server application.
 
 #### Header Size Constraints
 
@@ -662,17 +680,27 @@ expose implementations to these vulnerabilities.
 
 ## The CONNECT Method {#connect}
 
-The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
-HTTP proxies to establish a TLS session with an origin server for the purposes
-of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
-an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
-method is used to establish a tunnel over a single HTTP/2 stream to a remote
-host for similar purposes.
+The CONNECT method requests that the recipient establish a tunnel to the
+destination origin server identified by the request-target (Section 4.3.6 of
+{{!RFC7231}}).  It is primarily used with HTTP proxies to establish a TLS
+session with an origin server for the purposes of interacting with "https"
+resources.
 
-A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in Section 8.3 of {{!HTTP2}}. A CONNECT
-request that does not conform to these restrictions is malformed (see
-{{malformed}}). The request stream MUST NOT be closed at the end of the request.
+In HTTP/1.x, CONNECT is used to convert an entire HTTP connection into a tunnel
+to a remote host. In HTTP/2 and HTTP/3, the CONNECT method is used to establish
+a tunnel over a single stream.
+
+A CONNECT request MUST be constructed as follows:
+
+- The ":method" pseudo-header field is set to "CONNECT"
+- The ":scheme" and ":path" pseudo-header fields are omitted
+- The ":authority" pseudo-header field contains the host and port to connect to
+  (equivalent to the authority-form of the request-target of CONNECT requests
+  (see Section 5.3 of [RFC7230]))
+
+The request stream remains open at the end of the request to carry the data to
+be transferred.  A CONNECT request that does not conform to these restrictions
+is malformed (see {{malformed}}).
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -715,11 +743,11 @@ HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of [RFC7230]) or
 
 ## Server Push
 
-Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
-a server to push a request-response exchange to a client in anticipation of the
-client making the indicated request.  This trades off network usage against a
-potential latency gain.  HTTP/3 server push is similar to what is described in
-HTTP/2 {{!HTTP2}}, but uses different mechanisms.
+Server push is an interaction mode which permits a server to push a
+request-response exchange to a client in anticipation of the client making the
+indicated request.  This trades off network usage against a potential latency
+gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
+but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
@@ -738,8 +766,28 @@ with a Push ID that is greater than the maximum Push ID as a connection error of
 type H3_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
-{{frame-push-promise}}) on the request stream which generated the push. Promised
-requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
+{{frame-push-promise}}) on the request stream which generated the push. This
+allows the server push to be associated with a client request.
+
+Not all requests can be pushed.  A server MAY push requests which have the
+following properties:
+
+- cacheable (see Section 4.2.3 of [RFC7231])
+- safe (see Section 4.2.1 of [RFC7231])
+- does not include a request body
+
+Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
+carrying a request which is not cacheable, is not known to be safe, or that
+indicates the presence of a request body.  If the pushed response arrives on a
+push stream, this MAY be treated as a stream error of type
+H3_STREAM_CREATION_ERROR.
+
+The server MUST include a value in the ":authority" pseudo-header field for
+which the server is authoritative (see {{connection-reuse}}).  A client SHOULD
+send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request
+for which it does not consider the server authoritative.  If the pushed response
+arrives on a push stream, this MAY be treated as a stream error of type
+H3_STREAM_CREATION_ERROR.
 
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
@@ -772,6 +820,15 @@ CANCEL_PUSH frame, the client can abort reading the stream with an error code of
 H3_REQUEST_CANCELLED. This asks the server not to transfer additional data and
 indicates that it will be discarded upon receipt.
 
+Pushed responses that are cacheable (see Section 3 of {{!RFC7234}}) can be
+stored by the client, if it implements an HTTP cache.  Pushed responses are
+considered successfully validated on the origin server (e.g., if the "no-cache"
+cache response directive is present (Section 5.2.2 of {{!RFC7234}})) at the time
+the pushed response is received.
+
+Pushed responses that are not cacheable MUST NOT be stored by any HTTP cache.
+They MAY be made available to the application separately.
+
 # Connection Closure
 
 Once established, an HTTP/3 connection can be used for many requests and
@@ -799,36 +856,45 @@ keep connections open.
 ## Connection Shutdown
 
 Even when a connection is not idle, either endpoint can decide to stop using the
-connection and let the connection close gracefully.  Since clients drive request
-generation, clients perform a connection shutdown by not sending additional
-requests on the connection; responses and pushed responses associated to
-previous requests will continue to completion.  Servers perform the same
-function by communicating with clients.
+connection and initiate a graceful connection close.  Endpoints initiate the
+graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
+The GOAWAY frame contains an identifier that indicates to the receiver the range
+of requests or pushes that were or might be processed in this connection.  The
+server sends a client-initiated bidirectional Stream ID; the client sends a Push
+ID.  Requests or pushes with the indicated identifier or greater are rejected by
+the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
+were processed.
 
-Servers initiate the shutdown of a connection by sending a GOAWAY frame
-({{frame-goaway}}).  The GOAWAY frame indicates that client-initiated requests
-on lower stream IDs were or might be processed in this connection, while
-requests on the indicated stream ID and greater were rejected. This enables
-client and server to agree on which requests were accepted prior to the
-connection shutdown.  This identifier MAY be zero if no requests were processed.
-Servers SHOULD NOT permit additional QUIC streams after sending a GOAWAY frame.
+The information in the GOAWAY frame enables a client and server to agree on
+which requests or pushes were accepted prior to the connection shutdown. Upon
+sending a GOAWAY frame, the endpoint SHOULD explicitly cancel (see
+{{request-cancellation}} and {{frame-cancel-push}}) any requests or pushes that
+have identifiers greater than or equal to that indicated, in order to clean up
+transport state for the affected streams. The endpoint SHOULD continue to do so
+as more requests or pushes arrive.
 
-Clients MUST NOT send new requests on the connection after receiving GOAWAY;
-a new connection MAY be established to send additional requests.
+Endpoints MUST NOT initiate new requests or promise new pushes on the connection
+after receipt of a GOAWAY frame from the peer.  Clients MAY establish a new
+connection to send additional requests.
 
-Some requests might already be in transit. If the client has already sent
-requests on streams with a Stream ID greater than or equal to that indicated in
-the GOAWAY frame, those requests will not be processed and MAY be retried by the
-client on a different connection.  The client MAY cancel these requests.  It is
-RECOMMENDED that the server explicitly reject such requests (see
-{{request-cancellation}}) in order to clean up transport state for the affected
-streams.
+Some requests or pushes might already be in transit:
 
-Requests on Stream IDs less than the Stream ID in the GOAWAY frame might have
-been processed; their status cannot be known until a response is received, the
-stream is reset individually, or the connection terminates.  Servers MAY reject
-individual requests on streams below the indicated ID if these requests were not
-processed.
+  - Upon receipt of a GOAWAY frame, if the client has already sent requests with
+    a Stream ID greater than or equal to the identifier received in a GOAWAY
+    frame, those requests will not be processed.  Clients can safely retry
+    unprocessed requests on a different connection.
+
+    Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
+    server might have been processed; their status cannot be known until a
+    response is received, the stream is reset individually, another GOAWAY is
+    received, or the connection terminates.
+
+    Servers MAY reject individual requests on streams below the indicated ID if
+    these requests were not processed.
+
+  - If a server receives a GOAWAY frame after having promised pushes with a Push
+    ID greater than or equal to the identifier received in a GOAWAY frame, those
+    pushes will not be accepted.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
@@ -839,25 +905,37 @@ request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
 A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  A server MAY send multiple GOAWAY frames
-indicating different stream IDs, but MUST NOT increase the value they send in
-the last Stream ID, since clients might already have retried unprocessed
-requests on another connection.
+when the server closes the connection.  An endpoint MAY send multiple GOAWAY
+frames indicating different identifiers, but MUST NOT increase the identifier
+value they send, since clients might already have retried unprocessed requests
+on another connection.
 
-A server that is attempting to gracefully shut down a connection can send an
-initial GOAWAY frame with the last Stream ID set to the maximum possible value
-for a client-initiated, bidirectional stream (i.e. 2^62-4 in case of QUIC
-version 1).  This GOAWAY frame signals to the client that shutdown is imminent
-and that initiating further requests is prohibited.  After allowing time for any
-in-flight requests to reach the server, the server can send another GOAWAY frame
-indicating which requests it will accept before the end of the connection. This
-ensures that a connection can be cleanly shut down without causing requests to
-fail.
+An endpoint that is attempting to gracefully shut down a connection can send a
+GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
+2^62-1 for clients). This ensures that the peer stops creating new requests or
+pushes. After allowing time for any in-flight requests or pushes to arrive, the
+endpoint can send another GOAWAY frame indicating which requests or pushes it
+might accept before the end of the connection. This ensures that a connection
+can be cleanly shut down without losing requests.
 
-Once all accepted requests have been processed, the server can permit the
-connection to become idle, or MAY initiate an immediate closure of the
-connection.  An endpoint that completes a graceful shutdown SHOULD use the
-H3_NO_ERROR code when closing the connection.
+A client has more flexibility in the value it chooses for the Push ID in a
+GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
+continue fulfilling pushes which have already been promised, and the client can
+continue granting push credit as needed (see {{frame-max-push-id}}). A smaller
+value indicates the client will reject pushes with Push IDs greater than or
+equal to this value.  Like the server, the client MAY send subsequent GOAWAY
+frames so long as the specified Push ID is strictly smaller than all previously
+sent values.
+
+Even when a GOAWAY indicates that a given request or push will not be processed
+or accepted upon receipt, the underlying transport resources still exist.  The
+endpoint that initiated these requests can cancel them to clean up transport
+state.
+
+Once all accepted requests and pushes have been processed, the endpoint can
+permit the connection to become idle, or MAY initiate an immediate closure of
+the connection.  An endpoint that completes a graceful shutdown SHOULD use the
+HTTP_NO_ERROR code when closing the connection.
 
 If a client has consumed all available bidirectional stream IDs with requests,
 the server need not send a GOAWAY frame, since the client is unable to make
@@ -872,8 +950,8 @@ code in this frame indicates to the peer why the connection is being closed.
 See {{errors}} for error codes which can be used when closing a connection in
 HTTP/3.
 
-Before closing the connection, a GOAWAY MAY be sent to allow the client to retry
-some requests.  Including the GOAWAY frame in the same packet as the QUIC
+Before closing the connection, a GOAWAY frame MAY be sent to allow the client to
+retry some requests.  Including the GOAWAY frame in the same packet as the QUIC
 CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
@@ -1363,7 +1441,7 @@ as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
 decompressed request header sets MUST contain the same fields in the same
-order, and both the name and and value in each field MUST be exact
+order, and both the name and the value in each field MUST be exact
 matches. Clients SHOULD compare the request header sets for resources promised
 multiple times. If a client receives a Push ID that has already been promised
 and detects a mismatch, it MUST respond with a connection error of type
@@ -1389,28 +1467,28 @@ See {{server-push}} for a description of the overall server push mechanism.
 ### GOAWAY {#frame-goaway}
 
 The GOAWAY frame (type=0x7) is used to initiate graceful shutdown of a
-connection by a server.  GOAWAY allows a server to stop accepting new requests
-while still finishing processing of previously received requests.  This enables
-administrative actions, like server maintenance.  GOAWAY by itself does not
-close a connection.
+connection by either endpoint.  GOAWAY allows an endpoint to stop accepting new
+requests or pushes while still finishing processing of previously received
+requests and pushes.  This enables administrative actions, like server
+maintenance.  GOAWAY by itself does not close a connection.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Stream ID (i)                      ...
+|                  Stream ID/Push ID (i)                      ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY Frame Payload"}
 
-The GOAWAY frame is always sent on the control stream. It carries a QUIC Stream
-ID for a client-initiated bidirectional stream encoded as a variable-length
-integer.  A client MUST treat receipt of a GOAWAY frame containing a Stream ID
-of any other type as a connection error of type H3_ID_ERROR.
+The GOAWAY frame is always sent on the control stream.  In the server to client
+direction, it carries a QUIC Stream ID for a client-initiated bidirectional
+stream encoded as a variable-length integer.  A client MUST treat receipt of a
+GOAWAY frame containing a Stream ID of any other type as a connection error of
+type H3_ID_ERROR.
 
-Clients do not need to send GOAWAY to initiate a graceful shutdown; they simply
-stop making new requests.  A server MUST treat receipt of a GOAWAY frame on any
-stream as a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
+In the client to server direction, the GOAWAY frame carries a Push ID encoded as
+a variable-length integer.
 
 The GOAWAY frame applies to the connection, not a specific stream.  A client
 MUST treat a GOAWAY frame on a stream other than the control stream as a
@@ -1600,8 +1678,10 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS; the considerations from Section 10 of {{!HTTP2}} apply in addition to
+with TLS; the considerations from Section 10 of {{?HTTP2}} apply in addition to
 those listed here.
+
+TODO:  This is going to be a big import, probably worthy of its own PR.
 
 When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
 security considerations of {{!ALTSVC}} also apply.
@@ -1684,7 +1764,7 @@ using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{!HTTP2}}, it is preferable that the assignments parallel each other where the
+{{?HTTP2}}, it is preferable that the assignments parallel each other where the
 code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
 operation.
@@ -1732,7 +1812,7 @@ Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
-{{!HTTP2}}, it is preferable that the assignments parallel each other.  If an
+{{?HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
 assigning the corresponding value to an unrelated operation.
 
@@ -1901,7 +1981,7 @@ removed. Because stream termination is handled by QUIC, an END_STREAM flag is
 not required.  This permits the removal of the Flags field from the generic
 frame layout.
 
-Frame payloads are largely drawn from {{!HTTP2}}. However, QUIC includes many
+Frame payloads are largely drawn from {{?HTTP2}}. However, QUIC includes many
 features (e.g., flow control) which are also present in HTTP/2. In these cases,
 the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
 types are not required in HTTP/3. Where an HTTP/2-defined frame is no longer
@@ -1991,7 +2071,8 @@ PING (0x6):
 : PING frames do not exist, since QUIC provides equivalent functionality.
 
 GOAWAY (0x7):
-: GOAWAY is sent only from server to client and does not contain an error code.
+: GOAWAY does not contain an error code.  In the client to server direction,
+  it carries a Push ID instead of a server initiated stream ID.
   See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
@@ -2002,7 +2083,7 @@ CONTINUATION (0x9):
   frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/3 if still applicable.  The IDs of frames defined in {{!HTTP2}} have been
+HTTP/3 if still applicable.  The IDs of frames defined in {{?HTTP2}} have been
 reserved for simplicity.  Note that the frame type space in HTTP/3 is
 substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
 equivalent HTTP/2 code points.  See {{iana-frames}}.
@@ -2050,7 +2131,7 @@ their value to limit it to 30 bits for more efficient encoding, or to make use
 of the 62-bit space if more than 30 bits are required.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
+settings defined in {{?HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
@@ -2067,7 +2148,7 @@ provides. However, there is no direct portability of HTTP/2 error codes to
 HTTP/3 error codes; the values are shifted in order to prevent accidental
 or implicit conversion.
 
-The HTTP/2 error codes defined in Section 7 of {{!HTTP2}} logically map to
+The HTTP/2 error codes defined in Section 7 of {{?HTTP2}} logically map to
 the HTTP/3 error codes as follows:
 
 NO_ERROR (0x0):
