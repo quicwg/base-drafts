@@ -4606,9 +4606,13 @@ max_udp_payload_size (0x03):
   with payloads larger than this limit are not likely to be processed by the
   receiver.
 
-  The default for this parameter is the maximum permitted UDP payload of 65527.
+: The default for this parameter is the maximum permitted UDP payload of 65527.
   Values below 1200 are invalid.
 
+: This limit does act as an additional constraint on datagram size in the same
+  way as the path MTU, but it is a property of the endpoint and not the path. It
+  is expected that this is the space an endpoint dedicates to holding incoming
+  packets.
 initial_max_data (0x04):
 
 : The initial maximum data parameter is an integer value that contains the
