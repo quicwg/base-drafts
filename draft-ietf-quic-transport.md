@@ -6387,6 +6387,29 @@ following properties:
 Note that these guarantees are the same guarantees provided for any NAT, for the
 same reasons.
 
+## Considerations for 5-tuple routing architectures
+
+QUIC servers may be deployed behind a 5-tuple based routing architecture that
+delivers packets based on both the source and destination IP addresses and
+ports. In such an architecture, clients that change IP address or port are
+likely to be routed to a different server. There are several actions that can
+mitigate or resolve operational and security issues in this case.
+
+* Servers can use an out-of-band mechanism to deliver packets to the correct
+destination or transfer state from the original destination. Properly designed,
+this completely solves the problem and no further measures are necessary.
+
+* Sending the disable_active_migration transport parameter informs the client
+that any address change is likely to terminate the connection, which may lead it
+to use more aggressive timeouts or terminate connections when its IP address
+changes.
+
+* The preferred_address transport parameter can provide a path that does not use
+the 5-tuple based routers.
+
+* Servers MUST either use different Stateless Reset Token keys, or encode the
+client IP address and port in the Stateless Reset token. Doing neither will
+create a Reset Oracle (see {{reset_oracle}}).
 
 # IANA Considerations {#iana}
 
