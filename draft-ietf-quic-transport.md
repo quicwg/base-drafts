@@ -6389,7 +6389,7 @@ same reasons.
 
 ## Considerations for 5-tuple routing architectures
 
-QUIC servers may be deployed behind a 5-tuple based routing architecture that
+QUIC servers can be deployed behind a 5-tuple based routing architecture that
 delivers packets based on both the source and destination IP addresses and
 ports. In such an architecture, clients that change IP address or port are
 likely to be routed to a different server. There are several actions that can
@@ -6400,7 +6400,7 @@ destination or transfer state from the original destination. Properly designed,
 this completely solves the problem and no further measures are necessary.
 
 * Sending the disable_active_migration transport parameter informs the client
-that any address change is likely to terminate the connection, which may lead it
+that any address change is likely to terminate the connection, which can lead it
 to use more aggressive timeouts or terminate connections when its IP address
 changes.
 
