@@ -3290,9 +3290,8 @@ necessary if an ACK frame would be too large to fit in a packet, however
 receivers MAY also limit ACK frame size further to preserve space for other
 frames.
 
-When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
-received packet number. A receiver SHOULD retain ACK Ranges containing newly
-received packets or higher-numbered packets.
+When discarding unacknowledged ACK Ranges, a receiver SHOULD retain ACK Ranges
+containing newly received packets or higher-numbered packets.
 
 A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
 not receive an acknowledgement for a long period of time.  This could cause the
