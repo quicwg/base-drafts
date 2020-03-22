@@ -792,8 +792,11 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed.  This duration is computed
-as follows:
+where PTOs do not occur or are substantially delayed. The RECOMMENDED value
+for kPersistentCongestionThreshold is 3, which is approximately equivalent to
+having two TLPs before an RTO in TCP.
+
+This duration is computed as follows:
 
 ~~~
 (smoothed_rtt + 4 * rttvar + max_ack_delay) *
@@ -1349,21 +1352,15 @@ kInitialWindow:
 : Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
-: Minimum congestion window in bytes. The RECOMMENDED value is
-  2 * max_datagram_size.
+: Minimum congestion window in bytes as described in {{initial-cwnd}}.
 
 kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
-  The RECOMMENDED value is 0.5.
+  The {{congestion-control}} section recommends a value is 0.5.
 
 kPersistentCongestionThreshold:
-: Period of time for persistent congestion to be established, specified as a PTO
-  multiplier.  The rationale for this threshold is to enable a sender to use
-  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
-  {{RACK}}, before establishing persistent congestion, as TCP does with a
-  Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
-  kPersistentCongestionThreshold is 3, which is approximately equivalent to
-  having two TLPs before an RTO in TCP.
+: Period of time for persistent congestion to be established, as described in
+  {{persistent-congestion}}, specified as a PTO multiplier.
 
 
 ## Variables of interest {#vars-of-interest}
