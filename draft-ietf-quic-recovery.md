@@ -448,7 +448,8 @@ Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
   up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8.
+multiplier, is 9/8.  The RECOMMENDED value of the timer granularity(kGranularity)
+is 1ms.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variation.  Smaller
@@ -991,8 +992,8 @@ kTimeThreshold:
 
 kGranularity:
 
-: Timer granularity. This is a system-dependent value, and the RECOMMENDED
-  value is 1ms.
+: Timer granularity. This is a system-dependent value, and {{time-threshold}}
+  recommends a value of 1ms.
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken, as described in {{pto-handshake}}.
