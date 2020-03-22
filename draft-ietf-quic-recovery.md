@@ -527,9 +527,8 @@ SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
 in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
-PATH_RESPONSE to set the initial RTT (see kInitialRtt in
-{{ld-consts-of-interest}}) for a new path, but the delay SHOULD NOT be
-considered an RTT sample.
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in {{pto-handshake}})
+for a new path, but the delay SHOULD NOT be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
@@ -996,7 +995,8 @@ kGranularity:
   recommends a value of 1ms.
 
 kInitialRtt:
-: The RTT used before an RTT sample is taken, as described in {{pto-handshake}}.
+: The RTT used before an RTT sample is taken. The value recommended in
+{{pto-handshake}} is 500ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
