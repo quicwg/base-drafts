@@ -1063,7 +1063,7 @@ before adding the newly provided connection ID to the set of active connection
 IDs. This ordering allows an endpoint that has already supplied its peer with as
 many connection IDs as allowed by the active_connection_id_limit transport
 parameter to replace those connection IDs with new ones as necessary.  Failure
-to retire the connection IDs promptly when requested can result in connection
+to cease using the connection IDs when requested can result in connection
 failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
