@@ -792,9 +792,12 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed. The RECOMMENDED value
-for kPersistentCongestionThreshold is 3, which is approximately equivalent to
-having two TLPs before an RTO in TCP.
+where PTOs do not occur or are substantially delayed. The rationale for this
+threshold is to enable a sender to use initial PTOs for aggressive probing,
+as TCP does with Tail Loss Probe (TLP) {{RACK}}, before establishing persistent
+congestion, as TCP does with a Retransmission Timeout (RTO) {{?RFC5681}}.
+The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
+approximately equivalent to two TLPs before an RTO in TCP.
 
 This duration is computed as follows:
 
@@ -1359,8 +1362,9 @@ kLossReductionFactor:
   The {{congestion-control}} section recommends a value is 0.5.
 
 kPersistentCongestionThreshold:
-: Period of time for persistent congestion to be established, as described in
-  {{persistent-congestion}}, specified as a PTO multiplier.
+: Period of time for persistent congestion to be established, specified
+  as a PTO multiplier. The {{persistent-congestion}} section recommends a
+  value of 3.
 
 
 ## Variables of interest {#vars-of-interest}
