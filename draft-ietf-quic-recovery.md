@@ -1129,12 +1129,12 @@ OnAckReceived(ack, pn_space):
       ProcessECN(ack, pn_space)
 
   lost_packets = DetectLostPackets(pn_space)
-  // Inform the congestion controller of lost packets and
-  // let it decide whether to retransmit immediately.
   if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
-  for acked_packet in newly_acked_packets:
-    OnPacketAcked(acked_packet.packet_number, pn_space)
+  for (acked_packet in newly_acked_packets):
+    if (acked_packet.in_flight):
+      OnPacketAcked(acked_packet)
+    sent_packets[pn_space].remove(acked_packet.packet_number)
 
   pto_count = 0
   SetLossDetectionTimer()
@@ -1160,28 +1160,6 @@ UpdateRtt(ack_delay):
   rttvar = 3/4 * rttvar + 1/4 * abs(smoothed_rtt - adjusted_rtt)
   smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 ~~~
-
-
-## On Packet Acknowledgment
-
-When a packet is acknowledged for the first time, the following OnPacketAcked
-function is called.  Note that a single ACK frame may newly acknowledge several
-packets. OnPacketAcked must be called once for each of these newly acknowledged
-packets.
-
-OnPacketAcked takes two parameters: acked_packet, which is the struct detailed
-in {{sent-packets-fields}}, and the packet number space that this ACK frame was
-sent for.
-
-Pseudocode for OnPacketAcked follows:
-
-~~~
-   OnPacketAcked(acked_packet, pn_space):
-     if (acked_packet.in_flight):
-       OnPacketAckedCC(acked_packet)
-     sent_packets[pn_space].remove(acked_packet.packet_number)
-~~~
-
 
 ## Setting the Loss Detection Timer
 
@@ -1433,14 +1411,14 @@ increases bytes_in_flight.
 
 ## On Packet Acknowledgement
 
-Invoked from loss detection's OnPacketAcked and is supplied with the
+Invoked from loss detection's OnAckReceived and is supplied with the
 acked_packet from sent_packets.
 
 ~~~
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
-   OnPacketAckedCC(acked_packet):
+   OnPacketAcked(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
      if (InCongestionRecovery(acked_packet.time_sent)):
