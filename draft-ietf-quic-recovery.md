@@ -412,7 +412,7 @@ reduce future spurious retransmissions and loss events. Implementations with
 adaptive time thresholds MAY choose to start with smaller initial reordering
 thresholds to minimize recovery latency.
 
-### Packet Threshold
+### Packet Threshold {#packet-threshold}
 
 The RECOMMENDED initial value for the packet reordering threshold
 (kPacketThreshold) is 3, based on best practices for TCP loss detection
@@ -516,7 +516,7 @@ detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
 
-### Handshakes and New Paths
+### Handshakes and New Paths {#pto-handshake}
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.  Resumed connections over the same network
@@ -978,13 +978,13 @@ common practice.
 
 kPacketThreshold:
 : Maximum reordering in packets before packet threshold loss detection
-  considers a packet lost. The RECOMMENDED value is 3.
+  considers a packet lost. The value recommended in {{packet-threshold}} is 3.
 
 kTimeThreshold:
 
 : Maximum reordering in time before time threshold loss detection
-  considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
-  value is 9/8.
+  considers a packet lost. Specified as an RTT multiplier. The value
+  recommended in {{time-threshold}} is 9/8.
 
 kGranularity:
 
@@ -992,7 +992,7 @@ kGranularity:
   value is 1ms.
 
 kInitialRtt:
-: The RTT used before an RTT sample is taken. The RECOMMENDED value is 500ms.
+: The RTT used before an RTT sample is taken, as described in {{pto-handshake}}.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1192,7 +1192,7 @@ and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
 This algorithm may result in the timer being set in the past, particularly if
-timers wake up late. Timers set in the past SHOULD fire immediately.
+timers wake up late. Timers set in the past fire immediately.
 
 Pseudocode for SetLossDetectionTimer follows:
 
