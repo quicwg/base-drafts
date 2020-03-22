@@ -534,7 +534,8 @@ Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
 as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
 then the PTO alarm MUST NOT be armed until datagrams have been received from
-the client.
+the client, because packets sent on PTO count against the anti-amplification
+limit.
 
 Since the server could be blocked until more packets are received from the
 client, it is the client's responsibility to send packets to unblock the server
