@@ -1128,13 +1128,15 @@ OnAckReceived(ack, pn_space):
   if (ACK frame contains ECN information):
       ProcessECN(ack, pn_space)
 
+  lost_packets = DetectLostPackets(pn_space)
+  // Inform the congestion controller of lost packets and
+  // let it decide whether to retransmit immediately.
+  if (!lost_packets.empty()):
+    OnPacketsLost(lost_packets)
   for acked_packet in newly_acked_packets:
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
-  DetectLostPackets(pn_space)
-
   pto_count = 0
-
   SetLossDetectionTimer()
 
 
@@ -1265,7 +1267,8 @@ OnLossDetectionTimeout():
     GetEarliestTimeAndSpace(loss_time)
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
-    DetectLostPackets(pn_space)
+    lost_packets = DetectLostPackets(pn_space)
+    OnPacketsLost(lost_packets)
     SetLossDetectionTimer()
     return
 
@@ -1292,8 +1295,9 @@ OnLossDetectionTimeout():
 
 ## Detecting Lost Packets
 
-DetectLostPackets is called every time an ACK is received and operates on
-the sent_packets for that packet number space.
+DetectLostPackets is called every time an ACK is received or the time threshold
+loss detection timer expires and operates on the sent_packets for that packet
+number space.
 
 Pseudocode for DetectLostPackets follows:
 
@@ -1327,11 +1331,7 @@ DetectLostPackets(pn_space):
       else:
         loss_time[pn_space] = min(loss_time[pn_space],
                                   unacked.time_sent + loss_delay)
-
-  // Inform the congestion controller of lost packets and
-  // let it decide whether to retransmit immediately.
-  if (!lost_packets.empty()):
-    OnPacketsLost(lost_packets)
+  return lost_packets
 ~~~
 
 
@@ -1499,15 +1499,14 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked from DetectLostPackets when packets are deemed lost.
 
 ~~~
-   InPersistentCongestion(largest_lost_packet):
+   InPersistentCongestion(lost_packets):
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
      // newest lost packet, including the edges, are marked
      // lost
-     return AreAllPacketsLost(largest_lost_packet,
-                              congestion_period)
+     return AreAllPacketsLost(lost_packets, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
@@ -1517,7 +1516,7 @@ Invoked from DetectLostPackets when packets are deemed lost.
      CongestionEvent(largest_lost_packet.time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(largest_lost_packet)):
+     if (InPersistentCongestion(lost_packets)):
        congestion_window = kMinimumWindow
 ~~~
 
