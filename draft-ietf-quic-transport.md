@@ -1052,22 +1052,22 @@ connection ID to a single network path where possible. Endpoints SHOULD retire
 connection IDs when no longer actively using the network path on which the
 connection ID was used.
 
-An endpoint can cause its peer to retire connection IDs by sending a
-NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST first retire the corresponding connection IDs using
-RETIRE_CONNECTION_ID frames and then add the newly provided connection ID to the
-set of active connection IDs.  Failure to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+An endpoint might need to stop accepting previously issued connection IDs in
+certain circumstances.  Such an endpoint can cause its peer to retire connection
+IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
+field.  The endpoint SHOULD continue to accept the previously issued connection
+IDs until they are retired by the peer.  If the endpoint can no longer process
+the indicated connection IDs, it MAY close the connection.
 
-An endpoint MAY discard a connection ID for which retirement has been requested
-once an interval of no less than 3 PTO has elapsed since an acknowledgement is
-received for the NEW_CONNECTION_ID frame requesting that retirement.  Until
-then, the endpoint SHOULD be prepared to receive packets that contain the
-connection ID that it has requested be retired.  Subsequent incoming packets
-using that connection ID could elicit a response with the corresponding
-stateless reset token.
+Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
+corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
+before adding the newly provided connection ID to the set of active connection
+IDs. This ordering allows an endpoint that has already supplied its peer with as
+many connection IDs as allowed by the active_connection_id_limit transport
+parameter to replace those connection IDs with new ones as necessary.  Failure
+to cease using the connection IDs when requested can result in connection
+failures, as the issuing endpoint might be unable to continue using the
+connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
