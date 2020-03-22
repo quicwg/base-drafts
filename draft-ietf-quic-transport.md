@@ -1513,7 +1513,7 @@ of type PROTOCOL_VIOLATION:
   and the value sent in the corresponding Destination Connection ID fields of
   Initial packets.
 
-If a zero-length connection IDs is selected, the corresponding transport
+If a zero-length connection ID is selected, the corresponding transport
 parameter is included with a zero-length value.
 
 
