@@ -1219,7 +1219,7 @@ In either role, applications need to be able to:
   type, as communicated in the transport parameters ({{transport-parameters}});
 - control resource allocation of various types, including flow control and the
   number of permitted streams of each type;
-- identify whether the handshake has completed successfully or is still ongoing
+- identify whether the handshake has completed successfully or is still ongoing;
 - keep a connection from silently closing, either by generating PING frames
   ({{frame-ping}}) or by requesting that the transport send additional frames
   before the idle timeout expires ({{idle-timeout}}); and
