@@ -4111,7 +4111,7 @@ carries ACKs in either direction.
 The Initial packet contains a long header as well as the Length and Packet
 Number fields.  The first byte contains the Reserved and Packet Number Length
 bits.  Between the SCID and Length fields, there are two additional
-field specific to the Initial packet.
+fields specific to the Initial packet.
 
 Token Length:
 
