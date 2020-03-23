@@ -5615,9 +5615,9 @@ value.
 
 An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
 smaller than the Retire Prior To field of a previously received
-NEW_CONNECTION_ID frame MUST immediately send a corresponding
-RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
-
+NEW_CONNECTION_ID frame MUST send a corresponding RETIRE_CONNECTION_ID frame
+that retires the newly received connection ID, unless it has already done so
+for that sequence number.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
