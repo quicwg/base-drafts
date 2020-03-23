@@ -87,8 +87,8 @@ code and issues list for this draft can be found at
 # Introduction
 
 HTTP semantics {{!SEMANTICS=I-D.ietf-httpbis-semantics}} are used for a broad
-range of services on the Internet. These semantics have most commonly been used with
-two different TCP mappings, HTTP/1.1 and HTTP/2.  HTTP/3 supports the same
+range of services on the Internet. These semantics have most commonly been used
+with two different TCP mappings, HTTP/1.1 and HTTP/2.  HTTP/3 supports the same
 semantics over a new transport protocol, QUIC.
 
 ## Prior versions of HTTP
@@ -106,8 +106,8 @@ HTTP/2 {{?HTTP2=RFC7540}} introduced a binary framing and multiplexing layer to
 improve latency without modifying the transport layer.  However, because the
 parallel nature of HTTP/2's multiplexing is not visible to TCP's loss recovery
 mechanisms, a lost or reordered packet causes all active transactions to
-experience a stall regardless of whether that transaction was directly impacted by the
-lost packet.
+experience a stall regardless of whether that transaction was directly impacted
+by the lost packet.
 
 ## Delegation to QUIC
 
