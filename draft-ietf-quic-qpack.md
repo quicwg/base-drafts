@@ -86,8 +86,8 @@ The QUIC transport protocol {{QUIC-TRANSPORT}} is designed to support HTTP
 semantics, and its design subsumes many of the features of HTTP/2 {{?RFC7540}}.
 HTTP/2 uses HPACK {{!RFC7541}} for compression of the header and trailer
 sections.  If HPACK were used for HTTP/3 {{HTTP3}}, it would induce head-of-line
-blocking due to built-in assumptions of a total ordering across frames on all
-streams.
+blocking for field sections due to built-in assumptions of a total ordering across
+frames on all streams.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
 the presence of out-of-order delivery, with flexibility for implementations to
