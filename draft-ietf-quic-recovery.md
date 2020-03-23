@@ -816,7 +816,7 @@ illustrate persistent congestion:
   t=7 | Send Pkt #4 (PTO 3)
   t=8 | Recv ACK of Pkt #4
 
-The first three packets are determined to be lost when the acknowlegement of
+The first three packets are determined to be lost when the acknowledgement of
 packet 4 is received at t=8.  The congestion period is calculated as the time
 between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
