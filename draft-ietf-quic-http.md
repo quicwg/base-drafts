@@ -158,10 +158,10 @@ such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response fields are compressed for transmission.
 Because HPACK {{?HPACK=RFC7541}} relies on in-order transmission of compressed
-field blocks (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
+field sections (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
 QPACK [QPACK].  QPACK uses separate unidirectional streams to modify and track
-field table state, while field blocks refer to the state of the table without
-modifying it.
+field table state, while encoded field sections refer to the state of the table
+without modifying it.
 
 ## Document Organization
 
@@ -1218,14 +1218,14 @@ connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 ### HEADERS {#frame-headers}
 
-The HEADERS frame (type=0x1) is used to carry a block of HTTP fields, compressed
+The HEADERS frame (type=0x1) is used to carry an HTTP field section, encoded
 using QPACK. See [QPACK] for more details.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Field Block (*)                      ...
+|                   Encoded Field Section (*)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS Frame Payload"}
@@ -1420,7 +1420,7 @@ field set from server to client on a request stream, as in HTTP/2.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                          Push ID (i)                        ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Field Block (*)                      ...
+|                   Encoded Field Section (*)                 ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
@@ -1432,9 +1432,9 @@ Push ID:
   ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
   ({{frame-cancel-push}}).
 
-Field Block:
-: QPACK-compressed request fields for the promised response.  See [QPACK] for
-  more details.
+Encoded Field Section:
+: QPACK-encoded request header fields for the promised response.  See [QPACK]
+  for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
 MAX_PUSH_ID frame ({{frame-max-push-id}}). A client MUST treat receipt of a
@@ -2012,7 +2012,7 @@ that prioritization is not important for achieving good performance.
 ### Field Compression Differences
 
 HPACK was designed with the assumption of in-order delivery. A sequence of
-encoded field blocks must arrive (and be decoded) at an endpoint in the same
+encoded field sections must arrive (and be decoded) at an endpoint in the same
 order in which they were encoded. This ensures that the dynamic state at the two
 endpoints remains in sync.
 
