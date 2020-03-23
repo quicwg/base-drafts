@@ -570,6 +570,15 @@ The following pseudo-header fields are defined for requests:
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+
+If the ":scheme" pseudo-header field identifies a scheme which has a mandatory
+authority component (including "http" and "https"), the request MUST contain
+either an ":authority" pseudo-header field or a "Host" header field.  If these
+fields are present, they MUST NOT be empty.  If both fields are present, they
+MUST contain the same value.  If the scheme does not have a mandatory authority
+component and none is provided in the request target, the request MUST NOT
+contain the ":authority" pseudo-header and "Host" header fields.
+
 An HTTP request that omits mandatory pseudo-header fields or contains invalid
 values for those fields is malformed ({{malformed}}).
 
