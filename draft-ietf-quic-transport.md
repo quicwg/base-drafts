@@ -1490,8 +1490,9 @@ in the original_connection_id transport parameter. After sending a Retry
 packet, a server also includes the Source Connection ID field from the Retry
 packet in the retry_connection_id transport parameter.
 
-Each endpoint ensures that the values of transport parameters matches the
-values. The values provided by a peer for these transport parameters MUST match
+Each endpoint ensures that the values of the peer's transport parameters
+match the values the endpoint sent in its packet headers. The values
+provided by a peer for these transport parameters MUST match the
 values that an endpoint used in the Destination Connection ID field of an
 Initial packet. Including connection ID values in transport parameters and
 verifying them ensures that the choice of connection ID cannot be influenced by
