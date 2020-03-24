@@ -316,48 +316,49 @@ same keys even if TLS has already updated to newer keys.
 
 One important difference between TLS records (used with TCP) and QUIC CRYPTO
 frames is that in QUIC multiple frames may appear in the same QUIC packet as
-long as they are associated with the same encryption level. For instance, an
-implementation might bundle a Handshake message and an ACK for some Handshake
-data into the same packet.
+long as they are associated with the same packet number space. For instance,
+an endpoint can bundle a Handshake message and an ACK for some Handshake data
+into the same packet.
 
-Some frames are prohibited in different encryption levels, others cannot be
-sent. The rules here generalize those of TLS, in that frames associated with
-establishing the connection can usually appear at any encryption level, whereas
-those associated with transferring data can only appear in the 0-RTT and 1-RTT
-encryption levels:
+Some frames are prohibited in different packet number spaces. The rules here
+generalize those of TLS, in that frames associated with establishing the
+connection can usually appear in packets in any packet number space, whereas
+those associated with transferring data can only appear in the application
+data packet number space:
 
-- PADDING and PING frames MAY appear in packets of any encryption level.
+- PADDING, PING, and CRYPTO frames MAY appear in any packet number space.
 
-- CRYPTO frames and CONNECTION_CLOSE frames signaling errors at the QUIC layer
-  (type 0x1c) MAY appear in packets of any encryption level except 0-RTT.
+- CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
+  appear in any packet number space. CONNECTION_CLOSE frames signaling
+  application errors (type 0x1d) MUST only appear in the application data packet
+  number space.
 
-- CONNECTION_CLOSE frames signaling application errors (type 0x1d) MUST only be
-  sent in packets at the 1-RTT encryption level.
+- ACK frames MAY appear in any packet number space, but can only acknowledge
+  packets which appeared in that packet number space.  However, as noted below,
+  0-RTT packets cannot contain ACK frames.
 
-- ACK frames MAY appear in packets of any encryption level other than 0-RTT, but
-  can only acknowledge packets which appeared in that packet number space.
+- All other frame types MUST only be sent in the application data packet number
+  space.
 
-- All other frame types MUST only be sent in the 0-RTT and 1-RTT levels.
-
-Note that it is not possible to send the following frames in 0-RTT for various
-reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
-RETIRE_CONNECTION_ID.
+Note that it is not possible to send the following frames in 0-RTT packets for
+various reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.  A server MAY treat receipt of these frames in 0-RTT
+packets as a connection error of type PROTOCOL_VIOLATION.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
-indicate which level a given packet was encrypted under, as shown in
-{{packet-types-levels}}. When multiple packets of different encryption levels
-need to be sent, endpoints SHOULD use coalesced packets to send them in the same
-UDP datagram.
+indicate which keys were used to protect a given packet, as shown in
+{{packet-types-keys}}. When packets of different types need to be sent,
+endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 
-| Packet Type         | Encryption Level | PN Space  |
-|:--------------------|:-----------------|:----------|
-| Initial             | Initial secrets  | Initial   |
-| 0-RTT Protected     | 0-RTT            | 0/1-RTT   |
-| Handshake           | Handshake        | Handshake |
-| Retry               | N/A              | N/A       |
-| Version Negotiation | N/A              | N/A       |
-| Short Header        | 1-RTT            | 0/1-RTT   |
-{: #packet-types-levels title="Encryption Levels by Packet Type"}
+| Packet Type         | Encryption Keys | PN Space         |
+|:--------------------|:----------------|:-----------------|
+| Initial             | Initial secrets | Initial          |
+| 0-RTT Protected     | 0-RTT           | Application data |
+| Handshake           | Handshake       | Handshake        |
+| Retry               | Retry           | N/A              |
+| Version Negotiation | N/A             | N/A              |
+| Short Header        | 1-RTT           | Application data |
+{: #packet-types-keys title="Encryption Keys by Packet Type"}
 
 Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
@@ -415,12 +416,20 @@ A QUIC client starts TLS by requesting TLS handshake bytes from TLS.  The client
 acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
-At any time, the TLS stack at an endpoint will have a current sending encryption
-level and receiving encryption level. Each encryption level is associated with a
-different flow of bytes, which is reliably transmitted to the peer in CRYPTO
-frames. When TLS provides handshake bytes to be sent, they are appended to the
-current flow and any packet that includes the CRYPTO frame is protected using
-keys from the corresponding encryption level.
+At any time, the TLS stack at an endpoint will have a current sending
+encryption level and receiving encryption level. Encryption levels determine
+the packet type and keys that are used for protecting data.
+
+Each encryption level is associated with a different sequence of bytes, which is
+reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
+bytes to be sent, they are appended to the current flow. Any packet that
+includes the CRYPTO frame is protected using keys from the corresponding
+encryption level. Four encryption levels are used, producing keys for Initial,
+0-RTT, Handshake, and 1-RTT packets. CRYPTO frames are carried in just three of
+these levels, omitting the 0-RTT level. These four levels correspond to three
+packet number spaces: Initial and Handshake encrypted packets use their own
+separate spaces; 0-RTT and 1-RTT packets use the application data packet number
+space.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
@@ -700,13 +709,13 @@ requirements for determining whether to accept or reject early data.
 
 ## HelloRetryRequest
 
-In TLS over TCP, the HelloRetryRequest feature (see Section 4.1.4 of {{!TLS13}})
-can be used to correct a client's incorrect KeyShare extension as well as for a
-stateless round-trip check. From the perspective of QUIC, this just looks like
-additional messages carried in the Initial encryption level. Although it is in
-principle possible to use this feature for address verification in QUIC, QUIC
-implementations SHOULD instead use the Retry feature (see Section 8.1 of
-{{QUIC-TRANSPORT}}).  HelloRetryRequest is still used to request key shares.
+In TLS over TCP, the HelloRetryRequest feature (see Section 4.1.4 of
+{{!TLS13}}) can be used to correct a client's incorrect KeyShare extension as
+well as for a stateless round-trip check. From the perspective of QUIC, this
+just looks like additional messages carried in Initial packets. Although it is
+in principle possible to use this feature for address verification in QUIC,
+QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
+{{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
 ## TLS Errors
@@ -717,7 +726,7 @@ Section 6 of {{!TLS13}}.
 A TLS alert is turned into a QUIC connection error by converting the one-byte
 alert description into a QUIC error code.  The alert description is added to
 0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame.
+The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.

@@ -428,7 +428,8 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 Once a later packet within the same packet number space has been acknowledged,
 an endpoint SHOULD declare an earlier packet lost if it was sent a threshold
 amount of time in the past. To avoid declaring packets as lost too early, this
-time threshold MUST be set to at least kGranularity.  The time threshold is:
+time threshold MUST be set to at least the local timer granularity, as
+indicated by the kGranularity constant.  The time threshold is:
 
 ~~~
 max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
@@ -477,9 +478,6 @@ the PTO period as follows:
 PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 ~~~
 
-kGranularity, smoothed_rtt, rttvar, and max_ack_delay are defined in
-{{ld-consts-of-interest}} and {{ld-vars-of-interest}}.
-
 The PTO period is the amount of time that a sender ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
 network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
@@ -518,11 +516,11 @@ detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
 
-## Handshakes and New Paths
+### Handshakes and New Paths
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.  Resumed connections over the same network
-SHOULD use the previous connection's final smoothed RTT value as the resumed
+MAY use the previous connection's final smoothed RTT value as the resumed
 connection's initial RTT.  If no previous RTT is available, the initial RTT
 SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
 in {{?RFC6298}}.
@@ -554,10 +552,29 @@ otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
 bytes.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
-removed from bytes in flight when the Initial and Handshake keys are discarded.
-When Initial or Handshake keys are discarded, the PTO and loss detection timers
-MUST be reset, because discarding keys indicates forward progress and the loss
-detection timer may have been set for a now discarded packet number space.
+removed from bytes in flight when the Initial and Handshake keys are discarded,
+as described below in Section {{discarding-packets}}. When Initial or Handshake
+keys are discarded, the PTO and loss detection timers MUST be reset, because
+discarding keys indicates forward progress and the loss detection timer might
+have been set for a now discarded packet number space.
+
+### Speeding Up Handshake Completion
+
+When a server receives an Initial packet containing duplicate CRYPTO data,
+it can assume the client did not receive all of the server's CRYPTO data sent
+in Initial packets, or the client's estimated RTT is too small. When a
+client receives Handshake or 1-RTT packets prior to obtaining Handshake keys,
+it may assume some or all of the server's Initial packets were lost.
+
+To speed up handshake completion under these conditions, an endpoint MAY send
+a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
+subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
+
+Peers can also use coalesced packets to ensure that each datagram elicits at
+least one acknowledgement.  For example, clients can coalesce an Initial packet
+containing PING and PADDING frames with a 0-RTT data packet and a server can
+coalesce an Initial packet containing a PING frame with one or more packets in
+its first flight.
 
 ### Sending Probe Packets
 
@@ -570,6 +587,9 @@ to a single lost datagram or transmit data from multiple packet number spaces.
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
+
+If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
+packet number to eliminate the ack delay.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
 data, it MUST be sent.
@@ -796,7 +816,7 @@ illustrate persistent congestion:
   t=7 | Send Pkt #4 (PTO 3)
   t=8 | Recv ACK of Pkt #4
 
-The first three packets are determined to be lost when the acknowlegement of
+The first three packets are determined to be lost when the acknowledgement of
 packet 4 is received at t=8.  The congestion period is calculated as the time
 between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
@@ -900,7 +920,7 @@ detect.
 
 # IANA Considerations
 
-This document has no IANA actions.  Yet.
+This document has no IANA actions.
 
 
 --- back
@@ -965,8 +985,8 @@ kTimeThreshold:
 
 kGranularity:
 
-: Timer granularity. This is a system-dependent value.  However, implementations
-  SHOULD use a value no smaller than 1ms.
+: Timer granularity. This is a system-dependent value, and the RECOMMENDED
+  value is 1ms.
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The RECOMMENDED value is 500ms.
@@ -1204,8 +1224,16 @@ SetLossDetectionTimer():
     loss_detection_timer.update(earliest_loss_time)
     return
 
+  if (server is at anti-amplification limit):
+    // The server's alarm is not set if nothing can be sent.
+    loss_detection_timer.cancel()
+    return
+
   if (no ack-eliciting packets in flight &&
-      PeerNotAwaitingAddressValidation()):
+      peer not awaiting address validation):
+    // There is nothing to detect lost, so no timer is set.
+    // However, the client needs to arm the timer if the
+    // server might be blocked by the anti-amplification limit.
     loss_detection_timer.cancel()
     return
 
@@ -1241,7 +1269,14 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (endpoint is client without 1-RTT keys):
+  if (bytes_in_flight > 0):
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
+    _, pn_space = GetEarliestTimeAndSpace(
+      time_of_last_sent_ack_eliciting_packet)
+    SendOneOrTwoAckElicitingPackets(pn_space)
+  else:
+    assert(endpoint is client without 1-RTT keys)
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
@@ -1249,12 +1284,6 @@ OnLossDetectionTimeout():
       SendOneAckElicitingHandshakePacket()
     else:
       SendOneAckElicitingPaddedInitialPacket()
-  else:
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
-    SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
   SetLossDetectionTimer()

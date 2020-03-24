@@ -123,7 +123,7 @@ each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
 implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
-{{!HTTP2=RFC7540}}.
+{{?HTTP2=RFC7540}}.
 
 # HTTP/3 Protocol Overview
 
@@ -147,7 +147,7 @@ consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
 
-Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
+Server push is an interaction mode introduced in HTTP/2 {{?HTTP2}} which permits
 a server to push a request-response exchange to a client in anticipation of the
 client making the indicated request.  This trades off network usage against a
 potential latency gain.  Several HTTP/3 frames are used to manage server push,
@@ -339,6 +339,12 @@ respective HTTP control stream (see {{control-streams}}).
 
 ## Connection Reuse
 
+HTTP/3 connections are persistent across multiple requests.  For best
+performance, it is expected that clients will not close connections until it is
+determined that no further communication with a server is necessary (for
+example, when a user navigates away from a particular web page) or until the
+server closes the connection.
+
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  The client MAY send
 any requests for which the client considers the server authoritative.
@@ -351,6 +357,12 @@ certificate for the origin before considering it authoritative. Clients MUST NOT
 assume that an HTTP/3 endpoint is authoritative for other origins without an
 explicit signal.
 
+Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
+pair, where the host is derived from a URI, a selected alternative service
+{{!ALTSVC}}, or a configured proxy.  A client MAY open multiple connections to
+the same IP address and UDP port using different transport or TLS configurations
+but SHOULD avoid creating multiple connections with the same configuration.
+
 Prior to making requests for an origin whose scheme is not "https," the client
 MUST ensure the server is willing to serve that scheme.  If the client intends
 to make requests for an origin whose scheme is "http", this means that it MUST
@@ -358,13 +370,17 @@ obtain a valid `http-opportunistic` response for the origin as described in
 {{!RFC8164}} prior to making any such requests.  Other schemes might define
 other mechanisms.
 
+Servers are encouraged to maintain open connections for as long as possible but
+are permitted to terminate idle connections if necessary.  When either endpoint
+chooses to close the HTTP/3 session, the terminating endpoint SHOULD first send
+a GOAWAY frame ({{connection-shutdown}}) so that both endpoints can reliably
+determine whether previously sent frames have been processed and gracefully
+complete or terminate any necessary remaining tasks.
+
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
 (Misdirected Request) status code in response to the request (see Section 9.1.2
-of {{!HTTP2}}).
-
-The considerations discussed in Section 9.1 of {{!HTTP2}} also apply to the
-management of HTTP/3 connections.
+of {{?HTTP2}}).
 
 
 # HTTP Request Lifecycle
@@ -554,6 +570,15 @@ The following pseudo-header fields are defined for requests:
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+
+If the ":scheme" pseudo-header field identifies a scheme which has a mandatory
+authority component (including "http" and "https"), the request MUST contain
+either an ":authority" pseudo-header field or a "Host" header field.  If these
+fields are present, they MUST NOT be empty.  If both fields are present, they
+MUST contain the same value.  If the scheme does not have a mandatory authority
+component and none is provided in the request target, the request MUST NOT
+contain the ":authority" pseudo-header and "Host" header fields.
+
 An HTTP request that omits mandatory pseudo-header fields or contains invalid
 values for those fields is malformed ({{malformed}}).
 
@@ -577,8 +602,10 @@ head-of-line blocking.  See that document for additional details.
 To allow for better compression efficiency, the cookie header field {{!RFC6265}}
 MAY be split into separate header fields, each with one or more cookie-pairs,
 before compression. If a decompressed header list contains multiple cookie
-header fields, these MUST be concatenated before being passed into a non-HTTP/2,
-non-HTTP/3 context, as described in Section 8.1.2.5 of {{!HTTP2}}.
+header fields, these MUST be concatenated into a single octet string using the
+two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
+into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
+generic HTTP server application.
 
 #### Header Size Constraints
 
@@ -662,17 +689,27 @@ expose implementations to these vulnerabilities.
 
 ## The CONNECT Method {#connect}
 
-The pseudo-method CONNECT (Section 4.3.6 of {{!RFC7231}}) is primarily used with
-HTTP proxies to establish a TLS session with an origin server for the purposes
-of interacting with "https" resources. In HTTP/1.x, CONNECT is used to convert
-an entire HTTP connection into a tunnel to a remote host. In HTTP/2, the CONNECT
-method is used to establish a tunnel over a single HTTP/2 stream to a remote
-host for similar purposes.
+The CONNECT method requests that the recipient establish a tunnel to the
+destination origin server identified by the request-target (Section 4.3.6 of
+{{!RFC7231}}).  It is primarily used with HTTP proxies to establish a TLS
+session with an origin server for the purposes of interacting with "https"
+resources.
 
-A CONNECT request in HTTP/3 functions in the same manner as in HTTP/2. The
-request MUST be formatted as described in Section 8.3 of {{!HTTP2}}. A CONNECT
-request that does not conform to these restrictions is malformed (see
-{{malformed}}). The request stream MUST NOT be closed at the end of the request.
+In HTTP/1.x, CONNECT is used to convert an entire HTTP connection into a tunnel
+to a remote host. In HTTP/2 and HTTP/3, the CONNECT method is used to establish
+a tunnel over a single stream.
+
+A CONNECT request MUST be constructed as follows:
+
+- The ":method" pseudo-header field is set to "CONNECT"
+- The ":scheme" and ":path" pseudo-header fields are omitted
+- The ":authority" pseudo-header field contains the host and port to connect to
+  (equivalent to the authority-form of the request-target of CONNECT requests
+  (see Section 5.3 of [RFC7230]))
+
+The request stream remains open at the end of the request to carry the data to
+be transferred.  A CONNECT request that does not conform to these restrictions
+is malformed (see {{malformed}}).
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field. Once this connection
@@ -715,11 +752,11 @@ HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of [RFC7230]) or
 
 ## Server Push
 
-Server push is an interaction mode introduced in HTTP/2 {{!HTTP2}} which permits
-a server to push a request-response exchange to a client in anticipation of the
-client making the indicated request.  This trades off network usage against a
-potential latency gain.  HTTP/3 server push is similar to what is described in
-HTTP/2 {{!HTTP2}}, but uses different mechanisms.
+Server push is an interaction mode which permits a server to push a
+request-response exchange to a client in anticipation of the client making the
+indicated request.  This trades off network usage against a potential latency
+gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
+but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
@@ -738,8 +775,28 @@ with a Push ID that is greater than the maximum Push ID as a connection error of
 type H3_ID_ERROR.
 
 The header of the request message is carried by a PUSH_PROMISE frame (see
-{{frame-push-promise}}) on the request stream which generated the push. Promised
-requests MUST conform to the requirements in Section 8.2 of {{!HTTP2}}.
+{{frame-push-promise}}) on the request stream which generated the push. This
+allows the server push to be associated with a client request.
+
+Not all requests can be pushed.  A server MAY push requests which have the
+following properties:
+
+- cacheable (see Section 4.2.3 of [RFC7231])
+- safe (see Section 4.2.1 of [RFC7231])
+- does not include a request body
+
+Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
+carrying a request which is not cacheable, is not known to be safe, or that
+indicates the presence of a request body.  If the pushed response arrives on a
+push stream, this MAY be treated as a stream error of type
+H3_STREAM_CREATION_ERROR.
+
+The server MUST include a value in the ":authority" pseudo-header field for
+which the server is authoritative (see {{connection-reuse}}).  A client SHOULD
+send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request
+for which it does not consider the server authoritative.  If the pushed response
+arrives on a push stream, this MAY be treated as a stream error of type
+H3_STREAM_CREATION_ERROR.
 
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
@@ -771,6 +828,15 @@ CANCEL_PUSH frame. If the push stream is already open or opens after sending the
 CANCEL_PUSH frame, the client can abort reading the stream with an error code of
 H3_REQUEST_CANCELLED. This asks the server not to transfer additional data and
 indicates that it will be discarded upon receipt.
+
+Pushed responses that are cacheable (see Section 3 of {{!RFC7234}}) can be
+stored by the client, if it implements an HTTP cache.  Pushed responses are
+considered successfully validated on the origin server (e.g., if the "no-cache"
+cache response directive is present (Section 5.2.2 of {{!RFC7234}})) at the time
+the pushed response is received.
+
+Pushed responses that are not cacheable MUST NOT be stored by any HTTP cache.
+They MAY be made available to the application separately.
 
 # Connection Closure
 
@@ -1621,8 +1687,10 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS; the considerations from Section 10 of {{!HTTP2}} apply in addition to
+with TLS; the considerations from Section 10 of {{?HTTP2}} apply in addition to
 those listed here.
+
+TODO:  This is going to be a big import, probably worthy of its own PR.
 
 When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
 security considerations of {{!ALTSVC}} also apply.
@@ -1705,7 +1773,7 @@ using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
-{{!HTTP2}}, it is preferable that the assignments parallel each other where the
+{{?HTTP2}}, it is preferable that the assignments parallel each other where the
 code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
 operation.
@@ -1753,7 +1821,7 @@ Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
-{{!HTTP2}}, it is preferable that the assignments parallel each other.  If an
+{{?HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
 assigning the corresponding value to an unrelated operation.
 
@@ -1922,7 +1990,7 @@ removed. Because stream termination is handled by QUIC, an END_STREAM flag is
 not required.  This permits the removal of the Flags field from the generic
 frame layout.
 
-Frame payloads are largely drawn from {{!HTTP2}}. However, QUIC includes many
+Frame payloads are largely drawn from {{?HTTP2}}. However, QUIC includes many
 features (e.g., flow control) which are also present in HTTP/2. In these cases,
 the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
 types are not required in HTTP/3. Where an HTTP/2-defined frame is no longer
@@ -2024,7 +2092,7 @@ CONTINUATION (0x9):
   frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
-HTTP/3 if still applicable.  The IDs of frames defined in {{!HTTP2}} have been
+HTTP/3 if still applicable.  The IDs of frames defined in {{?HTTP2}} have been
 reserved for simplicity.  Note that the frame type space in HTTP/3 is
 substantially larger (62 bits versus 8 bits), so many HTTP/3 frame types have no
 equivalent HTTP/2 code points.  See {{iana-frames}}.
@@ -2072,7 +2140,7 @@ their value to limit it to 30 bits for more efficient encoding, or to make use
 of the 62-bit space if more than 30 bits are required.
 
 Settings need to be defined separately for HTTP/2 and HTTP/3. The IDs of
-settings defined in {{!HTTP2}} have been reserved for simplicity.  Note that
+settings defined in {{?HTTP2}} have been reserved for simplicity.  Note that
 the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
@@ -2089,7 +2157,7 @@ provides. However, there is no direct portability of HTTP/2 error codes to
 HTTP/3 error codes; the values are shifted in order to prevent accidental
 or implicit conversion.
 
-The HTTP/2 error codes defined in Section 7 of {{!HTTP2}} logically map to
+The HTTP/2 error codes defined in Section 7 of {{?HTTP2}} logically map to
 the HTTP/3 error codes as follows:
 
 NO_ERROR (0x0):

@@ -200,7 +200,8 @@ Out-of-order packet:
 
 : A packet that does not increase the largest received packet number for its
   packet number space ({{packet-numbers}}) by exactly one. A packet can arrive
-  out of order if it is delayed or if earlier packets are lost or delayed.
+  out of order if it is delayed, if earlier packets are lost or delayed, or if
+  the sender intentionally skips a packet number.
 
 Endpoint:
 
@@ -1051,22 +1052,22 @@ connection ID to a single network path where possible. Endpoints SHOULD retire
 connection IDs when no longer actively using the network path on which the
 connection ID was used.
 
-An endpoint can cause its peer to retire connection IDs by sending a
-NEW_CONNECTION_ID frame with an increased Retire Prior To field.  Upon receipt,
-the peer MUST first retire the corresponding connection IDs using
-RETIRE_CONNECTION_ID frames and then add the newly provided connection ID to the
-set of active connection IDs.  Failure to retire the connection IDs within
-approximately one PTO can cause packets to be delayed, lost, or cause the
-original endpoint to send a stateless reset in response to a connection ID it
-can no longer route correctly.
+An endpoint might need to stop accepting previously issued connection IDs in
+certain circumstances.  Such an endpoint can cause its peer to retire connection
+IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
+field.  The endpoint SHOULD continue to accept the previously issued connection
+IDs until they are retired by the peer.  If the endpoint can no longer process
+the indicated connection IDs, it MAY close the connection.
 
-An endpoint MAY discard a connection ID for which retirement has been requested
-once an interval of no less than 3 PTO has elapsed since an acknowledgement is
-received for the NEW_CONNECTION_ID frame requesting that retirement.  Until
-then, the endpoint SHOULD be prepared to receive packets that contain the
-connection ID that it has requested be retired.  Subsequent incoming packets
-using that connection ID could elicit a response with the corresponding
-stateless reset token.
+Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
+corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
+before adding the newly provided connection ID to the set of active connection
+IDs. This ordering allows an endpoint that has already supplied its peer with as
+many connection IDs as allowed by the active_connection_id_limit transport
+parameter to replace those connection IDs with new ones as necessary.  Failure
+to cease using the connection IDs when requested can result in connection
+failures, as the issuing endpoint might be unable to continue using the
+connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -1218,7 +1219,7 @@ In either role, applications need to be able to:
   type, as communicated in the transport parameters ({{transport-parameters}});
 - control resource allocation of various types, including flow control and the
   number of permitted streams of each type;
-- identify whether the handshake has completed successfully or is still ongoing
+- identify whether the handshake has completed successfully or is still ongoing;
 - keep a connection from silently closing, either by generating PING frames
   ({{frame-ping}}) or by requesting that the transport send additional frames
   before the idle timeout expires ({{idle-timeout}}); and
@@ -1372,12 +1373,11 @@ by the frames that are typically contained in those packets. So, for instance
 the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
-Note that multiple QUIC packets -- even of different encryption levels -- may be
+Note that multiple QUIC packets -- even of different packet types -- can be
 coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
 handshake may consist of as few as 4 UDP datagrams, or any number more. For
-instance, the server's first flight contains packets from the Initial encryption
-level (obfuscation), the Handshake level, and "0.5-RTT data" from the server at
-the 1-RTT encryption level.
+instance, the server's first flight contains Initial packets,
+Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short header.
 
 ~~~~
 Client                                                  Server
@@ -1398,9 +1398,9 @@ Handshake[0]: CRYPTO[FIN], ACK[0]
 {: #tls-1rtt-handshake title="Example 1-RTT Handshake"}
 
 {{tls-0rtt-handshake}} shows an example of a connection with a 0-RTT handshake
-and a single packet of 0-RTT data. Note that as described in {{packet-numbers}},
-the server acknowledges 0-RTT data at the 1-RTT encryption level, and the
-client sends 1-RTT packets in the same packet number space.
+and a single packet of 0-RTT data. Note that as described in
+{{packet-numbers}}, the server acknowledges 0-RTT data in 1-RTT packets, and
+the client sends 1-RTT packets in the same packet number space.
 
 ~~~~
 Client                                                  Server
@@ -1582,7 +1582,6 @@ limits or alter any values that might be violated by the client with its
 values for the following parameters ({{transport-parameter-definitions}})
 that are smaller than the remembered value of the parameters.
 
-* active_connection_id_limit
 * initial_max_data
 * initial_max_stream_data_bidi_local
 * initial_max_stream_data_bidi_remote
@@ -1675,8 +1674,11 @@ consider the client address to have been validated.
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
 magnitude of any amplification attack that can be mounted using spoofed source
-addresses.  In determining this limit, servers only count the size of
-successfully processed packets.
+addresses.  For the purposes of avoiding amplification prior to address
+validation, servers MUST count all of the payload bytes received in datagrams
+that are uniquely attributed to a single connection. This includes datagrams
+that contain packets that are successfully processed and datagrams that contain
+packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
 payloads of at least 1200 bytes, adding padding to packets in the datagram as
@@ -1709,7 +1711,7 @@ controller.  Clients are only constrained by the congestion controller.
 ### Token Construction
 
 A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
-way that allows the server to identity how it was provided to a client.  These
+way that allows the server to identify how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
 
@@ -1787,7 +1789,7 @@ used to dynamically calculate the expiration time.  A server can store the
 expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
-values to be linked by an on-path observer to the connection on which it was
+values to be linked by an observer to the connection on which it was
 issued, unless the values are encrypted.  For example, it cannot include the
 previous connection ID or addressing information.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
@@ -1882,10 +1884,24 @@ tokens that would be accepted by the server.  Only the server requires access to
 the integrity protection key for tokens.
 
 There is no need for a single well-defined format for the token because the
-server that generates the token also consumes it.  A token could include
-information about the claimed client address (IP and port), a timestamp, and any
-other supplementary information the server will need to validate the token in
-the future.
+server that generates the token also consumes it.  Tokens sent in Retry packets
+SHOULD include information that allows the server to verify that the source IP
+address and port in client packets remains constant.
+
+Tokens sent in NEW_TOKEN frames MUST include information that allows the server
+to verify that the client IP address has not changed from when the token was
+issued. Servers can use tokens from NEW_TOKEN in deciding not to send a Retry
+packet, even if the client address has changed. If the client IP address has
+changed, the server MUST adhere to the anti-amplification limits found in
+{{validate-handshake}}.  Note that in the presence of NAT, this requirement
+might be insufficient to protect other hosts that share the NAT from
+amplification attack.
+
+Servers MUST ensure that replay of tokens is prevented or limited.  For
+instance, servers might limit the time over which a token is accepted.  Tokens
+provided in NEW_TOKEN frames might need to allow longer validity periods.
+Tokens MAY include additional information about clients to further narrow
+applicability or reuse.
 
 
 ## Path Validation {#migrate-validate}
@@ -2461,10 +2477,11 @@ source address.
 
 ## Idle Timeout {#idle-timeout}
 
-If the idle timeout is enabled by either peer, a connection is silently closed
+If a max_idle_timeout is specified by either peer in its transport parameters
+({{transport-parameter-definitions}}), the connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-the max_idle_timeouts (see {{transport-parameter-definitions}}) and three times
-the current Probe Timeout (PTO).
+both peers max_idle_timeout values and three times the current Probe Timeout
+(PTO).
 
 Each endpoint advertises a max_idle_timeout, but the effective value
 at an endpoint is computed as the minimum of the two advertised values. By
@@ -2472,24 +2489,23 @@ announcing a max_idle_timeout, an endpoint commits to initiating an immediate
 close ({{immediate-close}}) if it abandons the connection prior to the effective
 value.
 
-An endpoint restarts its idle timer when a packet from its peer is received
-and processed successfully.  The idle timer is also restarted when sending the
-first ack-eliciting packet (see {{QUIC-RECOVERY}}) after receiving a packet.
-Restarting when sending packets ensures that connections do not prematurely time
-out when initiating new activity.  Only restarting when sending after receipt of
-a packet ensures the idle timeout is not excessively lengthened past the time
-the peer's timeout has expired.  An endpoint might need to send packets to avoid
-an idle timeout if it is unable to send application data due to being blocked on
-flow control limits; see {{flow-control}}.
+An endpoint restarts its idle timer when a packet from its peer is received and
+processed successfully. An endpoint also restarts its idle timer when sending an
+ack-eliciting packet if no other ack-eliciting packets have been sent since last
+receiving and processing a packet. Restarting this timer when sending a packet
+ensures that connections are not closed after new activity is initiated.
 
-An endpoint that sends packets near the end of the idle timeout period
-risks having those packets discarded if its peer enters the draining state
-before the packets arrive.  If a peer could time out within a Probe Timeout
-(PTO; see Section 6.6 of {{QUIC-RECOVERY}}), it is advisable to probe the path
-with an ack-eliciting packet to ensure the connection is still responsive
-before sending any data that cannot be retried safely.  Note that it is
-likely that only applications or application protocols will know what
-information can be retried.
+An endpoint might need to send ack-eliciting packets to avoid an idle timeout
+if it is expecting response data, but does not have or is unable to send
+application data.
+
+An endpoint that sends packets close to the effective timeout risks having
+them be discarded at the peer, since the peer might enter its draining state
+before these packets arrive. An endpoint can send a PING or another
+ack-eliciting frame to test the connection for liveness if the peer could
+time out soon, such as within a PTO; see Section 6.6 of {{QUIC-RECOVERY}}.
+This is especially useful if any available application data cannot be safely
+retried. Note that the application determines what data is safe to retry.
 
 
 ## Immediate Close {#immediate-close}
@@ -2556,17 +2572,35 @@ level of packet protection to avoid the packet being discarded.  After the
 handshake is confirmed (see Section 4.1.2 of {{QUIC-TLS}}), an endpoint MUST
 send any CONNECTION_CLOSE frames in a 1-RTT packet.  However, prior to
 confirming the handshake, it is possible that more advanced packet protection
-keys are not available to the peer, so the frame MAY be replicated in a packet
-that uses a lower packet protection level.
+keys are not available to the peer, so another CONNECTION_CLOSE frame MAY be
+sent in a packet that uses a lower packet protection level.  More specifically:
 
-A client will always know whether the server has Handshake keys (see
-{{discard-initial}}), but it is possible that a server does not know whether the
-client has Handshake keys.  Under these circumstances, a server SHOULD send a
-CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure that at
-least one of them is processable by the client.  Similarly, a peer might be
-unable to read 1-RTT packets, so an endpoint SHOULD send CONNECTION_CLOSE in
-Handshake and 1-RTT packets prior to confirming the handshake.  These packets
-can be coalesced into a single UDP datagram; see {{packet-coalesce}}.
+* A client will always know whether the server has Handshake keys (see
+  {{discard-initial}}), but it is possible that a server does not know whether
+  the client has Handshake keys.  Under these circumstances, a server SHOULD
+  send a CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure
+  that at least one of them is processable by the client.
+
+* A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured of
+  the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame in an
+  Initial packet makes it more likely that the server can receive the close
+  signal, even if the application error code might not be received.
+
+* Prior to confirming the handshake, a peer might be unable to process 1-RTT
+  packets, so an endpoint SHOULD send CONNECTION_CLOSE in both Handshake and
+  1-RTT packets.  A server SHOULD also send CONNECTION_CLOSE in an Initial
+  packet.
+
+Sending a CONNECTION_CLOSE of type 0x1d in an Initial or Handshake packet could
+expose application state or be used to alter application state. A
+CONNECTION_CLOSE of type 0x1d MUST be replaced by a CONNECTION_CLOSE of type
+0x1c when sending the frame in Initial or Handshake packets. Otherwise,
+information about the application state might be revealed. Endpoints MUST clear
+the value of the Reason Phrase field and SHOULD use the APPLICATION_ERROR code
+when converting to a CONNECTION_CLOSE of type 0x1c.
+
+CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
+single UDP datagram; see {{packet-coalesce}}.
 
 An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
 response to unauthenticated information received in Initial or Handshake
@@ -2917,11 +2951,10 @@ successfully authenticated.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
-short header are used to identify which encryption level - and therefore the
-keys - that are used. Packets protected with 0-RTT and 1-RTT keys are expected
-to have confidentiality and data origin authentication; the cryptographic
-handshake ensures that only the communicating endpoints receive the
-corresponding keys.
+short header are used to identify which encryption keys are used. Packets
+protected with 0-RTT and 1-RTT keys are expected to have confidentiality and
+data origin authentication; the cryptographic handshake ensures that only the
+communicating endpoints receive the corresponding keys.
 
 The packet number field contains a packet number, which has additional
 confidentiality protection that is applied after packet protection is applied
@@ -2946,10 +2979,11 @@ construct PMTU probes (see {{pmtu-probes-src-cid}}).  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
-Handshake, 1-RTT) makes it more likely the receiver will be able to process all
-the packets in a single pass.  A packet with a short header does not include a
-length, so it can only be the last packet included in a UDP datagram.  An
-endpoint SHOULD NOT coalesce multiple packets at the same encryption level.
+Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
+receiver will be able to process all the packets in a single pass. A packet
+with a short header does not include a length, so it can only be the last
+packet included in a UDP datagram. An endpoint SHOULD NOT coalesce multiple
+packets at the same encryption level.
 
 Senders MUST NOT coalesce QUIC packets for different connections into a single
 UDP datagram. Receivers SHOULD ignore any subsequent packets with a different
@@ -3090,13 +3124,13 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | IH_1*   |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |
 {: #frame-types title="Frame Types"}
 
 The "Packets" column in {{frame-types}} does not form part of the IANA registry
 (see {{iana-frames}}).  This column lists the types of packets that each
-frame type can appear in, indicated by the following characters:
+frame type could appear in, indicated by the following characters:
 
 I:
 
@@ -3114,11 +3148,10 @@ H:
 
 : 1-RTT ({{short-header}})
 
-*:
+ih:
 
-: A CONNECTION_CLOSE frame of type 0x1c can appear in Initial, Handshake, and
-1-RTT packets, whereas a CONNECTION_CLOSE of type 0x1d can only appear in a
-1-RTT packet.
+: A CONNECTION_CLOSE frame of type 0x1d cannot appear in Initial or Handshake
+  packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
 that all frames can appear in 1-RTT packets.
@@ -3182,10 +3215,6 @@ Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
 packet.
 
-<!-- TODO: Do we need to say anything about partial processing. And our
-expectations about what implementations do with packets that have errors after
-valid frames? -->
-
 
 ## Generating Acknowledgements {#generating-acks}
 
@@ -3194,7 +3223,7 @@ ack-eliciting packets cause an ACK frame to be sent within the maximum ack
 delay.  Packets that are not ack-eliciting are only acknowledged when an ACK
 frame is sent for other reasons.
 
-When sending a packet for any reason, an endpoint should attempt to bundle an
+When sending a packet for any reason, an endpoint SHOULD attempt to bundle an
 ACK frame if one has not been sent recently. Doing so helps with timely loss
 detection at the peer.
 
@@ -3219,15 +3248,16 @@ Section 5.2.1 of {{QUIC-RECOVERY}}.
 
 An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
 This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+A receiver could decide to send an ACK frame less frequently if it has
+information about how frequently the sender's congestion controller
+needs feedback, or if the receiver is CPU or bandwidth constrained.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
-endpoint MAY continue sending ACK frames immediately on each subsequently
-received packet, but the endpoint SHOULD return to acknowledging every other
-packet within a period of 1/8 x RTT, unless more ack-eliciting packets are
-received out of order.  If every subsequent ack-eliciting packet arrives out of
-order, then an ACK frame SHOULD be sent immediately for every received
-ack-eliciting packet.
+endpoint SHOULD NOT continue sending ACK frames immediately unless more
+ack-eliciting packets are received out of order.  If every subsequent
+ack-eliciting packet arrives out of order, then an ACK frame SHOULD be sent
+immediately for every received ack-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
@@ -3305,25 +3335,33 @@ continue making forward progress.
 
 ### Limiting ACK Ranges {#ack-limiting}
 
-To limit ACK Ranges (see {{ack-ranges}}) to those that have not yet been
-received by the sender, the receiver SHOULD track which ACK frames have been
-acknowledged by its peer. The receiver SHOULD exclude already acknowledged
-packets from future ACK frames whenever these packets would unnecessarily
-contribute to the ACK frame size.  When the receiver is only sending
-non-ack-eliciting packets, it can bundle a PING or other small ack-eliciting
-frame with a fraction of them, such as once per round trip, to enable
-dropping unnecessary ACK ranges and any state for previously sent packets.
-The receiver MUST NOT bundle an ack-eliciting frame, such as a PING, with all
-packets that would otherwise be non-ack-eliciting, in order to avoid an
-infinite feedback loop of acknowledgements.
+A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
+sends in ACK frames, both to limit the size of ACK frames and to avoid resource
+exhaustion. After receiving acknowledgments for an ACK frame, the receiver
+SHOULD stop tracking those acknowledged ACK Ranges.
 
-To limit receiver state or the size of ACK frames, a receiver MAY limit the
-number of ACK Ranges it sends.  A receiver can do this even without receiving
-acknowledgment of its ACK frames, with the knowledge this could cause the sender
-to unnecessarily retransmit some data.  Standard QUIC algorithms
-({{QUIC-RECOVERY}}) declare packets lost after sufficiently newer packets are
-acknowledged.  Therefore, the receiver SHOULD repeatedly acknowledge newly
-received packets in preference to packets received in the past.
+It is possible that retaining many ACK Ranges could cause an ACK frame to become
+too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
+size, at the cost of increased retransmissions from the sender. This is
+necessary if an ACK frame would be too large to fit in a packet, however
+receivers MAY also limit ACK frame size further to preserve space for other
+frames.
+
+When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
+received packet number. A receiver SHOULD retain ACK Ranges containing newly
+received packets or higher-numbered packets.
+
+A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
+not receive an acknowledgement for a long period of time.  This could cause the
+receiver to maintain state for a large number of ACK frames for a long period of
+time, and ACK frames it sends could be unnecessarily large.  In such a case, a
+receiver could bundle a PING or other small ack-eliciting frame occasionally,
+such as once per round trip, to elicit an ACK from the peer.
+
+A receiver MUST NOT bundle an ack-eliciting frame with all packets that would
+otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
+acknowledgements.
+
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
@@ -3366,7 +3404,7 @@ containing that information is acknowledged.
 * Data sent in CRYPTO frames is retransmitted according to the rules in
   {{QUIC-RECOVERY}}, until all data has been acknowledged.  Data in CRYPTO
   frames for Initial and Handshake packets is discarded when keys for the
-  corresponding encryption level are discarded.
+  corresponding packet number space are discarded.
 
 * Application data sent in STREAM frames is retransmitted in new STREAM frames
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
@@ -4116,7 +4154,7 @@ carries ACKs in either direction.
 The Initial packet contains a long header as well as the Length and Packet
 Number fields.  The first byte contains the Reserved and Packet Number Length
 bits.  Between the SCID and Length fields, there are two additional
-field specific to the Initial packet.
+fields specific to the Initial packet.
 
 Token Length:
 
@@ -4292,9 +4330,9 @@ PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.
 Endpoints MUST treat receipt of Handshake packets with other frames as a
 connection error.
 
-Like Initial packets (see {{discard-initial}}), data in CRYPTO frames at the
-Handshake encryption level is discarded - and no longer retransmitted - when
-Handshake protection keys are discarded.
+Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
+Handshake packets is discarded - and no longer retransmitted - when Handshake
+protection keys are discarded.
 
 ### Retry Packet {#packet-retry}
 
@@ -4640,14 +4678,20 @@ stateless_reset_token (0x02):
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
 
-max_packet_size (0x03):
+max_udp_payload_size (0x03):
 
-: The maximum packet size parameter is an integer value that limits the size of
-  packets that the endpoint is willing to receive.  This indicates that packets
-  larger than this limit will be dropped.  The default for this parameter is the
-  maximum permitted UDP payload of 65527.  Values below 1200 are invalid.  This
-  limit only applies to protected packets ({{packet-protected}}).
+: The maximum UDP payload size parameter is an integer value that limits the
+  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  with payloads larger than this limit are not likely to be processed by the
+  receiver.
 
+: The default for this parameter is the maximum permitted UDP payload of 65527.
+  Values below 1200 are invalid.
+
+: This limit does act as an additional constraint on datagram size in the same
+  way as the path MTU, but it is a property of the endpoint and not the path. It
+  is expected that this is the space an endpoint dedicates to holding incoming
+  packets.
 initial_max_data (0x04):
 
 : The initial maximum data parameter is an integer value that contains the
@@ -5269,8 +5313,9 @@ are present in the frame.
   final size of the stream.  Setting this bit indicates that the frame
   marks the end of the stream.
 
-An endpoint that receives a STREAM frame for a send-only stream MUST terminate
-the connection with error STREAM_STATE_ERROR.
+An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
+receives a STREAM frame for a locally-initiated stream that has not yet been
+created, or for a send-only stream.
 
 The STREAM frames are shown in {{fig-stream}}.
 
@@ -5629,9 +5674,9 @@ value.
 
 An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
 smaller than the Retire Prior To field of a previously received
-NEW_CONNECTION_ID frame MUST immediately send a corresponding
-RETIRE_CONNECTION_ID frame that retires the newly received connection ID.
-
+NEW_CONNECTION_ID frame MUST send a corresponding RETIRE_CONNECTION_ID frame
+that retires the newly received connection ID, unless it has already done so
+for that sequence number.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
@@ -5779,10 +5824,10 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using an 1-RTT packet ({{QUIC-TLS}}, Section 4).  When an application
-wishes to abandon a connection during the handshake, an endpoint can send a
-CONNECTION_CLOSE frame (type 0x1c) with an error code of 0x15a ("user_canceled"
-alert; see {{?TLS13}}) in an Initial or a Handshake packet.
+sent using 0-RTT or 1-RTT packets ({{QUIC-TLS}}, Section 4).  When an
+application wishes to abandon a connection during the handshake, an endpoint
+can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
+APPLICATION_ERROR in an Initial or a Handshake packet.
 
 
 ## HANDSHAKE_DONE frame {#frame-handshake-done}
@@ -5893,6 +5938,10 @@ PROTOCOL_VIOLATION (0xA):
 
 INVALID_TOKEN (0xB):
 : A server received a Retry Token in a client Initial that is invalid.
+
+APPLICATION_ERROR (0xC):
+
+: The application or application protocol caused the connection to be closed.
 
 CRYPTO_BUFFER_EXCEEDED (0xD):
 
@@ -6597,7 +6646,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x00 | original_connection_id      | {{transport-parameter-definitions}} |
 | 0x01 | max_idle_timeout            | {{transport-parameter-definitions}} |
 | 0x02 | stateless_reset_token       | {{transport-parameter-definitions}} |
-| 0x03 | max_packet_size             | {{transport-parameter-definitions}} |
+| 0x03 | max_udp_payload_size        | {{transport-parameter-definitions}} |
 | 0x04 | initial_max_data            | {{transport-parameter-definitions}} |
 | 0x05 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
 | 0x06 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
@@ -6686,6 +6735,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
 | 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
 | 0xB   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0xC   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
 | 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
