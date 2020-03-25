@@ -669,8 +669,8 @@ frames but is invalid due to:
 - invalid values for pseudo-header fields,
 - pseudo-header fields after fields,
 - an invalid sequence of HTTP messages,
-- the inclusion of uppercase header field names, or
-- the inclusion of invalid characters in header field names or values
+- the inclusion of uppercase field names, or
+- the inclusion of invalid characters in field names or values
 
 A request or response that includes a payload body can include a
 `content-length` header field.  A request or response is also malformed if the
@@ -1764,8 +1764,8 @@ types, or unknown stream types.  Note, however, that some uses are entirely
 legitimate, such as optional-to-understand extensions and padding to increase
 resistance to traffic analysis.
 
-Header compression also offers some opportunities to waste processing resources;
-see Section 7 of [QPACK] for more details on potential abuses.
+Compression of field sections also offers some opportunities to waste processing
+resources; see Section 7 of [QPACK] for more details on potential abuses.
 
 All these features -- i.e., server push, unknown protocol elements, field
 compression -- have legitimate uses.  These features become a burden only when
@@ -1774,7 +1774,8 @@ they are used unnecessarily or to excess.
 An endpoint that doesn't monitor this behavior exposes itself to a risk of
 denial-of-service attack.  Implementations SHOULD track the use of these
 features and set limits on their use.  An endpoint MAY treat activity that is
-suspicious as a connection error ({{errors}}) of type H3_EXCESSIVE_LOAD.
+suspicious as a connection error ({{errors}}) of type H3_EXCESSIVE_LOAD, but
+false positives will result in disrupting valid connections and requests.
 
 ### Limits on Field Section Size
 
@@ -1782,8 +1783,8 @@ A large field section ({{request-response}}) can cause an implementation to
 commit a large amount of state.  Header fields that are critical for routing can
 appear toward the end of a header field section, which prevents streaming of the
 header field section to its ultimate destination.  This ordering and other
-reasons, such as ensuring cache correctness, mean that an endpoint might need to
-buffer the entire header field section.  Since there is no hard limit to the
+reasons, such as ensuring cache correctness, mean that an endpoint likely needs
+to buffer the entire header field section.  Since there is no hard limit to the
 size of a field section, some endpoints could be forced to commit a large amount
 of available memory for header fields.
 
@@ -1796,7 +1797,7 @@ or response could encounter a hop with a lower, unknown limit.  An intermediary
 can attempt to avoid this problem by passing on values presented by different
 peers, but they are not obligated to do so.
 
-A server that receives a larger header block than it is willing to handle can
+A server that receives a larger field section than it is willing to handle can
 send an HTTP 431 (Request Header Fields Too Large) status code {{?RFC6585}}.  A
 client can discard responses that it cannot process.
 
