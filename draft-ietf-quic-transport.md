@@ -6396,20 +6396,26 @@ likely to be routed to a different server. There are several actions that can
 mitigate or resolve operational and security issues in this case.
 
 * Servers can use an out-of-band mechanism to deliver packets to the correct
-destination or transfer state from the original destination. Properly designed,
-this completely solves the problem and no further measures are necessary.
+destination or transfer state from the original destination.
 
-* Sending the disable_active_migration transport parameter informs the client
-that any address change is likely to terminate the connection, which can lead it
-to use more aggressive timeouts or terminate connections when its IP address
+* If the server has another address where the 5-tuple based routers are not on-
+path, the preferred_address transport parameter can communicate that address and
+thus support changing client IP addresses without difficulty.
+
+If a server does not implement one of the solutions above, it SHOULD send the
+disable_active_migration transport parameter to inform the client that any
+address change is likely to terminate the connection, which can lead it to use
+strategies to avoid NAT rebinding or terminate connections when its IP address
 changes.
 
-* The preferred_address transport parameter can provide a path that does not use
-the 5-tuple based routers.
+Regardless of other mitigations, servers behind 5-tuple routing MUST do one of
+the following to avoid creating a Reset Oracle ({{reset-oracle}}):
 
-* Servers MUST either use different Stateless Reset Token keys, or encode the
-client IP address and port in the Stateless Reset token. Doing neither will
-create a Reset Oracle (see {{reset-oracle}}).
+* not send Stateless Reset under any circumstances, or
+* use a different Stateless Reset Token key than other servers, or
+* encode the client IP address and port in the Stateless Reset token. If using
+the preferred_address transport parameter, the token must also encode the
+preferred address.
 
 # IANA Considerations {#iana}
 
