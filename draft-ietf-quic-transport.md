@@ -6408,14 +6408,15 @@ address change is likely to terminate the connection, which can lead it to use
 strategies to avoid NAT rebinding or terminate connections when its IP address
 changes.
 
-Regardless of other mitigations, servers behind 5-tuple routing MUST do one of
-the following to avoid creating a Reset Oracle ({{reset-oracle}}):
+Regardless of other mitigations, 5-tuple routing introduces new possibilities
+to create a Reset Oracle ({{reset-oracle}}). An attacker could tweak the source
+address or port of a packet to direct it to a different server and thus obtain
+the stateless reset token for a connection ID. Additional measures are
+therefore necessary. For example, a server might:
 
 * not send Stateless Reset under any circumstances, or
 * use a different Stateless Reset Token key than other servers, or
-* encode the client IP address and port in the Stateless Reset token. If using
-the preferred_address transport parameter, the token must also encode the
-preferred address.
+* encode a unique server identifier in the Stateless Reset token.
 
 # IANA Considerations {#iana}
 
