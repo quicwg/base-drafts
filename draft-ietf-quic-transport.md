@@ -1069,6 +1069,18 @@ to cease using the connection IDs when requested can result in connection
 failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
+An endpoint MAY elect to only send or retransmit RETIRE_CONNECTION_ID frames
+with sequence numbers greater than or equal to the highest Retire Prior To field
+received minus its advertised active_connection_id_limit. This bounds the
+necessary state at the endpoint. For example, if an endpoint receives a Retire
+Prior To field of 7 and has an advertised active_connection_id_limit of 4, it
+may cease sending any RETIRE_CONNECTION_ID frame with sequence number less than
+3.
+
+Peers are discouraged from issuing updates of the Retire Prior To field before
+receiving RETIRE_CONNECTION_ID frames for the previous update of Retire Prior
+To. Doing so may result in the peer being uncertain if it is to receive
+additional packets with an old Connection ID.
 
 ## Matching Packets to Connections {#packet-handling}
 
