@@ -508,19 +508,21 @@ field.
 
 #### Pseudo-Header Fields
 
-As in HTTP/2, HTTP/3 uses a series of pseudo-header field lines beginning with
-the ':' character (ASCII 0x3a) to convey the target URI, the method of the
-request, and the status code for the response.
+Like HTTP/2, HTTP/3 employs a series of pseudo-header fields where the field
+name begins with the ':' character (ASCII 0x3a).  These pseudo-header fields
+convey the target URI, the method of the request, and the status code for the
+response.
 
 Pseudo-header fields are not HTTP fields.  Endpoints MUST NOT generate
 pseudo-header fields other than those defined in this document, except as
 negotiated via an extension; see {{extensions}}.
 
-Pseudo-fields are only valid in the context in which they are defined.
-Pseudo-fields defined for requests MUST NOT appear in responses; pseudo-header
-fields defined for responses MUST NOT appear in requests. Pseudo-fields MUST NOT
-appear in trailers.  Endpoints MUST treat a request or response that contains
-undefined or invalid pseudo-header fields as malformed ({{malformed}}).
+Pseudo-header fields are only valid in the context in which they are defined.
+Pseudo-header fields defined for requests MUST NOT appear in responses;
+pseudo-header fields defined for responses MUST NOT appear in requests.
+Pseudo-header fields MUST NOT appear in trailers.  Endpoints MUST treat a
+request or response that contains undefined or invalid pseudo-header fields as
+malformed ({{malformed}}).
 
 All pseudo-header fields MUST appear in the header field section before regular
 header fields.  Any request or response that contains a pseudo-header field that
@@ -754,7 +756,7 @@ Each server push is identified by a unique Push ID. This Push ID is used in one
 or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
 fields, then included with the push stream which ultimately fulfills those
 promises. When the same Push ID is promised on multiple request streams, the
-decompressed request field sets MUST contain the same fields in the
+decompressed request field sections MUST contain the same fields in the
 same order, and both the name and the value in each field MUST be exact
 matches.
 
@@ -1310,8 +1312,8 @@ peer combines the two sets to conclude which choice will be used.  SETTINGS does
 not provide a mechanism to identify when the choice takes effect.
 
 Different values for the same parameter can be advertised by each peer. For
-example, a client might be willing to consume a very large response field set,
-while servers are more cautious about request size.
+example, a client might be willing to consume a very large response field
+section, while servers are more cautious about request size.
 
 The same setting identifier MUST NOT occur more than once in the SETTINGS frame.
 A receiver MAY treat the presence of duplicate setting identifiers as a
@@ -1412,7 +1414,7 @@ error of type H3_SETTINGS_ERROR.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
-field set from server to client on a request stream, as in HTTP/2.
+field section from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
  0                   1                   2                   3
@@ -1442,14 +1444,14 @@ PUSH_PROMISE frame that contains a larger Push ID than the client has advertised
 as a connection error of H3_ID_ERROR.
 
 A server MAY use the same Push ID in multiple PUSH_PROMISE frames. If so, the
-decompressed request header sets MUST contain the same fields in the same
-order, and both the name and the value in each field MUST be exact
-matches. Clients SHOULD compare the request header sets for resources promised
-multiple times. If a client receives a Push ID that has already been promised
-and detects a mismatch, it MUST respond with a connection error of type
-H3_GENERAL_PROTOCOL_ERROR. If the decompressed field sets match exactly, the
-client SHOULD associate the pushed content with each stream on which
-a PUSH_PROMISE was received.
+decompressed request header sets MUST contain the same fields in the same order,
+and both the name and the value in each field MUST be exact matches. Clients
+SHOULD compare the request header sections for resources promised multiple
+times. If a client receives a Push ID that has already been promised and detects
+a mismatch, it MUST respond with a connection error of type
+H3_GENERAL_PROTOCOL_ERROR. If the decompressed field sections match exactly, the
+client SHOULD associate the pushed content with each stream on which a
+PUSH_PROMISE was received.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
