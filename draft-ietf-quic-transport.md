@@ -1077,8 +1077,9 @@ sending frames which the peer is least likely to have received.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
 RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To. Doing so
-may result in being uncertain if it is to receive additional packets with an old
-Connection ID.
+may result in the peer being unwilling to immediately retire all the connection
+IDs, if retiring them would cause it to exceed its limit on outstanding
+RETIRE_CONNECTION_ID frames, as described above.
 
 ## Matching Packets to Connections {#packet-handling}
 
