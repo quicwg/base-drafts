@@ -1069,14 +1069,16 @@ to cease using the connection IDs when requested can result in connection
 failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
-An endpoint MAY elect to limit the number of outstanding RETIRE_CONNECTION_ID frames
-to bound the necessary state.  In order to allow a peer to retire all previously issued
-connection IDs, this limit SHOULD be at least the active_connection_id_limit.
+An endpoint MAY elect to limit the number of outstanding RETIRE_CONNECTION_ID
+frames to bound the necessary state. In order to allow a peer to retire all
+previously issued connection IDs, this limit SHOULD be at least the
+active_connection_id_limit. Within this limit, endpoints SHOULD prioritize
+sending frames which the peer is least likely to have received.
 
-Peers SHOULD NOT issue updates of the Retire Prior To field before
-receiving RETIRE_CONNECTION_ID frames for the previous update of Retire Prior
-To. Doing so may result in the peer being uncertain if it is to receive
-additional packets with an old Connection ID.
+Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
+RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To. Doing so
+may result in being uncertain if it is to receive additional packets with an old
+Connection ID.
 
 ## Matching Packets to Connections {#packet-handling}
 
