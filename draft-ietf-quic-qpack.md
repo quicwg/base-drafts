@@ -126,13 +126,11 @@ Representation:
 
 Encoder:
 
-: An implementation which transforms a field section into a series of
-  representations.
+: An implementation which encodes field sections.
 
 Decoder:
 
-: An implementation which transforms a series of representations into a field
-  section.
+: An implementation which decodes encoded field sections.
 
 Absolute Index:
 
@@ -192,7 +190,7 @@ limited to field lines it is compressing.
 
 QPACK preserves the ordering of field lines within each field section.  An
 encoder MUST emit field representations in the order they appear in the input
-field list.
+field section.
 
 QPACK is designed to contain the more complex state tracking to the encoder,
 while the decoder is relatively simple.
@@ -283,8 +281,8 @@ can often be improved by referencing dynamic table entries that are still in
 transit, but if there is loss or reordering the stream can become blocked at the
 decoder.  An encoder can avoid the risk of blocking by only referencing dynamic
 table entries which have been acknowledged, but this could mean using literals.
-Since literals make the encoding of the field section larger, this can result in
-the encoder becoming blocked on congestion or flow control limits.
+Since literals make the encoded field section larger, this can result in the
+encoder becoming blocked on congestion or flow control limits.
 
 ### Avoiding Flow Control Deadlocks
 
@@ -344,8 +342,8 @@ Otherwise, the stream on which the field section was received becomes blocked.
 
 While blocked, field section data SHOULD remain in the blocked stream's flow
 control window.  A stream becomes unblocked when the Insert Count becomes
-greater than or equal to the Required Insert Count for all field sections the
-decoder has started reading from the stream.
+greater than or equal to the Required Insert Count for all encoded field
+sections the decoder has started reading from the stream.
 
 When processing encoded field sections, the decoder expects the Required Insert
 Count to equal the lowest possible value for the Insert Count with which the
@@ -1138,8 +1136,8 @@ The following error codes are defined for HTTP/3 to indicate failures of
 QPACK which prevent the connection from continuing:
 
 QPACK_DECOMPRESSION_FAILED (0x200):
-: The decoder failed to interpret a representation and is not able to continue
-  decoding that field section.
+: The decoder failed to interpret an encoded field section and is not able to
+  continue decoding that field section.
 
 QPACK_ENCODER_STREAM_ERROR (0x201):
 : The decoder failed to interpret an encoder instruction received on the
