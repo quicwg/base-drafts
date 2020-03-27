@@ -6417,6 +6417,7 @@ following properties:
 Note that these guarantees are the same guarantees provided for any NAT, for the
 same reasons.
 
+
 # IANA Considerations {#iana}
 
 This document establishes several registries for the management of codepoints in
