@@ -412,7 +412,7 @@ reduce future spurious retransmissions and loss events. Implementations with
 adaptive time thresholds MAY choose to start with smaller initial reordering
 thresholds to minimize recovery latency.
 
-### Packet Threshold
+### Packet Threshold {#packet-threshold}
 
 The RECOMMENDED initial value for the packet reordering threshold
 (kPacketThreshold) is 3, based on best practices for TCP loss detection
@@ -448,7 +448,8 @@ Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
   up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8.
+multiplier, is 9/8. The RECOMMENDED value of the timer granularity
+(kGranularity) is 1ms.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variation.  Smaller
@@ -516,7 +517,7 @@ detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
 
-### Handshakes and New Paths
+### Handshakes and New Paths {#pto-handshake}
 
 The initial probe timeout for a new connection or new path SHOULD be
 set to twice the initial RTT.  Resumed connections over the same network
@@ -526,9 +527,8 @@ SHOULD be set to 500ms, resulting in a 1 second initial timeout as recommended
 in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
-PATH_RESPONSE to set the initial RTT (see kInitialRtt in
-{{ld-consts-of-interest}}) for a new path, but the delay SHOULD NOT be
-considered an RTT sample.
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in {{pto-handshake}})
+for a new path, but the delay SHOULD NOT be considered an RTT sample.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
@@ -792,8 +792,14 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed.  This duration is computed
-as follows:
+where PTOs do not occur or are substantially delayed. The rationale for this
+threshold is to enable a sender to use initial PTOs for aggressive probing,
+as TCP does with Tail Loss Probe (TLP) {{RACK}}, before establishing persistent
+congestion, as TCP does with a Retransmission Timeout (RTO) {{?RFC5681}}.
+The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
+approximately equivalent to two TLPs before an RTO in TCP.
+
+This duration is computed as follows:
 
 ~~~
 (smoothed_rtt + 4 * rttvar + max_ack_delay) *
@@ -968,28 +974,29 @@ time_sent:
 : The time the packet was sent.
 
 
-## Constants of interest {#ld-consts-of-interest}
+## Constants of interest
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.
 
 kPacketThreshold:
 : Maximum reordering in packets before packet threshold loss detection
-  considers a packet lost. The RECOMMENDED value is 3.
+  considers a packet lost. The value recommended in {{packet-threshold}} is 3.
 
 kTimeThreshold:
 
 : Maximum reordering in time before time threshold loss detection
-  considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
-  value is 9/8.
+  considers a packet lost. Specified as an RTT multiplier. The value
+  recommended in {{time-threshold}} is 9/8.
 
 kGranularity:
 
-: Timer granularity. This is a system-dependent value, and the RECOMMENDED
-  value is 1ms.
+: Timer granularity. This is a system-dependent value, and {{time-threshold}}
+  recommends a value of 1ms.
 
 kInitialRtt:
-: The RTT used before an RTT sample is taken. The RECOMMENDED value is 500ms.
+: The RTT used before an RTT sample is taken. The value recommended in
+{{pto-handshake}} is 500ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1189,7 +1196,7 @@ and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
 This algorithm may result in the timer being set in the past, particularly if
-timers wake up late. Timers set in the past SHOULD fire immediately.
+timers wake up late. Timers set in the past fire immediately.
 
 Pseudocode for SetLossDetectionTimer follows:
 
@@ -1349,21 +1356,16 @@ kInitialWindow:
 : Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
-: Minimum congestion window in bytes. The RECOMMENDED value is
-  2 * max_datagram_size.
+: Minimum congestion window in bytes as described in {{initial-cwnd}}.
 
 kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
-  The RECOMMENDED value is 0.5.
+  The {{congestion-control}} section recommends a value is 0.5.
 
 kPersistentCongestionThreshold:
-: Period of time for persistent congestion to be established, specified as a PTO
-  multiplier.  The rationale for this threshold is to enable a sender to use
-  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
-  {{RACK}}, before establishing persistent congestion, as TCP does with a
-  Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
-  kPersistentCongestionThreshold is 3, which is approximately equivalent to
-  having two TLPs before an RTO in TCP.
+: Period of time for persistent congestion to be established, specified
+  as a PTO multiplier. The {{persistent-congestion}} section recommends a
+  value of 3.
 
 
 ## Variables of interest {#vars-of-interest}
