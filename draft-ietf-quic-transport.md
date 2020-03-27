@@ -1077,7 +1077,7 @@ Prior To field of 7 and has an advertised active_connection_id_limit of 4, it
 may cease sending any RETIRE_CONNECTION_ID frame with sequence number less than
 3.
 
-Peers are discouraged from issuing updates of the Retire Prior To field before
+Peers SHOULD NOT issue updates of the Retire Prior To field before
 receiving RETIRE_CONNECTION_ID frames for the previous update of Retire Prior
 To. Doing so may result in the peer being uncertain if it is to receive
 additional packets with an old Connection ID.
