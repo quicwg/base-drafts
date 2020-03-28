@@ -1007,11 +1007,12 @@ initial connection ID.
 When an endpoint issues a connection ID, it MUST accept packets that carry this
 connection ID for the duration of the connection or until its peer invalidates
 the connection ID via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).  Connection IDs that are issued and not
-retired are considered active; any active connection ID is valid for use with
-the current connection at any time, in any packet type.  This includes the
-connection ID issued by the server via the preferred_address transport
-parameter.
+({{frame-retire-connection-id}}) or it invalidates the connection ID by
+increasing the the Retire Prior To field.  Connection IDs that are issued and
+not retired via either of these two mechanisms are considered active; any
+active connection ID is valid for use with the current connection at any time,
+in any packet type.  This includes the connection ID issued by the server via
+the preferred_address transport parameter.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
@@ -1056,18 +1057,19 @@ An endpoint might need to stop accepting previously issued connection IDs in
 certain circumstances.  Such an endpoint can cause its peer to retire connection
 IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
 field.  The endpoint SHOULD continue to accept the previously issued connection
-IDs until they are retired by the peer.  If the endpoint can no longer process
-the indicated connection IDs, it MAY close the connection.
+IDs until a connection ID greater than or equal to the Retire Prior To value is
+used by the peer.  If the endpoint can no longer process the indicated connection
+IDs, it MAY close the connection.
 
 Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
-corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
-before adding the newly provided connection ID to the set of active connection
-IDs. This ordering allows an endpoint that has already supplied its peer with as
-many connection IDs as allowed by the active_connection_id_limit transport
-parameter to replace those connection IDs with new ones as necessary.  Failure
-to cease using the connection IDs when requested can result in connection
-failures, as the issuing endpoint might be unable to continue using the
-connection IDs with the active connection.
+corresponding connection IDs.  Use of a newly provided connection ID proves receipt
+of the increased Retire Prior To field, so the connection IDs do not need to be
+retired with RETIRE_CONNECTION_ID frames. This ordering allows an endpoint that
+has already supplied its peer with as many connection IDs as allowed by the
+active_connection_id_limit transport parameter to replace those connection IDs
+with new ones as necessary.  Failure to cease using the connection IDs when
+requested can result in connection failures, as the issuing endpoint might be
+unable to continue using the connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
