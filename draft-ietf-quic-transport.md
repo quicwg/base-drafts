@@ -1005,9 +1005,8 @@ are not assigned sequence numbers unless a server opts to retain them as its
 initial connection ID.
 
 When an endpoint issues a connection ID, it MUST accept packets that carry this
-connection ID for the duration of the connection or until its peer invalidates
-the connection ID via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).  Connection IDs that are issued and not
+connection ID for the duration of the connection or until the connection ID has
+been retired ({{retiring-cids}}).  Connection IDs that are issued and not
 retired are considered active; any active connection ID is valid for use with
 the current connection at any time, in any packet type.  This includes the
 connection ID issued by the server via the preferred_address transport
@@ -1056,18 +1055,19 @@ An endpoint might need to stop accepting previously issued connection IDs in
 certain circumstances.  Such an endpoint can cause its peer to retire connection
 IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
 field.  The endpoint SHOULD continue to accept the previously issued connection
-IDs until they are retired by the peer.  If the endpoint can no longer process
-the indicated connection IDs, it MAY close the connection.
+IDs until the NEW_CONNECTION_ID frame has been acknowledged.  If the endpoint
+can no longer process the indicated connection IDs, it MAY close the connection.
 
 Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
-corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
-before adding the newly provided connection ID to the set of active connection
-IDs. This ordering allows an endpoint that has already supplied its peer with as
-many connection IDs as allowed by the active_connection_id_limit transport
-parameter to replace those connection IDs with new ones as necessary.  Failure
-to cease using the connection IDs when requested can result in connection
-failures, as the issuing endpoint might be unable to continue using the
-connection IDs with the active connection.
+corresponding connection IDs before adding the newly provided connection ID to
+the set of active connection IDs. This ordering allows an endpoint that has
+already supplied its peer with as many connection IDs as allowed by the
+active_connection_id_limit transport parameter to replace those connection IDs
+with new ones as necessary.  By acknowledging the packet that contained the
+NEW_CONNECTION_ID frame, the endpoint confirms the connection ID was retired.
+Failure to cease using the connection IDs when requested can result in
+onnection failures, as the issuing endpoint might be unable to continue using
+the connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -2596,8 +2596,7 @@ applies to the connection ID that it selected during the handshake; clients
 cannot use this transport parameter because their transport parameters don't
 have confidentiality protection.  These tokens are protected by encryption, so
 only client and server know their value.  Tokens are invalidated when their
-associated connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+associated connection ID is retired ({{retiring-cids}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
 following layout:
@@ -5607,6 +5606,10 @@ Retire Prior To field MUST be less than or equal to the Sequence Number field.
 Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
 
+The receiver of the NEW_CONNECTION_ID frame that retired the connection ID
+confirms the retirement back to the sender when they acknowledge the packet that
+contained the NEW_CONNECTION_ID frame.
+
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
 Retire Prior To fields that do not increase the largest received Retire Prior To
@@ -5614,9 +5617,8 @@ value.
 
 An endpoint that receives a NEW_CONNECTION_ID frame with a sequence number
 smaller than the Retire Prior To field of a previously received
-NEW_CONNECTION_ID frame MUST send a corresponding RETIRE_CONNECTION_ID frame
-that retires the newly received connection ID, unless it has already done so
-for that sequence number.
+NEW_CONNECTION_ID frame MUST immediately retire the newly received connection
+D, unless it has already done so for that sequence number.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
