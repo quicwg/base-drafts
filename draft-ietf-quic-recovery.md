@@ -1108,14 +1108,16 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
+  // Determine which packets have been acknowledged and remove
+  // them from sent_packets.
+  newly_acked_packets = DetectNewlyAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
-  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
   if (newly_acked_packets.empty()):
     return
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (sent_packets[pn_space].contains(ack.largest_acked) &&
+  if (newly_acked_packets.largest == ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
@@ -1129,12 +1131,7 @@ OnAckReceived(ack, pn_space):
       ProcessECN(ack, pn_space)
 
   lost_packets = DetectLostPackets(pn_space)
-  if (!lost_packets.empty()):
-    OnPacketsLost(lost_packets)
-  for (acked_packet in newly_acked_packets):
-    if (acked_packet.in_flight):
-      OnPacketAcked(acked_packet)
-    sent_packets[pn_space].remove(acked_packet.packet_number)
+  OnCongestionEvent(acked_packets, lost_packets)
 
   pto_count = 0
   SetLossDetectionTimer()
@@ -1411,17 +1408,17 @@ increases bytes_in_flight.
 
 ## On Packet Acknowledgement
 
-Invoked from loss detection's OnAckReceived and is supplied with the
+Invoked from OnCongestionEvent and is supplied with the
 acked_packet from sent_packets.
 
 ~~~
-   InCongestionRecovery(sent_time):
+   InLossRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
    OnPacketAcked(acked_packet):
      // Remove from bytes_in_flight.
      bytes_in_flight -= acked_packet.size
-     if (InCongestionRecovery(acked_packet.time_sent)):
+     if (InLossRecovery(acked_packet.time_sent)):
        // Do not increase congestion window in recovery period.
        return
      if (IsAppOrFlowControlLimited()):
