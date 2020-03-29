@@ -1058,18 +1058,19 @@ certain circumstances.  Such an endpoint can cause its peer to retire connection
 IDs by sending a NEW_CONNECTION_ID frame with an increased Retire Prior To
 field.  The endpoint SHOULD continue to accept the previously issued connection
 IDs until a connection ID greater than or equal to the Retire Prior To value is
-used by the peer.  If the endpoint can no longer process the indicated connection
-IDs, it MAY close the connection.
+used by the peer.  If the endpoint can no longer process the indicated
+connection IDs, it MAY close the connection.
 
 Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
-corresponding connection IDs.  Use of a newly provided connection ID proves receipt
-of the increased Retire Prior To field, so the connection IDs do not need to be
-retired with RETIRE_CONNECTION_ID frames. This ordering allows an endpoint that
-has already supplied its peer with as many connection IDs as allowed by the
-active_connection_id_limit transport parameter to replace those connection IDs
-with new ones as necessary.  Failure to cease using the connection IDs when
-requested can result in connection failures, as the issuing endpoint might be
-unable to continue using the connection IDs with the active connection.
+corresponding connection IDs.  Use of a newly provided connection ID proves
+receipt of the increased Retire Prior To field, so the connection IDs do not
+need to be retired with RETIRE_CONNECTION_ID frames. This ordering allows an
+endpoint that has already supplied its peer with as many connection IDs as
+allowed by the active_connection_id_limit transport parameter to replace those
+connection IDs with new ones as necessary.  Failure to cease using the
+connection IDs when requested can result in connection failures, as the issuing
+endpoint might be unable to continue using the connection IDs with the active
+connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
