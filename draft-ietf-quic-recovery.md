@@ -1410,8 +1410,8 @@ increases bytes_in_flight.
 
 ## On Packet Acknowledgement
 
-Invoked from OnCongestionEvent and is supplied with the
-acked_packet from sent_packets.
+Invoked from loss detection's OnPacketAcked and is supplied with the
+newly acked_packets from sent_packets.
 
 ~~~
    InLossRecovery(sent_time):
