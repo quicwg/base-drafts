@@ -501,7 +501,12 @@ and prevents a server from sending a 1-RTT packet on a PTO expiration before it
 has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
-value. This exponential reduction in the sender's rate is important because
+value. The PTO is set back to the original value upon receiving an
+acknowledgement for a non-Initial packet. The PTO timer is not decreased upon
+receiving an Initial ACK to ensure the client's anti-deadlock timer doesn't
+fire too aggressively when the server does not yet have handshake data to send.
+
+This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
 severe congestion.  Even when there are ack-eliciting packets in-flight in
 multiple packet number spaces, the exponential increase in probe timeout
@@ -583,6 +588,7 @@ in the packet number space as a probe, unless there is no data available to
 send.  An endpoint MAY send up to two full-sized datagrams containing
 ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
 to a single lost datagram or transmit data from multiple packet number spaces.
+All probe packets sent on a PTO MUST be ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
@@ -590,9 +596,6 @@ number spaces with in-flight data, coalescing packets if possible.
 
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
-
-When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent.
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
@@ -611,11 +614,12 @@ recovery latency increases exponentially as packets continue to be dropped in
 the network.  Sending two packets on PTO expiration increases resilience to
 packet drops, thus reducing the probability of consecutive PTO events.
 
-Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
-new data when possible.  A probe packet MAY carry retransmitted unacknowledged
-data when new data is unavailable, when flow control does not permit new data to
-be sent, or to opportunistically reduce loss recovery delay.  Implementations
-MAY use alternative strategies for determining the content of probe packets,
+When the PTO timer expires, and there is new or previously sent unacknowledged
+data, it MUST be sent. A probe packet SHOULD carry new data when possible.
+A probe packet MAY carry retransmitted unacknowledged data when new data is 
+navailable, when flow control does not permit new data to be sent, or to
+opportunistically reduce loss recovery delay.  Implementations MAY use
+alternative strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
@@ -1139,8 +1143,9 @@ OnAckReceived(ack, pn_space):
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
   DetectLostPackets(pn_space)
-
-  pto_count = 0
+  // Reset pto_count, unless it's an Initial ACK.
+  if (pn_space != Initial)
+    pto_count = 0
 
   SetLossDetectionTimer()
 
