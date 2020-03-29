@@ -1547,6 +1547,7 @@ OnPacketNumberSpaceDiscarded(pn_space):
   // Reset the loss detection and PTO timer
   time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
   loss_time[pn_space] = 0
+  pto_count = 0
   SetLossDetectionTimer()
 ~~~
 
