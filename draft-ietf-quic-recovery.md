@@ -588,7 +588,6 @@ in the packet number space as a probe, unless there is no data available to
 send.  An endpoint MAY send up to two full-sized datagrams containing
 ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
 to a single lost datagram or transmit data from multiple packet number spaces.
-All probe packets sent on a PTO MUST be ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
@@ -596,6 +595,9 @@ number spaces with in-flight data, coalescing packets if possible.
 
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
+
+When the PTO timer expires, and there is new or previously sent unacknowledged
+data, it MUST be sent. 
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
@@ -614,12 +616,11 @@ recovery latency increases exponentially as packets continue to be dropped in
 the network.  Sending two packets on PTO expiration increases resilience to
 packet drops, thus reducing the probability of consecutive PTO events.
 
-When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent. A probe packet SHOULD carry new data when possible.
-A probe packet MAY carry retransmitted unacknowledged data when new data is
-navailable, when flow control does not permit new data to be sent, or to
-opportunistically reduce loss recovery delay.  Implementations MAY use
-alternative strategies for determining the content of probe packets,
+Probe packets sent on a PTO MUST be ack-eliciting. A probe packet SHOULD carry
+new data when possible. A probe packet MAY carry retransmitted unacknowledged
+data when new data is unavailable, when flow control does not permit new data to
+be sent, or to opportunistically reduce loss recovery delay.  Implementations
+MAY use alternative strategies for determining the content of probe packets,
 including sending new or retransmitted data based on the application's
 priorities.
 
