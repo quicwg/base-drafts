@@ -597,7 +597,7 @@ If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent. 
+data, it MUST be sent.
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
@@ -616,8 +616,8 @@ recovery latency increases exponentially as packets continue to be dropped in
 the network.  Sending two packets on PTO expiration increases resilience to
 packet drops, thus reducing the probability of consecutive PTO events.
 
-Probe packets sent on a PTO MUST be ack-eliciting. A probe packet SHOULD carry
-new data when possible. A probe packet MAY carry retransmitted unacknowledged
+Probe packets sent on a PTO MUST be ack-eliciting.  A probe packet SHOULD carry
+new data when possible.  A probe packet MAY carry retransmitted unacknowledged
 data when new data is unavailable, when flow control does not permit new data to
 be sent, or to opportunistically reduce loss recovery delay.  Implementations
 MAY use alternative strategies for determining the content of probe packets,
