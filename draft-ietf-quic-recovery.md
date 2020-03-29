@@ -530,19 +530,6 @@ A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
 PATH_RESPONSE to set the initial RTT (see kInitialRtt in {{pto-handshake}})
 for a new path, but the delay SHOULD NOT be considered an RTT sample.
 
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited to three times the amount of data received,
-as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
-then the PTO alarm MUST NOT be armed until datagrams have been received from
-the client.
-
-Since the server could be blocked until more packets are received from the
-client, it is the client's responsibility to send packets to unblock the server
-until it is certain that the server has finished its address validation
-(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
-
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
 incorrect RTT estimate at the client. To allow the client to improve its RTT
@@ -557,6 +544,23 @@ as described below in Section {{discarding-packets}}. When Initial or Handshake
 keys are discarded, the PTO and loss detection timers MUST be reset, because
 discarding keys indicates forward progress and the loss detection timer might
 have been set for a now discarded packet number space.
+
+#### Before Address Validation
+
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited to three times the amount of data received,
+as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no additional data can be
+sent, the server's PTO alarm MUST NOT be armed until datagrams have been
+received from the client, because packets sent on PTO count against the
+anti-amplification limit. Note that the server could fail to validate the
+client's address even if 0-RTT is accepted.
+
+Since the server could be blocked until more packets are received from the
+client, it is the client's responsibility to send packets to unblock the server
+until it is certain that the server has finished its address validation
+(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
+probe timer if the client has not received an acknowledgement for one of its
+Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
 
 ### Speeding Up Handshake Completion
 
