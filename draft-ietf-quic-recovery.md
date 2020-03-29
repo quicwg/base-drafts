@@ -616,7 +616,7 @@ packet drops, thus reducing the probability of consecutive PTO events.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
 data, it MUST be sent. A probe packet SHOULD carry new data when possible.
-A probe packet MAY carry retransmitted unacknowledged data when new data is 
+A probe packet MAY carry retransmitted unacknowledged data when new data is
 navailable, when flow control does not permit new data to be sent, or to
 opportunistically reduce loss recovery delay.  Implementations MAY use
 alternative strategies for determining the content of probe packets,
