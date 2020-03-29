@@ -1131,7 +1131,9 @@ OnAckReceived(ack, pn_space):
       ProcessECN(ack, pn_space)
 
   lost_packets = DetectLostPackets(pn_space)
-  OnCongestionEvent(acked_packets, lost_packets)
+  if (!lost_packets.empty()):
+    OnPacketsLost(lost_packets)
+  OnPacketsAcked(newly_acked_packets)
 
   pto_count = 0
   SetLossDetectionTimer()
