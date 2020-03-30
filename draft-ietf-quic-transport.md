@@ -1160,9 +1160,10 @@ Servers MUST drop incoming packets under all other circumstances.
 
 QUIC endpoints can be deployed behind a 5-tuple based routing architecture that
 delivers packets based on both the source and destination IP addresses and
-ports. In such an architecture, clients that change IP address or port are
-likely to be routed to a different server. There are several actions that can
-mitigate or resolve operational and security issues in this case.
+ports. When routing depends on addresses that the endpoint does not control,
+changes to the IP address or port of peers could result in packets being routed
+to a different server. The following actions could mitigate or resolve
+operational and security issues in this case:
 
 * Servers can use an out-of-band mechanism to deliver packets to the correct
 destination or transfer state from the original destination.
