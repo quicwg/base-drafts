@@ -1158,7 +1158,7 @@ Servers MUST drop incoming packets under all other circumstances.
 
 ### Considerations for 5-tuple routing architectures
 
-QUIC servers can be deployed behind a 5-tuple based routing architecture that
+QUIC endpoints can be deployed behind a 5-tuple based routing architecture that
 delivers packets based on both the source and destination IP addresses and
 ports. In such an architecture, clients that change IP address or port are
 likely to be routed to a different server. There are several actions that can
