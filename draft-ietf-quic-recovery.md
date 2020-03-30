@@ -1431,10 +1431,10 @@ newly acked_packets from sent_packets.
        if (congestion_window < ssthresh):
          // Slow start.
          congestion_window += packet.size
-       else:
-         // Congestion avoidance.
-         congestion_window += max_datagram_size * acked_packet.size
-             / congestion_window
+         return
+       // Congestion avoidance.
+       congestion_window += max_datagram_size * acked_packet.size
+           / congestion_window
 ~~~
 
 
