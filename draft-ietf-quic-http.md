@@ -147,7 +147,7 @@ and an internal framing layer similar to HTTP/2.
 Once a client knows that an HTTP/3 server exists at a certain endpoint, it opens
 a QUIC connection. QUIC provides protocol negotiation, stream-based
 multiplexing, and flow control.  Discovery of an HTTP/3 endpoint is described in
-greater detail in {{discovery}}.
+{{discovery}}.
 
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
