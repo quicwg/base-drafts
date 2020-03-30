@@ -61,6 +61,17 @@ normative:
 
 informative:
 
+  BREACH:
+    title: "BREACH: Reviving the CRIME Attack"
+    date: "July 2013"
+    target: http://breachattack.com/resources/BREACH%20-%20SSL,%20gone%20in%2030%20seconds.pdf
+    author:
+      -
+        ins: Y. Gluck
+      -
+        ins: N. Harris
+      -
+        ins: A. Prado
 
 --- abstract
 
@@ -668,8 +679,9 @@ frames but is invalid due to:
 - the absence of mandatory pseudo-header fields,
 - invalid values for pseudo-header fields,
 - pseudo-header fields after fields,
-- an invalid sequence of HTTP messages, or
-- the inclusion of uppercase field names.
+- an invalid sequence of HTTP messages,
+- the inclusion of uppercase field names, or
+- the inclusion of invalid characters in field names or values
 
 A request or response that includes a payload body can include a
 `content-length` header field.  A request or response is also malformed if the
@@ -1691,24 +1703,173 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS; the considerations from Section 10 of {{?HTTP2}} apply in addition to
-those listed here.
+with TLS.  However, many of the considerations from Section 10 of {{?HTTP2}}
+apply to [QUIC-TRANSPORT] and are discussed in that document.
 
-TODO:  This is going to be a big import, probably worthy of its own PR.
+## Server Authority
 
-When HTTP Alternative Services is used for discovery for HTTP/3 endpoints, the
-security considerations of {{!ALTSVC}} also apply.
+HTTP/3 relies on the HTTP definition of authority. The security considerations
+of establishing authority are discussed in Section 11.1 of {{!SEMANTICS}}.
 
-## Traffic Analysis
+## Cross-Protocol Attacks
+
+The use of ALPN in the TLS and QUIC handshakes establishes the target
+application protocol before application-layer bytes are processed.  Because all
+QUIC packets are encrypted, it is difficult for an attacker to control the
+plaintext bytes of an HTTP/3 connection which could be used in a cross-protocol
+attack on a plaintext protocol.
+
+## Intermediary Encapsulation Attacks
+
+The HTTP/3 field encoding allows the expression of names that are not valid
+field names in the syntax used by HTTP (Section 4.3 of {{!SEMANTICS}}). Requests
+or responses containing invalid field names MUST be treated as malformed
+({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
+or response containing an invalid field name into an HTTP/1.1 message.
+
+Similarly, HTTP/3 allows field values that are not valid. While most of the
+values that can be encoded will not alter field parsing, carriage return (CR,
+ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL, ASCII 0x0)
+might be exploited by an attacker if they are translated verbatim. Any request
+or response that contains a character not permitted in a field value MUST be
+treated as malformed ({{malformed}}).  Valid characters are defined by the
+"field-content" ABNF rule in Section 4.4 of {{!SEMANTICS}}.
+
+## Cacheability of Pushed Responses
+
+Pushed responses do not have an explicit request from the client; the request is
+provided by the server in the PUSH_PROMISE frame.
+
+Caching responses that are pushed is possible based on the guidance provided by
+the origin server in the Cache-Control header field. However, this can cause
+issues if a single server hosts more than one tenant.  For example, a server
+might offer multiple users each a small portion of its URI space.
+
+Where multiple tenants share space on the same server, that server MUST ensure
+that tenants are not able to push representations of resources that they do not
+have authority over.  Failure to enforce this would allow a tenant to provide a
+representation that would be served out of cache, overriding the actual
+representation that the authoritative tenant provides.
+
+Pushed responses for which an origin server is not authoritative (see
+{{connection-reuse}}) MUST NOT be used or cached.
+
+## Denial-of-Service Considerations
+
+An HTTP/3 connection can demand a greater commitment of resources to operate
+than an HTTP/1.1 or HTTP/2 connection.  The use of field compression and flow
+control depend on a commitment of resources for storing a greater amount of
+state.  Settings for these features ensure that memory commitments for these
+features are strictly bounded.
+
+The number of PUSH_PROMISE frames is constrained in a similar fashion.  A client
+that accepts server push SHOULD limit the number of Push IDs it issues at a
+time.
+
+Processing capacity cannot be guarded as effectively as state capacity.
+
+The ability to send undefined protocol elements which the peer is required to
+ignore can be abused to cause a peer to expend additional processing time.  This
+might be done by setting multiple undefined SETTINGS parameters, unknown frame
+types, or unknown stream types.  Note, however, that some uses are entirely
+legitimate, such as optional-to-understand extensions and padding to increase
+resistance to traffic analysis.
+
+Compression of field sections also offers some opportunities to waste processing
+resources; see Section 7 of [QPACK] for more details on potential abuses.
+
+All these features -- i.e., server push, unknown protocol elements, field
+compression -- have legitimate uses.  These features become a burden only when
+they are used unnecessarily or to excess.
+
+An endpoint that doesn't monitor this behavior exposes itself to a risk of
+denial-of-service attack.  Implementations SHOULD track the use of these
+features and set limits on their use.  An endpoint MAY treat activity that is
+suspicious as a connection error ({{errors}}) of type H3_EXCESSIVE_LOAD, but
+false positives will result in disrupting valid connections and requests.
+
+### Limits on Field Section Size
+
+A large field section ({{request-response}}) can cause an implementation to
+commit a large amount of state.  Header fields that are critical for routing can
+appear toward the end of a header field section, which prevents streaming of the
+header field section to its ultimate destination.  This ordering and other
+reasons, such as ensuring cache correctness, mean that an endpoint likely needs
+to buffer the entire header field section.  Since there is no hard limit to the
+size of a field section, some endpoints could be forced to commit a large amount
+of available memory for header fields.
+
+An endpoint can use the SETTINGS_MAX_HEADER_LIST_SIZE ({{settings-parameters}})
+setting to advise peers of limits that might apply on the size of field
+sections. This setting is only advisory, so endpoints MAY choose to send field
+sections that exceed this limit and risk having the request or response being
+treated as malformed.  This setting is specific to a connection, so any request
+or response could encounter a hop with a lower, unknown limit.  An intermediary
+can attempt to avoid this problem by passing on values presented by different
+peers, but they are not obligated to do so.
+
+A server that receives a larger field section than it is willing to handle can
+send an HTTP 431 (Request Header Fields Too Large) status code {{?RFC6585}}.  A
+client can discard responses that it cannot process.
+
+### CONNECT Issues
+
+The CONNECT method can be used to create disproportionate load on an proxy,
+since stream creation is relatively inexpensive when compared to the creation
+and maintenance of a TCP connection.  A proxy might also maintain some resources
+for a TCP connection beyond the closing of the stream that carries the CONNECT
+request, since the outgoing TCP connection remains in the TIME_WAIT state.
+Therefore, a proxy cannot rely on QUIC stream limits alone to control the
+resources consumed by CONNECT requests.
+
+## Use of Compression
+
+Compression can allow an attacker to recover secret data when it is compressed
+in the same context as data under attacker control. HTTP/3 enables compression
+of fields ({{header-formatting}}); the following concerns also apply to the use
+of HTTP compressed content-codings; see Section 6.1.2 of {{!SEMANTICS}}.
+
+There are demonstrable attacks on compression that exploit the characteristics
+of the web (e.g., {{BREACH}}).  The attacker induces multiple requests
+containing varying plaintext, observing the length of the resulting ciphertext
+in each, which reveals a shorter length when a guess about the secret is
+correct.
+
+Implementations communicating on a secure channel MUST NOT compress content that
+includes both confidential and attacker-controlled data unless separate
+compression dictionaries are used for each source of data.  Compression MUST NOT
+be used if the source of data cannot be reliably determined.
+
+Further considerations regarding the compression of fields sections are
+described in {{QPACK}}.
+
+## Padding and Traffic Analysis
+
+Padding can be used to obscure the exact size of frame content and is provided
+to mitigate specific attacks within HTTP, for example, attacks where compressed
+content includes both attacker-controlled plaintext and secret data (e.g.,
+{{BREACH}}).
 
 Where HTTP/2 employs PADDING frames and Padding fields in other frames to make a
 connection more resistant to traffic analysis, HTTP/3 can either rely on
 transport-layer padding or employ the reserved frame and stream types discussed
 in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
 different results in terms of the granularity of padding, how padding is
-arranged in relation to the information that is being protected, whether
-padding is applied in the case of packet loss, and how an implementation might
-control padding.
+arranged in relation to the information that is being protected, whether padding
+is applied in the case of packet loss, and how an implementation might control
+padding.  Redundant padding could even be counterproductive.
+
+To mitigate attacks that rely on compression, disabling or limiting compression
+might be preferable to padding as a countermeasure.
+
+Use of padding can result in less protection than might seem immediately
+obvious.  At best, padding only makes it more difficult for an attacker to infer
+length information by increasing the number of frames an attacker has to
+observe.  Incorrectly implemented padding schemes can be easily defeated.  In
+particular, randomized padding with a predictable distribution provides very
+little protection; similarly, padding payloads to a fixed size exposes
+information as payload sizes cross the fixed-sized boundary, which could be
+possible if an attacker can control plaintext.
 
 ## Frame Parsing
 
@@ -1733,6 +1894,23 @@ addresses), such implementations will need to either actively retrieve the
 client's current address or addresses when they are relevant or explicitly
 accept that the original address might change.
 
+## Privacy Considerations
+
+Several characteristics of HTTP/3 provide an observer an opportunity to
+correlate actions of a single client or server over time.  These include the
+value of settings, the timing of reactions to stimulus, and the handling of any
+features that are controlled by settings.
+
+As far as these create observable differences in behavior, they could be used as
+a basis for fingerprinting a specific client.
+
+HTTP/3's preference for using a single QUIC connection allows correlation of a
+user's activity on a site.  Reusing connections for different origins allows
+for correlation of activity across those origins.
+
+Several features of QUIC solicit immediate responses and can be used by an
+endpoint to measure latency to their peer; this might have privacy implications
+in certain scenarios.
 
 # IANA Considerations
 
