@@ -1175,19 +1175,15 @@ could indicate a separate server address that does not require the use of the
 client address for routing. Note that clients could choose not to use the
 preferred address.
 
-
 If a server does not implement one of the solutions above, it SHOULD send the
 disable_active_migration transport parameter to inform the client that any
-address change is likely to terminate the connection. Clients might infer from
-this that they might need to avoid NAT rebinding or terminate connections when
-its IP address changes.
+address change is likely to terminate the connection.
 
 Regardless of other mitigations, 5-tuple routing introduces new possibilities
 to create a stateless reset oracle. An attacker could tweak the source address
-or port of
-a packet to direct it to a different server and thus obtain the stateless reset
-token for a connection ID. Endpoints should take additional precautions in
-accordance with {{reset-oracle}}.
+or port of a packet to direct it to a different server and thus obtain the
+stateless reset token for a connection ID. Endpoints should take additional
+precautions in accordance with {{reset-oracle}}.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
 
