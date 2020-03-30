@@ -1241,7 +1241,7 @@ SetLossDetectionTimer():
     return
 
   if (no ack-eliciting packets in flight &&
-      peer not awaiting address validation):
+      PeerNotAwaitingAddressValidation()):
     // There is nothing to detect lost, so no timer is set.
     // However, the client needs to arm the timer if the
     // server might be blocked by the anti-amplification limit.
