@@ -1218,15 +1218,15 @@ GetEarliestTimeAndSpace(times):
       space = pn_space
   return time, space
 
-PeerNotAwaitingAddressValidation():
+PeerAwaitingAddressValidation():
   # Assume clients validate the server's address implicitly.
   if (endpoint is server):
-    return true
+    return false
   # Servers complete address validation when a
   # protected packet is received.
-  return has received Handshake ACK ||
+  return !(has received Handshake ACK ||
        has received 1-RTT ACK ||
-       has received HANDSHAKE_DONE
+       has received HANDSHAKE_DONE)
 
 SetLossDetectionTimer():
   earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
@@ -1241,7 +1241,7 @@ SetLossDetectionTimer():
     return
 
   if (no ack-eliciting packets in flight &&
-      PeerNotAwaitingAddressValidation()):
+      !PeerAwaitingAddressValidation()):
     // There is nothing to detect lost, so no timer is set.
     // However, the client needs to arm the timer if the
     // server might be blocked by the anti-amplification limit.
