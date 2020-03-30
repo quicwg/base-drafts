@@ -5595,6 +5595,14 @@ frame multiple times MUST NOT be treated as a connection error.  A receiver can
 use the sequence number supplied in the NEW_CONNECTION_ID frame to identify new
 connection IDs from old ones.
 
+When receiving a NEW_CONNECTION_ID frame carrying a sequence number greater than
+those that have been previously received, an endpoint MUST check that the sum of
+number of active connection IDs that it retains and the number of connection IDs
+that the peer would have sent (i.e., those with sequence numbers below or equal
+to the newly received one) is no greater than the active_connection_id_limit
+being adversited by the endpoint.  Doing so prevents malicious peers from
+creating unbounded state on the endpoint.
+
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
 issued connection ID with a different Stateless Reset Token or a different
 sequence number, or if a sequence number is used for different connection
@@ -5620,15 +5628,16 @@ for that sequence number.
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
-An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
-will no longer use a connection ID that was issued by its peer. This may include
-the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
-frame also serves as a request to the peer to send additional connection IDs for
-future use (see {{connection-id}}).  New connection IDs can be delivered to a
-peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
+An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate the
+connection IDs issued by the peer that the endpoint  will no longer use.  This
+may include the connection ID provided during the handshake.  Sending a
+RETIRE_CONNECTION_ID frame also serves as a request to the peer to send
+additional connection IDs for future use (see {{connection-id}}).  New
+connection IDs can be delivered to a peer using the NEW_CONNECTION_ID frame
+({{frame-new-connection-id}}).
 
-Retiring a connection ID invalidates the stateless reset token associated with
-that connection ID.
+Retiring connection IDs invalidates the stateless reset tokens associated with
+those connection IDs.
 
 The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
 
@@ -5636,17 +5645,31 @@ The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Sequence Number (i)                    ...
+|                  Largest Sequence Number (i)                ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                Active Sequence Number Count (i)             ...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                  Active Sequence Numbers (i)                ...
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ~~~
 {: #fig-retire-connection-id title="RETIRE_CONNECTION_ID Frame Format"}
 
 RETIRE_CONNECTION_ID frames contain the following fields:
 
-Sequence Number:
+Largest Sequence Number:
 
-: The sequence number of the connection ID being retired.  See
+: The largest sequence number of the connection ID being retired.  See
   {{retiring-cids}}.
+
+Active Sequence Number Count:
+
+: Number of sequence numbers stored in the Active Sequence Numbers field.
+
+Active Sequence Numbers:
+
+: Sequence numbers of connection IDs below Largest Sequence Number that are not
+  retired.  Each sequence number is encoded using the variable-length encoding
+  ({{#integer-encoding}}).
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
 than any previously sent to the peer MUST be treated as a connection error of
