@@ -1078,10 +1078,7 @@ active_connection_id_limit, the connection MAY be closed with a connection error
 of type CONNECTION_ID_LIMIT_ERROR.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
-RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To. Doing so
-may result in the peer being unwilling to immediately retire all the connection
-IDs, if retiring them would cause it to exceed its limit on outstanding
-RETIRE_CONNECTION_ID frames, as described above.
+RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To.
 
 ## Matching Packets to Connections {#packet-handling}
 
