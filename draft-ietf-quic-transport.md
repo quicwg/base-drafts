@@ -1178,9 +1178,9 @@ preferred address.
 
 If a server does not implement one of the solutions above, it SHOULD send the
 disable_active_migration transport parameter to inform the client that any
-address change is likely to terminate the connection, which can lead it to use
-strategies to avoid NAT rebinding or terminate connections when its IP address
-changes.
+address change is likely to terminate the connection. Clients might infer from
+this that they might need to avoid NAT rebinding or terminate connections when
+its IP address changes.
 
 Regardless of other mitigations, 5-tuple routing introduces new possibilities
 to create a stateless reset oracle. An attacker could tweak the source address
