@@ -1168,13 +1168,13 @@ operational and security issues in this case:
 * Endpoints can use an out-of-band mechanism to deliver packets to the correct
 destination or transfer state from the original destination.
 
-* If the server has another address where the 5-tuple based routers are not on-
-path, the preferred_address transport parameter can communicate that address and
-thus support changing client IP addresses without difficulty. For example, the
-initial address may route to a 5-tuple based load balancer, and the preferred
-address could indicate a separate server address with routing robust to client
-address changes. However, if the client does not use the preferred address,
-other measures are necessary.
+* A server can request that a connection be migrated to an address that is
+unique using the preferred_address transport parameter. For example, the initial
+address may route to a 5-tuple based load balancer, and the preferred address
+could indicate a separate server address that does not require the use of the
+client address for routing. Note that clients could choose not to use the
+preferred address.
+
 
 If a server does not implement one of the solutions above, it SHOULD send the
 disable_active_migration transport parameter to inform the client that any
