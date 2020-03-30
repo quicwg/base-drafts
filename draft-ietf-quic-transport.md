@@ -1183,7 +1183,8 @@ strategies to avoid NAT rebinding or terminate connections when its IP address
 changes.
 
 Regardless of other mitigations, 5-tuple routing introduces new possibilities
-to create a Reset Oracle. An attacker could tweak the source address or port of
+to create a stateless reset oracle. An attacker could tweak the source address
+or port of
 a packet to direct it to a different server and thus obtain the stateless reset
 token for a connection ID. Endpoints should take additional precautions in
 accordance with {{reset-oracle}}.
