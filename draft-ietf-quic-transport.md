@@ -1069,7 +1069,7 @@ to cease using the connection IDs when requested can result in connection
 failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
-An endpoint MAY elect to limit the number of outstanding RETIRE_CONNECTION_ID
+An endpoint SHOULD elect to limit the number of outstanding RETIRE_CONNECTION_ID
 frames to bound the necessary state. In order to allow a peer to retire all
 previously issued connection IDs, this limit SHOULD be at least the
 active_connection_id_limit. Within this limit, endpoints SHOULD prioritize
