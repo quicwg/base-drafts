@@ -1165,7 +1165,7 @@ changes to the IP address or port of peers could result in packets being routed
 to a different server. The following actions could mitigate or resolve
 operational and security issues in this case:
 
-* Servers can use an out-of-band mechanism to deliver packets to the correct
+* Endpoints can use an out-of-band mechanism to deliver packets to the correct
 destination or transfer state from the original destination.
 
 * If the server has another address where the 5-tuple based routers are not on-
