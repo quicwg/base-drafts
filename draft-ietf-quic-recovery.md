@@ -502,9 +502,10 @@ has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value. The PTO is set back to the original value upon receiving an
-acknowledgement for a non-Initial packet. The PTO timer is not decreased upon
-receiving an Initial ACK to ensure the client's anti-deadlock timer doesn't
-fire too aggressively when the server does not yet have handshake data to send.
+acknowledgement for a non-Initial packet. The PTO timer is not decreased when
+the client receives an Initial ACK to ensure the client's anti-deadlock timer
+does not fire too aggressively when the server does not yet have handshake data
+to send.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
@@ -1144,8 +1145,8 @@ OnAckReceived(ack, pn_space):
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
   DetectLostPackets(pn_space)
-  // Reset pto_count, unless it's an Initial ACK.
-  if (pn_space != Initial)
+  // Reset pto_count, unless the client receives an Initial ACK
+  if (endpoint is server || pn_space != Initial)
     pto_count = 0
 
   SetLossDetectionTimer()
