@@ -1110,14 +1110,16 @@ OnAckReceived(ack, pn_space):
 
   // DetectNewlyAckedPackets finds packets that are newly
   // acknowledged and removes them from sent_packets.
-  newly_acked_packets = DetectAndRemoveAckedPackets(ack, pn_space)
+  newly_acked_packets =
+      DetectAndRemoveAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
   if (newly_acked_packets.empty()):
     return
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (newly_acked_packets.largest().packet_number == ack.largest_acked &&
+  if (newly_acked_packets.largest().packet_number ==
+          ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
@@ -1483,8 +1485,8 @@ Invoked from DetectLostPackets when packets are deemed lost.
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
-     // largest newly lost packet, including the edges, are marked
-     // lost
+     // largest newly lost packet, including the edges, are
+     // marked lost
      return AreAllPacketsLost(lost_packets, congestion_period)
 
    OnPacketsLost(lost_packets):
