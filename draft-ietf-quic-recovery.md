@@ -1108,7 +1108,7 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
-  // Determine which packets have been acknowledged and remove
+  // DetectNewlyAckedPackets finds packets have been newly acknowledged and removes
   // them from sent_packets.
   newly_acked_packets = DetectNewlyAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
