@@ -1130,7 +1130,7 @@ OnAckReceived(ack, pn_space):
   if (ACK frame contains ECN information):
       ProcessECN(ack, pn_space)
 
-  lost_packets = DetectLostPackets(pn_space)
+  lost_packets = DetectAndRemoveLostPackets(pn_space)
   if (!lost_packets.empty()):
     OnPacketsLost(lost_packets)
   OnPacketsAcked(newly_acked_packets)
