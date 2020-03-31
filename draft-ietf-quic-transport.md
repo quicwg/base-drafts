@@ -2246,6 +2246,13 @@ that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
 
+An endpoint SHOULD NOT initiate migration when a peer that requests the use of
+a zero-length connection ID. If the peer routes incoming packets using the
+source address, migration might not be successful. If the peer routes incoming
+packets by assigning a unique destination address to the connection, which
+might be achieved using using the preferred_address transport parameter (see
+{{preferred-address}}), packets sent on different paths will be linkable.
+
 Unintentional changes in path without a change in connection ID are possible.
 For example, after a period of network inactivity, NAT rebinding might cause
 packets to be sent on a new path when the client resumes sending.
