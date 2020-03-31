@@ -1117,7 +1117,7 @@ OnAckReceived(ack, pn_space):
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (newly_acked_packets.largest == ack.largest_acked &&
+  if (newly_acked_packets.largest().packet_number == ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
@@ -1491,7 +1491,6 @@ Invoked from DetectLostPackets when packets are deemed lost.
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     largest_lost_packet = lost_packets.last()
      CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
