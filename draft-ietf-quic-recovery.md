@@ -360,8 +360,8 @@ smoothed_rtt = rtt_sample
 rttvar = rtt_sample / 2
 ~~~
 
-Before any RTT samples are available, the initial RTT is used as rtt_sample. 
-On the first RTT sample for the network path, that sample is used as rtt_sample.
+Before any RTT samples are available, the initial RTT is used as rtt_sample.  On
+the first RTT sample for the network path, that sample is used as rtt_sample.
 This ensures that the first measurement erases the history of any persisted or
 default values.
 
@@ -521,11 +521,10 @@ data.
 
 ### Handshakes and New Paths
 
-Resumed
-connections over the same network SHOULD use the previous connection's final
-smoothed RTT value as the resumed connection's initial RTT. When no previous
-RTT is available, the initial RTT SHOULD be set to 333ms, resulting in a 1 second
-initial timeout, as recommended in {{?RFC6298}}.
+Resumed connections over the same network SHOULD use the previous connection's
+final smoothed RTT value as the resumed connection's initial RTT.  When no
+previous RTT is available, the initial RTT SHOULD be set to 333ms, resulting in
+a 1 second initial timeout, as recommended in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
 PATH_RESPONSE to set the initial RTT (see kInitialRtt in
