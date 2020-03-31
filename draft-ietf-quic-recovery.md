@@ -1483,7 +1483,7 @@ Invoked from DetectLostPackets when packets are deemed lost.
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
-     // newest lost packet, including the edges, are marked
+     // largest newly lost packet, including the edges, are marked
      // lost
      return AreAllPacketsLost(lost_packets, congestion_period)
 
@@ -1492,7 +1492,7 @@ Invoked from DetectLostPackets when packets are deemed lost.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
      largest_lost_packet = lost_packets.last()
-     CongestionEvent(largest_lost_packet.time_sent)
+     CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
      if (InPersistentCongestion(lost_packets)):
