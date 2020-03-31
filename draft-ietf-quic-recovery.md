@@ -1145,8 +1145,9 @@ OnAckReceived(ack, pn_space):
     OnPacketAcked(acked_packet.packet_number, pn_space)
 
   DetectLostPackets(pn_space)
-  // Reset pto_count, unless the client receives an Initial ACK
-  if (endpoint is server || pn_space != Initial)
+  // Reset pto_count unless the server has not yet
+  // validated the client's address.
+  if (PeerCompletedAddressValidation())
     pto_count = 0
 
   SetLossDetectionTimer()
