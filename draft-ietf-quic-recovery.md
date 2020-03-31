@@ -1110,7 +1110,7 @@ OnAckReceived(ack, pn_space):
 
   // DetectNewlyAckedPackets finds packets have been newly acknowledged and removes
   // them from sent_packets.
-  newly_acked_packets = DetectNewlyAckedPackets(ack, pn_space)
+  newly_acked_packets = DetectAndRemoveAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
   if (newly_acked_packets.empty()):
     return
