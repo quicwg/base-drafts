@@ -5600,7 +5600,7 @@ those that have been previously received, an endpoint MUST check that the sum of
 number of active connection IDs that it retains and the number of connection IDs
 that the peer would have sent (i.e., those with sequence numbers below or equal
 to the newly received one) is no greater than the active_connection_id_limit
-being adversited by the endpoint.  Doing so prevents malicious peers from
+being advertised by the endpoint.  Doing so prevents malicious peers from
 creating unbounded state on the endpoint.
 
 If an endpoint receives a NEW_CONNECTION_ID frame that repeats a previously
