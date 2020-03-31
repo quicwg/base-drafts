@@ -350,8 +350,10 @@ endpoint:
   min_rtt.  This limits the underestimation that a misreporting peer can cause
   to the smoothed_rtt.
 
-smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.  When
-there are no samples for a network path:
+smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
+
+When there are no samples for a network path, and on the first RTT sample for
+the network path:
 
 ~~~
 smoothed_rtt = rtt_sample
