@@ -329,22 +329,22 @@ Although HTTP is independent of the transport protocol, the "http" scheme
 associates authority with the ability to receive TCP connections on the
 indicated port of whatever host is identified within the authority component.
 Because HTTP/3 does not use TCP, HTTP/3 cannot be used for direct access to the
-authoritative server.  However, protocol extensions such as {{!ALTSVC=RFC7838}}
+authoritative server for a resource identified by an "http" URI.  However, protocol extensions such as {{!ALTSVC=RFC7838}}
 permit the authoritative server to identify other services which are also
 authoritative and which might be reachable over HTTP/3.
 
-Prior to making requests for an origin whose scheme is not "https," the client
+Prior to making requests for an origin whose scheme is not "https", the client
 MUST ensure the server is willing to serve that scheme.  If the client intends
 to make requests for an origin whose scheme is "http", this means that it MUST
 obtain a valid `http-opportunistic` response for the origin as described in
 {{!RFC8164}} prior to making any such requests.  Other schemes might define
 other mechanisms.
 
-Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
+Connectivity problems (e.g., firewall blocking UDP) can result in QUIC connection
 establishment failure; clients SHOULD attempt to use TCP-based versions of HTTP
 in this case.
 
-Servers MAY serve HTTP/3 on any UDP port; an alternative always includes
+Servers MAY serve HTTP/3 on any UDP port; an alternative service advertisement always includes
 an explicit port, and URLs contain either an explicit port or a default port
 associated with the scheme.
 
@@ -402,8 +402,8 @@ is considered authoritative for all URIs with the "https" scheme for which the
 hostname in the URI is present in the authenticated certificate provided by the
 server, either as the CN field of the certificate subject or as a dNSName in the
 subjectAltName field of the certificate (see {{!RFC6125}}).  For a host that is
-an IP address, the client MUST verify that the address appears in the
-subjectAltName of the certificate.
+an IP address, the client MUST verify that the address appears as an iPAddress in
+the subjectAltName field of the certificate.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
 pair, where the host is derived from a URI, a selected alternative service
