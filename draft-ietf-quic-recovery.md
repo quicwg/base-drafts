@@ -1273,8 +1273,8 @@ OnLossDetectionTimeout():
 ## Detecting Lost Packets
 
 DetectLostPackets is called every time an ACK is received or the time threshold
-loss detection timer expires and operates on the sent_packets for that packet
-number space.
+loss detection timer expires. This function operates on the sent_packets for that
+packet number space and returns a list of packets newly detected as lost.
 
 Pseudocode for DetectLostPackets follows:
 
