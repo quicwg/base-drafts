@@ -1108,8 +1108,8 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
-  // DetectNewlyAckedPackets finds packets have been newly acknowledged and removes
-  // them from sent_packets.
+  // DetectNewlyAckedPackets finds packets have been newly
+  // acknowledged and removes them from sent_packets.
   newly_acked_packets = DetectAndRemoveAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
   if (newly_acked_packets.empty()):
@@ -1272,14 +1272,15 @@ OnLossDetectionTimeout():
 
 ## Detecting Lost Packets
 
-DetectLostPackets is called every time an ACK is received or the time threshold
-loss detection timer expires. This function operates on the sent_packets for that
-packet number space and returns a list of packets newly detected as lost.
+DetectAndRemoveLostPackets is called every time an ACK is received or the time
+threshold loss detection timer expires. This function operates on the
+sent_packets for that packet number space and returns a list of packets newly
+detected as lost.
 
-Pseudocode for DetectLostPackets follows:
+Pseudocode for DetectAndRemoveLostPackets follows:
 
 ~~~
-DetectLostPackets(pn_space):
+DetectAndRemoveLostPackets(pn_space):
   assert(largest_acked_packet[pn_space] != infinite)
   loss_time[pn_space] = 0
   lost_packets = {}
