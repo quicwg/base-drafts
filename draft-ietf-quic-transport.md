@@ -1072,10 +1072,9 @@ connection IDs with the active connection.
 An endpoint SHOULD limit the number of outstanding RETIRE_CONNECTION_ID frames
 to bound the necessary state. In order to allow a peer to retire all previously
 issued connection IDs, the limit on the number of outstanding
-RETIRE_CONNECTION_IDs SHOULD be at least the active_connection_id_limit.  If the
-number of outstanding RETIRE_CONNECTION_IDs exceeds twice the
-active_connection_id_limit, the connection MAY be closed with a connection error
-of type CONNECTION_ID_LIMIT_ERROR.
+RETIRE_CONNECTION_IDs SHOULD be at least the active_connection_id_limit. An
+endpoint MAY choose to treat having too many connection IDs in need of
+retirement as a connection error of type CONNECTION_ID_LIMIT_ERROR.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
 RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To.
