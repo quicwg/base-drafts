@@ -1250,7 +1250,8 @@ SetLossDetectionTimer():
     return
 
   // Calculate PTO duration
-  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay
+  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
+    max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
   sent_time, _ = GetEarliestTimeAndSpace(
