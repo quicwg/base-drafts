@@ -1260,7 +1260,7 @@ SetLossDetectionTimer():
   sent_time, _ = GetEarliestTimeAndSpace(
     time_of_last_sent_ack_eliciting_packet)
   if (sent_time == 0)
-    assert(!PeerNotAwaitingAddressValidation())
+    assert(!PeerCompletedAddressValidation())
     sent_time = now()
   loss_detection_timer.update(sent_time + timeout)
 ~~~
