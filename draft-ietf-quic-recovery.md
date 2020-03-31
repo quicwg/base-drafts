@@ -1414,14 +1414,14 @@ Invoked from loss detection's OnPacketAcked and is supplied with the
 newly acked_packets from sent_packets.
 
 ~~~
-   InLossRecovery(sent_time):
+   InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
    OnPacketsAcked(acked_packets):
      for (packet in acked_packets):
        // Remove from bytes_in_flight.
        bytes_in_flight -= packet.size
-       if (InLossRecovery(packet.time_sent)):
+       if (InCongestionRecovery(packet.time_sent)):
          // Do not increase congestion window in recovery period.
          return
        if (IsAppOrFlowControlLimited()):
