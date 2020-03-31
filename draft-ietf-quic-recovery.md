@@ -501,7 +501,7 @@ and prevents a server from sending a 1-RTT packet on a PTO expiration before it
 has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
-value. The PTO is set back to the original value upon receiving an
+value. The PTO period is set back to the original value upon receiving an
 acknowledgement for a non-Initial packet. The PTO timer is not decreased when
 the client receives an Initial ACK to ensure the client's anti-deadlock timer
 does not fire too aggressively when the server does not yet have handshake data
