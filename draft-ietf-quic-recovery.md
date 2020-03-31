@@ -1410,7 +1410,7 @@ increases bytes_in_flight.
 
 ## On Packet Acknowledgement
 
-Invoked from loss detection's OnPacketAcked and is supplied with the
+Invoked from loss detection's OnAckReceived and is supplied with the
 newly acked_packets from sent_packets.
 
 ~~~
