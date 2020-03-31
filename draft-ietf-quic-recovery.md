@@ -1147,7 +1147,7 @@ OnAckReceived(ack, pn_space):
   DetectLostPackets(pn_space)
   // Reset pto_count unless the server has not yet
   // validated the client's address.
-  if (PeerCompletedAddressValidation())
+  if (PeerCompletedAddressValidation()):
     pto_count = 0
 
   SetLossDetectionTimer()
