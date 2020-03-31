@@ -416,7 +416,7 @@ reduce future spurious retransmissions and loss events. Implementations with
 adaptive time thresholds MAY choose to start with smaller initial reordering
 thresholds to minimize recovery latency.
 
-### Packet Threshold
+### Packet Threshold {#packet-threshold}
 
 The RECOMMENDED initial value for the packet reordering threshold
 (kPacketThreshold) is 3, based on best practices for TCP loss detection
@@ -432,7 +432,8 @@ as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
 Once a later packet within the same packet number space has been acknowledged,
 an endpoint SHOULD declare an earlier packet lost if it was sent a threshold
 amount of time in the past. To avoid declaring packets as lost too early, this
-time threshold MUST be set to at least kGranularity.  The time threshold is:
+time threshold MUST be set to at least the local timer granularity, as
+indicated by the kGranularity constant.  The time threshold is:
 
 ~~~
 max(kTimeThreshold * max(smoothed_rtt, latest_rtt), kGranularity)
@@ -451,7 +452,8 @@ Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
   up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8.
+multiplier, is 9/8. The RECOMMENDED value of the timer granularity
+(kGranularity) is 1ms.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variation.  Smaller
@@ -519,30 +521,16 @@ detection timer is set.  The time threshold loss detection timer is expected
 to both expire earlier than the PTO and be less likely to spuriously retransmit
 data.
 
-### Handshakes and New Paths
+### Handshakes and New Paths {#pto-handshake}
 
-Resumed connections over the same network SHOULD use the previous connection's
+Resumed connections over the same network MAY use the previous connection's
 final smoothed RTT value as the resumed connection's initial RTT.  When no
 previous RTT is available, the initial RTT SHOULD be set to 333ms, resulting in
 a 1 second initial timeout, as recommended in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
-PATH_RESPONSE to set the initial RTT (see kInitialRtt in
-{{ld-consts-of-interest}}) for a new path, but the delay SHOULD NOT be
-considered an RTT sample.
-
-Until the server has validated the client's address on the path, the amount of
-data it can send is limited to three times the amount of data received,
-as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no data can be sent,
-then the PTO alarm MUST NOT be armed until datagrams have been received from
-the client.
-
-Since the server could be blocked until more packets are received from the
-client, it is the client's responsibility to send packets to unblock the server
-until it is certain that the server has finished its address validation
-(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in {{pto-handshake}})
+for a new path, but the delay SHOULD NOT be considered an RTT sample.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -559,6 +547,23 @@ keys are discarded, the PTO and loss detection timers MUST be reset, because
 discarding keys indicates forward progress and the loss detection timer might
 have been set for a now discarded packet number space.
 
+#### Before Address Validation
+
+Until the server has validated the client's address on the path, the amount of
+data it can send is limited to three times the amount of data received,
+as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no additional data can be
+sent, the server's PTO alarm MUST NOT be armed until datagrams have been
+received from the client, because packets sent on PTO count against the
+anti-amplification limit. Note that the server could fail to validate the
+client's address even if 0-RTT is accepted.
+
+Since the server could be blocked until more packets are received from the
+client, it is the client's responsibility to send packets to unblock the server
+until it is certain that the server has finished its address validation
+(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
+probe timer if the client has not received an acknowledgement for one of its
+Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
+
 ### Speeding Up Handshake Completion
 
 When a server receives an Initial packet containing duplicate CRYPTO data,
@@ -571,8 +576,8 @@ To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
 subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
-Peers can also use coalesced packets to ensure that each datagram elicits at least
-one acknowledgement.  For example, clients can coalesce an Initial packet
+Peers can also use coalesced packets to ensure that each datagram elicits at
+least one acknowledgement.  For example, clients can coalesce an Initial packet
 containing PING and PADDING frames with a 0-RTT data packet and a server can
 coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
@@ -588,6 +593,9 @@ to a single lost datagram or transmit data from multiple packet number spaces.
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
 number spaces with in-flight data, coalescing packets if possible.
+
+If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
+packet number to eliminate the ack delay.
 
 When the PTO timer expires, and there is new or previously sent unacknowledged
 data, it MUST be sent.
@@ -790,8 +798,14 @@ sent over a long enough period of time, the network is considered to be
 experiencing persistent congestion.  Commonly, this can be established by
 consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
 packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed.  This duration is computed
-as follows:
+where PTOs do not occur or are substantially delayed. The rationale for this
+threshold is to enable a sender to use initial PTOs for aggressive probing,
+as TCP does with Tail Loss Probe (TLP) {{RACK}}, before establishing persistent
+congestion, as TCP does with a Retransmission Timeout (RTO) {{?RFC5681}}.
+The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
+approximately equivalent to two TLPs before an RTO in TCP.
+
+This duration is computed as follows:
 
 ~~~
 (smoothed_rtt + 4 * rttvar + max_ack_delay) *
@@ -814,7 +828,7 @@ illustrate persistent congestion:
   t=7 | Send Pkt #4 (PTO 3)
   t=8 | Recv ACK of Pkt #4
 
-The first three packets are determined to be lost when the acknowlegement of
+The first three packets are determined to be lost when the acknowledgement of
 packet 4 is received at t=8.  The congestion period is calculated as the time
 between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
@@ -966,28 +980,29 @@ time_sent:
 : The time the packet was sent.
 
 
-## Constants of interest {#ld-consts-of-interest}
+## Constants of interest
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.
 
 kPacketThreshold:
 : Maximum reordering in packets before packet threshold loss detection
-  considers a packet lost. The RECOMMENDED value is 3.
+  considers a packet lost. The value recommended in {{packet-threshold}} is 3.
 
 kTimeThreshold:
 
 : Maximum reordering in time before time threshold loss detection
-  considers a packet lost. Specified as an RTT multiplier. The RECOMMENDED
-  value is 9/8.
+  considers a packet lost. Specified as an RTT multiplier. The value
+  recommended in {{time-threshold}} is 9/8.
 
 kGranularity:
 
-: Timer granularity. This is a system-dependent value.  However, implementations
-  SHOULD use a value no smaller than 1ms.
+: Timer granularity. This is a system-dependent value, and {{time-threshold}}
+  recommends a value of 1ms.
 
 kInitialRtt:
-: The RTT used before an RTT sample is taken. The RECOMMENDED value is 500ms.
+: The RTT used before an RTT sample is taken. The value recommended in
+{{pto-handshake}} is 500ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1186,7 +1201,7 @@ and timer events further below.  The function SetLossDetectionTimer defined
 below shows how the single timer is set.
 
 This algorithm may result in the timer being set in the past, particularly if
-timers wake up late. Timers set in the past SHOULD fire immediately.
+timers wake up late. Timers set in the past fire immediately.
 
 Pseudocode for SetLossDetectionTimer follows:
 
@@ -1204,7 +1219,7 @@ GetEarliestTimeAndSpace(times):
       space = pn_space
   return time, space
 
-PeerNotAwaitingAddressValidation():
+PeerCompletedAddressValidation():
   # Assume clients validate the server's address implicitly.
   if (endpoint is server):
     return true
@@ -1221,8 +1236,16 @@ SetLossDetectionTimer():
     loss_detection_timer.update(earliest_loss_time)
     return
 
+  if (server is at anti-amplification limit):
+    // The server's alarm is not set if nothing can be sent.
+    loss_detection_timer.cancel()
+    return
+
   if (no ack-eliciting packets in flight &&
-      PeerNotAwaitingAddressValidation()):
+      PeerCompletedAddressValidation()):
+    // There is nothing to detect lost, so no timer is set.
+    // However, the client needs to arm the timer if the
+    // server might be blocked by the anti-amplification limit.
     loss_detection_timer.cancel()
     return
 
@@ -1253,7 +1276,14 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (endpoint is client without 1-RTT keys):
+  if (bytes_in_flight > 0):
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
+    _, pn_space = GetEarliestTimeAndSpace(
+      time_of_last_sent_ack_eliciting_packet)
+    SendOneOrTwoAckElicitingPackets(pn_space)
+  else:
+    assert(endpoint is client without 1-RTT keys)
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
@@ -1261,12 +1291,6 @@ OnLossDetectionTimeout():
       SendOneAckElicitingHandshakePacket()
     else:
       SendOneAckElicitingPaddedInitialPacket()
-  else:
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
-    SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
   SetLossDetectionTimer()
@@ -1332,21 +1356,16 @@ kInitialWindow:
 : Default limit on the initial bytes in flight as described in {{initial-cwnd}}.
 
 kMinimumWindow:
-: Minimum congestion window in bytes. The RECOMMENDED value is
-  2 * max_datagram_size.
+: Minimum congestion window in bytes as described in {{initial-cwnd}}.
 
 kLossReductionFactor:
 : Reduction in congestion window when a new loss event is detected.
-  The RECOMMENDED value is 0.5.
+  The {{congestion-control}} section recommends a value is 0.5.
 
 kPersistentCongestionThreshold:
-: Period of time for persistent congestion to be established, specified as a PTO
-  multiplier.  The rationale for this threshold is to enable a sender to use
-  initial PTOs for aggressive probing, as TCP does with Tail Loss Probe (TLP)
-  {{RACK}}, before establishing persistent congestion, as TCP does with a
-  Retransmission Timeout (RTO) {{?RFC5681}}.  The RECOMMENDED value for
-  kPersistentCongestionThreshold is 3, which is approximately equivalent to
-  having two TLPs before an RTO in TCP.
+: Period of time for persistent congestion to be established, specified
+  as a PTO multiplier. The {{persistent-congestion}} section recommends a
+  value of 3.
 
 
 ## Variables of interest {#vars-of-interest}
