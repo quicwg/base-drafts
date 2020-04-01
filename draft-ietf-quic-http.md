@@ -325,7 +325,7 @@ to an IP address, establishing a QUIC connection to that address on the
 indicated port, and sending an HTTP/3 request message to the server over that
 secured connection containing the URI's identifying data.
 
-Connectivity problems (e.g., firewall blocking UDP) can result in QUIC
+Connectivity problems (e.g., blocking UDP) can result in QUIC
 connection establishment failure; clients SHOULD attempt to use TCP-based
 versions of HTTP in this case.
 
