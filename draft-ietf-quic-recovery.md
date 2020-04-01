@@ -1118,14 +1118,18 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
+  // DetectNewlyAckedPackets finds packets that are newly
+  // acknowledged and removes them from sent_packets.
+  newly_acked_packets =
+      DetectAndRemoveAckedPackets(ack, pn_space)
   // Nothing to do if there are no newly acked packets.
-  newly_acked_packets = DetermineNewlyAckedPackets(ack, pn_space)
   if (newly_acked_packets.empty()):
     return
 
   // If the largest acknowledged is newly acked and
   // at least one ack-eliciting was newly acked, update the RTT.
-  if (sent_packets[pn_space].contains(ack.largest_acked) &&
+  if (newly_acked_packets.largest().packet_number ==
+          ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
@@ -1138,13 +1142,12 @@ OnAckReceived(ack, pn_space):
   if (ACK frame contains ECN information):
       ProcessECN(ack, pn_space)
 
-  for acked_packet in newly_acked_packets:
-    OnPacketAcked(acked_packet.packet_number, pn_space)
-
-  DetectLostPackets(pn_space)
+  lost_packets = DetectAndRemoveLostPackets(pn_space)
+  if (!lost_packets.empty()):
+    OnPacketsLost(lost_packets)
+  OnPacketsAcked(newly_acked_packets)
 
   pto_count = 0
-
   SetLossDetectionTimer()
 
 
@@ -1168,28 +1171,6 @@ UpdateRtt(ack_delay):
   rttvar = 3/4 * rttvar + 1/4 * abs(smoothed_rtt - adjusted_rtt)
   smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 ~~~
-
-
-## On Packet Acknowledgment
-
-When a packet is acknowledged for the first time, the following OnPacketAcked
-function is called.  Note that a single ACK frame may newly acknowledge several
-packets. OnPacketAcked must be called once for each of these newly acknowledged
-packets.
-
-OnPacketAcked takes two parameters: acked_packet, which is the struct detailed
-in {{sent-packets-fields}}, and the packet number space that this ACK frame was
-sent for.
-
-Pseudocode for OnPacketAcked follows:
-
-~~~
-   OnPacketAcked(acked_packet, pn_space):
-     if (acked_packet.in_flight):
-       OnPacketAckedCC(acked_packet)
-     sent_packets[pn_space].remove(acked_packet.packet_number)
-~~~
-
 
 ## Setting the Loss Detection Timer
 
@@ -1275,7 +1256,9 @@ OnLossDetectionTimeout():
     GetEarliestTimeAndSpace(loss_time)
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
-    DetectLostPackets(pn_space)
+    lost_packets = DetectLostPackets(pn_space)
+    assert(!lost_packets.empty())
+    OnPacketsLost(lost_packets)
     SetLossDetectionTimer()
     return
 
@@ -1302,13 +1285,15 @@ OnLossDetectionTimeout():
 
 ## Detecting Lost Packets
 
-DetectLostPackets is called every time an ACK is received and operates on
-the sent_packets for that packet number space.
+DetectAndRemoveLostPackets is called every time an ACK is received or the time
+threshold loss detection timer expires. This function operates on the
+sent_packets for that packet number space and returns a list of packets newly
+detected as lost.
 
-Pseudocode for DetectLostPackets follows:
+Pseudocode for DetectAndRemoveLostPackets follows:
 
 ~~~
-DetectLostPackets(pn_space):
+DetectAndRemoveLostPackets(pn_space):
   assert(largest_acked_packet[pn_space] != infinite)
   loss_time[pn_space] = 0
   lost_packets = {}
@@ -1337,11 +1322,7 @@ DetectLostPackets(pn_space):
       else:
         loss_time[pn_space] = min(loss_time[pn_space],
                                   unacked.time_sent + loss_delay)
-
-  // Inform the congestion controller of lost packets and
-  // let it decide whether to retransmit immediately.
-  if (!lost_packets.empty()):
-    OnPacketsLost(lost_packets)
+  return lost_packets
 ~~~
 
 
@@ -1438,27 +1419,28 @@ increases bytes_in_flight.
 
 ## On Packet Acknowledgement
 
-Invoked from loss detection's OnPacketAcked and is supplied with the
-acked_packet from sent_packets.
+Invoked from loss detection's OnAckReceived and is supplied with the
+newly acked_packets from sent_packets.
 
 ~~~
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
-   OnPacketAckedCC(acked_packet):
-     // Remove from bytes_in_flight.
-     bytes_in_flight -= acked_packet.size
-     if (InCongestionRecovery(acked_packet.time_sent)):
-       // Do not increase congestion window in recovery period.
-       return
-     if (IsAppOrFlowControlLimited()):
-       // Do not increase congestion_window if application
-       // limited or flow control limited.
-       return
-     if (congestion_window < ssthresh):
-       // Slow start.
-       congestion_window += acked_packet.size
-     else:
+   OnPacketsAcked(acked_packets):
+     for (packet in acked_packets):
+       // Remove from bytes_in_flight.
+       bytes_in_flight -= packet.size
+       if (InCongestionRecovery(packet.time_sent)):
+         // Do not increase congestion window in recovery period.
+         return
+       if (IsAppOrFlowControlLimited()):
+         // Do not increase congestion_window if application
+         // limited or flow control limited.
+         return
+       if (congestion_window < ssthresh):
+         // Slow start.
+         congestion_window += packet.size
+         return
        // Congestion avoidance.
        congestion_window += max_datagram_size * acked_packet.size
            / congestion_window
@@ -1504,25 +1486,23 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked from DetectLostPackets when packets are deemed lost.
 
 ~~~
-   InPersistentCongestion(largest_lost_packet):
+   InPersistentCongestion(lost_packets):
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
-     // newest lost packet, including the edges, are marked
-     // lost
-     return AreAllPacketsLost(largest_lost_packet,
-                              congestion_period)
+     // largest newly lost packet, including the edges, are
+     // marked lost
+     return AreAllPacketsLost(lost_packets, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for (lost_packet : lost_packets):
        bytes_in_flight -= lost_packet.size
-     largest_lost_packet = lost_packets.last()
-     CongestionEvent(largest_lost_packet.time_sent)
+     CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(largest_lost_packet)):
+     if (InPersistentCongestion(lost_packets)):
        congestion_window = kMinimumWindow
 ~~~
 
