@@ -1247,6 +1247,7 @@ OnLossDetectionTimeout():
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     lost_packets = DetectLostPackets(pn_space)
+    assert(!lost_packets.empty())
     OnPacketsLost(lost_packets)
     SetLossDetectionTimer()
     return
