@@ -1091,13 +1091,13 @@ Pseudocode for OnPacketSent follows:
               in_flight, sent_bytes):
    sent_packets[pn_space][packet_number].packet_number =
                                             packet_number
-   sent_packets[pn_space][packet_number].time_sent = now
+   sent_packets[pn_space][packet_number].time_sent = now()
    sent_packets[pn_space][packet_number].ack_eliciting =
                                             ack_eliciting
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (ack_eliciting):
-       time_of_last_sent_ack_eliciting_packet[pn_space] = now
+       time_of_last_sent_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
      sent_packets[pn_space][packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -1239,6 +1239,9 @@ SetLossDetectionTimer():
 
   sent_time, _ = GetEarliestTimeAndSpace(
     time_of_last_sent_ack_eliciting_packet)
+  if (sent_time == 0)
+    assert(!PeerCompletedAddressValidation())
+    sent_time = now()
   loss_detection_timer.update(sent_time + timeout)
 ~~~
 
@@ -1458,7 +1461,7 @@ window.
      // Start a new congestion event if packet was sent after the
      // start of the previous congestion recovery period.
      if (!InCongestionRecovery(sent_time)):
-       congestion_recovery_start_time = Now()
+       congestion_recovery_start_time = now()
        congestion_window *= kLossReductionFactor
        congestion_window = max(congestion_window, kMinimumWindow)
        ssthresh = congestion_window
