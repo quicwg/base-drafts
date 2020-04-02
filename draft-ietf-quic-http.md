@@ -305,29 +305,27 @@ encouraged to coordinate their experiments on the quic@ietf.org mailing list.
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
 HTTP relies on the notion of an authoritative response: a response that has been
-determined by (or at the direction of) the origin server identified within the
-target URI to be the most appropriate response for that request given the state
-of the target resource at the time of response message origination.  Locating an
+determined to be the most appropriate response for that request given the state
+of the target resource at the time of response message origination by (or at the
+direction of) the origin server identified within the target URI.  Locating an
 authoritative server for an HTTP URL is discussed in Section 5.4 of
 {{!SEMANTICS}}.
 
-The "https" scheme associates authority with the ability of a server to use a
-private key associated with a certificate that the client considers to be
-trustworthy for the host identified by the authority component of the URL. If a
-server presents a certificate that verifiably applies to the host, along with
-proof that it controls the corresponding private key, then a client will accept
-a secured connection to that server as being authoritative for all origins with
-the same scheme and host.
+The "https" scheme associates authority with possession of a certificate that
+the client considers to be trustworthy for the host identified by the authority
+component of the URL. If a server presents a certificate and proof that it
+controls the corresponding private key, then a client will accept a secured
+connection to that server as being authoritative for all origins with the
+"https" scheme and a host identified in the certificate.
 
-When an "https" URI is used within a context that calls for access to the
-indicated resource, a client MAY attempt access by resolving the host identifier
-to an IP address, establishing a QUIC connection to that address on the
-indicated port, and sending an HTTP/3 request message to the server over that
-secured connection containing the URI's identifying data.
+A client MAY attempt access to a resource with an "https" URI by resolving the
+host identifier to an IP address, establishing a QUIC connection to that address
+on the indicated port, and sending an HTTP/3 request message targeting the URI
+to the server over that secured connection.
 
-Connectivity problems (e.g., blocking UDP) can result in QUIC
-connection establishment failure; clients SHOULD attempt to use TCP-based
-versions of HTTP in this case.
+Connectivity problems (e.g., blocking UDP) can result in QUIC connection
+establishment failure; clients SHOULD attempt to use TCP-based versions of HTTP
+in this case.
 
 Servers MAY serve HTTP/3 on any UDP port; an alternative service advertisement
 always includes an explicit port, and URLs contain either an explicit port or a
