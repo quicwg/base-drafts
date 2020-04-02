@@ -3044,7 +3044,7 @@ sequence of complete frames, as shown in {{packet-frames}}.  Version
 Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
-QUIC Packet Payload {
+Packet Payload {
   Frame (..) ...,
 }
 ~~~
@@ -4089,7 +4089,7 @@ Initial Packet {
   Token Length (i),
   Token (..),
   Packet Number (8..32),
-  Payload (..),
+  Packet Payload (..),
 }
 ~~~
 {: #initial-format title="Initial Packet"}
@@ -4112,7 +4112,7 @@ Token:
 : The value of the token that was previously provided in a Retry packet or
   NEW_TOKEN frame.
 
-Payload:
+Packet Payload:
 
 : The payload of the packet.
 
@@ -4185,7 +4185,7 @@ limitations.
   SCID Len (8),
   Source Connection ID (0..160),
   Packet Number (8..32),
-  Payload (..),
+  Packet Payload (..),
 }
 ~~~
 {: #0rtt-format title="0-RTT Packet"}
@@ -4243,7 +4243,7 @@ Handshake Packet {
   Token Length (i),
   Token (..),
   Packet Number (8..32),
-  Payload (..),
+  Packet Payload (..),
 }
 ~~~
 {: #handshake-format title="Handshake Protected Packet"}
@@ -4293,7 +4293,8 @@ Retry Packet {
 
 A Retry packet (shown in {{retry-format}}) does not contain any protected
 fields. The value in the Unused field is selected randomly by the server. In
-addition to the long header, it contains these additional fields:
+addition to the fields from the long header, it contains these additional
+fields:
 
 Retry Token:
 
@@ -4387,7 +4388,7 @@ Long Header Packet {
   Key Phase (1),
   Packet Number Length (2),
   Destination Connection ID (0..160),
-  Protected Payload (..),
+  Packet Payload (..),
 }
 ~~~~~
 {: #fig-short-header title="Short Header Packet Format"}
@@ -4447,7 +4448,7 @@ Packet Number:
   Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
   in Packet Number Length field. See {{packet-encoding}} for details.
 
-Protected Payload:
+Packet Payload:
 
 : Packets with a short header always include a 1-RTT protected payload.
 
@@ -4595,6 +4596,7 @@ max_udp_payload_size (0x03):
   way as the path MTU, but it is a property of the endpoint and not the path. It
   is expected that this is the space an endpoint dedicates to holding incoming
   packets.
+
 initial_max_data (0x04):
 
 : The initial maximum data parameter is an integer value that contains the
