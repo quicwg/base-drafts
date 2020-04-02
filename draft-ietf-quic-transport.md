@@ -1028,8 +1028,9 @@ packet with a previously unused connection ID.  An endpoint MAY limit the
 frequency or the total number of connection IDs issued for each connection to
 avoid the risk of running out of connection IDs; see {{reset-token}}.  An
 endpoint MAY also limit the issuance of connection IDs to reduce the amount of
-per-path state it maintains, such as path validation status, as its peer can
-interact with as many paths as there are issued connection IDs.
+per-path state it maintains, such as path validation status, as its peer
+might interact with it over as many paths as there are issued connection
+IDs.
 
 An endpoint that initiates migration and requires non-zero-length connection IDs
 SHOULD ensure that the pool of connection IDs available to its peer allows the
