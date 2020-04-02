@@ -237,12 +237,16 @@ Application:
 
 ## Notational Conventions
 
-Packet and frame diagrams in this document use a bespoke format. Items are
-described as strings of ASCII characters. Complex items are defined by
-including a list of other items surrounded by a pair of matching braces. Each
-item in this list is separated by commas.
+Packet and frame diagrams in this document use a bespoke format. The purpose of
+this format is to summarize, not define, protocol elements. Prose defines the
+complete semantics and details of structures.
 
-Individual items use the following additional conventions:
+Complex fields are named and then followed by a list of fields surrounded by a
+pair of matching braces. Each field in this list is separated by commas.
+
+Individual fields include length information, plus indications about fixed
+value, optionality, or repetitions. Individual fields use the following
+notational conventions:
 
 x (A):
 : Indicates that x is A bits long
@@ -265,18 +269,20 @@ x (?) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
   the specified length)
 
-By convention, individual items that have a defined structure use the name of
-that structure.
+By convention, individual fields reference a complex field by using the name of
+that the complex field.
 
 For example:
 
 ~~~
 Example Structure {
-  One-bit Item (1),
-  Fixed 7-Bit Item (7) = 61,
-  Variable-Length Item (8..24),
-  [Optional Item With Minimum Length (16..)],
-  Repeated Item (8) ...,
+  One-bit Field (1),
+  7-bit Field with Fixed Value (7) = 61,
+  Variable-Length Field (8..24),
+  Field With Minimum Length (16..),
+  Field With Maximum Length (..128),
+  [Optional Field (64)],
+  Repeated Field (8) ...,
 }
 ~~~
 {: #fig-ex-format title="Example Format"}
