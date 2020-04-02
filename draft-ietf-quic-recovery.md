@@ -501,11 +501,11 @@ packet on a PTO expiration before confirming that the server is able to decrypt
 expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
-value. The PTO period is set back to the original value upon receiving an
-acknowledgement for a non-Initial packet. The PTO timer is not decreased when
-the client receives an Initial ACK to ensure the client's anti-deadlock timer
-does not fire too aggressively when the server does not yet have handshake data
-to send.
+value.  The PTO period is reset based on the latest rtt information when
+receiving an acknowledgement if the peer has completed address validation.
+The PTO timer is not decreased while the peer is validating the
+address, to ensure the endpoint's anti-deadlock timer does not fire too
+aggressively when the server does not yet have handshake data to send.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
