@@ -237,23 +237,50 @@ Application:
 
 ## Notational Conventions
 
-Packet and frame diagrams in this document use the format described in Section
-3.1 of {{?RFC2360}}, with the following additional conventions:
+Packet and frame diagrams in this document use a bespoke format. Items are
+described as strings of ASCII characters. Complex items are defined by
+including a list of other items surrounded by a pair of matching braces. Each
+item in this list is separated by commas.
 
-\[x\]:
-: Indicates that x is optional
+Individual items use the following additional conventions:
 
 x (A):
 : Indicates that x is A bits long
 
-x (A/B/C) ...:
-: Indicates that x is one of A, B, or C bits long
-
-x (i) ...:
+x (i):
 : Indicates that x uses the variable-length encoding in {{integer-encoding}}
 
-x (*) ...:
-: Indicates that x is variable-length
+x (A..B):
+: Indicates that x can be any length from A to B; A can be omitted to indicate
+  a mimumum of zero bits and B can be omitted to indicate no set upper limit;
+  values always end on an octet boundary
+
+x (?) = B:
+: Indicates that x has a fixed value of B
+
+\[x (?)\]:
+: Indicates that x is optional (and has the specified length)
+
+x (?) ...:
+: Indicates that x is repeated zero or more times (and that each instance is
+  the specified length)
+
+By convention, individual items that have a defined structure use the name of
+that structure.
+
+For example:
+
+~~~
+Example Structure {
+  One-bit Item (1),
+  Fixed 7-Bit Item (7) = 61,
+  Variable-Length Item (8..24),
+  [Optional Item With Minimum Length (16..)],
+  Repeated Item (8) ...,
+}
+~~~
+{: #fig-ex-format title="Example Format"}
+
 
 
 # Streams {#streams}
@@ -3013,7 +3040,7 @@ Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
 QUIC Packet Payload {
-  Frame (*) ...,
+  Frame (..) ...,
 }
 ~~~
 {: #packet-frames title="QUIC Payload"}
@@ -3028,7 +3055,7 @@ additional type-dependent fields:
 ~~~
 Frame {
   Frame Type (i),
-  Type-Dependent Fields (*),
+  Type-Dependent Fields (..),
 }
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
@@ -4043,29 +4070,22 @@ first CRYPTO frames sent by the client and server to perform key exchange, and
 carries ACKs in either direction.
 
 ~~~
-+-+-+-+-+-+-+-+-+
-|1|1| 0 |R R|P P|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..160)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..160)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Token Length (i)                    ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                            Token (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Packet Number (8/16/24/32)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Initial Packet {
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 0,
+  Reserved Bits (2),
+  Packet Number Length (2),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Token Length (i),
+  Token (..),
+  Packet Number (8..32),
+  Payload (..),
+}
 ~~~
 {: #initial-format title="Initial Packet"}
 
@@ -4148,25 +4168,20 @@ See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
-+-+-+-+-+-+-+-+-+
-|1|1| 1 |R R|P P|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..160)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..160)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Packet Number (8/16/24/32)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+0-RTT Packet {
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 1,
+  Reserved Bits (2),
+  Packet Number Length (2),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Packet Number (8..32),
+  Payload (..),
+}
 ~~~
 {: #0rtt-format title="0-RTT Packet"}
 
@@ -4209,25 +4224,22 @@ Packet Number Length bits.  It is used to carry acknowledgments and
 cryptographic handshake messages from the server and client.
 
 ~~~
-+-+-+-+-+-+-+-+-+
-|1|1| 2 |R R|P P|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..160)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..160)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Length (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Packet Number (8/16/24/32)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Payload (*)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Handshake Packet {
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 2,
+  Reserved Bits (2),
+  Packet Number Length (2),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Token Length (i),
+  Token (..),
+  Packet Number (8..32),
+  Payload (..),
+}
 ~~~
 {: #handshake-format title="Handshake Protected Packet"}
 
@@ -4268,7 +4280,7 @@ Retry Packet {
   DCID Len (8),
   Destination Connection ID (0..160),
   SCID Len (8),
-  Retry Token (*),
+  Retry Token (..),
   Retry Integrity Tag (128),
 }
 ~~~
@@ -4370,7 +4382,7 @@ Long Header Packet {
   Key Phase (1),
   Packet Number Length (2),
   Destination Connection ID (0..160),
-  Protected Payload (*),
+  Protected Payload (..),
 }
 ~~~~~
 {: #fig-short-header title="Short Header Packet Format"}
@@ -4498,7 +4510,7 @@ sequence of transport parameters, as shown in {{transport-parameter-sequence}}:
 
 ~~~
 Transport Parameters {
-  Transport Parameter (*) ...,
+  Transport Parameter (..) ...,
 }
 ~~~
 {: #transport-parameter-sequence title="Sequence of Transport Parameters"}
@@ -4510,7 +4522,7 @@ as shown in {{transport-parameter-encoding-fig}}:
 Transport Parameter {
   Transport Parameter ID (i),
   Transport Parameter Length (i),
-  Transport Parameter Value (*),
+  Transport Parameter Value (..),
 }
 ~~~
 {: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
@@ -4682,7 +4694,7 @@ Preferred Address {
   IPv6 Address (128),
   IPv6 Port (16),
   CID Length (8),
-  Connection ID (*),
+  Connection ID (..),
   Stateless Reset Token (128),
 }
 ~~~
@@ -4789,8 +4801,8 @@ ACK Frame {
   ACK Delay (i),
   ACK Range Count (i),
   First ACK Range (i),
-  ACK Range (*) ...,
-  [ECN Counts (*)],
+  ACK Range (..) ...,
+  [ECN Counts (..)],
 }
 ~~~
 {: #ack-format title="ACK Frame Format"}
@@ -5036,7 +5048,7 @@ The CRYPTO frame is shown in {{fig-crypto}}.
 CRYPTO Frame {
   Offset (i),
   Length (i),
-  Crypto Data (*),
+  Crypto Data (..),
 }
 ~~~
 {: #fig-crypto title="CRYPTO Frame Format"}
@@ -5082,7 +5094,7 @@ The NEW_TOKEN frame is shown in {{fig-new-token}}.
 ~~~
 NEW_TOKEN Frame {
   Token Length (i),
-  Token (*),
+  Token (..),
 }
 ~~~
 {: #fig-new-token title="NEW_TOKEN Frame Format"}
@@ -5141,7 +5153,7 @@ STREAM Frame {
   Stream ID (i),
   [Offset (i)],
   [Length (i)],
-  Stream Data (*),
+  Stream Data (..),
 }
 ~~~
 {: #fig-stream title="STREAM Frame Format"}
@@ -5564,7 +5576,7 @@ CONNECTION_CLOSE Frame {
   Error Code (i),
   [Frame Type (i)],
   Reason Phrase Length (i),
-  Reason Phrase (*),
+  Reason Phrase (..),
 }
 ~~~
 {: #fig-connection-close title="CONNECTION_CLOSE Frame Format"}
