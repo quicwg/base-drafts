@@ -4386,7 +4386,7 @@ A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
 
-#### Completing a Handshake After Retry
+#### Continuing a Handshake After Retry
 
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
