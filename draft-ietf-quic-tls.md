@@ -1634,11 +1634,13 @@ As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 # Security Considerations
 
-There are likely to be some real clangers here eventually, but the current set
-of issues is well captured in the relevant sections of the main text.
+All of the security considerations that apply to TLS also apply to the use of
+TLS in QUIC. Reading all of {{!TLS13}} and its appendices is the best way to
+gain an understanding of the security properties of QUIC.
 
-Never assume that because it isn't in the security considerations section it
-doesn't affect security.  Most of this document does.
+This section summarizes some of the more important security aspects specific to
+the TLS integration, though there are many security-relevant details in the
+remainder of the document.
 
 
 ## Session Linkability
