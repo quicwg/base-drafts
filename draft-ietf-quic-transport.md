@@ -259,15 +259,18 @@ x (A..B):
   a mimumum of zero bits and B can be omitted to indicate no set upper limit;
   values always end on an octet boundary
 
-x (?) = B:
-: Indicates that x has a fixed value of B
+x (?) = C:
+: Indicates that x has a fixed value of C
 
-\[x (?)\]:
-: Indicates that x is optional (and has the specified length)
+x (?) = C..D:
+: Indicates that x has a value in the range from C to D, inclusive
 
-x (?) ...:
+\[x (E)\]:
+: Indicates that x is optional (and has length of E)
+
+x (E) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
-  the specified length)
+  length E)
 
 By convention, individual fields reference a complex field by using the name of
 that the complex field.
@@ -4804,6 +4807,7 @@ An ACK frame is shown in {{ack-format}}.
 
 ~~~
 ACK Frame {
+  Type (i) = 0x02..0x03,
   Largest Acknowledged (i),
   ACK Delay (i),
   ACK Range Count (i),
@@ -4979,6 +4983,7 @@ The RESET_STREAM frame is shown in {{fig-reset-stream}}.
 
 ~~~
 RESET_STREAM Frame {
+  Type (i) = 0x04,
   Stream ID (i),
   Application Protocol Error Code (i),
   Final Size (i),
@@ -5022,6 +5027,7 @@ The STOP_SENDING frame is shown in {{fig-stop-sending}}.
 
 ~~~
 STOP_SENDING Frame {
+  Type (i) = 0x05,
   Stream ID (i),
   Application Protocol Error Code (i),
 }
@@ -5053,6 +5059,7 @@ The CRYPTO frame is shown in {{fig-crypto}}.
 
 ~~~
 CRYPTO Frame {
+  Type (i) = 0x06,
   Offset (i),
   Length (i),
   Crypto Data (..),
@@ -5100,6 +5107,7 @@ The NEW_TOKEN frame is shown in {{fig-new-token}}.
 
 ~~~
 NEW_TOKEN Frame {
+  Type (i) = 0x07,
   Token Length (i),
   Token (..),
 }
@@ -5157,6 +5165,7 @@ The STREAM frames are shown in {{fig-stream}}.
 
 ~~~
 STREAM Frame {
+  Type (i) = 0x08..0x0f,
   Stream ID (i),
   [Offset (i)],
   [Length (i)],
@@ -5208,6 +5217,7 @@ The MAX_DATA frame is shown in {{fig-max-data}}.
 
 ~~~
 MAX_DATA Frame {
+  Type (i) = 0x10,
   Maximum Data (i),
 }
 ~~~
@@ -5244,6 +5254,7 @@ The MAX_STREAM_DATA frame is shown in {{fig-max-stream-data}}.
 
 ~~~
 MAX_STREAM_DATA Frame {
+  Type (i) = 0x11,
   Stream ID (i),
   Maximum Data (i),
 }
@@ -5286,6 +5297,7 @@ The MAX_STREAMS frames are shown in {{fig-max-streams}};
 
 ~~~
 MAX_STREAMS Frame {
+  Type (i) = 0x12..0x13,
   Maximum Streams (i),
 }
 ~~~
@@ -5327,6 +5339,7 @@ The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.
 
 ~~~
 DATA_BLOCKED Frame {
+  Type (i) = 0x14,
   Data Limit (i),
 }
 ~~~
@@ -5353,6 +5366,7 @@ The STREAM_DATA_BLOCKED frame is shown in {{fig-stream-data-blocked}}.
 
 ~~~
 STREAM_DATA_BLOCKED Frame {
+  Type (i) = 0x15,
   Stream ID (i),
   Data Limit (i),
 }
@@ -5386,6 +5400,7 @@ The STREAMS_BLOCKED frames are shown in {{fig-streams-blocked}}.
 
 ~~~
 STREAMS_BLOCKED Frame {
+  Type (i) = 0x16..0x17,
   Stream Limit (i),
 }
 ~~~
@@ -5411,6 +5426,7 @@ The NEW_CONNECTION_ID frame is shown in {{fig-new-connection-id}}.
 
 ~~~
 NEW_CONNECTION_ID Frame {
+  Type (i) = 0x18,
   Sequence Number (i),
   Retire Prior To (i),
   Length (8),
@@ -5499,6 +5515,7 @@ The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
 
 ~~~
 RETIRE_CONNECTION_ID Frame {
+  Type (i) = 0x19,
   Sequence Number (i),
 }
 ~~~
@@ -5535,6 +5552,7 @@ The PATH_CHALLENGE frame is shown in {{fig-path-challenge}}.
 
 ~~~
 PATH_CHALLENGE Frame {
+  Type (i) = 0x1a,
   Data (64),
 }
 ~~~
@@ -5557,8 +5575,16 @@ The recipient of this frame MUST generate a PATH_RESPONSE frame
 ## PATH_RESPONSE Frame {#frame-path-response}
 
 The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
-frame.  Its format is identical to the PATH_CHALLENGE frame
-({{frame-path-challenge}}).
+frame.  Its format, shown in {{fig-path-response}} is identical to the
+PATH_CHALLENGE frame ({{frame-path-challenge}}).
+
+~~~
+PATH_RESPONSE Frame {
+  Type (i) = 0x1b,
+  Data (64),
+}
+~~~
+{: #fig-path-response title="PATH_RESPONSE Frame Format"}
 
 If the content of a PATH_RESPONSE frame does not match the content of a
 PATH_CHALLENGE frame previously sent by the endpoint, the endpoint MAY generate
@@ -5580,6 +5606,7 @@ The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
 
 ~~~
 CONNECTION_CLOSE Frame {
+  Type (i) = 0x1c..0x1d,
   Error Code (i),
   [Frame Type (i)],
   Reason Phrase Length (i),
