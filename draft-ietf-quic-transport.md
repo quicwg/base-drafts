@@ -101,11 +101,11 @@ TLS for key negotiation.
 
 Discussion of this draft takes place on the QUIC working group mailing list
 (quic@ietf.org), which is archived at
-\<https://mailarchive.ietf.org/arch/search/?email_list=quic\>.
+[](https://mailarchive.ietf.org/arch/search/?email_list=quic)
 
-Working Group information can be found at \<https://github.com/quicwg\>; source
+Working Group information can be found at [](https://github.com/quicwg); source
 code and issues list for this draft can be found at
-\<https://github.com/quicwg/base-drafts/labels/-transport\>.
+()[https://github.com/quicwg/base-drafts/labels/-transport).
 
 --- middle
 
@@ -173,10 +173,7 @@ in {{QUIC-INVARIANTS}}.
 
 ## Terms and Definitions
 
-The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
-when, and only when, they appear in all capitals, as shown here.
+{::boilerplate bcp14}
 
 Commonly used terms in the document are described below.
 
@@ -3775,7 +3772,7 @@ identified as 0xff00000D.
 
 Implementors are encouraged to register version numbers of QUIC that they are
 using for private experimentation on the GitHub wiki at
-\<https://github.com/quicwg/base-drafts/wiki/QUIC-Versions\>.
+[](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
 
 
 

@@ -68,11 +68,11 @@ developed.
 
 Discussion of this draft takes place on the QUIC working group mailing list
 (quic@ietf.org), which is archived at
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+[](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
-Working Group information can be found at <https://github.com/quicwg>; source
+Working Group information can be found at [](https://github.com/quicwg); source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/-invariants>.
+[](https://github.com/quicwg/base-drafts/labels/-invariants).
 
 
 --- middle
@@ -101,10 +101,7 @@ version of QUIC.
 
 # Conventions and Definitions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
-when, and only when, they appear in all capitals, as shown here.
+{::boilerplate bcp14}
 
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
