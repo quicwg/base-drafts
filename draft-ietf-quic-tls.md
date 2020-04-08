@@ -648,7 +648,7 @@ messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
 
 
-## Session Resumption
+## Session Resumption {#resumption}
 
 QUIC can use the session resumption feature of TLS 1.3. It does this by
 carrying NewSessionTicket messages in CRYPTO frames after the handshake is
@@ -1639,6 +1639,12 @@ of issues is well captured in the relevant sections of the main text.
 
 Never assume that because it isn't in the security considerations section it
 doesn't affect security.  Most of this document does.
+
+
+## Session Linkability
+
+Use of TLS session tickets allows servers and possibly other entities to
+correlate connections made by the same client; see {{resumption}} for details.
 
 
 ## Replay Attacks with 0-RTT
