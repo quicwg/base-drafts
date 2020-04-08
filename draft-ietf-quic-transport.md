@@ -4698,6 +4698,8 @@ active_connection_id_limit (0x000e):
   that received in the preferred_address transport parameter, and those received
   in NEW_CONNECTION_ID frames.
   The value of the active_connection_id_limit parameter MUST be at least 2.
+  An endpoint that receives a value less than 2 MUST close the connection
+  with an error of type TRANSPORT_PARAMETER_ERROR.
   If this transport parameter is absent, a default of 2 is assumed.  If an
   endpoint uses a zero-length connection ID, the active_connection_id_limit
   value received from its peer is ignored and not used, as
