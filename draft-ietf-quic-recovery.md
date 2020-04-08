@@ -420,8 +420,9 @@ The RECOMMENDED initial value for the packet reordering threshold
 less than 3, to keep in line with TCP {{?RFC5681}}.
 
 Some networks may exhibit higher degrees of reordering, causing a sender to
-detect spurious losses.  Implementers MAY use algorithms developed for TCP, such
-as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience.
+detect spurious losses.  Implementers SHOULD use algorithms developed for TCP, such
+as TCP-NCR {{?RFC4653}}, to improve QUIC's reordering resilience when losses
+were spuriously detected.
 
 ### Time Threshold {#time-threshold}
 
