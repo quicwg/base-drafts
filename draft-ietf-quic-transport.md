@@ -4338,8 +4338,8 @@ Retry Integrity Tag:
 
 : See the Retry Packet Integrity section of {{QUIC-TLS}}.
 
-<!-- Break this stuff up a little, maybe into "Sending Retry" and "Processing
-Retry" sections. -->
+
+#### Sending a Retry Packet
 
 The server populates the Destination Connection ID with the connection ID that
 the client included in the Source Connection ID of the Initial packet.
@@ -4357,6 +4357,9 @@ server can either discard or buffer 0-RTT packets that it receives.  A server
 can send multiple Retry packets as it receives Initial or 0-RTT packets.  A
 server MUST NOT send more than one Retry packet in response to a single UDP
 datagram.
+
+
+#### Handling a Retry Packet
 
 A client MUST accept and process at most one Retry packet for each connection
 attempt.  After the client has received and processed an Initial or Retry packet
@@ -4378,6 +4381,12 @@ packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
 the connection ID as part of its token validation logic (see
 {{token-integrity}}).
+
+A Retry packet does not include a packet number and cannot be explicitly
+acknowledged by a client.
+
+
+#### Completing a Handshake After Retry
 
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet (see {{negotiating-connection-ids}}).  Aside from this,
@@ -4405,8 +4414,6 @@ original_connection_id transport parameter is present and correct; otherwise, it
 MUST validate that the transport parameter is absent.  A client MUST treat a
 failed validation as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
-A Retry packet does not include a packet number and cannot be explicitly
-acknowledged by a client.
 
 ## Short Header Packets {#short-header}
 
