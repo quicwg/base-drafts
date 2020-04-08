@@ -1069,12 +1069,13 @@ to cease using the connection IDs when requested can result in connection
 failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
-An endpoint SHOULD limit the number of in flight RETIRE_CONNECTION_ID frames
-to bound the necessary state. In order to minimize delay in common situations,
-the limit on the number of in flight RETIRE_CONNECTION_IDs SHOULD be at least
-the active_connection_id_limit. An endpoint MAY choose to treat having too many
-connection IDs in need of retirement as a connection error of type
-CONNECTION_ID_LIMIT_ERROR.
+When retiring a connection ID, an endpoint remembers a sequence number and maybe
+a packet number for a RETIRE_CONNECTION_ID frame.  An endpoint SHOULD limit the
+state it commits by limiting the number of connection IDs that it tracks for
+retirement to at least twice the active_connection_id_limit. An endpoint MUST
+NOT forget a connection ID without retiring it, though MAY choose to treat
+having too many connection IDs in need of retirement as a connection error of
+type CONNECTION_ID_LIMIT_ERROR.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
 RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To.
