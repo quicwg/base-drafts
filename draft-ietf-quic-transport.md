@@ -1070,7 +1070,8 @@ failures, as the issuing endpoint might be unable to continue using the
 connection IDs with the active connection.
 
 An endpoint SHOULD limit the
-state it commits to retiring connection IDs using RETIRE_CONNECTION_ID by limiting the number of connection IDs that it tracks for
+state it commits to retiring connection IDs using RETIRE_CONNECTION_ID by
+limiting the number of connection IDs that it tracks for
 retirement to at least twice the active_connection_id_limit. An endpoint MUST
 NOT forget a connection ID without retiring it, though MAY choose to treat
 having too many connection IDs in need of retirement as a connection error of
