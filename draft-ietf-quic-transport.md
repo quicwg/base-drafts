@@ -4383,7 +4383,7 @@ This version of QUIC defines a single packet type which uses the
 short packet header.
 
 ~~~
-Long Header Packet {
+Short Header Packet {
   Header Form (1) = 0,
   Fixed Bit (1) = 1,
   Spin Bit (1),
@@ -4391,6 +4391,7 @@ Long Header Packet {
   Key Phase (1),
   Packet Number Length (2),
   Destination Connection ID (0..160),
+  Packet Number (8..32),
   Packet Payload (..),
 }
 ~~~~~

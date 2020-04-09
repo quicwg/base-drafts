@@ -1033,11 +1033,9 @@ integer at the start of the stream. The format and structure of data that
 follows this integer is determined by the stream type.
 
 ~~~~~~~~~~ drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Stream Type (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Unidirectional Stream Header {
+  Type (i),
+}
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
@@ -1122,13 +1120,10 @@ Only servers can push; if a server receives a client-initiated push stream, this
 MUST be treated as a connection error of type H3_STREAM_CREATION_ERROR.
 
 ~~~~~~~~~~ drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           0x01 (i)                          ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Push Stream Header {
+  Type (i) = 0x01,
+  Push ID (i),
+}
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
@@ -1182,15 +1177,11 @@ Note that, unlike QUIC frames, HTTP/3 frames can span multiple packets.
 All frames have the following format:
 
 ~~~~~~~~~~ drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Type (i)                          ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Length (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Frame Payload (*)                     ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+HTTP/3 Frame Format {
+  Type (i),
+  Length (i),
+  Frame Payload (..),
+}
 ~~~~~~~~~~
 {: #fig-frame title="HTTP/3 Frame Format"}
 
@@ -1229,11 +1220,11 @@ frame is received on a control stream, the recipient MUST respond with a
 connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~ drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Payload (*)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+DATA Frame {
+  Type (i) = 0x0,
+  Length (i),
+  Data (..),
+}
 ~~~~~~~~~~
 {: #fig-data title="DATA Frame Payload"}
 
@@ -1243,11 +1234,11 @@ The HEADERS frame (type=0x1) is used to carry an HTTP field section, encoded
 using QPACK. See [QPACK] for more details.
 
 ~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   Encoded Field Section (*)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+HEADERS Frame {
+  Type (i) = 0x1,
+  Length (i),
+  Encoded Field Section (..),
+}
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS Frame Payload"}
 
@@ -1284,11 +1275,11 @@ frame on a stream other than the control stream MUST be treated as a connection
 error of type H3_FRAME_UNEXPECTED.
 
 ~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+CANCEL_PUSH Frame {
+  Type (i) = 0x3,
+  Length (i),
+  Push ID (..),
+}
 ~~~~~~~~~~
 {: #fig-cancel-push title="CANCEL_PUSH Frame Payload"}
 
@@ -1343,13 +1334,12 @@ parameter consists of a setting identifier and a value, both encoded as QUIC
 variable-length integers.
 
 ~~~~~~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Identifier (i)                       ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Value (i)                         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+SETTINGS Frame {
+  Type (i) = 0x4,
+  Length (i),
+  Identifier (i),
+  Value (i),
+}
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS Parameter Format"}
 
@@ -1436,13 +1426,12 @@ The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
 field section from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   Encoded Field Section (*)                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+PUSH_PROMISE Frame {
+  Type (i) = 0x5,
+  Length (i),
+  Push ID (i),
+  Encoded Field Section (..),
+}
 ~~~~~~~~~~
 {: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
 
@@ -1496,11 +1485,11 @@ requests and pushes.  This enables administrative actions, like server
 maintenance.  GOAWAY by itself does not close a connection.
 
 ~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                  Stream ID/Push ID (i)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+GOAWAY Frame {
+  Type (i) = 0x7,
+  Length (i),
+  Stream ID/Push ID (..),
+}
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY Frame Payload"}
 
@@ -1540,11 +1529,11 @@ manage the number of promised server pushes can increase the maximum Push ID by
 sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Push ID (i)                        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+MAX_PUSH_ID Frame {
+  Type (i) = 0x1,
+  Length (i),
+  Push ID (..),
+}
 ~~~~~~~~~~
 {: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
 
