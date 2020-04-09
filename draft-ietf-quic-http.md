@@ -84,7 +84,7 @@ subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
+([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
 [](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
 Working Group information can be found at [](https://github.com/quicwg); source
@@ -298,7 +298,8 @@ experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 4.4.1.1 of {{!SEMANTICS}}. Experimenters are
-encouraged to coordinate their experiments on the quic@ietf.org mailing list.
+encouraged to coordinate their experiments on the
+[quic@ietf.org](mailto:quic@ietf.org) mailing list.
 
 ## Discovering an HTTP/3 Endpoint {#discovery}
 

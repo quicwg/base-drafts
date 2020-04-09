@@ -100,7 +100,7 @@ QUIC.
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
+([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
 [](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
 Working Group information can be found at [](https://github.com/quicwg); source
