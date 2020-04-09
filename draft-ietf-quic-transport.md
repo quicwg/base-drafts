@@ -1478,7 +1478,7 @@ this connection. This Destination Connection ID is used to determine packet
 protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the SCID Len field to indicate the length.
+and sets the SCID Length field to indicate the length.
 
 The first flight of 0-RTT packets use the same Destination Connection ID and
 Source Connection ID values as the client's first Initial packet.
@@ -3883,9 +3883,9 @@ Long Header Packet {
   Long Packet Type (2),
   Type-Specific Bits (4),
   Version (32),
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Source Connection ID (0..160),
 }
 ~~~~~
@@ -3923,7 +3923,7 @@ Version:
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
-DCID Len:
+DCID Length:
 
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
@@ -3935,11 +3935,11 @@ DCID Len:
 
 Destination Connection ID:
 
-: The Destination Connection ID field follows the DCID Len and is between 0 and
-  20 bytes in length. {{negotiating-connection-ids}} describes the use of this
-  field in more detail.
+: The Destination Connection ID field follows the DCID Length and is between 0
+  and 20 bytes in length. {{negotiating-connection-ids}} describes the use of
+  this field in more detail.
 
-SCID Len:
+SCID Length:
 
 : The byte following the Destination Connection ID contains the length in bytes
   of the Source Connection ID field that follows it.  This length is encoded as
@@ -3951,7 +3951,7 @@ SCID Len:
 
 Source Connection ID:
 
-: The Source Connection ID field follows the SCID Len and is between 0 and 20
+: The Source Connection ID field follows the SCID Length and is between 0 and 20
   bytes in length. {{negotiating-connection-ids}} describes the use of this
   field in more detail.
 
@@ -4026,9 +4026,9 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Source Connection ID (0..160),
   Supported Version (32) ...,
 }
@@ -4085,9 +4085,9 @@ Initial Packet {
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
@@ -4183,9 +4183,9 @@ limitations.
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Source Connection ID (0..160),
   Packet Number (8..32),
   Packet Payload (..),
@@ -4239,9 +4239,9 @@ Handshake Packet {
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
@@ -4285,9 +4285,9 @@ Retry Packet {
   Long Packet Type (2) = 3,
   Type-Specific Bits (4),
   Version (32),
-  DCID Len (8),
+  DCID Length (8),
   Destination Connection ID (0..160),
-  SCID Len (8),
+  SCID Length (8),
   Retry Token (..),
   Retry Integrity Tag (128),
 }
