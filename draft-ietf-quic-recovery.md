@@ -503,8 +503,8 @@ expiration before it has the keys to process an acknowledgement.
 When a PTO timer expires, the PTO period MUST be set to twice its current
 value.  The PTO period is set based on the latest RTT information when
 receiving an acknowledgement if the peer has completed address validation.
-The PTO timer is not decreased while the peer is validating the
-address, to ensure the endpoint's anti-deadlock timer does not fire too
+The PTO backoff is not decreased while the peer is validating the
+address, to ensure the client's anti-deadlock timer does not fire too
 aggressively when the server does not yet have handshake data to send.
 
 This exponential reduction in the sender's rate is important because
