@@ -501,7 +501,7 @@ packet on a PTO expiration before confirming that the server is able to decrypt
 expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO period MUST be set to twice its current
-value.  The PTO period is reset based on the latest rtt information when
+value.  The PTO period is set based on the latest RTT information when
 receiving an acknowledgement if the peer has completed address validation.
 The PTO timer is not decreased while the peer is validating the
 address, to ensure the endpoint's anti-deadlock timer does not fire too
