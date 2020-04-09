@@ -655,7 +655,7 @@ carrying NewSessionTicket messages in CRYPTO frames after the handshake is
 complete. Session resumption is the basis of 0-RTT, but can be used without
 also enabling 0-RTT.
 
-Endpoints that use sesion resumption might need to remember some information
+Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
 that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
 does not depend on any state being retained when resuming a connection, unless
