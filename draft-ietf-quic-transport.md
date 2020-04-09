@@ -1482,18 +1482,16 @@ authenticated by including all values in transport parameters; see
 {{transport-parameters}}. This ensures that all connection IDs used for the
 handshake are also authenticated by the cryptographic handshake.
 
-Each endpoint includes the value of the Source Connection ID field from the 
-most recent Initial packet it sent in the handshake_connection_id transport
-parameter; see
-{{transport-parameter-definitions}}. A server includes the Destination
-Connection ID field it receives in original Initial packets from the client
-- Initial packets received by the server prior to sending a Retry packet -
-in the original_connection_id transport parameter. After sending a Retry
+Each endpoint includes the value of the Source Connection ID field from the most
+recent Initial packet it sent in the handshake_connection_id transport
+parameter; see {{transport-parameter-definitions}}. A server includes the
+Destination Connection ID field it receives in original Initial packets from the
+client - Initial packets received by the server prior to sending a Retry packet
+- in the original_connection_id transport parameter. After sending a Retry
 packet, a server also includes the Source Connection ID field from the Retry
 packet in the retry_connection_id transport parameter.
 
-The values
-provided by a peer for these transport parameters MUST match the
+The values provided by a peer for these transport parameters MUST match the
 values that an endpoint used in the Destination Connection ID field of Initial
 packets that it sent. Including connection ID values in transport parameters and
 verifying them ensures that that an attacker cannot influence the choice of
@@ -4447,11 +4445,12 @@ the Retry packet in its retry_connection_id transport parameter.
 
 A server always includes an original_connection_id transport parameter. If it
 sends a Retry packet, the server MUST subsequently include the Destination
-Connection ID field from the client's original Initial packets - packets received
-by the server prior to sending the Retry packet -  in the original_connection_id
-transport parameter. If the server did not send a Retry packet, the value of the
-original_connection_id transport parameter MUST be copied from the
-Destination Connection ID field of the most recent client Initial packets.
+Connection ID field from the client's original Initial packets - packets
+received by the server prior to sending the Retry packet - in the
+original_connection_id transport parameter. If the server did not send a Retry
+packet, the value of the original_connection_id transport parameter MUST be
+copied from the Destination Connection ID field of the most recent client
+Initial packets.
 
 If the client received and processed a Retry packet, it MUST validate that the
 retry_connection_id transport parameter is present and correct; otherwise, it
