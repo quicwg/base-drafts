@@ -1483,7 +1483,7 @@ authenticated by including all values in transport parameters; see
 handshake are also authenticated by the cryptographic handshake.
 
 Each endpoint includes the value of the Source Connection ID field from the most
-recent Initial packet it sent in the handshake_connection_id transport
+recent Initial packet it sent in the initial_connection_id transport
 parameter; see {{transport-parameter-definitions}}. A server includes the
 Destination Connection ID field it receives in original Initial packets from the
 client - Initial packets received by the server prior to sending a Retry packet
@@ -1499,7 +1499,7 @@ connection ID for a successful connection by injecting packets carrying
 attacker-chosen connection IDs during the handshake. An endpoint MUST
 treat any of the following as a connection error of type PROTOCOL_VIOLATION:
 
-* absence of the handshake_connection_id transport parameter from either
+* absence of the initial_connection_id transport parameter from either
   endpoint,
 
 * absence of the original_connection_id transport parameter from the server,
@@ -1565,7 +1565,7 @@ specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
 not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
-ack_delay_exponent, handshake_connection_id, original_connection_id,
+ack_delay_exponent, initial_connection_id, original_connection_id,
 preferred_address, retry_connection_id, and stateless_reset_token. The client
 MUST use the server's new values in the handshake instead and, absent new
 values from the server, the default value.
@@ -4837,7 +4837,7 @@ active_connection_id_limit (0x0e):
   When a zero-length connection ID is being used, the active_connection_id_limit
   parameter MUST NOT be sent.
 
-handshake_connection_id (0x0f):
+initial_connection_id (0x0f):
 
 : The value that the endpoint included in the Source Connection ID field of the
   first Initial packet it sends during the handshake; see {{cid-auth}}.
@@ -6660,7 +6660,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x0c | disable_active_migration    | {{transport-parameter-definitions}} |
 | 0x0d | preferred_address           | {{transport-parameter-definitions}} |
 | 0x0e | active_connection_id_limit  | {{transport-parameter-definitions}} |
-| 0x0f | handshake_connection_id     | {{transport-parameter-definitions}} |
+| 0x0f | initial_connection_id       | {{transport-parameter-definitions}} |
 | 0x10 | retry_connection_id         | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
