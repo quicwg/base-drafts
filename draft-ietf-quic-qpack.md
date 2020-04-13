@@ -1304,54 +1304,62 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 # Sample One Pass Encoding Algorithm
 
 Pseudo-code for single pass encoding, excluding handling of duplicates,
-non-blocking mode, and reference tracking.
+non-blocking mode, available encoder stream flow control and reference tracking.
 
 ~~~
-baseIndex = dynamicTable.baseIndex
-largestReference = 0
+base = dynamicTable.getInsertCount()
+requiredInsertCount = 0
 for header in headers:
-  staticIdx = staticTable.getIndex(header)
-  if staticIdx:
-    encodeIndexReference(streamBuffer, staticIdx)
+  staticIndex = staticTable.getIndex(header)
+  if staticIndex is not None:
+    encodeIndexReference(streamBuffer, staticIndex)
     continue
 
-  dynamicIdx = dynamicTable.getIndex(header)
-  if !dynamicIdx:
+  dynamicIndex = dynamicTable.getIndex(header)
+  if dynamicIndex is None:
     # No matching entry.  Either insert+index or encode literal
-    nameIdx = getNameIndex(header)
-    if shouldIndex(header) and dynamicTable.canIndex(header):
-      encodeLiteralWithIncrementalIndex(controlBuffer, nameIdx,
-                                        header)
-      dynamicTable.add(header)
-      dynamicIdx = dynamicTable.baseIndex
 
-  if !dynamicIdx:
+    # getNameIndex attempts to find an index for this header's name.
+    # If one exists, it returns the name's (absolute) index and a
+    # boolean indicating which table has the name.  If the name
+    # can't be found, nameIndex is None
+    nameIndex, isStaticName = getNameIndex(header.name)
+    if shouldIndex(header) and dynamicTable.canIndex(header):
+      encodeInsert(encoderBuffer, nameIndex, isStaticName, header)
+      dynamicTable.add(header)
+      dynamicIndex = dynamicTable.getInsertCount()
+
+  if dynamicIndex is None:
     # Couldn't index it, literal
-    if nameIdx <= staticTable.size:
+    if nameIndex is None or isStaticName:
+      # Encodes a literal with a static name or literal name
       encodeLiteral(streamBuffer, nameIndex, header)
     else:
-      # encode literal, possibly with nameIdx above baseIndex
-      encodeDynamicLiteral(streamBuffer, nameIndex, baseIndex,
-                           header)
-      largestReference = max(largestReference,
-                             dynamicTable.toAbsolute(nameIdx))
+      # encode literal with dynamic name, possibly above base
+      encodeDynamicLiteral(streamBuffer, nameIndex, base, header)
+      requiredInsertCount = max(requiredInsertCount, nameIndex)
   else:
     # Dynamic index reference
-    assert(dynamicIdx)
-    largestReference = max(largestReference, dynamicIdx)
-    # Encode dynamicIdx, possibly with dynamicIdx above baseIndex
-    encodeDynamicIndexReference(streamBuffer, dynamicIdx,
-                                baseIndex)
+    assert(dynamicIndex is not None)
+    requiredInsertCount = max(requiredInsertCount, dynamicIndex)
+    # Encode dynamicIndex, possibly above base
+    encodeDynamicIndexReference(streamBuffer, dynamicIndex, base)
 
 # encode the prefix
-encodeInteger(prefixBuffer, 0x00, largestReference, 8)
-if baseIndex >= largestReference:
-  encodeInteger(prefixBuffer, 0, baseIndex - largestReference, 7)
+if requiredInsertCount == 0:
+  encodeIndexReference(prefixBuffer, 0, 0, 8)
+  encodeIndexReference(prefixBuffer, 0, 0, 7)
 else:
-  encodeInteger(prefixBuffer, 0x80,
-                largestReference  - baseIndex, 7)
+  wireRIC =
+    (requiredInsertCount % (2 * getMaxEntries(maxTableCapacity))) + 1;
+  encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
+  if base >= requiredInsertCount:
+    encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
+  else:
+    encodeInteger(prefixBuffer, 0x80,
+                  requiredInsertCount  - base - 1, 7)
 
-return controlBuffer, prefixBuffer + streamBuffer
+return encoderBuffer, prefixBuffer + streamBuffer
 ~~~
 
 # Change Log
