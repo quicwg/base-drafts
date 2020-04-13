@@ -932,7 +932,7 @@ table.
 
 For example, if the dynamic table is 100 bytes, then the Required Insert Count
 will be encoded modulo 6.  If a decoder has received 10 inserts, then an encoded
-value of 3 indicates that the Required Insert Count is 9 for the header block.
+value of 4 indicates that the Required Insert Count is 9 for the header block.
 
 #### Base {#base}
 
