@@ -1319,13 +1319,14 @@ for header in headers:
   if dynamicIndex is None:
     # No matching entry.  Either insert+index or encode literal
 
-    # getNameIndex attempts to find an index for this header's name.
-    # If one exists, it returns the name's (absolute) index and a
-    # boolean indicating which table has the name.  If the name
-    # can't be found, nameIndex is None
+    # getNameIndex attempts to find an index for this header's
+    # name.  If one exists, it returns the name's (absolute)
+    # index and a boolean indicating which table has the name.
+    # If the name can't be found, nameIndex is None
     nameIndex, isStaticName = getNameIndex(header.name)
     if shouldIndex(header) and dynamicTable.canIndex(header):
-      encodeInsert(encoderBuffer, nameIndex, isStaticName, header)
+      encodeInsert(encoderBuffer, nameIndex, isStaticName,
+                   header)
       dynamicTable.add(header)
       dynamicIndex = dynamicTable.getInsertCount()
 
@@ -1351,7 +1352,8 @@ if requiredInsertCount == 0:
   encodeIndexReference(prefixBuffer, 0, 0, 7)
 else:
   wireRIC =
-    (requiredInsertCount % (2 * getMaxEntries(maxTableCapacity))) + 1;
+    (requiredInsertCount %
+     (2 * getMaxEntries(maxTableCapacity))) + 1;
   encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
   if base >= requiredInsertCount:
     encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
