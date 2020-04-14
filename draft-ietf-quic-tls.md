@@ -1702,11 +1702,6 @@ that the AEAD acts as a PRF, if L bits are sampled, the odds of two ciphertext
 samples being identical approach 2^(-L/2), that is, the birthday bound. For the
 algorithms described in this document, that probability is one in 2^64.
 
-Note:
-
-: In some cases, inputs shorter than the full size required by the packet
-  protection algorithm might be used.
-
 To prevent an attacker from modifying packet headers, the header is transitively
 authenticated using packet protection; the entire packet header is part of the
 authenticated additional data.  Protected fields that are falsified or modified
