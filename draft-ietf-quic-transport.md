@@ -246,7 +246,7 @@ pair of matching braces. Each field in this list is separated by commas.
 
 Individual fields include length information, plus indications about fixed
 value, optionality, or repetitions. Individual fields use the following
-notational conventions:
+notational conventions, with all lengths in bits:
 
 x (A):
 : Indicates that x is A bits long
@@ -257,7 +257,7 @@ x (i):
 x (A..B):
 : Indicates that x can be any length from A to B; A can be omitted to indicate
   a mimumum of zero bits and B can be omitted to indicate no set upper limit;
-  values always end on an octet boundary
+  values in this format always end on an octet boundary
 
 x (?) = C:
 : Indicates that x has a fixed value of C
@@ -273,7 +273,7 @@ x (E) ...:
   length E)
 
 By convention, individual fields reference a complex field by using the name of
-that the complex field.
+the complex field.
 
 For example:
 
@@ -281,6 +281,7 @@ For example:
 Example Structure {
   One-bit Field (1),
   7-bit Field with Fixed Value (7) = 61,
+  Arbitrary-Length Field (..),
   Variable-Length Field (8..24),
   Field With Minimum Length (16..),
   Field With Maximum Length (..128),
@@ -3935,7 +3936,7 @@ DCID Length:
 
 Destination Connection ID:
 
-: The Destination Connection ID field follows the DCID Length and is between 0
+: The Destination Connection ID field follows the DCID Length field and is between 0
   and 20 bytes in length. {{negotiating-connection-ids}} describes the use of
   this field in more detail.
 
@@ -3951,7 +3952,7 @@ SCID Length:
 
 Source Connection ID:
 
-: The Source Connection ID field follows the SCID Length and is between 0 and 20
+: The Source Connection ID field follows the SCID Length field and is between 0 and 20
   bytes in length. {{negotiating-connection-ids}} describes the use of this
   field in more detail.
 

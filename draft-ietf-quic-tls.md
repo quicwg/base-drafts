@@ -1012,8 +1012,8 @@ Initial Packet {
   Token Length (i),
   Token (..),
   Packet Number (8..32),     # Protected
-  Protected Payload (0..24), # Skipped
-  Protected Payload (128),   # Sampled
+  Protected Payload (0..24), # Skipped Part
+  Protected Payload (128),   # Sampled Part
   Protected Payload (..)     # Remainder
 }
 
@@ -1028,7 +1028,7 @@ Short Header Packet {
   Packet Number (8..32),     # Protected
   Protected Payload (0..24), # Skipped Part
   Protected Payload (128),   # Sampled Part
-  Protected Payload (..)     # Remainder
+  Protected Payload (..),    # Remainder
 }
 ~~~
 {: #fig-sample title="Header Protection and Ciphertext Sample"}

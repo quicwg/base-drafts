@@ -1034,7 +1034,7 @@ follows this integer is determined by the stream type.
 
 ~~~~~~~~~~ drawing
 Unidirectional Stream Header {
-  Type (i),
+  Stream Type (i),
 }
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
@@ -1121,7 +1121,7 @@ MUST be treated as a connection error of type H3_STREAM_CREATION_ERROR.
 
 ~~~~~~~~~~ drawing
 Push Stream Header {
-  Type (i) = 0x01,
+  Stream Type (i) = 0x01,
   Push ID (i),
 }
 ~~~~~~~~~~
