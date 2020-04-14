@@ -670,7 +670,7 @@ Session resumption allows servers to link activity on the original connection
 with the resumed connection, which might be a privacy issue for clients.
 Clients can choose not to enable resumption to avoid creating this correlation.
 Client SHOULD NOT reuse tickets as that allows entities other than the server
-to correlate connection; see Section C.4 of {{!TLS13}}.
+to correlate connections; see Section C.4 of {{!TLS13}}.
 
 
 ## Enabling 0-RTT {#enable-0rtt}
