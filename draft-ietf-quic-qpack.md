@@ -1196,7 +1196,7 @@ content.
 
 Note:
 
-Padding schemes only provide limited protection against an attacker with these
+: Padding schemes only provide limited protection against an attacker with these
 capabilities, potentially only forcing an increased number of guesses to learn
 the length associated with a given guess. Padding schemes also work directly
 against compression by increasing the number of bits that are transmitted.
@@ -1219,7 +1219,7 @@ the entropy of values. As a result, values with high entropy are unlikely to be
 recovered successfully. However, values with low entropy remain vulnerable.
 
 Attacks of this nature are possible any time that two mutually distrustful
-entities control requests or responses that are placed onto a single HTTP/2
+entities control requests or responses that are placed onto a single HTTP/3
 connection. If the shared QPACK compressor permits one entity to add entries to
 the dynamic table, and the other to access those entries, then the state of the
 table can be learned.
@@ -1252,29 +1252,29 @@ that is constructing header fields. Header field values that are added to the
 table are attributed to an entity, and only the entity that created a particular
 value can extract that value.
 
-To improve compression performance of tqhis option, certain entries might be
+To improve compression performance of this option, certain entries might be
 tagged as being public. For example, a web browser might make the values of the
 Accept-Encoding header field available in all requests.
 
 An encoder without good knowledge of the provenance of header fields might
 instead introduce a penalty for a header field with many different values, such
 that a large number of attempts to guess a header field value results in the
-header field no more being compared to the dynamic table entries in future
-messages, effectively preventing further guesses.
+header field not being compared to the dynamic table entries in future messages,
+effectively preventing further guesses.
 
 Note:
 
-Simply removing entries corresponding to the header field from the dynamic table
-can be ineffectual if the attacker has a reliable way of causing values to be
-reinstalled. For example, a request to load an image in a web browser typically
-includes the Cookie header field (a potentially highly valued target for this
-sort of attack), and web sites can easily force an image to be loaded, thereby
-refreshing the entry in the dynamic table.
+: Simply removing entries corresponding to the header field from the dynamic
+table can be ineffectual if the attacker has a reliable way of causing values to
+be reinstalled. For example, a request to load an image in a web browser
+typically includes the Cookie header field (a potentially highly valued target
+for this sort of attack), and web sites can easily force an image to be loaded,
+thereby refreshing the entry in the dynamic table.
 
 This response might be made inversely proportional to the length of the header
-field value. Marking a header field as not using the dynamic table any more
-might occur for shorter values more quickly or with higher probability than for
-longer values.
+field value. Disabling access to the dynamic table for a header field might
+occur for shorter values more quickly or with higher probability than for longer
+values.
 
 ## Never Indexed Literals
 
@@ -1311,7 +1311,7 @@ little value.
 Note that these criteria for deciding to use a never indexed literal
 representation will evolve over time as new attacks are discovered.
 
-##. Static Huffman Encoding
+## Static Huffman Encoding
 
 There is no currently known attack against a static Huffman encoding. A study
 has shown that using a static Huffman encoding table created an information
@@ -1322,14 +1322,14 @@ information (see [PETAL]).
 ## Memory Consumption
 
 An attacker can try to cause an endpoint to exhaust its memory. QPACK is
-designed to limit both the peak and state amounts of memory allocated by an
+designed to limit both the peak and stable amounts of memory allocated by an
 endpoint.
 
 The amount of memory used by the compressor is limited by the protocol using
 QPACK through the definition of the maximum size of the dynamic table, and the
 maximum number of blocking streams. In HTTP/3, these values are controlled by
-the decoder through the setting parameter QPACK_MAX_TABLE_CAPACITY and
-QPACK_BLOCKED_STREAMS, respectively (see Section
+the decoder through the setting parameter SETTINGS_QPACK_MAX_TABLE_CAPACITY and
+SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
 {{maximum-dynamic-table-capacity}} and {{blocked-streams}}). The limit on the
 size of the dynamic table takes into account both the size of the data stored in
 the dynamic table, plus a small allowance for overhead.  The limit on the number
@@ -1340,13 +1340,15 @@ the decoder uses to track each blocked stream.
 A decoder can limit the amount of state memory used for the dynamic table by
 setting an appropriate value for the maximum size of the dynamic table. In
 HTTP/3, this is realized by setting an appropriate value for the
-QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of state
-memory it uses by signaling lower dynamic table size than the decoder allows
-(see {{eviction}}).  A decoder can limit the amount of state memory used for
-blocked streams by setting an appropriate value for the maximum number of
-blocked streams.  In HTTP/3, this is realized by setting an appropriate value
-for the QPACK_BLOCKED_STREAMS parameter.  An encoder can limit the amount of
-state memory by only using as many blocked streams as it wishes to support; no
+SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of
+state memory it uses by signaling a lower dynamic table size than the decoder
+allows (see {{eviction}}).
+
+A decoder can limit the amount of state memory used for blocked streams by
+setting an appropriate value for the maximum number of blocked streams.  In
+HTTP/3, this is realized by setting an appropriate value for the
+QPACK_BLOCKED_STREAMS parameter.  An encoder can limit the amount of state
+memory by only using as many blocked streams as it wishes to support; no
 signaling to the decoder is requred.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
