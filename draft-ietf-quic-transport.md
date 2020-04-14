@@ -3909,12 +3909,12 @@ Fixed Bit:
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
   for this bit are not valid packets in this version and MUST be discarded.
 
-Long Packet Type (T):
+Long Packet Type:
 
 : The next two bits (those with a mask of 0x30) of byte 0 contain a packet type.
   Packet types are listed in {{long-packet-types}}.
 
-Type-Specific Bits (X):
+Type-Specific Bits:
 
 : The lower four bits (those with a mask of 0x0f) of byte 0 are type-specific.
 
@@ -3978,7 +3978,7 @@ packet type.  While type-specific semantics for this version are described in
 the following sections, several long-header packets in this version of QUIC
 contain these additional fields:
 
-Reserved Bits (R):
+Reserved Bits:
 
 : Two bits (those with a mask of 0x0c) of byte 0 are reserved across multiple
   packet types.  These bits are protected using header protection (see Section
@@ -3989,7 +3989,7 @@ Reserved Bits (R):
   header protection can expose the endpoint to attacks (see Section 9.3 of
   {{QUIC-TLS}}).
 
-Packet Number Length (P):
+Packet Number Length:
 
 : In packet types which contain a Packet Number field, the least significant two
   bits (those with a mask of 0x03) of byte 0 contain the length of the packet
@@ -4410,12 +4410,12 @@ Fixed Bit:
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
   for this bit are not valid packets in this version and MUST be discarded.
 
-Spin Bit (S):
+Spin Bit:
 
 : The third most significant bit (0x20) of byte 0 is the latency spin bit, set
 as described in {{spin-bit}}.
 
-Reserved Bits (R):
+Reserved Bits:
 
 : The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
   bits are protected using header protection (see Section 5.4 of
@@ -4426,14 +4426,14 @@ Reserved Bits (R):
   header protection can expose the endpoint to attacks (see Section 9.3 of
   {{QUIC-TLS}}).
 
-Key Phase (K):
+Key Phase:
 
 : The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
   using header protection (see Section 5.4 of {{QUIC-TLS}}).
 
-Packet Number Length (P):
+Packet Number Length:
 
 : The least significant two bits (those with a mask of 0x03) of byte 0 contain
   the length of the packet number, encoded as an unsigned, two-bit integer that
