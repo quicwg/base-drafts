@@ -3936,9 +3936,9 @@ DCID Length:
 
 Destination Connection ID:
 
-: The Destination Connection ID field follows the DCID Length field and is between 0
-  and 20 bytes in length. {{negotiating-connection-ids}} describes the use of
-  this field in more detail.
+: The Destination Connection ID field follows the DCID Length field and is
+  between 0 and 20 bytes in length. {{negotiating-connection-ids}} describes
+  the use of this field in more detail.
 
 SCID Length:
 
@@ -3952,9 +3952,9 @@ SCID Length:
 
 Source Connection ID:
 
-: The Source Connection ID field follows the SCID Length field and is between 0 and 20
-  bytes in length. {{negotiating-connection-ids}} describes the use of this
-  field in more detail.
+: The Source Connection ID field follows the SCID Length field and is between 0
+  and 20 bytes in length. {{negotiating-connection-ids}} describes the use of
+  this field in more detail.
 
 In this version of QUIC, the following packet types with the long header are
 defined:
