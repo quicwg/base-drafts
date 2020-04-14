@@ -72,17 +72,6 @@ informative:
     date: May, 2015
 
 
-  HUFFMAN:
-    target: http://ieeexplore.ieee.org/xpl/articleDetails.jsp?arnumber=4051119
-    title: "A Method for the Construction of Minimum-Redundancy Codes"
-    author:
-      -
-        ins: D. A. Huffman
-    date: September, 1952
-    seriesinfo:
-      Proceedings of the Institute of Radio Engineers,
-      Volume 40, Number 9, pp. 1098-1101
-
   PETAL:
     target: http://www.pdl.cmu.edu/PDL-FTP/associated/CMU-PDL-13-106.pdf
     title: "PETAL: Preset Encoding Table Information Leakage"
@@ -1263,7 +1252,9 @@ that is constructing header fields. Header field values that are added to the
 table are attributed to an entity, and only the entity that created a particular
 value can extract that value.
 
-To improve compression performance of tqhis option, certain entries might be tagged as being public. For example, a web browser might make the values of the Accept-Encoding header field available in all requests.
+To improve compression performance of tqhis option, certain entries might be
+tagged as being public. For example, a web browser might make the values of the
+Accept-Encoding header field available in all requests.
 
 An encoder without good knowledge of the provenance of header fields might
 instead introduce a penalty for a header field with many different values, such
