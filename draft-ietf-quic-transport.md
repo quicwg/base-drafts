@@ -2249,7 +2249,7 @@ correlate activity.
 An endpoint SHOULD NOT initiate migration with a peer that uses a zero-length
 connection ID, for two reasons. First, if the peer routes incoming packets using
 the packets' source address, migration might not be successful. Second, if
-such a  peer routes incoming packets by assigning a unique destination address
+such a peer routes incoming packets by assigning a unique destination address
 to the connection, which can be achieved using using the preferred_address
 transport parameter (see {{preferred-address}}), packets sent by this
 endpoint over multiple paths are trivially linkable.
