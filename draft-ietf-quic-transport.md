@@ -5258,7 +5258,7 @@ The MAX_STREAM_DATA frame is shown in {{fig-max-stream-data}}.
 MAX_STREAM_DATA Frame {
   Type (i) = 0x11,
   Stream ID (i),
-  Maximum Data (i),
+  Maximum Stream Data (i),
 }
 ~~~
 {: #fig-max-stream-data title="MAX_STREAM_DATA Frame Format"}
@@ -5310,8 +5310,8 @@ MAX_STREAMS frames contain the following fields:
 Maximum Streams:
 
 : A count of the cumulative number of streams of the corresponding type that
-  can be opened over the lifetime of the connection.  Stream IDs cannot exceed
-  2^62-1, as it is not possible to encode stream IDs larger than this value.
+  can be opened over the lifetime of the connection.  This value cannot exceed
+  2^60, as it is not possible to encode stream IDs larger than 2^62-1.
   Receipt of a frame that permits opening of a stream larger than this limit
   MUST be treated as a FRAME_ENCODING_ERROR.
 
@@ -5342,14 +5342,14 @@ The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.
 ~~~
 DATA_BLOCKED Frame {
   Type (i) = 0x14,
-  Data Limit (i),
+  Maximum Data (i),
 }
 ~~~
 {: #fig-data-blocked title="DATA_BLOCKED Frame Format"}
 
 DATA_BLOCKED frames contain the following fields:
 
-Data Limit:
+Maximum Data:
 
 : A variable-length integer indicating the connection-level limit at which
   blocking occurred.
@@ -5370,7 +5370,7 @@ The STREAM_DATA_BLOCKED frame is shown in {{fig-stream-data-blocked}}.
 STREAM_DATA_BLOCKED Frame {
   Type (i) = 0x15,
   Stream ID (i),
-  Data Limit (i),
+  Maximum Stream Data (i),
 }
 ~~~
 {: #fig-stream-data-blocked title="STREAM_DATA_BLOCKED Frame Format"}
@@ -5381,7 +5381,7 @@ Stream ID:
 
 : A variable-length integer indicating the stream which is flow control blocked.
 
-Stream Data Limit:
+Maximum Stream Data:
 
 : A variable-length integer indicating the offset of the stream at which the
   blocking occurred.
@@ -5403,19 +5403,20 @@ The STREAMS_BLOCKED frames are shown in {{fig-streams-blocked}}.
 ~~~
 STREAMS_BLOCKED Frame {
   Type (i) = 0x16..0x17,
-  Stream Limit (i),
+  Maximum Streams (i),
 }
 ~~~
 {: #fig-streams-blocked title="STREAMS_BLOCKED Frame Format"}
 
 STREAMS_BLOCKED frames contain the following fields:
 
-Stream Limit:
+Maximum Streams:
 
-: A variable-length integer indicating the stream limit at the time the frame
-  was sent.  Stream IDs cannot exceed 2^62-1, as it is not possible to encode
-  stream IDs larger than this value.  Receipt of a frame that encodes a larger
-  stream ID MUST be treated as a STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
+: A variable-length integer indicating the maximum number of streams allowed
+  at the time the frame was sent.  This value cannot exceed 2^60, as it is
+  not possible to encode stream IDs larger than 2^62-1.  Receipt of a frame
+  that encodes a larger stream ID MUST be treated as a STREAM_LIMIT_ERROR or a
+  FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
