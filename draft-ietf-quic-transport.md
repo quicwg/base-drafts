@@ -3304,9 +3304,20 @@ necessary if an ACK frame would be too large to fit in a packet, however
 receivers MAY also limit ACK frame size further to preserve space for other
 frames.
 
-When discarding unacknowledged ACK Ranges, a receiver MUST retain the largest
-received packet number. A receiver SHOULD retain ACK Ranges containing newly
-received packets or higher-numbered packets.
+A receiver MUST retain an ACK Range unless it can ensure that it will not
+subsequently accept packets with numbers in that range. Maintaining a minimum
+packet number that increases as ranges are discarded is one way to achieve this
+with minimal state.
+
+Receivers can discard all ACK Ranges, but they MUST retain the largest packet
+number that has been successfully processed as that is used to recover packet
+numbers from subsequent packets.
+
+A receiver SHOULD include an ACK Range containing the largest received packet
+number in every ACK frame. The Largest Acknowledged field is used in ECN
+validation at a sender and including a lower value than what was included in a
+previous ACK frame could cause ECN to be unnecessarily disabled; see
+{{ecn-validation}}.
 
 A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
 not receive an acknowledgement for a long period of time.  This could cause the
