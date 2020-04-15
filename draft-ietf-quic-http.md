@@ -1226,7 +1226,7 @@ DATA Frame {
   Data (..),
 }
 ~~~~~~~~~~
-{: #fig-data title="DATA Frame Payload"}
+{: #fig-data title="DATA Frame"}
 
 ### HEADERS {#frame-headers}
 
@@ -1240,7 +1240,7 @@ HEADERS Frame {
   Encoded Field Section (..),
 }
 ~~~~~~~~~~
-{: #fig-headers title="HEADERS Frame Payload"}
+{: #fig-headers title="HEADERS Frame"}
 
 HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
@@ -1281,7 +1281,7 @@ CANCEL_PUSH Frame {
   Push ID (..),
 }
 ~~~~~~~~~~
-{: #fig-cancel-push title="CANCEL_PUSH Frame Payload"}
+{: #fig-cancel-push title="CANCEL_PUSH Frame"}
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled (see
@@ -1433,7 +1433,7 @@ PUSH_PROMISE Frame {
   Encoded Field Section (..),
 }
 ~~~~~~~~~~
-{: #fig-push-promise title="PUSH_PROMISE Frame Payload"}
+{: #fig-push-promise title="PUSH_PROMISE Frame"}
 
 The payload consists of:
 
@@ -1491,7 +1491,7 @@ GOAWAY Frame {
   Stream ID/Push ID (..),
 }
 ~~~~~~~~~~
-{: #fig-goaway title="GOAWAY Frame Payload"}
+{: #fig-goaway title="GOAWAY Frame"}
 
 The GOAWAY frame is always sent on the control stream.  In the server to client
 direction, it carries a QUIC Stream ID for a client-initiated bidirectional
