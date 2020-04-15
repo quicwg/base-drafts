@@ -1334,14 +1334,18 @@ parameter consists of a setting identifier and a value, both encoded as QUIC
 variable-length integers.
 
 ~~~~~~~~~~~~~~~  drawing
-SETTINGS Frame {
-  Type (i) = 0x4,
-  Length (i),
+Setting {
   Identifier (i),
   Value (i),
 }
+
+SETTINGS Frame {
+  Type (i) = 0x4,
+  Length (i),
+  Setting (..) ...,
+}
 ~~~~~~~~~~~~~~~
-{: #fig-ext-settings title="SETTINGS Parameter Format"}
+{: #fig-ext-settings title="SETTINGS Frame"}
 
 An implementation MUST ignore the contents for any SETTINGS identifier it does
 not understand.
