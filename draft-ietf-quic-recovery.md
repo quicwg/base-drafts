@@ -501,8 +501,15 @@ packet on a PTO expiration before confirming that the server is able to decrypt
 0-RTT packets, and prevents a server from sending a 1-RTT packet on a PTO
 expiration before it has the keys to process an acknowledgement.
 
-When a PTO timer expires, the PTO period MUST be set to twice its current
-value. This exponential reduction in the sender's rate is important because
+When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
+PTO period being set to twice its current value.  The PTO period is set based
+on the latest RTT information after receiving an acknowledgement. The PTO
+backoff is reset upon receiving an acknowledgement unless it's a client unsure
+if the the server has validated the client's address. Not resetting the backoff
+during peer address validation ensures the client's anti-deadlock timer is not
+set too aggressively when the server is slow in responding with handshake data.
+
+This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
 severe congestion.  Even when there are ack-eliciting packets in-flight in
 multiple packet number spaces, the exponential increase in probe timeout
@@ -1146,7 +1153,10 @@ OnAckReceived(ack, pn_space):
     OnPacketsLost(lost_packets)
   OnPacketsAcked(newly_acked_packets)
 
-  pto_count = 0
+  // Reset pto_count unless the client is unsure if
+  // the server has validated the client's address.
+  if (PeerCompletedAddressValidation()):
+    pto_count = 0
   SetLossDetectionTimer()
 
 
@@ -1521,6 +1531,7 @@ OnPacketNumberSpaceDiscarded(pn_space):
   // Reset the loss detection and PTO timer
   time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
   loss_time[pn_space] = 0
+  pto_count = 0
   SetLossDetectionTimer()
 ~~~
 
