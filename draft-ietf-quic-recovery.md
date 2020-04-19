@@ -505,7 +505,7 @@ PTO period being set to twice its current value.  The PTO period is set based
 on the latest RTT information after receiving an acknowledgement. The PTO
 backoff is reset upon receiving an acknowledgement unless it's a client unsure
 if the the server has validated the client's address. Not resetting the backoff
-during peer addresss validation ensures the client's anti-deadlock timer is not
+during peer address validation ensures the client's anti-deadlock timer is not
 set too aggressively when the server is slow in responding with handshake data.
 
 This exponential reduction in the sender's rate is important because
