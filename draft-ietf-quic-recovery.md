@@ -502,7 +502,7 @@ expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value.  The PTO period is set based
-on the latest RTT information when receiving an acknowledgement. The PTO
+on the latest RTT information after receiving an acknowledgement. The PTO
 backoff is reset upon receiving an acknowledgement unless it's a client unsure
 if the the server has validated the client's address. Not resetting the backoff
 during peer addresss validation ensures the client's anti-deadlock timer is not
