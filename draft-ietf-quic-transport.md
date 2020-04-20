@@ -1035,7 +1035,7 @@ peer to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
 
 
-### Consuming and Retiring Connection IDs {#retiring-cids}
+### Consuming and Retiring Connection IDs {#retire-cid}
 
 An endpoint can change the connection ID it uses for a peer to another available
 one at any time during the connection.  An endpoint consumes connection IDs in
@@ -5579,7 +5579,7 @@ Sequence Number:
 Retire Prior To:
 
 : A variable-length integer indicating which connection IDs should be retired.
-  See {{retiring-cids}}.
+  See {{retire-cid}}.
 
 Length:
 
@@ -5616,7 +5616,7 @@ IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
 The Retire Prior To field counts connection IDs established during connection
-setup and the preferred_address transport parameter (see {{retiring-cids}}). The
+setup and the preferred_address transport parameter (see {{retire-cid}}). The
 Retire Prior To field MUST be less than or equal to the Sequence Number field.
 Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
@@ -5660,7 +5660,7 @@ RETIRE_CONNECTION_ID frames contain the following fields:
 Sequence Number:
 
 : The sequence number of the connection ID being retired.  See
-  {{retiring-cids}}.
+  {{retire-cid}}.
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
 than any previously sent to the peer MUST be treated as a connection error of
