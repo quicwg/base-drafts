@@ -1048,10 +1048,10 @@ Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
 be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
-As discussed in {{migration-linkability}}, endpoints limit the use of a
-connection ID to a single network path where possible. Endpoints SHOULD retire
-connection IDs when no longer actively using the network path on which the
-connection ID was used.
+As discussed in {{migration-linkability}}, endpoints MUST limit the use of a
+connection ID to packets sent from a single local address.  Endpoints SHOULD
+retire connection IDs when they are no longer actively using the network path on
+which the connection ID was used.
 
 An endpoint might need to stop accepting previously issued connection IDs in
 certain circumstances.  Such an endpoint can cause its peer to retire connection
@@ -2241,11 +2241,21 @@ linked by any other entity.
 At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
-An endpoint MUST use a new connection ID if it initiates connection migration as
-described in {{initiating-migration}} or probes a new network path as described
-in {{probing}}.  An endpoint MUST use a new connection ID in response to a
-change in the address of a peer if the packet with the new peer address uses an
-active connection ID that has not been previously used by the peer.
+An endpoint MUST NOT reuse a connection ID when sending from more than one local
+address, for example when initiating connection migration as described in
+{{initiating-migration}} or when probing a new network path as described in
+{{probing}}.
+
+Similarly, an endpoint MUST NOT reuse a connection ID when sending to more than
+one destination address, for example when responding to a change in the address
+of a peer if the packet with the new peer address uses an active connection ID
+that has not been previously used by the peer.
+
+Note that these requirements apply to the endpoints sending packets, as
+unintentional changes in path without a change in connection ID are possible.
+For example, after a period of network inactivity, NAT rebinding might cause
+packets to be sent on a new path when the client resumes sending.  An endpoint
+responds to such an event as described in {{migration-response}}.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
@@ -2253,10 +2263,6 @@ the same connection across different network paths.  Header protection ensures
 that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
-
-Unintentional changes in path without a change in connection ID are possible.
-For example, after a period of network inactivity, NAT rebinding might cause
-packets to be sent on a new path when the client resumes sending.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
