@@ -2247,12 +2247,14 @@ other properties of packets, such as timing and size, from being used to
 correlate activity.
 
 An endpoint SHOULD NOT initiate migration with a peer that uses a zero-length
-connection ID, for two reasons. First, if the peer routes incoming packets using
-the packets' source address, migration might not be successful. Second, if
-such a peer routes incoming packets by assigning a unique destination address
-to the connection, which can be achieved using using the preferred_address
-transport parameter (see {{preferred-address}}), packets sent by this
-endpoint over multiple paths are trivially linkable.
+connection ID, because traffic over the new path might be trivially linkable to
+traffic over the old one. If the server is able to route packets with a
+zero-length connection ID to the right connection, it means that the server is
+using other information to demultiplex packets. For example, the server can
+assign an address that is unique to the connection using the preferred_address
+transport parameter; see {{preferred-address}}.  Information that might allow
+correct routing of packets across multiple network paths will also allow
+activity on those paths to be linked by entities other than the peer.
 
 Unintentional changes in path without a change in connection ID are possible.
 For example, after a period of network inactivity, NAT rebinding might cause
