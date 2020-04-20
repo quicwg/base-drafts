@@ -6177,8 +6177,8 @@ properties. Any attack on the TLS handshake could affect QUIC.
 Any attack on the TLS handshake that might compromise the secrecy or uniqueness
 of session keys affects other security guarantees provided by QUIC that depends
 on these keys. For instance, migration ({{migration}}) depends on the efficacy
-of confidentiality protections, both from the negotiation of keys using the TLS
-handshake and from QUIC packet protection, to avoid linkability across network
+of confidentiality protections, both for the negotiation of keys using the TLS
+handshake and for QUIC packet protection, to avoid linkability across network
 paths.
 
 An attack on the integrity of the TLS handshake might allow an attacker to
