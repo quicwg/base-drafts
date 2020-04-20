@@ -146,8 +146,7 @@ and an internal framing layer similar to HTTP/2.
 
 Once a client knows that an HTTP/3 server exists at a certain endpoint, it opens
 a QUIC connection. QUIC provides protocol negotiation, stream-based
-multiplexing, and flow control. An HTTP/3 endpoint can be discovered using HTTP
-Alternative Services; this process is described in greater detail in
+multiplexing, and flow control.  Discovery of an HTTP/3 endpoint is described in
 {{discovery}}.
 
 Within each stream, the basic unit of HTTP/3 communication is a frame
@@ -303,10 +302,38 @@ encouraged to coordinate their experiments on the
 
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
+HTTP relies on the notion of an authoritative response: a response that has been
+determined to be the most appropriate response for that request given the state
+of the target resource at the time of response message origination by (or at the
+direction of) the origin server identified within the target URI.  Locating an
+authoritative server for an HTTP URL is discussed in Section 5.4 of
+{{!SEMANTICS}}.
+
+The "https" scheme associates authority with possession of a certificate that
+the client considers to be trustworthy for the host identified by the authority
+component of the URL. If a server presents a certificate and proof that it
+controls the corresponding private key, then a client will accept a secured
+connection to that server as being authoritative for all origins with the
+"https" scheme and a host identified in the certificate.
+
+A client MAY attempt access to a resource with an "https" URI by resolving the
+host identifier to an IP address, establishing a QUIC connection to that address
+on the indicated port, and sending an HTTP/3 request message targeting the URI
+to the server over that secured connection.
+
+Connectivity problems (e.g., blocking UDP) can result in QUIC connection
+establishment failure; clients SHOULD attempt to use TCP-based versions of HTTP
+in this case.
+
+Servers MAY serve HTTP/3 on any UDP port; an alternative service advertisement
+always includes an explicit port, and URLs contain either an explicit port or a
+default port associated with the scheme.
+
+### HTTP Alternative Services {#alt-svc}
+
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
-the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
-({{!ALTSVC=RFC7838}}), using the ALPN token defined in
-{{connection-establishment}}.
+the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
+using the ALPN token defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
@@ -320,12 +347,24 @@ On receipt of an Alt-Svc record indicating HTTP/3 support, a client MAY attempt
 to establish a QUIC connection to the indicated host and port and, if
 successful, send HTTP requests using the mapping described in this document.
 
-Connectivity problems (e.g. firewall blocking UDP) can result in QUIC connection
-establishment failure, in which case the client SHOULD continue using the
-existing connection or try another alternative endpoint offered by the origin.
+### Other Schemes
 
-Servers MAY serve HTTP/3 on any UDP port, since an alternative always includes
-an explicit port.
+Although HTTP is independent of the transport protocol, the "http" scheme
+associates authority with the ability to receive TCP connections on the
+indicated port of whatever host is identified within the authority component.
+Because HTTP/3 does not use TCP, HTTP/3 cannot be used for direct access to the
+authoritative server for a resource identified by an "http" URI.  However,
+protocol extensions such as {{!ALTSVC=RFC7838}} permit the authoritative server
+to identify other services which are also authoritative and which might be
+reachable over HTTP/3.
+
+Prior to making requests for an origin whose scheme is not "https", the client
+MUST ensure the server is willing to serve that scheme.  If the client intends
+to make requests for an origin whose scheme is "http", this means that it MUST
+obtain a valid `http-opportunistic` response for the origin as described in
+{{!RFC8164}} prior to making any such requests.  Other schemes might define
+other mechanisms.
+
 
 ## Connection Establishment {#connection-establishment}
 
@@ -358,29 +397,19 @@ example, when a user navigates away from a particular web page) or until the
 server closes the connection.
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
-requests with multiple different URI authority components.  The client MAY send
-any requests for which the client considers the server authoritative.
-
-An authoritative HTTP/3 endpoint is typically discovered because the client has
-received an Alt-Svc record from the request's origin which nominates the
-endpoint as a valid HTTP Alternative Service for that origin.  As required by
-{{!RFC7838}}, clients MUST check that the nominated server can present a valid
-certificate for the origin before considering it authoritative. Clients MUST NOT
-assume that an HTTP/3 endpoint is authoritative for other origins without an
-explicit signal.
+requests with multiple different URI authority components.  In general, a server
+is considered authoritative for all URIs with the "https" scheme for which the
+hostname in the URI is present in the authenticated certificate provided by the
+server, either as the CN field of the certificate subject or as a dNSName in the
+subjectAltName field of the certificate (see {{!RFC6125}}).  For a host that is
+an IP address, the client MUST verify that the address appears as an iPAddress
+in the subjectAltName field of the certificate.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
 pair, where the host is derived from a URI, a selected alternative service
 {{!ALTSVC}}, or a configured proxy.  A client MAY open multiple connections to
 the same IP address and UDP port using different transport or TLS configurations
 but SHOULD avoid creating multiple connections with the same configuration.
-
-Prior to making requests for an origin whose scheme is not "https," the client
-MUST ensure the server is willing to serve that scheme.  If the client intends
-to make requests for an origin whose scheme is "http", this means that it MUST
-obtain a valid `http-opportunistic` response for the origin as described in
-{{!RFC8164}} prior to making any such requests.  Other schemes might define
-other mechanisms.
 
 Servers are encouraged to maintain open connections for as long as possible but
 are permitted to terminate idle connections if necessary.  When either endpoint
