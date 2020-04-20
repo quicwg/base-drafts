@@ -2057,9 +2057,10 @@ verifies ECN capability as described in {{ecn}}.
 
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
-be received on any path, return reachability on the new path is not
-established. To establish return reachability on the new path, an endpoint MAY
-concurrently initiate path validation {{migrate-validate}} on the new path.
+be received on any path, return reachability on the new path is not established.
+To establish return reachability on the new path, an endpoint MAY concurrently
+initiate path validation {{migrate-validate}} on the new path or it MAY choose
+to wait for the peer to send the next non-probing frame to its new address.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -2304,10 +2305,12 @@ transport parameter in the TLS handshake.
 Servers MAY communicate a preferred address of each address family (IPv4 and
 IPv6) to allow clients to pick the one most suited to their network attachment.
 
-Once the handshake is finished, the client SHOULD select one of the two
+Once the handshake is confirmed, the client SHOULD select one of the two
 server's preferred addresses and initiate path validation (see
 {{migrate-validate}}) of that address using the connection ID provided in the
-preferred_address transport parameter.
+preferred_address transport parameter or, if that connection ID has been
+retired, any active connection ID that has not already been used on a different
+path.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
