@@ -2327,6 +2327,11 @@ begins sending non-probing packets to the client exclusively from its preferred
 IP address.  It SHOULD drop packets for this connection received on the old IP
 address, but MAY continue to process delayed packets.
 
+The addresses that a server provides in the preferred_address transport
+parameter are only valid for the connection in which they are provided. A
+client MUST NOT use these for other connections, including connections that are
+resumed from the current connection.
+
 
 ### Interaction of Client Migration and Preferred Address
 
@@ -2354,6 +2359,12 @@ address before path validation is complete.
 
 A client that migrates to a new address SHOULD use a preferred address from the
 same address family for the server.
+
+The connection ID provided in the preferred_address transport parameter is not
+specific to the addresses that are provided. This connection ID is provided to
+ensure that the client has a connection ID available for migration, but the
+client MAY use this connection ID on any path.
+
 
 ## Use of IPv6 Flow-Label and Migration {#ipv6-flow-label}
 
