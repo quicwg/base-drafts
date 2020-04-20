@@ -403,7 +403,10 @@ hostname in the URI is present in the authenticated certificate provided by the
 server, either as the CN field of the certificate subject or as a dNSName in the
 subjectAltName field of the certificate (see {{!RFC6125}}).  For a host that is
 an IP address, the client MUST verify that the address appears as an iPAddress
-in the subjectAltName field of the certificate.
+in the subjectAltName field of the certificate.  If the hostname or address is
+not present in the certificate, the client MUST NOT consider the server
+authoritative for origins containing that hostname or address.  See Section 5.4
+of {{!SEMANTICS}} for more detail on authoritative access.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
 pair, where the host is derived from a URI, a selected alternative service
