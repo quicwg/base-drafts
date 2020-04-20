@@ -247,7 +247,7 @@ prior to a dramatic decrease in congestion window; see
 
 ### The Minimum Congestion Window is 2 Packets
 
-QUIC recommends that the minimum congestion window be 2 packets instead 
+QUIC recommends that the minimum congestion window be 2 packets instead
 of the 1 packet minimum in TCP. A minimum of 2 packets avoids waiting for a
 delayed acknowledgement, which can substantially decrease throughput,
 particularly if the max_ack_delay is larger than the round trip time.
