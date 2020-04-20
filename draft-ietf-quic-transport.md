@@ -1264,15 +1264,22 @@ expectation that it will eventually receive an Initial packet.
 
 ## Handling Version Negotiation Packets {#handle-vn}
 
-When a client receives a Version Negotiation packet, it MUST abandon the
-current connection attempt.  Version Negotiation packets are designed to allow
-future versions of QUIC to negotiate the version in use between endpoints.
-Future versions of QUIC might change how implementations that support multiple
-versions of QUIC react to Version Negotiation packets when attempting to
-establish a connection using this version.  How to perform version negotiation
-is left as future work defined by future versions of QUIC.  In particular,
-that future work will need to ensure robustness against version downgrade
-attacks; see {{version-downgrade}}.
+Version Negotiation packets are designed to allow future versions of QUIC to
+negotiate the version in use between endpoints.  Future versions of QUIC might
+change how implementations that support multiple versions of QUIC react to
+Version Negotiation packets when attempting to establish a connection using this
+version.
+
+A client that supports only this version of QUIC MUST abandon the current
+connection attempt if it receives a Version Negotiation packet, with the
+following two exceptions. A client MUST discard any Version Negotiation packet
+if it has received and successfully processed any other packet, including an
+earlier Version Negotiation packet. A client MUST discard a Version Negotiation
+packet that lists the QUIC version selected by the client.
+
+How to perform version negotiation is left as future work defined by future
+versions of QUIC.  In particular, that future work will ensure robustness
+against version downgrade attacks; see {{version-downgrade}}.
 
 
 ### Version Negotiation Between Draft Versions
