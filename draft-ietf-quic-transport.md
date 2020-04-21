@@ -6062,10 +6062,22 @@ considered separately.
 ### Handshake {#handshake-properties}
 
 The QUIC handshake incorporates the TLS 1.3 handshake and enjoys the
-cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}.
+cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
+of the security properties of QUIC depend on the TLS handshake providing these
+properties. Any attack on the TLS handshake could affect QUIC.
 
-In addition to those properties, the handshake is intended to provide some
-defense against DoS attacks on the handshake, as described below.
+Any attack on the TLS handshake that compromises the secrecy or uniqueness
+of session keys affects other security guarantees provided by QUIC that depends
+on these keys. For instance, migration ({{migration}}) depends on the efficacy
+of confidentiality protections, both for the negotiation of keys using the TLS
+handshake and for QUIC packet protection, to avoid linkability across network
+paths.
+
+An attack on the integrity of the TLS handshake might allow an attacker to
+affect the selection of application protocol or QUIC version.
+
+In addition to the properties provided by TLS, the QUIC handshake provides some
+defense against DoS attacks on the handshake.
 
 
 #### Anti-Amplification
@@ -6112,9 +6124,9 @@ The entire handshake is cryptographically protected, with the Initial packets
 being encrypted with per-version keys and the Handshake and later packets being
 encrypted with keys derived from the TLS key exchange.  Further, parameter
 negotiation is folded into the TLS transcript and thus provides the same
-security guarantees as ordinary TLS negotiation.  Thus, an attacker can observe
+integrity guarantees as ordinary TLS negotiation.  An attacker can observe
 the client's transport parameters (as long as it knows the version-specific
-salt) but cannot observe the server's transport parameters and cannot influence
+keys) but cannot observe the server's transport parameters and cannot influence
 parameter negotiation.
 
 Connection IDs are unencrypted but integrity protected in all packets.
