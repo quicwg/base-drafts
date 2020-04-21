@@ -252,7 +252,7 @@ of the 1 packet minimum in TCP. A minimum of 2 packets avoids waiting for a
 delayed acknowledgement, which can substantially decrease throughput,
 particularly if the max_ack_delay is larger than the round trip time.
 A 2 packet minimum congestion window also avoids waiting for a probe
-timeout(see {{pto}}) every time a single packet is lost.
+timeout (see {{pto}}) every time a single packet is lost.
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
