@@ -6174,7 +6174,7 @@ cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
 of the security properties of QUIC depend on the TLS handshake providing these
 properties. Any attack on the TLS handshake could affect QUIC.
 
-Any attack on the TLS handshake that might compromise the secrecy or uniqueness
+Any attack on the TLS handshake that compromises the secrecy or uniqueness
 of session keys affects other security guarantees provided by QUIC that depends
 on these keys. For instance, migration ({{migration}}) depends on the efficacy
 of confidentiality protections, both for the negotiation of keys using the TLS
