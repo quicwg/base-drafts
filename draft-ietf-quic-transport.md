@@ -2248,9 +2248,9 @@ address, for example when initiating connection migration as described in
 {{probing}}.
 
 Similarly, an endpoint MUST NOT reuse a connection ID when sending to more than
-one destination address, for example when responding to a change in the address
-of a peer if the packet with the new peer address uses an active connection ID
-that has not been previously used by the peer.
+one destination address.  However, if an endpoint receives packets from a new
+source address with the same destination connection ID, it MAY continue to use
+the current connection ID with the new address.
 
 These requirements regarding connection ID reuse apply only to the sending of
 packets, as unintentional changes in path without a change in connection ID are
@@ -2307,10 +2307,9 @@ IPv6) to allow clients to pick the one most suited to their network attachment.
 
 Once the handshake is confirmed, the client SHOULD select one of the two
 server's preferred addresses and initiate path validation (see
-{{migrate-validate}}) of that address using the connection ID provided in the
-preferred_address transport parameter or, if that connection ID has been
-retired, any active connection ID that has not already been used on a different
-path.
+{{migrate-validate}}) of that address using any previously unused active
+connection ID, taken from either the preferred_address transport parameter or
+a NEW_CONNECTION_ID frame.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
@@ -5581,8 +5580,8 @@ Sequence Number:
 
 Retire Prior To:
 
-: A variable-length integer indicating which connection IDs should be retired.
-  See {{retire-cid}}.
+: A variable-length integer indicating which connection IDs should be retired;
+  see {{retire-cid}}.
 
 Length:
 
@@ -5662,8 +5661,7 @@ RETIRE_CONNECTION_ID frames contain the following fields:
 
 Sequence Number:
 
-: The sequence number of the connection ID being retired; see
-  {{retire-cid}}.
+: The sequence number of the connection ID being retired; see {{retire-cid}}.
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
 than any previously sent to the peer MUST be treated as a connection error of
