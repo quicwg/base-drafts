@@ -992,34 +992,44 @@ packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
 ~~~
 {: #pseudo-hp title="Header Protection Pseudocode"}
 
-{{fig-sample}} shows the protected fields of long and short headers marked with
-an E.  {{fig-sample}} also shows the sampled fields.
+{{fig-sample}} shows an example long header packet (Initial) and a short header
+packet. {{fig-sample}} shows the fields in each header that are covered by
+header protection and the portion of the protected packet payload that is
+sampled.
 
 ~~~
-Long Header:
-+-+-+-+-+-+-+-+-+
-|1|1|T T|E E E E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Version -> Length Fields                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Initial Packet {
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 0,
+  Reserved Bits (2),         # Protected
+  Packet Number Length (2),  # Protected
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Token Length (i),
+  Token (..),
+  Packet Number (8..32),     # Protected
+  Protected Payload (0..24), # Skipped Part
+  Protected Payload (128),   # Sampled Part
+  Protected Payload (..)     # Remainder
+}
 
-Short Header:
-+-+-+-+-+-+-+-+-+
-|0|1|S|E E E E E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/32..144)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-Common Fields:
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|E E E E E E E E E  Packet Number (8/16/24/32) E E E E E E E E...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   [Protected Payload (8/16/24)]             ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Sampled part of Protected Payload (128)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Protected Payload Remainder (*)             ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Short Header Packet {
+  Header Form (1) = 0,
+  Fixed Bit (1) = 1,
+  Spin Bit (1),
+  Reserved Bits (2),         # Protected
+  Key Phase (1),             # Protected
+  Packet Number Length (2),  # Protected
+  Destination Connection ID (0..160),
+  Packet Number (8..32),     # Protected
+  Protected Payload (0..24), # Skipped Part
+  Protected Payload (128),   # Sampled Part
+  Protected Payload (..),    # Remainder
+}
 ~~~
 {: #fig-sample title="Header Protection and Ciphertext Sample"}
 
@@ -1240,27 +1250,19 @@ using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
 secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| ODCID Len (8) |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|          Original Destination Connection ID (0..160)        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|1|1| 3 | Unused|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..160)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..160)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Retry Token (*)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Retry Pseudo-Packet {
+  ODCID Length (8),
+  Original Destination Connection ID (0..160),
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 3,
+  Type-Specific Bits (4),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Retry Token (..),
+}
 ~~~
 {: #retry-pseudo title="Retry Pseudo-Packet"}
 
@@ -1268,7 +1270,7 @@ The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
 the transmitted Retry packet, removing the Retry Integrity Tag and prepending
 the two following fields:
 
-ODCID Len:
+ODCID Length:
 
 : The ODCID Len contains the length in bytes of the Original Destination
   Connection ID field that follows it, encoded as an 8-bit unsigned integer.
