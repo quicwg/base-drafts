@@ -645,6 +645,31 @@ messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
 
 
+## Session Resumption {#resumption}
+
+QUIC can use the session resumption feature of TLS 1.3. It does this by
+carrying NewSessionTicket messages in CRYPTO frames after the handshake is
+complete. Session resumption is the basis of 0-RTT, but can be used without
+also enabling 0-RTT.
+
+Endpoints that use session resumption might need to remember some information
+about the current connection when creating a resumed connection. TLS requires
+that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
+does not depend on any state being retained when resuming a connection, unless
+0-RTT is also used; see {{enable-0rtt}} and Section 7.3.1 of
+{{QUIC-TRANSPORT}}. Application protocols could depend on state that is
+retained between resumed connections.
+
+Clients can store any state required for resumption along with the session
+ticket. Servers can use the session ticket to help carry state.
+
+Session resumption allows servers to link activity on the original connection
+with the resumed connection, which might be a privacy issue for clients.
+Clients can choose not to enable resumption to avoid creating this correlation.
+Client SHOULD NOT reuse tickets as that allows entities other than the server
+to correlate connections; see Section C.4 of {{!TLS13}}.
+
+
 ## Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
@@ -1608,11 +1633,19 @@ As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 # Security Considerations
 
-There are likely to be some real clangers here eventually, but the current set
-of issues is well captured in the relevant sections of the main text.
+All of the security considerations that apply to TLS also apply to the use of
+TLS in QUIC. Reading all of {{!TLS13}} and its appendices is the best way to
+gain an understanding of the security properties of QUIC.
 
-Never assume that because it isn't in the security considerations section it
-doesn't affect security.  Most of this document does.
+This section summarizes some of the more important security aspects specific to
+the TLS integration, though there are many security-relevant details in the
+remainder of the document.
+
+
+## Session Linkability
+
+Use of TLS session tickets allows servers and possibly other entities to
+correlate connections made by the same client; see {{resumption}} for details.
 
 
 ## Replay Attacks with 0-RTT
