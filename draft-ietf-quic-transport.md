@@ -2252,11 +2252,11 @@ one destination address, for example when responding to a change in the address
 of a peer if the packet with the new peer address uses an active connection ID
 that has not been previously used by the peer.
 
-Note that these requirements apply to the endpoints sending packets, as
-unintentional changes in path without a change in connection ID are possible.
-For example, after a period of network inactivity, NAT rebinding might cause
-packets to be sent on a new path when the client resumes sending.  An endpoint
-responds to such an event as described in {{migration-response}}.
+These requirements regarding connection ID reuse apply only to the sending of
+packets, as unintentional changes in path without a change in connection ID are
+possible.  For example, after a period of network inactivity, NAT rebinding
+might cause packets to be sent on a new path when the client resumes sending.
+An endpoint responds to such an event as described in {{migration-response}}.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
@@ -5619,7 +5619,7 @@ IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
 The Retire Prior To field counts connection IDs established during connection
-setup and the preferred_address transport parameter (see {{retire-cid}}). The
+setup and the preferred_address transport parameter; see {{retire-cid}}. The
 Retire Prior To field MUST be less than or equal to the Sequence Number field.
 Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
@@ -5662,7 +5662,7 @@ RETIRE_CONNECTION_ID frames contain the following fields:
 
 Sequence Number:
 
-: The sequence number of the connection ID being retired.  See
+: The sequence number of the connection ID being retired; see
   {{retire-cid}}.
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
