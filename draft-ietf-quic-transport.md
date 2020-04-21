@@ -6061,7 +6061,7 @@ considered separately.
 
 ### Handshake {#handshake-properties}
 
-The QUIC handshake incorporates the TLS 1.3 handshake and enjoys the
+The QUIC handshake incorporates the TLS 1.3 handshake and inherits the
 cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
 of the security properties of QUIC depend on the TLS handshake providing these
 properties. Any attack on the TLS handshake could affect QUIC.
