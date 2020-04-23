@@ -1217,15 +1217,15 @@ PeerCompletedAddressValidation():
        has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
+  if (server is at anti-amplification limit):
+    // The server's alarm is not set if nothing can be sent.
+    loss_detection_timer.cancel()
+    return
+
   earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
   if (earliest_loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
-    return
-
-  if (server is at anti-amplification limit):
-    // The server's alarm is not set if nothing can be sent.
-    loss_detection_timer.cancel()
     return
 
   if (no ack-eliciting packets in flight &&
