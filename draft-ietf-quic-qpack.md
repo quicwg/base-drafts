@@ -86,8 +86,8 @@ The QUIC transport protocol {{QUIC-TRANSPORT}} is designed to support HTTP
 semantics, and its design subsumes many of the features of HTTP/2 {{?RFC7540}}.
 HTTP/2 uses HPACK {{!RFC7541}} for compression of the header and trailer
 sections.  If HPACK were used for HTTP/3 {{HTTP3}}, it would induce head-of-line
-blocking for field sections due to built-in assumptions of a total ordering across
-frames on all streams.
+blocking for field sections due to built-in assumptions of a total ordering
+across frames on all streams.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
 the presence of out-of-order delivery, with flexibility for implementations to
@@ -100,6 +100,13 @@ with substantially less head-of-line blocking under the same loss conditions.
 {::boilerplate bcp14}
 
 Definitions of terms that are used in this document:
+
+HTTP fields:
+
+: Metadata sent as part of an HTTP message.  The term encompasses both header
+  and trailer fields. Colloquially, the term "headers" has often been used to
+  refer to HTTP header fields and trailer fields; this document uses "fields"
+  for generality.
 
 HTTP field line:
 
@@ -164,26 +171,27 @@ x ...
 
 # Compression Process Overview
 
-Like HPACK, QPACK uses two tables for associating field lines to indices.  The
-static table ({{header-table-static}}) is predefined and contains common field
-lines (some of them with an empty value).  The dynamic table
+Like HPACK, QPACK uses two tables for associating field lines ("headers") to
+indices.  The static table ({{header-table-static}}) is predefined and contains
+common header field lines (some of them with an empty value).  The dynamic table
 ({{header-table-dynamic}}) is built up over the course of the connection and can
-be used by the encoder to index field lines in the encoded field sections.
+be used by the encoder to index both header and trailer field lines in the
+encoded field sections.
 
 QPACK defines unidirectional streams for sending instructions from encoder to
 decoder and vice versa.
 
 ## Encoder
 
-An encoder converts a field section into a series of representations by emitting
-either an indexed or a literal representation for each field line in the list;
-see {{field-line-representations}}.  Indexed representations achieve high
-compression by replacing the literal name and possibly the value with an index
-to either the static or dynamic table.  References to the static table and
-literal representations do not require any dynamic state and never risk
-head-of-line blocking.  References to the dynamic table risk head-of-line
-blocking if the encoder has not received an acknowledgement indicating the entry
-is available at the decoder.
+An encoder converts a header or trailer field section into a series of
+representations by emitting either an indexed or a literal representation for
+each field line in the list; see {{field-line-representations}}.  Indexed
+representations achieve high compression by replacing the literal name and
+possibly the value with an index to either the static or dynamic table.
+References to the static table and literal representations do not require any
+dynamic state and never risk head-of-line blocking.  References to the dynamic
+table risk head-of-line blocking if the encoder has not received an
+acknowledgement indicating the entry is available at the decoder.
 
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
