@@ -597,7 +597,11 @@ All probe packets sent on a PTO MUST be ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
-number spaces with in-flight data, coalescing packets if possible.
+number spaces with in-flight data, coalescing packets if possible.  This is
+particularly valuable when the server has both Initial and Handshake data
+in-flight or the client has both Handshake and ApplicationData in-flight,
+because the peer might only have receive keys for one of the two packet number
+spaces.
 
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
