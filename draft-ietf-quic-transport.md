@@ -1158,28 +1158,29 @@ Servers MUST drop incoming packets under all other circumstances.
 
 ### Considerations for simple load balancers
 
-A server farm could be deployed behind a simple load balancer that routes
-packets based on source and destination IP addresses and ports. Changes to
-the IP address or port of a peer could result in packets being routed by the load
-balancer to a different server. Such a server deployment could use one of the
-following methods to for connection continuity when a client's address changes.
+A server deployment could load balance among servers using simply source and
+destination IP addresses and ports. Changes to the client's IP address or port of
+could result in packets being forwarded to the wrong server. Such a server
+deployment could use one of the following methods to for connection continuity
+when a client's address changes.
 
 * Servers could use an out-of-band mechanism to forward packets or connection
 state to the correct endpoint.
 
-* If the server deployment can use other non-load-balanced server IP
-addresses or ports than the one that the client is initiating connections on,
-servers could use the preferred_address transport parameter to request
-that clients move to these server addresses. Note that clients could choose
-not to use the preferred address.
+* If servers can use other dedicated server IP addresses or ports than
+the one that the client is initiating connections to, they could use the
+preferred_address transport parameter to request
+that clients move connections to these dedicated addresses. Note that clients could
+choose not to use the preferred address.
 
-If a server behind such a load balancer does not implement a solution to
-maintain connection continuity SHOULD disallow connection migration
-via the disable_active_migration transport parameter.
+A server in a deployment that does not implement a solution to
+maintain connection continuity during connection migration
+SHOULD disallow it via the disable_active_migration transport
+parameter.
 
 Server deployments that use such load balancing might still allow for
-creation of a stateless reset oracle. Servers should take additional
-precautions in accordance with {{reset-oracle}}.
+creation of a stateless reset oracle, and should therefore follow the
+guidelines in {{reset-oracle}}.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
 
