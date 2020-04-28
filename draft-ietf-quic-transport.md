@@ -1096,15 +1096,16 @@ field.  The endpoint SHOULD continue to accept the previously issued connection
 IDs until they are retired by the peer.  If the endpoint can no longer process
 the indicated connection IDs, it MAY close the connection.
 
-Upon receipt of an increased Retire Prior To field, the peer MUST stop using the
-corresponding connection IDs and retire them with RETIRE_CONNECTION_ID frames
-before adding the newly provided connection ID to the set of active connection
-IDs. This ordering allows an endpoint that has already supplied its peer with as
-many connection IDs as allowed by the active_connection_id_limit transport
-parameter to replace those connection IDs with new ones as necessary.  Failure
-to cease using the connection IDs when requested can result in connection
-failures, as the issuing endpoint might be unable to continue using the
-connection IDs with the active connection.
+Upon receipt of an increased Retire Prior To field, the peer MUST stop using
+the corresponding connection IDs and retire them with RETIRE_CONNECTION_ID
+frames before adding the newly provided connection ID to the set of active
+connection IDs. This ordering allows an endpoint to replace all active
+connection IDs without the possibility of a peer having no available connection
+IDs and without exceeding the limit the peer sets in the
+active_connection_id_limit transport parameter; see
+{{transport-parameter-definitions}}. Failure to cease using the connection IDs
+when requested can result in connection failures, as the issuing endpoint might
+be unable to continue using the connection IDs with the active connection.
 
 
 ## Matching Packets to Connections {#packet-handling}
@@ -5516,6 +5517,7 @@ smaller than the Retire Prior To field of a previously received
 NEW_CONNECTION_ID frame MUST send a corresponding RETIRE_CONNECTION_ID frame
 that retires the newly received connection ID, unless it has already done so
 for that sequence number.
+
 
 ## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
 
