@@ -568,6 +568,11 @@ until it is certain that the server has finished its address validation
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
 
+A client could have received and acknowledged a Handshake packet, but not
+sent any ack-eliciting Handshake packets.  In this case, the PTO is set
+from the current time, rather than the time an ack-eliciting Handshake packet
+was sent.
+
 ### Speeding Up Handshake Completion
 
 When a server receives an Initial packet containing duplicate CRYPTO data,
