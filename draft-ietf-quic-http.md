@@ -602,9 +602,9 @@ The following pseudo-header fields are defined for requests:
   ":path":
 
   : Contains the path and query parts of the target URI (the "path-absolute"
-    production and optionally a '?' character followed by the "query" production
-    (see Sections 3.3 and 3.4 of [RFC3986]).  A request in asterisk form
-    includes the value '*' for the ":path" pseudo-header field.
+    production and optionally a '?' character followed by the "query"
+    production; see Sections 3.3 and 3.4 of {{?URI=RFC3986}}.  A request in
+    asterisk form includes the value '*' for the ":path" pseudo-header field.
 
   : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
     "http" or "https" URIs that do not contain a path component MUST include a
@@ -614,7 +614,8 @@ The following pseudo-header fields are defined for requests:
     of {{?HTTP11}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
-and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
+and ":path" pseudo-header fields, unless it is a CONNECT request; see
+{{connect}}.
 
 If the ":scheme" pseudo-header field identifies a scheme which has a mandatory
 authority component (including "http" and "https"), the request MUST contain
@@ -749,8 +750,8 @@ A CONNECT request MUST be constructed as follows:
 - The ":method" pseudo-header field is set to "CONNECT"
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
-  (equivalent to the authority-form of the request-target of CONNECT requests
-  (see Section 5.3 of {{?HTTP11}}))
+  (equivalent to the authority-form of the request-target of CONNECT requests;
+  see Section 5.3 of {{?HTTP11}})
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
@@ -826,8 +827,8 @@ This allows the server push to be associated with a client request.
 Not all requests can be pushed.  A server MAY push requests which have the
 following properties:
 
-- cacheable (see Section 7.2.3 of {{!SEMANTICS}})
-- safe (see Section 7.2.1 of {{!SEMANTICS}})
+- cacheable; see Section 7.2.3 of {{!SEMANTICS}}
+- safe; see Section 7.2.1 of {{!SEMANTICS}}
 - does not include a request body or trailer section
 
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
