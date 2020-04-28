@@ -756,8 +756,8 @@ alerts at the "warning" level.
 QUIC permits the use of a generic code in place of a specific error code; see
 Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
 alert with a generic alert, such as handshake_failure (0x128 in QUIC).
-Endpoints might use a generic error code to avoid possibly exposing
-confidential information.
+Endpoints MAY use a generic error code to avoid possibly exposing confidential
+information.
 
 
 ## Discarding Unused Keys
@@ -1576,8 +1576,8 @@ is used for agreeing on an application protocol, endpoints MUST use ALPN for
 this purpose.
 
 When using ALPN, endpoints MUST immediately close a connection (see Section
-10.3 of {{QUIC-TRANSPORT}}) if an application protocol is not negotiated with a
-no_application_protocol TLS alert (QUIC error code 0x178, see {{tls-errors}}).
+10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
 While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
 use error 0x178 to terminate a connection when ALPN negotiation fails.
 
