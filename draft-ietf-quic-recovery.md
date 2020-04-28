@@ -569,8 +569,9 @@ packet, and otherwise it MUST send an Initial packet in a UDP datagram of
 at least 1200 bytes.
 
 A client could have received and acknowledged a Handshake packet, causing it to
-discard state for the Initial packet number space, but not sent any ack-eliciting
-Handshake packets.  In this case, the PTO is set from the current time.
+discard state for the Initial packet number space, but not sent any
+ack-eliciting Handshake packets.  In this case, the PTO is set from the current
+time.
 
 ### Speeding Up Handshake Completion
 
