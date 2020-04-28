@@ -1178,7 +1178,7 @@ maintain connection continuity during connection migration
 SHOULD disallow it via the disable_active_migration transport
 parameter.
 
-Server deployments that use such load balancing might still allow for
+Server deployments that use such load balancing might allow for
 creation of a stateless reset oracle, and should therefore follow the
 guidelines in {{reset-oracle}}.
 
