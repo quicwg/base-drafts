@@ -1156,33 +1156,29 @@ SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
 
-### Considerations for 5-tuple routing architectures
+### Considerations for simple load balancers
 
-QUIC endpoints can be deployed behind a 5-tuple based routing architecture that
-delivers packets based on both the source and destination IP addresses and
-ports. When routing depends on addresses that the endpoint does not control,
-changes to the IP address or port of peers could result in packets being routed
-to a different server. The following actions could mitigate or resolve
-operational and security issues in this case:
+A server farm could be deployed behind a simple load balancer that routes
+packets based on source and destination IP addresses and ports. Changes to
+the IP address or port of a peer could result in packets being routed by the load
+balancer to a different server. Such a server deployment could use one of the
+following methods to for connection continuity when a client's address changes.
 
-* Endpoints can use an out-of-band mechanism to deliver packets to the correct
-destination or transfer state from the original destination.
+* Servers could use an out-of-band mechanism to forward packets or connection
+state to the correct endpoint.
 
-* A server can request that a connection be migrated to an address that is
-unique using the preferred_address transport parameter. For example, the initial
-address may route to a 5-tuple based load balancer, and the preferred address
-could indicate a separate server address that does not require the use of the
-client address for routing. Note that clients could choose not to use the
-preferred address.
+* If the server deployment can use other non-load-balanced server IP
+addresses or ports than the one that the client is initiating connections on,
+servers could use the preferred_address transport parameter to request
+that clients move to these server addresses. Note that clients could choose
+not to use the preferred address.
 
-If a server does not implement one of the solutions above, it SHOULD send the
-disable_active_migration transport parameter to inform the client that any
-address change is likely to terminate the connection.
+If a server behind such a load balancer does not implement a solution to
+maintain connection continuity SHOULD disallow connection migration
+via the disable_active_migration transport parameter.
 
-Regardless of other mitigations, 5-tuple routing introduces new possibilities
-to create a stateless reset oracle. An attacker could tweak the source address
-or port of a packet to direct it to a different server and thus obtain the
-stateless reset token for a connection ID. Endpoints should take additional
+Server deployments that use such load balancing might still allow for
+creation of a stateless reset oracle. Servers should take additional
 precautions in accordance with {{reset-oracle}}.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
