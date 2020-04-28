@@ -3745,13 +3745,14 @@ correct endpoint.  However, only long header packets ({{long-header}}) contain
 source connection IDs, and long header packets are not decrypted or acknowledged
 by the peer once the handshake is complete.
 
-One way to construct a PMTU probe is to coalesce (see {{packet-coalesce}}) a
-Handshake packet ({{packet-handshake}}) with a short header packet in a single
-UDP datagram.  If the UDP datagram reaches the endpoint, the Handshake packet
-will be ignored, but the short header packet will be acknowledged.  If the UDP
-datagram causes an ICMP message to be sent, the first part of the datagram will
-be quoted in that message.  If the the source connection ID is within the quoted
-portion of the UDP datagram, that could be used for routing.
+One way to construct a probe for the path MTU is to coalesce (see
+{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
+header packet in a single UDP datagram.  If the UDP datagram reaches the
+endpoint, the Handshake packet will be ignored, but the short header packet will
+be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
+first part of the datagram will be quoted in that message.  If the the source
+connection ID is within the quoted portion of the UDP datagram, that could be
+used for routing.
 
 
 # Versions {#versions}
