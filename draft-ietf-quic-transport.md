@@ -1159,7 +1159,7 @@ Servers MUST drop incoming packets under all other circumstances.
 ### Considerations for simple load balancers
 
 A server deployment could load balance among servers using simply source and
-destination IP addresses and ports. Changes to the client's IP address or port of
+destination IP addresses and ports. Changes to the client's IP address or port
 could result in packets being forwarded to the wrong server. Such a server
 deployment could use one of the following methods to for connection continuity
 when a client's address changes.
