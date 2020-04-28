@@ -3311,7 +3311,7 @@ with minimal state.
 
 Receivers can discard all ACK Ranges, but they MUST retain the largest packet
 number that has been successfully processed as that is used to recover packet
-numbers from subsequent packets.
+numbers from subsequent packets; see {{packet-encoding}}.
 
 A receiver SHOULD include an ACK Range containing the largest received packet
 number in every ACK frame. The Largest Acknowledged field is used in ECN
