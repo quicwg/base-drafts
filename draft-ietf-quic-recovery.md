@@ -1247,7 +1247,7 @@ SetLossDetectionTimer():
   if (sent_time == 0):
     assert(!PeerCompletedAddressValidation())
     sent_time = now()
-  
+
   // Calculate PTO duration
   timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
     max_ack_delay
