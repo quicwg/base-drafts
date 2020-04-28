@@ -311,7 +311,7 @@ means of ensuring ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
 an arbitrary amount of data to be sent on any stream, subject to flow control
-constraints (see {{flow-control}}) and stream limits.
+constraints and stream limits; see {{flow-control}}.
 
 
 ## Stream Types and Identifiers {#stream-id}
@@ -1418,9 +1418,9 @@ the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
 Note that multiple QUIC packets -- even of different packet types -- can be
-coalesced into a single UDP datagram (see {{packet-coalesce}}), and so this
-handshake may consist of as few as 4 UDP datagrams, or any number more. For
-instance, the server's first flight contains Initial packets,
+coalesced into a single UDP datagram; see {{packet-coalesce}}). As a result,
+this handshake may consist of as few as 4 UDP datagrams, or any number more.
+For instance, the server's first flight contains Initial packets,
 Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short header.
 
 ~~~~
@@ -1866,7 +1866,7 @@ connection properties.
 Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
 protect against such attacks, servers SHOULD ensure that tokens sent in Retry
 packets are only accepted for a short time. Tokens that are provided in
-NEW_TOKEN frames (see {{frame-new-token}}) need to be valid for longer, but
+NEW_TOKEN frames ({{frame-new-token}}) need to be valid for longer, but
 SHOULD NOT be accepted multiple times in a short period. Servers are encouraged
 to allow tokens to be used only once, if possible.
 
@@ -2857,7 +2857,7 @@ are sent; such failures might only be detected by other means, such as timers.
 
 An endpoint that detects an error SHOULD signal the existence of that error to
 its peer.  Both transport-level and application-level errors can affect an
-entire connection (see {{connection-errors}}), while only application-level
+entire connection; see {{connection-errors}}.  Only application-level
 errors can be isolated to a single stream; see {{stream-errors}}.
 
 The most appropriate error code ({{error-codes}}) SHOULD be included in the
@@ -2924,18 +2924,18 @@ prematurely cancelled by either endpoint.
 # Packets and Frames {#packets-frames}
 
 QUIC endpoints communicate by exchanging packets. Packets have confidentiality
-and integrity protection (see {{packet-protected}}) and are carried in UDP
+and integrity protection; see {{packet-protected}}. Packets are carried in UDP
 datagrams; see {{packet-coalesce}}.
 
-This version of QUIC uses the long packet header (see {{long-header}}) during
-connection establishment.  Packets with the long header are Initial
+This version of QUIC uses the long packet header during connection
+establishment; see {{long-header}}.  Packets with the long header are Initial
 ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), Handshake ({{packet-handshake}}),
 and Retry ({{packet-retry}}).  Version negotiation uses a version-independent
 packet with a long header; see {{packet-version}}.
 
-Packets with the short header ({{short-header}}) are designed for minimal
-overhead and are used after a connection is established and 1-RTT keys are
-available.
+Packets with the short header are designed for minimal overhead and are used
+after a connection is established and 1-RTT keys are available; see
+{{short-header}}.
 
 
 ## Protected Packets {#packet-protected}
@@ -4041,7 +4041,7 @@ Packet Number:
 : The packet number field is 1 to 4 bytes long. The packet number has
   confidentiality protection separate from packet protection, as described in
   Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
-  in the Packet Number Length bits of byte 0 (see above).
+  in the Packet Number Length bits of byte 0; see above.
 
 ### Version Negotiation Packet {#packet-version}
 
@@ -4598,8 +4598,8 @@ This section details the transport parameters defined in this document.
 
 Many transport parameters listed here have integer values.  Those transport
 parameters that are identified as integers use a variable-length integer
-encoding (see {{integer-encoding}}) and have a default value of 0 if the
-transport parameter is absent, unless otherwise stated.
+encoding; see {{integer-encoding}}.  Transport parameters have a default value
+of 0 if the transport parameter is absent unless otherwise stated.
 
 The following transport parameters are defined:
 
@@ -6561,9 +6561,9 @@ Frame Name:
 In addition to the advice in {{iana-policy}}, specifications for new permanent
 registrations SHOULD describe the means by which an endpoint might determine
 that it can send the identified type of frame.  An accompanying transport
-parameter registration (see {{iana-transport-parameters}}) is expected for most
-registrations.  Specifications for permanent registrations also needs to
-describe the format and assigned semantics of any fields in the frame.
+parameter registration is expected for most registrations; see
+{{iana-transport-parameters}}.  Specifications for permanent registrations also
+needs to describe the format and assigned semantics of any fields in the frame.
 
 The initial contents of this registry are tabulated in {{frame-types}}.
 
