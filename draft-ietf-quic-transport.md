@@ -1164,8 +1164,8 @@ could result in packets being forwarded to the wrong server. Such a server
 deployment could use one of the following methods to for connection continuity
 when a client's address changes.
 
-* Servers could use an out-of-band mechanism to forward packets or connection
-state to the correct endpoint.
+* Servers could use an out-of-band mechanism to forward packets to the correct server based
+on Connection ID.
 
 * If servers can use other dedicated server IP addresses or ports than
 the one that the client is initiating connections to, they could use the
