@@ -204,7 +204,7 @@ evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
 that uses the dynamic table has to keep track of each dynamic table entry
 referenced by each header block until that header block is acknowledged by the
-decoder (see {{header-acknowledgement}}).
+decoder; see {{header-acknowledgement}}.
 
 #### Avoiding Prohibited Insertions
 

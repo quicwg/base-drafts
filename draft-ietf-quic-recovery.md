@@ -218,7 +218,7 @@ forward progress without relying on timeouts.
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
-more accurate round-trip time estimate (see Section 13.2 of {{QUIC-TRANSPORT}}).
+more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 ### Probe Timeout Replaces RTO and TLP
 
@@ -676,7 +676,7 @@ all recovery state associated with those packets and MUST remove them from
 the count of bytes in flight.
 
 Endpoints stop sending and receiving Initial packets once they start exchanging
-Handshake packets (see Section 17.2.2.1 of {{QUIC-TRANSPORT}}). At this point,
+Handshake packets; see Section 17.2.2.1 of {{QUIC-TRANSPORT}}. At this point,
 recovery state for all in-flight Initial packets is discarded.
 
 When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
@@ -688,8 +688,8 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available (see Section 4.10.1 of
-{{QUIC-TLS}}).
+sooner, as soon as handshake keys are available; see Section 4.10.1 of
+{{QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
 
@@ -715,7 +715,7 @@ window in bytes.
 
 An endpoint MUST NOT send a packet if it would cause bytes_in_flight (see
 {{vars-of-interest}}) to be larger than the congestion window, unless the packet
-is sent on a PTO timer expiration (see {{pto}}).
+is sent on a PTO timer expiration; see {{pto}}.
 
 ## Explicit Congestion Notification {#congestion-ecn}
 

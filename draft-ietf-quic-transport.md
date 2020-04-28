@@ -190,8 +190,8 @@ QUIC packet:
 Ack-eliciting Packet:
 
 : A QUIC packet that contains frames other than ACK, PADDING, and
-  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment (see
-  {{sending-acknowledgements}}).
+  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
+  {{sending-acknowledgements}}.
 
 Out-of-order packet:
 
@@ -916,8 +916,8 @@ An endpoint MUST NOT send data on a stream at or beyond the final size.
 
 Once a final size for a stream is known, it cannot change.  If a RESET_STREAM or
 STREAM frame is received indicating a change in the final size for the stream,
-an endpoint SHOULD respond with a FINAL_SIZE_ERROR error (see
-{{error-handling}}).  A receiver SHOULD treat receipt of data at or beyond the
+an endpoint SHOULD respond with a FINAL_SIZE_ERROR error; see
+{{error-handling}}.  A receiver SHOULD treat receipt of data at or beyond the
 final size as a FINAL_SIZE_ERROR error, even after a stream is closed.
 Generating these errors is not mandatory, but only because requiring that an
 endpoint generate these errors also means that the endpoint needs to maintain
@@ -1660,8 +1660,8 @@ on its own.
 The primary defense against amplification attack is verifying that an endpoint
 is able to receive packets at the transport address that it claims.  Address
 validation is performed both during connection establishment (see
-{{validate-handshake}}) and during connection migration (see
-{{migrate-validate}}).
+{{validate-handshake}}) and during connection migration; see
+{{migrate-validate}}.
 
 
 ## Address Validation During Connection Establishment {#validate-handshake}
@@ -1701,8 +1701,8 @@ A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
 address validation prior to completing the handshake. This token is delivered to
 the client during connection establishment with a Retry packet (see
-{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
-{{validate-future}}).
+{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame; see
+{{validate-future}}.
 
 In addition to sending limits imposed prior to address validation, servers are
 also constrained in what they can send by the limits set by the congestion
@@ -2145,8 +2145,8 @@ congestion window's worth of data per estimated round-trip time (kMinimumWindow,
 as defined in {{QUIC-RECOVERY}}).  In the absence of this limit, an endpoint
 risks being used for a denial of service attack against an unsuspecting victim.
 Note that since the endpoint will not have any round-trip time measurements to
-this address, the estimate SHOULD be the default initial value (see
-{{QUIC-RECOVERY}}).
+this address, the estimate SHOULD be the default initial value; see
+{{QUIC-RECOVERY}}.
 
 If an endpoint skips validation of a peer address as described in
 {{migration-response}}, it does not need to limit its sending rate.
@@ -2925,13 +2925,13 @@ prematurely cancelled by either endpoint.
 
 QUIC endpoints communicate by exchanging packets. Packets have confidentiality
 and integrity protection (see {{packet-protected}}) and are carried in UDP
-datagrams (see {{packet-coalesce}}).
+datagrams; see {{packet-coalesce}}.
 
 This version of QUIC uses the long packet header (see {{long-header}}) during
 connection establishment.  Packets with the long header are Initial
 ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), Handshake ({{packet-handshake}}),
 and Retry ({{packet-retry}}).  Version negotiation uses a version-independent
-packet with a long header (see {{packet-version}}).
+packet with a long header; see {{packet-version}}.
 
 Packets with the short header ({{short-header}}) are designed for minimal
 overhead and are used after a connection is established and 1-RTT keys are
@@ -3486,8 +3486,8 @@ containing that information is acknowledged.
 * The HANDSHAKE_DONE frame MUST be retransmitted until it is acknowledged.
 
 Endpoints SHOULD prioritize retransmission of data over sending new data, unless
-priorities specified by the application indicate otherwise (see
-{{stream-prioritization}}).
+priorities specified by the application indicate otherwise; see
+{{stream-prioritization}}.
 
 Even though a sender is encouraged to assemble frames containing up-to-date
 information every time it sends a packet, it is not forbidden to retransmit
@@ -4013,13 +4013,13 @@ contain these additional fields:
 Reserved Bits:
 
 : Two bits (those with a mask of 0x0c) of byte 0 are reserved across multiple
-  packet types.  These bits are protected using header protection (see Section
-  5.4 of {{QUIC-TLS}}). The value included prior to protection MUST be set to 0.
+  packet types.  These bits are protected using header protection; see Section
+  5.4 of {{QUIC-TLS}}. The value included prior to protection MUST be set to 0.
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits, after removing both packet and header protection, as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks (see Section 9.3 of
-  {{QUIC-TLS}}).
+  header protection can expose the endpoint to attacks; see Section 9.3 of
+  {{QUIC-TLS}}.
 
 Packet Number Length:
 
@@ -4028,7 +4028,7 @@ Packet Number Length:
   number, encoded as an unsigned, two-bit integer that is one less than the
   length of the packet number field in bytes.  That is, the length of the packet
   number field is the value of this field, plus one.  These bits are protected
-  using header protection (see Section 5.4 of {{QUIC-TLS}}).
+  using header protection; see Section 5.4 of {{QUIC-TLS}}.
 
 Length:
 
@@ -4192,7 +4192,7 @@ when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.10.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state (see Section 6.5 of {{QUIC-RECOVERY}}).
+control state; see Section 6.5 of {{QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
@@ -4290,8 +4290,8 @@ to the server.
 
 The Destination Connection ID field in a Handshake packet contains a connection
 ID that is chosen by the recipient of the packet; the Source Connection ID
-includes the connection ID that the sender of the packet wishes to use (see
-{{negotiating-connection-ids}}).
+includes the connection ID that the sender of the packet wishes to use; see
+{{negotiating-connection-ids}}.
 
 Handshake packets are their own packet number space, and thus the first
 Handshake packet sent by a server contains a packet number of 0.
@@ -4381,8 +4381,8 @@ value from the Source Connection ID in the Retry packet. Changing Destination
 Connection ID also results in a change to the keys used to protect the Initial
 packet. It also sets the Token field to the token provided in the Retry. The
 client MUST NOT change the Source Connection ID because the server could include
-the connection ID as part of its token validation logic (see
-{{token-integrity}}).
+the connection ID as part of its token validation logic; see
+{{token-integrity}}.
 
 A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
@@ -4406,8 +4406,8 @@ A client MUST NOT reset the packet number for any packet number space after
 processing a Retry packet; {{packet-0rtt}} contains more information on this.
 
 A server acknowledges the use of a Retry packet for a connection using the
-original_connection_id transport parameter (see
-{{transport-parameter-definitions}}).  If the server sends a Retry packet, it
+original_connection_id transport parameter; see
+{{transport-parameter-definitions}}.  If the server sends a Retry packet, it
 MUST include the Destination Connection ID field from the client's first
 Initial packet in the transport parameter.
 
@@ -4457,13 +4457,13 @@ as described in {{spin-bit}}.
 Reserved Bits:
 
 : The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
-  bits are protected using header protection (see Section 5.4 of
-  {{QUIC-TLS}}).  The value included prior to protection MUST be set to 0.  An
+  bits are protected using header protection; see Section 5.4 of
+  {{QUIC-TLS}}.  The value included prior to protection MUST be set to 0.  An
   endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits, after removing both packet and header protection, as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks (see Section 9.3 of
-  {{QUIC-TLS}}).
+  header protection can expose the endpoint to attacks; see Section 9.3 of
+  {{QUIC-TLS}}.
 
 Key Phase:
 
@@ -4478,7 +4478,7 @@ Packet Number Length:
   the length of the packet number, encoded as an unsigned, two-bit integer that
   is one less than the length of the packet number field in bytes.  That is, the
   length of the packet number field is the value of this field, plus one.  These
-  bits are protected using header protection (see Section 5.4 of {{QUIC-TLS}}).
+  bits are protected using header protection; see Section 5.4 of {{QUIC-TLS}}.
 
 Destination Connection ID:
 
@@ -5218,8 +5218,8 @@ STREAM frames contain the following fields:
 
 Stream ID:
 
-: A variable-length integer indicating the stream ID of the stream (see
-  {{stream-id}}).
+: A variable-length integer indicating the stream ID of the stream; see
+  {{stream-id}}.
 
 Offset:
 
@@ -5283,8 +5283,8 @@ the initial limits; see {{zerortt-parameters}}.
 The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
-A MAX_STREAM_DATA frame can be sent for streams in the Recv state (see
-{{stream-send-states}}). Receiving a MAX_STREAM_DATA frame for a
+A MAX_STREAM_DATA frame can be sent for streams in the Recv state; see
+{{stream-send-states}}. Receiving a MAX_STREAM_DATA frame for a
 locally-initiated stream that has not yet been created MUST be treated as a
 connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
@@ -5371,8 +5371,8 @@ includes streams that have been closed as well as those that are open.
 ## DATA_BLOCKED Frame {#frame-data-blocked}
 
 A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
-data, but is unable to due to connection-level flow control (see
-{{flow-control}}).  DATA_BLOCKED frames can be used as input to tuning of flow
+data, but is unable to due to connection-level flow control; see
+{{flow-control}}.  DATA_BLOCKED frames can be used as input to tuning of flow
 control algorithms; see {{fc-credit}}.
 
 The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.

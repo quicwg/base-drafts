@@ -386,7 +386,7 @@ While connection-level options pertaining to the core QUIC protocol are set in
 the initial crypto handshake, HTTP/3-specific settings are conveyed in the
 SETTINGS frame. After the QUIC connection is established, a SETTINGS frame
 ({{frame-settings}}) MUST be sent by each endpoint as the initial frame of their
-respective HTTP control stream (see {{control-streams}}).
+respective HTTP control stream; see {{control-streams}}.
 
 ## Connection Reuse
 
@@ -401,7 +401,7 @@ requests with multiple different URI authority components.  In general, a server
 is considered authoritative for all URIs with the "https" scheme for which the
 hostname in the URI is present in the authenticated certificate provided by the
 server, either as the CN field of the certificate subject or as a dNSName in the
-subjectAltName field of the certificate (see {{!RFC6125}}).  For a host that is
+subjectAltName field of the certificate; see {{!RFC6125}}.  For a host that is
 an IP address, the client MUST verify that the address appears as an iPAddress
 in the subjectAltName field of the certificate.  If the hostname or address is
 not present in the certificate, the client MUST NOT consider the server
@@ -423,8 +423,8 @@ complete or terminate any necessary remaining tasks.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
-(Misdirected Request) status code in response to the request (see Section 9.1.2
-of {{?HTTP2}}).
+(Misdirected Request) status code in response to the request; see Section 9.1.2
+of {{?HTTP2}}.
 
 
 # HTTP Request Lifecycle
@@ -436,8 +436,8 @@ A client MUST send only a single request on a given stream. A server sends zero
 or more interim HTTP responses on the same stream as the request, followed by a
 single final HTTP response, as detailed below.
 
-Pushed responses are sent on a server-initiated unidirectional QUIC stream (see
-{{push-streams}}).  A server sends zero or more interim HTTP responses, followed
+Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
+{{push-streams}}.  A server sends zero or more interim HTTP responses, followed
 by a single final HTTP response, in the same manner as a standard response.
 Push is described in more detail in {{server-push}}.
 
@@ -592,8 +592,8 @@ The following pseudo-header fields are defined for requests:
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
     pseudo-header field MUST be omitted when translating from an HTTP/1.1
-    request that has a request target in origin or asterisk form (see Section
-    3.2 of {{?HTTP11}}).  Clients that generate HTTP/3 requests directly SHOULD
+    request that has a request target in origin or asterisk form; see Section
+    3.2 of {{?HTTP11}}.  Clients that generate HTTP/3 requests directly SHOULD
     use the ":authority" pseudo-header field instead of the Host field. An
     intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a Host
     field if one is not present in a request by copying the value of the
@@ -610,8 +610,8 @@ The following pseudo-header fields are defined for requests:
     "http" or "https" URIs that do not contain a path component MUST include a
     value of '/'.  The exception to this rule is an OPTIONS request for an
     "http" or "https" URI that does not include a path component; these MUST
-    include a ":path" pseudo-header field with a value of '*' (see Section 3.2.4
-    of {{?HTTP11}}).
+    include a ":path" pseudo-header field with a value of '*'; see Section 3.2.4
+    of {{?HTTP11}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request ({{connect}}).
@@ -631,7 +631,7 @@ HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
 For responses, a single ":status" pseudo-header field is defined that carries
-the HTTP status code (see Section 9 of {{!SEMANTICS}}).  This pseudo-header
+the HTTP status code; see Section 9 of {{!SEMANTICS}}.  This pseudo-header
 field MUST be included in all responses; otherwise, the response is malformed
 ({{malformed}}).
 
@@ -754,7 +754,7 @@ A CONNECT request MUST be constructed as follows:
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
-is malformed (see {{malformed}}).
+is malformed; see {{malformed}}.
 
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field.  Once this connection
@@ -812,7 +812,7 @@ same order, and both the name and the value in each field MUST be exact
 matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
-frame (see {{frame-max-push-id}}). A server cannot use server push until it
+frame; see {{frame-max-push-id}}. A server cannot use server push until it
 receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
 control the number of pushes that a server can promise. A server SHOULD use Push
 IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
@@ -837,7 +837,7 @@ push stream, this MAY be treated as a stream error of type
 H3_STREAM_CREATION_ERROR.
 
 The server MUST include a value in the ":authority" pseudo-header field for
-which the server is authoritative (see {{connection-reuse}}).  A client SHOULD
+which the server is authoritative; see {{connection-reuse}}.  A client SHOULD
 send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request
 for which it does not consider the server authoritative.  If the pushed response
 arrives on a push stream, this MAY be treated as a stream error of type
@@ -856,7 +856,7 @@ or DATA frames that reference the promised responses.  This reduces the chance
 that a client requests a resource that will be pushed by the server.
 
 When a server later fulfills a promise, the server push response is conveyed on
-a push stream (see {{push-streams}}). The push stream identifies the Push ID of
+a push stream; see {{push-streams}}. The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
 using the same format described for responses in {{request-response}}.
 
@@ -976,7 +976,7 @@ can be cleanly shut down without losing requests.
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
 continue fulfilling pushes which have already been promised, and the client can
-continue granting push credit as needed (see {{frame-max-push-id}}). A smaller
+continue granting push credit as needed; see {{frame-max-push-id}}. A smaller
 value indicates the client will reject pushes with Push IDs greater than or
 equal to this value.  Like the server, the client MAY send subsequent GOAWAY
 frames so long as the specified Push ID is strictly smaller than all previously
@@ -1316,8 +1316,8 @@ CANCEL_PUSH Frame {
 {: #fig-cancel-push title="CANCEL_PUSH Frame"}
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
-The Push ID identifies the server push that is being cancelled (see
-{{frame-push-promise}}).  If a CANCEL_PUSH frame is received which references a
+The Push ID identifies the server push that is being cancelled; see
+{{frame-push-promise}}.  If a CANCEL_PUSH frame is received which references a
 Push ID greater than currently allowed on the connection, this MUST be treated
 as a connection error of type H3_ID_ERROR.
 
@@ -1574,8 +1574,8 @@ MAX_PUSH_ID Frame {
 {: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
-the maximum value for a Push ID that the server can use (see
-{{frame-push-promise}}).  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
+the maximum value for a Push ID that the server can use; see
+{{frame-push-promise}}.  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
 receipt of a MAX_PUSH_ID that contains a smaller value than previously received
 MUST be treated as a connection error of type H3_ID_ERROR.
 
@@ -1610,7 +1610,7 @@ outstanding requests before making this choice.
 Because new error codes can be defined without negotiation (see {{extensions}}),
 use of an error code in an unexpected context or receipt of an unknown error
 code MUST be treated as equivalent to H3_NO_ERROR.  However, closing a stream
-can have other effects regardless of the error code (see {{request-response}}).
+can have other effects regardless of the error code; see {{request-response}}.
 
 This section describes HTTP/3-specific error codes which can be used to express
 the cause of a connection or stream error.
