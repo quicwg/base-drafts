@@ -3710,9 +3710,9 @@ ICMP message validation MUST include matching IP addresses and UDP ports
 The endpoint SHOULD ignore all ICMP messages that fail validation.
 
 An endpoint MUST NOT increase PMTU based on ICMP messages; see Section 3, clause
-6 of {{!DPLPMTUD}}.  Any reduction in the QUIC maximum packet size MAY be
-provisional until QUIC's loss detection algorithm determines that the quoted
-packet has actually been lost.
+6 of {{!DPLPMTUD}}.  Any reduction in the QUIC maximum packet size in response
+to ICMP messages MAY be provisional until QUIC's loss detection algorithm
+determines that the quoted packet has actually been lost.
 
 
 ## Datagram Packetization Layer PMTU Discovery
