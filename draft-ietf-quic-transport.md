@@ -1194,6 +1194,30 @@ SHOULD ignore any such packets.
 
 Servers MUST drop incoming packets under all other circumstances.
 
+### Considerations for Simple Load Balancers
+
+A server deployment could load balance among servers using only source and
+destination IP addresses and ports. Changes to the client's IP address or port
+could result in packets being forwarded to the wrong server. Such a server
+deployment could use one of the following methods for connection continuity
+when a client's address changes.
+
+* Servers could use an out-of-band mechanism to forward packets to the correct
+server based on Connection ID.
+
+* If servers can use other dedicated server IP addresses or ports than
+the one that the client initially connects to, they could use the
+preferred_address transport parameter to request that clients move
+connections to these dedicated addresses. Note that clients could
+choose not to use the preferred address.
+
+A server in a deployment that does not implement a solution to
+maintain connection continuity during connection migration
+SHOULD disallow migration using the disable_active_migration transport
+parameter.
+
+Server deployments that use this simple form of load balancing MUST avoid the
+creation of a stateless reset oracle; see {{reset-oracle}}.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
 
