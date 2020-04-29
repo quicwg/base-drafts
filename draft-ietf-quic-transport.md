@@ -1660,8 +1660,8 @@ on its own.
 The primary defense against amplification attack is verifying that an endpoint
 is able to receive packets at the transport address that it claims.  Address
 validation is performed both during connection establishment (see
-{{validate-handshake}}) and during connection migration; see
-{{migrate-validate}}.
+{{validate-handshake}}) and during connection migration (see
+{{migrate-validate}}).
 
 
 ## Address Validation During Connection Establishment {#validate-handshake}
@@ -1701,8 +1701,8 @@ A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
 address validation prior to completing the handshake. This token is delivered to
 the client during connection establishment with a Retry packet (see
-{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame; see
-{{validate-future}}.
+{{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
+{{validate-future}}).
 
 In addition to sending limits imposed prior to address validation, servers are
 also constrained in what they can send by the limits set by the congestion
