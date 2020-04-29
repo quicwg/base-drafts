@@ -1178,9 +1178,8 @@ maintain connection continuity during connection migration
 SHOULD disallow migration using the disable_active_migration transport
 parameter.
 
-Server deployments that use such load balancing might allow for
-creation of a stateless reset oracle, and should therefore follow the
-guidelines in {{reset-oracle}}.
+Server deployments that use this simple form of load balancing MUST avoid the
+creation of a stateless reset oracle; see {{reset-oracle}}.
 
 ## Life of a QUIC Connection {#connection-lifecycle}
 
