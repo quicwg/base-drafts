@@ -1597,7 +1597,7 @@ protection for these values.
    } ExtensionType;
 ~~~
 
-The `extension_data` field of the quic_transport_parameters extension contains a
+The extension_data field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
