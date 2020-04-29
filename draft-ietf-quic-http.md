@@ -1165,8 +1165,8 @@ client MUST treat this as a connection error of type H3_ID_ERROR.
 
 ### Reserved Stream Types {#stream-grease}
 
-Stream types of the format `0x1f * N + 0x21` for integer values of N are
-reserved to exercise the requirement that unknown types be ignored. These
+Stream types of the format `0x1f * N + 0x21` for non-negative integer values of
+N are reserved to exercise the requirement that unknown types be ignored. These
 streams have no semantics, and can be sent when application-layer padding is
 desired. They MAY also be sent on connections where no data is currently being
 transferred. Endpoints MUST NOT consider these streams to have any meaning upon
@@ -1390,11 +1390,11 @@ The following settings are defined in HTTP/3:
   SETTINGS_MAX_FIELD_SECTION_SIZE (0x6):
   : The default value is unlimited.  See {{header-formatting}} for usage.
 
-Setting identifiers of the format `0x1f * N + 0x21` for integer values of N are
-reserved to exercise the requirement that unknown identifiers be ignored.  Such
-settings have no defined meaning. Endpoints SHOULD include at least one such
-setting in their SETTINGS frame. Endpoints MUST NOT consider such settings to
-have any meaning upon receipt.
+Setting identifiers of the format `0x1f * N + 0x21` for non-negative integer
+values of N are reserved to exercise the requirement that unknown identifiers be
+ignored.  Such settings have no defined meaning. Endpoints SHOULD include at
+least one such setting in their SETTINGS frame. Endpoints MUST NOT consider such
+settings to have any meaning upon receipt.
 
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
@@ -1581,12 +1581,12 @@ MUST be treated as a connection error of type H3_ID_ERROR.
 
 ### Reserved Frame Types {#frame-reserved}
 
-Frame types of the format `0x1f * N + 0x21` for integer values of N are reserved
-to exercise the requirement that unknown types be ignored ({{extensions}}).
-These frames have no semantics, and can be sent on any open stream when
-application-layer padding is desired. They MAY also be sent on connections where
-no data is currently being transferred. Endpoints MUST NOT consider these frames
-to have any meaning upon receipt.
+Frame types of the format `0x1f * N + 0x21` for non-negative integer values of N
+are reserved to exercise the requirement that unknown types be ignored
+({{extensions}}).  These frames have no semantics, and can be sent on any open
+stream when application-layer padding is desired. They MAY also be sent on
+connections where no data is currently being transferred. Endpoints MUST NOT
+consider these frames to have any meaning upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
@@ -1676,10 +1676,11 @@ H3_VERSION_FALLBACK (0x110):
 : The requested operation cannot be served over HTTP/3.  The peer should
   retry over HTTP/1.1.
 
-Error codes of the format `0x1f * N + 0x21` for integer values of N are reserved
-to exercise the requirement that unknown error codes be treated as equivalent to
-H3_NO_ERROR ({{extensions}}). Implementations SHOULD select an error code from
-this space with some probability when they would have sent H3_NO_ERROR.
+Error codes of the format `0x1f * N + 0x21` for non-negative integer values of N
+are reserved to exercise the requirement that unknown error codes be treated as
+equivalent to H3_NO_ERROR ({{extensions}}). Implementations SHOULD select an
+error code from this space with some probability when they would have sent
+H3_NO_ERROR.
 
 # Extensions to HTTP/3 {#extensions}
 
@@ -2011,9 +2012,9 @@ The entries in {{iana-frame-table}} are registered by this document.
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
-assigned by IANA.
+Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
+values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+NOT be assigned by IANA.
 
 ### Settings Parameters {#iana-settings}
 
@@ -2053,9 +2054,9 @@ The entries in {{iana-setting-table}} are registered by this document.
 | ---------------------------- | ------ | ------------------------- | --------- |
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
-assigned by IANA.
+Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
+values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+NOT be assigned by IANA.
 
 ### Error Codes {#iana-error-codes}
 
@@ -2105,9 +2106,9 @@ The entries in the {{iana-error-table}} are registered by this document.
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
-assigned by IANA.
+Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
+values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+NOT be assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
 
@@ -2141,9 +2142,9 @@ The entries in the following table are registered by this document.
 | Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, each code of the format `0x1f * N + 0x21` for integer values of N
-(that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST NOT be
-assigned by IANA.
+Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
+values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+NOT be assigned by IANA.
 
 --- back
 
