@@ -2662,5 +2662,32 @@ None.
 
 The original authors of this specification were Robbie Shade and Mike Warres.
 
-A substantial portion of Mike's contribution was supported by Microsoft during
-his employment there.
+The IETF QUIC Working Group received an enormous amount of support from many
+people. Among others, the following people provided substantial contributions to
+this document:
+
+- Bence Béky
+- Daan De Meyer
+- Martin Duke
+- Roy Fielding
+- Alan Frindell
+- Alessandro Ghedini
+- Nick Harper
+- Ryan Hamilton
+- Christian Huitema
+- Subodh Iyengar
+- Robin Marx
+- Patrick McManus
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lucas Pardue
+- Roberto Peon
+- Julian Reschke
+- Ben Schwartz
+- Ian Swett
+- Willy Taureau
+- Martin Thomson
+- Dmitri Tikhonov
+- Tatsuhiro Tsujikawa
+
+A portion of Mike's contribution was supported by Microsoft during his
+employment there.
