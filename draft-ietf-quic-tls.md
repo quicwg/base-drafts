@@ -70,6 +70,15 @@ informative:
     date: 2016-03-08
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
+  ROBUST:
+    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS"
+    author:
+      - ins: M. Fischlin
+      - ins: F. Günther
+      - ins: C. Janson
+    date: 2020-02-21
+    target: "https://felixguenther.info/Q20_RC.pdf"
+
   IMC:
     title: "Introduction to Modern Cryptography, Second Edition"
     author:
@@ -1519,12 +1528,32 @@ After this period, old read keys and their corresponding secrets SHOULD be
 discarded.
 
 
-## Key Update Frequency
+## Minimum Key Update Frequency
 
 Key updates MUST be initiated before usage limits on packet protection keys are
 exceeded.  For the cipher suites mentioned in this document, the limits in
 Section 5.5 of {{!TLS13}} apply.  Other cipher suites MUST define usage limits
 in order to be used with QUIC.
+
+The usage limits defined in TLS 1.3 exist to provide protection against attacks
+on confidentiality and apply to successful applications of AEAD protection. The
+integrity protections in authenticated encryption also depend on limiting the
+number of attempts to forge packets. TLS achieves this by closing connections
+after any record fails an authentication check. In comparison, QUIC ignores any
+packet that cannot be authenticated, allowing an attacker to make multiple
+attempts to defeat integrity protection.
+
+Packet protection keys MUST NOT be used for removing packet protection after
+authentication fails on more than 2^36 packets. Endpoints MUST initiate a key
+update before the number of packets that fail authentication exceeds 2^36. This
+limit reduces the probability than attacker is able to create a successful
+packet forgery to 2^-57, see {{AEBounds}} and {{ROBUST}}.
+
+This limit of 2^36 unsuccessfully authenticated packets applies only to the
+AEAD algorithms that are defined for use in QUIC (AEAD_AES_128_GCM,
+AEAD_AES_256_GCM, AEAD_AES_128_CCM(?!?! - no analysis to support the inclusion
+of CCM), and AEAD_CHACHA20_POLY1305). Any TLS cipher suite that is specified
+for use with QUIC MUST specify a limit specific to the packet protection AEAD.
 
 
 ## Key Update Error Code {#key-update-error}
@@ -2203,6 +2232,7 @@ Christopher Wood,
 David Schinazi,
 Dragana Damjanovic,
 Eric Rescorla,
+Felix Günther,
 Ian Swett,
 Jana Iyengar, <contact
  asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
