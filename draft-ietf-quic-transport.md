@@ -1175,7 +1175,7 @@ choose not to use the preferred address.
 
 A server in a deployment that does not implement a solution to
 maintain connection continuity during connection migration
-SHOULD disallow it via the disable_active_migration transport
+SHOULD disallow migration using the disable_active_migration transport
 parameter.
 
 Server deployments that use such load balancing might allow for
