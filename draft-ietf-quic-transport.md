@@ -1168,7 +1168,7 @@ when a client's address changes.
 server based on Connection ID.
 
 * If servers can use other dedicated server IP addresses or ports than
-the one that the client is initiating connections to, they could use the
+the one that the client initially connects to, they could use the
 preferred_address transport parameter to request that clients move
 connections to these dedicated addresses. Note that clients could
 choose not to use the preferred address.
