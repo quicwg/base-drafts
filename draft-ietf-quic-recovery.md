@@ -533,8 +533,9 @@ previous RTT is available, the initial RTT SHOULD be set to 333ms, resulting in
 a 1 second initial timeout, as recommended in {{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
-PATH_RESPONSE to set the initial RTT (see kInitialRtt in {{pto-handshake}})
-for a new path, but the delay SHOULD NOT be considered an RTT sample.
+PATH_RESPONSE to set the initial RTT (see kInitialRtt in
+{{constants-of-interest}}) for a new path, but the delay SHOULD NOT be
+considered an RTT sample.
 
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
@@ -987,7 +988,7 @@ time_sent:
 : The time the packet was sent.
 
 
-## Constants of interest
+## Constants of Interest {#constants-of-interest}
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.
