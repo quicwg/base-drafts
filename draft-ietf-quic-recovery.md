@@ -840,22 +840,26 @@ This duration is computed as follows:
 
 For example, assume:
 
-  smoothed_rtt = 1
-  rttvar = 0
-  max_ack_delay = 0
-  kPersistentCongestionThreshold = 3
+~~~
+smoothed_rtt = 1
+rttvar = 0
+max_ack_delay = 0
+kPersistentCongestionThreshold = 3
+~~~
 
 If an ack-eliciting packet is sent at time t = 0, the following scenario would
 illustrate persistent congestion:
 
-  t=0 | Send Pkt #1 (App Data)
-  t=1 | Send Pkt #2 (PTO 1)
-  t=3 | Send Pkt #3 (PTO 2)
-  t=7 | Send Pkt #4 (PTO 3)
-  t=8 | Recv ACK of Pkt #4
+| Time | Action                 |
+|:-----|:-----------------------|
+| t=0  | Send Pkt #1 (App Data) |
+| t=1  | Send Pkt #2 (PTO 1)    |
+| t=3  | Send Pkt #3 (PTO 2)    |
+| t=7  | Send Pkt #4 (PTO 3)    |
+| t=8  | Recv ACK of Pkt #4     |
 
 The first three packets are determined to be lost when the acknowledgement of
-packet 4 is received at t=8.  The congestion period is calculated as the time
+packet 4 is received at t = 8.  The congestion period is calculated as the time
 between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
 Because the threshold was reached and because none of the packets between the
@@ -889,7 +893,7 @@ Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
 Implementations MUST either use pacing or limit such bursts to the initial
 congestion window, which is recommended to be the minimum of
-10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
+`10 * max_datagram_size` and `max(2 * max_datagram_size, 14720))`, where
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
