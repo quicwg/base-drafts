@@ -422,7 +422,9 @@ less than 3, to keep in line with TCP {{?RFC5681}}.
 Some networks may exhibit higher degrees of reordering, causing a sender to
 detect spurious losses.  Algorithms that increase the reordering threshold after
 spuriously detecting losses, such as TCP-NCR {{?RFC4653}}, have proven to be
-useful in TCP and are expected to be equally useful in QUIC.
+useful in TCP and are expected to at least as useful in QUIC.  Re-ordering
+could be more common with QUIC than TCP, because network elements cannot observe
+and fix the order of out-of-order packets.
 
 ### Time Threshold {#time-threshold}
 
