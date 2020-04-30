@@ -988,7 +988,7 @@ time_sent:
 : The time the packet was sent.
 
 
-## Constants of interest {#constants-of-interest}
+## Constants of Interest {#constants-of-interest}
 
 Constants used in loss recovery are based on a combination of RFCs, papers, and
 common practice.
