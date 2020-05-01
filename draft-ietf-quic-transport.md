@@ -1203,13 +1203,12 @@ deployment could use one of the following methods for connection continuity
 when a client's address changes.
 
 * Servers could use an out-of-band mechanism to forward packets to the correct
-server based on Connection ID.
+  server based on Connection ID.
 
-* If servers can use other dedicated server IP addresses or ports than
-the one that the client initially connects to, they could use the
-preferred_address transport parameter to request that clients move
-connections to these dedicated addresses. Note that clients could
-choose not to use the preferred address.
+* If servers can use a dedicated server IP address or port, other than the one
+  that the client initially connects to, they could use the preferred_address
+  transport parameter to request that clients move connections to that dedicated
+  address. Note that clients could choose not to use the preferred address.
 
 A server in a deployment that does not implement a solution to
 maintain connection continuity during connection migration
