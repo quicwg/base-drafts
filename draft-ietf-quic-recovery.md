@@ -897,9 +897,29 @@ congestion window, which is recommended to be the minimum of
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
-As an example of a well-known and publicly available implementation of a flow
-pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
-in Linux (3.11 onwards).
+Endpoints can implement pacing as they choose, as long as the total number of
+bytes sent over any interval, `t[n] - t[m]`, does not exceed a small multiple,
+`N`, of maximum value of the congestion window, `cwnd`, over that same period.
+Allowing for bursts produces the following relation for the total number of
+bytes sent over any interval:
+
+~~~
+sent@t[n] - sent@t[m]
+    <= N * cwnd * (t[m] - t[n]) / RTT
+       + min(10 * max_datagram_size,
+             max(2 * max_datagram_size, 14720))
+~~~
+
+For a congestion controller that limits the increase in congestion window by a
+fixed multiple each round trip, using that value for `N` in this function
+ensures that the pacer does not limit the overall send rate more than the
+congestion controller. The congestion controller specified in this document at
+most doubles the congestion window every round trip, so a factor of 2 suits a
+pacer using this congestion controller.
+
+One possible implementation strategy for pacing uses a leaky bucket algorithm,
+where the capacity of the "bucket" is limited to the maximum burst size and the
+rate the "bucket" fills is determined by the above function.
 
 ## Under-utilizing the Congestion Window
 
