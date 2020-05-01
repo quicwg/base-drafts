@@ -70,15 +70,6 @@ informative:
     date: 2016-03-08
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
-  ROBUST:
-    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS"
-    author:
-      - ins: M. Fischlin
-      - ins: F. Günther
-      - ins: C. Janson
-    date: 2020-02-21
-    target: "https://www.felixguenther.info/docs/QUIPS2020_RobustChannels.pdf"
-
   IMC:
     title: "Introduction to Modern Cryptography, Second Edition"
     author:
@@ -99,6 +90,15 @@ informative:
         name: Mike Bishop
         org: Akamai Technologies
         role: editor
+
+  ROBUST:
+    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS"
+    author:
+      - ins: M. Fischlin
+      - ins: F. Günther
+      - ins: C. Janson
+    date: 2020-02-21
+    target: "https://www.felixguenther.info/docs/QUIPS2020_RobustChannels.pdf"
 
 
 --- abstract
@@ -1531,29 +1531,49 @@ discarded.
 ## Minimum Key Update Frequency
 
 Key updates MUST be initiated before usage limits on packet protection keys are
-exceeded.  For the cipher suites mentioned in this document, the limits in
-Section 5.5 of {{!TLS13}} apply.  Other cipher suites MUST define usage limits
-in order to be used with QUIC.
+exceeded. For the cipher suites mentioned in this document, the limits in
+Section 5.5 of {{!TLS13}} apply. {{!TLS13}} does not specify a limit for
+AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^24
+packets can be used to obtain the same confidentiality protection as the limits
+specified in TLS.
 
 The usage limits defined in TLS 1.3 exist to provide protection against attacks
 on confidentiality and apply to successful applications of AEAD protection. The
 integrity protections in authenticated encryption also depend on limiting the
 number of attempts to forge packets. TLS achieves this by closing connections
 after any record fails an authentication check. In comparison, QUIC ignores any
-packet that cannot be authenticated, allowing an attacker to make multiple
-attempts to defeat integrity protection.
+packet that cannot be authenticated, allowing multiple attempts at defeating
+integrity protection.
 
-Packet protection keys MUST NOT be used for removing packet protection after
-authentication fails on more than 2^36 packets. Endpoints MUST initiate a key
-update before the number of packets that fail authentication exceeds 2^36. This
-limit reduces the probability than attacker is able to create a successful
-packet forgery to 2^-57, see {{AEBounds}} and {{ROBUST}}.
+Endpoints MUST count the number of packets that are received but cannot be
+authenticated. Packet protection keys MUST NOT be used for removing packet
+protection after authentication fails on more than a per-AEAD limit. Endpoints
+MUST initiate a key update before reaching this limit. Applying a limit reduces
+the probability than attacker is able to successfully forge a packet; see
+{{AEBounds}} and {{ROBUST}}.
 
-This limit of 2^36 unsuccessfully authenticated packets applies only to the
-AEAD algorithms that are defined for use in QUIC (AEAD_AES_128_GCM,
-AEAD_AES_256_GCM, AEAD_AES_128_CCM(?!?! - no analysis to support the inclusion
-of CCM), and AEAD_CHACHA20_POLY1305). Any TLS cipher suite that is specified
-for use with QUIC MUST specify a limit specific to the packet protection AEAD.
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305 the
+number of packets that fail authentication MUST NOT exceed 2^36. Note that the
+analysis in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
+AEAD_AES_256_GCM, but this specification recommends a lower limit. For
+AEAD_AES_128_CCM the number of packets that fail authentication MUST NOT exceed
+2^24.5; see {{ccm-bounds}}.
+
+Any TLS cipher suite that is specified for use with QUIC MUST define limits on
+the use of the associated AEAD function that preserves margins for
+confidentiality and integrity. That is, limits MUST be specified for the number
+of packets that can be authenticated and for the number packets that can fail
+authentication.  Any limits SHOULD reference any analysis upon which values are
+based and describe any assumptions used in that analysis.
+
+Note:
+
+: These limits were originally calculated based using assumptions about the
+  limits on TLS record size. The maximum size of a TLS record is 2^14 bytes.
+  In comparison, QUIC packets can be up to 2^16 bytes.  However, it is
+  expected that QUIC packets will generally be smaller than TLS records.
+  Where packets might be larger than 2^14 bytes in length, smaller limits might
+  be needed.
 
 
 ## Key Update Error Code {#key-update-error}
@@ -2050,6 +2070,92 @@ included in the final Retry packet:
 ffff00001b0008f067a5502a4262b574 6f6b656ea523cb5ba524695f6569f293
 a1359d8e
 ~~~
+
+# Analysis of Limits on AEAD_AES_128_CCM Usage {#ccm-bounds}
+
+TLS {{?TLS13}} and {{AEBounds}} do not specify limits on usage for
+AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits on
+use that ensure that both confidentiality and integrity are preserved. This
+section documents that analysis.
+
+{{?CCM-ANALYSIS=DOI.10.1007/3-540-36492-7_7}} is used as the basis of this
+analysis. The results of that analysis are used to derive usage limits that are
+based on those chosen in {{?TLS13}}.
+
+This analysis uses symbols for multiplication (*), division (/), and
+exponentiation (^), plus parentheses for establishing precedence. The following
+symbols are also used:
+
+t:
+
+: The size of the authentication tag in bits. For this cipher, t is 128.
+
+n:
+
+: The size of the block function in bits. For this cipher, n is 128.
+
+l:
+
+: The number of blocks in each packet. To match the analysis in {{AEBounds}},
+  this analysis uses a value of 2^10.
+
+q:
+
+: The number of genuine packets created and protected by endpoints. This value
+  is the bound on the number of packets that can be protected before updating
+  keys.
+
+v:
+
+: The number of forged packets that endpoints will accept. This value is the
+  bound on the number of forged packets that an endpoint can reject before
+  updating keys.
+
+
+## Confidentiality Limits
+
+For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an
+attacker gains an advantage over an ideal pseudorandom permutation (PRP) of no
+more than:
+
+~~~
+(l * q)^2 / 2^n
+~~~
+
+For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
+results in the relation:
+
+~~~
+q <= 2^24
+~~~
+
+That is, endpoints cannot protect more than 2^24 packets with the same set of
+keys without causing an attacker to gain an larger advantage than the target of
+2^-60.
+
+
+## Integrity Limits
+
+For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
+gains an advantage over an ideal PRP of no more than:
+
+~~~
+v / 2^t + (l * (v + q))^2 / 2^n
+~~~
+
+The goal is to limit this advantage to 2^-57, to match the target in
+{{?TLS13}}. As `t` and `n` are both 128, the first term is negligible relative
+to the second, so that term can be removed without a significant effect on the
+result. This produces the relation:
+
+~~~
+v + q <= 2^25.5
+~~~
+
+Using the previously-established value of 2^24 for `q` and rounding, this leads
+to an upper limit on `v` of 2^24.5. That is, endpoints cannot attempt to
+authenticate more than 2^24.5 packets with the same set of keys without causing
+an attacker to gain an larger advantage than the target of 2^-57.
 
 
 # Change Log
