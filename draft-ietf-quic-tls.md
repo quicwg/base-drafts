@@ -77,7 +77,7 @@ informative:
       - ins: F. Günther
       - ins: C. Janson
     date: 2020-02-21
-    target: "https://felixguenther.info/Q20_RC.pdf"
+    target: "https://www.felixguenther.info/docs/QUIPS2020_RobustChannels.pdf"
 
   IMC:
     title: "Introduction to Modern Cryptography, Second Edition"
