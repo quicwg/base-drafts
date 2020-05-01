@@ -3261,8 +3261,14 @@ a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
 
-An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
-This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
+
+An ACK frame SHOULD be generated for at least every 10th ack-eliciting packet
+(the QUIC IW). A receiver could send an ACK frame at least every second 
+ack-elicitingpacket (recommended practice for TCP {{?RFC5681}}). QUIC permits 
+a larger ratio between ACKs and data,which can reduce
+the number of ACK frames that are sent and need to be processed.
+The receiver can provide a higher rate of acknowledgements
+(e.g. every ack-eliciting packet) for the first 100 packets.
 A receiver could decide to send an ACK frame less frequently if it has
 information about how frequently the sender's congestion controller
 needs feedback, or if the receiver is CPU or bandwidth constrained.
