@@ -910,12 +910,12 @@ sent@t[n] - sent@t[m]
              max(2 * max_datagram_size, 14720))
 ~~~
 
-For a congestion controller that limits the increase in congestion window by a
-fixed multiple each round trip, using that value for `N` in this function
-ensures that the pacer does not limit the overall send rate more than the
-congestion controller. The congestion controller specified in this document at
-most doubles the congestion window every round trip, so a factor of 2 suits a
-pacer using this congestion controller.
+The inclusion of the factor, `N`, that increases the rate of sending is to
+anticipate increases in sending rate as the congestion window expands. Sending
+at a higher rate also avoids having scheduling delays reduce the send rate
+below that allowed by the congestion controller. A value of 2 ensures that
+pacing is unlikely to limit what is sent any more than the congestion
+controller.
 
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
