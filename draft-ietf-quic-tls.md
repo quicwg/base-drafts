@@ -2096,8 +2096,9 @@ n:
 
 l:
 
-: The number of blocks in each packet. To match the analysis in {{AEBounds}},
-  this analysis uses a value of 2^10.
+: The number of blocks in each packet. In this case, this is the number of
+  16-byte AES blocks in a packet. To match the analysis in {{AEBounds}}, this
+  analysis uses a value of 2^10, which assumes a limit on packet size of 2^14.
 
 q:
 
