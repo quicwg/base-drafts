@@ -897,15 +897,15 @@ congestion window, which is recommended to be the minimum of
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
-Endpoints can implement pacing as they choose, as long as the total number of
-bytes sent over any interval, `t[n] - t[m]`, does not exceed a small multiple,
-`N`, of maximum value of the congestion window, `cwnd`, over that same period.
-Allowing for bursts produces the following relation for the total number of
-bytes sent over any interval:
+Endpoints can implement pacing as they choose, as long as the rate of bytes
+sent over any interval, `t[n] - t[m]`, does not exceed a small multiple, `N`,
+of maximum value of the congestion window, `congestion_window`, averaged over
+the round trip time estimate, `smoothed_rtt`. Allowing for bursts produces the
+following relation for the total number of bytes sent over any interval:
 
 ~~~
 sent@t[n] - sent@t[m]
-    <= N * cwnd * (t[m] - t[n]) / RTT
+    <= N * congestion_window * (t[m] - t[n]) / smoothed_rtt
        + min(10 * max_datagram_size,
              max(2 * max_datagram_size, 14720))
 ~~~
