@@ -245,6 +245,19 @@ QUIC specifies a time-based definition to ensure one or more packets are sent
 prior to a dramatic decrease in congestion window; see
 {{persistent-congestion}}.
 
+### The Minimum Congestion Window is Two Packets
+
+TCP uses a minimum congestion window of one packet. However, loss of
+that single packet means that the sender needs to waiting for a PTO
+({{pto}}) to recover, which can be much longer than a round-trip time.
+Sending a single ack-eliciting packet also increases the chances of incurring
+additional latency when a receiver delays its acknowledgement.
+
+QUIC therefore recommends that the minimum congestion window be two
+packets. While this increases network load, it is considered safe, since the
+sender will still reduce its sending rate exponentially under persistent
+congestion ({{pto}}).
+
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
@@ -540,10 +553,7 @@ considered an RTT sample.
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
 incorrect RTT estimate at the client. To allow the client to improve its RTT
-estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake
-keys are available to the client, it MUST send a Handshake packet, and
-otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
-bytes.
+estimate, the new packet that it sends MUST be ack-eliciting.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
@@ -568,6 +578,14 @@ until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
+If Handshake keys are available to the client, it MUST send a Handshake
+packet, and otherwise it MUST send an Initial packet in a UDP datagram of
+at least 1200 bytes.
+
+A client could have received and acknowledged a Handshake packet, causing it to
+discard state for the Initial packet number space, but not sent any
+ack-eliciting Handshake packets.  In this case, the PTO is set from the current
+time.
 
 ### Speeding Up Handshake Completion
 
@@ -689,7 +707,7 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  Initial secrets however might be destroyed
-sooner, as soon as handshake keys are available; see Section 4.10.1 of
+sooner, as soon as handshake keys are available; see Section 4.11.1 of
 {{QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
@@ -822,22 +840,26 @@ This duration is computed as follows:
 
 For example, assume:
 
-  smoothed_rtt = 1
-  rttvar = 0
-  max_ack_delay = 0
-  kPersistentCongestionThreshold = 3
+~~~
+smoothed_rtt = 1
+rttvar = 0
+max_ack_delay = 0
+kPersistentCongestionThreshold = 3
+~~~
 
 If an ack-eliciting packet is sent at time t = 0, the following scenario would
 illustrate persistent congestion:
 
-  t=0 | Send Pkt #1 (App Data)
-  t=1 | Send Pkt #2 (PTO 1)
-  t=3 | Send Pkt #3 (PTO 2)
-  t=7 | Send Pkt #4 (PTO 3)
-  t=8 | Recv ACK of Pkt #4
+| Time | Action                 |
+|:-----|:-----------------------|
+| t=0  | Send Pkt #1 (App Data) |
+| t=1  | Send Pkt #2 (PTO 1)    |
+| t=3  | Send Pkt #3 (PTO 2)    |
+| t=7  | Send Pkt #4 (PTO 3)    |
+| t=8  | Recv ACK of Pkt #4     |
 
 The first three packets are determined to be lost when the acknowledgement of
-packet 4 is received at t=8.  The congestion period is calculated as the time
+packet 4 is received at t = 8.  The congestion period is calculated as the time
 between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
 Because the threshold was reached and because none of the packets between the
@@ -871,7 +893,7 @@ Sending multiple packets into the network without any delay between them
 creates a packet burst that might cause short-term congestion and losses.
 Implementations MUST either use pacing or limit such bursts to the initial
 congestion window, which is recommended to be the minimum of
-10 * max_datagram_size and max(2* max_datagram_size, 14720)), where
+`10 * max_datagram_size` and `max(2 * max_datagram_size, 14720))`, where
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
@@ -887,7 +909,7 @@ the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
 or flow control limits.
 
-A sender MAY use the pipeACK method described in section 4.3 of {{?RFC7661}}
+A sender MAY use the pipeACK method described in Section 4.3 of {{?RFC7661}}
 to determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
@@ -1241,16 +1263,23 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
+  // Determine which PN space to arm PTO for.
+  sent_time, pn_space = GetEarliestTimeAndSpace(
+    time_of_last_sent_ack_eliciting_packet)
+  // Don't arm PTO for ApplicationData until handshake complete.
+  if (pn_space == ApplicationData &&
+      handshake is not confirmed):
+    loss_detection_timer.cancel()
+    return
+  if (sent_time == 0):
+    assert(!PeerCompletedAddressValidation())
+    sent_time = now()
+
   // Calculate PTO duration
   timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
     max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
-  sent_time, _ = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet)
-  if (sent_time == 0)
-    assert(!PeerCompletedAddressValidation())
-    sent_time = now()
   loss_detection_timer.update(sent_time + timeout)
 ~~~
 

@@ -2045,7 +2045,7 @@ duration of the handshake.  An endpoint MUST NOT initiate connection migration
 before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 
 An endpoint also MUST NOT send packets from a different local address, actively
-initiating migration, if the peer sent the `disable_active_migration` transport
+initiating migration, if the peer sent the disable_active_migration transport
 parameter during the handshake. An endpoint which has sent this transport
 parameter, but detects that a peer has nonetheless migrated to a different
 network MUST either drop the incoming packets on that path without generating a
@@ -3257,7 +3257,7 @@ contract: an endpoint promises to never intentionally delay acknowledgments
 of an ack-eliciting packet by more than the indicated value. If it does,
 any excess accrues to the RTT estimate and could result in spurious or
 delayed retransmissions from the peer. For Initial and Handshake packets,
-a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
+a max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
 
@@ -3752,20 +3752,12 @@ associate the message with a corresponding transport connection {{!DPLPMTUD}}.
 ICMP message validation MUST include matching IP addresses and UDP ports
 {{!RFC8085}} and, when possible, connection IDs to an active QUIC session.
 
-Further validation can also be provided:
-
-* An IPv4 endpoint could set the Don't Fragment (DF) bit on a small proportion
-  of packets, so that most invalid ICMP messages arrive when there are no DF
-  packets outstanding, and can therefore be identified as spurious.
-
-* An endpoint could store additional information from the IP or UDP headers to
-  use for validation (for example, the IP ID or UDP checksum).
-
 The endpoint SHOULD ignore all ICMP messages that fail validation.
 
-An endpoint MUST NOT increase PMTU based on ICMP messages.  Any reduction in the
-QUIC maximum packet size MAY be provisional until QUIC's loss detection
-algorithm determines that the quoted packet has actually been lost.
+An endpoint MUST NOT increase PMTU based on ICMP messages; see Section 3, clause
+6 of {{!DPLPMTUD}}.  Any reduction in the QUIC maximum packet size in response
+to ICMP messages MAY be provisional until QUIC's loss detection algorithm
+determines that the quoted packet has actually been lost.
 
 
 ## Datagram Packetization Layer PMTU Discovery
@@ -3791,18 +3783,21 @@ apply if these messages are used by DPLPMTUD.
 
 ### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
-Endpoints that rely on the destination connection ID for routing QUIC packets
-are likely to require that the connection ID be included in PMTU probe packets
-to route any resulting ICMP messages ({{icmp-pmtud}}) back to the correct
-endpoint.  However, only long header packets ({{long-header}}) contain source
-connection IDs, and long header packets are not decrypted or acknowledged by
-the peer once the handshake is complete.  One way to construct a PMTU probe is
-to coalesce (see {{packet-coalesce}}) a Handshake packet ({{packet-handshake}})
-with a short header packet in a single UDP datagram.  If the UDP datagram
-reaches the endpoint, the Handshake packet will be ignored, but the short header
-packet will be acknowledged.  If the UDP datagram elicits an ICMP message, that
-message will likely contain the source connection ID within the quoted portion
-of the UDP datagram.
+Endpoints that rely on the destination connection ID for routing incoming QUIC
+packets are likely to require that the connection ID be included in PMTU probe
+packets to route any resulting ICMP messages ({{icmp-pmtud}}) back to the
+correct endpoint.  However, only long header packets ({{long-header}}) contain
+source connection IDs, and long header packets are not decrypted or acknowledged
+by the peer once the handshake is complete.
+
+One way to construct a probe for the path MTU is to coalesce (see
+{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
+header packet in a single UDP datagram.  If the UDP datagram reaches the
+endpoint, the Handshake packet will be ignored, but the short header packet will
+be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
+first part of the datagram will be quoted in that message.  If the the source
+connection ID is within the quoted portion of the UDP datagram, that could be
+used for routing.
 
 
 # Versions {#versions}
@@ -4577,7 +4572,7 @@ connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
-The `extension_data` field of the quic_transport_parameters extension defined in
+The extension_data field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
 sequence of transport parameters, as shown in {{transport-parameter-sequence}}:
 
@@ -4896,7 +4891,7 @@ ACK Delay:
   when this ACK was sent and when the largest acknowledged packet, as indicated
   in the Largest Acknowledged field, was received by this peer.  The value of
   the ACK Delay field is scaled by multiplying the encoded value by 2 to the
-  power of the value of the `ack_delay_exponent` transport parameter set by the
+  power of the value of the ack_delay_exponent transport parameter set by the
   sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling in
   this fashion allows for a larger range of values with a shorter encoding at
   the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
@@ -6559,7 +6554,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
-(that is, `27`, `58`, `89`, ...) are reserved and MUST NOT be assigned by IANA.
+(that is, 27, 58, 89, ...) are reserved and MUST NOT be assigned by IANA.
 
 
 ## QUIC Frame Type Registry {#iana-frames}
@@ -7224,34 +7219,35 @@ work by Jim Roskind {{EARLY-DESIGN}}.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Alessandro Ghedini,
-Alyssa Wilk,
-Antoine Delignat-Lavaud,
-Brian Trammell,
-Christian Huitema,
-Colin Perkins,
-David Schinazi,
-Dmitri Tikhonov,
-Eric Kinnear,
-Eric Rescorla,
-Gorry Fairhurst,
-Ian Swett,
-Igor Lubashev, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Lucas Pardue,
-Magnus Westerlund,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>, <contact
- fullname="Mirja Kühlewind"/>,
-Nick Banks,
-Nick Harper,
-Patrick McManus,
-Roberto Peon,
-Ryan Hamilton,
-Subodh Iyengar,
-Tatsuhiro Tsujikawa,
-Ted Hardie,
-Tom Jones,
-and Victor Vasiliev.
+
+- Alessandro Ghedini
+- Alyssa Wilk
+- Antoine Delignat-Lavaud
+- Brian Trammell
+- Christian Huitema
+- Colin Perkins
+- David Schinazi
+- Dmitri Tikhonov
+- Eric Kinnear
+- Eric Rescorla
+- Gorry Fairhurst
+- Ian Swett
+- Igor Lubashev
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lucas Pardue
+- Magnus Westerlund
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- <t><t><contact fullname="Mirja Kühlewind"/></t></t>
+- Nick Banks
+- Nick Harper
+- Patrick McManus
+- Roberto Peon
+- Ryan Hamilton
+- Subodh Iyengar
+- Tatsuhiro Tsujikawa
+- Ted Hardie
+- Tom Jones
+- Victor Vasiliev

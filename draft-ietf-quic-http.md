@@ -456,8 +456,10 @@ An HTTP message (request or response) consists of:
 3. optionally, the trailer field section, if present (see Section 4.6 of
    {{!SEMANTICS}}), sent as a single HEADERS frame.
 
-Receipt of DATA and HEADERS frames in any other sequence MUST be treated as a
-connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
+Receipt of an invalid sequence of frames MUST be treated as a connection error
+of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
+any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
+is considered invalid.
 
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
@@ -482,12 +484,6 @@ A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx; see Section 9.2 of {{!SEMANTICS}}) precede a final
 response to the same request.  Interim responses do not contain a payload body
 or trailers.
-
-If an endpoint receives an invalid sequence of frames on either a request or
-a push stream, it MUST respond with a connection error of type
-H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
-HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
-considered invalid.
 
 An HTTP request/response exchange fully consumes a client-initiated
 bidirectional QUIC stream. After sending a request, a client MUST close the
@@ -664,7 +660,7 @@ on the uncompressed size of fields, including the length of the name and value
 in bytes plus an overhead of 32 bytes for each field.
 
 If an implementation wishes to advise its peer of this limit, it can be conveyed
-as a number of bytes in the `SETTINGS_MAX_FIELD_SECTION_SIZE` parameter. An
+as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation which has received this parameter SHOULD NOT send an HTTP message
 header which exceeds the indicated size, as the peer will likely refuse to
 process it.  However, because this limit is applied at each hop, messages below
@@ -715,7 +711,7 @@ frames but is invalid due to:
 - the inclusion of invalid characters in field names or values
 
 A request or response that includes a payload body can include a
-`content-length` header field.  A request or response is also malformed if the
+Content-Length header field.  A request or response is also malformed if the
 value of a content-length header field does not equal the sum of the DATA frame
 payload lengths that form the body.  A response that is defined to have no
 payload, as described in Section 6.3.3 of {{!SEMANTICS}} can have a non-zero
@@ -1116,7 +1112,7 @@ the reception of the unidirectional stream header.
 
 ### Control Streams
 
-A control stream is indicated by a stream type of `0x00`.  Data on this stream
+A control stream is indicated by a stream type of 0x00.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
@@ -1141,7 +1137,7 @@ Server push is an optional feature introduced in HTTP/2 that allows a server to
 initiate a response before a request has been made.  See {{server-push}} for
 more details.
 
-A push stream is indicated by a stream type of `0x01`, followed by the Push ID
+A push stream is indicated by a stream type of 0x01, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
 remaining data on this stream consists of HTTP/3 frames, as defined in
 {{frames}}, and fulfills a promised server push by zero or more interim HTTP
@@ -2014,7 +2010,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Settings Parameters {#iana-settings}
@@ -2056,7 +2052,7 @@ The entries in {{iana-setting-table}} are registered by this document.
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Error Codes {#iana-error-codes}
@@ -2108,7 +2104,7 @@ The entries in the {{iana-error-table}} are registered by this document.
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
@@ -2144,7 +2140,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 --- back
@@ -2360,9 +2356,8 @@ the peers' settings to arrive before responding to other streams.  See
 ## HTTP/2 Error Codes
 
 QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
-provides. However, there is no direct portability of HTTP/2 error codes to
-HTTP/3 error codes; the values are shifted in order to prevent accidental
-or implicit conversion.
+provides. However, the differences between HTTP/2 and HTTP/3 mean that error
+codes are not directly portable between versions.
 
 The HTTP/2 error codes defined in Section 7 of {{?HTTP2}} logically map to
 the HTTP/3 error codes as follows:
@@ -2416,6 +2411,34 @@ H3_1_1_REQUIRED (0xd):
 
 Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 {{iana-error-codes}}.
+
+### Mapping Between HTTP/2 and HTTP/3 Errors
+
+An intermediary that converts between HTTP/2 and HTTP/3 may encounter error
+conditions from either upstream. It is useful to communicate the occurrence of
+error to the downstream but error codes largely reflect connection-local
+problems that generally do not make sense to propagate.
+
+An intermediary that encounters an error from an upstream origin can indicate
+this by sending an HTTP status code such as 502, which is suitable for a broad
+class of errors.
+
+There are some rare cases where it is beneficial to propagate the error by
+mapping it to the closest matching error type to the receiver. For example, an
+intermediary that receives an HTTP/2 stream error of type REFUSED_STREAM from
+the origin has a clear signal that the request was not processed and that the
+request is safe to retry. Propagating this error condition to the client as an
+HTTP/3 stream error of type H3_REQUEST_REJECTED allows the client to take the
+action it deems most appropriate. In the reverse direction the intermediary
+might deem it beneficial to pass on client request cancellations that are
+indicated by terminating a stream with H3_REQUEST_CANCELLED.
+
+Conversion between errors is described in the logical mapping. The error codes
+are defined in non-overlapping spaces in order to protect against accidental
+conversion that could result in the use of inappropriate or unknown error codes
+for the target version. An intermediary is permitted to promote stream errors to
+connection errors but they should be aware of the cost to the connection for
+what might be a temporary or intermittent error.
 
 # Change Log
 
@@ -2666,5 +2689,32 @@ None.
 
 The original authors of this specification were Robbie Shade and Mike Warres.
 
-A substantial portion of Mike's contribution was supported by Microsoft during
-his employment there.
+The IETF QUIC Working Group received an enormous amount of support from many
+people. Among others, the following people provided substantial contributions to
+this document:
+
+- Bence Béky
+- Daan De Meyer
+- Martin Duke
+- Roy Fielding
+- Alan Frindell
+- Alessandro Ghedini
+- Nick Harper
+- Ryan Hamilton
+- Christian Huitema
+- Subodh Iyengar
+- Robin Marx
+- Patrick McManus
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lucas Pardue
+- Roberto Peon
+- Julian Reschke
+- Ben Schwartz
+- Ian Swett
+- Willy Taureau
+- Martin Thomson
+- Dmitri Tikhonov
+- Tatsuhiro Tsujikawa
+
+A portion of Mike's contribution was supported by Microsoft during his
+employment there.
