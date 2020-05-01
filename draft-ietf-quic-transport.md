@@ -1207,7 +1207,7 @@ when a client's address changes.
 
 * If servers can use a dedicated server IP address or port, other than the one
   that the client initially connects to, they could use the preferred_address
-  transport parameter to request that clients move connections to a dedicated
+  transport parameter to request that clients move connections to that dedicated
   address. Note that clients could choose not to use the preferred address.
 
 A server in a deployment that does not implement a solution to
