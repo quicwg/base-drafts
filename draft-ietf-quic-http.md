@@ -2411,35 +2411,33 @@ H3_1_1_REQUIRED (0xd):
 Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
 {{iana-error-codes}}.
 
-### Propagating errors between HTTP/2 and HTTP/3
+### Mapping Between HTTP/2 and HTTP/3 Errors
 
-An intermediary that converts between HTTP/2 and HTTP/3 is likely to need to
-propagate error conditions in either direction. Conversion between errors is
-described in the logical mapping. The error codes are defined in non-overlapping
-spaces in order to protect against accidental conversion that could result in
-the use of inappropriate or unknown error codes for the target version.
+An intermediary that converts between HTTP/2 and HTTP/3 may encounter error
+conditions from either upstream. It is useful to communicate the occurrence of
+error to the downstream but error codes largely reflect connection-local
+problems that generally do not make sense to propagate.
 
-It is not required to convert an inbound error type to the closest matching
-outbound error type e.g. converting an HTTP/2 stream error to an HTTP/3 stream
-error. An intermediary might instead choose to convert HTTP/2 errors from an
-upstream origin into an HTTP response that indicates an error via a status code
-such as 502. An example of where this is useful is to convert an upstream server
-HTTP/2 error code of INTERNAL_ERROR, thus avoiding an HTTP/3 client believing
-there is an internal error in the intermediary.
+An intermediary that encounters an error from an upstream origin can indicate
+this by sending an HTTP status code such as 502, which is suitable for a broad
+class of errors.
 
-There are cases where it is beneficial to provide the closest matching error
-type to the receiver. For example, an intermediary that receives an HTTP/2
-stream error of type REFUSED_STREAM from the origin has a clear signal that the
-request was not processed and that the request is safe to retry. Propagating
-this error condition to the client as an HTTP/3 stream error of type
-H3_REQUEST_REJECTED allows the client to take the action it deems most
-appropriate. Similarly, it could benefit the origin if the intermediary can pass
-on client request cancellations that are indicated by terminating a stream with
-H3_REQUEST_CANCELLED.
+There are some rare cases where it is beneficial to propagate the error by
+mapping it to the closest matching error type to the receiver. For example, an
+intermediary that receives an HTTP/2 stream error of type REFUSED_STREAM from
+the origin has a clear signal that the request was not processed and that the
+request is safe to retry. Propagating this error condition to the client as an
+HTTP/3 stream error of type H3_REQUEST_REJECTED allows the client to take the
+action it deems most appropriate. In the reverse direction the intermediary
+might deem it beneficial to pass on client request cancellations that are
+indicated by terminating a stream with H3_REQUEST_CANCELLED.
 
-An intermediary is permitted to promote stream errors to connection errors but
-they should be aware of the cost to the connection for what might be a temporary
-or intermittent error.
+Conversion between errors is described in the logical mapping. The error codes
+are defined in non-overlapping spaces in order to protect against accidental
+conversion that could result in the use of inappropriate or unknown error codes
+for the target version. An intermediary is permitted to promote stream errors to
+connection errors but they should be aware of the cost to the connection for
+what might be a temporary or intermittent error.
 
 # Change Log
 
