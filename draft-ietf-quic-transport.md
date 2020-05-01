@@ -7219,34 +7219,35 @@ work by Jim Roskind {{EARLY-DESIGN}}.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Alessandro Ghedini,
-Alyssa Wilk,
-Antoine Delignat-Lavaud,
-Brian Trammell,
-Christian Huitema,
-Colin Perkins,
-David Schinazi,
-Dmitri Tikhonov,
-Eric Kinnear,
-Eric Rescorla,
-Gorry Fairhurst,
-Ian Swett,
-Igor Lubashev, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Lucas Pardue,
-Magnus Westerlund,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>, <contact
- fullname="Mirja Kühlewind"/>,
-Nick Banks,
-Nick Harper,
-Patrick McManus,
-Roberto Peon,
-Ryan Hamilton,
-Subodh Iyengar,
-Tatsuhiro Tsujikawa,
-Ted Hardie,
-Tom Jones,
-and Victor Vasiliev.
+
+- Alessandro Ghedini
+- Alyssa Wilk
+- Antoine Delignat-Lavaud
+- Brian Trammell
+- Christian Huitema
+- Colin Perkins
+- David Schinazi
+- Dmitri Tikhonov
+- Eric Kinnear
+- Eric Rescorla
+- Gorry Fairhurst
+- Ian Swett
+- Igor Lubashev
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lucas Pardue
+- Magnus Westerlund
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- <t><t><contact fullname="Mirja Kühlewind"/></t></t>
+- Nick Banks
+- Nick Harper
+- Patrick McManus
+- Roberto Peon
+- Ryan Hamilton
+- Subodh Iyengar
+- Tatsuhiro Tsujikawa
+- Ted Hardie
+- Tom Jones
+- Victor Vasiliev
