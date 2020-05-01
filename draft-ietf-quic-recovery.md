@@ -1241,16 +1241,23 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
+  // Determine which PN space to arm PTO for.
+  sent_time, pn_space = GetEarliestTimeAndSpace(
+    time_of_last_sent_ack_eliciting_packet)
+  // Don't arm PTO for ApplicationData until handshake complete.
+  if (pn_space == ApplicationData &&
+      handshake is not confirmed):
+    loss_detection_timer.cancel()
+    return
+  if (sent_time == 0):
+    assert(!PeerCompletedAddressValidation())
+    sent_time = now()
+
   // Calculate PTO duration
   timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
     max_ack_delay
   timeout = timeout * (2 ^ pto_count)
 
-  sent_time, _ = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet)
-  if (sent_time == 0)
-    assert(!PeerCompletedAddressValidation())
-    sent_time = now()
   loss_detection_timer.update(sent_time + timeout)
 ~~~
 
