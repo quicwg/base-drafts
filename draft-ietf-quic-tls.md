@@ -2196,23 +2196,24 @@ No significant changes.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Adam Langley,
-Alessandro Ghedini,
-Christian Huitema,
-Christopher Wood,
-David Schinazi,
-Dragana Damjanovic,
-Eric Rescorla,
-Ian Swett,
-Jana Iyengar, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>,
-Nick Banks,
-Nick Harper,
-Roberto Peon,
-Rui Paulo,
-Ryan Hamilton,
-and Victor Vasiliev.
+
+- Adam Langley
+- Alessandro Ghedini
+- Christian Huitema
+- Christopher Wood
+- David Schinazi
+- Dragana Damjanovic
+- Eric Rescorla
+- Ian Swett
+- Jana Iyengar
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- Nick Banks
+- Nick Harper
+- Roberto Peon
+- Rui Paulo
+- Ryan Hamilton
+- Victor Vasiliev
