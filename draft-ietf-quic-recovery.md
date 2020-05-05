@@ -540,10 +540,7 @@ considered an RTT sample.
 Prior to handshake completion, when few to none RTT samples have been
 generated, it is possible that the probe timer expiration is due to an
 incorrect RTT estimate at the client. To allow the client to improve its RTT
-estimate, the new packet that it sends MUST be ack-eliciting.  If Handshake
-keys are available to the client, it MUST send a Handshake packet, and
-otherwise it MUST send an Initial packet in a UDP datagram of at least 1200
-bytes.
+estimate, the new packet that it sends MUST be ack-eliciting.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
@@ -568,6 +565,14 @@ until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
+If Handshake keys are available to the client, it MUST send a Handshake
+packet, and otherwise it MUST send an Initial packet in a UDP datagram of
+at least 1200 bytes.
+
+A client could have received and acknowledged a Handshake packet, causing it to
+discard state for the Initial packet number space, but not sent any
+ack-eliciting Handshake packets.  In this case, the PTO is set from the current
+time.
 
 ### Speeding Up Handshake Completion
 
