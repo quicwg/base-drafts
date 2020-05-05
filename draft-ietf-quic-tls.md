@@ -740,18 +740,24 @@ QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
 {{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
-## TLS Errors
+## TLS Errors {#tls-errors}
 
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the one-byte
-alert description into a QUIC error code.  The alert description is added to
-0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
+A TLS alert is converted into a QUIC connection error. The alert description is
+added to 0x100 to produce a QUIC error code from the range reserved for
+CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
+type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+QUIC permits the use of a generic code in place of a specific error code; see
+Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
+alert with a generic alert, such as handshake_failure (0x128 in QUIC).
+Endpoints MAY use a generic error code to avoid possibly exposing confidential
+information.
 
 
 ## Discarding Unused Keys
@@ -1567,12 +1573,13 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
-this purpose.  When using ALPN, endpoints MUST immediately close a connection
-(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
-{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
-QUIC clients MUST also use it to terminate a connection when ALPN negotiation
-fails.
+this purpose.
+
+When using ALPN, endpoints MUST immediately close a connection (see Section
+10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
+While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
+use error 0x178 to terminate a connection when ALPN negotiation fails.
 
 An application protocol MAY restrict the QUIC versions that it can operate over.
 Servers MUST select an application protocol compatible with the QUIC version
