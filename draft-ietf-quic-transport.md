@@ -2045,7 +2045,7 @@ duration of the handshake.  An endpoint MUST NOT initiate connection migration
 before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 
 An endpoint also MUST NOT send packets from a different local address, actively
-initiating migration, if the peer sent the `disable_active_migration` transport
+initiating migration, if the peer sent the disable_active_migration transport
 parameter during the handshake. An endpoint which has sent this transport
 parameter, but detects that a peer has nonetheless migrated to a different
 network MUST either drop the incoming packets on that path without generating a
@@ -3257,7 +3257,7 @@ contract: an endpoint promises to never intentionally delay acknowledgments
 of an ack-eliciting packet by more than the indicated value. If it does,
 any excess accrues to the RTT estimate and could result in spurious or
 delayed retransmissions from the peer. For Initial and Handshake packets,
-a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
+a max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
 
@@ -4572,7 +4572,7 @@ connection.
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
-The `extension_data` field of the quic_transport_parameters extension defined in
+The extension_data field of the quic_transport_parameters extension defined in
 {{QUIC-TLS}} contains the QUIC transport parameters. They are encoded as a
 sequence of transport parameters, as shown in {{transport-parameter-sequence}}:
 
@@ -4891,7 +4891,7 @@ ACK Delay:
   when this ACK was sent and when the largest acknowledged packet, as indicated
   in the Largest Acknowledged field, was received by this peer.  The value of
   the ACK Delay field is scaled by multiplying the encoded value by 2 to the
-  power of the value of the `ack_delay_exponent` transport parameter set by the
+  power of the value of the ack_delay_exponent transport parameter set by the
   sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling in
   this fashion allows for a larger range of values with a shorter encoding at
   the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
@@ -6554,7 +6554,7 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
-(that is, `27`, `58`, `89`, ...) are reserved and MUST NOT be assigned by IANA.
+(that is, 27, 58, 89, ...) are reserved and MUST NOT be assigned by IANA.
 
 
 ## QUIC Frame Type Registry {#iana-frames}

@@ -660,7 +660,7 @@ on the uncompressed size of fields, including the length of the name and value
 in bytes plus an overhead of 32 bytes for each field.
 
 If an implementation wishes to advise its peer of this limit, it can be conveyed
-as a number of bytes in the `SETTINGS_MAX_FIELD_SECTION_SIZE` parameter. An
+as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation which has received this parameter SHOULD NOT send an HTTP message
 header which exceeds the indicated size, as the peer will likely refuse to
 process it.  However, because this limit is applied at each hop, messages below
@@ -711,7 +711,7 @@ frames but is invalid due to:
 - the inclusion of invalid characters in field names or values
 
 A request or response that includes a payload body can include a
-`content-length` header field.  A request or response is also malformed if the
+Content-Length header field.  A request or response is also malformed if the
 value of a content-length header field does not equal the sum of the DATA frame
 payload lengths that form the body.  A response that is defined to have no
 payload, as described in Section 6.3.3 of {{!SEMANTICS}} can have a non-zero
@@ -1112,7 +1112,7 @@ the reception of the unidirectional stream header.
 
 ### Control Streams
 
-A control stream is indicated by a stream type of `0x00`.  Data on this stream
+A control stream is indicated by a stream type of 0x00.  Data on this stream
 consists of HTTP/3 frames, as defined in {{frames}}.
 
 Each side MUST initiate a single control stream at the beginning of the
@@ -1137,7 +1137,7 @@ Server push is an optional feature introduced in HTTP/2 that allows a server to
 initiate a response before a request has been made.  See {{server-push}} for
 more details.
 
-A push stream is indicated by a stream type of `0x01`, followed by the Push ID
+A push stream is indicated by a stream type of 0x01, followed by the Push ID
 of the promise that it fulfills, encoded as a variable-length integer. The
 remaining data on this stream consists of HTTP/3 frames, as defined in
 {{frames}}, and fulfills a promised server push by zero or more interim HTTP
@@ -2010,7 +2010,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Settings Parameters {#iana-settings}
@@ -2052,7 +2052,7 @@ The entries in {{iana-setting-table}} are registered by this document.
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Error Codes {#iana-error-codes}
@@ -2104,7 +2104,7 @@ The entries in the {{iana-error-table}} are registered by this document.
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
@@ -2140,7 +2140,7 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, `0x21`, `0x40`, ..., through `0x3FFFFFFFFFFFFFFE`) MUST
+values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
 NOT be assigned by IANA.
 
 --- back

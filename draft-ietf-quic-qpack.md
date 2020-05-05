@@ -625,11 +625,11 @@ and follows the definitions in [RFC7541] without modification.
 
 QPACK defines two unidirectional stream types:
 
- - An encoder stream is a unidirectional stream of type `0x02`.
+ - An encoder stream is a unidirectional stream of type 0x02.
    It carries an unframed sequence of encoder instructions from encoder
    to decoder.
 
- - A decoder stream is a unidirectional stream of type `0x03`.
+ - A decoder stream is a unidirectional stream of type 0x03.
    It carries an unframed sequence of decoder instructions from decoder
    to encoder.
 
