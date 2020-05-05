@@ -456,8 +456,10 @@ An HTTP message (request or response) consists of:
 3. optionally, the trailer field section, if present (see Section 4.6 of
    {{!SEMANTICS}}), sent as a single HEADERS frame.
 
-Receipt of DATA and HEADERS frames in any other sequence MUST be treated as a
-connection error of type H3_FRAME_UNEXPECTED ({{errors}}).
+Receipt of an invalid sequence of frames MUST be treated as a connection error
+of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
+any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
+is considered invalid.
 
 A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
@@ -482,12 +484,6 @@ A response MAY consist of multiple messages when and only when one or more
 informational responses (1xx; see Section 9.2 of {{!SEMANTICS}}) precede a final
 response to the same request.  Interim responses do not contain a payload body
 or trailers.
-
-If an endpoint receives an invalid sequence of frames on either a request or
-a push stream, it MUST respond with a connection error of type
-H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before any
-HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame is
-considered invalid.
 
 An HTTP request/response exchange fully consumes a client-initiated
 bidirectional QUIC stream. After sending a request, a client MUST close the
