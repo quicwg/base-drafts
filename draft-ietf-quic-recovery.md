@@ -248,8 +248,8 @@ prior to a dramatic decrease in congestion window; see
 ### The Minimum Congestion Window is Two Packets
 
 TCP uses a minimum congestion window of one packet. However, loss of
-a single packet sent with that window causes the sender to waiting for a PTO
-({{pto}}) to recover from that loss, which is much longer than a round trip.
+that single packet means that the sender needs to waiting for a PTO
+({{pto}}) to recover, which can be much longer than a round-trip time.
 Sending a single ack-eliciting packet also increases the chances of incurring
 additional latency when a receiver delays its acknowledgement.
 
