@@ -247,12 +247,16 @@ prior to a dramatic decrease in congestion window; see
 
 ### The Minimum Congestion Window is Two Packets
 
-QUIC recommends that the minimum congestion window be 2 packets instead
-of the 1 packet minimum in TCP. A 2 packet minimum congestion window avoids
-waiting for a probe timeout (see {{pto}}) every time a single packet is lost.
-A minimum of 2 packets also avoids waiting for a delayed acknowledgement, which
-can substantially decrease throughput, particularly if the max_ack_delay is
-larger than the round trip time.
+TCP uses a minimum congestion window of one packet. However, loss of
+a single packet sent with that window limits the sender to waiting for a PTO
+({{pto}}) to recover from that loss, which can be a substantial period of time.
+Sending a single data packet also increases the chances of incurring
+additional latency when a receiver delays its acknowledgement.
+
+QUIC therefore recommends that the minimum congestion window be two
+packets. While this increases network load, it is considered safe, since the
+sender will still reduce its sending rate exponentially under persistent
+congestion ({{pto}}).
 
 
 # Estimating the Round-Trip Time {#compute-rtt}
