@@ -245,6 +245,19 @@ QUIC specifies a time-based definition to ensure one or more packets are sent
 prior to a dramatic decrease in congestion window; see
 {{persistent-congestion}}.
 
+### The Minimum Congestion Window is Two Packets
+
+TCP uses a minimum congestion window of one packet. However, loss of
+that single packet means that the sender needs to waiting for a PTO
+({{pto}}) to recover, which can be much longer than a round-trip time.
+Sending a single ack-eliciting packet also increases the chances of incurring
+additional latency when a receiver delays its acknowledgement.
+
+QUIC therefore recommends that the minimum congestion window be two
+packets. While this increases network load, it is considered safe, since the
+sender will still reduce its sending rate exponentially under persistent
+congestion ({{pto}}).
+
 
 # Estimating the Round-Trip Time {#compute-rtt}
 
