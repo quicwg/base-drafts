@@ -245,7 +245,7 @@ QUIC specifies a time-based definition to ensure one or more packets are sent
 prior to a dramatic decrease in congestion window; see
 {{persistent-congestion}}.
 
-### The Minimum Congestion Window is 2 Packets
+### The Minimum Congestion Window is Two Packets
 
 QUIC recommends that the minimum congestion window be 2 packets instead
 of the 1 packet minimum in TCP. A 2 packet minimum congestion window avoids
