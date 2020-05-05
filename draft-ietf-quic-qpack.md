@@ -933,12 +933,12 @@ value of 4 indicates that the Required Insert Count is 9 for the header block.
 
 #### Base {#base}
 
-The `Base` is used to resolve references in the dynamic table as described in
+The Base is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
 To save space, the Base is encoded relative to the Required Insert Count using a
-one-bit sign ('S') and the `Delta Base` value.  A sign bit of 0 indicates that
-the Base is greater than or equal to the value of the Required Insert Count; the
+one-bit sign ('S') and the Delta Base value.  A sign bit of 0 indicates that the
+Base is greater than or equal to the value of the Required Insert Count; the
 decoder adds the value of Delta Base to the Required Insert Count to determine
 the value of the Base.  A sign bit of 1 indicates that the Base is less than the
 Required Insert Count; the decoder subtracts the value of Delta Base from the
