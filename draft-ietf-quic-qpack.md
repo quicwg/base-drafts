@@ -1310,25 +1310,22 @@ non-blocking mode, available encoder stream flow control and reference tracking.
 base = dynamicTable.getInsertCount()
 requiredInsertCount = 0
 for header in headers:
-  staticIndex = staticTable.getIndex(header)
+  staticIndex = staticTable.findIndex(header)
   if staticIndex is not None:
     encodeIndexReference(streamBuffer, staticIndex)
     continue
 
-  dynamicIndex = dynamicTable.getIndex(header)
+  dynamicIndex = dynamicTable.findIndex(header)
   if dynamicIndex is None:
     # No matching entry.  Either insert+index or encode literal
+    staticNameIndex = staticTable.findName(header.name)
+    if staticNameIndex is None:
+       dynamicNameIndex = dynamicTable.findName(header.name)
 
-    # getNameIndex attempts to find an index for this header's
-    # name.  If one exists, it returns the name's (absolute)
-    # index and a boolean indicating which table has the name.
-    # If the name can't be found, nameIndex is None
-    nameIndex, isStaticName = getNameIndex(header.name)
     if shouldIndex(header) and dynamicTable.canIndex(header):
-      encodeInsert(encoderBuffer, nameIndex, isStaticName,
-                   header)
-      dynamicTable.add(header)
-      dynamicIndex = dynamicTable.getInsertCount()
+      encodeInsert(encoderBuffer, staticNameIndex,
+                   dynamicNameIndex, header)
+      dynamicIndex = dynamicTable.add(header)
 
   if dynamicIndex is None:
     # Couldn't index it, literal
@@ -1351,9 +1348,10 @@ if requiredInsertCount == 0:
   encodeIndexReference(prefixBuffer, 0, 0, 8)
   encodeIndexReference(prefixBuffer, 0, 0, 7)
 else:
-  wireRIC =
-    (requiredInsertCount %
-     (2 * getMaxEntries(maxTableCapacity))) + 1;
+  wireRIC = (
+    requiredInsertCount
+    % (2 * getMaxEntries(maxTableCapacity))
+  ) + 1;
   encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
   if base >= requiredInsertCount:
     encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
