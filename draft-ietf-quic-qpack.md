@@ -1289,10 +1289,10 @@ particular value was intentionally sent as a literal.
 An intermediary MUST NOT re-encode a value that uses a literal representation
 with the 'N' bit set with another representation that would index it. If QPACK
 is used for re-encoding, a literal representation with the 'N' bit set MUST be
-used.  If HPACK (see Section 6.2.3 of [RFC7541]) is used for re-encoding, the
-never indexed literal representation MUST be used.
+used.  If HPACK is used for re-encoding, the never indexed literal
+representation (see Section 6.2.3 of [RFC7541]) MUST be used.
 
-The choice to use a never indexed literal representation for a header field
+The choice to mark that a header field should never be indexed
 depends on several factors. Since QPACK doesn't protect against guessing an
 entire header field value, short or low-entropy values are more readily
 recovered by an adversary. Therefore, an encoder might choose not to index
@@ -1325,11 +1325,11 @@ An attacker can try to cause an endpoint to exhaust its memory. QPACK is
 designed to limit both the peak and stable amounts of memory allocated by an
 endpoint.
 
-The amount of memory used by the compressor is limited by the protocol using
+The amount of memory used by the encoder is limited by the protocol using
 QPACK through the definition of the maximum size of the dynamic table, and the
 maximum number of blocking streams. In HTTP/3, these values are controlled by
-the decoder through the setting parameter SETTINGS_QPACK_MAX_TABLE_CAPACITY and
-SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
+the decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY
+and SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
 {{maximum-dynamic-table-capacity}} and {{blocked-streams}}). The limit on the
 size of the dynamic table takes into account both the size of the data stored in
 the dynamic table, plus a small allowance for overhead.  The limit on the number
@@ -1355,7 +1355,7 @@ The amount of temporary memory consumed by an encoder or decoder can be limited
 by processing header fields sequentially. A decoder implementation does not need
 to retain a complete list of header fields while decoding a header block. An
 encoder implementation does not need to retain a complete list of header fields
-if while encoding a header block if it is using a single-pass encoder.  Note
+while encoding a header block if it is using a single-pass algorithm.  Note
 that it might be necessary for an application to retain a complete
 header list for other reasons; even if QPACK does not force this to occur,
 application constraints might make this necessary.
