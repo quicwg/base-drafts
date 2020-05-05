@@ -248,9 +248,9 @@ prior to a dramatic decrease in congestion window; see
 ### The Minimum Congestion Window is Two Packets
 
 TCP uses a minimum congestion window of one packet. However, loss of
-a single packet sent with that window limits the sender to waiting for a PTO
-({{pto}}) to recover from that loss, which can be a substantial period of time.
-Sending a single data packet also increases the chances of incurring
+a single packet sent with that window causes the sender to waiting for a PTO
+({{pto}}) to recover from that loss, which is much longer than a round trip.
+Sending a single ack-eliciting packet also increases the chances of incurring
 additional latency when a receiver delays its acknowledgement.
 
 QUIC therefore recommends that the minimum congestion window be two
