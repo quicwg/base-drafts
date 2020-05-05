@@ -1331,11 +1331,11 @@ maximum number of blocking streams. In HTTP/3, these values are controlled by
 the decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY
 and SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
 {{maximum-dynamic-table-capacity}} and {{blocked-streams}}). The limit on the
-size of the dynamic table takes into account both the size of the data stored in
-the dynamic table, plus a small allowance for overhead.  The limit on the number
-of blocked streams is only a proxy for the maximum amount of memory required by
-the decoder.  The actual maximum amount of memory will depend on how much memory
-the decoder uses to track each blocked stream.
+size of the dynamic table takes into account the size of the data stored in the
+dynamic table, plus a small allowance for overhead.  The limit on the number of
+blocked streams is only a proxy for the maximum amount of memory required by the
+decoder.  The actual maximum amount of memory will depend on how much memory the
+decoder uses to track each blocked stream.
 
 A decoder can limit the amount of state memory used for the dynamic table by
 setting an appropriate value for the maximum size of the dynamic table. In
