@@ -3265,7 +3265,7 @@ Section 5.2.1 of {{QUIC-RECOVERY}}.
 An ACK frame SHOULD be generated for at least every 10th ack-eliciting packet
 (the QUIC IW). A receiver could send an ACK frame at least every second 
 ack-elicitingpacket (recommended practice for TCP {{?RFC5681}}). QUIC permits 
-a larger ratio between ACKs and data,which can reduce
+a larger ratio between ACKs and data, which can reduce
 the number of ACK frames that are sent and need to be processed.
 The receiver can provide a higher rate of acknowledgements
 (e.g. every ack-eliciting packet) for the first 100 packets.
