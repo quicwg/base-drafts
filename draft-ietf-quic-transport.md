@@ -3261,7 +3261,6 @@ a max_ack_delay of 0 is used. The sender uses the receiver's `max_ack_delay`
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
 
-
 An ACK frame SHOULD be generated for at least every 10th ack-eliciting packet
 (the QUIC IW). A receiver could send an ACK frame at least every second 
 ack-eliciting packet (recommended practice for TCP {{?RFC5681}}). QUIC permits 
