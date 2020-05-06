@@ -3268,7 +3268,7 @@ ack-elicitingpacket (recommended practice for TCP {{?RFC5681}}). QUIC permits
 a larger ratio between ACKs and data, which can reduce
 the number of ACK frames that are sent and need to be processed.
 The receiver can provide a higher rate of acknowledgements
-(e.g. every ack-eliciting packet) for the first 100 packets.
+(e.g., every ack-eliciting packet) for the first 100 packets.
 A receiver could decide to send an ACK frame less frequently if it has
 information about how frequently the sender's congestion controller
 needs feedback, or if the receiver is CPU or bandwidth constrained.
