@@ -1555,7 +1555,7 @@ Endpoints MUST count the number of packets that are received but cannot be
 authenticated. Packet protection keys MUST NOT be used for removing packet
 protection after authentication fails on more than a per-AEAD limit. Endpoints
 MUST initiate a key update before reaching this limit. Applying a limit reduces
-the probability than attacker is able to successfully forge a packet; see
+the probability that an attacker is able to successfully forge a packet; see
 {{AEBounds}} and {{ROBUST}}.
 
 For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305 the
