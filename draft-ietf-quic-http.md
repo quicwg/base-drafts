@@ -960,7 +960,8 @@ A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  An endpoint MAY send multiple GOAWAY
 frames indicating different identifiers, but MUST NOT increase the identifier
 value they send, since clients might already have retried unprocessed requests
-on another connection.
+on another connection. Receiving a GOAWAY containing a larger identifier than
+previously received MUST be treated as a connection error of type H3_ID_ERROR.
 
 An endpoint that is attempting to gracefully shut down a connection can send a
 GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
