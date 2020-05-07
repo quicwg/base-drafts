@@ -2705,10 +2705,13 @@ this document:
 - Subodh Iyengar
 - Robin Marx
 - Patrick McManus
+- Luca Nicco
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
 - Lucas Pardue
 - Roberto Peon
 - Julian Reschke
+- Eric Rescorla
+- Martin Seemann
 - Ben Schwartz
 - Ian Swett
 - Willy Taureau
