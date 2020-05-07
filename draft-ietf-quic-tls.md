@@ -1558,7 +1558,7 @@ MUST initiate a key update before reaching this limit. Applying a limit reduces
 the probability than attacker is able to successfully forge a packet; see
 {{AEBounds}} and {{ROBUST}}.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305 the
+For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305 the
 number of packets that fail authentication MUST NOT exceed 2^36. Note that the
 analysis in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
 AEAD_AES_256_GCM, but this specification recommends a lower limit. For
@@ -1574,7 +1574,7 @@ based and describe any assumptions used in that analysis.
 
 Note:
 
-: These limits were originally calculated based using assumptions about the
+: These limits were originally calculated using assumptions about the
   limits on TLS record size. The maximum size of a TLS record is 2^14 bytes.
   In comparison, QUIC packets can be up to 2^16 bytes.  However, it is
   expected that QUIC packets will generally be smaller than TLS records.
