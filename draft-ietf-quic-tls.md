@@ -1553,24 +1553,18 @@ integrity protection.
 
 Endpoints MUST count the number of packets that are received but cannot be
 authenticated. Packet protection keys MUST NOT be used for removing packet
-protection after authentication fails on more than a per-AEAD limit. Endpoints
-MUST initiate a key update before reaching this limit. Applying a limit reduces
-the probability that an attacker is able to successfully forge a packet; see
-{{AEBounds}} and {{ROBUST}}.
+protection after authentication fails on more than a limit that is specific to
+the AEAD in use. Endpoints MUST initiate a key update before reaching this
+limit. Applying a limit reduces the probability that an attacker is able to
+successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
 
-For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305 the
-number of packets that fail authentication MUST NOT exceed 2^36. Note that the
-analysis in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
-AEAD_AES_256_GCM, but this specification recommends a lower limit. For
-AEAD_AES_128_CCM the number of packets that fail authentication MUST NOT exceed
-2^24.5; see {{ccm-bounds}}.
-
-Any TLS cipher suite that is specified for use with QUIC MUST define limits on
-the use of the associated AEAD function that preserves margins for
-confidentiality and integrity. That is, limits MUST be specified for the number
-of packets that can be authenticated and for the number packets that can fail
-authentication.  Any limits SHOULD reference any analysis upon which values are
-based and describe any assumptions used in that analysis.
+For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, if the
+number of packets that fail authentication exceeds 2^36, the endpoint MUST
+immediately close the connection.  Note that the analysis in {{AEBounds}}
+supports a higher limit for the AEAD_AES_128_GCM and AEAD_AES_256_GCM, but this
+specification recommends a lower limit.  For AEAD_AES_128_CCM, if the number of
+packets that fail authentication exceeds 2^24.5, the endpoint MUST immediately
+close the connection; see {{ccm-bounds}}.
 
 Note:
 
@@ -1580,6 +1574,14 @@ Note:
   expected that QUIC packets will generally be smaller than TLS records.
   Where packets might be larger than 2^14 bytes in length, smaller limits might
   be needed.
+
+Any TLS cipher suite that is specified for use with QUIC MUST define limits on
+the use of the associated AEAD function that preserves margins for
+confidentiality and integrity. That is, limits MUST be specified for the number
+of packets that can be authenticated and for the number packets that can fail
+authentication.  Providing a reference to any analysis upon which values are
+based - and any assumptions used in that analysis - allows limits to be adapted
+to varying usage conditions.
 
 
 ## Key Update Error Code {#key-update-error}
