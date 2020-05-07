@@ -129,8 +129,7 @@ version-specific and of arbitrary length.
 
 ## Long Header
 
-Long headers take the form described in {{fig-long}}.  Bits that have
-version-specific semantics are marked with an X.
+Long headers take the form described in {{fig-long}}.
 
 ~~~
 Long Header Packet {
@@ -138,9 +137,9 @@ Long Header Packet {
   Version-Specific Bits (7),
   Version (32),
   DCID Len (8),
-  Destination Connection ID (0..255),
+  Destination Connection ID (0..2040),
   SCID Len (8),
-  Source Connection ID (0..255),
+  Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
 ~~~
@@ -166,8 +165,7 @@ The remainder of the packet contains version-specific content.
 
 ## Short Header
 
-Short headers take the form described in {{fig-short}}.  Bits that have
-version-specific semantics are marked with an X.
+Short headers take the form described in {{fig-short}}.
 
 ~~~~~
 Short Header Packet {
