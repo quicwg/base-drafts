@@ -4701,10 +4701,9 @@ active_connection_id_limit (0x000e):
   An endpoint that receives a value less than 2 MUST close the connection
   with an error of type TRANSPORT_PARAMETER_ERROR.
   If this transport parameter is absent, a default of 2 is assumed.  If an
-  endpoint uses a zero-length connection ID, the active_connection_id_limit
-  value received from its peer is ignored and not used, as
-  NEW_CONNECTION_ID frames cannot be sent by an endpoint that opts for a
-  zero-length connection ID.
+  endpoint issues a zero-length connection ID, it will never send a
+  NEW_CONNECTION_ID frame and therefore ignores the active_connection_id_limit
+  value received from its peer.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
