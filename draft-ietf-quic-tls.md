@@ -2104,9 +2104,7 @@ n:
 
 l:
 
-: The number of blocks in each packet. In this case, this is the number of
-  16-byte AES blocks in a packet. To match the analysis in {{AEBounds}}, this
-  analysis uses a value of 2^10, which assumes a limit on packet size of 2^14.
+: The number of blocks in each packet (see below).
 
 q:
 
@@ -2119,6 +2117,19 @@ v:
 : The number of forged packets that endpoints will accept. This value is the
   bound on the number of forged packets that an endpoint can reject before
   updating keys.
+
+The analysis of AEAD_AES_128_CCM relies on a count of the number of block
+operations involved in producing each message. For simplicity, and to match the
+analysis of other AEAD functions in {{AEBounds}}, this analysis assumes a
+packet length of 2^10 blocks and a packet size limit of 2^14.
+
+For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
+of: the length of the associated data in blocks, the length of the ciphertext
+in blocks, the length of the plaintext in blocks, plus 1. In this analysis,
+this is simplified to a value of twice the length of the packet in blocks (that
+is, `2l = 2^11`). This simplification is based on the packet containing all of
+the associated data and ciphertext. This results in a negligible 1 to 3 block
+overestimation of the number of operations.
 
 
 ## Confidentiality Limits
