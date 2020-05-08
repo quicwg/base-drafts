@@ -1552,19 +1552,18 @@ packet that cannot be authenticated, allowing multiple attempts at defeating
 integrity protection.
 
 Endpoints MUST count the number of packets that are received but cannot be
-authenticated. Packet protection keys MUST NOT be used for removing packet
-protection after authentication fails on more than a limit that is specific to
-the AEAD in use. Endpoints MUST initiate a key update before reaching this
-limit. Applying a limit reduces the probability that an attacker is able to
+authenticated.  If the number of packets that fail authentication exceeds a
+limit that is specific to the AEAD in use, the endpoint MUST immediately close
+the connection.  Endpoints MUST initiate a key update before reaching this
+limit.  Applying a limit reduces the probability that an attacker is able to
 successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
 
-For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, if the
-number of packets that fail authentication exceeds 2^36, the endpoint MUST
-immediately close the connection.  Note that the analysis in {{AEBounds}}
-supports a higher limit for the AEAD_AES_128_GCM and AEAD_AES_256_GCM, but this
-specification recommends a lower limit.  For AEAD_AES_128_CCM, if the number of
-packets that fail authentication exceeds 2^24.5, the endpoint MUST immediately
-close the connection; see {{ccm-bounds}}.
+For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, the limit on
+the number of packets that fail authentication is 2^36.  Note that the analysis
+in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
+AEAD_AES_256_GCM, but this specification recommends a lower limit.  For
+AEAD_AES_128_CCM, ithe limit on the number of packets that fail authentication
+is 2^24.5; see {{ccm-bounds}}.
 
 Note:
 
