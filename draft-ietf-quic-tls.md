@@ -1539,7 +1539,7 @@ discarded.
 Key updates MUST be initiated before usage limits on packet protection keys are
 exceeded. For the cipher suites mentioned in this document, the limits in
 Section 5.5 of {{!TLS13}} apply. {{!TLS13}} does not specify a limit for
-AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^24
+AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^23
 packets can be used to obtain the same confidentiality protection as the limits
 specified in TLS.
 
@@ -1562,8 +1562,8 @@ For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, the limit on
 the number of packets that fail authentication is 2^36.  Note that the analysis
 in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
 AEAD_AES_256_GCM, but this specification recommends a lower limit.  For
-AEAD_AES_128_CCM, ithe limit on the number of packets that fail authentication
-is 2^24.5; see {{ccm-bounds}}.
+AEAD_AES_128_CCM, the limit on the number of packets that fail authentication
+is 2^23.5; see {{ccm-bounds}}.
 
 Note:
 
@@ -2128,17 +2128,17 @@ attacker gains an advantage over an ideal pseudorandom permutation (PRP) of no
 more than:
 
 ~~~
-(l * q)^2 / 2^n
+(2l * q)^2 / 2^n
 ~~~
 
 For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
 results in the relation:
 
 ~~~
-q <= 2^24
+q <= 2^23
 ~~~
 
-That is, endpoints cannot protect more than 2^24 packets with the same set of
+That is, endpoints cannot protect more than 2^23 packets with the same set of
 keys without causing an attacker to gain an larger advantage than the target of
 2^-60.
 
@@ -2149,7 +2149,7 @@ For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains an advantage over an ideal PRP of no more than:
 
 ~~~
-v / 2^t + (l * (v + q))^2 / 2^n
+v / 2^t + (2l * (v + q))^2 / 2^n
 ~~~
 
 The goal is to limit this advantage to 2^-57, to match the target in
@@ -2158,12 +2158,12 @@ to the second, so that term can be removed without a significant effect on the
 result. This produces the relation:
 
 ~~~
-v + q <= 2^25.5
+v + q <= 2^24.5
 ~~~
 
 Using the previously-established value of 2^24 for `q` and rounding, this leads
-to an upper limit on `v` of 2^24.5. That is, endpoints cannot attempt to
-authenticate more than 2^24.5 packets with the same set of keys without causing
+to an upper limit on `v` of 2^23.5. That is, endpoints cannot attempt to
+authenticate more than 2^23.5 packets with the same set of keys without causing
 an attacker to gain an larger advantage than the target of 2^-57.
 
 
