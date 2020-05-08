@@ -2161,7 +2161,7 @@ result. This produces the relation:
 v + q <= 2^24.5
 ~~~
 
-Using the previously-established value of 2^24 for `q` and rounding, this leads
+Using the previously-established value of 2^23 for `q` and rounding, this leads
 to an upper limit on `v` of 2^23.5. That is, endpoints cannot attempt to
 authenticate more than 2^23.5 packets with the same set of keys without causing
 an attacker to gain an larger advantage than the target of 2^-57.
