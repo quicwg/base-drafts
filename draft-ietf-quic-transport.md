@@ -2246,15 +2246,15 @@ that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
 
-An endpoint SHOULD NOT initiate migration with a peer that has requested a zero-length
-connection ID, because traffic over the new path might be trivially linkable to
-traffic over the old one. If the server is able to route packets with a
-zero-length connection ID to the right connection, it means that the server is
-using other information to demultiplex packets. For example, a server might
-provide a unique address to every client, for instance using HTTP alternative
-services {{?ALTSVC=RFC7838}}.  Information that might allow correct routing of
-packets across multiple network paths will also allow activity on those paths to
-be linked by entities other than the peer.
+An endpoint SHOULD NOT initiate migration with a peer that has requested a
+zero-length connection ID, because traffic over the new path might be trivially
+linkable to traffic over the old one. If the server is able to route packets
+with a zero-length connection ID to the right connection, it means that the
+server is using other information to demultiplex packets. For example, a server
+might provide a unique address to every client, for instance using HTTP
+alternative services {{?ALTSVC=RFC7838}}.  Information that might allow correct
+routing of packets across multiple network paths will also allow activity on
+those paths to be linked by entities other than the peer.
 
 Unintentional changes in path without a change in connection ID are possible.
 For example, after a period of network inactivity, NAT rebinding might cause
