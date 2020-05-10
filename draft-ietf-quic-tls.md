@@ -1643,7 +1643,7 @@ field and record carry no semantic content and are ignored.
 This mode has no use in QUIC as it only applies to middleboxes that interfere
 with TLS over TCP. A client MUST NOT request the use of the TLS 1.3
 compatibility mode. A server SHOULD treat the receipt of a TLS ClientHello that
-requests the use of the TLS 1.3 middlebox compatibility mode as a connection
+with a non-empty legacy_session_id field as a connection
 error of type PROTOCOL_VIOLATION.
 
 
