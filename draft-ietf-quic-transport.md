@@ -2246,7 +2246,7 @@ that packet numbers cannot be used to correlate activity.  This does not prevent
 other properties of packets, such as timing and size, from being used to
 correlate activity.
 
-An endpoint SHOULD NOT initiate migration with a peer that uses a zero-length
+An endpoint SHOULD NOT initiate migration with a peer that has requested a zero-length
 connection ID, because traffic over the new path might be trivially linkable to
 traffic over the old one. If the server is able to route packets with a
 zero-length connection ID to the right connection, it means that the server is
