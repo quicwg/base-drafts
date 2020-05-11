@@ -4078,9 +4078,9 @@ Version Negotiation Packet {
   Unused (7),
   Version (32) = 0,
   DCID Length (8),
-  Destination Connection ID (0..160),
+  Destination Connection ID (0..2040),
   SCID Length (8),
-  Source Connection ID (0..160),
+  Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
 ~~~
