@@ -1077,7 +1077,7 @@ having too many connection IDs in need of retirement as a connection error of
 type CONNECTION_ID_LIMIT_ERROR.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
-RETIRE_CONNECTION_ID frames for the previous update of Retire Prior To.
+RETIRE_CONNECTION_ID frames that retire all connection IDs indicated by the previous Retire Prior To value.
 
 ## Matching Packets to Connections {#packet-handling}
 
