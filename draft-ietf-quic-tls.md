@@ -2133,9 +2133,9 @@ overestimation of the number of operations.
 
 ## Confidentiality Limits
 
-For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an
-attacker gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of no
-more than:
+For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
+gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
+no more than:
 
 ~~~
 (2l * q)^2 / 2^n
