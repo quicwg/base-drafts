@@ -67,12 +67,12 @@ developed.
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
+[](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
-Working Group information can be found at <https://github.com/quicwg>; source
+Working Group information can be found at [](https://github.com/quicwg); source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/-invariants>.
+[](https://github.com/quicwg/base-drafts/labels/-invariants).
 
 
 --- middle
@@ -101,10 +101,7 @@ version of QUIC.
 
 # Conventions and Definitions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
-when, and only when, they appear in all capitals, as shown here.
+{::boilerplate bcp14}
 
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
@@ -132,27 +129,19 @@ version-specific and of arbitrary length.
 
 ## Long Header
 
-Long headers take the form described in {{fig-long}}.  Bits that have
-version-specific semantics are marked with an X.
+Long headers take the form described in {{fig-long}}.
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..2040)           ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..2040)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Long Header Packet {
+  Header Form (1) = 1,
+  Version-Specific Bits (7),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..2040),
+  SCID Len (8),
+  Source Connection ID (0..2040),
+  Version-Specific Data (..),
+}
 ~~~
 {: #fig-long title="QUIC Long Header"}
 
@@ -166,29 +155,25 @@ The next byte contains the length in bytes of the Destination Connection ID (see
 unsigned integer.  The Destination Connection ID field follows the DCID Len
 field and is between 0 and 255 bytes in length.
 
-The next byte contains the length in bytes
-of the Source Connection ID field that follows it.  This length is encoded as
-a 8-bit unsigned integer.  The Source Connection ID field follows the SCID Len
-field and is between 0 and 255 bytes in length.
+The next byte contains the length in bytes of the Source Connection ID field
+that follows it.  This length is encoded as a 8-bit unsigned integer.  The
+Source Connection ID field follows the SCID Len field and is between 0 and 255
+bytes in length.
 
 The remainder of the packet contains version-specific content.
 
 
 ## Short Header
 
-Short headers take the form described in {{fig-short}}.  Bits that have
-version-specific semantics are marked with an X.
+Short headers take the form described in {{fig-short}}.
 
 ~~~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|0|X X X X X X X|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Destination Connection ID (*)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|X X X X X X X X X X X X X X X X X X X X X X X X X X X X X X  ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Short Header Packet {
+  Header Form (1) = 0,
+  Version-Specific Bits (7),
+  Destination Connection ID (..),
+  Version-Specific Data (..),
+}
 ~~~~~
 {: #fig-short title="QUIC Short Header"}
 
@@ -243,29 +228,16 @@ conforms with the format of a packet with a long header as defined in
 Version field, which is set to 0x00000000.
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+
-|1|X X X X X X X|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                       Version (32) = 0                        |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..2040)           ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..2040)              ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Supported Version 1 (32)                   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   [Supported Version 2 (32)]                  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-                               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                   [Supported Version N (32)]                  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Version Negotiation Packet {
+  Header Form (1) = 1,
+  Unused (7),
+  Version (32) = 0,
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Supported Version (32) ...,
+}
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 

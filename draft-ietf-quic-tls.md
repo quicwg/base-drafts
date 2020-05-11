@@ -100,12 +100,12 @@ QUIC.
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
-<https://mailarchive.ietf.org/arch/search/?email_list=quic>.
+([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
+[](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
-Working Group information can be found at <https://github.com/quicwg>; source
+Working Group information can be found at [](https://github.com/quicwg); source
 code and issues list for this draft can be found at
-<https://github.com/quicwg/base-drafts/labels/-tls>.
+[](https://github.com/quicwg/base-drafts/labels/-tls).
 
 --- middle
 
@@ -125,10 +125,7 @@ This document describes how TLS acts as a security component of QUIC.
 
 # Notational Conventions
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
-when, and only when, they appear in all capitals, as shown here.
+{::boilerplate bcp14}
 
 This document uses the terminology established in {{QUIC-TRANSPORT}}.
 
@@ -648,6 +645,31 @@ messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
 
 
+## Session Resumption {#resumption}
+
+QUIC can use the session resumption feature of TLS 1.3. It does this by
+carrying NewSessionTicket messages in CRYPTO frames after the handshake is
+complete. Session resumption is the basis of 0-RTT, but can be used without
+also enabling 0-RTT.
+
+Endpoints that use session resumption might need to remember some information
+about the current connection when creating a resumed connection. TLS requires
+that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
+does not depend on any state being retained when resuming a connection, unless
+0-RTT is also used; see {{enable-0rtt}} and Section 7.3.1 of
+{{QUIC-TRANSPORT}}. Application protocols could depend on state that is
+retained between resumed connections.
+
+Clients can store any state required for resumption along with the session
+ticket. Servers can use the session ticket to help carry state.
+
+Session resumption allows servers to link activity on the original connection
+with the resumed connection, which might be a privacy issue for clients.
+Clients can choose not to enable resumption to avoid creating this correlation.
+Client SHOULD NOT reuse tickets as that allows entities other than the server
+to correlate connections; see Section C.4 of {{!TLS13}}.
+
+
 ## Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
@@ -718,18 +740,24 @@ QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
 {{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
-## TLS Errors
+## TLS Errors {#tls-errors}
 
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the one-byte
-alert description into a QUIC error code.  The alert description is added to
-0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
+A TLS alert is converted into a QUIC connection error. The alert description is
+added to 0x100 to produce a QUIC error code from the range reserved for
+CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
+type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+QUIC permits the use of a generic code in place of a specific error code; see
+Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
+alert with a generic alert, such as handshake_failure (0x128 in QUIC).
+Endpoints MAY use a generic error code to avoid possibly exposing confidential
+information.
 
 
 ## Discarding Unused Keys
@@ -995,34 +1023,44 @@ packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
 ~~~
 {: #pseudo-hp title="Header Protection Pseudocode"}
 
-{{fig-sample}} shows the protected fields of long and short headers marked with
-an E.  {{fig-sample}} also shows the sampled fields.
+{{fig-sample}} shows an example long header packet (Initial) and a short header
+packet. {{fig-sample}} shows the fields in each header that are covered by
+header protection and the portion of the protected packet payload that is
+sampled.
 
 ~~~
-Long Header:
-+-+-+-+-+-+-+-+-+
-|1|1|T T|E E E E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                    Version -> Length Fields                 ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Initial Packet {
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 0,
+  Reserved Bits (2),         # Protected
+  Packet Number Length (2),  # Protected
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Source Connection ID (0..160),
+  Token Length (i),
+  Token (..),
+  Packet Number (8..32),     # Protected
+  Protected Payload (0..24), # Skipped Part
+  Protected Payload (128),   # Sampled Part
+  Protected Payload (..)     # Remainder
+}
 
-Short Header:
-+-+-+-+-+-+-+-+-+
-|0|1|S|E E E E E|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0/32..144)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-Common Fields:
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|E E E E E E E E E  Packet Number (8/16/24/32) E E E E E E E E...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   [Protected Payload (8/16/24)]             ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|             Sampled part of Protected Payload (128)         ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Protected Payload Remainder (*)             ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Short Header Packet {
+  Header Form (1) = 0,
+  Fixed Bit (1) = 1,
+  Spin Bit (1),
+  Reserved Bits (2),         # Protected
+  Key Phase (1),             # Protected
+  Packet Number Length (2),  # Protected
+  Destination Connection ID (0..160),
+  Packet Number (8..32),     # Protected
+  Protected Payload (0..24), # Skipped Part
+  Protected Payload (128),   # Sampled Part
+  Protected Payload (..),    # Remainder
+}
 ~~~
 {: #fig-sample title="Header Protection and Ciphertext Sample"}
 
@@ -1243,27 +1281,19 @@ using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
 secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
 
 ~~~
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| ODCID Len (8) |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|          Original Destination Connection ID (0..160)        ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|1|1| 3 | Unused|
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                         Version (32)                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| DCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|               Destination Connection ID (0..160)            ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-| SCID Len (8)  |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                 Source Connection ID (0..160)               ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Retry Token (*)                      ...
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+Retry Pseudo-Packet {
+  ODCID Length (8),
+  Original Destination Connection ID (0..160),
+  Header Form (1) = 1,
+  Fixed Bit (1) = 1,
+  Long Packet Type (2) = 3,
+  Type-Specific Bits (4),
+  Version (32),
+  DCID Len (8),
+  Destination Connection ID (0..160),
+  SCID Len (8),
+  Retry Token (..),
+}
 ~~~
 {: #retry-pseudo title="Retry Pseudo-Packet"}
 
@@ -1271,7 +1301,7 @@ The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
 the transmitted Retry packet, removing the Retry Integrity Tag and prepending
 the two following fields:
 
-ODCID Len:
+ODCID Length:
 
 : The ODCID Len contains the length in bytes of the Original Destination
   Connection ID field that follows it, encoded as an 8-bit unsigned integer.
@@ -1543,12 +1573,13 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
-this purpose.  When using ALPN, endpoints MUST immediately close a connection
-(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
-{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
-QUIC clients MUST also use it to terminate a connection when ALPN negotiation
-fails.
+this purpose.
+
+When using ALPN, endpoints MUST immediately close a connection (see Section
+10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
+While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
+use error 0x178 to terminate a connection when ALPN negotiation fails.
 
 An application protocol MAY restrict the QUIC versions that it can operate over.
 Servers MUST select an application protocol compatible with the QUIC version
@@ -1573,7 +1604,7 @@ protection for these values.
    } ExtensionType;
 ~~~
 
-The `extension_data` field of the quic_transport_parameters extension contains a
+The extension_data field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
@@ -1609,11 +1640,19 @@ As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 # Security Considerations
 
-There are likely to be some real clangers here eventually, but the current set
-of issues is well captured in the relevant sections of the main text.
+All of the security considerations that apply to TLS also apply to the use of
+TLS in QUIC. Reading all of {{!TLS13}} and its appendices is the best way to
+gain an understanding of the security properties of QUIC.
 
-Never assume that because it isn't in the security considerations section it
-doesn't affect security.  Most of this document does.
+This section summarizes some of the more important security aspects specific to
+the TLS integration, though there are many security-relevant details in the
+remainder of the document.
+
+
+## Session Linkability
+
+Use of TLS session tickets allows servers and possibly other entities to
+correlate connections made by the same client; see {{resumption}} for details.
 
 
 ## Replay Attacks with 0-RTT
@@ -1704,11 +1743,6 @@ ciphertext sample reveals the exclusive OR of the protected fields.  Assuming
 that the AEAD acts as a PRF, if L bits are sampled, the odds of two ciphertext
 samples being identical approach 2^(-L/2), that is, the birthday bound. For the
 algorithms described in this document, that probability is one in 2^64.
-
-Note:
-
-: In some cases, inputs shorter than the full size required by the packet
-  protection algorithm might be used.
 
 To prevent an attacker from modifying packet headers, the header is transitively
 authenticated using packet protection; the entire packet header is part of the
@@ -2169,23 +2203,24 @@ No significant changes.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Adam Langley,
-Alessandro Ghedini,
-Christian Huitema,
-Christopher Wood,
-David Schinazi,
-Dragana Damjanovic,
-Eric Rescorla,
-Ian Swett,
-Jana Iyengar, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>,
-Nick Banks,
-Nick Harper,
-Roberto Peon,
-Rui Paulo,
-Ryan Hamilton,
-and Victor Vasiliev.
+
+- Adam Langley
+- Alessandro Ghedini
+- Christian Huitema
+- Christopher Wood
+- David Schinazi
+- Dragana Damjanovic
+- Eric Rescorla
+- Ian Swett
+- Jana Iyengar
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- Nick Banks
+- Nick Harper
+- Roberto Peon
+- Rui Paulo
+- Ryan Hamilton
+- Victor Vasiliev
