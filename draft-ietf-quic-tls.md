@@ -1543,16 +1543,15 @@ AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^23
 packets can be used to obtain the same confidentiality protection as the limits
 specified in TLS.
 
-The usage limits defined in TLS 1.3 exist to provide protection against attacks
+The usage limits defined in TLS 1.3 exist for protection against attacks
 on confidentiality and apply to successful applications of AEAD protection. The
 integrity protections in authenticated encryption also depend on limiting the
 number of attempts to forge packets. TLS achieves this by closing connections
 after any record fails an authentication check. In comparison, QUIC ignores any
-packet that cannot be authenticated, allowing multiple attempts at defeating
-integrity protection.
+packet that cannot be authenticated, allowing multiple forgery attempts.
 
-Endpoints MUST count the number of packets that are received but cannot be
-authenticated.  If the number of packets that fail authentication exceeds a
+Endpoints MUST count the number of received packets that fail authentication.
+If the number of packets that fail authentication exceeds a
 limit that is specific to the AEAD in use, the endpoint MUST immediately close
 the connection.  Endpoints MUST initiate a key update before reaching this
 limit.  Applying a limit reduces the probability that an attacker is able to
@@ -2135,7 +2134,7 @@ overestimation of the number of operations.
 ## Confidentiality Limits
 
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an
-attacker gains an advantage over an ideal pseudorandom permutation (PRP) of no
+attacker gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of no
 more than:
 
 ~~~
