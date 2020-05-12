@@ -1679,22 +1679,29 @@ Editorial changes only
 # Acknowledgments
 {:numbered="false"}
 
+The IETF QUIC Working Group received an enormous amount of support from many
+people.
+
+The compression design team did substantial work exploring the problem space and
+influencing the initial draft.  The contributions of design team members Roberto
+Peon, Martin Thomson and Dmitri Tikhonov is gratefully acknowledged.
+
+The following people also provided substantial contributions to this document:
+
+- Bence Béky
+- Alessandro Ghedini
+- Ryan Hamilton
+- Robin Marx
+- Patrick McManus
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lucas Pardue
+- Biren Roy
+- Ian Swett
+
 This draft draws heavily on the text of {{!RFC7541}}.  The indirect input of
-those authors is gratefully acknowledged, as well as ideas from:
-
-* Ryan Hamilton
-
-* Patrick McManus
-
-* Kazuho Oku
-
-* Biren Roy
-
-* Ian Swett
-
-* Dmitri Tikhonov
+those authors is also gratefully acknowledged.
 
 Buck's contribution was supported by Google during his employment there.
 
-A substantial portion of Mike's contribution was supported by Microsoft during
-his employment there.
+A portion of Mike's contribution was supported by Microsoft during his
+employment there.
