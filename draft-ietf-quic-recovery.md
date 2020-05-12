@@ -920,6 +920,7 @@ might send packets spaced at intervals of:
 ~~~
 inter-packet time = smoothed_rtt * packet_size / congestion_window / N
 ~~~
+
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
 rate the "bucket" fills is determined by the above function.
