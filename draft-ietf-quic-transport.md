@@ -4154,9 +4154,9 @@ Version Negotiation Packet {
   Unused (7),
   Version (32) = 0,
   DCID Length (8),
-  Destination Connection ID (0..160),
+  Destination Connection ID (0..2040),
   SCID Length (8),
-  Source Connection ID (0..160),
+  Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
 ~~~
@@ -4370,8 +4370,6 @@ Handshake Packet {
   Destination Connection ID (0..160),
   SCID Length (8),
   Source Connection ID (0..160),
-  Token Length (i),
-  Token (..),
   Packet Number (8..32),
   Packet Payload (..),
 }
@@ -4410,7 +4408,7 @@ Retry Packet {
   Header Form (1) = 1,
   Fixed Bit (1) = 1,
   Long Packet Type (2) = 3,
-  Type-Specific Bits (4),
+  Unused (4),
   Version (32),
   DCID Length (8),
   Destination Connection ID (0..160),
