@@ -1586,6 +1586,35 @@ treat any of the following as a connection error of type PROTOCOL_VIOLATION:
 If a zero-length connection ID is selected, the corresponding transport
 parameter is included with a zero-length value.
 
+{{fig-auth-cid}} shows the connection IDs that are used in a complete
+handshake. The exchange of Initial and Retry packets is shown, plus the later
+exchange of 1-RTT packets that includes the connection ID established during
+the handshake.
+
+~~~
+Client                                                  Server
+
+Initial: DCID=S1, SCID=C1 ->
+                                   <- Retry*: DCID=C1, SCID=S2
+Initial*: DCID=S2, SCID=C1 ->
+                                  <- Initial: DCID=C1, SCID=S3
+                             ...
+1-RTT: DCID=S3 ->
+                                             <- 1-RTT: DCID=C1
+~~~
+{: #fig-auth-cid title="Use of Connection IDs in a Handshake"}
+
+For the handshake in {{fig-auth-cid}} the client sets the value of the
+initial_source_connection_id transport parameter to `C1`. If the server sends a
+Retry packet (that is, the packets marked with a '*' are sent), it sets
+original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
+and initial_source_connection_id to `S3`. If the server does not send a Retry
+packet (that is, packets marked with a '*' are not sent), it sets
+original_destination_connection_id to `S1`, initial_source_connection_id to
+`S3`, and does not include retry_source_connection_id. Each endpoint validates
+the transport parameters set by their peer, including the client confirming
+that retry_source_connection_id is absent if no Retry packet was processed.
+
 
 ## Transport Parameters {#transport-parameters}
 
