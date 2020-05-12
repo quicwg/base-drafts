@@ -567,7 +567,7 @@ have been set for a now discarded packet number space.
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
 as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no additional data can be
-sent, the server's PTO alarm MUST NOT be armed until datagrams have been
+sent, the server's PTO timer MUST NOT be armed until datagrams have been
 received from the client, because packets sent on PTO count against the
 anti-amplification limit. Note that the server could fail to validate the
 client's address even if 0-RTT is accepted.
@@ -1251,7 +1251,7 @@ SetLossDetectionTimer():
     return
 
   if (server is at anti-amplification limit):
-    // The server's alarm is not set if nothing can be sent.
+    // The server's timer is not set if nothing can be sent.
     loss_detection_timer.cancel()
     return
 
