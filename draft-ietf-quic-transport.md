@@ -1616,11 +1616,11 @@ Initial: DCID=S2, SCID=C1 ->
 ~~~
 {: #fig-auth-cid-retry title="Use of Connection IDs in a Handshake with Retry"}
 
-For the handshakes shown in {{fig-auth-cid}} and {{fig-auth-cid-retry}} the
-client sets the value of the initial_source_connection_id transport parameter
-to `C1`. In {{fig-auth-cid-retry}}, the server sets
-original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
-and initial_source_connection_id to `S3`. In {{fig-auth-cid}}, the server sets
+For the handshakes in {{fig-auth-cid}} and {{fig-auth-cid-retry}} the client
+sets the value of the initial_source_connection_id transport parameter to `C1`.
+In {{fig-auth-cid-retry}}, the server sets original_destination_connection_id
+to `S1`, retry_source_connection_id to `S2`, and initial_source_connection_id
+to `S3`. In {{fig-auth-cid}}, the server sets
 original_destination_connection_id to `S1`, initial_source_connection_id to
 `S3`, and does not include retry_source_connection_id. Each endpoint validates
 the transport parameters set by their peer, including the client confirming
