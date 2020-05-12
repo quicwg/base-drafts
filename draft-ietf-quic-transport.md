@@ -4340,6 +4340,7 @@ Retry Packet {
   DCID Length (8),
   Destination Connection ID (0..160),
   SCID Length (8),
+  Source Connection ID (0..160),
   Retry Token (..),
   Retry Integrity Tag (128),
 }
