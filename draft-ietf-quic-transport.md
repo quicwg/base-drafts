@@ -1644,9 +1644,9 @@ An endpoint MUST NOT send a parameter more than once in a given transport
 parameters extension.  An endpoint SHOULD treat receipt of duplicate transport
 parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 
-A server MUST include the original_destination_connection_id transport parameter
-({{transport-parameter-definitions}}) if it sent a Retry packet to enable
-validation of the Retry, as described in {{packet-retry}}.
+Endpoints use transport parameters to authenticate the negotiation of
+connection IDs during the handshake; see {{cid-auth}}.
+
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
