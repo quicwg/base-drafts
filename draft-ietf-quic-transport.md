@@ -1050,9 +1050,12 @@ An endpoint SHOULD ensure that its peer has a sufficient number of available and
 unused connection IDs.  Endpoints store received connection IDs for future use
 and advertise the number of connection IDs they are willing to store with the
 active_connection_id_limit transport parameter.  An endpoint MUST NOT provide
-more connection IDs than the peer's limit.  An endpoint that receives more
-connection IDs than its advertised active_connection_id_limit MUST close the
-connection with an error of type CONNECTION_ID_LIMIT_ERROR.
+more connection IDs than the peer's limit, with the exception that connection
+IDs MAY be provided if sent in a NEW_CONNECTION_ID frame that also requests the
+retirement of enough connection IDs that the number of active connection IDs
+will stay within the limit.  An endpoint that receives more connection IDs than
+its advertised active_connection_id_limit MUST close the connection with an
+error of type CONNECTION_ID_LIMIT_ERROR.
 
 An endpoint SHOULD supply a new connection ID when the peer retires a connection
 ID.  If an endpoint provided fewer connection IDs than the peer's
