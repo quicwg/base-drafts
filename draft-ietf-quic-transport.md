@@ -1085,9 +1085,10 @@ be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, endpoints MUST limit the use of a
-connection ID to packets sent from a single local address.  Endpoints SHOULD
-retire connection IDs when they are no longer actively using the network path on
-which the connection ID was used.
+connection ID to packets sent from a single local address to a single
+destination address.  Endpoints SHOULD retire connection IDs when they are no
+longer actively using either the local or destination address for which the
+connection ID was used.
 
 An endpoint might need to stop accepting previously issued connection IDs in
 certain circumstances.  Such an endpoint can cause its peer to retire connection
@@ -2284,9 +2285,11 @@ address, for example when initiating connection migration as described in
 {{probing}}.
 
 Similarly, an endpoint MUST NOT reuse a connection ID when sending to more than
-one destination address.  However, if an endpoint receives packets from a new
-source address with the same destination connection ID, it MAY continue to use
-the current connection ID with the new address.
+one destination address.  Due to network changes outside the control of its
+peer, an endpoint might receive packets from a new source address with the same
+destination connection ID, in which case it MAY continue to use the current
+connection ID with the new remote address while still sending from the same
+local address.
 
 These requirements regarding connection ID reuse apply only to the sending of
 packets, as unintentional changes in path without a change in connection ID are
