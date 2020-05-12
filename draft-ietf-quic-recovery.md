@@ -1059,7 +1059,7 @@ smoothed_rtt:
   {{smoothed-rtt}}.
 
 rttvar:
-: The RTT variation, computed as described in {{smoothed-rtt}}
+: The RTT variation, computed as described in {{smoothed-rtt}}.
 
 min_rtt:
 : The minimum RTT seen in the connection, ignoring ack delay, as described
