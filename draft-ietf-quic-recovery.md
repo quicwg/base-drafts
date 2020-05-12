@@ -904,19 +904,22 @@ the round trip time estimate, `smoothed_rtt`. Allowing for bursts produces the
 following relation for the total number of bytes sent over any interval:
 
 ~~~
-sent@t[n] - sent@t[m]
+number of bytes sent between t[m] and t[n]
     <= N * congestion_window * (t[m] - t[n]) / smoothed_rtt
        + min(10 * max_datagram_size,
              max(2 * max_datagram_size, 14720))
 ~~~
 
-The inclusion of the factor, `N`, that increases the rate of sending is to
-anticipate increases in sending rate as the congestion window expands. Sending
-at a higher rate also avoids having scheduling delays reduce the send rate
-below that allowed by the congestion controller. A value of 2 ensures that
-pacing is unlikely to limit what is sent any more than the congestion
-controller.
+The inclusion of the factor, `N`, with a value of at least 1 increases the rate
+of sending. The value of `N` might be increased to avoid having scheduling
+delays reduce the send rate below that allowed by the congestion controller.
 
+An endpoint that does not burst packets and has even spacing between packets
+might send packets spaced at intervals of:
+
+~~~
+inter-packet time = smoothed_rtt * packet_size / congestion_window / N
+~~~
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
 rate the "bucket" fills is determined by the above function.
