@@ -250,14 +250,14 @@ references to those entries will eventually become zero, allowing them to be
 evicted.
 
 ~~~~~~~~~~  drawing
-   +----------+---------------------------------+--------+
-   | Draining |          Referenceable          | Unused |
-   | Entries  |             Entries             | Space  |
-   +----------+---------------------------------+--------+
-   ^          ^                                 ^
-   |          |                                 |
- Dropping    Draining Index               Insertion Point
-  Point
+   +--------+---------------------------------+----------+
+   | Unused |          Referenceable          | Draining |
+   | Space  |             Entries             | Entries  |
+   +--------+---------------------------------+----------+
+            ^                                 ^          ^
+            |                                 |          |
+      Insertion Point                 Draining Index  Dropping
+                                                       Point
 ~~~~~~~~~~
 {:#fig-draining-index title="Draining Dynamic Table Entries"}
 
