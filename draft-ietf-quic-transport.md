@@ -4142,6 +4142,7 @@ Initial Packet {
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
+  Length (i),
   Packet Number (8..32),
   Packet Payload (..),
 }
@@ -4238,6 +4239,7 @@ limitations.
   Destination Connection ID (0..160),
   SCID Length (8),
   Source Connection ID (0..160),
+  Length (i),
   Packet Number (8..32),
   Packet Payload (..),
 }
@@ -4294,6 +4296,7 @@ Handshake Packet {
   Destination Connection ID (0..160),
   SCID Length (8),
   Source Connection ID (0..160),
+  Length (i),
   Packet Number (8..32),
   Packet Payload (..),
 }
