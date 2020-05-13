@@ -478,6 +478,11 @@ ack-eliciting packets are not acknowledged within the expected period of
 time or the handshake has not been completed.  A PTO enables a connection to
 recover from loss of tail packets or acknowledgements.
 
+A PTO timer expiration event does not indicate packet loss and MUST NOT cause
+prior unacknowledged packets to be marked as lost. When an acknowledgement
+is received that newly acknowledges packets, loss detection proceeds as
+dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
+
 As with loss detection, the probe timeout is per packet number space.
 The PTO algorithm used in QUIC implements the reliability functions of
 Tail Loss Probe {{?RACK}}, RTO {{?RFC5681}}, and F-RTO algorithms for
@@ -657,16 +662,6 @@ or sending different payloads.  Sending the same payload may be simpler
 and ensures the highest priority frames arrive first.  Sending different
 payloads each time reduces the chances of spurious retransmission.
 
-
-### Loss Detection {#pto-loss}
-
-Delivery or loss of packets in flight is established when an ACK frame is
-received that newly acknowledges one or more packets.
-
-A PTO timer expiration event does not indicate packet loss and MUST NOT cause
-prior unacknowledged packets to be marked as lost. When an acknowledgement
-is received that newly acknowledges packets, loss detection proceeds as
-dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
 ## Handling Retry Packets
 
