@@ -913,8 +913,8 @@ bursts can reduce CPU utilization at the risk of increased retransmits rates.
 
 A `pacing_gain` multiplier greater than 1 allows senders to increase the rate
 of sending. The value of `pacing_gain` might be larger in slow start than
-congestion avoidance to ensure the sender increases its congestion window is
-able to double every round trip.
+congestion avoidance to ensure the sender is able to double its congestion
+window every round trip.
 
 The ideal interval between the previously send packet burst and the next is:
 
