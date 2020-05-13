@@ -1142,6 +1142,20 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
+## On Receiving a Packet
+
+When a packet is received, it may 
+
+Psuedocode for OnPacketReceived follows:
+
+~~~
+OnPacketReceived(packet):
+  // If this packet unblocks the server, arm the
+  // timer to ensure forward progress resumes
+  if (server was at anti-amplification limit):
+    SetLossDetectionTimer()
+  DecryptAndProcessFrames()
+~~~
 
 ## On Receiving an Acknowledgment
 
