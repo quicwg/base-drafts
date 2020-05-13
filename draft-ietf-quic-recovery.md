@@ -1144,7 +1144,8 @@ Pseudocode for OnPacketSent follows:
 
 ## On Receiving a Packet
 
-When a packet is received, it may 
+When a packet is received, it may allow the server to send
+if the server was previously amplification limited.
 
 Psuedocode for OnPacketReceived follows:
 
