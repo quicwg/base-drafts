@@ -908,7 +908,7 @@ not including UDP or IP overhead.
 
 Endpoints can implement pacing as they choose, as long as bursts are not larger
 than the initial window and average sending rate over a round trip does not
-exceed a small multiple, `pacing_gain`, of the congestion window. Allowing for
+exceed a small multiple, `pacing_gain`, of the congestion window. Larger
 bursts can reduce CPU utilization at the risk of increased retransmits rates.
 
 A `pacing_gain` multiplier greater than 1 allows senders to increase the rate
