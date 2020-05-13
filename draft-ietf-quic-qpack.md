@@ -1684,7 +1684,7 @@ people.
 
 The compression design team did substantial work exploring the problem space and
 influencing the initial draft.  The contributions of design team members Roberto
-Peon, Martin Thomson and Dmitri Tikhonov is gratefully acknowledged.
+Peon, Martin Thomson, and Dmitri Tikhonov is gratefully acknowledged.
 
 The following people also provided substantial contributions to this document:
 
