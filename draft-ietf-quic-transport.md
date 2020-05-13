@@ -1084,7 +1084,7 @@ Sending a RETIRE_CONNECTION_ID frame indicates that the connection ID will not
 be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
-As discussed in {{migration-linkability}}, endpoints MUST limit the use of a
+As discussed in {{migration-linkability}}, endpoints limit the use of a
 connection ID to packets sent from a single local address to a single
 destination address.  Endpoints SHOULD retire connection IDs when they are no
 longer actively using either the local or destination address for which the
