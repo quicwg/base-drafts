@@ -475,8 +475,8 @@ and larger thresholds increase loss detection delay.
 
 A Probe Timeout (PTO) triggers sending one or two probe datagrams when
 ack-eliciting packets are not acknowledged within the expected period of
-time or the handshake has not been completed.  A PTO enables a connection to
-recover from loss of tail packets or acknowledgements.
+time or the server may not have validated the client's address.  A PTO enables
+a connection to recover from loss of tail packets or acknowledgements.
 
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost. When an acknowledgement
