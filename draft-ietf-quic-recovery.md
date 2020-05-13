@@ -906,9 +906,25 @@ congestion window, which is recommended to be the minimum of
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
-As an example of a well-known and publicly available implementation of a flow
-pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
-in Linux (3.11 onwards).
+Endpoints can implement pacing as they choose, as long as bursts are not larger
+than the initial window and average sending rate over a round trip does not exceed
+a small multiple, `pacing_gain`, of the congestion window. Allowing for bursts can
+reduce CPU utilization at the risk of increased retransmits rates.
+
+The `pacing_gain` multiplier, with a value of at least 1, allows senders to increase
+the rate of sending. The value of `pacing_gain` might be larger in slow start to
+ensure the sender is typically congestion window limited, rather than pacing limited.
+
+The ideal interval between the previously send packet burst and the next is:
+
+~~~
+interval = smoothed_rtt * bytes_last_sent / congestion_window / pacing_gain
+~~~
+
+Timers are not ideal, so intervals will need to be adjusted to ensure the
+average pacing rate is maintained.  Not doing so could result in a large decrease
+in average sending rate when timers consistently fire late.
+
 
 ## Under-utilizing the Congestion Window
 
