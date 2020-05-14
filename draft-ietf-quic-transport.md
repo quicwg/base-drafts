@@ -1047,17 +1047,18 @@ connection ID issued by the server via the preferred_address transport
 parameter.
 
 An endpoint SHOULD ensure that its peer has a sufficient number of available and
-unused connection IDs.  Endpoints store received connection IDs for future use
-and advertise the number of connection IDs they are willing to store with the
-active_connection_id_limit transport parameter.  An endpoint MUST NOT provide
-more connection IDs than the peer's limit, with the exception that connection
-IDs MAY be provided if sent in a NEW_CONNECTION_ID frame that also requests the
-retirement of enough connection IDs that the number of active connection IDs
-will stay within the limit.  An endpoint that receives a NEW_CONNECTION_ID
-frame that increases the number of active connection IDs - without a Retire
-Prior To field that requests retirement of enough active connections to keep the
-total number of active connection IDs within the value the endpoint advertised
-in its active_connection_id_limit transport parameter - MUST close the
+unused connection IDs.  Endpoints advertise the number of active connection IDs
+they are willing to maintain using the active_connection_id_limit transport
+parameter.  An endpoint MUST NOT provide more connection IDs than the peer's
+limit.  An endpoint MAY send connection IDs that temporarily exceed a peer's
+limit if the NEW_CONNECTION_ID frame also requires the retirement of any excess,
+by including a sufficiently large value in the Retire Prior To field.
+
+A NEW_CONNECTION_ID frame might cause an endpoint to add some active connection
+IDs and retire others based on the value of the Retire Prior To field.  After
+processing a NEW_CONNECTION_ID frame and adding and retiring active connection
+IDs, if the number of active connection IDs exceeds the value advertised in its
+active_connection_id_limit transport parameter, an endpoint MUST close the
 connection with an error of type CONNECTION_ID_LIMIT_ERROR.
 
 An endpoint SHOULD supply a new connection ID when the peer retires a connection
