@@ -188,10 +188,6 @@ TLS provides two basic handshake modes of interest to QUIC:
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
-Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
-{{remove-eoed}}).  Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
-used by QUIC; ChangeCipherSpec is redundant in TLS 1.3 and QUIC has defined its
-own key update mechanism {{key-update}}.
 
 ~~~
     Client                                             Server
@@ -212,6 +208,11 @@ own key update mechanism {{key-update}}.
        (1-RTT) Keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
+
+{{tls-full}} omits the EndOfEarlyData message, which is not used in QUIC; see
+{{remove-eoed}}. Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
+used by QUIC. ChangeCipherSpec is redundant in TLS 1.3; see {{compat-mode}}.
+QUIC has its own key update mechanism; see {{key-update}}.
 
 Data is protected using a number of encryption levels:
 
@@ -446,7 +447,7 @@ network, it proceeds as follows:
   find the proper location in the data sequence.  If the result of this process
   is that new data is available, then it is delivered to TLS in order.
 
-- If the packet is from a previously installed encryption level, it MUST not
+- If the packet is from a previously installed encryption level, it MUST NOT
   contain data which extends past the end of previously received data in that
   flow. Implementations MUST treat any violations of this requirement as a
   connection error of type PROTOCOL_VIOLATION.
@@ -645,6 +646,31 @@ messages and clients MUST treat receipt of such messages as a connection error
 of type PROTOCOL_VIOLATION.
 
 
+## Session Resumption {#resumption}
+
+QUIC can use the session resumption feature of TLS 1.3. It does this by
+carrying NewSessionTicket messages in CRYPTO frames after the handshake is
+complete. Session resumption is the basis of 0-RTT, but can be used without
+also enabling 0-RTT.
+
+Endpoints that use session resumption might need to remember some information
+about the current connection when creating a resumed connection. TLS requires
+that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
+does not depend on any state being retained when resuming a connection, unless
+0-RTT is also used; see {{enable-0rtt}} and Section 7.3.1 of
+{{QUIC-TRANSPORT}}. Application protocols could depend on state that is
+retained between resumed connections.
+
+Clients can store any state required for resumption along with the session
+ticket. Servers can use the session ticket to help carry state.
+
+Session resumption allows servers to link activity on the original connection
+with the resumed connection, which might be a privacy issue for clients.
+Clients can choose not to enable resumption to avoid creating this correlation.
+Client SHOULD NOT reuse tickets as that allows entities other than the server
+to correlate connections; see Section C.4 of {{!TLS13}}.
+
+
 ## Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
@@ -715,18 +741,24 @@ QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
 {{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
-## TLS Errors
+## TLS Errors {#tls-errors}
 
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the one-byte
-alert description into a QUIC error code.  The alert description is added to
-0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
+A TLS alert is converted into a QUIC connection error. The alert description is
+added to 0x100 to produce a QUIC error code from the range reserved for
+CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
+type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+QUIC permits the use of a generic code in place of a specific error code; see
+Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
+alert with a generic alert, such as handshake_failure (0x128 in QUIC).
+Endpoints MAY use a generic error code to avoid possibly exposing confidential
+information.
 
 
 ## Discarding Unused Keys
@@ -1529,7 +1561,7 @@ Handshake packets, but because that tampering requires modifying TLS handshake
 messages, that tampering will cause the TLS handshake to fail.
 
 
-# QUIC-Specific Additions to the TLS Handshake
+# QUIC-Specific Adjustments to the TLS Handshake
 
 QUIC uses the TLS handshake for more than just negotiation of cryptographic
 parameters.  The TLS handshake provides preliminary values for QUIC transport
@@ -1542,12 +1574,13 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
-this purpose.  When using ALPN, endpoints MUST immediately close a connection
-(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
-{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
-QUIC clients MUST also use it to terminate a connection when ALPN negotiation
-fails.
+this purpose.
+
+When using ALPN, endpoints MUST immediately close a connection (see Section
+10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
+While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
+use error 0x178 to terminate a connection when ALPN negotiation fails.
 
 An application protocol MAY restrict the QUIC versions that it can operate over.
 Servers MUST select an application protocol compatible with the QUIC version
@@ -1572,7 +1605,7 @@ protection for these values.
    } ExtensionType;
 ~~~
 
-The `extension_data` field of the quic_transport_parameters extension contains a
+The extension_data field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
@@ -1606,13 +1639,36 @@ PROTOCOL_VIOLATION.
 As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
 
 
+## Prohibit TLS Middlebox Compatibility Mode {#compat-mode}
+
+Appendix D.4 of {{!TLS13}} describes an alteration to the TLS 1.3 handshake as
+a workaround for bugs in some middleboxes. The TLS 1.3 middlebox compatibility
+mode involves setting the legacy_session_id field to a 32-byte value in the
+ClientHello and ServerHello, then sending a change_cipher_spec record. Both
+field and record carry no semantic content and are ignored.
+
+This mode has no use in QUIC as it only applies to middleboxes that interfere
+with TLS over TCP. QUIC also provides no means to carry a change_cipher_spec
+record. A client MUST NOT request the use of the TLS 1.3 compatibility mode. A
+server SHOULD treat the receipt of a TLS ClientHello that with a non-empty
+legacy_session_id field as a connection error of type PROTOCOL_VIOLATION.
+
+
 # Security Considerations
 
-There are likely to be some real clangers here eventually, but the current set
-of issues is well captured in the relevant sections of the main text.
+All of the security considerations that apply to TLS also apply to the use of
+TLS in QUIC. Reading all of {{!TLS13}} and its appendices is the best way to
+gain an understanding of the security properties of QUIC.
 
-Never assume that because it isn't in the security considerations section it
-doesn't affect security.  Most of this document does.
+This section summarizes some of the more important security aspects specific to
+the TLS integration, though there are many security-relevant details in the
+remainder of the document.
+
+
+## Session Linkability
+
+Use of TLS session tickets allows servers and possibly other entities to
+correlate connections made by the same client; see {{resumption}} for details.
 
 
 ## Replay Attacks with 0-RTT
@@ -2163,23 +2219,24 @@ No significant changes.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Adam Langley,
-Alessandro Ghedini,
-Christian Huitema,
-Christopher Wood,
-David Schinazi,
-Dragana Damjanovic,
-Eric Rescorla,
-Ian Swett,
-Jana Iyengar, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>,
-Nick Banks,
-Nick Harper,
-Roberto Peon,
-Rui Paulo,
-Ryan Hamilton,
-and Victor Vasiliev.
+
+- Adam Langley
+- Alessandro Ghedini
+- Christian Huitema
+- Christopher Wood
+- David Schinazi
+- Dragana Damjanovic
+- Eric Rescorla
+- Ian Swett
+- Jana Iyengar
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- Nick Banks
+- Nick Harper
+- Roberto Peon
+- Rui Paulo
+- Ryan Hamilton
+- Victor Vasiliev
