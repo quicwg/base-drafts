@@ -3673,17 +3673,22 @@ supports a reasonable Maximum Transmission Unit (MTU).  Padding datagrams also
 helps reduce the amplitude of amplification attacks caused by server responses
 toward an unverified client address; see {{address-validation}}.
 
+Enforcement of the max_udp_payload_size transport parameter
+({{transport-parameter-definitions}}) might act as an additional limit on
+packet size. Exceeding this limit can be avoided once the value is known.
+However, prior to learning the value of the transport parameter, endpoints risk
+datagrams being lost if they send packets larger than 1200 bytes.
+
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
-believes that the Path Maximum Transmission Unit (PMTU) supports the size that
-it chooses.
+believes that the network path and peer both support the size that it chooses.
 
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
-A server MUST discard an Initial packet that is carried in a UDP datagram that
-is smaller than 1200 bytes.  A server MAY also immediately close the connection
-by sending a CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION;
-see {{immediate-close-hs}}.
+A server MUST discard an Initial packet that is carried in a UDP datagram with
+a payload that is less than 1200 bytes. A server MAY also immediately close the
+connection by sending a CONNECTION_CLOSE frame with an error code of
+PROTOCOL_VIOLATION; see {{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
@@ -3691,11 +3696,12 @@ address of the client; see {{address-validation}}.
 
 ## Path Maximum Transmission Unit (PMTU)
 
-The PMTU is the maximum size of the entire IP packet including the IP header,
-UDP header, and UDP payload.  The UDP payload includes the QUIC packet header,
-protected payload, and any authentication fields. The PMTU can depend upon the
-current path characteristics.  Therefore, the current largest UDP payload an
-implementation will send is referred to as the QUIC maximum packet size.
+The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
+packet including the IP header, UDP header, and UDP payload.  The UDP payload
+includes the QUIC packet header, protected payload, and any authentication
+fields.  The PMTU can depend on path characteristics, and can therefore change
+over time.  The largest UDP payload an endpoint sends at any given time is
+referred to as the endpoint's maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{?RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
