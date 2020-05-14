@@ -897,29 +897,24 @@ congestion window, which is recommended to be the minimum of
 max_datagram_size is the current maximum size of a datagram for the connection,
 not including UDP or IP overhead.
 
-Endpoints can implement pacing as they choose, as long as the rate of bytes
-sent over any interval, `t[n] - t[m]`, does not exceed a small multiple, `N`,
-of maximum value of the congestion window, `congestion_window`, averaged over
-the round trip time estimate, `smoothed_rtt`. Allowing for bursts produces the
-following relation for the total number of bytes sent over any interval:
+Endpoints can implement pacing as they choose. A perfectly paced sender spreads
+bytes exactly evenly over time. For a window-based congestion controller, such
+as the one in this document, that rate can be computed by averaging the
+congestion window over the round-trip time. Expressed as a rate in bytes:
 
 ~~~
-number of bytes sent between t[m] and t[n]
-    <= N * congestion_window * (t[m] - t[n]) / smoothed_rtt
-       + min(10 * max_datagram_size,
-             max(2 * max_datagram_size, 14720))
+rate = N * congestion_window / smoothed_rtt
 ~~~
 
-The inclusion of the factor, `N`, with a value of at least 1 increases the rate
-of sending. The value of `N` might be increased to avoid having scheduling
-delays reduce the send rate below that allowed by the congestion controller.
-
-An endpoint that does not burst packets and has even spacing between packets
-might send packets spaced at intervals of:
+Or, expressed as an inter-packet interval:
 
 ~~~
 interval = smoothed_rtt * packet_size / congestion_window / N
 ~~~
+
+Using a value for N that is small, but greater than 1 (for example, 1.25)
+ensures that short-term variations in round-trip time or scheduler delays don't
+result in not fully utilizing the congestion window.
 
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
