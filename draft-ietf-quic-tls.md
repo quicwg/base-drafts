@@ -188,10 +188,6 @@ TLS provides two basic handshake modes of interest to QUIC:
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
-Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
-{{remove-eoed}}).  Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
-used by QUIC; ChangeCipherSpec is redundant in TLS 1.3 and QUIC has defined its
-own key update mechanism {{key-update}}.
 
 ~~~
     Client                                             Server
@@ -212,6 +208,11 @@ own key update mechanism {{key-update}}.
        (1-RTT) Keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
+
+{{tls-full}} omits the EndOfEarlyData message, which is not used in QUIC; see
+{{remove-eoed}}. Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
+used by QUIC. ChangeCipherSpec is redundant in TLS 1.3; see {{compat-mode}}.
+QUIC has its own key update mechanism; see {{key-update}}.
 
 Data is protected using a number of encryption levels:
 
@@ -1560,7 +1561,7 @@ Handshake packets, but because that tampering requires modifying TLS handshake
 messages, that tampering will cause the TLS handshake to fail.
 
 
-# QUIC-Specific Additions to the TLS Handshake
+# QUIC-Specific Adjustments to the TLS Handshake
 
 QUIC uses the TLS handshake for more than just negotiation of cryptographic
 parameters.  The TLS handshake provides preliminary values for QUIC transport
@@ -1636,6 +1637,21 @@ of a CRYPTO frame in a 0-RTT packet as a connection error of type
 PROTOCOL_VIOLATION.
 
 As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
+
+
+## Prohibit TLS Middlebox Compatibility Mode {#compat-mode}
+
+Appendix D.4 of {{!TLS13}} describes an alteration to the TLS 1.3 handshake as
+a workaround for bugs in some middleboxes. The TLS 1.3 middlebox compatibility
+mode involves setting the legacy_session_id field to a 32-byte value in the
+ClientHello and ServerHello, then sending a change_cipher_spec record. Both
+field and record carry no semantic content and are ignored.
+
+This mode has no use in QUIC as it only applies to middleboxes that interfere
+with TLS over TCP. QUIC also provides no means to carry a change_cipher_spec
+record. A client MUST NOT request the use of the TLS 1.3 compatibility mode. A
+server SHOULD treat the receipt of a TLS ClientHello that with a non-empty
+legacy_session_id field as a connection error of type PROTOCOL_VIOLATION.
 
 
 # Security Considerations
