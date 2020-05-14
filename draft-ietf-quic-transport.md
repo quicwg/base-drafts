@@ -3699,9 +3699,9 @@ address of the client; see {{address-validation}}.
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
 packet including the IP header, UDP header, and UDP payload.  The UDP payload
 includes the QUIC packet header, protected payload, and any authentication
-fields.  The PMTU can depend upon the current path characteristics.  Therefore,
-the current largest UDP payload an implementation will send is referred to as
-the QUIC maximum packet size.
+fields.  The PMTU can depend on path characteristics, and can therefore change
+over time.  The largest UDP payload an endpoint sends at any given time is
+referred to as the endpoint's maximum packet size.
 
 QUIC depends on a PMTU of at least 1280 bytes. This is the IPv6 minimum size
 {{?RFC8200}} and is also supported by most modern IPv4 networks.  All QUIC
