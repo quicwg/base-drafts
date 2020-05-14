@@ -4774,6 +4774,14 @@ preferred_address (0x0d):
   be at least one unused active connection ID when the client initiates
   migration to the preferred address.
 
+: The Connection ID and Stateless Reset Token fields of a preferred address are
+  identical in syntax and semantics to the corresponding fields of a
+  NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).  A server that chooses
+  a zero-length connection ID MUST NOT provide a preferred address.  Similarly,
+  a server MUST NOT include a zero-length connection ID in this transport
+  parameter.  A client MUST treat violation of these requirements as a
+  connection error of type TRANSPORT_PARAMETER_ERROR.
+
 ~~~
 Preferred Address {
   IPv4 Address (32),
