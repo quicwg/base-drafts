@@ -256,7 +256,7 @@ x (i):
 
 x (A..B):
 : Indicates that x can be any length from A to B; A can be omitted to indicate
-  a mimumum of zero bits and B can be omitted to indicate no set upper limit;
+  a minimum of zero bits and B can be omitted to indicate no set upper limit;
   values in this format always end on an octet boundary
 
 x (?) = C:
@@ -3811,7 +3811,7 @@ One way to construct a probe for the path MTU is to coalesce (see
 header packet in a single UDP datagram.  If the UDP datagram reaches the
 endpoint, the Handshake packet will be ignored, but the short header packet will
 be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
-first part of the datagram will be quoted in that message.  If the the source
+first part of the datagram will be quoted in that message.  If the source
 connection ID is within the quoted portion of the UDP datagram, that could be
 used for routing.
 
