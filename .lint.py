@@ -58,7 +58,11 @@ for inputfile in args.files:
 
             # Check length
             length = len(line)
-            limit = args.maxFigureLineLength if insideFigure else args.maxLineLength
+            limit = (
+                int(args.maxFigureLineLength)
+                if insideFigure
+                else int(args.maxLineLength)
+            )
             if length > limit:
                 err("Line is {0} characters; limit is {1}".format(length, limit))
 
