@@ -889,14 +889,6 @@ Timely delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
-Sending multiple packets into the network without any delay between them
-creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or limit such bursts to the initial
-congestion window, which is recommended to be the minimum of
-`10 * max_datagram_size` and `max(2 * max_datagram_size, 14720))`, where
-max_datagram_size is the current maximum size of a datagram for the connection,
-not including UDP or IP overhead.
-
 Endpoints can implement pacing as they choose. A perfectly paced sender spreads
 bytes exactly evenly over time. For a window-based congestion controller, such
 as the one in this document, that rate can be computed by averaging the
@@ -915,6 +907,14 @@ interval = smoothed_rtt * packet_size / congestion_window / N
 Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
 that short-term variations in round-trip time or scheduler delays don't result
 in under-utilization of the congestion window.
+
+Practical considerations, such as packetization, scheduling delays, and
+computational efficiency, can cause a sender to deviate from this rate over time
+periods that are much shorter than a round-trip time.  Sending multiple packets
+into the network without any delay between them creates a packet burst that
+might cause short-term congestion and losses.  Implementations MUST either use
+pacing or limit such bursts to the initial congestion window; see
+{{initial-cwnd}}.
 
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
