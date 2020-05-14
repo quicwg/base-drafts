@@ -4613,7 +4613,7 @@ Transport Parameter {
 ~~~
 {: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
 
-The Transport Param Length field contains the length of the Transport
+The Transport Parameter Length field contains the length of the Transport
 Parameter Value field.
 
 QUIC encodes transport parameters into a sequence of bytes, which are then
