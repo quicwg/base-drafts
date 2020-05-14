@@ -829,9 +829,7 @@ following properties:
 
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
 carrying a request which is not cacheable, is not known to be safe, or that
-indicates the presence of a request body.  If the pushed response arrives on a
-push stream, this MAY be treated as a stream error of type
-H3_STREAM_CREATION_ERROR.
+indicates the presence of a request body.
 
 The server MUST include a value in the ":authority" pseudo-header field for
 which the server is authoritative; see {{connection-reuse}}.  A client SHOULD
