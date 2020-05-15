@@ -1551,7 +1551,7 @@ after any record fails an authentication check. In comparison, QUIC ignores any
 packet that cannot be authenticated, allowing multiple forgery attempts.
 
 Endpoints MUST count the number of received packets that fail authentication.
-If the number of packets that fail authentication exceeds a
+If the number of packets that fail authentication with the same key exceeds a
 limit that is specific to the AEAD in use, the endpoint MUST immediately close
 the connection.  Endpoints MUST initiate a key update before reaching this
 limit.  Applying a limit reduces the probability that an attacker is able to
