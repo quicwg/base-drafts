@@ -1142,20 +1142,20 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
-## On Receiving a Packet
+## On Receiving a Datagram
 
-When a packet is received, it may allow the server to send
-if the server was previously amplification limited.
+When a datagram is received, it may allow the server to send
+if the server was previously amplification limited, even if
+none of the packets in it can be processed.
 
-Psuedocode for OnPacketReceived follows:
+Pseudocode for OnDatagramReceived follows:
 
 ~~~
-OnPacketReceived(packet):
+OnDatagramReceived(datagram):
   // If this packet unblocks the server, arm the
-  // timer to ensure forward progress resumes
+  // PTO timer to avoid deadlock.
   if (server was at anti-amplification limit):
     SetLossDetectionTimer()
-  DecryptAndProcessFrames()
 ~~~
 
 ## On Receiving an Acknowledgment
