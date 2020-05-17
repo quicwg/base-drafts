@@ -4802,11 +4802,13 @@ active_connection_id_limit (0x0e):
   to store. This value includes the connection ID received during the handshake,
   that received in the preferred_address transport parameter, and those received
   in NEW_CONNECTION_ID frames.
-  Unless a zero-length connection ID is being used, the value of the
-  active_connection_id_limit parameter MUST be no less than 2. If this
-  transport parameter is absent, a default of 2 is assumed.
-  When a zero-length connection ID is being used, the active_connection_id_limit
-  parameter MUST NOT be sent.
+  The value of the active_connection_id_limit parameter MUST be at least 2.
+  An endpoint that receives a value less than 2 MUST close the connection
+  with an error of type TRANSPORT_PARAMETER_ERROR.
+  If this transport parameter is absent, a default of 2 is assumed.  If an
+  endpoint issues a zero-length connection ID, it will never send a
+  NEW_CONNECTION_ID frame and therefore ignores the active_connection_id_limit
+  value received from its peer.
 
 If present, transport parameters that set initial flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
