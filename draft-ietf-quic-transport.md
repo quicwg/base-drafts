@@ -1071,7 +1071,7 @@ peer to use a new connection ID on migration, as the peer will close the
 connection if the pool is exhausted.
 
 
-### Consuming and Retiring Connection IDs {#retiring-cids}
+### Consuming and Retiring Connection IDs {#retire-cid}
 
 An endpoint can change the connection ID it uses for a peer to another available
 one at any time during the connection.  An endpoint consumes connection IDs in
@@ -1085,8 +1085,9 @@ be used again and requests that the peer replace it with a new connection ID
 using a NEW_CONNECTION_ID frame.
 
 As discussed in {{migration-linkability}}, endpoints limit the use of a
-connection ID to a single network path where possible. Endpoints SHOULD retire
-connection IDs when no longer actively using the network path on which the
+connection ID to packets sent from a single local address to a single
+destination address.  Endpoints SHOULD retire connection IDs when they are no
+longer actively using either the local or destination address for which the
 connection ID was used.
 
 An endpoint might need to stop accepting previously issued connection IDs in
@@ -2116,9 +2117,10 @@ verifies ECN capability as described in {{ecn}}.
 
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
-be received on any path, return reachability on the new path is not
-established. To establish return reachability on the new path, an endpoint MAY
-concurrently initiate path validation {{migrate-validate}} on the new path.
+be received on any path, return reachability on the new path is not established.
+To establish return reachability on the new path, an endpoint MAY concurrently
+initiate path validation {{migrate-validate}} on the new path or it MAY choose
+to wait for the peer to send the next non-probing frame to its new address.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -2300,11 +2302,23 @@ linked by any other entity.
 At any time, endpoints MAY change the Destination Connection ID they send to a
 value that has not been used on another path.
 
-An endpoint MUST use a new connection ID if it initiates connection migration as
-described in {{initiating-migration}} or probes a new network path as described
-in {{probing}}.  An endpoint MUST use a new connection ID in response to a
-change in the address of a peer if the packet with the new peer address uses an
-active connection ID that has not been previously used by the peer.
+An endpoint MUST NOT reuse a connection ID when sending from more than one local
+address, for example when initiating connection migration as described in
+{{initiating-migration}} or when probing a new network path as described in
+{{probing}}.
+
+Similarly, an endpoint MUST NOT reuse a connection ID when sending to more than
+one destination address.  Due to network changes outside the control of its
+peer, an endpoint might receive packets from a new source address with the same
+destination connection ID, in which case it MAY continue to use the current
+connection ID with the new remote address while still sending from the same
+local address.
+
+These requirements regarding connection ID reuse apply only to the sending of
+packets, as unintentional changes in path without a change in connection ID are
+possible.  For example, after a period of network inactivity, NAT rebinding
+might cause packets to be sent on a new path when the client resumes sending.
+An endpoint responds to such an event as described in {{migration-response}}.
 
 Using different connection IDs for packets sent in both directions on each new
 network path eliminates the use of the connection ID for linking packets from
@@ -2315,17 +2329,13 @@ correlate activity.
 
 An endpoint SHOULD NOT initiate migration with a peer that has requested a
 zero-length connection ID, because traffic over the new path might be trivially
-linkable to traffic over the old one. If the server is able to route packets
+linkable to traffic over the old one.  If the server is able to route packets
 with a zero-length connection ID to the right connection, it means that the
-server is using other information to demultiplex packets. For example, a server
+server is using other information to demultiplex packets.  For example, a server
 might provide a unique address to every client, for instance using HTTP
 alternative services {{?ALTSVC=RFC7838}}.  Information that might allow correct
 routing of packets across multiple network paths will also allow activity on
 those paths to be linked by entities other than the peer.
-
-Unintentional changes in path without a change in connection ID are possible.
-For example, after a period of network inactivity, NAT rebinding might cause
-packets to be sent on a new path when the client resumes sending.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
@@ -2367,10 +2377,11 @@ transport parameter in the TLS handshake.
 Servers MAY communicate a preferred address of each address family (IPv4 and
 IPv6) to allow clients to pick the one most suited to their network attachment.
 
-Once the handshake is finished, the client SHOULD select one of the two
+Once the handshake is confirmed, the client SHOULD select one of the two
 server's preferred addresses and initiate path validation (see
-{{migrate-validate}}) of that address using the connection ID provided in the
-preferred_address transport parameter.
+{{migrate-validate}}) of that address using any previously unused active
+connection ID, taken from either the preferred_address transport parameter or
+a NEW_CONNECTION_ID frame.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
@@ -5532,8 +5543,8 @@ Sequence Number:
 
 Retire Prior To:
 
-: A variable-length integer indicating which connection IDs should be retired.
-  See {{retiring-cids}}.
+: A variable-length integer indicating which connection IDs should be retired;
+  see {{retire-cid}}.
 
 Length:
 
@@ -5570,7 +5581,7 @@ IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
 The Retire Prior To field counts connection IDs established during connection
-setup and the preferred_address transport parameter; see {{retiring-cids}}. The
+setup and the preferred_address transport parameter; see {{retire-cid}}. The
 Retire Prior To field MUST be less than or equal to the Sequence Number field.
 Receiving a value greater than the Sequence Number MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR.
@@ -5613,8 +5624,7 @@ RETIRE_CONNECTION_ID frames contain the following fields:
 
 Sequence Number:
 
-: The sequence number of the connection ID being retired.  See
-  {{retiring-cids}}.
+: The sequence number of the connection ID being retired; see {{retire-cid}}.
 
 Receipt of a RETIRE_CONNECTION_ID frame containing a sequence number greater
 than any previously sent to the peer MUST be treated as a connection error of
