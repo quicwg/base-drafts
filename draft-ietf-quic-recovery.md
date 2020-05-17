@@ -890,7 +890,7 @@ containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
 Endpoints can implement pacing as they choose. A perfectly paced sender spreads
-bytes exactly evenly over time. For a window-based congestion controller, such
+packets exactly evenly over time. For a window-based congestion controller, such
 as the one in this document, that rate can be computed by averaging the
 congestion window over the round-trip time. Expressed as a rate in bytes:
 
@@ -905,7 +905,7 @@ interval = smoothed_rtt * packet_size / congestion_window / N
 ~~~
 
 Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
-that short-term variations in round-trip time or scheduler delays don't result
+that variations in round-trip time don't result
 in under-utilization of the congestion window.
 
 Practical considerations, such as packetization, scheduling delays, and
