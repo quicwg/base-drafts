@@ -6877,6 +6877,32 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-27
+
+- Allowed CONNECTION_CLOSE in any packet number space, with a requirement to
+  use a new transport-level error for application-specific errors in Initial
+  and Handshake packets (#3430, #3435, #3440)
+- Clearer requirements for address validation (#2125, #3327)
+- Security analysis of handshake and migration (#2143, #2387, #2925)
+- The entire payload of a datagram is used when counting bytes for
+  avoid amplification attacks (#3333, #3470)
+- Connection IDs can be used at any time, including in the handshake (#3348,
+  #3560, #3438, #3565)
+- Only one ACK should be sent for each instance of reordering (#3357, #3361)
+- Remove text allowing a server to proceed with a bad Retry token (#3396,
+  #3398)
+- Ignore active_connection_id_limit with a zero-length connection ID (#3427,
+  #3426)
+- Require active_connection_id_limit be remembered for 0-RTT (#3423, #3425)
+- Require ack_delay not be remembered for 0-RTT (#3433, #3545)
+- Redefined max_packet_size to max_udp_datagram_size (#3471, #3473)
+- Guidance on limiting outstanding attempts to retire connection IDs (#3489,
+  #3509, #3557, #3547)
+- Restored text on dropping bogus Version Negotiation packets (#3532, #3533)
+- Clarified that largest acknowledged needs to be saved, but not necessarily
+  signaled in all cases (#3541, #3581)
+- Addressed linkability risk with the use of preferred_address (#3559, #3563)
+
 ## Since draft-ietf-quic-transport-26
 
 - Change format of transport parameters to use varints (#3294, #3169)
