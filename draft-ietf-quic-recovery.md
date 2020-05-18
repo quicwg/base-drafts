@@ -1144,10 +1144,10 @@ Pseudocode for OnPacketSent follows:
 
 ## On Receiving a Datagram
 
-Receiving a datagram might allow the server to send additional data if the
-server was previously blocked by the anti-amplification limits; see
-{{before-address-validation}}. This is necessary even if none of the packets in
-the datagram are successfully processed.
+Receiving a datagram might allow the server to send if the
+server was previously blocked by the anti-amplification limits.
+This is necessary even if none of the packets in the datagram
+are successfully processed.
 
 Pseudocode for OnDatagramReceived follows:
 
