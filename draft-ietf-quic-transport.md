@@ -1524,7 +1524,7 @@ for subsequent packets, including any 0-RTT packets.  This means that a client
 might have to change the connection ID it sets in the Destination Connection ID
 field twice during connection establishment: once in response to a Retry, and
 once in response to an Initial packet from the server. Once a client has
-received an Initial packet from the server, it MUST discard any subsequent
+received a valid Initial packet from the server, it MUST discard any subsequent
 packet it receives with a different Source Connection ID.
 
 A client MUST change the Destination Connection ID it uses for sending packets
