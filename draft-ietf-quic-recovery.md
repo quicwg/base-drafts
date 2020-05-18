@@ -905,10 +905,11 @@ interval = smoothed_rtt * packet_size / congestion_window / N
 ~~~
 
 Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
-that variations in round-trip time don't result
-in under-utilization of the congestion window.  Values of 'N' larger than 1 result
-in acknowledgements rather than alarms causing sending when the window is
-fully utilized and acknowledgements arrive smoothly.
+that variations in round-trip time don't result in under-utilization of the
+congestion window.  Values of 'N' larger than 1 ultimately result in sending
+packets as acknowledgments are received rather than when timers fire, provided
+the congestion window is fully utilized and acknowledgments arrive at regular
+intervals.
 
 Practical considerations, such as packetization, scheduling delays, and
 computational efficiency, can cause a sender to deviate from this rate over time
