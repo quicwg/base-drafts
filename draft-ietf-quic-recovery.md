@@ -529,7 +529,7 @@ to process an acknowledgement.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff is reset upon
-receiving an acknowledgement unless it's a client unsure if the the server has
+receiving an acknowledgement unless it's a client unsure if the server has
 validated the client's address. Not resetting the backoff during peer address
 validation ensures the client's anti-deadlock timer is not set too aggressively
 when the server is slow in responding with handshake data.
