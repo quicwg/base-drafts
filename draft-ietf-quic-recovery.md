@@ -1252,8 +1252,7 @@ GetEarliestTimeAndSpace(times, ack_delay):
       (time == 0 || times[Handshake] < time)):
     time, space = times[Handshake], Handshake
   # Skip ApplicationData until handshake completion.
-  if (pn_space == ApplicationData &&
-      !IsHandshakeComplete()):
+  if (!IsHandshakeComplete()):
     return time, space
   # Include ack_delay in ApplicationData.
   if (times[ApplicationData] != 0 &&
