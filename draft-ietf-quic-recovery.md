@@ -1247,12 +1247,10 @@ Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
 GetEarliestTimeAndSpace(times, ack_delay):
-  time = times[Initial]
-  space = Initial
+  time, space = times[Initial], Initial
   if (times[Handshake] != 0 &&
       (time == 0 || times[Handshake] < time)):
-    time = times[Handshake];
-    space = Handshake
+    time, space = times[Handshake], Handshake
   # Skip ApplicationData until handshake completion.
   if (pn_space == ApplicationData &&
       !IsHandshakeComplete()):
@@ -1261,7 +1259,7 @@ GetEarliestTimeAndSpace(times, ack_delay):
   if (times[ApplicationData] != 0 &&
       (time == 0 ||
        times[ApplicationData] + ack_delay < time)):
-    return times[ApplicationData], ApplicationData
+    return times[ApplicationData] + ack_delay, ApplicationData
   return time, space
 
 PeerCompletedAddressValidation():
@@ -1296,7 +1294,7 @@ SetLossDetectionTimer():
 
   // Determine which PN space to arm PTO for.
   sent_time, pn_space = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet, ack_delay)
+    time_of_last_sent_ack_eliciting_packet, max_ack_delay)
   // Don't arm PTO for ApplicationData until handshake complete.
   if (pn_space == ApplicationData &&
       handshake is not confirmed):
@@ -1306,9 +1304,8 @@ SetLossDetectionTimer():
     assert(!PeerCompletedAddressValidation())
     sent_time = now()
 
-  // Calculate PTO duration
-  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
-    max_ack_delay
+  // Calculate PTO duration, sent_time includes max_ack_delay.
+  timeout = smoothed_rtt + max(4 * rttvar, kGranularity)
   timeout = timeout * (2 ^ pto_count)
 
   loss_detection_timer.update(sent_time + timeout)
@@ -1338,7 +1335,7 @@ OnLossDetectionTimeout():
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
     _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet, ack_delay)
+      time_of_last_sent_ack_eliciting_packet, max_ack_delay)
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
     assert(endpoint is client without 1-RTT keys)
