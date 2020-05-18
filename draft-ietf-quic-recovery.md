@@ -880,9 +880,10 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
-controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, or a pacer might use
-the rate estimate of a rate-based controller.
+controller.  Sending multiple packets into the network without any delay between
+them creates a packet burst that might cause short-term congestion and losses.
+Implementations MUST either use pacing or limit such bursts to the initial
+congestion window; see {{initial-cwnd}}.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
@@ -917,11 +918,7 @@ intervals.
 
 Practical considerations, such as packetization, scheduling delays, and
 computational efficiency, can cause a sender to deviate from this rate over time
-periods that are much shorter than a round-trip time.  Sending multiple packets
-into the network without any delay between them creates a packet burst that
-might cause short-term congestion and losses.  Implementations MUST either use
-pacing or limit such bursts to the initial congestion window; see
-{{initial-cwnd}}.
+periods that are much shorter than a round-trip time.
 
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
