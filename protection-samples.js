@@ -15,10 +15,17 @@ var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
 
-var version = 'ff00001b';
+const draft_version = 28;
+var version = 'ff0000' + draft_version.toString(16);
+
+function chunk(s, n) {
+  return (new Array(Math.ceil(s.length / n)))
+    .fill()
+    .map((_, i) => s.slice(i * n, i * n + n));
+}
 
 function log(m, k) {
-  console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
+  console.log(m + ' [' + k.length + ']: ' + chunk(k.toString('hex'), 32).join(' '));
 };
 
 class HMAC {
