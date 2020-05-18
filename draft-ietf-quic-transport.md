@@ -3457,7 +3457,12 @@ to fit within a single QUIC packet.  If it does not, then older ranges
 (those with the smallest packet numbers) are omitted.
 
 {{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for
-determining what packets to acknowledge in each ACK frame.
+determining what packets to acknowledge in each ACK frame.  Though the goal of
+these algorithms is to generate an acknowledgment for every packet that is
+processed, it is still possible for acknowledgments to be lost.  A sender cannot
+expect to receive an acknowledgment for every packet that the receiver
+processes.
+
 
 ### Receiver Tracking of ACK Frames {#ack-tracking}
 
