@@ -1152,7 +1152,7 @@ Pseudocode for OnDatagramReceived follows:
 
 ~~~
 OnDatagramReceived(datagram):
-  // If this packet unblocks the server, arm the
+  // If this datagram unblocks the server, arm the
   // PTO timer to avoid deadlock.
   if (server was at anti-amplification limit):
     SetLossDetectionTimer()
