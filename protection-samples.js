@@ -6,9 +6,8 @@
 
 
 'use strict';
-var buffer = require('buffer');
+require('buffer');
 var crypto = require('crypto');
-var assert = require('assert');
 
 var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
 var SHA256 = 'sha256';
@@ -139,7 +138,7 @@ class InitialProtection {
     log('hp sample', sample);
     // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
     // var mask = ctr.update(Buffer.alloc(5));
-    var ecb = crypto.createCipheriv('aes-128-ecb', this.hp, Buffer.alloc(0));
+    var ecb = crypto.createCipheriv(AES_ECB, this.hp, Buffer.alloc(0));
     var mask = ecb.update(sample);
     log('hp mask', mask);
     return mask;
