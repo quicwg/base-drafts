@@ -1246,17 +1246,22 @@ timers wake up late. Timers set in the past fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
-GetEarliestTimeAndSpace(times):
+GetEarliestTimeAndSpace(times, ack_delay):
   time = times[Initial]
   space = Initial
-  for pn_space in [ Handshake, ApplicationData ]:
-    if (times[pn_space] != 0 &&
-        (time == 0 || times[pn_space] < time) &&
-        # Skip ApplicationData until handshake completion.
-        (pn_space != ApplicationData ||
-          IsHandshakeComplete()):
-      time = times[pn_space];
-      space = pn_space
+  if (times[Handshake] != 0 &&
+      (time == 0 || times[Handshake] < time)):
+    time = times[Handshake];
+    space = Handshake
+  # Skip ApplicationData until handshake completion.
+  if (pn_space == ApplicationData &&
+      !IsHandshakeComplete()):
+    return time, space
+  # Include ack_delay in ApplicationData.
+  if (times[ApplicationData] != 0 &&
+      (time == 0 ||
+       times[ApplicationData] + ack_delay < time)):
+    return times[ApplicationData], ApplicationData
   return time, space
 
 PeerCompletedAddressValidation():
@@ -1270,7 +1275,7 @@ PeerCompletedAddressValidation():
        has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
-  earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
+  earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time, 0)
   if (earliest_loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
@@ -1291,7 +1296,7 @@ SetLossDetectionTimer():
 
   // Determine which PN space to arm PTO for.
   sent_time, pn_space = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet)
+    time_of_last_sent_ack_eliciting_packet, ack_delay)
   // Don't arm PTO for ApplicationData until handshake complete.
   if (pn_space == ApplicationData &&
       handshake is not confirmed):
@@ -1320,7 +1325,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 ~~~
 OnLossDetectionTimeout():
   earliest_loss_time, pn_space =
-    GetEarliestTimeAndSpace(loss_time)
+    GetEarliestTimeAndSpace(loss_time, 0)
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     lost_packets = DetectLostPackets(pn_space)
@@ -1333,7 +1338,7 @@ OnLossDetectionTimeout():
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
     _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
+      time_of_last_sent_ack_eliciting_packet, ack_delay)
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
     assert(endpoint is client without 1-RTT keys)
