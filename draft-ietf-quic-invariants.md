@@ -129,8 +129,7 @@ version-specific and of arbitrary length.
 
 ## Long Header
 
-Long headers take the form described in {{fig-long}}.  Bits that have
-version-specific semantics are marked with an X.
+Long headers take the form described in {{fig-long}}.
 
 ~~~
 Long Header Packet {
@@ -138,9 +137,9 @@ Long Header Packet {
   Version-Specific Bits (7),
   Version (32),
   DCID Len (8),
-  Destination Connection ID (0..160),
+  Destination Connection ID (0..2040),
   SCID Len (8),
-  Source Connection ID (0..160),
+  Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
 ~~~
@@ -156,18 +155,17 @@ The next byte contains the length in bytes of the Destination Connection ID (see
 unsigned integer.  The Destination Connection ID field follows the DCID Len
 field and is between 0 and 255 bytes in length.
 
-The next byte contains the length in bytes
-of the Source Connection ID field that follows it.  This length is encoded as
-a 8-bit unsigned integer.  The Source Connection ID field follows the SCID Len
-field and is between 0 and 255 bytes in length.
+The next byte contains the length in bytes of the Source Connection ID field
+that follows it.  This length is encoded as a 8-bit unsigned integer.  The
+Source Connection ID field follows the SCID Len field and is between 0 and 255
+bytes in length.
 
 The remainder of the packet contains version-specific content.
 
 
 ## Short Header
 
-Short headers take the form described in {{fig-short}}.  Bits that have
-version-specific semantics are marked with an X.
+Short headers take the form described in {{fig-short}}.
 
 ~~~~~
 Short Header Packet {
@@ -235,9 +233,9 @@ Version Negotiation Packet {
   Unused (7),
   Version (32) = 0,
   DCID Len (8),
-  Destination Connection ID (0..160),
+  Destination Connection ID (0..2040),
   SCID Len (8),
-  Source Connection ID (0..160),
+  Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
 ~~~

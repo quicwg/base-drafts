@@ -6,19 +6,25 @@
 
 
 'use strict';
-var buffer = require('buffer');
+require('buffer');
 var crypto = require('crypto');
-var assert = require('assert');
 
 var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
 var SHA256 = 'sha256';
 var AES_GCM = 'aes-128-gcm';
 var AES_ECB = 'aes-128-ecb';
 
-var version = 'ff00001b';
+const draft_version = 28;
+var version = 'ff0000' + draft_version.toString(16);
+
+function chunk(s, n) {
+  return (new Array(Math.ceil(s.length / n)))
+    .fill()
+    .map((_, i) => s.slice(i * n, i * n + n));
+}
 
 function log(m, k) {
-  console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
+  console.log(m + ' [' + k.length + ']: ' + chunk(k.toString('hex'), 32).join(' '));
 };
 
 class HMAC {
@@ -132,7 +138,7 @@ class InitialProtection {
     log('hp sample', sample);
     // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
     // var mask = ctr.update(Buffer.alloc(5));
-    var ecb = crypto.createCipheriv('aes-128-ecb', this.hp, Buffer.alloc(0));
+    var ecb = crypto.createCipheriv(AES_ECB, this.hp, Buffer.alloc(0));
     var mask = ecb.update(sample);
     log('hp mask', mask);
     return mask;
