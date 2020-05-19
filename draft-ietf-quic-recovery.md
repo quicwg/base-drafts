@@ -532,8 +532,8 @@ PTO period being set to twice its current value. The PTO backoff is reset upon
 receiving an acknowledgement, except when a client receives an acknowledgment
 from a server prior to the server validating the client address. A client
 keeps increasing the PTO backoff until the server's address validation
-completes to ensure the client's anti-deadlock timer is not set too
-aggressively when the server is slow in responding with handshake data.
+completes to ensure the client's PTO timer is not set too aggressively
+when the server is slow in responding with handshake data.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
