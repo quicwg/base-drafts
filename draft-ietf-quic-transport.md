@@ -1229,9 +1229,11 @@ when a client's address changes.
   transport parameter to request that clients move connections to that dedicated
   address. Note that clients could choose not to use the preferred address.
 
-A server in a deployment that does not implement a solution to
-maintain connection continuity during connection migration
-SHOULD disallow migration using the disable_active_migration transport
+A server in a deployment that does not implement a solution to maintain
+connection continuity during connection migration SHOULD disallow migration
+using the disable_active_migration transport parameter.  The
+disable_active_migration transport parameter does not prohibit subsequent
+connection migration after a client has acted on the preferred_address transport
 parameter.
 
 Server deployments that use this simple form of load balancing MUST avoid the
@@ -4872,11 +4874,11 @@ max_ack_delay (0x0b):
 disable_active_migration (0x0c):
 
 : The disable active migration transport parameter is included if the endpoint
-  does not support active connection migration ({{migration}}). Peers of an
-  endpoint that sets this transport parameter MUST NOT send any packets,
-  including probing packets ({{probing}}), from a local address or port other
-  than that used to perform the handshake.  This parameter is a zero-length
-  value.
+  does not support active connection migration ({{migration}}) on the address
+  being used during the handshake.  Peers of an endpoint that sets this
+  transport parameter MUST NOT send any packets, including probing packets
+  ({{probing}}), from a local address or port other than that used to perform
+  the handshake. This parameter is a zero-length value.
 
 preferred_address (0x0d):
 
