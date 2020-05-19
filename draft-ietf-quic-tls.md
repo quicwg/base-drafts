@@ -2055,11 +2055,13 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-tls-27
 
--
+- Allowed CONNECTION_CLOSE in any packet number space, with restrictions on
+  use of the application-specific variant (#3430, #3435, #3440)
+- Prohibit the use of the compatibility mode from TLS 1.3 (#3594, #3595)
 
 ## Since draft-ietf-quic-tls-26
 
-- Updated examples
+- No changes
 
 ## Since draft-ietf-quic-tls-25
 

@@ -2445,6 +2445,15 @@ what might be a temporary or intermittent error.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-27
+
+- Updated text to refer to latest HTTP revisions
+- Use the HTTP definition of authority for establishing and coalescing
+  connections (#253, #2223, #3558)
+- Define use of GOAWAY from both endpoints (#2632, #3129)
+- Require either :authority or Host if the URI scheme has a mandatory
+  authority component (#3408, #3475)
+
 ## Since draft-ietf-quic-http-26
 
 - No changes

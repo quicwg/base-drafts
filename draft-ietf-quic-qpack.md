@@ -1346,7 +1346,7 @@ setting an appropriate value for the maximum number of blocked streams.  In
 HTTP/3, this is realized by setting an appropriate value for the
 QPACK_BLOCKED_STREAMS parameter.  An encoder can limit the amount of state
 memory by only using as many blocked streams as it wishes to support; no
-signaling to the decoder is requred.
+signaling to the decoder is required.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
 by processing header fields sequentially. A decoder implementation does not need
@@ -1590,6 +1590,10 @@ return controlBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-14
+
+Added security considerations
+
 ## Since draft-ietf-quic-qpack-13
 
 No changes
@@ -1684,7 +1688,7 @@ people.
 
 The compression design team did substantial work exploring the problem space and
 influencing the initial draft.  The contributions of design team members Roberto
-Peon, Martin Thomson, and Dmitri Tikhonov is gratefully acknowledged.
+Peon, Martin Thomson, and Dmitri Tikhonov are gratefully acknowledged.
 
 The following people also provided substantial contributions to this document:
 

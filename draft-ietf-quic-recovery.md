@@ -893,17 +893,39 @@ Timely delivery of ACK frames is important for efficient loss recovery. Packets
 containing only ACK frames SHOULD therefore not be paced, to avoid delaying
 their delivery to the peer.
 
-Sending multiple packets into the network without any delay between them
-creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or limit such bursts to the initial
-congestion window, which is recommended to be the minimum of
-`10 * max_datagram_size` and `max(2 * max_datagram_size, 14720))`, where
-max_datagram_size is the current maximum size of a datagram for the connection,
-not including UDP or IP overhead.
+Endpoints can implement pacing as they choose. A perfectly paced sender spreads
+packets exactly evenly over time. For a window-based congestion controller, such
+as the one in this document, that rate can be computed by averaging the
+congestion window over the round-trip time. Expressed as a rate in bytes:
 
-As an example of a well-known and publicly available implementation of a flow
-pacer, implementers are referred to the Fair Queue packet scheduler (fq qdisc)
-in Linux (3.11 onwards).
+~~~
+rate = N * congestion_window / smoothed_rtt
+~~~
+
+Or, expressed as an inter-packet interval:
+
+~~~
+interval = smoothed_rtt * packet_size / congestion_window / N
+~~~
+
+Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
+that variations in round-trip time don't result in under-utilization of the
+congestion window.  Values of 'N' larger than 1 ultimately result in sending
+packets as acknowledgments are received rather than when timers fire, provided
+the congestion window is fully utilized and acknowledgments arrive at regular
+intervals.
+
+Practical considerations, such as packetization, scheduling delays, and
+computational efficiency, can cause a sender to deviate from this rate over time
+periods that are much shorter than a round-trip time.  Sending multiple packets
+into the network without any delay between them creates a packet burst that
+might cause short-term congestion and losses.  Implementations MUST either use
+pacing or limit such bursts to the initial congestion window; see
+{{initial-cwnd}}.
+
+One possible implementation strategy for pacing uses a leaky bucket algorithm,
+where the capacity of the "bucket" is limited to the maximum burst size and the
+rate the "bucket" fills is determined by the above function.
 
 ## Under-utilizing the Congestion Window
 
@@ -1140,6 +1162,22 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
+## On Receiving a Datagram
+
+When a server is blocked by anti-amplification limits, receiving
+a datagram unblocks it, even if none of the packets in the
+datagram are successfully processed. In such a case, the PTO
+timer will need to be re-armed.
+
+Pseudocode for OnDatagramReceived follows:
+
+~~~
+OnDatagramReceived(datagram):
+  // If this datagram unblocks the server, arm the
+  // PTO timer to avoid deadlock.
+  if (server was at anti-amplification limit):
+    SetLossDetectionTimer()
+~~~
 
 ## On Receiving an Acknowledgment
 
@@ -1579,6 +1617,21 @@ OnPacketNumberSpaceDiscarded(pn_space):
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-27
+
+- Added recommendations for speeding up handshake under some loss conditions
+  (#3078, #3080)
+- PTO count is reset when handshake progress is made (#3272, #3415)
+- PTO count is not reset by a client when the server might be awaiting
+  address validation (#3546, #3551)
+- Recommend repairing losses immediately after entering the recovery period
+  (#3335, #3443)
+- Clarified what loss conditions can be ignored during the handshake (#3456,
+  #3450)
+- Allow, but don't recommend, using RTT from previous connection to seed RTT
+  (#3464, #3496)
+- Recommend use of adaptive loss detection thresholds (#3571, #3572)
 
 ## Since draft-ietf-quic-recovery-26
 
