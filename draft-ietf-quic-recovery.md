@@ -1618,6 +1618,21 @@ OnPacketNumberSpaceDiscarded(pn_space):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-27
+
+- Added recommendations for speeding up handshake under some loss conditions
+  (#3078, #3080)
+- PTO count is reset when handshake progress is made (#3272, #3415)
+- PTO count is not reset by a client when the server might be awaiting
+  address validation (#3546, #3551)
+- Recommend repairing losses immediately after entering the recovery period
+  (#3335, #3443)
+- Clarified what loss conditions can be ignored during the handshake (#3456,
+  #3450)
+- Allow, but don't recommend, using RTT from previous connection to seed RTT
+  (#3464, #3496)
+- Recommend use of adaptive loss detection thresholds (#3571, #3572)
+
 ## Since draft-ietf-quic-recovery-26
 
 No changes.
