@@ -528,12 +528,14 @@ decrypt 0-RTT packets, and prevents a server from sending a 1-RTT packet on
 a PTO expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
-PTO period being set to twice its current value. The PTO backoff is reset upon
-receiving an acknowledgement, except when a client receives an acknowledgment
-from a server prior to the server validating the client address. A client
-keeps increasing the PTO backoff until the server's address validation
-completes to ensure the client's PTO timer is not set too aggressively
-when the server is slow in responding with handshake data.
+PTO period being set to twice its current value. The PTO backoff factor is reset
+when an acknowledgement is received, except in the following case. A server
+might take longer to respond to packets during the handshake than otherwise.
+To protect such a server from repeated client probes, the PTO backoff is not
+reset at a client that is not yet certain that the server has finished validating
+the client's address. That is, a client does not reset the PTO backoff factor on
+receiving acknowledgements until it receives a HANDSHAKE_DONE frame or
+an acknowledgement for one of its Handshake or 1-RTT packets.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
