@@ -1930,7 +1930,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff00001b088394c8f03e5157080000449e00000002
+c3ff00001c088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1947,13 +1947,13 @@ header[0] ^= mask[0] & 0x0f
      = c0
 header[18..21] ^= mask[1..4]
      = 3b343aa8
-header = c0ff00001b088394c8f03e5157080000449e3b343aa8
+header = c0ff00001c088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff00001b088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+c0ff00001c088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
 9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
 4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
 b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
@@ -1990,7 +1990,7 @@ eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
 cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
 acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-38d3b779d72edc00c5cd088eff802b05
+ea5388b911e76d2856d68cf6cf394185
 ~~~
 
 
@@ -2010,7 +2010,7 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001b0008f067a5502a4262b50040740001
+c1ff00001c0008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
@@ -2019,17 +2019,17 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c9ff00001b0008f067a5502a4262b5004074168b
+header = c9ff00001c0008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff00001b0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+c9ff00001c0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bd8c3a9528d2b6aca20f0
-8047d9f017f0
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bda5b23c81034ab74f54c
+b1bd72951256
 ~~~
 
 
@@ -2041,8 +2041,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff00001b0008f067a5502a4262b574 6f6b656ea523cb5ba524695f6569f293
-a1359d8e
+ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
+6fdf1d63
 ~~~
 
 
