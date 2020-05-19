@@ -522,18 +522,18 @@ When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout,
 with one exception. The ApplicationData packet number space (Section 4.1.1
 of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
-the PTO for ApplicationData
-prevents a client from retransmitting a 0-RTT packet on a PTO expiration before
-confirming that the server is able to decrypt 0-RTT packets, and prevents a
-server from sending a 1-RTT packet on a PTO expiration before it has the keys
-to process an acknowledgement.
+the PTO for ApplicationData prevents a client from retransmitting a 0-RTT
+packet on a PTO expiration before confirming that the server is able to
+decrypt 0-RTT packets, and prevents a server from sending a 1-RTT packet on
+a PTO expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff is reset upon
-receiving an acknowledgement unless it's a client unsure if the server has
-validated the client's address. Not resetting the backoff during peer address
-validation ensures the client's anti-deadlock timer is not set too aggressively
-when the server is slow in responding with handshake data.
+receiving an acknowledgement, except when a client receives an acknowledgment
+from a server prior to the server validating the client address. A client
+keeps increasing the PTO backoff until the server's address validation
+completes to ensure the client's anti-deadlock timer is not set too
+aggressively when the server is slow in responding with handshake data.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
