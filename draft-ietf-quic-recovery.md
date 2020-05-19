@@ -513,22 +513,29 @@ The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
 immediately.
 
 A sender recomputes and may need to reset its PTO timer every time an
-ack-eliciting packet is sent. When ack-eliciting packets are in-flight in
-multiple packet number spaces, the timer MUST be set for the packet number
-space with the earliest timeout, except for ApplicationData, which MUST be
-ignored until the handshake completes; see Section 4.1.1 of {{QUIC-TLS}}.  Not
-arming the PTO for ApplicationData prevents a client from retransmitting a 0-RTT
-packet on a PTO expiration before confirming that the server is able to decrypt
-0-RTT packets, and prevents a server from sending a 1-RTT packet on a PTO
-expiration before it has the keys to process an acknowledgement.
+ack-eliciting packet is sent or acknowledged, when the handshake is confirmed,
+or when Initial or Handshake keys are discarded. This ensures the PTO is always
+set based on the latest RTT information and for the last sent packet in the
+correct packet number space.
+
+When ack-eliciting packets in multiple packet number spaces are in flight,
+the timer MUST be set for the packet number space with the earliest timeout,
+with one exception. The ApplicationData packet number space (Section 4.1.1
+of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
+the PTO for ApplicationData prevents a client from retransmitting a 0-RTT
+packet on a PTO expiration before confirming that the server is able to
+decrypt 0-RTT packets, and prevents a server from sending a 1-RTT packet on
+a PTO expiration before it has the keys to process an acknowledgement.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
-PTO period being set to twice its current value.  The PTO period is set based
-on the latest RTT information after receiving an acknowledgement. The PTO
-backoff is reset upon receiving an acknowledgement unless it's a client unsure
-if the the server has validated the client's address. Not resetting the backoff
-during peer address validation ensures the client's anti-deadlock timer is not
-set too aggressively when the server is slow in responding with handshake data.
+PTO period being set to twice its current value. The PTO backoff factor is reset
+when an acknowledgement is received, except in the following case. A server
+might take longer to respond to packets during the handshake than otherwise.  To
+protect such a server from repeated client probes, the PTO backoff is not reset
+at a client that is not yet certain that the server has finished validating the
+client's address. That is, a client does not reset the PTO backoff factor on
+receiving acknowledgements until it receives a HANDSHAKE_DONE frame or an
+acknowledgement for one of its Handshake or 1-RTT packets.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
