@@ -6885,7 +6885,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Clearer requirements for address validation (#2125, #3327)
 - Security analysis of handshake and migration (#2143, #2387, #2925)
 - The entire payload of a datagram is used when counting bytes for
-  avoid amplification attacks (#3333, #3470)
+  mitigating amplification attacks (#3333, #3470)
 - Connection IDs can be used at any time, including in the handshake (#3348,
   #3560, #3438, #3565)
 - Only one ACK should be sent for each instance of reordering (#3357, #3361)
