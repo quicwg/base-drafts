@@ -518,7 +518,7 @@ or when Initial or Handshake keys are discarded. This ensures the PTO is always
 set based on the latest RTT information and for the last sent packet in the
 correct packet number space.
 
-When ack-eliciting packets are in-flight in multiple packet number spaces,
+When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout,
 except for ApplicationData, which MUST be ignored until the handshake completes;
 see Section 4.1.1 of {{QUIC-TLS}}.  Not arming the PTO for ApplicationData
