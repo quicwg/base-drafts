@@ -520,8 +520,9 @@ correct packet number space.
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout,
-except for ApplicationData, which MUST be ignored until the handshake completes;
-see Section 4.1.1 of {{QUIC-TLS}}.  Not arming the PTO for ApplicationData
+with one exception. The ApplicationData packet number space (Section 4.1.1
+of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
+the PTO for ApplicationData
 prevents a client from retransmitting a 0-RTT packet on a PTO expiration before
 confirming that the server is able to decrypt 0-RTT packets, and prevents a
 server from sending a 1-RTT packet on a PTO expiration before it has the keys
