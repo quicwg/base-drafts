@@ -3733,7 +3733,7 @@ packets on a new path to a peer:
   lost {{QUIC-RECOVERY}}, validation is deemed to have failed.
 
 To reduce the chances of misinterpreting congestive loss as packets dropped by a
-faulty network element, an endpoint could set the ECT(0) codepoint only for the
+faulty network element, an endpoint could set the ECT(0) codepoint for only the
 first ten outgoing packets on a path, or for a period of three RTTs, whichever
 occurs first.
 
