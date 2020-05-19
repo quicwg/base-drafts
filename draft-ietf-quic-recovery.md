@@ -908,9 +908,10 @@ Or, expressed as an inter-packet interval:
 interval = smoothed_rtt * packet_size / congestion_window / N
 ~~~
 
-Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
-that variations in round-trip time don't result in under-utilization of the
-congestion window.
+Using a value for N that is low, but at least 1 (for example, 1.25) ensures that
+variations in round-trip time don't result in under-utilization of the
+congestion window. Note that a higher N results in the inter-packet interval
+becoming smaller, and a large enough N defeats purpose of pacing.
 
 Practical considerations, such as packetization, scheduling delays, and
 computational efficiency, can cause a sender to deviate from this rate over time
