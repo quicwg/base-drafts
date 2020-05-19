@@ -1144,10 +1144,10 @@ Pseudocode for OnPacketSent follows:
 
 ## On Receiving a Datagram
 
-When a server is  blocked by anti-amplification limits, receiving
+When a server is blocked by anti-amplification limits, receiving
 a datagram unblocks it, even if none of the packets in the
 datagram are successfully processed. In such a case, the PTO
-timer is now set, since data is in flight and probes can be sent.
+timer may need to be armed.
 
 Pseudocode for OnDatagramReceived follows:
 
