@@ -1162,6 +1162,22 @@ Pseudocode for OnPacketSent follows:
      SetLossDetectionTimer()
 ~~~
 
+## On Receiving a Datagram
+
+When a server is blocked by anti-amplification limits, receiving
+a datagram unblocks it, even if none of the packets in the
+datagram are successfully processed. In such a case, the PTO
+timer will need to be re-armed.
+
+Pseudocode for OnDatagramReceived follows:
+
+~~~
+OnDatagramReceived(datagram):
+  // If this datagram unblocks the server, arm the
+  // PTO timer to avoid deadlock.
+  if (server was at anti-amplification limit):
+    SetLossDetectionTimer()
+~~~
 
 ## On Receiving an Acknowledgment
 
