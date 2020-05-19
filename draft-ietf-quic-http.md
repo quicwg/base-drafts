@@ -827,18 +827,13 @@ following properties:
 - safe; see Section 7.2.1 of {{!SEMANTICS}}
 - does not include a request body or trailer section
 
-Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
-carrying a request which is not cacheable, is not known to be safe, or that
-indicates the presence of a request body.  If the pushed response arrives on a
-push stream, this MAY be treated as a stream error of type
-H3_STREAM_CREATION_ERROR.
-
 The server MUST include a value in the ":authority" pseudo-header field for
-which the server is authoritative; see {{connection-reuse}}.  A client SHOULD
-send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame carrying a request
-for which it does not consider the server authoritative.  If the pushed response
-arrives on a push stream, this MAY be treated as a stream error of type
-H3_STREAM_CREATION_ERROR.
+which the server is authoritative; see {{connection-reuse}}.
+
+Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
+carrying a request which is not cacheable, is not known to be safe, that
+indicates the presence of a request body, or for which it does not consider the
+server authoritative.
 
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
@@ -1297,7 +1292,9 @@ corresponding promise to be fulfilled.
 Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
 A server SHOULD NOT send a CANCEL_PUSH when it has already created a
 corresponding push stream, and a client SHOULD NOT send a CANCEL_PUSH when it
-has already received a corresponding push stream.
+has already received a corresponding push stream.  If a push stream arrives
+after a client has sent CANCEL_PUSH, this MAY be treated as a stream error of
+type H3_STREAM_CREATION_ERROR.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
