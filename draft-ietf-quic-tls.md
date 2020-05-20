@@ -657,7 +657,7 @@ Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
 that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
 does not depend on any state being retained when resuming a connection, unless
-0-RTT is also used; see {{enable-0rtt}} and Section 7.3.1 of
+0-RTT is also used; see {{enable-0rtt}} and Section 7.4.1 of
 {{QUIC-TRANSPORT}}. Application protocols could depend on state that is
 retained between resumed connections.
 
