@@ -222,7 +222,7 @@ evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
 that uses the dynamic table has to keep track of each dynamic table entry
 referenced by each field section until those representations are acknowledged by
-the decoder (see {{entry-acknowledgement}}).
+the decoder (see {{header-acknowledgement}}).
 
 #### Avoiding Prohibited Insertions
 
@@ -301,7 +301,7 @@ A decoder might stop issuing flow control credit on the stream that carries an
 encoded field section until the necessary updates are received on the encoder
 stream. If the granting of flow control credit on the encoder stream (or the
 connection as a whole) depends on the consumption and release of data on the
-stream carrying the field section, a deadlock might result.
+stream carrying the encoded field section, a deadlock might result.
 
 More generally, a stream containing a large instruction can become deadlocked if
 the decoder withholds flow control credit until the instruction is completely
@@ -319,7 +319,7 @@ Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
 order to be able to send Insert Count Increment instructions.
 
-An Entry Acknowledgement instruction ({{entry-acknowledgement}}) implies that
+A Section Acknowledgement instruction ({{header-acknowledgement}}) implies that
 the decoder has received all dynamic table state necessary to decode the field
 section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
@@ -335,8 +335,9 @@ As in HPACK, the decoder processes a series of representations and emits the
 corresponding field sections. It also processes instructions received on the
 encoder stream that modify the dynamic table.  Note that encoded field sections
 and encoder stream instructions arrive on separate streams.  This is unlike
-HPACK, where field sections can contain instructions that modify the dynamic
-table, and there is no dedicated stream of HPACK instructions.
+HPACK, where encoded field sections (header blocks) can contain instructions
+that modify the dynamic table, and there is no dedicated stream of HPACK
+instructions.
 
 The decoder MUST emit field lines in the order their representations appear in
 the encoded field section.
@@ -348,8 +349,8 @@ Insert Count. When the Required Insert Count is less than or equal to the
 decoder's Insert Count, the field section can be processed immediately.
 Otherwise, the stream on which the field section was received becomes blocked.
 
-While blocked, field section data SHOULD remain in the blocked stream's flow
-control window.  A stream becomes unblocked when the Insert Count becomes
+While blocked, encoded field section data SHOULD remain in the blocked stream's
+flow control window.  A stream becomes unblocked when the Insert Count becomes
 greater than or equal to the Required Insert Count for all encoded field
 sections the decoder has started reading from the stream.
 
@@ -370,18 +371,18 @@ The decoder signals the following events by emitting decoder instructions
 #### Completed Processing of a Field Section
 
 After the decoder finishes decoding a field section encoded using
-representations containing dynamic table references, it MUST emit an Entry
-Acknowledgement instruction ({{entry-acknowledgement}}).  A stream may carry
+representations containing dynamic table references, it MUST emit a Section
+Acknowledgement instruction ({{header-acknowledgement}}).  A stream may carry
 multiple field sections in the case of intermediate responses, trailers, and
-pushed requests.  The encoder interprets each Entry Acknowledgement instruction
-as acknowledging the earliest unacknowledged field section containing dynamic
-table references sent on the given stream.
+pushed requests.  The encoder interprets each Section Acknowledgement
+instruction as acknowledging the earliest unacknowledged field section
+containing dynamic table references sent on the given stream.
 
 #### Abandonment of a Stream
 
 When an endpoint receives a stream reset before the end of a stream or before
-all field sections are processed on that stream, or when it abandons reading of
-a stream, it generates a Stream Cancellation instruction; see
+all encoded field sections are processed on that stream, or when it abandons
+reading of a stream, it generates a Stream Cancellation instruction; see
 {{stream-cancellation}}.  This signals to the encoder that all references to the
 dynamic table on that stream are no longer outstanding.  A decoder with a
 maximum dynamic table capacity ({{maximum-dynamic-table-capacity}}) equal to
@@ -389,7 +390,7 @@ zero MAY omit sending Stream Cancellations, because the encoder cannot have any
 dynamic table references.  An encoder cannot infer from this instruction that
 any updates to the dynamic table have been received.
 
-The Entry Acknowledgement and Stream Cancellation instructions permit the
+The Section Acknowledgement and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
 with absolute index lower than the Known Received Count has zero references,
 then it is considered evictable; see {{blocked-insertion}}.
@@ -402,8 +403,8 @@ when to emit Insert Count Increment instructions; see
 dynamic table entry will provide the timeliest feedback to the encoder, but
 could be redundant with other decoder feedback. By delaying an Insert Count
 Increment instruction, the decoder might be able to coalesce multiple Insert
-Count Increment instructions, or replace them entirely with Entry
-Acknowledgements; see {{entry-acknowledgement}}. However, delaying too long
+Count Increment instructions, or replace them entirely with Section
+Acknowledgements; see {{header-acknowledgement}}. However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
 
@@ -555,8 +556,8 @@ d = count of entries dropped
 {: title="Example Dynamic Table Indexing - Encoder Stream"}
 
 Unlike in encoder instructions, relative indices in field line representations
-are relative to the Base at the beginning of the field section; see
-{{header-prefix}}. This ensures that references are stable even if field
+are relative to the Base at the beginning of the encoded field section; see
+{{header-prefix}}. This ensures that references are stable even if encoded field
 sections and dynamic table updates are processed out of order.
 
 In a field line representation, a relative index of "0" refers to the entry with
@@ -787,12 +788,12 @@ of the dynamic table.
 
 This section specifies the following decoder instructions.
 
-### Entry Acknowledgement
+### Section Acknowledgement {#header-acknowledgement}
 
-After processing a field section whose declared Required Insert Count is not
-zero, the decoder emits an Entry Acknowledgement instruction.  The instruction
-begins with the '1' one-bit pattern which is followed by the field section's
-associated stream ID encoded as a 7-bit prefix integer; see
+After processing an encoded field section whose declared Required Insert Count
+is not zero, the decoder emits a Section Acknowledgement instruction.  The
+instruction begins with the '1' one-bit pattern which is followed by the field
+section's associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
 
 This instruction is used as described in {{known-received-count}} and
@@ -804,14 +805,14 @@ in {{state-synchronization}}.
 | 1 |      Stream ID (7+)       |
 +---+---------------------------+
 ~~~~~~~~~~
-{:#fig-header-ack title="Entry Acknowledgement"}
+{:#fig-header-ack title="Section Acknowledgement"}
 
-If an encoder receives an Entry Acknowledgement instruction referring to a
+If an encoder receives a Section Acknowledgement instruction referring to a
 stream on which every encoded field section with a non-zero Required Insert
 Count has already been acknowledged, that MUST be treated as a connection error
 of type QPACK_DECODER_STREAM_ERROR.
 
-The Entry Acknowledgement instruction might increase the Known Received Count;
+The Section Acknowledgement instruction might increase the Known Received Count;
 see {{known-received-count}}.
 
 
@@ -864,7 +865,7 @@ dynamic table in a particular state, but do not modify that state.
 Encoded field sections are carried in frames on streams defined by the enclosing
 protocol.
 
-### Field Section Prefix {#header-prefix}
+### Encoded Field Section Prefix {#header-prefix}
 
 Each encoded field section is prefixed with two integers.  The Required Insert
 Count is encoded as an integer with an 8-bit prefix after the encoding described
