@@ -1279,7 +1279,8 @@ GetLossTimeAndSpace():
   return time, space
 
 GetPtoTimeAndSpace():
-  duration = smoothed_rtt + max(4 * rttvar, kGranularity) * (2 ^ pto_count)
+  duration = smoothed_rtt +
+      max(4 * rttvar, kGranularity) * (2 ^ pto_count)
   # Arm PTO from now when there are no inflight packets
   if (no in-flight packets):
     return now() + duration, Initial
@@ -1295,10 +1296,12 @@ GetPtoTimeAndSpace():
       // ApplicationData include the max_ack_delay in PTO.
       duration += max_ack_delay * (2 ^ pto_count)
 
-    if (timeout > time_of_last_sent_ack_eliciting_packet[space] + duration):
-      timeout = time_of_last_sent_ack_eliciting_packet[space] + duration
+    if (timeout >
+          time_of_last_sent_ack_eliciting_packet[space] + duration):
+      timeout =
+          time_of_last_sent_ack_eliciting_packet[space] + duration
       pn_space = space
-  return timeout, space 
+  return timeout, space
 
 PeerCompletedAddressValidation():
   # Assume clients validate the server's address implicitly.
