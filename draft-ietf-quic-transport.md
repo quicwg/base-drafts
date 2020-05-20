@@ -1230,9 +1230,9 @@ when a client's address changes.
   address. Note that clients could choose not to use the preferred address.
 
 A server in a deployment that does not implement a solution to maintain
-connection continuity during connection migration SHOULD disallow migration
+connection continuity when the client address changes SHOULD indicate migration is not supported
 using the disable_active_migration transport parameter.  The
-disable_active_migration transport parameter does not prohibit subsequent
+disable_active_migration transport parameter does not prohibit
 connection migration after a client has acted on the preferred_address transport
 parameter.
 
