@@ -1269,18 +1269,34 @@ timers wake up late. Timers set in the past fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
-GetEarliestTimeAndSpace(times):
-  time = times[Initial]
+GetLossTimeAndSpace():
+  time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if (times[pn_space] != 0 &&
-        (time == 0 || times[pn_space] < time) &&
-        # Skip ApplicationData until handshake completion.
-        (pn_space != ApplicationData ||
-          IsHandshakeComplete()):
+    if (time == 0 || loss_time[pn_space] < time):
       time = times[pn_space];
       space = pn_space
   return time, space
+
+GetPtoTimeAndSpace():
+  duration = smoothed_rtt + max(4 * rttvar, kGranularity) * (2 ^ pto_count)
+  # Set PTO time for the case there are no inflight packets
+  timeout = now() + duration
+  pn_space = Initial
+  for space in [ Initial, Handshake, ApplicationData ]:
+    if (no in-flight packets in space):
+        continue;
+    if space == ApplicationData:
+      // Don't arm PTO for ApplicationData until handshake complete.
+      if (handshake is not complete):
+        return timeout, pn_space
+      // ApplicationData include the max_ack_delay in PTO.
+      duration += max_ack_delay * (2 ^ pto_count)
+    
+    if timeout > time_of_last_sent_ack_eliciting_packet[space] + duration
+      timeout = time_of_last_sent_ack_eliciting_packet[space] + duration
+      pn_space = space
+  return timeout, space    
 
 PeerCompletedAddressValidation():
   # Assume clients validate the server's address implicitly.
@@ -1293,7 +1309,7 @@ PeerCompletedAddressValidation():
        has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
-  earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
+  earliest_loss_time, _ = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
@@ -1313,23 +1329,8 @@ SetLossDetectionTimer():
     return
 
   // Determine which PN space to arm PTO for.
-  sent_time, pn_space = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet)
-  // Don't arm PTO for ApplicationData until handshake complete.
-  if (pn_space == ApplicationData &&
-      handshake is not confirmed):
-    loss_detection_timer.cancel()
-    return
-  if (sent_time == 0):
-    assert(!PeerCompletedAddressValidation())
-    sent_time = now()
-
-  // Calculate PTO duration
-  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
-    max_ack_delay
-  timeout = timeout * (2 ^ pto_count)
-
-  loss_detection_timer.update(sent_time + timeout)
+  timeout, _ = GetPtoTimeAndSpace()
+  loss_detection_timer.update(timeout)
 ~~~
 
 
@@ -1342,8 +1343,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  earliest_loss_time, pn_space =
-    GetEarliestTimeAndSpace(loss_time)
+  earliest_loss_time, pn_space = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     lost_packets = DetectLostPackets(pn_space)
@@ -1355,8 +1355,7 @@ OnLossDetectionTimeout():
   if (bytes_in_flight > 0):
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
+    _, pn_space = GetPtoTimeAndSpace()
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
     assert(endpoint is client without 1-RTT keys)
