@@ -188,10 +188,6 @@ TLS provides two basic handshake modes of interest to QUIC:
    self-contained trigger for any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
-Note that this omits the EndOfEarlyData message, which is not used in QUIC (see
-{{remove-eoed}}).  Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
-used by QUIC; ChangeCipherSpec is redundant in TLS 1.3 and QUIC has defined its
-own key update mechanism {{key-update}}.
 
 ~~~
     Client                                             Server
@@ -212,6 +208,11 @@ own key update mechanism {{key-update}}.
        (1-RTT) Keys
 ~~~
 {: #tls-full title="TLS Handshake with 0-RTT"}
+
+{{tls-full}} omits the EndOfEarlyData message, which is not used in QUIC; see
+{{remove-eoed}}. Likewise, neither ChangeCipherSpec nor KeyUpdate messages are
+used by QUIC. ChangeCipherSpec is redundant in TLS 1.3; see {{compat-mode}}.
+QUIC has its own key update mechanism; see {{key-update}}.
 
 Data is protected using a number of encryption levels:
 
@@ -446,7 +447,7 @@ network, it proceeds as follows:
   find the proper location in the data sequence.  If the result of this process
   is that new data is available, then it is delivered to TLS in order.
 
-- If the packet is from a previously installed encryption level, it MUST not
+- If the packet is from a previously installed encryption level, it MUST NOT
   contain data which extends past the end of previously received data in that
   flow. Implementations MUST treat any violations of this requirement as a
   connection error of type PROTOCOL_VIOLATION.
@@ -740,18 +741,24 @@ QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
 {{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
-## TLS Errors
+## TLS Errors {#tls-errors}
 
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is turned into a QUIC connection error by converting the one-byte
-alert description into a QUIC error code.  The alert description is added to
-0x100 to produce a QUIC error code from the range reserved for CRYPTO_ERROR.
-The resulting value is sent in a QUIC CONNECTION_CLOSE frame of type 0x1c.
+A TLS alert is converted into a QUIC connection error. The alert description is
+added to 0x100 to produce a QUIC error code from the range reserved for
+CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
+type 0x1c.
 
 The alert level of all TLS alerts is "fatal"; a TLS stack MUST NOT generate
 alerts at the "warning" level.
+
+QUIC permits the use of a generic code in place of a specific error code; see
+Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
+alert with a generic alert, such as handshake_failure (0x128 in QUIC).
+Endpoints MAY use a generic error code to avoid possibly exposing confidential
+information.
 
 
 ## Discarding Unused Keys
@@ -1554,7 +1561,7 @@ Handshake packets, but because that tampering requires modifying TLS handshake
 messages, that tampering will cause the TLS handshake to fail.
 
 
-# QUIC-Specific Additions to the TLS Handshake
+# QUIC-Specific Adjustments to the TLS Handshake
 
 QUIC uses the TLS handshake for more than just negotiation of cryptographic
 parameters.  The TLS handshake provides preliminary values for QUIC transport
@@ -1567,12 +1574,13 @@ QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation (ALPN)
 {{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
-this purpose.  When using ALPN, endpoints MUST immediately close a connection
-(see Section 10.3 in {{QUIC-TRANSPORT}}) if an application protocol is not
-negotiated with a no_application_protocol TLS alert (QUIC error code 0x178, see
-{{tls-errors}}).  While {{!ALPN}} only specifies that servers use this alert,
-QUIC clients MUST also use it to terminate a connection when ALPN negotiation
-fails.
+this purpose.
+
+When using ALPN, endpoints MUST immediately close a connection (see Section
+10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
+While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
+use error 0x178 to terminate a connection when ALPN negotiation fails.
 
 An application protocol MAY restrict the QUIC versions that it can operate over.
 Servers MUST select an application protocol compatible with the QUIC version
@@ -1597,7 +1605,7 @@ protection for these values.
    } ExtensionType;
 ~~~
 
-The `extension_data` field of the quic_transport_parameters extension contains a
+The extension_data field of the quic_transport_parameters extension contains a
 value that is defined by the version of QUIC that is in use.
 
 The quic_transport_parameters extension is carried in the ClientHello and the
@@ -1629,6 +1637,21 @@ of a CRYPTO frame in a 0-RTT packet as a connection error of type
 PROTOCOL_VIOLATION.
 
 As a result, EndOfEarlyData does not appear in the TLS handshake transcript.
+
+
+## Prohibit TLS Middlebox Compatibility Mode {#compat-mode}
+
+Appendix D.4 of {{!TLS13}} describes an alteration to the TLS 1.3 handshake as
+a workaround for bugs in some middleboxes. The TLS 1.3 middlebox compatibility
+mode involves setting the legacy_session_id field to a 32-byte value in the
+ClientHello and ServerHello, then sending a change_cipher_spec record. Both
+field and record carry no semantic content and are ignored.
+
+This mode has no use in QUIC as it only applies to middleboxes that interfere
+with TLS over TCP. QUIC also provides no means to carry a change_cipher_spec
+record. A client MUST NOT request the use of the TLS 1.3 compatibility mode. A
+server SHOULD treat the receipt of a TLS ClientHello that with a non-empty
+legacy_session_id field as a connection error of type PROTOCOL_VIOLATION.
 
 
 # Security Considerations
@@ -1907,7 +1930,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff00001b088394c8f03e5157080000449e00000002
+c3ff00001c088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1924,13 +1947,13 @@ header[0] ^= mask[0] & 0x0f
      = c0
 header[18..21] ^= mask[1..4]
      = 3b343aa8
-header = c0ff00001b088394c8f03e5157080000449e3b343aa8
+header = c0ff00001c088394c8f03e5157080000449e3b343aa8
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff00001b088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
+c0ff00001c088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
 9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
 4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
 b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
@@ -1967,7 +1990,7 @@ eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
 cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
 acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
 13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-38d3b779d72edc00c5cd088eff802b05
+ea5388b911e76d2856d68cf6cf394185
 ~~~
 
 
@@ -1987,7 +2010,7 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001b0008f067a5502a4262b50040740001
+c1ff00001c0008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
@@ -1996,17 +2019,17 @@ from the third protected octet:
 ~~~
 sample = 7002596f99ae67abf65a5852f54f58c3
 mask   = 38168a0c25
-header = c9ff00001b0008f067a5502a4262b5004074168b
+header = c9ff00001c0008f067a5502a4262b5004074168b
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff00001b0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
+c9ff00001c0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
 5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
 537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bd8c3a9528d2b6aca20f0
-8047d9f017f0
+cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bda5b23c81034ab74f54c
+b1bd72951256
 ~~~
 
 
@@ -2018,8 +2041,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff00001b0008f067a5502a4262b574 6f6b656ea523cb5ba524695f6569f293
-a1359d8e
+ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
+6fdf1d63
 ~~~
 
 
@@ -2030,9 +2053,15 @@ a1359d8e
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-27
+
+- Allowed CONNECTION_CLOSE in any packet number space, with restrictions on
+  use of the application-specific variant (#3430, #3435, #3440)
+- Prohibit the use of the compatibility mode from TLS 1.3 (#3594, #3595)
+
 ## Since draft-ietf-quic-tls-26
 
-- Updated examples
+- No changes
 
 ## Since draft-ietf-quic-tls-25
 
@@ -2196,23 +2225,24 @@ No significant changes.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Adam Langley,
-Alessandro Ghedini,
-Christian Huitema,
-Christopher Wood,
-David Schinazi,
-Dragana Damjanovic,
-Eric Rescorla,
-Ian Swett,
-Jana Iyengar, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Marten Seemann,
-Martin Duke,
-Mike Bishop, <contact
- fullname="Mikkel Fahnøe Jørgensen"/>,
-Nick Banks,
-Nick Harper,
-Roberto Peon,
-Rui Paulo,
-Ryan Hamilton,
-and Victor Vasiliev.
+
+- Adam Langley
+- Alessandro Ghedini
+- Christian Huitema
+- Christopher Wood
+- David Schinazi
+- Dragana Damjanovic
+- Eric Rescorla
+- Ian Swett
+- Jana Iyengar
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Marten Seemann
+- Martin Duke
+- Mike Bishop
+- <t><t><contact fullname="Mikkel Fahnøe Jørgensen"/></t></t>
+- Nick Banks
+- Nick Harper
+- Roberto Peon
+- Rui Paulo
+- Ryan Hamilton
+- Victor Vasiliev
