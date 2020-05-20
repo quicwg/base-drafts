@@ -1110,7 +1110,7 @@ loss_detection_timer:
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
-time_of_last_sent_ack_eliciting_packet\[kPacketNumberSpace]:
+time_of_last_ack_eliciting_packet\[kPacketNumberSpace]:
 : The time the most recent ack-eliciting packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
@@ -1140,7 +1140,7 @@ follows:
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
-     time_of_last_sent_ack_eliciting_packet[pn_space] = 0
+     time_of_last_ack_eliciting_packet[pn_space] = 0
      loss_time[pn_space] = 0
 ~~~
 
@@ -1163,7 +1163,7 @@ Pseudocode for OnPacketSent follows:
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (ack_eliciting):
-       time_of_last_sent_ack_eliciting_packet[pn_space] = now()
+       time_of_last_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
      sent_packets[pn_space][packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -1290,16 +1290,16 @@ GetPtoTimeAndSpace():
     if (no in-flight packets in space):
         continue;
     if space == ApplicationData:
-      // Don't arm PTO for ApplicationData until handshake complete.
+      // Skip ApplicationData until handshake complete.
       if (handshake is not complete):
         return timeout, pn_space
       // ApplicationData include the max_ack_delay in PTO.
       duration += max_ack_delay * (2 ^ pto_count)
 
     if (timeout >
-          time_of_last_sent_ack_eliciting_packet[space] + duration):
+          time_of_last_ack_eliciting_packet[space] + duration):
       timeout =
-          time_of_last_sent_ack_eliciting_packet[space] + duration
+          time_of_last_ack_eliciting_packet[space] + duration
       pn_space = space
   return timeout, space
 
@@ -1616,7 +1616,7 @@ OnPacketNumberSpaceDiscarded(pn_space):
       bytes_in_flight -= size
   sent_packets[pn_space].clear()
   // Reset the loss detection and PTO timer
-  time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
+  time_of_last_ack_eliciting_packet[kPacketNumberSpace] = 0
   loss_time[pn_space] = 0
   pto_count = 0
   SetLossDetectionTimer()
