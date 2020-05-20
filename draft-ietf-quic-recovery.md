@@ -1274,7 +1274,7 @@ GetLossTimeAndSpace():
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
     if (time == 0 || loss_time[pn_space] < time):
-      time = times[pn_space];
+      time = loss_times[pn_space];
       space = pn_space
   return time, space
 
