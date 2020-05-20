@@ -1650,7 +1650,7 @@ field and record carry no semantic content and are ignored.
 This mode has no use in QUIC as it only applies to middleboxes that interfere
 with TLS over TCP. QUIC also provides no means to carry a change_cipher_spec
 record. A client MUST NOT request the use of the TLS 1.3 compatibility mode. A
-server SHOULD treat the receipt of a TLS ClientHello that with a non-empty
+server SHOULD treat the receipt of a TLS ClientHello with a non-empty
 legacy_session_id field as a connection error of type PROTOCOL_VIOLATION.
 
 
