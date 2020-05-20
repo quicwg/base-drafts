@@ -4937,7 +4937,7 @@ initial_source_connection_id (0x0f):
 
 retry_source_connection_id (0x10):
 
-: The value that the the server included in the Source Connection ID field of a
+: The value that the server included in the Source Connection ID field of a
   Retry packet; see {{cid-auth}}.  This transport parameter is only sent by a
   server.
 
