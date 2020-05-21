@@ -2016,7 +2016,7 @@ the integrity protection key for tokens.
 There is no need for a single well-defined format for the token because the
 server that generates the token also consumes it.  Tokens sent in Retry packets
 SHOULD include information that allows the server to verify that the source IP
-address and port in client packets remains constant.
+address and port in client packets remain constant.
 
 Tokens sent in NEW_TOKEN frames MUST include information that allows the server
 to verify that the client IP address has not changed from when the token was
