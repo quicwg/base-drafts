@@ -1284,23 +1284,23 @@ GetPtoTimeAndSpace():
   # Arm PTO from now when there are no inflight packets
   if (no in-flight packets):
     return (now() + duration), Initial
-  timeout = infinite
-  pn_space = Initial
+  pto_timeout = infinite
+  pto_space = Initial
   for space in [ Initial, Handshake, ApplicationData ]:
     if (no in-flight packets in space):
         continue;
     if space == ApplicationData:
       // Skip ApplicationData until handshake complete.
       if (handshake is not complete):
-        return timeout, pn_space
+        return pto_timeout, pto_space
       // ApplicationData include the max_ack_delay in PTO.
       duration += max_ack_delay * (2 ^ pto_count)
 
     t = time_of_last_ack_eliciting_packet[space] + duration
-    if (t < timeout):
-      timeout = t
-      pn_space = space
-  return timeout, space
+    if (t < pto_timeout):
+      pto_timeout = t
+      pto_space = space
+  return pto_timeout, pto_space
 
 PeerCompletedAddressValidation():
   # Assume clients validate the server's address implicitly.
