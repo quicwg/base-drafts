@@ -1283,7 +1283,7 @@ GetPtoTimeAndSpace():
       max(4 * rttvar, kGranularity) * (2 ^ pto_count)
   # Arm PTO from now when there are no inflight packets
   if (no in-flight packets):
-    return now() + duration, Initial
+    return (now() + duration), Initial
   timeout = infinite
   pn_space = Initial
   for space in [ Initial, Handshake, ApplicationData ]:
@@ -1296,10 +1296,9 @@ GetPtoTimeAndSpace():
       // ApplicationData include the max_ack_delay in PTO.
       duration += max_ack_delay * (2 ^ pto_count)
 
-    if (timeout >
-          time_of_last_ack_eliciting_packet[space] + duration):
-      timeout =
-          time_of_last_ack_eliciting_packet[space] + duration
+    t = time_of_last_ack_eliciting_packet[space] + duration
+    if (t < timeout):
+      timeout = t
       pn_space = space
   return timeout, space
 
