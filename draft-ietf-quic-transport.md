@@ -1233,7 +1233,7 @@ A server in a deployment that does not implement a solution to maintain
 connection continuity when the client address changes SHOULD indicate migration
 is not supported using the disable_active_migration transport parameter.  The
 disable_active_migration transport parameter does not prohibit connection
-migration after a client has acted on the preferred_address transport parameter.
+migration after a client has acted on a preferred_address transport parameter.
 
 Server deployments that use this simple form of load balancing MUST avoid the
 creation of a stateless reset oracle; see {{reset-oracle}}.
@@ -2154,8 +2154,8 @@ before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 If the peer sent the disable_active_migration transport parameter, an endpoint
 also MUST NOT send packets (including probing packets; see {{probing}}) from a
 different local address to the address the peer used during the handshake. An
-endpoint which has sent this transport parameter, but detects that a peer has
-nonetheless migrated to a different network MUST either drop the incoming
+endpoint that has sent this transport parameter, but detects that a peer has
+nonetheless migrated to a different remote address MUST either drop the incoming
 packets on that path without generating a stateless reset or proceed with path
 validation and allow the peer to migrate. Generating a stateless reset or
 closing the connection would allow third parties in the network to cause
@@ -4875,9 +4875,8 @@ disable_active_migration (0x0c):
 : The disable active migration transport parameter is included if the endpoint
   does not support active connection migration ({{migration}}) on the address
   being used during the handshake.  When a peer sets this transport parameter,
-  the recipient MUST NOT send any packets to the address the peer used to
-  perform the handshake from a local address or port other than that used to
-  perform the handshake.  This parameter is a zero-length value.
+  an endpoint MUST NOT use a new local address when sending to the address
+  that the peer used during the handshake.  This parameter is a zero-length value.
 
 preferred_address (0x0d):
 
