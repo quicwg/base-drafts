@@ -6902,7 +6902,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Clarified that largest acknowledged needs to be saved, but not necessarily
   signaled in all cases (#3541, #3581)
 - Addressed linkability risk with the use of preferred_address (#3559, #3563)
-- Added authentication of handshake connection IDs (#3429, #3499)
+- Added authentication of handshake connection IDs (#3439, #3499)
 
 ## Since draft-ietf-quic-transport-26
 
