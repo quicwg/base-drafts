@@ -4347,7 +4347,7 @@ first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
+Section 4.11.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state; see Section 6.5 of {{QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
