@@ -281,6 +281,7 @@ For example:
 Example Structure {
   One-bit Field (1),
   7-bit Field with Fixed Value (7) = 61,
+  Field with Variable-Length Intgeger (i),
   Arbitrary-Length Field (..),
   Variable-Length Field (8..24),
   Field With Minimum Length (16..),
