@@ -215,6 +215,7 @@ protocol that does not conform to the properties described in this document is
 not QUIC.  Future documents might describe additional properties which apply to
 a specific QUIC version, or to a range of QUIC versions.
 
+
 # Version Negotiation {#version-negotiation}
 
 A QUIC endpoint that receives a packet with a long header and a version it
@@ -240,7 +241,6 @@ Version Negotiation Packet {
 }
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
-
 
 The Version Negotiation packet contains a list of Supported Version fields, each
 identifying a version that the endpoint sending the packet supports.  The
