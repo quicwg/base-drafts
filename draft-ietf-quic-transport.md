@@ -6903,6 +6903,7 @@ Issue and pull request numbers are listed with a leading octothorp.
   signaled in all cases (#3541, #3581)
 - Addressed linkability risk with the use of preferred_address (#3559, #3563)
 - Added authentication of handshake connection IDs (#3439, #3499)
+- Opening a stream in the wrong direction is an error (#3527)
 
 ## Since draft-ietf-quic-transport-26
 
