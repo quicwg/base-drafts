@@ -112,6 +112,47 @@ endpoints use QUIC packets to establish a QUIC connection, which is shared
 protocol state between those endpoints.
 
 
+# Notational Conventions
+
+Packet diagrams in this document use a format defined in {{QUIC-TRANSPORT}} to
+illustrate the order and size of fields.
+
+Complex fields are named and then followed by a list of fields surrounded by a
+pair of matching braces. Each field in this list is separated by commas.
+
+Individual fields include length information, plus indications about fixed
+value, optionality, or repetitions. Individual fields use the following
+notational conventions, with all lengths in bits:
+
+x (A):
+: Indicates that x is A bits long
+
+x (A..B):
+: Indicates that x can be any length from A to B; A can be omitted to indicate
+  a minimum of zero bits and B can be omitted to indicate no set upper limit;
+  values in this format always end on an octet boundary
+
+x (?) = C:
+: Indicates that x has a fixed value of C
+
+x (E) ...:
+: Indicates that x is repeated zero or more times (and that each instance is
+  length E)
+
+{{fig-ex-format}} shows an example structure:
+
+~~~
+Example Structure {
+  One-bit Field (1),
+  7-bit Field with Fixed Value (7) = 61,
+  Arbitrary-Length Field (..),
+  Variable-Length Field (8..24),
+  Repeated Field (8) ...,
+}
+~~~
+{: #fig-ex-format title="Example Format"}
+
+
 # QUIC Packet Headers
 
 QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
