@@ -1554,7 +1554,7 @@ Endpoints MUST count the number of received packets that fail authentication for
 each set of keys.  If the number of packets that fail authentication with the
 same key exceeds a limit that is specific to the AEAD in use, the endpoint MUST
 stop using those keys.  Endpoints MUST initiate a key update before reaching
-this limit.  If a key update is not possible, the endpoints MUST immediately
+this limit.  If a key update is not possible, the endpoint MUST immediately
 close the connection.  Applying a limit reduces the probability that an attacker
 is able to successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
 
