@@ -1550,12 +1550,13 @@ number of attempts to forge packets. TLS achieves this by closing connections
 after any record fails an authentication check. In comparison, QUIC ignores any
 packet that cannot be authenticated, allowing multiple forgery attempts.
 
-Endpoints MUST count the number of received packets that fail authentication.
-If the number of packets that fail authentication with the same key exceeds a
-limit that is specific to the AEAD in use, the endpoint MUST immediately close
-the connection.  Endpoints MUST initiate a key update before reaching this
-limit.  Applying a limit reduces the probability that an attacker is able to
-successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
+Endpoints MUST count the number of received packets that fail authentication for
+each set of keys.  If the number of packets that fail authentication with the
+same key exceeds a limit that is specific to the AEAD in use, the endpoint MUST
+stop using those keys.  Endpoints MUST initiate a key update before reaching
+this limit.  If a key update is not possible, the endpoints MUST immediately
+close the connection.  Applying a limit reduces the probability that an attacker
+is able to successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
 
 For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, the limit on
 the number of packets that fail authentication is 2^36.  Note that the analysis
