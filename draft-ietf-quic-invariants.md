@@ -18,7 +18,7 @@ author:
     org: Mozilla
     email: mt@lowentropy.net
 
-normative:
+informative:
 
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
@@ -36,8 +36,6 @@ normative:
         name: Martin Thomson
         org: Mozilla
         role: editor
-
-informative:
 
   QUIC-TLS:
     title: "Using Transport Layer Security (TLS) to Secure QUIC"
