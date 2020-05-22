@@ -114,8 +114,10 @@ protocol state between those endpoints.
 
 # QUIC Packet Headers
 
-A QUIC packet is the content of the UDP datagrams exchanged by QUIC endpoints.
-This document describes the contents of those datagrams.
+QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
+This section describes the invariant characteristics of a QUIC packet.  A
+version of QUIC could permit multiple QUIC packets in a single UDP datagram, but
+the invariant properties only describe the first packet in a datagram.
 
 QUIC defines two types of packet header: long and short.  Packets with long
 headers are identified by the most significant bit of the first byte being set;
