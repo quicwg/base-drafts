@@ -1584,7 +1584,8 @@ of Initial packets that it sent. Including connection ID values in transport
 parameters and verifying them ensures that that an attacker cannot influence
 the choice of connection ID for a successful connection by injecting packets
 carrying attacker-chosen connection IDs during the handshake. An endpoint MUST
-treat any of the following as a connection error of type PROTOCOL_VIOLATION:
+treat any of the following as a connection error of type
+TRANSPORT_PARAMETER_ERROR:
 
 * absence of the initial_source_connection_id transport parameter from either
   endpoint,
@@ -1596,7 +1597,10 @@ treat any of the following as a connection error of type PROTOCOL_VIOLATION:
   after receiving a Retry packet,
 
 * presence of the retry_source_connection_id transport parameter when no Retry
-  packet was received, or
+  packet was received.
+
+An endpoint MUST treat the following as a connection error of type
+PROTOCOL_VIOLATION:
 
 * a mismatch between values received from a peer in these transport parameters
   and the value sent in the corresponding Destination or Source Connection ID
