@@ -3854,7 +3854,7 @@ maximum packet size to avoid the packet being fragmented or dropped
 {{?RFC8085}}.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
-IP addresses has fallen below the minimum QUIC packet size, it MUST immediately 
+IP addresses has fallen below the smallest allowed maximum packet size, it MUST immediately 
 cease sending QUIC packets, except for
 PMTUD or DPLPMTUD probe packets, on the affected path.  An endpoint MAY terminate the
 connection if an alternative path cannot be found.
