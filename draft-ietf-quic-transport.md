@@ -3804,7 +3804,7 @@ Assuming the minimum IP header size, this results in a
 QUIC maximum packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4. 
 
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
-to at least the minimum QUIC packet size, by adding PADDING frames to the Initial packet or by
+to at least 1200 bytes, by adding PADDING frames to the Initial packet or by
 coalescing the Initial packet; see {{packet-coalesce}}.  Sending a UDP datagram
 of this size ensures that the network path from the client to the server
 supports a reasonable Path Maximum Transmission Unit (PMTU).  Padding datagrams also
