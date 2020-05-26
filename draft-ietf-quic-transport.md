@@ -170,6 +170,9 @@ Accompanying documents describe QUIC's loss detection and congestion control
 This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
 
+To refer to QUIC version 1, cite this document.  References to the limited
+set of version-independent properties of QUIC can cite {{QUIC-INVARIANTS}}.
+
 
 ## Terms and Definitions
 
