@@ -3849,7 +3849,7 @@ In the absence of these mechanisms, QUIC endpoints SHOULD NOT send IP packets
 larger than the minimum QUIC packet size. 
 
 All QUIC
-packets (except for PMTUD/DPLPMTUD probe packets) SHOULD be sized to fit within the
+packets other than PMTUD/DPLPMTUD probe packets SHOULD be sized to fit within the
 maximum packet size to avoid the packet being fragmented or dropped
 {{?RFC8085}}.
 
