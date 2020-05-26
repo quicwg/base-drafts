@@ -3869,7 +3869,7 @@ implementation MAY be more conservative in computing the maximum packet
 size to allow for unknown tunnel overheads or IP header options/extensions.
 
 
-### Handling of ICMP PTB Messages by PMTUD {#icmp-pmtud}
+### Handling of ICMP Messages by PMTUD {#icmp-pmtud}
 
 PMTUD {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages
 (e.g., IPv6 Packet Too Big messages) that indicate when a packet is dropped
