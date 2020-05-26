@@ -3930,7 +3930,7 @@ path cannot be found.
 ###  DPLPMTUD and Initial Connectivity
 
 From the perspective of DPLPMTUD, QUIC transport is an 
-acknowledged PL. A sender can therefore enter the DPLPMTUD BASE
+acknowledged packetization layer (PL). A sender can therefore enter the DPLPMTUD BASE
 state when the QUIC connection handshake has been completed and
 the endpoint has established a 1-RTT key.
 
