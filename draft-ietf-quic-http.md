@@ -1292,9 +1292,10 @@ SHOULD send a CANCEL_PUSH even if it has opened the corresponding stream.
 
 Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
 A client SHOULD NOT send a CANCEL_PUSH when it has already received a
-corresponding push stream.  If a push stream arrives after a client has sent
-CANCEL_PUSH, this MAY be treated as a stream error of type
-H3_STREAM_CREATION_ERROR.
+corresponding push stream.  A push stream may arrive after a client has sent
+CANCEL_PUSH, because a server may have not yet processed the CANCEL_PUSH. The
+client SHOULD abort reading the stream with an error code of
+H3_REQUEST_CANCELLED.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
