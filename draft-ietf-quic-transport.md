@@ -3937,9 +3937,9 @@ the endpoint has established a 1-RTT key.
 
 ###  Sending QUIC DPLPMTUD Probe Packets
 
-DPLPMTU Probe packets consists of a QUIC Header and a payload containing a
-PING Frame and multiple PADDING Frames, this can implement
-"Probing using padding data" (see section 4.1 of {{!DPLPMTUD}}. 
+DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
+PADDING frame therefore implement "Probing using padding data", as defined in
+Section 4.1 of {{!DPLPMTUD}}.
 These can be generated without affecting the transfer of other QUIC frames.
 The PING Frame is used to trigger generation of an acknowledgement.
 Multiple PADDING Frames are used together to control the length of the probe packet.  
