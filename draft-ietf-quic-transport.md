@@ -3204,9 +3204,15 @@ response to further packets that it receives.
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
-efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC4303}}.
+protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
+
+Endpoints that track individual packets for the purposes of detecting duplicates
+might accumulate excessive state.  The data required for detecting duplicates
+can be limited by maintaining a minimum packet number below which all packets
+are immediately dropped.  In setting a minimum packet number endpoints might
+need to account for large variations in round trip time that could significantly
+delay packets, especially if a peer migrates to or probes a different network
+path; see {{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
