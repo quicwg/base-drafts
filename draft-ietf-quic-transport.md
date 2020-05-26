@@ -3206,14 +3206,14 @@ has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
 protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
 
-Endpoints that track all individual packets for the purposes of detecting duplicates
-are at risk of accumulating excessive state.  The data required for detecting duplicates
-can be limited by maintaining a minimum packet number below which all packets
-are immediately dropped.  Endpoints that use a minimum packet number need to
-ensure that any value does not cause delayed packets to be dropped.  Any minimum
-needs to account for large variations in round trip time, which includes the
-possibility that a peer might probe a network path with a much longer round trip
-time; see {{migration}}.
+Endpoints that track all individual packets for the purposes of detecting
+duplicates are at risk of accumulating excessive state.  The data required for
+detecting duplicates can be limited by maintaining a minimum packet number below
+which all packets are immediately dropped.  Endpoints that use a minimum packet
+number need to ensure that any value does not cause delayed packets to be
+dropped.  Any minimum needs to account for large variations in round trip time,
+which includes the possibility that a peer might probe a network path with a
+much longer round trip time; see {{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
