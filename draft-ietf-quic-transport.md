@@ -3879,7 +3879,7 @@ attacks that successfully guess the addresses used on the path and reduce the
 PMTU to a bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
-the minimum QUIC packet size bytes.
+the minimum QUIC packet size.
 
 The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
 quoted packet should contain as much of the original packet as possible without
