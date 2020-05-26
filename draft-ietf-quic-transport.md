@@ -3959,7 +3959,8 @@ In addition to UDP Port
 validation, QUIC validates an ICMP message by using other PL
 information (e.g., validation of connection identifiers (CIDs) in the
 quoted packet of any received ICMP message). 
-The further considerations for processing ICMP messages described in the previous section also
+
+The considerations for processing ICMP messages described in {{icmp-pmtud}} also
 apply if these messages are used by DPLPMTUD.
 
 ## PMTUD/DPLPMTUD Probes Containing Source Connection ID {#pmtu-probes-src-cid}
