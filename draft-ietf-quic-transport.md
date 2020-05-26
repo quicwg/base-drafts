@@ -3951,7 +3951,7 @@ which could delay the transmission of subsequent application data.
 QUIC provides an acknowledged PL, therefore a sender does not
 implement the DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state.
 
-###  Handling of ICMP PTB Messages by DPLPMTUD
+###  Handling of ICMP Messages by DPLPMTUD
 
 An endpoint using DPLPMTUD requires the validation of any received PTB message 
 before using the PTB information, as defined in section 4.6 of {{!DPLPMTUD}}.
