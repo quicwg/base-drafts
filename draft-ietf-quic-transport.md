@@ -3945,7 +3945,7 @@ The PING Frame is used to trigger generation of an acknowledgement.
 Multiple PADDING Frames are used together to control the length of the probe packet.  
 These frames might not be retransmitted if a probe packet containing
 them is lost.  The frames consume congestion window,
-which could dela subsequent transmission by application.
+which could delay subsequent transmission by an application.
 
 ###  Validating the QUIC Path with DPLPMTUD
 
