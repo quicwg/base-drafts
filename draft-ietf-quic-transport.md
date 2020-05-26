@@ -3890,7 +3890,7 @@ actually be smaller, or the information unintelligible, as described in Section
 QUIC endpoints using PMTUD SHOULD validate ICMP messages to protect from off-path injection
 as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}. This validation
 SHOULD use the quoted packet supplied in the payload of an ICMP message to
-associate the message with a corresponding transport connection (e.g., {{!DPLPMTUD}}).
+associate the message with a corresponding transport connection (see Section 4.6.1 of {{!DPLPMTUD}}).
 ICMP message validation MUST include matching IP addresses and UDP ports
 {{!RFC8085}} and, when possible, connection IDs to an active QUIC session.
 The endpoint SHOULD ignore all ICMP messages that fail validation.
