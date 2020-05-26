@@ -3919,7 +3919,8 @@ packet size. The MIN_PLPMTU is the same as the BASE_PMTU.
 
 QUIC endpoints implementing DPLPMTUD maintain a maximum packet size 
 (DPLPMTUD MPS) for each combination of local and remote IP
-addresses. 
+addresses.
+
 If a QUIC endpoint determines that the PLPMTU between any pair of local
 and remote IP addresses has fallen below the size needed to support
 the minimum QUIC packet size (BASE_PLPMTU), it MUST immediately cease
