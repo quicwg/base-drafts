@@ -3209,10 +3209,11 @@ protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
 Endpoints that track individual packets for the purposes of detecting duplicates
 might accumulate excessive state.  The data required for detecting duplicates
 can be limited by maintaining a minimum packet number below which all packets
-are immediately dropped.  In setting a minimum packet number endpoints might
-need to account for large variations in round trip time that could significantly
-delay packets, especially when a peer probes a different network path; see
-{{migration}}.
+are immediately dropped.  Endpoints that use a minimum packet number need to
+ensure that any value does not cause delayed packets to be dropped.  Any minimum
+needs to account for large variations in round trip time, which includes the
+possibility that a peer might probe a network path with a much longer round trip
+time; see {{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
