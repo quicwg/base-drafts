@@ -3797,7 +3797,7 @@ later time in the connection.
 The QUIC packet size includes the QUIC header and protected payload, but not the
 UDP or IP header.
 
-QUIC defines the minimum QUIC packet size as at least 1280 bytes.
+QUIC depends upon a minimum packet size of at least 1280 bytes.
 This is the IPv6 minimum size
 {{?RFC8200}} and is also supported by most modern IPv4 networks.
 Assuming the minimum IP header size, this results in a
