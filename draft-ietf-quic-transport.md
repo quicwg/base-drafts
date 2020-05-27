@@ -3962,14 +3962,21 @@ PMTUD/DPLPMTUD probe packets to route any resulting ICMP messages
 packets ({{long-header}}) contain source connection IDs, and long header packets
 are not decrypted or acknowledged by the peer once the handshake is complete.
 
-One way to construct a PMTU probe is to coalesce (see
-{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
-header packet in a single UDP datagram.  If the UDP datagram reaches the
-endpoint, the Handshake packet will be ignored, but the short header packet will
-be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
-first part of the datagram will be quoted in that message.  If the source
-connection ID is within the quoted portion of the UDP datagram, that could be
-used for routing.
+One way to construct a PMTU probe is to coalesce (see {{packet-coalesce}}) a
+packet with a long header, such as a Handshake or 0-RTT packet
+({{long-header}}), with a short header packet in a single UDP datagram.  If the
+UDP datagram reaches the endpoint, the packet with the long header will be
+ignored, but the short header packet will be acknowledged.  If the UDP datagram
+causes an ICMP message to be sent, the first part of the datagram will be quoted
+in that message.  If the source connection ID is within the quoted portion of
+the UDP datagram, that could be used for routing.
+
+Note:
+: The purpose of using a packet with a long header is only to ensure that the
+  quoted packet contained in the ICMP message contains a Source Connection ID
+  field that can be use for routing.  This packet does not need to be a valid
+  packet and it can be sent even if there is no current use for packets of that
+  type.
 
 
 # Versions {#versions}
