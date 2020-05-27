@@ -953,7 +953,7 @@ might have acted on.
 
 A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  An endpoint MAY send multiple GOAWAY
-frames indicating different identifiers, but MUST NOT increase the identifier
+frames indicating different identifiers, but the identifier in each frame
 value they carry, since clients might already have retried unprocessed requests
 on another connection.
 
