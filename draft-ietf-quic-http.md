@@ -954,8 +954,8 @@ might have acted on.
 A client that is unable to retry requests loses all requests that are in flight
 when the server closes the connection.  An endpoint MAY send multiple GOAWAY
 frames indicating different identifiers, but the identifier in each frame
-value they carry, since clients might already have retried unprocessed requests
-on another connection.
+MUST NOT be greater than the identifier in any previous frame, since clients
+might already have retried unprocessed requests on another connection.
 
 An endpoint that is attempting to gracefully shut down a connection can send a
 GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
