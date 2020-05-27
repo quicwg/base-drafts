@@ -3899,18 +3899,6 @@ to ICMP messages MAY be provisional until QUIC's loss detection algorithm
 determines that the quoted packet has actually been lost.
 
 
-### PMTUD Probes with Handshake packets
-
-One way to construct a PMTU probe is to coalesce (see
-{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
-header packet in a single UDP datagram.  If the UDP datagram reaches the
-endpoint, the Handshake packet will be ignored, but the short header packet will
-be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
-first part of the datagram will be quoted in that message.  If the source
-connection ID is within the quoted portion of the UDP datagram, that could be
-used for routing.
-
-
 ## Datagram Packetization Layer PMTU Discovery
 
 When implementing the algorithm in Section 5 of {{!DPLPMTUD}}, the initial value
@@ -3953,7 +3941,7 @@ QUIC provides an acknowledged PL, therefore a sender does not implement the
 DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state.
 
 
-###  Handling of ICMP Messages by DPLPMTUD
+### Handling of ICMP Messages by DPLPMTUD
 
 An endpoint using DPLPMTUD requires the validation of any received PTB message
 before using the PTB information, as defined in Section 4.6 of {{!DPLPMTUD}}.
@@ -3973,6 +3961,15 @@ PMTUD/DPLPMTUD probe packets to route any resulting ICMP messages
 ({{icmp-pmtud}}) back to the correct endpoint.  However, only long header
 packets ({{long-header}}) contain source connection IDs, and long header packets
 are not decrypted or acknowledged by the peer once the handshake is complete.
+
+One way to construct a PMTU probe is to coalesce (see
+{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
+header packet in a single UDP datagram.  If the UDP datagram reaches the
+endpoint, the Handshake packet will be ignored, but the short header packet will
+be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
+first part of the datagram will be quoted in that message.  If the source
+connection ID is within the quoted portion of the UDP datagram, that could be
+used for routing.
 
 
 # Versions {#versions}
