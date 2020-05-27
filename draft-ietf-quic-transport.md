@@ -1583,15 +1583,12 @@ values that an endpoint used in the Destination and Source Connection ID fields
 of Initial packets that it sent. Including connection ID values in transport
 parameters and verifying them ensures that that an attacker cannot influence
 the choice of connection ID for a successful connection by injecting packets
-carrying attacker-chosen connection IDs during the handshake. An endpoint MUST
-treat any of the following as a connection error of type
-TRANSPORT_PARAMETER_ERROR:
+carrying attacker-chosen connection IDs during the handshake.
 
-* absence of the initial_source_connection_id transport parameter from either
-  endpoint,
-
-* absence of the original_destination_connection_id transport parameter from
-  the server,
+An endpoint MUST treat absence of the initial_source_connection_id transport
+parameter from either endpoint or absence of the
+original_destination_connection_id transport parameter from the server as a
+connection error of type TRANSPORT_PARAMETER_ERROR.
 
 An endpoint MUST treat the following as a connection error of type
 PROTOCOL_VIOLATION:
