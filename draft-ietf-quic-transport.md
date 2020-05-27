@@ -1206,9 +1206,8 @@ If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
 the version that the client selected.
 
-If a server isn't currently accepting any new connections, it SHOULD send an
-Initial packet containing a CONNECTION_CLOSE frame with error code
-SERVER_BUSY.
+If a server refuses to accept a new connection, it SHOULD send an Initial packet
+containing a CONNECTION_CLOSE frame with error code CONNECTION_REFUSED.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
 packets in anticipation of a late-arriving Initial packet. Clients are not able
@@ -5936,9 +5935,9 @@ INTERNAL_ERROR (0x1):
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-SERVER_BUSY (0x2):
+CONNECTION_REFUSED (0x2):
 
-: The server is currently busy and does not accept any new connections.
+: The server refused to accept a new connection.
 
 FLOW_CONTROL_ERROR (0x3):
 
@@ -6787,7 +6786,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 |:------|:--------------------------|:------------------------------|:----------------|
 | 0x0   | NO_ERROR                  | No error                      | {{error-codes}} |
 | 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
-| 0x2   | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
+| 0x2   | CONNECTION_REFUSED_ERROR  | Server refuses a connection | {{error-codes}} |
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
