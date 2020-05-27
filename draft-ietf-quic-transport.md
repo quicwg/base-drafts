@@ -3795,26 +3795,32 @@ later time in the connection.
 # Packet Size {#packet-size}
 
 The QUIC packet size includes the QUIC header and protected payload, but not the
-UDP or IP header.
+UDP or IP headers.
 
 QUIC depends upon a minimum packet size of at least 1280 bytes.  This is the
 IPv6 minimum size {{?RFC8200}} and is also supported by most modern IPv4
 networks.  Assuming the minimum IP header size, this results in a QUIC maximum
 packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
 
+The QUIC maximum packet size is the largest size of QUIC packet that can be sent
+across a network path using a single packet. Any maximum packet size larger than
+1200 bytes is discovered using PMTUD/DPLPMTUD.
+
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
-to at least 1200 bytes, by adding PADDING frames to the Initial packet or by
+to at least the smallest allowed maximum packet size (1200 bytes)
+by adding PADDING frames to the Initial packet or by
 coalescing the Initial packet; see {{packet-coalesce}}.  Sending a UDP datagram
 of this size ensures that the network path from the client to the server
-supports a reasonable Path Maximum Transmission Unit (PMTU).  Padding datagrams
-also helps reduce the amplitude of amplification attacks caused by server
-responses toward an unverified client address; see {{address-validation}}.
+supports a reasonable Path Maximum Transmission Unit (PMTU).  This also
+helps reduce the amplitude of amplification attacks caused by server responses
+toward an unverified client address; see {{address-validation}}.
 
 Enforcement of the max_udp_payload_size transport parameter
 ({{transport-parameter-definitions}}) might act as an additional limit on the
 maximum packet size. A sender can avoid exceeding this limit, once the value is
 known.  However, prior to learning the value of the transport parameter,
-endpoints risk datagrams being lost if they send packets larger than 1200 bytes.
+endpoints risk datagrams being lost if they send packets larger than the
+smallest allowed maximum packet size of 1200 bytes.
 
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the network path and peer both support the size that it chooses.
@@ -3823,13 +3829,13 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
 A server MUST discard an Initial packet that is carried in a UDP datagram with
-a payload that is less than 1200 bytes. A server MAY also immediately close the
+a payload that is less than the smallest allowed maximum packet size (1200 bytes).
+A server MAY also immediately close the
 connection by sending a CONNECTION_CLOSE frame with an error code of
 PROTOCOL_VIOLATION; see {{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
-
 
 ## Path Maximum Transmission Unit (PMTU)
 
@@ -3865,6 +3871,16 @@ addresses.
 A QUIC implementation MAY be more conservative in computing the maximum packet
 size to allow for unknown tunnel overheads or IP header options/extensions.
 
+### PMTUD Probes with Handshake packets
+
+One way to construct a PMTU probe is to coalesce (see
+{{packet-coalesce}}) a Handshake packet ({{packet-handshake}}) with a short
+header packet in a single UDP datagram. If the UDP datagram reaches the
+endpoint, the Handshake packet will be ignored, but the short header packet will
+be acknowledged.  If the UDP datagram causes an ICMP message to be sent, the
+first part of the datagram will be quoted in that message.  If the source
+connection ID is within the quoted portion of the UDP datagram, that could be
+used for routing.
 
 ### Handling of ICMP Messages by PMTUD {#icmp-pmtud}
 
