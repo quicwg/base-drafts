@@ -3828,11 +3828,11 @@ believes that the network path and peer both support the size that it chooses.
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
-A server MUST discard an Initial packet that is carried in a UDP datagram with
-a payload that is less than the smallest allowed maximum packet size (1200 bytes).
-A server MAY also immediately close the
-connection by sending a CONNECTION_CLOSE frame with an error code of
-PROTOCOL_VIOLATION; see {{immediate-close-hs}}.
+A server MUST discard an Initial packet that is carried in a UDP datagram with a
+payload that is less than the smallest allowed maximum packet size  of 1200
+bytes.  A server MAY also immediately close the connection by sending a
+CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
+{{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
