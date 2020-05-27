@@ -1279,11 +1279,14 @@ GetLossTimeAndSpace():
   return time, space
 
 GetPtoTimeAndSpace():
-  duration = smoothed_rtt +
-      max(4 * rttvar, kGranularity) * (2 ^ pto_count)
+  duration = (smoothed_rtt + max(4 * rttvar, kGranularity))
+      * (2 ^ pto_count)
   # Arm PTO from now when there are no inflight packets
   if (no in-flight packets):
-    return (now() + duration), Initial
+    if (has handshake keys):
+      return (now() + duration), Handshake
+    else:
+      return (now() + duration), Initial
   pto_timeout = infinite
   pto_space = Initial
   for space in [ Initial, Handshake, ApplicationData ]:
