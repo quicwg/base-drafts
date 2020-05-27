@@ -3927,12 +3927,12 @@ established a 1-RTT key.
 
 DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
 PADDING frame therefore implement "Probing using padding data", as defined in
-Section 4.1 of {{!DPLPMTUD}}.  These can be generated without affecting the
-transfer of other QUIC frames.  The PING Frame is used to trigger generation of
-an acknowledgement.  Multiple PADDING Frames are used together to control the
-length of the probe packet.  These frames might not be retransmitted if a probe
-packet containing them is lost.  The frames consume congestion window, which
-could delay subsequent transmission by an application.
+Section 4.1 of {{!DPLPMTUD}}.  Endpoints could limit the content of probe
+packets to PING and PADDING frames as packets that are larger than the current
+maximum packet size are more likely to be dropped by the network.
+
+DPLPMTU probe packets consume congestion window, which could delay subsequent
+transmission by an application.
 
 
 ### Validating the QUIC Path with DPLPMTUD
