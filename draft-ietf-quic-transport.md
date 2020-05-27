@@ -3211,7 +3211,7 @@ duplicates are at risk of accumulating excessive state.  The data required for
 detecting duplicates can be limited by maintaining a minimum packet number below
 which all packets are immediately dropped.  Any minimum needs to account for
 large variations in round trip time, which includes the possibility that a peer
-might probe a network path with a much longer round trip time; see
+might probe network paths with a much larger round trip times; see
 {{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
