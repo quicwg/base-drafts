@@ -3916,9 +3916,9 @@ MPS) for each combination of local and remote IP addresses.
 
 If a QUIC endpoint determines that the PLPMTU between any pair of local and
 remote IP addresses has fallen below the size needed to support the minimum QUIC
-packet size (BASE_PLPMTU), it MUST immediately cease sending QUIC packets,
-except for DPLPMTUD probe packets, on the affected path. An endpoint MAY
-terminate the connection if an alternative path cannot be found.
+packet size (BASE_PLPMTU), it MUST immediately cease sending QUIC packets on the
+affected path. An endpoint MAY terminate the connection if an alternative path
+cannot be found.
 
 
 ### DPLPMTUD and Initial Connectivity
