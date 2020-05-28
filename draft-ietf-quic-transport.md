@@ -3951,8 +3951,8 @@ DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state.
 An endpoint using DPLPMTUD requires the validation of any received PTB message
 before using the PTB information, as defined in Section 4.6 of {{!DPLPMTUD}}.
 In addition to UDP Port validation, QUIC validates an ICMP message by using
-other PL information (e.g., validation of connection identifiers (CIDs) in the
-quoted packet of any received ICMP message).
+other PL information (e.g., validation of connection IDs in the quoted packet of
+any received ICMP message).
 
 The considerations for processing ICMP messages described in {{icmp-pmtud}} also
 apply if these messages are used by DPLPMTUD.
@@ -3964,8 +3964,9 @@ Endpoints that rely on the destination connection ID for routing incoming QUIC
 packets are likely to require that the connection ID be included in
 PMTUD/DPLPMTUD probe packets to route any resulting ICMP messages
 ({{icmp-pmtud}}) back to the correct endpoint.  However, only long header
-packets ({{long-header}}) contain source connection IDs, and long header packets
-are not decrypted or acknowledged by the peer once the handshake is complete.
+packets ({{long-header}}) contain the Source Connection ID field, and long
+header packets are not decrypted or acknowledged by the peer once the handshake
+is complete.
 
 One way to construct a PMTUD or DPLPMTUD probe is to coalesce (see
 {{packet-coalesce}}) a packet with a long header, such as a Handshake or 0-RTT
@@ -3973,15 +3974,15 @@ packet ({{long-header}}), with a short header packet in a single UDP datagram.
 If the UDP datagram reaches the endpoint, the packet with the long header will
 be ignored, but the short header packet will be acknowledged.  If the UDP
 datagram causes an ICMP message to be sent, the first part of the datagram will
-be quoted in that message.  If the source connection ID is within the quoted
-portion of the UDP datagram, that could be used for routing.
+be quoted in that message.  If the Source Connection ID field is within the
+quoted portion of the UDP datagram, that could be used for routing or validation
+of the ICMP message.
 
 Note:
 : The purpose of using a packet with a long header is only to ensure that the
   quoted packet contained in the ICMP message contains a Source Connection ID
-  field that can be use for routing.  This packet does not need to be a valid
-  packet and it can be sent even if there is no current use for packets of that
-  type.
+  field.  This packet does not need to be a valid packet and it can be sent even
+  if there is no current use for packets of that type.
 
 
 # Versions {#versions}
