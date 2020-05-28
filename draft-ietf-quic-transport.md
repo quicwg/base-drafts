@@ -3804,7 +3804,7 @@ packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
 
 The QUIC maximum packet size is the largest size of QUIC packet that can be sent
 across a network path using a single packet. Any maximum packet size larger than
-1200 bytes is discovered using PMTUD/DPLPMTUD.
+1200 bytes can be discovered using PMTUD/DPLPMTUD.
 
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
 to at least the smallest allowed maximum packet size (1200 bytes)
@@ -3931,7 +3931,7 @@ when the QUIC connection handshake has been completed.
 ### Sending QUIC DPLPMTUD Probe Packets
 
 DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
-PADDING frame therefore implement "Probing using padding data", as defined in
+PADDING frame implement "Probing using padding data", as defined in
 Section 4.1 of {{!DPLPMTUD}}.  Endpoints could limit the content of probe
 packets to PING and PADDING frames as packets that are larger than the current
 maximum packet size are more likely to be dropped by the network.
@@ -3943,7 +3943,8 @@ transmission by an application.
 ### Validating the QUIC Path with DPLPMTUD
 
 QUIC provides an acknowledged PL, therefore a sender does not implement the
-DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state.
+DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section
+5.2 of {{!DPLPMTUD}}.
 
 
 ### Handling of ICMP Messages by DPLPMTUD
