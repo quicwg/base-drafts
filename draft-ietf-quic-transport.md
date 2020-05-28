@@ -3406,8 +3406,8 @@ ack-eliciting packet.
 An endpoint MUST NOT send a non-ack-eliciting packet in response to a
 non-ack-eliciting packet, even if there are packet gaps which precede the
 received packet. This avoids an infinite feedback loop of acknowledgements,
-which could prevent the connection from ever becoming idle. Note that
-non-ack-eliciting packets are eventually acknowledged when the endpoint sends an
+which could prevent the connection from ever becoming idle.
+Non-ack-eliciting packets are eventually acknowledged when the endpoint sends an
 ACK frame in response to other events.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
@@ -3566,13 +3566,13 @@ messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
 
 
-### Other Considerations
+### PADDING Frames Consume Congestion Window
 
 Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
 sender to become limited by the congestion controller with no acknowledgments
 forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent in addition to PADDING frames to elicit acknowledgments from
+frames are sent periodically in addition to PADDING frames to elicit acknowledgments from
 the receiver.
 
 
