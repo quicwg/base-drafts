@@ -1618,7 +1618,7 @@ OnPacketNumberSpaceDiscarded(pn_space):
       bytes_in_flight -= size
   sent_packets[pn_space].clear()
   // Reset the loss detection and PTO timer
-  time_of_last_ack_eliciting_packet[kPacketNumberSpace] = 0
+  time_of_last_ack_eliciting_packet[pn_space] = 0
   loss_time[pn_space] = 0
   pto_count = 0
   SetLossDetectionTimer()

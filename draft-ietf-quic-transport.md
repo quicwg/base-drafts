@@ -170,6 +170,9 @@ Accompanying documents describe QUIC's loss detection and congestion control
 This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
 
+To refer to QUIC version 1, cite this document.  References to the limited
+set of version-independent properties of QUIC can cite {{QUIC-INVARIANTS}}.
+
 
 ## Terms and Definitions
 
@@ -281,6 +284,7 @@ For example:
 Example Structure {
   One-bit Field (1),
   7-bit Field with Fixed Value (7) = 61,
+  Field with Variable-Length Intgeger (i),
   Arbitrary-Length Field (..),
   Variable-Length Field (8..24),
   Field With Minimum Length (16..),
@@ -1202,9 +1206,8 @@ If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
 the version that the client selected.
 
-If a server isn't currently accepting any new connections, it SHOULD send an
-Initial packet containing a CONNECTION_CLOSE frame with error code
-SERVER_BUSY.
+If a server refuses to accept a new connection, it SHOULD send an Initial packet
+containing a CONNECTION_CLOSE frame with error code CONNECTION_REFUSED.
 
 If the packet is a 0-RTT packet, the server MAY buffer a limited number of these
 packets in anticipation of a late-arriving Initial packet. Clients are not able
@@ -2016,7 +2019,7 @@ the integrity protection key for tokens.
 There is no need for a single well-defined format for the token because the
 server that generates the token also consumes it.  Tokens sent in Retry packets
 SHOULD include information that allows the server to verify that the source IP
-address and port in client packets remains constant.
+address and port in client packets remain constant.
 
 Tokens sent in NEW_TOKEN frames MUST include information that allows the server
 to verify that the client IP address has not changed from when the token was
@@ -3203,9 +3206,15 @@ response to further packets that it receives.
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.3 of {{QUIC-TLS}}. An
-efficient algorithm for duplicate suppression can be found in Section 3.4.3 of
-{{?RFC4303}}.
+protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
+
+Endpoints that track all individual packets for the purposes of detecting
+duplicates are at risk of accumulating excessive state.  The data required for
+detecting duplicates can be limited by maintaining a minimum packet number below
+which all packets are immediately dropped.  Any minimum needs to account for
+large variations in round trip time, which includes the possibility that a peer
+might probe network paths with a much larger round trip times; see
+{{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
@@ -4347,7 +4356,7 @@ first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.10.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
+Section 4.11.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state; see Section 6.5 of {{QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
@@ -4937,7 +4946,7 @@ initial_source_connection_id (0x0f):
 
 retry_source_connection_id (0x10):
 
-: The value that the the server included in the Source Connection ID field of a
+: The value that the server included in the Source Connection ID field of a
   Retry packet; see {{cid-auth}}.  This transport parameter is only sent by a
   server.
 
@@ -5926,9 +5935,9 @@ INTERNAL_ERROR (0x1):
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-SERVER_BUSY (0x2):
+CONNECTION_REFUSED (0x2):
 
-: The server is currently busy and does not accept any new connections.
+: The server refused to accept a new connection.
 
 FLOW_CONTROL_ERROR (0x3):
 
@@ -6777,7 +6786,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 |:------|:--------------------------|:------------------------------|:----------------|
 | 0x0   | NO_ERROR                  | No error                      | {{error-codes}} |
 | 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
-| 0x2   | SERVER_BUSY               | Server currently busy         | {{error-codes}} |
+| 0x2   | CONNECTION_REFUSED_ERROR  | Server refuses a connection | {{error-codes}} |
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
@@ -6902,6 +6911,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Clarified that largest acknowledged needs to be saved, but not necessarily
   signaled in all cases (#3541, #3581)
 - Addressed linkability risk with the use of preferred_address (#3559, #3563)
+- Added authentication of handshake connection IDs (#3439, #3499)
+- Opening a stream in the wrong direction is an error (#3527)
 
 ## Since draft-ietf-quic-transport-26
 

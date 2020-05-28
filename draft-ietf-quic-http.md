@@ -747,7 +747,7 @@ A CONNECT request MUST be constructed as follows:
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests;
-  see Section 5.3 of {{?HTTP11}})
+  see Section 3.2.3 of {{?HTTP11}})
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
