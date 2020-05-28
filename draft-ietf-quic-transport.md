@@ -3925,8 +3925,7 @@ terminate the connection if an alternative path cannot be found.
 
 From the perspective of DPLPMTUD, QUIC transport is an acknowledged
 packetization layer (PL). A sender can therefore enter the DPLPMTUD BASE state
-when the QUIC connection handshake has been completed and the endpoint has
-established a 1-RTT key.
+when the QUIC connection handshake has been completed.
 
 
 ### Sending QUIC DPLPMTUD Probe Packets
