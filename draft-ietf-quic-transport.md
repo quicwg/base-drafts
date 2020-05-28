@@ -3365,6 +3365,9 @@ Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
 packet.
 
+An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
+send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
+the condition.
 
 ## Generating Acknowledgements {#generating-acks}
 
@@ -3396,11 +3399,16 @@ a max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay
 value in determining timeouts for timer-based retransmission, as detailed in
 Section 5.2.1 of {{QUIC-RECOVERY}}.
 
-An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
-This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
-A receiver could decide to send an ACK frame less frequently if it has
-information about how frequently the sender's congestion controller
-needs feedback, or if the receiver is CPU or bandwidth constrained.
+Since packets containing only ACK frames are not congestion controlled, an
+endpoint MUST NOT send more than one such packet in response to receiving an
+ack-eliciting packet.
+
+An endpoint MUST NOT send a non-ack-eliciting packet in response to a
+non-ack-eliciting packet, even if there are packet gaps which precede the
+received packet. This avoids an infinite feedback loop of acknowledgements,
+which could prevent the connection from ever becoming idle. Note that
+non-ack-eliciting packets are eventually acknowledged when the endpoint sends an
+ACK frame in response to other events.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
@@ -3413,17 +3421,10 @@ Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
-As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case the receiver can determine whether an
-immediate or delayed acknowledgement should be generated after processing
-incoming packets.
-
-Packets containing PADDING frames are considered to be in flight for congestion
-control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
-sender to become limited by the congestion controller with no acknowledgments
-forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent in addition to PADDING frames to elicit acknowledgments from
-the receiver.
+The algorithms in {{QUIC-RECOVERY}} are resilient to receivers that do not
+follow guidance offered above. However, an implementor should only deviate from
+these requirements after careful consideration of the performance implications
+of doing so.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
@@ -3433,24 +3434,34 @@ non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
 ack-eliciting packet has been received to bundle an ACK frame with outgoing
 frames.
 
-The algorithms in {{QUIC-RECOVERY}} are resilient to receivers that do not
-follow guidance offered above. However, an implementor should only deviate from
-these requirements after careful consideration of the performance implications
-of doing so.
 
-Packets containing only ACK frames are not congestion controlled, so there are
-limits on how frequently they can be sent.  An endpoint MUST NOT send more than
-one ACK-frame-only packet in response to receiving an ack-eliciting packet.  An
-endpoint MUST NOT send a non-ack-eliciting packet in response to a
-non-ack-eliciting packet, even if there are packet gaps which precede the
-received packet. Limiting ACK frames avoids an infinite feedback loop of
-acknowledgements, which could prevent the connection from ever becoming idle.
-However, the endpoint acknowledges non-ACK-eliciting packets when it sends an
-ACK frame.
+### Acknowledgement Frequency
 
-An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
-send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.
+A receiver determines how frequently to send acknowledgements in response to
+ack-eliciting packets. Under normal circumstances, reducing the frequency of
+acknowledgement packets can improve connection and endpoint performance in
+several ways, such as reducing computational cost at both endpoints, and
+improving connection throughput on severely asymmetric links.
+
+However, there are undesirable consequences to a receiver simply reducing the
+acknowledgement frequency, especially to an arbitrary fixed value. A sender
+relies on receipt of acknowledgements to determine the amount of data in flight
+and to detect loss; see {{QUIC-RECOVERY}}. Loss detection can be delayed with
+late acknowledgements. Window-based congestion controllers, such as the one
+defined in {{QUIC-RECOVERY}}, rely on receipt of acknowledgments to increase
+their sending rate. Consequently, a connection can suffer performance penalties
+when acknowledgements are not sent frequently enough.
+
+Further research and experimentation will yield effective mechanisms to balance
+this tradeoff. Meanwhile, this document provides the following guidance:
+{{sending-acknowledgements}}, a receiver SHOULD generate an ACK frame for at
+least every second ack-eliciting packet. This recommendation is in keeping with
+specified endpoint behavior for TCP {{?RFC5681}}.
+
+A receiver MAY process multiple packets before sending any ACK frames in
+response. This allows for a receiver to process packets already queued for
+processing before determining whether to send an acknowledgement.
+
 
 ### Managing ACK Ranges
 
@@ -3553,6 +3564,16 @@ the server in packets protected by 1-RTT keys.  This can mean that the client is
 unable to use these acknowledgments if the server cryptographic handshake
 messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
+
+
+### Other Considerations
+
+Packets containing PADDING frames are considered to be in flight for congestion
+control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
+sender to become limited by the congestion controller with no acknowledgments
+forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
+frames are sent in addition to PADDING frames to elicit acknowledgments from
+the receiver.
 
 
 ## Retransmission of Information
