@@ -3438,11 +3438,11 @@ frames.
 ### Acknowledgement Frequency
 
 A receiver determines how frequently to send acknowledgements in response to
-ack-eliciting packets. This determination involves a tradeoff however.
+ack-eliciting packets. This determination involves a tradeoff.
 
-Endpoints rely on timely acknowledgment to detect loss; see Section X of
+Endpoints rely on timely acknowledgment to detect loss; see Section 5 of
 {{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
-Section X of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their sending
+Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their sending
 rate. In both cases, delaying acknowledgment can adversely affect performance.
 
 On the other hand, reducing the frequency of acknowledgement packets reduces
@@ -3455,9 +3455,8 @@ experimentation might suggest alternative acknowledgment strategies with better
 performance characteristics. This recommendation is general in nature and
 consistent with recommendations for TCP endpoint behavior {{?RFC5681}}.
 
-A receiver MAY process multiple packets before sending any ACK frames in
-response. This allows for a receiver to process packets already queued for
-processing before determining whether to send an acknowledgement.
+A receiver MAY process multiple available packets before determining whether to sending an ACK frame in
+response.
 
 
 ### Managing ACK Ranges
