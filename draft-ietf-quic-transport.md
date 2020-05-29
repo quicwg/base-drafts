@@ -3445,18 +3445,20 @@ Endpoints rely on timely acknowledgment to detect loss; see Section 5 of
 Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their sending
 rate. In both cases, delaying acknowledgment can adversely affect performance.
 
-On the other hand, reducing the frequency of acknowledgement packets reduces
-packet processing cost at both endpoints. It can also improve connection
-throughput on severely asymmetric links; see Section 3 of {{?RFC3449}}.
+On the other hand, reducing the frequency of packets that carrying only
+acknowledgements reduces packet processing cost at both endpoints. It can also
+improve connection throughput on severely asymmetric links; see Section 3 of
+{{?RFC3449}}.
 
 A receiver SHOULD send an ACK frame after receiving at least two ack-eliciting
-packets. Better knowledge of network conditions or further research and
-experimentation might suggest alternative acknowledgment strategies with better
-performance characteristics. This recommendation is general in nature and
-consistent with recommendations for TCP endpoint behavior {{?RFC5681}}.
+packets. This recommendation is general in nature and consistent with
+recommendations for TCP endpoint behavior {{?RFC5681}}. Knowledge of network
+conditions, knowledge of the peer's congestion controller, or further research
+and experimentation might suggest alternative acknowledgment strategies with
+better performance characteristics.
 
-A receiver MAY process multiple available packets before determining whether to sending an ACK frame in
-response.
+A receiver MAY process multiple available packets before determining whether to
+send an ACK frame in response.
 
 
 ### Managing ACK Ranges
@@ -3568,8 +3570,8 @@ Packets containing PADDING frames are considered to be in flight for congestion
 control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
 sender to become limited by the congestion controller with no acknowledgments
 forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent periodically in addition to PADDING frames to elicit acknowledgments from
-the receiver.
+frames are sent periodically in addition to PADDING frames to elicit
+acknowledgments from the receiver.
 
 
 ## Retransmission of Information
