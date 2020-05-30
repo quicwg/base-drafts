@@ -1283,6 +1283,7 @@ GetPtoTimeAndSpace():
       * (2 ^ pto_count)
   # Arm PTO from now when there are no inflight packets
   if (no in-flight packets):
+    assert(!PeerCompletedAddressValidation())
     if (has handshake keys):
       return (now() + duration), Handshake
     else:
