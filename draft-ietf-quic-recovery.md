@@ -1281,7 +1281,7 @@ GetLossTimeAndSpace():
 GetPtoTimeAndSpace():
   duration = (smoothed_rtt + max(4 * rttvar, kGranularity))
       * (2 ^ pto_count)
-  # Arm PTO from now when there are no inflight packets
+  // Arm PTO from now when there are no inflight packets.
   if (no in-flight packets):
     assert(!PeerCompletedAddressValidation())
     if (has handshake keys):
@@ -1293,11 +1293,11 @@ GetPtoTimeAndSpace():
   for space in [ Initial, Handshake, ApplicationData ]:
     if (no in-flight packets in space):
         continue;
-    if space == ApplicationData:
+    if (space == ApplicationData):
       // Skip ApplicationData until handshake complete.
       if (handshake is not complete):
         return pto_timeout, pto_space
-      // ApplicationData include the max_ack_delay in PTO.
+      // Include max_ack_delay and backoff for ApplicationData.
       duration += max_ack_delay * (2 ^ pto_count)
 
     t = time_of_last_ack_eliciting_packet[space] + duration
