@@ -3928,18 +3928,6 @@ packetization layer (PL). A sender can therefore enter the DPLPMTUD BASE state
 when the QUIC connection handshake has been completed.
 
 
-### Sending QUIC DPLPMTUD Probe Packets
-
-DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
-PADDING frame implement "Probing using padding data", as defined in
-Section 4.1 of {{!DPLPMTUD}}.  Endpoints could limit the content of probe
-packets to PING and PADDING frames as packets that are larger than the current
-maximum packet size are more likely to be dropped by the network.
-
-DPLPMTU probe packets consume congestion window, which could delay subsequent
-transmission by an application.
-
-
 ### Validating the QUIC Path with DPLPMTUD
 
 QUIC provides an acknowledged PL, therefore a sender does not implement the
@@ -3957,6 +3945,20 @@ any received ICMP message).
 
 The considerations for processing ICMP messages described in {{icmp-pmtud}} also
 apply if these messages are used by DPLPMTUD.
+
+
+## Sending QUIC DPLPMTUD Probe Packets
+
+DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
+PADDING frame therefore implement "Probing using padding data", as defined in
+Section 4.1 of {{!DPLPMTUD}}.  Endpoints could limit the content of probe
+packets to PING and PADDING frames as packets that are larger than the current
+maximum packet size are more likely to be dropped by the network.   Loss of a
+probe packet is therefore not a reliable indication of congestion and SHOULD NOT
+trigger a congestion control reaction; see Section 3, Bullet 7 of {{!DPLPMTUD}}.
+DPLPMTU probe packets consume congestion window, which could delay subsequent
+transmission by an application.
+
 
 
 ## PMTUD/DPLPMTUD Probes Containing Source Connection ID {#pmtu-probes-src-cid}
