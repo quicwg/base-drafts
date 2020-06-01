@@ -2836,14 +2836,14 @@ difficult to distinguish from other packets if the recipient requires the use of
 a connection ID.  To prevent a resulting stateless reset from being trivially
 distinguishable from a valid packet, all packets sent by an endpoint SHOULD be
 padded to at least 22 bytes longer than the minimum connection ID that the
-endpoint might use.  An endpoint that sends a stateless reset in response to
+endpoint might use.  An endpoint that sends a stateless reset in response to a
 packet that is 43 bytes or less in length SHOULD send a stateless reset that is
 one byte shorter than the packet it responds to.
 
-These values assume that the Stateless Reset Token is the same as the minimum
-expansion of the packet protection AEAD.  Additional unpredictable bytes are
-necessary if the endpoint could have negotiated a packet protection scheme with
-a larger minimum expansion.
+These values assume that the Stateless Reset Token is the same length as the
+minimum expansion of the packet protection AEAD.  Additional unpredictable bytes
+are necessary if the endpoint could have negotiated a packet protection scheme
+with a larger minimum expansion.
 
 An endpoint MUST NOT send a stateless reset that is three times or more larger
 than the packet it receives to avoid being used for amplification.
