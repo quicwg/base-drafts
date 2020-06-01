@@ -3446,8 +3446,8 @@ Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their
 congestion window. In both cases, delaying acknowledgments can adversely affect
 performance.
 
-On the other hand, reducing the frequency of packets that carrying only
-acknowledgements reduces packet processing cost at both endpoints. It can also
+On the other hand, reducing the frequency of packets that carry only
+acknowledgements reduces packet transmission and processing cost at both endpoints. It can also
 improve connection throughput on severely asymmetric links; see Section 3 of
 {{?RFC3449}}.
 
