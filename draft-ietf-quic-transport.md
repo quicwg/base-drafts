@@ -1591,13 +1591,13 @@ original_destination_connection_id transport parameter from the server as a
 connection error of type TRANSPORT_PARAMETER_ERROR.
 
 An endpoint MUST treat the following as a connection error of type
-PROTOCOL_VIOLATION:
+TRANSPORT_PARAMETER_ERROR or PROTOCOL_VIOLATION:
 
 * absence of the retry_source_connection_id transport parameter from the server
   after receiving a Retry packet,
 
 * presence of the retry_source_connection_id transport parameter when no Retry
-  packet was received.
+  packet was received, or
 
 * a mismatch between values received from a peer in these transport parameters
   and the value sent in the corresponding Destination or Source Connection ID
