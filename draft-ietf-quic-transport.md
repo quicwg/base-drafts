@@ -3443,7 +3443,7 @@ ack-eliciting packets. This determination involves a tradeoff.
 Endpoints rely on timely acknowledgment to detect loss; see Section 5 of
 {{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
 Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their sending
-rate. In both cases, delaying acknowledgment can adversely affect performance.
+rate. In both cases, delaying acknowledgments can adversely affect performance.
 
 On the other hand, reducing the frequency of packets that carrying only
 acknowledgements reduces packet processing cost at both endpoints. It can also
@@ -3567,10 +3567,10 @@ data sent by the server protected by the 1-RTT keys.
 ### PADDING Frames Consume Congestion Window
 
 Packets containing PADDING frames are considered to be in flight for congestion
-control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
-sender to become limited by the congestion controller with no acknowledgments
-forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent periodically in addition to PADDING frames to elicit
+control purposes {{QUIC-RECOVERY}}. Packets containing only PADDING frames
+therefore consume congestion window but do not generate acknowledgments that
+will open the congestion window. To avoid a deadlock, a sender SHOULD ensure
+that other frames are sent periodically in addition to PADDING frames to elicit
 acknowledgments from the receiver.
 
 
