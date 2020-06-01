@@ -3850,18 +3850,19 @@ An endpoint SHOULD use Datagram Packetization Layer PMTU Discovery
 ({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) or implement Path MTU Discovery
 (PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the path to a destination
 will support a desired message size without fragmentation.  In the absence of
-these mechanisms, QUIC endpoints SHOULD NOT send IP packets
-larger than the minimum QUIC packet size.
+these mechanisms, QUIC endpoints SHOULD NOT send IP packets larger than the
+minimum QUIC packet size.
 
-All QUIC packets other than PMTUD/DPLPMTUD probe packets SHOULD be sized to fit
-within the maximum packet size to avoid the packet being fragmented or dropped
-{{?RFC8085}}.
+Both PMTUD and DPLPMTUD send IP packets that are larger than the current maximum
+packet size.  Aside from these PMTU probe packets, all QUIC packets SHOULD be
+sized to fit within the maximum packet size to avoid the packet being fragmented
+or dropped {{?RFC8085}}.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below the smallest allowed maximum packet size of 1200
-bytes, it MUST immediately cease sending QUIC packets, except for PMTUD or
-DPLPMTUD probe packets, on the affected path.  An endpoint MAY terminate the
-connection if an alternative path cannot be found.
+bytes, it MUST immediately cease sending QUIC packets, except for PMTU probe
+packets, on the affected path.  An endpoint MAY terminate the connection if an
+alternative path cannot be found.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
 implementations that implement any kind of PMTU discovery therefore SHOULD
@@ -3911,6 +3912,9 @@ When implementing the algorithm in Section 5 of {{!DPLPMTUD}}, the initial value
 of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size. The
 MIN_PLPMTU is the same as the BASE_PMTU.
 
+PMTU probe packets for DPLPMTUD that use the PADDING frame implement "Probing
+using padding data", as defined in Section 4.1 of {{!DPLPMTUD}}.
+
 QUIC endpoints implementing DPLPMTUD maintain a maximum packet size (DPLPMTUD
 MPS) for each combination of local and remote IP addresses.
 
@@ -3937,49 +3941,47 @@ DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section
 
 ### Handling of ICMP Messages by DPLPMTUD
 
-An endpoint using DPLPMTUD requires the validation of any received PTB message
-before using the PTB information, as defined in Section 4.6 of {{!DPLPMTUD}}.
-In addition to UDP Port validation, QUIC validates an ICMP message by using
-other PL information (e.g., validation of connection IDs in the quoted packet of
-any received ICMP message).
+An endpoint using DPLPMTUD requires the validation of any received ICMP Packet
+Too Big (PTB) message before using the PTB information, as defined in Section
+4.6 of {{!DPLPMTUD}}.  In addition to UDP Port validation, QUIC validates an
+ICMP message by using other PL information (e.g., validation of connection IDs
+in the quoted packet of any received ICMP message).
 
 The considerations for processing ICMP messages described in {{icmp-pmtud}} also
 apply if these messages are used by DPLPMTUD.
 
 
-## Sending QUIC DPLPMTUD Probe Packets
+## Sending QUIC PMTU Probe Packets
 
-DPLPMTU probe packets are ack-eliciting packets.  Probe packets that use the
-PADDING frame therefore implement "Probing using padding data", as defined in
-Section 4.1 of {{!DPLPMTUD}}.  Endpoints could limit the content of probe
-packets to PING and PADDING frames as packets that are larger than the current
-maximum packet size are more likely to be dropped by the network.   Loss of a
+PMTU probe packets are ack-eliciting packets.
+
+Endpoints could limit the content of probe packets to PING and PADDING frames as
+packets that are larger than the current maximum packet size are more likely to
+be dropped by the network.   Loss of a QUIC packet that is carried in a PMTU
 probe packet is therefore not a reliable indication of congestion and SHOULD NOT
 trigger a congestion control reaction; see Section 3, Bullet 7 of {{!DPLPMTUD}}.
-DPLPMTU probe packets consume congestion window, which could delay subsequent
-transmission by an application.
+However, PMTU probe packets consume congestion window, which could delay
+subsequent transmission by an application.
 
 
-
-## PMTUD/DPLPMTUD Probes Containing Source Connection ID {#pmtu-probes-src-cid}
+## PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
 Endpoints that rely on the destination connection ID for routing incoming QUIC
 packets are likely to require that the connection ID be included in
-PMTUD/DPLPMTUD probe packets to route any resulting ICMP messages
-({{icmp-pmtud}}) back to the correct endpoint.  However, only long header
-packets ({{long-header}}) contain the Source Connection ID field, and long
-header packets are not decrypted or acknowledged by the peer once the handshake
-is complete.
+PMTU probe packets to route any resulting ICMP messages ({{icmp-pmtud}}) back to
+the correct endpoint.  However, only long header packets ({{long-header}})
+contain the Source Connection ID field, and long header packets are not
+decrypted or acknowledged by the peer once the handshake is complete.
 
-One way to construct a PMTUD or DPLPMTUD probe is to coalesce (see
+One way to construct a PMTU probe packet is to coalesce (see
 {{packet-coalesce}}) a packet with a long header, such as a Handshake or 0-RTT
 packet ({{long-header}}), with a short header packet in a single UDP datagram.
-If the UDP datagram reaches the endpoint, the packet with the long header will
-be ignored, but the short header packet will be acknowledged.  If the UDP
-datagram causes an ICMP message to be sent, the first part of the datagram will
-be quoted in that message.  If the Source Connection ID field is within the
-quoted portion of the UDP datagram, that could be used for routing or validation
-of the ICMP message.
+If the resulting PMTU probe packet reaches the endpoint, the packet with the
+long header will be ignored, but the short header packet will be acknowledged.
+If the UDP datagram causes an ICMP message to be sent, the first part of the
+datagram will be quoted in that message.  If the Source Connection ID field is
+within the quoted portion of the UDP datagram, that could be used for routing or
+validation of the ICMP message.
 
 Note:
 : The purpose of using a packet with a long header is only to ensure that the
