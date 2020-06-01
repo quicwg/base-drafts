@@ -3365,6 +3365,9 @@ Once the packet has been fully processed, a receiver acknowledges receipt by
 sending one or more ACK frames containing the packet number of the received
 packet.
 
+An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
+send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
+the condition.
 
 ## Generating Acknowledgements {#generating-acks}
 
@@ -3386,21 +3389,26 @@ guidance offered below seeks to strike this balance.
 
 Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
 MUST be acknowledged at least once within the maximum ack delay. An endpoint
-communicates its maximum delay using the max_ack_delay transport parameter;
-see {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
-contract: an endpoint promises to never intentionally delay acknowledgments
-of an ack-eliciting packet by more than the indicated value. If it does,
-any excess accrues to the RTT estimate and could result in spurious or
-delayed retransmissions from the peer. For Initial and Handshake packets,
-a max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay
-value in determining timeouts for timer-based retransmission, as detailed in
-Section 5.2.1 of {{QUIC-RECOVERY}}.
+communicates its maximum delay using the max_ack_delay transport parameter; see
+{{transport-parameter-definitions}}.  max_ack_delay declares an explicit
+contract: an endpoint promises to never intentionally delay acknowledgments of
+an ack-eliciting packet by more than the indicated value. If it does, any excess
+accrues to the RTT estimate and could result in spurious or delayed
+retransmissions from the peer. For Initial and Handshake packets, a
+max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay value
+in determining timeouts for timer-based retransmission, as detailed in Section
+5.2.1 of {{QUIC-RECOVERY}}.
 
-An ACK frame SHOULD be generated for at least every second ack-eliciting packet.
-This recommendation is in keeping with standard practice for TCP {{?RFC5681}}.
-A receiver could decide to send an ACK frame less frequently if it has
-information about how frequently the sender's congestion controller
-needs feedback, or if the receiver is CPU or bandwidth constrained.
+Since packets containing only ACK frames are not congestion controlled, an
+endpoint MUST NOT send more than one such packet in response to receiving an
+ack-eliciting packet.
+
+An endpoint MUST NOT send a non-ack-eliciting packet in response to a
+non-ack-eliciting packet, even if there are packet gaps which precede the
+received packet. This avoids an infinite feedback loop of acknowledgements,
+which could prevent the connection from ever becoming idle.  Non-ack-eliciting
+packets are eventually acknowledged when the endpoint sends an ACK frame in
+response to other events.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
 frame immediately on receiving an ack-eliciting packet that is out of order. The
@@ -3413,17 +3421,10 @@ Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
-As an optimization, a receiver MAY process multiple packets before sending any
-ACK frames in response.  In this case the receiver can determine whether an
-immediate or delayed acknowledgement should be generated after processing
-incoming packets.
-
-Packets containing PADDING frames are considered to be in flight for congestion
-control purposes {{QUIC-RECOVERY}}. Sending only PADDING frames might cause the
-sender to become limited by the congestion controller with no acknowledgments
-forthcoming from the receiver. Therefore, a sender SHOULD ensure that other
-frames are sent in addition to PADDING frames to elicit acknowledgments from
-the receiver.
+The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
+that do not follow guidance offered above. However, an implementer should only
+deviate from these requirements after careful consideration of the performance
+implications of doing so.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
@@ -3433,24 +3434,33 @@ non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
 ack-eliciting packet has been received to bundle an ACK frame with outgoing
 frames.
 
-The algorithms in {{QUIC-RECOVERY}} are resilient to receivers that do not
-follow guidance offered above. However, an implementor should only deviate from
-these requirements after careful consideration of the performance implications
-of doing so.
 
-Packets containing only ACK frames are not congestion controlled, so there are
-limits on how frequently they can be sent.  An endpoint MUST NOT send more than
-one ACK-frame-only packet in response to receiving an ack-eliciting packet.  An
-endpoint MUST NOT send a non-ack-eliciting packet in response to a
-non-ack-eliciting packet, even if there are packet gaps which precede the
-received packet. Limiting ACK frames avoids an infinite feedback loop of
-acknowledgements, which could prevent the connection from ever becoming idle.
-However, the endpoint acknowledges non-ACK-eliciting packets when it sends an
-ACK frame.
+### Acknowledgement Frequency
 
-An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
-send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.
+A receiver determines how frequently to send acknowledgements in response to
+ack-eliciting packets. This determination involves a tradeoff.
+
+Endpoints rely on timely acknowledgment to detect loss; see Section 5 of
+{{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
+Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their
+congestion window. In both cases, delaying acknowledgments can adversely affect
+performance.
+
+On the other hand, reducing the frequency of packets that carry only
+acknowledgements reduces packet transmission and processing cost at both
+endpoints. It can also improve connection throughput on severely asymmetric
+links; see Section 3 of {{?RFC3449}}.
+
+A receiver SHOULD send an ACK frame after receiving at least two ack-eliciting
+packets. This recommendation is general in nature and consistent with
+recommendations for TCP endpoint behavior {{?RFC5681}}. Knowledge of network
+conditions, knowledge of the peer's congestion controller, or further research
+and experimentation might suggest alternative acknowledgment strategies with
+better performance characteristics.
+
+A receiver MAY process multiple available packets before determining whether to
+send an ACK frame in response.
+
 
 ### Managing ACK Ranges
 
@@ -3553,6 +3563,16 @@ the server in packets protected by 1-RTT keys.  This can mean that the client is
 unable to use these acknowledgments if the server cryptographic handshake
 messages are delayed or lost.  Note that the same limitation applies to other
 data sent by the server protected by the 1-RTT keys.
+
+
+### PADDING Frames Consume Congestion Window
+
+Packets containing PADDING frames are considered to be in flight for congestion
+control purposes {{QUIC-RECOVERY}}. Packets containing only PADDING frames
+therefore consume congestion window but do not generate acknowledgments that
+will open the congestion window. To avoid a deadlock, a sender SHOULD ensure
+that other frames are sent periodically in addition to PADDING frames to elicit
+acknowledgments from the receiver.
 
 
 ## Retransmission of Information
