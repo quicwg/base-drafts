@@ -3804,16 +3804,18 @@ packet size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
 
 The QUIC maximum packet size is the largest size of QUIC packet that can be sent
 across a network path using a single packet. Any maximum packet size larger than
-1200 bytes can be discovered using PMTUD/DPLPMTUD.
+1200 bytes can be discovered using Path Maximum Transmission Unit Discovery
+(PMTUD; see {{pmtud}}) or Datagram Packetization Layer PMTU Discovery (DPLPMTUD;
+see {{dplpmtud}}).
 
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
-to at least the smallest allowed maximum packet size (1200 bytes)
-by adding PADDING frames to the Initial packet or by
-coalescing the Initial packet; see {{packet-coalesce}}.  Sending a UDP datagram
-of this size ensures that the network path from the client to the server
-supports a reasonable Path Maximum Transmission Unit (PMTU).  This also
-helps reduce the amplitude of amplification attacks caused by server responses
-toward an unverified client address; see {{address-validation}}.
+to at least the smallest allowed maximum packet size (1200 bytes) by adding
+PADDING frames to the Initial packet or by coalescing the Initial packet; see
+{{packet-coalesce}}.  Sending a UDP datagram of this size ensures that the
+network path from the client to the server supports a reasonable Path Maximum
+Transmission Unit (PMTU).  This also helps reduce the amplitude of amplification
+attacks caused by server responses toward an unverified client address; see
+{{address-validation}}.
 
 Enforcement of the max_udp_payload_size transport parameter
 ({{transport-parameter-definitions}}) might act as an additional limit on the
@@ -3837,6 +3839,7 @@ CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
 
+
 ## Path Maximum Transmission Unit (PMTU)
 
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
@@ -3846,22 +3849,20 @@ fields.  The PMTU can depend on path characteristics, and can therefore change
 over time.  The largest UDP payload an endpoint sends at any given time is
 referred to as the endpoint's maximum packet size.
 
-An endpoint SHOULD use Datagram Packetization Layer PMTU Discovery
-({{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) or implement Path MTU Discovery
-(PMTUD) {{!RFC1191}} {{!RFC8201}} to determine whether the path to a destination
-will support a desired message size without fragmentation.  In the absence of
-these mechanisms, QUIC endpoints SHOULD NOT send IP packets larger than the
-minimum QUIC packet size.
+An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
+whether the path to a destination will support a desired message size without
+fragmentation.  In the absence of these mechanisms, QUIC endpoints SHOULD NOT
+send IP packets larger than the minimum QUIC packet size.
 
-Both PMTUD and DPLPMTUD send IP packets that are larger than the current maximum
-packet size.  Aside from these PMTU probe packets, all QUIC packets SHOULD be
-sized to fit within the maximum packet size to avoid the packet being fragmented
-or dropped {{?RFC8085}}.
+Both DPLPMTUD and PMTUD send IP packets that are larger than the current maximum
+packet size.  We refer to these as PMTU probes.  All QUIC packets that are not
+sent in a PMTU probe SHOULD be sized to fit within the maximum packet size to
+avoid the packet being fragmented or dropped {{?RFC8085}}.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below the smallest allowed maximum packet size of 1200
-bytes, it MUST immediately cease sending QUIC packets, except for PMTU probe
-packets, on the affected path.  An endpoint MAY terminate the connection if an
+bytes, it MUST immediately cease sending QUIC packets, except for those in PMTU
+probes, on the affected path.  An endpoint MAY terminate the connection if an
 alternative path cannot be found.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
@@ -3873,14 +3874,14 @@ A QUIC implementation MAY be more conservative in computing the maximum packet
 size to allow for unknown tunnel overheads or IP header options/extensions.
 
 
-### Handling of ICMP Messages by PMTUD {#icmp-pmtud}
+### Handling of ICMP Messages by PMTUD {#pmtud}
 
-PMTUD {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages (e.g., IPv6
-Packet Too Big messages) that indicate when a packet is dropped because it is
-larger than the local router MTU. DPLPMTUD can also optionally use these
-messages.  This use of ICMP messages is potentially vulnerable to off-path
-attacks that successfully guess the addresses used on the path and reduce the
-PMTU to a bandwidth-inefficient value.
+Path Maximum Transmission Unit Discovery (PMTUD; {{!RFC1191}}, {{!RFC8201}})
+relies on reception of ICMP messages (e.g., IPv6 Packet Too Big messages) that
+indicate when a packet is dropped because it is larger than the local router
+MTU. DPLPMTUD can also optionally use these messages.  This use of ICMP messages
+is potentially vulnerable to off-path attacks that successfully guess the
+addresses used on the path and reduce the PMTU to a bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 the minimum QUIC packet size.
@@ -3906,14 +3907,17 @@ to ICMP messages MAY be provisional until QUIC's loss detection algorithm
 determines that the quoted packet has actually been lost.
 
 
-## Datagram Packetization Layer PMTU Discovery
+## Datagram Packetization Layer PMTU Discovery {#dplpmtud}
 
-When implementing the algorithm in Section 5 of {{!DPLPMTUD}}, the initial value
-of BASE_PMTU SHOULD be consistent with the minimum QUIC packet size. The
+Datagram Packetization Layer PMTU Discovery (DPLPMTUD;
+{{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) relies on tracking loss or
+acknowledgment of QUIC packets that are carried in PMTU probes.  PMTU probes for
+DPLPMTUD that use the PADDING frame implement "Probing using padding data", as
+defined in Section 4.1 of {{!DPLPMTUD}}.
+
+Endpoints SHOULD set the initial value of BASE_PMTU (see Section 5.1 of
+{{!DPLPMTUD}}) to be consistent with the minimum QUIC packet size. The
 MIN_PLPMTU is the same as the BASE_PMTU.
-
-PMTU probe packets for DPLPMTUD that use the PADDING frame implement "Probing
-using padding data", as defined in Section 4.1 of {{!DPLPMTUD}}.
 
 QUIC endpoints implementing DPLPMTUD maintain a maximum packet size (DPLPMTUD
 MPS) for each combination of local and remote IP addresses.
@@ -3943,45 +3947,44 @@ DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section
 
 An endpoint using DPLPMTUD requires the validation of any received ICMP Packet
 Too Big (PTB) message before using the PTB information, as defined in Section
-4.6 of {{!DPLPMTUD}}.  In addition to UDP Port validation, QUIC validates an
+4.6 of {{!DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an
 ICMP message by using other PL information (e.g., validation of connection IDs
 in the quoted packet of any received ICMP message).
 
-The considerations for processing ICMP messages described in {{icmp-pmtud}} also
+The considerations for processing ICMP messages described in {{pmtud}} also
 apply if these messages are used by DPLPMTUD.
 
 
-## Sending QUIC PMTU Probe Packets
+## Sending QUIC PMTU Probes
 
-PMTU probe packets are ack-eliciting packets.
+PMTU probes are ack-eliciting packets.
 
-Endpoints could limit the content of probe packets to PING and PADDING frames as
+Endpoints could limit the content of PMTU probes to PING and PADDING frames as
 packets that are larger than the current maximum packet size are more likely to
 be dropped by the network.   Loss of a QUIC packet that is carried in a PMTU
-probe packet is therefore not a reliable indication of congestion and SHOULD NOT
+probe is therefore not a reliable indication of congestion and SHOULD NOT
 trigger a congestion control reaction; see Section 3, Bullet 7 of {{!DPLPMTUD}}.
-However, PMTU probe packets consume congestion window, which could delay
-subsequent transmission by an application.
+However, PMTU probes consume congestion window, which could delay subsequent
+transmission by an application.
 
 
-## PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
+### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
 Endpoints that rely on the destination connection ID for routing incoming QUIC
 packets are likely to require that the connection ID be included in
-PMTU probe packets to route any resulting ICMP messages ({{icmp-pmtud}}) back to
-the correct endpoint.  However, only long header packets ({{long-header}})
-contain the Source Connection ID field, and long header packets are not
-decrypted or acknowledged by the peer once the handshake is complete.
+PMTU probes to route any resulting ICMP messages ({{pmtud}}) back to the correct
+endpoint.  However, only long header packets ({{long-header}}) contain the
+Source Connection ID field, and long header packets are not decrypted or
+acknowledged by the peer once the handshake is complete.
 
-One way to construct a PMTU probe packet is to coalesce (see
-{{packet-coalesce}}) a packet with a long header, such as a Handshake or 0-RTT
-packet ({{long-header}}), with a short header packet in a single UDP datagram.
-If the resulting PMTU probe packet reaches the endpoint, the packet with the
-long header will be ignored, but the short header packet will be acknowledged.
-If the UDP datagram causes an ICMP message to be sent, the first part of the
-datagram will be quoted in that message.  If the Source Connection ID field is
-within the quoted portion of the UDP datagram, that could be used for routing or
-validation of the ICMP message.
+One way to construct a PMTU probe is to coalesce (see {{packet-coalesce}}) a
+packet with a long header, such as a Handshake or 0-RTT packet
+({{long-header}}), with a short header packet in a single UDP datagram.  If the
+resulting PMTU probe reaches the endpoint, the packet with the long header will
+be ignored, but the short header packet will be acknowledged.  If the PMTU probe
+causes an ICMP message to be sent, the first part of the probe will be quoted in
+that message.  If the Source Connection ID field is within the quoted portion of
+the probe, that could be used for routing or validation of the ICMP message.
 
 Note:
 : The purpose of using a packet with a long header is only to ensure that the
@@ -6077,7 +6080,7 @@ endpoints discard most packets that are not authenticated, greatly limiting the
 ability of an attacker to interfere with existing connections.
 
 Once a connection is established QUIC endpoints might accept some
-unauthenticated ICMP packets (see {{icmp-pmtud}}), but the use of these packets
+unauthenticated ICMP packets (see {{pmtud}}), but the use of these packets
 is extremely limited.  The only other type of packet that an endpoint might
 accept is a stateless reset ({{stateless-reset}}) which relies on the token
 being kept secret until it is used.
