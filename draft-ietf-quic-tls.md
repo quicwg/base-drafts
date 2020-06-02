@@ -2078,33 +2078,33 @@ ku  = HKDF-Expand-Label(secret, "quic ku", _, 32)
 ~~~
 
 The following shows the steps involved in protecting a minimal packet with an
-empty Destination Connection ID. This packet contains a single HANDSHAKE_DONE
-frame (that is, a payload of just 0x1e) and has a packet number of 0. In this
-example, a packet number of length 3 is used to avoid having to pad the payload
-of the packet; PADDING frames would be needed if the packet number is encoded
-on fewer octets.
+empty Destination Connection ID. This packet contains a single PING frame (that
+is, a payload of just 0x01) and has a packet number of 654360564. In this
+example, using a packet number of length 3 (that is, 49140 is encoded) avoids
+having to pad the payload of the packet; PADDING frames would be needed if the
+packet number is encoded on fewer octets.
 
 ~~~
-pn                 = 0
-nonce              = e0459b3474bdd0e44a41c144
-unprotected header = 42000000
-payload plaintext  = 1e
-payload ciphertext = 5df81b14ce4258476df9fdb92f3e18418c
+pn                 = 654360564 (decimal)
+nonce              = e0459b3474bdd0e46d417eb0
+unprotected header = 4200bff4
+payload plaintext  = 01
+payload ciphertext = 655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
 The resulting ciphertext is the minimum size possible. One byte is skipped to
 produce the sample for header protection.
 
 ~~~
-sample = f81b14ce4258476df9fdb92f3e18418c
-mask   = f19c0269d8
-header = 551d1a7d
+sample = 5e5cd55c41f69080575d7999c25a5bfb
+mask   = aefefe7d03
+header = 4cfe4189
 ~~~
 
 The protected packet is the smallest possible packet size of 21 bytes.
 
 ~~~
-packet = 539c02695df81b14ce4258476df9fdb92f3e18418c
+packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
 
