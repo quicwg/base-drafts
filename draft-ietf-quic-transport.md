@@ -3808,6 +3808,13 @@ across a network path using a single packet. Any maximum packet size larger than
 (PMTUD; see {{pmtud}}) or Datagram Packetization Layer PMTU Discovery (DPLPMTUD;
 see {{dplpmtud}}).
 
+Enforcement of the max_udp_payload_size transport parameter
+({{transport-parameter-definitions}}) might act as an additional limit on the
+maximum packet size. A sender can avoid exceeding this limit, once the value is
+known.  However, prior to learning the value of the transport parameter,
+endpoints risk datagrams being lost if they send packets larger than the
+smallest allowed maximum packet size of 1200 bytes.
+
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
 to at least the smallest allowed maximum packet size (1200 bytes) by adding
 PADDING frames to the Initial packet or by coalescing the Initial packet; see
@@ -3817,13 +3824,6 @@ Transmission Unit (PMTU).  This also helps reduce the amplitude of amplification
 attacks caused by server responses toward an unverified client address; see
 {{address-validation}}.
 
-Enforcement of the max_udp_payload_size transport parameter
-({{transport-parameter-definitions}}) might act as an additional limit on the
-maximum packet size. A sender can avoid exceeding this limit, once the value is
-known.  However, prior to learning the value of the transport parameter,
-endpoints risk datagrams being lost if they send packets larger than the
-smallest allowed maximum packet size of 1200 bytes.
-
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the network path and peer both support the size that it chooses.
 
@@ -3831,7 +3831,7 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 {{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
 A server MUST discard an Initial packet that is carried in a UDP datagram with a
-payload that is less than the smallest allowed maximum packet size  of 1200
+payload that is less than the smallest allowed maximum packet size of 1200
 bytes.  A server MAY also immediately close the connection by sending a
 CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
 {{immediate-close-hs}}.
@@ -3852,7 +3852,7 @@ referred to as the endpoint's maximum packet size.
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
 whether the path to a destination will support a desired message size without
 fragmentation.  In the absence of these mechanisms, QUIC endpoints SHOULD NOT
-send IP packets larger than the minimum QUIC packet size.
+send IP packets larger than the smallest allowed maximum packet size.
 
 Both DPLPMTUD and PMTUD send IP packets that are larger than the current maximum
 packet size.  We refer to these as PMTU probes.  All QUIC packets that are not
@@ -3862,8 +3862,8 @@ avoid the packet being fragmented or dropped {{?RFC8085}}.
 If a QUIC endpoint determines that the PMTU between any pair of local and remote
 IP addresses has fallen below the smallest allowed maximum packet size of 1200
 bytes, it MUST immediately cease sending QUIC packets, except for those in PMTU
-probes, on the affected path.  An endpoint MAY terminate the connection if an
-alternative path cannot be found.
+probes or those containing CONNECTION_CLOSE frames, on the affected path.  An
+endpoint MAY terminate the connection if an alternative path cannot be found.
 
 Each pair of local and remote addresses could have a different PMTU.  QUIC
 implementations that implement any kind of PMTU discovery therefore SHOULD
@@ -3921,12 +3921,6 @@ MIN_PLPMTU is the same as the BASE_PMTU.
 
 QUIC endpoints implementing DPLPMTUD maintain a maximum packet size (DPLPMTUD
 MPS) for each combination of local and remote IP addresses.
-
-If a QUIC endpoint determines that the PLPMTU between any pair of local and
-remote IP addresses has fallen below the size needed to support the minimum QUIC
-packet size (BASE_PLPMTU), it MUST immediately cease sending QUIC packets on the
-affected path. An endpoint MAY terminate the connection if an alternative path
-cannot be found.
 
 
 ### DPLPMTUD and Initial Connectivity
