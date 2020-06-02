@@ -2051,60 +2051,60 @@ ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
 This example shows some of the steps required to protect a packet with
 a short header.  This example uses AEAD_CHACHA20_POLY1305.
 
-In this example, TLS produces an application write secret from which
-HKDF-Expand-Label is used to produce four values: a key, an IV, a header
+In this example, TLS produces an application write secret from which a server
+uses HKDF-Expand-Label to produce four values: a key, an IV, a header
 protection key, and the secret that will be used after keys are updated (this
 last value is not used further in this example).
 
 ~~~
 secret
-    = 39d251df7424268ef22a001098dd8e39
-      5fe4c82b478a29d2f8ce340b7deb5f47
+    = 9ac312a7f877468ebe69422748ad00a1
+      5443f18203a07d6060f688f30f21632b
 
 key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 32)
-    = 18c450d55957e0a1e41fc1f96c976805
-      f1c0907b9dc58b7fc18b4f355915c0ee
+    = c6d98ff3441c3fe1b2182094f69caa2e
+      d4b716b65488960a7a984979fb23e1c8
 
 iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
-    = b0ea15f2f6ffa15f5b41fd2c
+    = e0459b3474bdd0e44a41c144
 
 hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 32)
-    = f261eb8533876b4fd9a84c6f125432d3
-      a8b522f1a7fd7553a72643f2db94c890
+    = 25a282b9e82f06f21f488917a4fc8f1b
+      73573685608597d0efcb076b0ab7a7a4
 
 ku  = HKDF-Expand-Label(server_initial_secret, "quic ku", _, 32)
-    = 8e9593ce868f5e9dcf3995d3207c1cc6
-      9b62023ac0f1d97cfde903c50f5edabc
+    = 1223504755036d556342ee9361d25342
+      1a826c9ecdf3c7148684b36b714881f9
 ~~~
 
 The following shows the steps involved in protecting a minimal packet with an
-empty Destination Connection ID. This packet contains a single PING frame (that
-is, a payload of just 0x01) and has a packet number of 3. In this example, a
-packet number of length 3 is used to avoid having to pad the payload of the
-packet; PADDING frames would be needed if the packet number is encoded on fewer
-octets.
+empty Destination Connection ID. This packet contains a single HANDSHAKE_DONE
+frame (that is, a payload of just 0x1e) and has a packet number of 0. In this
+example, a packet number of length 3 is used to avoid having to pad the payload
+of the packet; PADDING frames would be needed if the packet number is encoded
+on fewer octets.
 
 ~~~
-pn                 = 3
-nonce              = b0ea15f2f6ffa15f5b41fd2f
-unprotected header = 42000003
-payload plaintext  = 01
-payload ciphertext = f97422883e056cad7f92274ef92c3630ce
+pn                 = 0
+nonce              = e0459b3474bdd0e44a41c144
+unprotected header = 42000000
+payload plaintext  = 1e
+payload ciphertext = 5df81b14ce4258476df9fdb92f3e18418c
 ~~~
 
 The resulting ciphertext is the minimum size possible. One byte is skipped to
 produce the sample for header protection.
 
 ~~~
-sample = 7422883e056cad7f92274ef92c3630ce
-mask   = 771d1a7e76
+sample = f81b14ce4258476df9fdb92f3e18418c
+mask   = f19c0269d8
 header = 551d1a7d
 ~~~
 
-The protected packet is also the smallest possible size.
+The protected packet is the smallest possible packet size of 21 bytes.
 
 ~~~
-packet = 551d1a7df97422883e056cad7f92274ef92c3630ce
+packet = 539c02695df81b14ce4258476df9fdb92f3e18418c
 ~~~
 
 
