@@ -2046,6 +2046,68 @@ ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
 ~~~
 
 
+## ChaCha20-Poly1305 Short Header Packet
+
+This example shows some of the steps required to protect a packet with
+a short header.  This example uses AEAD_CHACHA20_POLY1305.
+
+In this example, TLS produces an application write secret from which
+HKDF-Expand-Label is used to produce four values: a key, an IV, a header
+protection key, and the secret that will be used after keys are updated (this
+last value is not used further in this example).
+
+~~~
+secret
+    = 39d251df7424268ef22a001098dd8e39
+      5fe4c82b478a29d2f8ce340b7deb5f47
+
+key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 32)
+    = 18c450d55957e0a1e41fc1f96c976805
+      f1c0907b9dc58b7fc18b4f355915c0ee
+
+iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
+    = b0ea15f2f6ffa15f5b41fd2c
+
+hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 32)
+    = f261eb8533876b4fd9a84c6f125432d3
+      a8b522f1a7fd7553a72643f2db94c890
+
+ku  = HKDF-Expand-Label(server_initial_secret, "quic ku", _, 32)
+    = 8e9593ce868f5e9dcf3995d3207c1cc6
+      9b62023ac0f1d97cfde903c50f5edabc
+~~~
+
+The following shows the steps involved in protecting a minimal packet with an
+empty Destination Connection ID. This packet contains a single PING frame (that
+is, a payload of just 0x01) and has a packet number of 3. In this example, a
+packet number of length 3 is used to avoid having to pad the payload of the
+packet; PADDING frames would be needed if the packet number is encoded on fewer
+octets.
+
+~~~
+pn                 = 3
+nonce              = b0ea15f2f6ffa15f5b41fd2f
+unprotected header = 42000003
+payload plaintext  = 01
+payload ciphertext = f97422883e056cad7f92274ef92c3630ce
+~~~
+
+The resulting ciphertext is the minimum size possible. One byte is skipped to
+produce the sample for header protection.
+
+~~~
+sample = 7422883e056cad7f92274ef92c3630ce
+mask   = 771d1a7e76
+header = 551d1a7d
+~~~
+
+The protected packet is also the smallest possible size.
+
+~~~
+packet = 551d1a7df97422883e056cad7f92274ef92c3630ce
+~~~
+
+
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
