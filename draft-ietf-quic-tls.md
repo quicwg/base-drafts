@@ -2061,18 +2061,18 @@ secret
     = 9ac312a7f877468ebe69422748ad00a1
       5443f18203a07d6060f688f30f21632b
 
-key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 32)
+key = HKDF-Expand-Label(secret, "quic key", _, 32)
     = c6d98ff3441c3fe1b2182094f69caa2e
       d4b716b65488960a7a984979fb23e1c8
 
-iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
+iv  = HKDF-Expand-Label(secret, "quic iv", _, 12)
     = e0459b3474bdd0e44a41c144
 
-hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 32)
+hp  = HKDF-Expand-Label(secret, "quic hp", _, 32)
     = 25a282b9e82f06f21f488917a4fc8f1b
       73573685608597d0efcb076b0ab7a7a4
 
-ku  = HKDF-Expand-Label(server_initial_secret, "quic ku", _, 32)
+ku  = HKDF-Expand-Label(secret, "quic ku", _, 32)
     = 1223504755036d556342ee9361d25342
       1a826c9ecdf3c7148684b36b714881f9
 ~~~
