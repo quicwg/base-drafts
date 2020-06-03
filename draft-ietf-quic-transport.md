@@ -4354,9 +4354,9 @@ require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
 a cryptographic handshake message, ACK frames, or both.  PING, PADDING, and
-CONNECTION_CLOSE frames are also permitted.  An endpoint that receives an
-Initial packet containing other frames can either discard the packet as spurious
-or treat it as a connection error.
+CONNECTION_CLOSE frames of type 0x1c are also permitted.  An endpoint that
+receives an Initial packet containing other frames can either discard the
+packet as spurious or treat it as a connection error.
 
 The first packet sent by a client always includes a CRYPTO frame that contains
 the start or all of the first cryptographic handshake message.  The first
@@ -4482,9 +4482,9 @@ Handshake packets are their own packet number space, and thus the first
 Handshake packet sent by a server contains a packet number of 0.
 
 The payload of this packet contains CRYPTO frames and could contain PING,
-PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames.
-Endpoints MUST treat receipt of Handshake packets with other frames as a
-connection error.
+PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames
+of type 0x1c. Endpoints MUST treat receipt of Handshake packets with other
+frames as a connection error.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
 Handshake packets is discarded - and no longer retransmitted - when Handshake
