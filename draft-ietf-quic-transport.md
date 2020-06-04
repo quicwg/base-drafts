@@ -5893,7 +5893,7 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using 0-RTT or 1-RTT packets ({{QUIC-TLS}}, Section 4).  When an
+sent using 0-RTT or 1-RTT packets; see Section 4 of {{QUIC-TLS}}.  When an
 application wishes to abandon a connection during the handshake, an endpoint
 can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
 APPLICATION_ERROR in an Initial or a Handshake packet.
