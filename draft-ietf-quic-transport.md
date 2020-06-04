@@ -5871,7 +5871,7 @@ Error Code:
   closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
   from the space defined in {{error-codes}}.  A CONNECTION_CLOSE frame of
   type 0x1d uses codes from the application protocol error code space;
-  see {{app-error-codes}}
+  see {{app-error-codes}}.
 
 Frame Type:
 
