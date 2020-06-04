@@ -7,15 +7,18 @@
 
 'use strict';
 require('buffer');
-var crypto = require('crypto');
+const assert = require('assert');
+const crypto = require('crypto');
 
-var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
-var SHA256 = 'sha256';
-var AES_GCM = 'aes-128-gcm';
-var AES_ECB = 'aes-128-ecb';
+const INITIAL_SALT = Buffer.from('afbfec289993d24c9e9786f19c6111e04390a899', 'hex');
+const RETRY_KEY = Buffer.from('ccce187ed09a09d05728155a6cb96be1', 'hex');
+const RETRY_NONCE = Buffer.from('e54930f97f2136f0530a8c1c', 'hex');
+const SHA256 = 'sha256';
+const AES_GCM = 'aes-128-gcm';
+const AES_ECB = 'aes-128-ecb';
 
 const draft_version = 29;
-var version = 'ff0000' + draft_version.toString(16);
+const version = 'ff0000' + draft_version.toString(16);
 
 function chunk(s, n) {
   return (new Array(Math.ceil(s.length / n)))
@@ -264,6 +267,18 @@ function hex_cid(cid) {
   return '0' + (cid.length / 2).toString(16) + cid;
 }
 
+// Verify that the retry keys are correct.
+function derive_retry() {
+  let secret = Buffer.from('8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c', 'hex');
+  let qhkdf = new QHKDF(new HMAC(SHA256), secret);
+  let key = qhkdf.expand_label("quic key", 16);
+  log('retry key', key);
+  assert.deepStrictEqual(key, RETRY_KEY);
+  let nonce = qhkdf.expand_label("quic iv", 12);
+  log('retry nonce', nonce);
+  assert.deepStrictEqual(nonce, RETRY_NONCE);
+}
+
 function retry(dcid, scid, odcid) {
   var pfx = Buffer.from(hex_cid(odcid), 'hex');
   var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
@@ -273,10 +288,7 @@ function retry(dcid, scid, odcid) {
   var aad = Buffer.concat([pfx, header]);
   log('retry aad', aad);
 
-  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
-  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
-
-  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
+  var gcm = crypto.createCipheriv(AES_GCM, RETRY_KEY, RETRY_NONCE);
   gcm.setAAD(aad);
   gcm.update('');
   gcm.final();
@@ -309,4 +321,5 @@ var scid = 'f067a5502a4262b5';
 var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
 
+derive_retry();
 retry('', scid, cid);
