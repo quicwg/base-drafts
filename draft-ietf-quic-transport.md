@@ -3850,9 +3850,9 @@ over time.  The largest UDP payload an endpoint sends at any given time is
 referred to as the endpoint's maximum packet size.
 
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
-whether the path to a destination will support a desired message size without
-fragmentation.  In the absence of these mechanisms, QUIC endpoints SHOULD NOT
-send IP packets larger than the smallest allowed maximum packet size.
+whether the path to a destination will support a desired maximum packet size
+without fragmentation.  In the absence of these mechanisms, QUIC endpoints
+SHOULD NOT send IP packets larger than the smallest allowed maximum packet size.
 
 Both DPLPMTUD and PMTUD send IP packets that are larger than the current maximum
 packet size.  We refer to these as PMTU probes.  All QUIC packets that are not
