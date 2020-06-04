@@ -80,6 +80,22 @@ class QHKDF {
   }
 }
 
+// XOR b into a.
+function xor(a, b) {
+    a.forEach((_, i) => {
+      a[i] ^= b[i];
+    });
+}
+
+function applyNonce(iv, counter) {
+  var nonce = Buffer.from(iv);
+  const m = nonce.readUIntBE(nonce.length - 6, 6);
+  const x = ((m ^ counter) & 0xffffff) +
+     ((((m / 0x1000000) ^ (counter / 0x1000000)) & 0xffffff) * 0x1000000);
+  nonce.writeUIntBE(x, nonce.length - 6, 6);
+  return nonce;
+}
+
 class InitialProtection {
   constructor(label, cid) {
     var qhkdf = QHKDF.extract(SHA256, INITIAL_SALT, cid);
@@ -95,12 +111,7 @@ class InitialProtection {
   }
 
   generateNonce(counter) {
-    var nonce = Buffer.from(this.iv);
-    var m = nonce.readUIntBE(nonce.length - 6, 6);
-    var x = ((m ^ counter) & 0xffffff) +
-        ((((m / 0x1000000) ^ (counter / 0x1000000)) & 0xffffff) * 0x1000000);
-    nonce.writeUIntBE(x, nonce.length - 6, 6);
-    return nonce;
+    return applyNonce(this.iv, counter);
   }
 
   // Returns the encrypted data with authentication tag appended.  The AAD is
@@ -144,13 +155,6 @@ class InitialProtection {
     return mask;
   }
 
-  // XOR b into a.
-  xor(a, b) {
-    a.forEach((_, i) => {
-      a[i] ^= b[i];
-    });
-  }
-
   // hdr is everything before the length field
   // hdr[0] has the packet number length already in place
   // pn is the packet number
@@ -174,7 +178,7 @@ class InitialProtection {
 
     var mask = this.hpMask(payload.slice(4 - pn_len, 20 - pn_len));
     aad[0] ^= mask[0] & (0x1f >> (aad[0] >> 7));
-    this.xor(aad.slice(pn_offset), mask.slice(1));
+    xor(aad.slice(pn_offset), mask.slice(1));
     log('masked header', aad);
     return Buffer.concat([aad, payload]);
   }
@@ -213,7 +217,7 @@ class InitialProtection {
     var hdr = Buffer.from(data.slice(0, hdr_len + pn_len));
     hdr[0] = octet0;
     log('header', hdr);
-    this.xor(hdr.slice(hdr_len), mask.slice(1));
+    xor(hdr.slice(hdr_len), mask.slice(1));
     log('unmasked header', hdr);
     var pn = hdr.readUIntBE(hdr_len, pn_len);
     // Important: this doesn't recover PN based on expected value.
@@ -283,6 +287,39 @@ function retry(dcid, scid, odcid) {
   log('retry', Buffer.concat([header, gcm.getAuthTag()]));
 }
 
+// A simple ChaCha20-Poly1305 packet.
+function chacha20(pn, payload) {
+  log('chacha20poly1305 pn=' + pn.toString(), payload);
+  let header = Buffer.alloc(4);
+  header.writeUIntBE(0x42, 0, 1);
+  header.writeUIntBE(pn & 0xffffff, 1, 3);
+  log('unprotected header', header);
+  const key = Buffer.from('c6d98ff3441c3fe1b2182094f69caa2e' +
+                          'd4b716b65488960a7a984979fb23e1c8', 'hex');
+  const iv = Buffer.from('e0459b3474bdd0e44a41c144', 'hex');
+  const nonce = applyNonce(iv, pn);
+  log('nonce', nonce);
+  let aead = crypto.createCipheriv('ChaCha20-Poly1305', key, nonce, { authTagLength: 16 });
+  aead.setAAD(header);
+  const e = aead.update(payload);
+  aead.final();
+  let ct = Buffer.concat([e, aead.getAuthTag()]);
+  log('ciphertext', ct);
+
+  const sample = ct.slice(1, 17);
+  log('sample', sample);
+  const hp = Buffer.from('25a282b9e82f06f21f488917a4fc8f1b' +
+                         '73573685608597d0efcb076b0ab7a7a4', 'hex');
+  let chacha = crypto.createCipheriv('ChaCha20', hp, sample);
+  const mask = chacha.update(Buffer.alloc(5));
+  log('mask', mask);
+  let packet = Buffer.concat([header, ct]);
+  header[0] ^= mask[0] & 0x1f;
+  xor(header.slice(1), mask.slice(1));
+  log('header', header);
+  log('protected packet', Buffer.concat([header, ct]));
+}
+
 var cid = '8394c8f03e515708';
 
 var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
@@ -310,3 +347,4 @@ var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
 
 retry('', scid, cid);
+chacha20(654360564, Buffer.from('01', 'hex'));

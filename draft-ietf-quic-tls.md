@@ -2046,6 +2046,68 @@ ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
 ~~~
 
 
+## ChaCha20-Poly1305 Short Header Packet
+
+This example shows some of the steps required to protect a packet with
+a short header.  This example uses AEAD_CHACHA20_POLY1305.
+
+In this example, TLS produces an application write secret from which a server
+uses HKDF-Expand-Label to produce four values: a key, an IV, a header
+protection key, and the secret that will be used after keys are updated (this
+last value is not used further in this example).
+
+~~~
+secret
+    = 9ac312a7f877468ebe69422748ad00a1
+      5443f18203a07d6060f688f30f21632b
+
+key = HKDF-Expand-Label(secret, "quic key", _, 32)
+    = c6d98ff3441c3fe1b2182094f69caa2e
+      d4b716b65488960a7a984979fb23e1c8
+
+iv  = HKDF-Expand-Label(secret, "quic iv", _, 12)
+    = e0459b3474bdd0e44a41c144
+
+hp  = HKDF-Expand-Label(secret, "quic hp", _, 32)
+    = 25a282b9e82f06f21f488917a4fc8f1b
+      73573685608597d0efcb076b0ab7a7a4
+
+ku  = HKDF-Expand-Label(secret, "quic ku", _, 32)
+    = 1223504755036d556342ee9361d25342
+      1a826c9ecdf3c7148684b36b714881f9
+~~~
+
+The following shows the steps involved in protecting a minimal packet with an
+empty Destination Connection ID. This packet contains a single PING frame (that
+is, a payload of just 0x01) and has a packet number of 654360564. In this
+example, using a packet number of length 3 (that is, 49140 is encoded) avoids
+having to pad the payload of the packet; PADDING frames would be needed if the
+packet number is encoded on fewer octets.
+
+~~~
+pn                 = 654360564 (decimal)
+nonce              = e0459b3474bdd0e46d417eb0
+unprotected header = 4200bff4
+payload plaintext  = 01
+payload ciphertext = 655e5cd55c41f69080575d7999c25a5bfb
+~~~
+
+The resulting ciphertext is the minimum size possible. One byte is skipped to
+produce the sample for header protection.
+
+~~~
+sample = 5e5cd55c41f69080575d7999c25a5bfb
+mask   = aefefe7d03
+header = 4cfe4189
+~~~
+
+The protected packet is the smallest possible packet size of 21 bytes.
+
+~~~
+packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
+~~~
+
+
 # Change Log
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
