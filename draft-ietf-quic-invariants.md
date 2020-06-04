@@ -177,9 +177,9 @@ Long Header Packet {
   Header Form (1) = 1,
   Version-Specific Bits (7),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
@@ -193,13 +193,13 @@ The next four bytes include a 32-bit Version field (see {{version}}).
 
 The next byte contains the length in bytes of the Destination Connection ID (see
 {{connection-id}}) field that follows it.  This length is encoded as an 8-bit
-unsigned integer.  The Destination Connection ID field follows the DCID Length
-field and is between 0 and 255 bytes in length.
+unsigned integer.  The Destination Connection ID field follows the Destination
+Connection ID Length field and is between 0 and 255 bytes in length.
 
 The next byte contains the length in bytes of the Source Connection ID field
 that follows it.  This length is encoded as a 8-bit unsigned integer.  The
-Source Connection ID field follows the SCID Length field and is between 0 and
-255 bytes in length.
+Source Connection ID field follows the Source Connection ID Length field and is
+between 0 and 255 bytes in length.
 
 The remainder of the packet contains version-specific content.
 
@@ -274,9 +274,9 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Supported Version (32) ...,
 }

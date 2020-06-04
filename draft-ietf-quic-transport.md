@@ -1535,7 +1535,7 @@ this connection. This Destination Connection ID is used to determine packet
 protection keys for Initial packets.
 
 The client populates the Source Connection ID field with a value of its choosing
-and sets the SCID Length field to indicate the length.
+and sets the Source Connection ID Length field to indicate the length.
 
 The first flight of 0-RTT packets use the same Destination Connection ID and
 Source Connection ID values as the client's first Initial packet.
@@ -1608,9 +1608,10 @@ treat any of the following as a connection error of type PROTOCOL_VIOLATION:
 If a zero-length connection ID is selected, the corresponding transport
 parameter is included with a zero-length value.
 
-{{fig-auth-cid}} shows the connection IDs that are used in a complete
-handshake. The exchange of Initial packets is shown, plus the later exchange of
-1-RTT packets that includes the connection ID established during the handshake.
+{{fig-auth-cid}} shows the connection IDs (with DCID=Destination Connection ID,
+SCID=Source Connection ID) that are used in a complete handshake. The exchange
+of Initial packets is shown, plus the later exchange of 1-RTT packets that
+includes the connection ID established during the handshake.
 
 ~~~
 Client                                                  Server
@@ -4100,9 +4101,9 @@ Long Header Packet {
   Long Packet Type (2),
   Type-Specific Bits (4),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..160),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..160),
 }
 ~~~~~
@@ -4140,7 +4141,7 @@ Version:
   indicates which version of QUIC is in use and determines how the rest of the
   protocol fields are interpreted.
 
-DCID Length:
+Destination Connection ID Length:
 
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
@@ -4152,11 +4153,11 @@ DCID Length:
 
 Destination Connection ID:
 
-: The Destination Connection ID field follows the DCID Length field and is
-  between 0 and 20 bytes in length. {{negotiating-connection-ids}} describes
-  the use of this field in more detail.
+: The Destination Connection ID field follows the Destination Connection ID
+  Length field and is between 0 and 20 bytes in length.
+  {{negotiating-connection-ids}} describes the use of this field in more detail.
 
-SCID Length:
+Source Connection ID Length:
 
 : The byte following the Destination Connection ID contains the length in bytes
   of the Source Connection ID field that follows it.  This length is encoded as
@@ -4168,9 +4169,9 @@ SCID Length:
 
 Source Connection ID:
 
-: The Source Connection ID field follows the SCID Length field and is between 0
-  and 20 bytes in length. {{negotiating-connection-ids}} describes the use of
-  this field in more detail.
+: The Source Connection ID field follows the Source Connection ID Length field
+  and is between 0 and 20 bytes in length. {{negotiating-connection-ids}}
+  describes the use of this field in more detail.
 
 In this version of QUIC, the following packet types with the long header are
 defined:
@@ -4243,9 +4244,9 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
@@ -4302,9 +4303,9 @@ Initial Packet {
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..160),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
@@ -4317,8 +4318,8 @@ Initial Packet {
 
 The Initial packet contains a long header as well as the Length and Packet
 Number fields.  The first byte contains the Reserved and Packet Number Length
-bits.  Between the SCID and Length fields, there are two additional
-fields specific to the Initial packet.
+bits.  Between the Source Connection ID and Length fields, there are two
+additional fields specific to the Initial packet.
 
 Token Length:
 
@@ -4401,9 +4402,9 @@ limitations.
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..160),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
@@ -4458,9 +4459,9 @@ Handshake Packet {
   Reserved Bits (2),
   Packet Number Length (2),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..160),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
@@ -4503,9 +4504,9 @@ Retry Packet {
   Long Packet Type (2) = 3,
   Unused (4),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..160),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..160),
   Retry Token (..),
   Retry Integrity Tag (128),
