@@ -275,6 +275,9 @@ x (E) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
   length E)
 
+This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.
+
 By convention, individual fields reference a complex field by using the name of
 the complex field.
 
