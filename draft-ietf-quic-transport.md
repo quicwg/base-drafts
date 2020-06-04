@@ -1437,9 +1437,9 @@ An endpoint can verify support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces
-({{packet-numbers}}).  The sequence numbers used by CRYPTO frames to ensure
-ordered delivery of cryptographic handshake data start from zero in each
-packet number space.
+({{packet-numbers}}).  The offsets used by CRYPTO frames to ensure ordered
+delivery of cryptographic handshake data start from zero in each packet number
+space.
 
 Endpoints MUST explicitly negotiate an application protocol.  This avoids
 situations where there is a disagreement about the protocol that is in use.
@@ -3190,9 +3190,9 @@ packets.  Similarly, Handshake packets are sent at the Handshake encryption
 level and can only be acknowledged in Handshake packets.
 
 This enforces cryptographic separation between the data sent in the different
-packet sequence number spaces.  Packet numbers in each space start at packet
-number 0.  Subsequent packets sent in the same packet number space MUST increase
-the packet number by at least one.
+packet number spaces.  Packet numbers in each space start at packet number 0.
+Subsequent packets sent in the same packet number space MUST increase the packet
+number by at least one.
 
 0-RTT and 1-RTT data exist in the same packet number space to make loss recovery
 algorithms easier to implement between the two packet types.
