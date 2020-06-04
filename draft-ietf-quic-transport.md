@@ -1027,12 +1027,13 @@ NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 
 ### Issuing Connection IDs {#issue-cid}
 
-Each Connection ID has an associated sequence number to assist in deduplicating
-messages.  The initial connection ID issued by an endpoint is sent in the Source
-Connection ID field of the long packet header ({{long-header}}) during the
-handshake.  The sequence number of the initial connection ID is 0.  If the
-preferred_address transport parameter is sent, the sequence number of the
-supplied connection ID is 1.
+Each Connection ID has an associated sequence number to assist in detecting when
+NEW_CONNECTION_ID or RETIRE_CONNECTION_ID frames refer to the same value.  The
+initial connection ID issued by an endpoint is sent in the Source Connection ID
+field of the long packet header ({{long-header}}) during the handshake.  The
+sequence number of the initial connection ID is 0.  If the preferred_address
+transport parameter is sent, the sequence number of the supplied connection ID
+is 1.
 
 Additional connection IDs are communicated to the peer using NEW_CONNECTION_ID
 frames ({{frame-new-connection-id}}).  The sequence number on each newly-issued
@@ -1255,8 +1256,8 @@ establish a shared secret using the cryptographic handshake protocol
 ({{transport-parameters}}).
 
 An application protocol can also operate in a limited fashion during the
-handshake phase.  0-RTT allows application messages to be sent by a client
-before receiving any messages from the server.  However, 0-RTT lacks certain key
+handshake phase.  0-RTT allows application data to be sent by a client before
+receiving any response from the server.  However, 0-RTT lacks certain key
 security guarantees. In particular, there is no protection against replay
 attacks in 0-RTT; see {{QUIC-TLS}}.  Separately, a server can also send
 application data to a client before it receives the final cryptographic
@@ -6183,9 +6184,9 @@ streams.
 
 ## Peer Denial of Service {#useless}
 
-QUIC and TLS both contain messages that have legitimate uses in some contexts,
-but that can be abused to cause a peer to expend processing resources without
-having any observable impact on the state of the connection.
+QUIC and TLS both contain frames or messages that have legitimate uses in some
+contexts, but that can be abused to cause a peer to expend processing resources
+without having any observable impact on the state of the connection.
 
 Messages can also be used to change and revert state in small or inconsequential
 ways, such as by sending small increments to flow control limits.
