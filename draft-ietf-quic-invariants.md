@@ -363,9 +363,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * The first packets exchanged on a flow use the long header
 
-* QUIC forbids acknowledgments of packets that only contain ACK frames,
-  therefore the last packet before a long period of quiescence might be assumed
-  to contain an acknowledgment
+* The last packet before a long period of quiescence might be assumed
+  to contain only an acknowledgment
 
 * QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
   exchanges during connection establishment
