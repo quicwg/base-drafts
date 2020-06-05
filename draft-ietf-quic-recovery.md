@@ -572,10 +572,10 @@ estimate, the new packet that it sends MUST be ack-eliciting.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
-as described below in Section {{discarding-packets}}. When Initial or Handshake
-keys are discarded, the PTO and loss detection timers MUST be reset, because
-discarding keys indicates forward progress and the loss detection timer might
-have been set for a now discarded packet number space.
+as described below in {{discarding-packets}}. When Initial or Handshake keys are
+discarded, the PTO and loss detection timers MUST be reset, because discarding
+keys indicates forward progress and the loss detection timer might have been set
+for a now discarded packet number space.
 
 #### Before Address Validation
 
