@@ -1643,16 +1643,16 @@ value of the initial_source_connection_id transport parameter to `C1`.
 
 When the handshake does not include a Retry ({{fig-auth-cid}}), the server sets
 original_destination_connection_id to `S1` and initial_source_connection_id to
-`S3`. The server does not include a retry_source_connection_id transport
-parameter.
+`S3`. In this case, the server does not include a retry_source_connection_id
+transport parameter.
 
-When the handshake includes a Retry ({{fig-auth-cid-retry}}), the server
-additionally sets original_destination_connection_id to `S1`,
-retry_source_connection_id to `S2`, and initial_source_connection_id to `S3`.
+When the handshake includes a Retry ({{fig-auth-cid-retry}}), the server sets
+original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
+and initial_source_connection_id to `S3`.
 
-Each endpoint validates the transport parameters set by their peer, including
-the client confirming that retry_source_connection_id is absent if no Retry
-packet was processed.
+Each endpoint validates transport parameters set by the peer. The client
+confirms that the retry_source_connection_id transport parameter is absent if it
+did not process a Retry packet.
 
 
 ## Transport Parameters {#transport-parameters}
