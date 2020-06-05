@@ -240,11 +240,11 @@ A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
-connection to be delivered to the wrong endpoint.  The connection ID is used by
-endpoints and the intermediaries that support them to ensure that each QUIC
-packet can be delivered to the correct instance of an endpoint.  At the
-endpoint, the connection ID is used to identify which QUIC connection the packet
-is intended for.
+connection to be delivered to the wrong transport endpoint.  The connection ID
+is used by endpoints and the intermediaries that support them to ensure that
+each QUIC packet can be delivered to the correct instance of an endpoint.  At
+the endpoint, the connection ID is used to identify which QUIC connection the
+packet is intended for.
 
 The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
