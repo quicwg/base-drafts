@@ -1043,6 +1043,7 @@ Initial Packet {
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
+  Length (i),
   Packet Number (8..32),     # Protected
   Protected Payload (0..24), # Skipped Part
   Protected Payload (128),   # Sampled Part
