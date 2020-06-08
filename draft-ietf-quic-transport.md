@@ -910,7 +910,7 @@ if no bytes were sent.
 
 The final size of a stream is always signaled to the recipient.  The final size
 is the sum of the Offset and Length fields of a STREAM frame with a FIN flag,
-noting that the length might be implicit.  Alternatively, the Final Size field
+noting that these fields might be implicit.  Alternatively, the Final Size field
 of a RESET_STREAM frame carries this value.  This ensures that all ways that a
 stream can be closed result in the number of bytes on the stream being reliably
 transmitted.  This guarantees that both endpoints agree on how much flow control
