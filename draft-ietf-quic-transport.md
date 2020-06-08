@@ -908,11 +908,13 @@ final size is the number of bytes sent.  More generally, this is one higher
 than the offset of the byte with the largest offset sent on the stream, or zero
 if no bytes were sent.
 
-At the end of a stream, the sender communicates the final size to the recipient,
-ensuring flow control state is synchronized.  For a stream that is reset, the
-final size is carried explicitly in a RESET_STREAM frame.  Otherwise, the final
-size is the offset plus the length of a STREAM frame marked with a FIN flag, or
-0 in the case of incoming unidirectional streams.
+The final size of a stream is always signaled to the recipient.  The final size
+is the sum of the Offset and Length fields of a STREAM frame with a FIN flag,
+noting that the length might be implicit.  Alternatively, the Final Size field
+of a RESET_STREAM frame carries this value.  This ensures that all ways that a
+stream can be closed result in the number of bytes on the stream being reliably
+transmitted.  This guarantees that both endpoints agree on how much flow control
+credit was consumed by the stream.
 
 An endpoint will know the final size for a stream when the receiving part of the
 stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).
