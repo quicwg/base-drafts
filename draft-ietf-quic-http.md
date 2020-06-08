@@ -1287,15 +1287,16 @@ stream.  If the push stream has already ended, the server MAY still abruptly
 terminate the stream or MAY take no action.
 
 When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
-a promise and has not created a push stream.  The client should not expect the
-corresponding promise to be fulfilled.
+a promise.  The client cannot expect the corresponding promise to be fulfilled,
+unless it has already received and processed the promised response. A server
+SHOULD send a CANCEL_PUSH even if it has opened the corresponding stream.
 
 Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
-A server SHOULD NOT send a CANCEL_PUSH when it has already created a
-corresponding push stream, and a client SHOULD NOT send a CANCEL_PUSH when it
-has already received a corresponding push stream.  If a push stream arrives
-after a client has sent CANCEL_PUSH, this MAY be treated as a stream error of
-type H3_STREAM_CREATION_ERROR.
+A client SHOULD NOT send a CANCEL_PUSH when it has already received a
+corresponding push stream.  A push stream could arrive after a client has sent
+CANCEL_PUSH, because a server might not have processed the CANCEL_PUSH. The
+client SHOULD abort reading the stream with an error code of
+H3_REQUEST_CANCELLED.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
 frame on a stream other than the control stream MUST be treated as a connection
