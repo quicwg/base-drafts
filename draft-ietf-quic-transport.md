@@ -3337,9 +3337,9 @@ necessary as a connection error of type PROTOCOL_VIOLATION.
 
 A sender bundles one or more frames in a QUIC packet; see {{frames}}.
 
-A sender can minimize per-packet bandwidth and computational costs by bundling
-as many frames as possible within a QUIC packet.  A sender MAY wait for a short
-period of time to bundle multiple frames before sending a packet that is not
+A sender can minimize per-packet bandwidth and computational costs by including
+as many frames as possible in each QUIC packet.  A sender MAY wait for a short
+period of time to collect multiple frames before sending a packet that is not
 maximally packed, to avoid sending out large numbers of small packets.  An
 implementation MAY use knowledge about application sending behavior or
 heuristics to determine whether and for how long to wait.  This waiting period
@@ -3355,8 +3355,8 @@ One of the benefits of QUIC is avoidance of head-of-line blocking across
 multiple streams.  When a packet loss occurs, only streams with data in that
 packet are blocked waiting for a retransmission to be received, while other
 streams can continue making progress.  Note that when data from multiple streams
-is bundled into a single QUIC packet, loss of that packet blocks all those
-streams from making progress.  Implementations are advised to bundle as few
+is included in a single QUIC packet, loss of that packet blocks all those
+streams from making progress.  Implementations are advised to include as few
 streams as necessary in outgoing packets without losing transmission efficiency
 to underfilled packets.
 
