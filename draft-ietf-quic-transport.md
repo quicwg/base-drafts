@@ -3354,7 +3354,7 @@ One of the benefits of QUIC is avoidance of head-of-line blocking across
 multiple streams.  When a packet loss occurs, only streams with data in that
 packet are blocked waiting for a retransmission to be received, while other
 streams can continue making progress.  Note that when data from multiple streams
-are included in a single QUIC packet, loss of that packet blocks all those
+is included in a single QUIC packet, loss of that packet blocks all those
 streams from making progress.  Implementations are advised to include as few
 streams as necessary in outgoing packets without losing transmission efficiency
 to underfilled packets.
