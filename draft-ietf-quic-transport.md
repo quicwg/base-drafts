@@ -2687,7 +2687,7 @@ if it is expecting response data, but does not have or is unable to send
 application data.
 
 An implementation of QUIC might provide applications with an option to defer an
-idle timeout.  This facility could be used when the application has wishes to
+idle timeout.  This facility could be used when the application wishes to
 avoid the loss of state that is bound to an open connection, but does not expect
 to exchange application data for some time.  With this option, an endpoint could
 send a PING frame periodically to defer an idle timeout; see {{frame-ping}}.
