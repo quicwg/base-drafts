@@ -396,13 +396,13 @@ Instead, it relies on receiving priority information from the application that
 uses QUIC.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
-the relative priority of streams.  When deciding which streams to dedicate
-resources to, the implementation SHOULD use the information provided by the
+the relative priority of streams.  When deciding the streams to which resources
+are dedicated, the implementation SHOULD use the information provided by the
 application.
 
 ## Required Operations on Streams {#stream-operations}
 
-There are certain operations which an application MUST be able to perform when
+There are certain operations that an application MUST be able to perform when
 interacting with QUIC streams.  This document does not specify an API, but
 any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC stream.
@@ -439,7 +439,7 @@ Unidirectional streams use the applicable state machine directly.  Bidirectional
 streams use both state machines.  For the most part, the use of these state
 machines is the same whether the stream is unidirectional or bidirectional.  The
 conditions for opening a stream are slightly more complex for a bidirectional
-stream because the opening of either send or receive sides causes the stream
+stream because the opening of either the send or receive side causes the stream
 to open in both directions.
 
 An endpoint MUST open streams of the same type in increasing order of stream ID.
@@ -497,7 +497,7 @@ data to a peer.
 ~~~
 {: #fig-stream-send-states title="States for Sending Parts of Streams"}
 
-The sending part of stream that the endpoint initiates (types 0
+The sending part of a stream that the endpoint initiates (types 0
 and 2 for clients, 1 and 3 for servers) is opened by the application.  The
 "Ready" state represents a newly created stream that is able to accept data from
 the application.  Stream data might be buffered in this state in preparation for
@@ -592,7 +592,7 @@ by the sender.
 
 The receiving part of a stream initiated by a peer (types 1 and 3 for a client,
 or 0 and 2 for a server) is created when the first STREAM, STREAM_DATA_BLOCKED,
-or RESET_STREAM is received for that stream.  For bidirectional streams
+or RESET_STREAM frame is received for that stream.  For bidirectional streams
 initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
 sending part of the stream also creates the receiving part.  The initial state
 for the receiving part of stream is "Recv".
@@ -665,15 +665,16 @@ STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RESET_STREAM
 ({{frame-reset-stream}}).
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
-or "Reset Recvd").  A sender MUST NOT send STREAM or STREAM_DATA_BLOCKED after
-sending a RESET_STREAM; that is, in the terminal states and in the "Reset Sent"
-state.  A receiver could receive any of these three frames in any state, due to
-the possibility of delayed delivery of packets carrying them.
+or "Reset Recvd").  A sender MUST NOT send a STREAM or STREAM_DATA_BLOCKED frame
+for a stream in the "Reset Sent" state or any terminal state; that is, after
+sending a RESET_STREAM frame.  A receiver could receive any of these three
+frames in any state, due to the possibility of delayed delivery of packets
+carrying them.
 
 The receiver of a stream sends MAX_STREAM_DATA ({{frame-max-stream-data}}) and
 STOP_SENDING frames ({{frame-stop-sending}}).
 
-The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver can
+The receiver only sends MAX_STREAM_DATA in the "Recv" state.  A receiver MAY
 send STOP_SENDING in any state where it has not received a RESET_STREAM frame;
 that is states other than "Reset Recvd" or "Reset Read".  However there is
 little value in sending a STOP_SENDING frame in the "Data Recvd" state, since
@@ -728,9 +729,9 @@ the opposite direction.  This typically indicates that the receiving application
 is no longer reading data it receives from the stream, but it is not a guarantee
 that incoming data will be ignored.
 
-STREAM frames received after sending STOP_SENDING are still counted toward
-connection and stream flow control, even though these frames can be discarded
-upon receipt.
+STREAM frames received after sending a STOP_SENDING frame are still counted
+toward connection and stream flow control, even though these frames can be
+discarded upon receipt.
 
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
@@ -759,8 +760,9 @@ stream is in any state other than "Recv" or "Size Known" - sending a
 STOP_SENDING frame is unnecessary.
 
 An endpoint that wishes to terminate both directions of a bidirectional stream
-can terminate one direction by sending a RESET_STREAM, and it can encourage
-prompt termination in the opposite direction by sending a STOP_SENDING frame.
+can terminate one direction by sending a RESET_STREAM frame, and it can
+encourage prompt termination in the opposite direction by sending a STOP_SENDING
+frame.
 
 
 # Flow Control {#flow-control}
@@ -987,7 +989,8 @@ at lower protocol layers (UDP, IP) don't cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
 deployment-specific) method which will allow packets with that connection ID to
-be routed back to the endpoint and identified by the endpoint upon receipt.
+be routed back to the endpoint and to be identified by the endpoint upon
+receipt.
 
 Connection IDs MUST NOT contain any information that can be used by an external
 observer (that is, one that does not cooperate with the issuer) to correlate
@@ -1186,8 +1189,8 @@ that packet.
 If a server receives a packet that has an unsupported version, but the packet is
 sufficiently large to initiate a new connection for any version supported by the
 server, it SHOULD send a Version Negotiation packet as described in
-{{send-vn}}. Servers MAY rate control these packets to avoid storms of Version
-Negotiation packets.  Otherwise, servers MUST drop packets that specify
+{{send-vn}}. Servers MAY limit the number of packets that it responds to with a
+Version Negotiation packet. Servers MUST drop smaller packets that specify
 unsupported versions.
 
 The first packet for an unsupported version can use different semantics and
@@ -1276,7 +1279,7 @@ a client and server to terminate a connection ({{termination}}).
 
 ## Required Operations on Connections
 
-There are certain operations which an application MUST be able to perform when
+There are certain operations that an application MUST be able to perform when
 interacting with the QUIC transport.  This document does not specify an API, but
 any implementation of this version of QUIC MUST expose the ability to perform
 the operations described in this section on a QUIC connection.
@@ -1463,11 +1466,12 @@ by the frames that are typically contained in those packets. So, for instance
 the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
-Note that multiple QUIC packets -- even of different packet types -- can be
-coalesced into a single UDP datagram; see {{packet-coalesce}}). As a result,
-this handshake may consist of as few as 4 UDP datagrams, or any number more.
-For instance, the server's first flight contains Initial packets,
-Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short header.
+Multiple QUIC packets -- even of different packet types -- can be coalesced into
+a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake may
+consist of as few as 4 UDP datagrams, or any number more up to the limits
+inherent to the protocol, such as congestion control or anti-amplification.  For
+instance, the server's first flight contains Initial packets, Handshake packets,
+and "0.5-RTT data" in 1-RTT packets with a short header.
 
 ~~~~
 Client                                                  Server
@@ -1660,7 +1664,7 @@ did not process a Retry packet.
 
 During connection establishment, both endpoints make authenticated declarations
 of their transport parameters.  Endpoints are required to comply with the
-restrictions implied by these parameters; the description of each parameter
+restrictions that each parameter defines; the description of each parameter
 includes rules for its handling.
 
 Transport parameters are declarations that are made unilaterally by each
@@ -1768,7 +1772,7 @@ Because there is no flow control of CRYPTO frames, an endpoint could
 potentially force its peer to buffer an unbounded amount of data.
 
 Implementations MUST support buffering at least 4096 bytes of data received in
-CRYPTO frames out of order. Endpoints MAY choose to allow more data to be
+out of order CRYPTO frames. Endpoints MAY choose to allow more data to be
 buffered during the handshake. A larger limit during the handshake could allow
 for larger keys or credentials to be exchanged. An endpoint's buffer size does
 not need to remain constant during the life of the connection.
@@ -1789,7 +1793,7 @@ CRYPTO frame was discarded.
 
 # Address Validation
 
-Address validation is used by QUIC to avoid being used for a traffic
+Address validation ensures that an endpoint cannot be used for a traffic
 amplification attack.  In such an attack, a packet is sent to a server with
 spoofed source address information that identifies a victim.  If a server
 generates more or larger packets in response to that packet, the attacker can
@@ -1822,8 +1826,8 @@ packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
 payloads of at least 1200 bytes, adding padding to packets in the datagram as
-necessary. Sending padded datagrams ensures that the server is not overly
-constrained by the amplification restriction.
+necessary. A client that sends padded datagrams allows the server to send more
+data prior to completing address validation.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
@@ -1833,8 +1837,8 @@ the client has no reason to send additional packets, the server will be unable
 to send more data because it has not validated the client's address. To prevent
 this deadlock, clients MUST send a packet on a probe timeout (PTO, see Section
 6.2 of {{QUIC-RECOVERY}}). Specifically, the client MUST send an Initial packet
-in a UDP datagram of at least 1200 bytes if it does not have Handshake keys, and
-otherwise send a Handshake packet.
+in a UDP datagram that contains at least 1200 bytes if it does not have
+Handshake keys, and otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
