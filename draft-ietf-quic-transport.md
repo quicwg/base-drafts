@@ -2678,17 +2678,43 @@ ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
 
+
+### Liveness Testing
+
+An endpoint that sends packets close to the effective timeout risks having
+them be discarded at the peer, since the peer might enter its draining state
+before these packets arrive.
+
+An endpoint can send a PING or another ack-eliciting frame to test the
+connection for liveness if the peer could time out soon, such as within a PTO;
+see Section 6.2 of {{QUIC-RECOVERY}}.  This is especially useful if any
+available application data cannot be safely retried. Note that the application
+determines what data is safe to retry.
+
+
+### Deferring Idle Timeout {#defer-idle}
+
 An endpoint might need to send ack-eliciting packets to avoid an idle timeout
 if it is expecting response data, but does not have or is unable to send
 application data.
 
-An endpoint that sends packets close to the effective timeout risks having
-them be discarded at the peer, since the peer might enter its draining state
-before these packets arrive. An endpoint can send a PING or another
-ack-eliciting frame to test the connection for liveness if the peer could
-time out soon, such as within a PTO; see Section 6.2 of {{QUIC-RECOVERY}}.
-This is especially useful if any available application data cannot be safely
-retried. Note that the application determines what data is safe to retry.
+An implementation of QUIC might provide applications with an option to defer an
+idle timeout.  This facility could be used when the application wishes to avoid
+losing state that has been associated with an open connection, but does not
+expect to exchange application data for some time.  With this option, an
+endpoint could send a PING frame periodically to defer an idle timeout; see
+{{frame-ping}}.
+
+Application protocols that use QUIC SHOULD provide guidance on when deferring an
+idle timeout is appropriate.  Unnecessary sending of PING frames could have a
+detrimental effect on performance.
+
+A connection will time out if no packets are sent or received for a period
+longer than the time negotiated using the max_idle_timeout transport parameter;
+see {{termination}}.  However, state in middleboxes might time out earlier than
+that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
+experience shows that sending packets every 15 to 30 seconds is necessary to
+prevent the majority of middleboxes from losing state for UDP flows.
 
 
 ## Immediate Close {#immediate-close}
@@ -5099,19 +5125,8 @@ The receiver of a PING frame simply needs to acknowledge the packet containing
 this frame.
 
 The PING frame can be used to keep a connection alive when an application or
-application protocol wishes to prevent the connection from timing out. An
-application protocol SHOULD provide guidance about the conditions under which
-generating a PING is recommended.  This guidance SHOULD indicate whether it is
-the client or the server that is expected to send the PING.  Having both
-endpoints send PING frames without coordination can produce an excessive number
-of packets and poor performance.
-
-A connection will time out if no packets are sent or received for a period
-longer than the time negotiated using the max_idle_timeout transport parameter;
-see {{termination}}.  However, state in middleboxes might time out earlier than
-that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
-experience shows that sending packets every 15 to 30 seconds is necessary to
-prevent the majority of middleboxes from losing state for UDP flows.
+application protocol wishes to prevent the connection from timing out; see
+{{defer-idle}}.
 
 
 ## ACK Frames {#frame-ack}
