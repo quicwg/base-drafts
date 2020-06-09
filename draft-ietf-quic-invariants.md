@@ -139,6 +139,9 @@ x (E) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
   length E)
 
+This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.
+
 {{fig-ex-format}} shows an example structure:
 
 ~~~
@@ -177,9 +180,9 @@ Long Header Packet {
   Header Form (1) = 1,
   Version-Specific Bits (7),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
@@ -189,17 +192,19 @@ Long Header Packet {
 A QUIC packet with a long header has the high bit of the first byte set to 1.
 All other bits in that byte are version specific.
 
-The next four bytes include a 32-bit Version field (see {{version}}).
+The next four bytes include a 32-bit Version field.  Versions are described in
+{{version}}.
 
-The next byte contains the length in bytes of the Destination Connection ID (see
-{{connection-id}}) field that follows it.  This length is encoded as an 8-bit
-unsigned integer.  The Destination Connection ID field follows the DCID Length
-field and is between 0 and 255 bytes in length.
+The next byte contains the length in bytes of the Destination Connection ID
+field that follows it.  This length is encoded as an 8-bit unsigned integer.
+The Destination Connection ID field follows the Destination Connection ID Length
+field and is between 0 and 255 bytes in length.  Connection IDs are described in
+{{connection-id}}.
 
 The next byte contains the length in bytes of the Source Connection ID field
 that follows it.  This length is encoded as a 8-bit unsigned integer.  The
-Source Connection ID field follows the SCID Length field and is between 0 and
-255 bytes in length.
+Source Connection ID field follows the Source Connection ID Length field and is
+between 0 and 255 bytes in length.
 
 The remainder of the packet contains version-specific content.
 
@@ -223,7 +228,7 @@ A QUIC packet with a short header has the high bit of the first byte set to 0.
 A QUIC packet with a short header includes a Destination Connection ID
 immediately following the first byte.  The short header does not include the
 Connection ID Lengths, Source Connection ID, or Version fields.  The length of
-the Destination Connection ID is not specified in packets with a short header
+the Destination Connection ID is not encoded in packets with a short header
 and is not constrained by this specification.
 
 The remainder of the packet has version-specific semantics.
@@ -235,11 +240,11 @@ A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
-connection to be delivered to the wrong endpoint.  The connection ID is used by
-endpoints and the intermediaries that support them to ensure that each QUIC
-packet can be delivered to the correct instance of an endpoint.  At the
-endpoint, the connection ID is used to identify which QUIC connection the packet
-is intended for.
+connection to be delivered to the wrong QUIC endpoint.  The connection ID
+is used by endpoints and the intermediaries that support them to ensure that
+each QUIC packet can be delivered to the correct instance of an endpoint.  At
+the endpoint, the connection ID is used to identify which QUIC connection the
+packet is intended for.
 
 The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
@@ -274,9 +279,9 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
@@ -358,9 +363,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * The first packets exchanged on a flow use the long header
 
-* QUIC forbids acknowledgments of packets that only contain ACK frames,
-  therefore the last packet before a long period of quiescence might be assumed
-  to contain an acknowledgment
+* The last packet before a long period of quiescence might be assumed
+  to contain only an acknowledgment
 
 * QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
   exchanges during connection establishment
