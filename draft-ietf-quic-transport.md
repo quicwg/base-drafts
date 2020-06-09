@@ -7016,6 +7016,16 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-28
+
+- Made SERVER_BUSY error (0x2) more generic, now CONNECTION_REFUSED (#3709,
+  #3690, #3694)
+- Allow TRANSPORT_PARAMETER_ERROR when validating connection IDs (#3703, #3691)
+- Integrate QUIC-specific language from draft-ietf-tsvwg-datagram-plpmtud
+  (#3695, #3702)
+- disable_active_migration does not apply to the addresses offered in
+  server_preferred_address (#3608, #3670)
+
 ## Since draft-ietf-quic-transport-27
 
 - Allowed CONNECTION_CLOSE in any packet number space, with a requirement to
