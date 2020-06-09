@@ -666,7 +666,7 @@ STREAM_DATA_BLOCKED ({{frame-stream-data-blocked}}), and RESET_STREAM
 
 A sender MUST NOT send any of these frames from a terminal state ("Data Recvd"
 or "Reset Recvd").  A sender MUST NOT send a STREAM or STREAM_DATA_BLOCKED frame
-for a stream in the "Reset Sent" state or any terminal state; that is, after
+for a stream in the "Reset Sent" state or any terminal state, that is, after
 sending a RESET_STREAM frame.  A receiver could receive any of these three
 frames in any state, due to the possibility of delayed delivery of packets
 carrying them.
@@ -1186,9 +1186,9 @@ that packet.
 
 ### Server Packet Handling {#server-pkt-handling}
 
-If a server receives a packet that has an unsupported version, but the packet is
-sufficiently large to initiate a new connection for any version supported by the
-server, it SHOULD send a Version Negotiation packet as described in
+If a server receives a packet that indicates an unsupported version but is large
+enough to initiate a new connection for any one supported version,
+the server SHOULD send a Version Negotiation packet as described in
 {{send-vn}}. Servers MAY limit the number of packets that it responds to with a
 Version Negotiation packet. Servers MUST drop smaller packets that specify
 unsupported versions.
@@ -1468,8 +1468,8 @@ frame carrying the ClientHello.
 
 Multiple QUIC packets -- even of different packet types -- can be coalesced into
 a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake may
-consist of as few as 4 UDP datagrams, or any number more up to the limits
-inherent to the protocol, such as congestion control or anti-amplification.  For
+consist of as few as 4 UDP datagrams, or any number more (subject to limits
+inherent to the protocol, such as congestion control or anti-amplification).  For
 instance, the server's first flight contains Initial packets, Handshake packets,
 and "0.5-RTT data" in 1-RTT packets with a short header.
 
