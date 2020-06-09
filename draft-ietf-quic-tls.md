@@ -91,6 +91,15 @@ informative:
         org: Akamai Technologies
         role: editor
 
+  ROBUST:
+    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS"
+    author:
+      - ins: M. Fischlin
+      - ins: F. Günther
+      - ins: C. Janson
+    date: 2020-02-21
+    target: "https://www.felixguenther.info/docs/QUIPS2020_RobustChannels.pdf"
+
 
 --- abstract
 
@@ -871,7 +880,7 @@ Initial packets are protected with a secret derived from the Destination
 Connection ID field from the client's Initial packet. Specifically:
 
 ~~~
-initial_salt = 0xc3eef712c72ebb5a11a7d2432bb46365bef9f502
+initial_salt = 0xafbfec289993d24c9e9786f19c6111e04390a899
 initial_secret = HKDF-Extract(initial_salt,
                               client_dst_connection_id)
 
@@ -1043,6 +1052,7 @@ Initial Packet {
   Source Connection ID (0..160),
   Token Length (i),
   Token (..),
+  Length (i),
   Packet Number (8..32),     # Protected
   Protected Payload (0..24), # Skipped Part
   Protected Payload (128),   # Sampled Part
@@ -1271,14 +1281,14 @@ off-path attackers' ability to send valid Retry packets.
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
 AEAD_AES_128_GCM {{!AEAD=RFC5116}} used with the following inputs:
 
-- The secret key, K, is 128 bits equal to 0x4d32ecdb2a2133c841e4043df27d4430.
-- The nonce, N, is 96 bits equal to 0x4d1611d05513a552c587d575.
+- The secret key, K, is 128 bits equal to 0xccce187ed09a09d05728155a6cb96be1.
+- The nonce, N, is 96 bits equal to 0xe54930f97f2136f0530a8c1c.
 - The plaintext, P, is empty.
 - The associated data, A, is the contents of the Retry Pseudo-Packet, as
   illustrated in {{retry-pseudo}}:
 
 The secret key and the nonce are values derived by calling HKDF-Expand-Label
-using 0x656e61e336ae9417f7f0edd8d78d461e2aa7084aba7a14c1e9f726d55709169a as the
+using 0x8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c as the
 secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
 
 ~~~
@@ -1526,12 +1536,63 @@ After this period, old read keys and their corresponding secrets SHOULD be
 discarded.
 
 
-## Key Update Frequency
+## Minimum Key Update Frequency
 
 Key updates MUST be initiated before usage limits on packet protection keys are
-exceeded.  For the cipher suites mentioned in this document, the limits in
-Section 5.5 of {{!TLS13}} apply.  Other cipher suites MUST define usage limits
-in order to be used with QUIC.
+exceeded. For the cipher suites mentioned in this document, the limits in
+Section 5.5 of {{!TLS13}} apply. {{!TLS13}} does not specify a limit for
+AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^23
+packets can be used to obtain the same confidentiality protection as the limits
+specified in TLS.
+
+The usage limits defined in TLS 1.3 exist for protection against attacks
+on confidentiality and apply to successful applications of AEAD protection. The
+integrity protections in authenticated encryption also depend on limiting the
+number of attempts to forge packets. TLS achieves this by closing connections
+after any record fails an authentication check. In comparison, QUIC ignores any
+packet that cannot be authenticated, allowing multiple forgery attempts.
+
+Endpoints MUST count the number of received packets that fail authentication for
+each set of keys.  If the number of packets that fail authentication with the
+same key exceeds a limit that is specific to the AEAD in use, the endpoint MUST
+stop using those keys.  Endpoints MUST initiate a key update before reaching
+this limit.  If a key update is not possible, the endpoint MUST immediately
+close the connection.  Applying a limit reduces the probability that an attacker
+is able to successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
+
+Note:
+
+: Due to the way that header protection protects the Key Phase, packets that are
+  discarded are likely to have an even distribution of both Key Phase values.
+  This means that packets that fail authentication will often use the packet
+  protection keys from the next key phase.  It is therefore necessary to also
+  track the number of packets that fail authentication with the next set of
+  packet protection keys.  To avoid exhaustion of both sets of keys, it might be
+  necessary to initiate two key updates in succession.
+
+For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, the limit on
+the number of packets that fail authentication is 2^36.  Note that the analysis
+in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
+AEAD_AES_256_GCM, but this specification recommends a lower limit.  For
+AEAD_AES_128_CCM, the limit on the number of packets that fail authentication
+is 2^23.5; see {{ccm-bounds}}.
+
+Note:
+
+: These limits were originally calculated using assumptions about the
+  limits on TLS record size. The maximum size of a TLS record is 2^14 bytes.
+  In comparison, QUIC packets can be up to 2^16 bytes.  However, it is
+  expected that QUIC packets will generally be smaller than TLS records.
+  Where packets might be larger than 2^14 bytes in length, smaller limits might
+  be needed.
+
+Any TLS cipher suite that is specified for use with QUIC MUST define limits on
+the use of the associated AEAD function that preserves margins for
+confidentiality and integrity. That is, limits MUST be specified for the number
+of packets that can be authenticated and for the number packets that can fail
+authentication.  Providing a reference to any analysis upon which values are
+based - and any assumptions used in that analysis - allows limits to be adapted
+to varying usage conditions.
 
 
 ## Key Update Error Code {#key-update-error}
@@ -1869,8 +1930,8 @@ The initial secret is common:
 
 ~~~
 initial_secret = HKDF-Extract(initial_salt, cid)
-    = 524e374c6da8cf8b496f4bcb69678350
-      7aafee6198b202b4bc823ebf7514a423
+    = 1e7e7764529715b1e0ddc8e9753c6157
+      6769605187793ed366f8bbf8c9e986eb
 ~~~
 
 The secrets for protecting client packets are:
@@ -1878,17 +1939,17 @@ The secrets for protecting client packets are:
 ~~~
 client_initial_secret
     = HKDF-Expand-Label(initial_secret, "client in", _, 32)
-    = fda3953aecc040e48b34e27ef87de3a6
-      098ecf0e38b7e032c5c57bcbd5975b84
+    = 0088119288f1d866733ceeed15ff9d50
+      902cf82952eee27e9d4d4918ea371d87
 
 key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
-    = af7fd7efebd21878ff66811248983694
+    = 175257a31eb09dea9366d8bb79ad80ba
 
 iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
-    = 8681359410a70bb9c92f0420
+    = 6b26114b9cba2b63a9e8dd4f
 
 hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
-    = a980b8b4fb7d9fbc13e814c23164253d
+    = 9ddd12c994c0698b89374a9c077a3077
 ~~~
 
 The secrets for protecting server packets are:
@@ -1896,17 +1957,17 @@ The secrets for protecting server packets are:
 ~~~
 server_initial_secret
     = HKDF-Expand-Label(initial_secret, "server in", _, 32)
-    = 554366b81912ff90be41f17e80222130
-      90ab17d8149179bcadf222f29ff2ddd5
+    = 006f881359244dd9ad1acf85f595bad6
+      7c13f9f5586f5e64e1acae1d9ea8f616
 
 key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
-    = 5d51da9ee897a21b2659ccc7e5bfa577
+    = 149d0b1662ab871fbe63c49b5e655a5d
 
 iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
-    = 5e5ae651fd1e8495af13508b
+    = bab2b12a4c76016ace47856d
 
 hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
-    = a8ed82e6664f865aedf6106943f95fb8
+    = c0c499a65a60024a18a250974ea01dfa
 ~~~
 
 
@@ -1930,7 +1991,7 @@ The unprotected header includes the connection ID and a 4 byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff00001c088394c8f03e5157080000449e00000002
+c3ff00001d088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -1938,59 +1999,59 @@ Because the header uses a 4 byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = 535064a4268a0d9d7b1c9d250ae35516
+sample = fb66bc5f93032b7ddd89fe0ff15d9c4f
 
 mask = AES-ECB(hp, sample)[0..4]
-     = 833b343aaa
+     = d64a952459
 
 header[0] ^= mask[0] & 0x0f
-     = c0
+     = c5
 header[18..21] ^= mask[1..4]
-     = 3b343aa8
-header = c0ff00001c088394c8f03e5157080000449e3b343aa8
+     = 4a95245b
+header = c5ff00001d088394c8f03e5157080000449e4a95245b
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c0ff00001c088394c8f03e5157080000 449e3b343aa8535064a4268a0d9d7b1c
-9d250ae355162276e9b1e3011ef6bbc0 ab48ad5bcc2681e953857ca62becd752
-4daac473e68d7405fbba4e9ee616c870 38bdbe908c06d9605d9ac49030359eec
-b1d05a14e117db8cede2bb09d0dbbfee 271cb374d8f10abec82d0f59a1dee29f
-e95638ed8dd41da07487468791b719c5 5c46968eb3b54680037102a28e53dc1d
-12903db0af5821794b41c4a93357fa59 ce69cfe7f6bdfa629eef78616447e1d6
-11c4baf71bf33febcb03137c2c75d253 17d3e13b684370f668411c0f00304b50
-1c8fd422bd9b9ad81d643b20da89ca05 25d24d2b142041cae0af205092e43008
-0cd8559ea4c5c6e4fa3f66082b7d303e 52ce0162baa958532b0bbc2bc785681f
-cf37485dff6595e01e739c8ac9efba31 b985d5f656cc092432d781db95221724
-87641c4d3ab8ece01e39bc85b1543661 4775a98ba8fa12d46f9b35e2a55eb72d
-7f85181a366663387ddc20551807e007 673bd7e26bf9b29b5ab10a1ca87cbb7a
-d97e99eb66959c2a9bc3cbde4707ff77 20b110fa95354674e395812e47a0ae53
-b464dcb2d1f345df360dc227270c7506 76f6724eb479f0d2fbb6124429990457
-ac6c9167f40aab739998f38b9eccb24f d47c8410131bf65a52af841275d5b3d1
-880b197df2b5dea3e6de56ebce3ffb6e 9277a82082f8d9677a6767089b671ebd
-244c214f0bde95c2beb02cd1172d58bd f39dce56ff68eb35ab39b49b4eac7c81
-5ea60451d6e6ab82119118df02a58684 4a9ffe162ba006d0669ef57668cab38b
-62f71a2523a084852cd1d079b3658dc2 f3e87949b550bab3e177cfc49ed190df
-f0630e43077c30de8f6ae081537f1e83 da537da980afa668e7b7fb25301cf741
-524be3c49884b42821f17552fbd1931a 813017b6b6590a41ea18b6ba49cd48a4
-40bd9a3346a7623fb4ba34a3ee571e3c 731f35a7a3cf25b551a680fa68763507
-b7fde3aaf023c50b9d22da6876ba337e b5e9dd9ec3daf970242b6c5aab3aa4b2
-96ad8b9f6832f686ef70fa938b31b4e5 ddd7364442d3ea72e73d668fb0937796
-f462923a81a47e1cee7426ff6d922126 9b5a62ec03d6ec94d12606cb485560ba
-b574816009e96504249385bb61a819be 04f62c2066214d8360a2022beb316240
-b6c7d78bbe56c13082e0ca272661210a bf020bf3b5783f1426436cf9ff418405
-93a5d0638d32fc51c5c65ff291a3a7a5 2fd6775e623a4439cc08dd25582febc9
-44ef92d8dbd329c91de3e9c9582e41f1 7f3d186f104ad3f90995116c682a2a14
-a3b4b1f547c335f0be710fc9fc03e0e5 87b8cda31ce65b969878a4ad4283e6d5
-b0373f43da86e9e0ffe1ae0fddd35162 55bd74566f36a38703d5f34249ded1f6
-6b3d9b45b9af2ccfefe984e13376b1b2 c6404aa48c8026132343da3f3a33659e
-c1b3e95080540b28b7f3fcd35fa5d843 b579a84c089121a60d8c1754915c344e
-eaf45a9bf27dc0c1e784161691220913 13eb0e87555abd706626e557fc36a04f
-cd191a58829104d6075c5594f627ca50 6bf181daec940f4a4f3af0074eee89da
-acde6758312622d4fa675b39f728e062 d2bee680d8f41a597c262648bb18bcfc
-13c8b3d97b1a77b2ac3af745d61a34cc 4709865bac824a94bb19058015e4e42d
-ea5388b911e76d2856d68cf6cf394185
+c5ff00001d088394c8f03e5157080000 449e4a95245bfb66bc5f93032b7ddd89
+fe0ff15d9c4f7050fccdb71c1cd80512 d4431643a53aafa1b0b518b44968b18b
+8d3e7a4d04c30b3ed9410325b2abb2da fb1c12f8b70479eb8df98abcaf95dd8f
+3d1c78660fbc719f88b23c8aef6771f3 d50e10fdfb4c9d92386d44481b6c52d5
+9e5538d3d3942de9f13a7f8b702dc317 24180da9df22714d01003fc5e3d165c9
+50e630b8540fbd81c9df0ee63f949970 26c4f2e1887a2def79050ac2d86ba318
+e0b3adc4c5aa18bcf63c7cf8e85f5692 49813a2236a7e72269447cd1c755e451
+f5e77470eb3de64c8849d29282069802 9cfa18e5d66176fe6e5ba4ed18026f90
+900a5b4980e2f58e39151d5cd685b109 29636d4f02e7fad2a5a458249f5c0298
+a6d53acbe41a7fc83fa7cc01973f7a74 d1237a51974e097636b6203997f921d0
+7bc1940a6f2d0de9f5a11432946159ed 6cc21df65c4ddd1115f86427259a196c
+7148b25b6478b0dc7766e1c4d1b1f515 9f90eabc61636226244642ee148b464c
+9e619ee50a5e3ddc836227cad938987c 4ea3c1fa7c75bbf88d89e9ada642b2b8
+8fe8107b7ea375b1b64889a4e9e5c38a 1c896ce275a5658d250e2d76e1ed3a34
+ce7e3a3f383d0c996d0bed106c2899ca 6fc263ef0455e74bb6ac1640ea7bfedc
+59f03fee0e1725ea150ff4d69a7660c5 542119c71de270ae7c3ecfd1af2c4ce5
+51986949cc34a66b3e216bfe18b347e6 c05fd050f85912db303a8f054ec23e38
+f44d1c725ab641ae929fecc8e3cefa56 19df4231f5b4c009fa0c0bbc60bc75f7
+6d06ef154fc8577077d9d6a1d2bd9bf0 81dc783ece60111bea7da9e5a9748069
+d078b2bef48de04cabe3755b197d52b3 2046949ecaa310274b4aac0d008b1948
+c1082cdfe2083e386d4fd84c0ed0666d 3ee26c4515c4fee73433ac703b690a9f
+7bf278a77486ace44c489a0c7ac8dfe4 d1a58fb3a730b993ff0f0d61b4d89557
+831eb4c752ffd39c10f6b9f46d8db278 da624fd800e4af85548a294c1518893a
+8778c4f6d6d73c93df200960104e062b 388ea97dcf4016bced7f62b4f062cb6c
+04c20693d9a0e3b74ba8fe74cc012378 84f40d765ae56a51688d985cf0ceaef4
+3045ed8c3f0c33bced08537f6882613a cd3b08d665fce9dd8aa73171e2d3771a
+61dba2790e491d413d93d987e2745af2 9418e428be34941485c93447520ffe23
+1da2304d6a0fd5d07d08372202369661 59bef3cf904d722324dd852513df39ae
+030d8173908da6364786d3c1bfcb19ea 77a63b25f1e7fc661def480c5d00d444
+56269ebd84efd8e3a8b2c257eec76060 682848cbf5194bc99e49ee75e4d0d254
+bad4bfd74970c30e44b65511d4ad0e6e c7398e08e01307eeeea14e46ccd87cf3
+6b285221254d8fc6a6765c524ded0085 dca5bd688ddf722e2c0faf9d0fb2ce7a
+0c3f2cee19ca0ffba461ca8dc5d2c817 8b0762cf67135558494d2a96f1a139f0
+edb42d2af89a9c9122b07acbc29e5e72 2df8615c343702491098478a389c9872
+a10b0c9875125e257c7bfdf27eef4060 bd3d00f4c14fd3e3496c38d3c5d1a566
+8c39350effbc2d16ca17be4ce29f02ed 969504dda2a8c6b9ff919e693ee79e09
+089316e7d1d89ec099db3b2b268725d8 88536a4b8bf9aee8fb43e82a4d919d48
+43b1ca70a2d8d3f725ead1391377dcc0
 ~~~
 
 
@@ -2010,26 +2071,26 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001c0008f067a5502a4262b50040740001
+c1ff00001d0008f067a5502a4262b50040740001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
 from the third protected octet:
 
 ~~~
-sample = 7002596f99ae67abf65a5852f54f58c3
-mask   = 38168a0c25
-header = c9ff00001c0008f067a5502a4262b5004074168b
+sample = 823a5d3a1207c86ee49132824f046524
+mask   = abaaf34fdc
+header = caff00001d0008f067a5502a4262b5004074aaf2
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c9ff00001c0008f067a5502a4262b500 4074168bf22b7002596f99ae67abf65a
-5852f54f58c37c808682e2e40492d8a3 899fb04fc0afe9aabc8767b18a0aa493
-537426373b48d502214dd856d63b78ce e37bc664b3fe86d487ac7a77c53038a3
-cd32f0b5004d9f5754c4f7f2d1f35cf3 f7116351c92bda5b23c81034ab74f54c
-b1bd72951256
+caff00001d0008f067a5502a4262b500 4074aaf2f007823a5d3a1207c86ee491
+32824f0465243d082d868b107a38092b c80528664cbf9456ebf27673fb5fa506
+1ab573c9f001b81da028a00d52ab00b1 5bebaa70640e106cf2acd043e9c6b441
+1c0a79637134d8993701fe779e58c2fe 753d14b0564021565ea92e57bc6faf56
+dfc7a40870e6
 ~~~
 
 
@@ -2041,9 +2102,169 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff00001c0008f067a5502a4262b574 6f6b656ef71a5f12afe3ecf8001a920e
-6fdf1d63
+ffff00001d0008f067a5502a4262b574 6f6b656ed16926d81f6f9ca2953a8aa4
+575e1e49
 ~~~
+
+
+## ChaCha20-Poly1305 Short Header Packet
+
+This example shows some of the steps required to protect a packet with
+a short header.  This example uses AEAD_CHACHA20_POLY1305.
+
+In this example, TLS produces an application write secret from which a server
+uses HKDF-Expand-Label to produce four values: a key, an IV, a header
+protection key, and the secret that will be used after keys are updated (this
+last value is not used further in this example).
+
+~~~
+secret
+    = 9ac312a7f877468ebe69422748ad00a1
+      5443f18203a07d6060f688f30f21632b
+
+key = HKDF-Expand-Label(secret, "quic key", _, 32)
+    = c6d98ff3441c3fe1b2182094f69caa2e
+      d4b716b65488960a7a984979fb23e1c8
+
+iv  = HKDF-Expand-Label(secret, "quic iv", _, 12)
+    = e0459b3474bdd0e44a41c144
+
+hp  = HKDF-Expand-Label(secret, "quic hp", _, 32)
+    = 25a282b9e82f06f21f488917a4fc8f1b
+      73573685608597d0efcb076b0ab7a7a4
+
+ku  = HKDF-Expand-Label(secret, "quic ku", _, 32)
+    = 1223504755036d556342ee9361d25342
+      1a826c9ecdf3c7148684b36b714881f9
+~~~
+
+The following shows the steps involved in protecting a minimal packet with an
+empty Destination Connection ID. This packet contains a single PING frame (that
+is, a payload of just 0x01) and has a packet number of 654360564. In this
+example, using a packet number of length 3 (that is, 49140 is encoded) avoids
+having to pad the payload of the packet; PADDING frames would be needed if the
+packet number is encoded on fewer octets.
+
+~~~
+pn                 = 654360564 (decimal)
+nonce              = e0459b3474bdd0e46d417eb0
+unprotected header = 4200bff4
+payload plaintext  = 01
+payload ciphertext = 655e5cd55c41f69080575d7999c25a5bfb
+~~~
+
+The resulting ciphertext is the minimum size possible. One byte is skipped to
+produce the sample for header protection.
+
+~~~
+sample = 5e5cd55c41f69080575d7999c25a5bfb
+mask   = aefefe7d03
+header = 4cfe4189
+~~~
+
+The protected packet is the smallest possible packet size of 21 bytes.
+
+~~~
+packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
+~~~
+
+# Analysis of Limits on AEAD_AES_128_CCM Usage {#ccm-bounds}
+
+TLS {{?TLS13}} and {{AEBounds}} do not specify limits on usage for
+AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits on
+use that ensure that both confidentiality and integrity are preserved. This
+section documents that analysis.
+
+{{?CCM-ANALYSIS=DOI.10.1007/3-540-36492-7_7}} is used as the basis of this
+analysis. The results of that analysis are used to derive usage limits that are
+based on those chosen in {{?TLS13}}.
+
+This analysis uses symbols for multiplication (*), division (/), and
+exponentiation (^), plus parentheses for establishing precedence. The following
+symbols are also used:
+
+t:
+
+: The size of the authentication tag in bits. For this cipher, t is 128.
+
+n:
+
+: The size of the block function in bits. For this cipher, n is 128.
+
+l:
+
+: The number of blocks in each packet (see below).
+
+q:
+
+: The number of genuine packets created and protected by endpoints. This value
+  is the bound on the number of packets that can be protected before updating
+  keys.
+
+v:
+
+: The number of forged packets that endpoints will accept. This value is the
+  bound on the number of forged packets that an endpoint can reject before
+  updating keys.
+
+The analysis of AEAD_AES_128_CCM relies on a count of the number of block
+operations involved in producing each message. For simplicity, and to match the
+analysis of other AEAD functions in {{AEBounds}}, this analysis assumes a
+packet length of 2^10 blocks and a packet size limit of 2^14.
+
+For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
+of: the length of the associated data in blocks, the length of the ciphertext
+in blocks, the length of the plaintext in blocks, plus 1. In this analysis,
+this is simplified to a value of twice the length of the packet in blocks (that
+is, `2l = 2^11`). This simplification is based on the packet containing all of
+the associated data and ciphertext. This results in a negligible 1 to 3 block
+overestimation of the number of operations.
+
+
+## Confidentiality Limits
+
+For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
+gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
+no more than:
+
+~~~
+(2l * q)^2 / 2^n
+~~~
+
+For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
+results in the relation:
+
+~~~
+q <= 2^23
+~~~
+
+That is, endpoints cannot protect more than 2^23 packets with the same set of
+keys without causing an attacker to gain an larger advantage than the target of
+2^-60.
+
+
+## Integrity Limits
+
+For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
+gains an advantage over an ideal PRP of no more than:
+
+~~~
+v / 2^t + (2l * (v + q))^2 / 2^n
+~~~
+
+The goal is to limit this advantage to 2^-57, to match the target in
+{{?TLS13}}. As `t` and `n` are both 128, the first term is negligible relative
+to the second, so that term can be removed without a significant effect on the
+result. This produces the relation:
+
+~~~
+v + q <= 2^24.5
+~~~
+
+Using the previously-established value of 2^23 for `q` and rounding, this leads
+to an upper limit on `v` of 2^23.5. That is, endpoints cannot attempt to
+authenticate more than 2^23.5 packets with the same set of keys without causing
+an attacker to gain an larger advantage than the target of 2^-57.
 
 
 # Change Log
@@ -2233,6 +2454,7 @@ document:
 - David Schinazi
 - Dragana Damjanovic
 - Eric Rescorla
+- Felix Günther
 - Ian Swett
 - Jana Iyengar
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>

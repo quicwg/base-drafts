@@ -151,14 +151,14 @@ of frames contained in a packet affect recovery and congestion control logic:
 * PADDING frames cause packets to contribute toward bytes in flight without
   directly causing an acknowledgment to be sent.
 
-## Relevant Differences Between QUIC and TCP
+# Relevant Differences Between QUIC and TCP
 
 Readers familiar with TCP's loss detection and congestion control will find
 algorithms here that parallel well-known TCP ones. Protocol differences between
 QUIC and TCP however contribute to algorithmic differences. We briefly describe
 these protocol differences below.
 
-### Separate Packet Number Spaces
+## Separate Packet Number Spaces
 
 QUIC uses separate packet number spaces for each encryption level, except 0-RTT
 and all generations of 1-RTT keys use the same packet number space.  Separate
@@ -167,7 +167,7 @@ encryption will not cause spurious retransmission of packets sent with a
 different encryption level.  Congestion control and round-trip time (RTT)
 measurement are unified across packet number spaces.
 
-### Monotonically Increasing Packet Numbers
+## Monotonically Increasing Packet Numbers
 
 TCP conflates transmission order at the sender with delivery order at the
 receiver, which results in retransmissions of the same data carrying the same
@@ -192,7 +192,7 @@ Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
 
-### Clearer Loss Epoch
+## Clearer Loss Epoch
 
 QUIC starts a loss epoch when a packet is lost and ends one when any packet
 sent after the epoch starts is acknowledged.  TCP waits for the gap in the
@@ -202,25 +202,25 @@ should reduce their congestion windows only once per epoch, QUIC will do it
 once for every round trip that experiences loss, while TCP may only do it
 once across multiple round trips.
 
-### No Reneging
+## No Reneging
 
 QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
 allow any acked packet to be reneged, greatly simplifying implementations on
 both sides and reducing memory pressure on the sender.
 
-### More ACK Ranges
+## More ACK Ranges
 
 QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed Acknowledgements
+## Explicit Correction For Delayed Acknowledgements
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
-### Probe Timeout Replaces RTO and TLP
+## Probe Timeout Replaces RTO and TLP
 
 QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
@@ -245,7 +245,7 @@ QUIC specifies a time-based definition to ensure one or more packets are sent
 prior to a dramatic decrease in congestion window; see
 {{persistent-congestion}}.
 
-### The Minimum Congestion Window is Two Packets
+## The Minimum Congestion Window is Two Packets
 
 TCP uses a minimum congestion window of one packet. However, loss of
 that single packet means that the sender needs to waiting for a PTO
@@ -572,10 +572,10 @@ estimate, the new packet that it sends MUST be ack-eliciting.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
-as described below in Section {{discarding-packets}}. When Initial or Handshake
-keys are discarded, the PTO and loss detection timers MUST be reset, because
-discarding keys indicates forward progress and the loss detection timer might
-have been set for a now discarded packet number space.
+as described below in {{discarding-packets}}. When Initial or Handshake keys are
+discarded, the PTO and loss detection timers MUST be reset, because discarding
+keys indicates forward progress and the loss detection timer might have been set
+for a now discarded packet number space.
 
 #### Before Address Validation
 
@@ -887,9 +887,10 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 This document does not specify a pacer, but it is RECOMMENDED that a sender pace
 sending of all in-flight packets based on input from the congestion
-controller. For example, a pacer might distribute the congestion window over
-the smoothed RTT when used with a window-based controller, or a pacer might use
-the rate estimate of a rate-based controller.
+controller.  Sending multiple packets into the network without any delay between
+them creates a packet burst that might cause short-term congestion and losses.
+Implementations MUST either use pacing or another method to limit such bursts
+to the initial congestion window; see {{initial-cwnd}}.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
@@ -924,11 +925,7 @@ intervals.
 
 Practical considerations, such as packetization, scheduling delays, and
 computational efficiency, can cause a sender to deviate from this rate over time
-periods that are much shorter than a round-trip time.  Sending multiple packets
-into the network without any delay between them creates a packet burst that
-might cause short-term congestion and losses.  Implementations MUST either use
-pacing or limit such bursts to the initial congestion window; see
-{{initial-cwnd}}.
+periods that are much shorter than a round-trip time.
 
 One possible implementation strategy for pacing uses a leaky bucket algorithm,
 where the capacity of the "bucket" is limited to the maximum burst size and the
@@ -1110,7 +1107,7 @@ loss_detection_timer:
 pto_count:
 : The number of times a PTO has been sent without receiving an ack.
 
-time_of_last_sent_ack_eliciting_packet\[kPacketNumberSpace]:
+time_of_last_ack_eliciting_packet\[kPacketNumberSpace]:
 : The time the most recent ack-eliciting packet was sent.
 
 largest_acked_packet\[kPacketNumberSpace]:
@@ -1140,7 +1137,7 @@ follows:
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
-     time_of_last_sent_ack_eliciting_packet[pn_space] = 0
+     time_of_last_ack_eliciting_packet[pn_space] = 0
      loss_time[pn_space] = 0
 ~~~
 
@@ -1163,7 +1160,7 @@ Pseudocode for OnPacketSent follows:
    sent_packets[pn_space][packet_number].in_flight = in_flight
    if (in_flight):
      if (ack_eliciting):
-       time_of_last_sent_ack_eliciting_packet[pn_space] = now()
+       time_of_last_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
      sent_packets[pn_space][packet_number].size = sent_bytes
      SetLossDetectionTimer()
@@ -1269,18 +1266,42 @@ timers wake up late. Timers set in the past fire immediately.
 Pseudocode for SetLossDetectionTimer follows:
 
 ~~~
-GetEarliestTimeAndSpace(times):
-  time = times[Initial]
+GetLossTimeAndSpace():
+  time = loss_time[Initial]
   space = Initial
   for pn_space in [ Handshake, ApplicationData ]:
-    if (times[pn_space] != 0 &&
-        (time == 0 || times[pn_space] < time) &&
-        # Skip ApplicationData until handshake completion.
-        (pn_space != ApplicationData ||
-          IsHandshakeComplete()):
-      time = times[pn_space];
+    if (time == 0 || loss_time[pn_space] < time):
+      time = loss_time[pn_space];
       space = pn_space
   return time, space
+
+GetPtoTimeAndSpace():
+  duration = (smoothed_rtt + max(4 * rttvar, kGranularity))
+      * (2 ^ pto_count)
+  // Arm PTO from now when there are no inflight packets.
+  if (no in-flight packets):
+    assert(!PeerCompletedAddressValidation())
+    if (has handshake keys):
+      return (now() + duration), Handshake
+    else:
+      return (now() + duration), Initial
+  pto_timeout = infinite
+  pto_space = Initial
+  for space in [ Initial, Handshake, ApplicationData ]:
+    if (no in-flight packets in space):
+        continue;
+    if (space == ApplicationData):
+      // Skip ApplicationData until handshake complete.
+      if (handshake is not complete):
+        return pto_timeout, pto_space
+      // Include max_ack_delay and backoff for ApplicationData.
+      duration += max_ack_delay * (2 ^ pto_count)
+
+    t = time_of_last_ack_eliciting_packet[space] + duration
+    if (t < pto_timeout):
+      pto_timeout = t
+      pto_space = space
+  return pto_timeout, pto_space
 
 PeerCompletedAddressValidation():
   # Assume clients validate the server's address implicitly.
@@ -1293,7 +1314,7 @@ PeerCompletedAddressValidation():
        has received HANDSHAKE_DONE
 
 SetLossDetectionTimer():
-  earliest_loss_time, _ = GetEarliestTimeAndSpace(loss_time)
+  earliest_loss_time, _ = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss detection.
     loss_detection_timer.update(earliest_loss_time)
@@ -1313,23 +1334,8 @@ SetLossDetectionTimer():
     return
 
   // Determine which PN space to arm PTO for.
-  sent_time, pn_space = GetEarliestTimeAndSpace(
-    time_of_last_sent_ack_eliciting_packet)
-  // Don't arm PTO for ApplicationData until handshake complete.
-  if (pn_space == ApplicationData &&
-      handshake is not confirmed):
-    loss_detection_timer.cancel()
-    return
-  if (sent_time == 0):
-    assert(!PeerCompletedAddressValidation())
-    sent_time = now()
-
-  // Calculate PTO duration
-  timeout = smoothed_rtt + max(4 * rttvar, kGranularity) +
-    max_ack_delay
-  timeout = timeout * (2 ^ pto_count)
-
-  loss_detection_timer.update(sent_time + timeout)
+  timeout, _ = GetPtoTimeAndSpace()
+  loss_detection_timer.update(timeout)
 ~~~
 
 
@@ -1342,8 +1348,7 @@ Pseudocode for OnLossDetectionTimeout follows:
 
 ~~~
 OnLossDetectionTimeout():
-  earliest_loss_time, pn_space =
-    GetEarliestTimeAndSpace(loss_time)
+  earliest_loss_time, pn_space = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
     lost_packets = DetectLostPackets(pn_space)
@@ -1355,8 +1360,7 @@ OnLossDetectionTimeout():
   if (bytes_in_flight > 0):
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
-    _, pn_space = GetEarliestTimeAndSpace(
-      time_of_last_sent_ack_eliciting_packet)
+    _, pn_space = GetPtoTimeAndSpace()
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
     assert(endpoint is client without 1-RTT keys)
@@ -1612,7 +1616,7 @@ OnPacketNumberSpaceDiscarded(pn_space):
       bytes_in_flight -= size
   sent_packets[pn_space].clear()
   // Reset the loss detection and PTO timer
-  time_of_last_sent_ack_eliciting_packet[kPacketNumberSpace] = 0
+  time_of_last_ack_eliciting_packet[pn_space] = 0
   loss_time[pn_space] = 0
   pto_count = 0
   SetLossDetectionTimer()

@@ -18,7 +18,7 @@ author:
     org: Mozilla
     email: mt@lowentropy.net
 
-normative:
+informative:
 
   QUIC-TRANSPORT:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
@@ -36,8 +36,6 @@ normative:
         name: Martin Thomson
         org: Mozilla
         role: editor
-
-informative:
 
   QUIC-TLS:
     title: "Using Transport Layer Security (TLS) to Secure QUIC"
@@ -114,10 +112,56 @@ endpoints use QUIC packets to establish a QUIC connection, which is shared
 protocol state between those endpoints.
 
 
+# Notational Conventions
+
+Packet diagrams in this document use a format defined in {{QUIC-TRANSPORT}} to
+illustrate the order and size of fields.
+
+Complex fields are named and then followed by a list of fields surrounded by a
+pair of matching braces. Each field in this list is separated by commas.
+
+Individual fields include length information, plus indications about fixed
+value, optionality, or repetitions. Individual fields use the following
+notational conventions, with all lengths in bits:
+
+x (A):
+: Indicates that x is A bits long
+
+x (A..B):
+: Indicates that x can be any length from A to B; A can be omitted to indicate
+  a minimum of zero bits and B can be omitted to indicate no set upper limit;
+  values in this format always end on an octet boundary
+
+x (?) = C:
+: Indicates that x has a fixed value of C
+
+x (E) ...:
+: Indicates that x is repeated zero or more times (and that each instance is
+  length E)
+
+This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.
+
+{{fig-ex-format}} shows an example structure:
+
+~~~
+Example Structure {
+  One-bit Field (1),
+  7-bit Field with Fixed Value (7) = 61,
+  Arbitrary-Length Field (..),
+  Variable-Length Field (8..24),
+  Repeated Field (8) ...,
+}
+~~~
+{: #fig-ex-format title="Example Format"}
+
+
 # QUIC Packet Headers
 
-A QUIC packet is the content of the UDP datagrams exchanged by QUIC endpoints.
-This document describes the contents of those datagrams.
+QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
+This section describes the invariant characteristics of a QUIC packet.  A
+version of QUIC could permit multiple QUIC packets in a single UDP datagram, but
+the invariant properties only describe the first packet in a datagram.
 
 QUIC defines two types of packet header: long and short.  Packets with long
 headers are identified by the most significant bit of the first byte being set;
@@ -136,9 +180,9 @@ Long Header Packet {
   Header Form (1) = 1,
   Version-Specific Bits (7),
   Version (32),
-  DCID Len (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Len (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
@@ -148,17 +192,19 @@ Long Header Packet {
 A QUIC packet with a long header has the high bit of the first byte set to 1.
 All other bits in that byte are version specific.
 
-The next four bytes include a 32-bit Version field (see {{version}}).
+The next four bytes include a 32-bit Version field.  Versions are described in
+{{version}}.
 
-The next byte contains the length in bytes of the Destination Connection ID (see
-{{connection-id}}) field that follows it.  This length is encoded as an 8-bit
-unsigned integer.  The Destination Connection ID field follows the DCID Len
-field and is between 0 and 255 bytes in length.
+The next byte contains the length in bytes of the Destination Connection ID
+field that follows it.  This length is encoded as an 8-bit unsigned integer.
+The Destination Connection ID field follows the Destination Connection ID Length
+field and is between 0 and 255 bytes in length.  Connection IDs are described in
+{{connection-id}}.
 
 The next byte contains the length in bytes of the Source Connection ID field
 that follows it.  This length is encoded as a 8-bit unsigned integer.  The
-Source Connection ID field follows the SCID Len field and is between 0 and 255
-bytes in length.
+Source Connection ID field follows the Source Connection ID Length field and is
+between 0 and 255 bytes in length.
 
 The remainder of the packet contains version-specific content.
 
@@ -182,7 +228,7 @@ A QUIC packet with a short header has the high bit of the first byte set to 0.
 A QUIC packet with a short header includes a Destination Connection ID
 immediately following the first byte.  The short header does not include the
 Connection ID Lengths, Source Connection ID, or Version fields.  The length of
-the Destination Connection ID is not specified in packets with a short header
+the Destination Connection ID is not encoded in packets with a short header
 and is not constrained by this specification.
 
 The remainder of the packet has version-specific semantics.
@@ -194,11 +240,11 @@ A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
-connection to be delivered to the wrong endpoint.  The connection ID is used by
-endpoints and the intermediaries that support them to ensure that each QUIC
-packet can be delivered to the correct instance of an endpoint.  At the
-endpoint, the connection ID is used to identify which QUIC connection the packet
-is intended for.
+connection to be delivered to the wrong QUIC endpoint.  The connection ID
+is used by endpoints and the intermediaries that support them to ensure that
+each QUIC packet can be delivered to the correct instance of an endpoint.  At
+the endpoint, the connection ID is used to identify which QUIC connection the
+packet is intended for.
 
 The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
@@ -214,6 +260,7 @@ The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
 not QUIC.  Future documents might describe additional properties which apply to
 a specific QUIC version, or to a range of QUIC versions.
+
 
 # Version Negotiation {#version-negotiation}
 
@@ -232,15 +279,14 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Len (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Len (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
-
 
 The Version Negotiation packet contains a list of Supported Version fields, each
 identifying a version that the endpoint sending the packet supports.  The
@@ -317,9 +363,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * The first packets exchanged on a flow use the long header
 
-* QUIC forbids acknowledgments of packets that only contain ACK frames,
-  therefore the last packet before a long period of quiescence might be assumed
-  to contain an acknowledgment
+* The last packet before a long period of quiescence might be assumed
+  to contain only an acknowledgment
 
 * QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
   exchanges during connection establishment
