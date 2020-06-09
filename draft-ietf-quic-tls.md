@@ -2274,6 +2274,12 @@ an attacker to gain an larger advantage than the target of 2^-57.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-28
+
+- Defined limits on the number of packets that can be protected with a single
+  key and limits on the number of packets that can fail authentication (#3619,
+  #3620)
+
 ## Since draft-ietf-quic-tls-27
 
 - Allowed CONNECTION_CLOSE in any packet number space, with restrictions on

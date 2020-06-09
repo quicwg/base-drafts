@@ -2445,6 +2445,11 @@ what might be a temporary or intermittent error.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-28
+
+- CANCEL_PUSH is recommended even when the stream is reset (#3698, #3700)
+- Use H3_ID_ERROR when GOAWAY contains a larger identifier (#3631, #3634)
+
 ## Since draft-ietf-quic-http-27
 
 - Updated text to refer to latest HTTP revisions

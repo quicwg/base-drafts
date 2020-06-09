@@ -1616,6 +1616,10 @@ return encoderBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-15
+
+No changes
+
 ## Since draft-ietf-quic-qpack-14
 
 Added security considerations

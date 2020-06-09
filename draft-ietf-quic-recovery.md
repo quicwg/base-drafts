@@ -1629,6 +1629,10 @@ OnPacketNumberSpaceDiscarded(pn_space):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-28
+
+- Refactored pseudocode to correct PTO calculation (#3564, #3674, #3681)
+
 ## Since draft-ietf-quic-recovery-27
 
 - Added recommendations for speeding up handshake under some loss conditions
