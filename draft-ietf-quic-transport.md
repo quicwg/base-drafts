@@ -1975,8 +1975,9 @@ When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
-a Retry. If the validation succeeds, the server SHOULD then allow the
-handshake to proceed.
+a Retry.  A server SHOULD encode tokens provided with NEW_TOKEN frames and Retry
+packets differently, and validate the latter more strictly.  If the validation
+succeeds, the server SHOULD then allow the handshake to proceed.
 
 Note:
 
@@ -1984,9 +1985,7 @@ Note:
   the packet is that the client might have received the token in a previous
   connection using the NEW_TOKEN frame, and if the server has lost state, it
   might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.  A server SHOULD encode tokens provided with
-  NEW_TOKEN frames and Retry packets differently, and validate the latter more
-  strictly.
+  the packet is discarded.
 
 In a stateless design, a server can use encrypted and authenticated tokens to
 pass information to clients that the server can later recover and use to
