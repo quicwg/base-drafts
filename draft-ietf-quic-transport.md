@@ -7003,7 +7003,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-28
 
-- Made error 0x2 more generic, now CONNECTION_REFUSED (#3709, #3690, #3694)
+- Made SERVER_BUSY error (0x2) more generic, now CONNECTION_REFUSED (#3709, #3690,
+  #3694)
 - Allow TRANSPORT_PARAMETER_ERROR when validating connection IDs (#3703, #3691)
 - Integrate QUIC-specific language from draft-ietf-tsvwg-datagram-plpmtud
   (#3695, #3702)
