@@ -5004,15 +5004,30 @@ to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
 traffic analysis for protected packets.
 
-A PADDING frame has no content.  That is, a PADDING frame consists of the single
-byte that identifies the frame as a PADDING frame.
+As shown in {{padding-format}}, a PADDING frame has no content.  That is, a
+PADDING frame consists of the single byte that identifies the frame as a PADDING
+frame.
+
+~~~
+PADDING Frame {
+  Type (i) = 0x00,
+}
+~~~
+{: #padding-format title="PADDING Frame Format"}
 
 
 ## PING Frame {#frame-ping}
 
 Endpoints can use PING frames (type=0x01) to verify that their peers are still
-alive or to check reachability to the peer. The PING frame contains no
-additional fields.
+alive or to check reachability to the peer. As shown in {{ping-format}} a PING
+frame contains no content.
+
+~~~
+PING Frame {
+  Type (i) = 0x01,
+}
+~~~
+{: #ping-format title="PING Frame Format"}
 
 The receiver of a PING frame simply needs to acknowledge the packet containing
 this frame.
@@ -5909,10 +5924,17 @@ APPLICATION_ERROR in an Initial or a Handshake packet.
 ## HANDSHAKE_DONE frame {#frame-handshake-done}
 
 The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
-the handshake to the client.  The HANDSHAKE_DONE frame contains no additional
-fields.
+the handshake to the client.  As shown in {{handshake-done-format}}, a
+HANDSHAKE_DONE frame has no content.
 
-This frame can only be sent by the server. Servers MUST NOT send a
+~~~
+HANDSHAKE_DONE Frame {
+  Type (i) = 0x1e,
+}
+~~~
+{: #handshake-done-format title="HANDSHAKE_DONE Frame Format"}
+
+A HANDSHAKE_DONE frame can only be sent by the server. Servers MUST NOT send a
 HANDSHAKE_DONE frame before completing the handshake.  A server MUST treat
 receipt of a HANDSHAKE_DONE frame as a connection error of type
 PROTOCOL_VIOLATION.
