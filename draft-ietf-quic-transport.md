@@ -3718,9 +3718,9 @@ this requires being able to read the ECN codepoints from the enclosing IP
 packet, which is not possible on all platforms.
 
 An IP packet that results in no QUIC packets being processed does not increase
-ECN counts.  A packet detected by a receiver as a duplicate does not affect the
-receiver's local ECN codepoint counts; see {{security-ecn}} for relevant
-security concerns.
+ECN counts.  A QUIC packet detected by a receiver as a duplicate does not
+affect the receiver's local ECN codepoint counts; see {{security-ecn}} for
+relevant security concerns.
 
 If an endpoint receives a QUIC packet without an ECT or CE codepoint in the IP
 packet header, it responds per {{generating-acks}} with an ACK frame without
