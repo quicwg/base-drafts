@@ -3771,9 +3771,9 @@ packets on a new path to a peer:
   lost {{QUIC-RECOVERY}}, validation is deemed to have failed.
 
 To reduce the chances of misinterpreting congestive loss as packets dropped by a
-faulty network element, an endpoint could set the ECT(0) codepoint in the first
-ten outgoing packets on a path, or for a period of three RTTs, whichever occurs
-first.
+faulty network element, an endpoint could set the ECT(0) codepoint for only the
+first ten outgoing packets on a path, or for a period of three RTTs, whichever
+occurs first.
 
 Implementations MAY experiment with and use other strategies for use of ECN.
 Other methods of probing paths for ECN support are possible, as are different
