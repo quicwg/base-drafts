@@ -3863,6 +3863,12 @@ known.  However, prior to learning the value of the transport parameter,
 endpoints risk datagrams being lost if they send packets larger than the
 smallest allowed maximum packet size of 1200 bytes.
 
+UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
+{{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
+
+
+## Initial Packet Size {#initial-size}
+
 A client MUST expand the payload of all UDP datagrams carrying Initial packets
 to at least the smallest allowed maximum packet size (1200 bytes) by adding
 PADDING frames to the Initial packet or by coalescing the Initial packet; see
@@ -3874,9 +3880,6 @@ attacks caused by server responses toward an unverified client address; see
 
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the network path and peer both support the size that it chooses.
-
-UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
-{{!IPv4=RFC0791}}, the DF bit MUST be set to prevent fragmentation on the path.
 
 A server MUST discard an Initial packet that is carried in a UDP datagram with a
 payload that is less than the smallest allowed maximum packet size of 1200
