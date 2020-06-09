@@ -151,14 +151,14 @@ of frames contained in a packet affect recovery and congestion control logic:
 * PADDING frames cause packets to contribute toward bytes in flight without
   directly causing an acknowledgment to be sent.
 
-## Relevant Differences Between QUIC and TCP
+# Relevant Differences Between QUIC and TCP
 
 Readers familiar with TCP's loss detection and congestion control will find
 algorithms here that parallel well-known TCP ones. Protocol differences between
 QUIC and TCP however contribute to algorithmic differences. We briefly describe
 these protocol differences below.
 
-### Separate Packet Number Spaces
+## Separate Packet Number Spaces
 
 QUIC uses separate packet number spaces for each encryption level, except 0-RTT
 and all generations of 1-RTT keys use the same packet number space.  Separate
@@ -167,7 +167,7 @@ encryption will not cause spurious retransmission of packets sent with a
 different encryption level.  Congestion control and round-trip time (RTT)
 measurement are unified across packet number spaces.
 
-### Monotonically Increasing Packet Numbers
+## Monotonically Increasing Packet Numbers
 
 TCP conflates transmission order at the sender with delivery order at the
 receiver, which results in retransmissions of the same data carrying the same
@@ -192,7 +192,7 @@ Most TCP mechanisms implicitly attempt to infer transmission ordering based on
 TCP sequence numbers - a non-trivial task, especially when TCP timestamps are
 not available.
 
-### Clearer Loss Epoch
+## Clearer Loss Epoch
 
 QUIC starts a loss epoch when a packet is lost and ends one when any packet
 sent after the epoch starts is acknowledged.  TCP waits for the gap in the
@@ -202,25 +202,25 @@ should reduce their congestion windows only once per epoch, QUIC will do it
 once for every round trip that experiences loss, while TCP may only do it
 once across multiple round trips.
 
-### No Reneging
+## No Reneging
 
 QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
 allow any acked packet to be reneged, greatly simplifying implementations on
 both sides and reducing memory pressure on the sender.
 
-### More ACK Ranges
+## More ACK Ranges
 
 QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-### Explicit Correction For Delayed Acknowledgements
+## Explicit Correction For Delayed Acknowledgements
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
 more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
-### Probe Timeout Replaces RTO and TLP
+## Probe Timeout Replaces RTO and TLP
 
 QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
@@ -245,7 +245,7 @@ QUIC specifies a time-based definition to ensure one or more packets are sent
 prior to a dramatic decrease in congestion window; see
 {{persistent-congestion}}.
 
-### The Minimum Congestion Window is Two Packets
+## The Minimum Congestion Window is Two Packets
 
 TCP uses a minimum congestion window of one packet. However, loss of
 that single packet means that the sender needs to waiting for a PTO
@@ -572,10 +572,10 @@ estimate, the new packet that it sends MUST be ack-eliciting.
 
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
-as described below in Section {{discarding-packets}}. When Initial or Handshake
-keys are discarded, the PTO and loss detection timers MUST be reset, because
-discarding keys indicates forward progress and the loss detection timer might
-have been set for a now discarded packet number space.
+as described below in {{discarding-packets}}. When Initial or Handshake keys are
+discarded, the PTO and loss detection timers MUST be reset, because discarding
+keys indicates forward progress and the loss detection timer might have been set
+for a now discarded packet number space.
 
 #### Before Address Validation
 

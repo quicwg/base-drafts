@@ -1831,10 +1831,10 @@ could occur when the server reaches its anti-amplification limit and the client
 has received acknowledgements for all the data it has sent.  In this case, when
 the client has no reason to send additional packets, the server will be unable
 to send more data because it has not validated the client's address. To prevent
-this deadlock, clients MUST send a packet on a probe timeout
-(PTO, see Section 5.3 of {{QUIC-RECOVERY}}). Specifically, the client MUST send
-an Initial packet in a UDP datagram of at least 1200 bytes if it does not have
-Handshake keys, and otherwise send a Handshake packet.
+this deadlock, clients MUST send a packet on a probe timeout (PTO, see Section
+6.2 of {{QUIC-RECOVERY}}). Specifically, the client MUST send an Initial packet
+in a UDP datagram of at least 1200 bytes if it does not have Handshake keys, and
+otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -2397,11 +2397,11 @@ path is no longer needed (such as the case in {{off-path-forward}}).
 A sender can make exceptions for probe packets so that their loss detection is
 independent and does not unduly cause the congestion controller to reduce its
 sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
-sent, which is cancelled if the corresponding PATH_RESPONSE is received. If
-the timer fires before the PATH_RESPONSE is received, the endpoint might send a
-new PATH_CHALLENGE, and restart the timer for a longer period of time.
-This timer SHOULD be set as described in Section 5.3 of {{QUIC-RECOVERY}} and
-MUST NOT be more aggressive.
+sent, which is cancelled if the corresponding PATH_RESPONSE is received. If the
+timer fires before the PATH_RESPONSE is received, the endpoint might send a new
+PATH_CHALLENGE, and restart the timer for a longer period of time.  This timer
+SHOULD be set as described in Section 6.2.1 of {{QUIC-RECOVERY}} and MUST NOT be
+more aggressive.
 
 
 ## Privacy Implications of Connection Migration {#migration-linkability}
@@ -2674,7 +2674,7 @@ An endpoint that sends packets close to the effective timeout risks having
 them be discarded at the peer, since the peer might enter its draining state
 before these packets arrive. An endpoint can send a PING or another
 ack-eliciting frame to test the connection for liveness if the peer could
-time out soon, such as within a PTO; see Section 6.6 of {{QUIC-RECOVERY}}.
+time out soon, such as within a PTO; see Section 6.2 of {{QUIC-RECOVERY}}.
 This is especially useful if any available application data cannot be safely
 retried. Note that the application determines what data is safe to retry.
 
@@ -3404,7 +3404,7 @@ accrues to the RTT estimate and could result in spurious or delayed
 retransmissions from the peer. For Initial and Handshake packets, a
 max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay value
 in determining timeouts for timer-based retransmission, as detailed in Section
-5.2.1 of {{QUIC-RECOVERY}}.
+6.2 of {{QUIC-RECOVERY}}.
 
 Since packets containing only ACK frames are not congestion controlled, an
 endpoint MUST NOT send more than one such packet in response to receiving an
@@ -3447,9 +3447,9 @@ frames.
 A receiver determines how frequently to send acknowledgements in response to
 ack-eliciting packets. This determination involves a tradeoff.
 
-Endpoints rely on timely acknowledgment to detect loss; see Section 5 of
+Endpoints rely on timely acknowledgment to detect loss; see Section 6 of
 {{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
-Section 6 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their
+Section 7 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their
 congestion window. In both cases, delaying acknowledgments can adversely affect
 performance.
 
@@ -4384,7 +4384,7 @@ when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
 Section 4.11.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state; see Section 6.5 of {{QUIC-RECOVERY}}.
+control state; see Section 6.4 of {{QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
