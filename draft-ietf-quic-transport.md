@@ -4829,9 +4829,9 @@ max_udp_payload_size (0x03):
   Values below 1200 are invalid.
 
 : This limit does act as an additional constraint on datagram size in the same
-  way as the path MTU, but it is a property of the endpoint and not the path. It
-  is expected that this is the space an endpoint dedicates to holding incoming
-  packets.
+  way as the path MTU, but it is a property of the endpoint and not the path;
+  see {{packet-size}}.  It is expected that this is the space an endpoint
+  dedicates to holding incoming packets.
 
 initial_max_data (0x04):
 
