@@ -3345,7 +3345,7 @@ H:
 
 ih:
 
-: A CONNECTION_CLOSE frame of type 0x1d cannot appear in Initial or Handshake
+: Only a CONNECTION_CLOSE frame of type 0x1c can appear in Initial or Handshake
   packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
@@ -6883,7 +6883,8 @@ parameter registration is expected for most registrations; see
 {{iana-transport-parameters}}.  Specifications for permanent registrations also
 needs to describe the format and assigned semantics of any fields in the frame.
 
-The initial contents of this registry are tabulated in {{frame-types}}.
+The initial contents of this registry are tabulated in {{frame-types}}.  Note
+that the registry does not include the "Packets" column from {{frame-types}}.
 
 
 ## QUIC Transport Error Codes Registry {#iana-error-codes}
