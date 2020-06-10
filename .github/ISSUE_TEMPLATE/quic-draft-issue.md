@@ -9,9 +9,7 @@ assignees: ''
 
 Before opening an issue, please familiarise yourself with the QUIC WG [Contribution Guidlines](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md) and [Late-Stage Process](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md#late-stage-process). 
 
-All documents in this repository follow this process.
-
-Before filing a new issue against these drafts, please consider a few things:
+All documents in this repository follow this process. Before filing a new issue against any of them, please consider a few things:
 
 * Issues should be just that; issues with our deliverables, **not proposals, questions or support requests**.
 * Please review the issues list to make sure that you aren't filing a duplicate. Design issues that revisit a topic where there's already declared consensus (see https://github.com/quicwg/base-drafts/issues?q=is%3Aclosed+label%3Ahas-consensus) need to provide compelling reasons to warrant reopening the discussion.
