@@ -1749,6 +1749,13 @@ values for 0-RTT.  This includes initial_max_data and either
 initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
+It is OPTIONAL for a server to be able to recover the previously sent values of
+the max_idle_timout, max_udp_payload_size, and disable_active_migration
+parameters. Lowering the values of these parameters while also accepting 0-RTT
+data could degrade the performance of the connection. Specifically, lowering the
+max_udp_payload_size could result in dropped packets leading to worse
+performance compared to rejecting 0-RTT data outright.
+
 A server MUST either reject 0-RTT data or abort a handshake if the implied
 values for transport parameters cannot be supported.
 
