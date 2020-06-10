@@ -9,14 +9,7 @@ assignees: ''
 
 Before opening an issue, please familiarise yourself with the QUIC WG [Contribution Guidlines](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md) and [Late-Stage Process](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md#late-stage-process). 
 
-The drafts currently in the late stage are:
-
-* Invariants
-* Transport
-* TLS
-* HTTP/3
-* QPACK
-* Recovery
+All documents in this repository follow this process.
 
 Before filing a new issue against these drafts, please consider a few things:
 
