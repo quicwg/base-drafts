@@ -2279,6 +2279,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Defined limits on the number of packets that can be protected with a single
   key and limits on the number of packets that can fail authentication (#3619,
   #3620)
+- Update Initial salt, Retry keys, and samples (#3711)
 
 ## Since draft-ietf-quic-tls-27
 
