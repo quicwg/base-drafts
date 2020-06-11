@@ -206,9 +206,6 @@ Additional resources are provided in the final sections:
 
 {::boilerplate bcp14}
 
-Field definitions are given in Augmented Backus-Naur Form (ABNF), as defined in
-{{!RFC5234}}.
-
 This document uses the variable-length integer encoding from
 {{QUIC-TRANSPORT}}.
 
