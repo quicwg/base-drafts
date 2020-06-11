@@ -6916,7 +6916,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 |:------|:--------------------------|:------------------------------|:----------------|
 | 0x0   | NO_ERROR                  | No error                      | {{error-codes}} |
 | 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
-| 0x2   | CONNECTION_REFUSED_ERROR  | Server refuses a connection | {{error-codes}} |
+| 0x2   | CONNECTION_REFUSED        | Server refuses a connection   | {{error-codes}} |
 | 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
 | 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
 | 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
