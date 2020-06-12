@@ -349,7 +349,7 @@ section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
 to the value of the Required Insert Count.
 
-An Insert Count Increment instruction {{insert-count-increment}} increases the
+An Insert Count Increment instruction ({{insert-count-increment}}) increases the
 Known Received Count by its Increment parameter.  See {{new-table-entries}} for
 guidance.
 
