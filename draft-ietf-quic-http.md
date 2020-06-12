@@ -2348,7 +2348,7 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
-As QUIC streams might arrive out-of-order, endpoints are advised to not wait for
+As QUIC streams might arrive out of order, endpoints are advised to not wait for
 the peers' settings to arrive before responding to other streams.  See
 {{settings-initialization}}.
 
