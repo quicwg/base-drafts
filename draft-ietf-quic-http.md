@@ -277,7 +277,8 @@ at different times.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-HTTP/3 uses the token "h3" to identify itself in ALPN and Alt-Svc.  Only
+HTTP/3 uses the token "h3" to identify itself in Application Layer Protocol
+Negotiation (ALPN) {{!RFC7301}} and Alt-Svc.  Only
 implementations of the final, published RFC can identify themselves as "h3".
 Until such an RFC exists, implementations MUST NOT identify themselves using
 this string.
