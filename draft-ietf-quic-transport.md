@@ -3483,7 +3483,7 @@ frames.
 ### Acknowledgement Frequency
 
 A receiver determines how frequently to send acknowledgements in response to
-ack-eliciting packets. This determination involves a tradeoff.
+ack-eliciting packets. This determination involves a trade-off.
 
 Endpoints rely on timely acknowledgment to detect loss; see Section 6 of
 {{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
