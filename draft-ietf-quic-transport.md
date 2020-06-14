@@ -399,9 +399,8 @@ Instead, it relies on receiving priority information from the application that
 uses QUIC.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
-the relative priority of streams.  When deciding the streams to which resources
-are dedicated, the implementation SHOULD use the information provided by the
-application.
+the relative priority of streams.  An implementation uses information provided
+by an application to determine how to allocate resources to active streams.
 
 ## Required Operations on Streams {#stream-operations}
 
