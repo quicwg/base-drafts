@@ -277,7 +277,7 @@ at different times.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
-HTTP/3 uses the token "h3" to identify itself in ALPN and Alt-Svc.  Only
+HTTP/3 uses the token "h3" to identify itself in ALPN and Alt-Svc. Only
 implementations of the final, published RFC can identify themselves as "h3".
 Until such an RFC exists, implementations MUST NOT identify themselves using
 this string.
@@ -333,7 +333,8 @@ default port associated with the scheme.
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
 the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
-using the ALPN token defined in {{connection-establishment}}.
+using the Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} token
+defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
