@@ -2460,8 +2460,7 @@ document:
 - David Schinazi
 - Dragana Damjanovic
 - Eric Rescorla
-- <t><t><contact asciiFullname="Felix Guenther"
-  fullname="Felix Günther"/></t></t>
+- Felix Günther
 - Ian Swett
 - Jana Iyengar
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
