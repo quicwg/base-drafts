@@ -3816,11 +3816,17 @@ marking strategies. Implementations MAY use other methods defined in RFCs; see
 {{?RFC8311}}. Implementations that use the ECT(1) codepoint need to perform ECN
 validation using ECT(1) counts.
 
+If not all out-going packets are sent with the same codepoint, the sender has to
+remember which packets were sent with which codepoint in order to perform the
+validation steps in the next section.
+
 
 #### Receiving ACK Frames {#ecn-ack}
 
 An endpoint that sets ECT(0) or ECT(1) codepoints on packets it transmits MUST
-use the following steps on receiving an ACK frame to validate ECN.
+use the following steps on receiving an ACK frame to validate ECN. In order to
+perform these checks, the endpoint has to remember the values of each ECN Count
+from the last ACK frame to calucate the increase since the last ACK.
 
 * If this ACK frame newly acknowledges a packet that the endpoint sent with
   either ECT(0) or ECT(1) codepoints set, and if no ECN feedback is present in
