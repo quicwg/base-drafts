@@ -444,8 +444,6 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either the send or receive side causes the stream
 to open in both directions.
 
-An endpoint MUST open streams of the same type in increasing order of stream ID.
-
 Note:
 
 : These states are largely informative.  This document uses stream states to
