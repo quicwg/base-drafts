@@ -792,8 +792,8 @@ is not excessive buffering at multiple layers.
 
 ## Data Flow Control {#data-flow-control}
 
-QUIC employs a limit-based flow-control scheme similar, where a receiver
-advertises the number of bytes it is prepared to receive on a given stream and
+QUIC employs a limit-based flow-control scheme where a receiver
+advertises the limit of total bytes it is prepared to receive on a given stream or
 for the entire connection.  This leads to two levels of data flow control in QUIC:
 
 * Stream flow control, which prevents a single stream from consuming the entire
@@ -824,8 +824,8 @@ streams, which is used to check for flow control violations. A receiver might
 use a sum of bytes consumed on all streams to determine the maximum data limit
 to be advertised.
 
-Once a receiver advertises an offset for the connection or a stream, it MAY
-advertise a smaller offset, but this has no effect.
+Once a receiver advertises a limit for the connection or a stream, it MAY
+advertise a smaller limit, but this has no effect.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the sender violates the advertised connection or stream
@@ -844,7 +844,7 @@ is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 
-## Incrementing Flow Control {#fc-credit}
+## Increasing Flow Control Limits {#fc-credit}
 
 Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
 and MAX_DATA frames, but this section offers a few considerations.
