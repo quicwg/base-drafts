@@ -92,13 +92,13 @@ informative:
         role: editor
 
   ROBUST:
-    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS"
+    title: "Robust Channels: Handling Unreliable Networks in the Record Layers of QUIC and DTLS 1.3"
     author:
       - ins: M. Fischlin
       - ins: F. Günther
       - ins: C. Janson
-    date: 2020-02-21
-    target: "https://www.felixguenther.info/docs/QUIPS2020_RobustChannels.pdf"
+    date: 2020-05-16
+    target: "https://eprint.iacr.org/2020/718"
 
 
 --- abstract
