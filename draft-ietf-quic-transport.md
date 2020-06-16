@@ -792,9 +792,9 @@ is not excessive buffering at multiple layers.
 
 ## Data Flow Control {#data-flow-control}
 
-QUIC employs a limit-based flow-control scheme where a receiver
-advertises the limit of total bytes it is prepared to receive on a given stream or
-for the entire connection.  This leads to two levels of data flow control in QUIC:
+QUIC employs a limit-based flow-control scheme where a receiver advertises the
+limit of total bytes it is prepared to receive on a given stream or for the
+entire connection.  This leads to two levels of data flow control in QUIC:
 
 * Stream flow control, which prevents a single stream from consuming the entire
   receive buffer for a connection by limiting the amount of data that can be
@@ -809,13 +809,13 @@ during the handshake ({{transport-parameters}}).  A receiver sends
 MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise larger limits.
 
-A receiver can advertise a larger limit for a stream by sending a MAX_STREAM_DATA
-frame with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame
-indicates the maximum absolute byte offset of a stream.  A receiver could use the
-current offset of data consumed to determine the flow control offset to be
-advertised. A receiver MAY send MAX_STREAM_DATA frames in multiple packets in
-order to make sure that the sender receives an update before running out of
-flow control, even if one of the packets is lost.
+A receiver can advertise a larger limit for a stream by sending a
+MAX_STREAM_DATA frame with the Stream ID field set appropriately.  A
+MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream.  A
+receiver could use the current offset of data consumed to determine the flow
+control offset to be advertised. A receiver MAY send MAX_STREAM_DATA frames in
+multiple packets in order to make sure that the sender receives an update before
+running out of flow control, even if one of the packets is lost.
 
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
