@@ -810,8 +810,8 @@ MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise larger limits.
 
 A receiver can advertise a larger limit for a stream by sending a
-MAX_STREAM_DATA frame with the Stream ID field set appropriately.  A
-MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream.  A
+MAX_STREAM_DATA frame with the Stream ID field set appropriately. A
+MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream. A
 receiver could use the current offset of data consumed to determine the flow
 control offset to be advertised. A receiver MAY send MAX_STREAM_DATA frames in
 multiple packets in order to make sure that the sender receives an update before
