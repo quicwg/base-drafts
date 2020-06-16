@@ -1780,7 +1780,7 @@ Because there is no flow control of CRYPTO frames, an endpoint could
 potentially force its peer to buffer an unbounded amount of data.
 
 Implementations MUST support buffering at least 4096 bytes of data received in
-out of order CRYPTO frames. Endpoints MAY choose to allow more data to be
+out-of-order CRYPTO frames. Endpoints MAY choose to allow more data to be
 buffered during the handshake. A larger limit during the handshake could allow
 for larger keys or credentials to be exchanged. An endpoint's buffer size does
 not need to remain constant during the life of the connection.
