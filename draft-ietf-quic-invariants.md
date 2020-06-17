@@ -202,7 +202,7 @@ field and is between 0 and 255 bytes in length.  Connection IDs are described in
 {{connection-id}}.
 
 The next byte contains the length in bytes of the Source Connection ID field
-that follows it.  This length is encoded as a 8-bit unsigned integer.  The
+that follows it.  This length is encoded as an 8-bit unsigned integer.  The
 Source Connection ID field follows the Source Connection ID Length field and is
 between 0 and 255 bytes in length.
 
@@ -295,8 +295,8 @@ contains no other fields.  An endpoint MUST ignore a packet that contains no
 Supported Version fields, or a truncated Supported Version.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
-A specific QUIC version might authenticate the packet as part of its connection
-establishment process.
+Specific QUIC versions define mechanisms to authenticate the packet as part of
+the connection establishment process.
 
 An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
@@ -350,7 +350,7 @@ a new version is deployed.
 
 This section lists a sampling of incorrect assumptions that might be made based
 on knowledge of QUIC version 1.  Some of these statements are not even true for
-QUIC version 1.  This is not an exhaustive list, it is intended to be
+QUIC version 1.  This is not an exhaustive list; it is intended to be
 illustrative only.
 
 The following statements are NOT guaranteed to be true for every QUIC version:
