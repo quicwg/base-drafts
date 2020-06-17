@@ -1325,9 +1325,9 @@ response to each packet that might initiate a new connection; see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD pad the first packet they send to the largest of the minimum packet sizes
-across all versions they support. This ensures that the server responds if there
-is a mutually supported version.
+SHOULD pad the first UDP datagram they send to the largest of the minimum
+datagram sizes from all versions they support. This ensures that the server
+responds if there is a mutually supported version.
 
 
 ## Sending Version Negotiation Packets {#send-vn}
@@ -1440,7 +1440,7 @@ properties:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-An endpoint can verify support for Explicit Congestion Notification (ECN) in the
+An endpoint verifies support for Explicit Congestion Notification (ECN) in the
 first packets it sends, as described in {{ecn-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces
@@ -3181,9 +3181,10 @@ with a short header does not include a length, so it can only be the last
 packet included in a UDP datagram. An endpoint SHOULD NOT coalesce multiple
 packets at the same encryption level.
 
-Senders MUST NOT coalesce QUIC packets for different connections into a single
-UDP datagram. Receivers SHOULD ignore any subsequent packets with a different
-Destination Connection ID than the first packet in the datagram.
+Receivers MAY route based on the information in the first packet contained in a
+UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
+into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets with
+a different Destination Connection ID than the first packet in the datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  The receiver of coalesced QUIC packets MUST individually process each
@@ -3463,9 +3464,10 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
-that do not follow guidance offered above. However, an implementer should only
+that do not follow guidance offered above. However, an endpoint should only
 deviate from these requirements after careful consideration of the performance
-implications of doing so.
+implications of a change, for connections made by the endpoint and for other
+users of the network.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
@@ -3551,7 +3553,7 @@ too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
 size, at the cost of increased retransmissions from the sender. This is
 necessary if an ACK frame would be too large to fit in a packet, however
 receivers MAY also limit ACK frame size further to preserve space for other
-frames.
+frames or to limit the bandwidth that acknowledgments consume.
 
 A receiver MUST retain an ACK Range unless it can ensure that it will not
 subsequently accept packets with numbers in that range. Maintaining a minimum
@@ -3575,7 +3577,7 @@ time, and ACK frames it sends could be unnecessarily large.  In such a case, a
 receiver could bundle a PING or other small ack-eliciting frame occasionally,
 such as once per round trip, to elicit an ACK from the peer.
 
-A receiver MUST NOT bundle an ack-eliciting frame with all packets that would
+A receiver MUST NOT bundle an ack-eliciting frame with packets that would
 otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
 acknowledgements.
 
@@ -5137,7 +5139,7 @@ information in the ECN section to manage their congestion state.
 
 QUIC acknowledgements are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
-TCP SACKs ({{?RFC2018}}).
+reneging for TCP SACKs ({{?RFC2018}}).
 
 Packets from different packet number spaces can be identified using the same
 numeric value. An acknowledgment for a packet needs to indicate both a packet
@@ -6030,7 +6032,7 @@ parameter to signal its willingness to receive one or more extension frame types
 with the one transport parameter.
 
 Extensions that modify or replace core protocol functionality (including frame
-types) will be difficult to combine with other extensions which modify or
+types) will be difficult to combine with other extensions that modify or
 replace the same functionality unless the behavior of the combination is
 explicitly defined.  Such extensions SHOULD define their interaction with
 previously-defined extensions modifying the same protocol components.
@@ -6112,7 +6114,7 @@ PROTOCOL_VIOLATION (0xA):
   more specific error codes.
 
 INVALID_TOKEN (0xB):
-: A server received a Retry Token in a client Initial that is invalid.
+: A server received a client Initial that contained an invalid Token field.
 
 APPLICATION_ERROR (0xC):
 
