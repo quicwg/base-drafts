@@ -791,10 +791,9 @@ is not excessive buffering at multiple layers.
 
 ## Data Flow Control {#data-flow-control}
 
-QUIC employs a credit-based flow-control scheme similar to that in HTTP/2
-{{?HTTP2}}, where a receiver advertises the number of bytes it is prepared to
-receive on a given stream and for the entire connection.  This leads to two
-levels of data flow control in QUIC:
+QUIC employs a limit-based flow-control scheme where a receiver advertises the
+limit of total bytes it is prepared to receive on a given stream or for the
+entire connection.  This leads to two levels of data flow control in QUIC:
 
 * Stream flow control, which prevents a single stream from consuming the entire
   receive buffer for a connection by limiting the amount of data that can be
@@ -804,28 +803,28 @@ levels of data flow control in QUIC:
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
 
-A receiver sets initial credits for all streams by sending transport parameters
+A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
 MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
-frames to the sender to advertise additional credit.
+frames to the sender to advertise larger limits.
 
-A receiver advertises credit for a stream by sending a MAX_STREAM_DATA frame
-with the Stream ID field set appropriately.  A MAX_STREAM_DATA frame indicates
-the maximum absolute byte offset of a stream.  A receiver could use the current
-offset of data consumed to determine the flow control offset to be advertised.
-A receiver MAY send MAX_STREAM_DATA frames in multiple packets in order to make
-sure that the sender receives an update before running out of flow control
-credit, even if one of the packets is lost.
+A receiver can advertise a larger limit for a stream by sending a
+MAX_STREAM_DATA frame with the Stream ID field set appropriately. A
+MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream. A
+receiver could use the current offset of data consumed to determine the flow
+control offset to be advertised. A receiver MAY send MAX_STREAM_DATA frames in
+multiple packets in order to make sure that the sender receives an update before
+running out of flow control, even if one of the packets is lost.
 
-A receiver advertises credit for a connection by sending a MAX_DATA frame, which
-indicates the maximum of the sum of the absolute byte offsets of all streams.  A
-receiver maintains a cumulative sum of bytes received on all streams, which is
-used to check for flow control violations. A receiver might use a sum of bytes
-consumed on all streams to determine the maximum data limit to be advertised.
+A receiver can advertise a larger limit for a connection by sending a MAX_DATA
+frame, which indicates the maximum of the sum of the absolute byte offsets of
+all streams.  A receiver maintains a cumulative sum of bytes received on all
+streams, which is used to check for flow control violations. A receiver might
+use a sum of bytes consumed on all streams to determine the maximum data limit
+to be advertised.
 
-A receiver can advertise a larger offset by sending MAX_STREAM_DATA or MAX_DATA
-frames.  Once a receiver advertises an offset, it MAY advertise a smaller
-offset, but this has no effect.
+Once a receiver advertises a limit for the connection or a stream, it MAY
+advertise a smaller limit, but this has no effect.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the sender violates the advertised connection or stream
@@ -834,7 +833,7 @@ data limits.
 A sender MUST ignore any MAX_STREAM_DATA or MAX_DATA frames that do not increase
 flow control limits.
 
-If a sender runs out of flow control credit, it will be unable to send new data
+If a sender has sent data up to the limit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
 control limits.  If a sender is blocked for a period longer than the idle
@@ -844,7 +843,7 @@ is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 
 
-## Flow Credit Increments {#fc-credit}
+## Increasing Flow Control Limits {#fc-credit}
 
 Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
 and MAX_DATA frames, but this section offers a few considerations.
