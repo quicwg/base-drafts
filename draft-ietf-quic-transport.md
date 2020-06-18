@@ -3295,32 +3295,32 @@ CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
 other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
-| Type Value  | Frame Type Name      | Definition                     | Packets | Special |
-|:------------|:---------------------|:-------------------------------|----:----|----:----|
-| 0x00        | PADDING              | {{frame-padding}}              | IH01    | NP      |
-| 0x01        | PING                 | {{frame-ping}}                 | IH01    |         |
-| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  | IH_1    | NC      |
-| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         | __01    |         |
-| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         | __01    |         |
-| 0x06        | CRYPTO               | {{frame-crypto}}               | IH_1    |         |
-| 0x07        | NEW_TOKEN            | {{frame-new-token}}            | ___1    |         |
-| 0x08 - 0x0f | STREAM               | {{frame-stream}}               | __01    | F       |
-| 0x10        | MAX_DATA             | {{frame-max-data}}             | __01    |         |
-| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      | __01    |         |
-| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          | __01    |         |
-| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         | __01    |         |
-| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  | __01    |         |
-| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      | __01    |         |
-| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    | __01    | P       |
-| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01    |         |
-| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01    | P       |
-| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01    | P       |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01    |         |
-| 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1    |         |
+| Type Value  | Frame Type Name      | Definition                     | Pkts | Spec |
+|:------------|:---------------------|:-------------------------------|------|------|
+| 0x00        | PADDING              | {{frame-padding}}              | IH01 | NP   |
+| 0x01        | PING                 | {{frame-ping}}                 | IH01 |      |
+| 0x02 - 0x03 | ACK                  | {{frame-ack}}                  | IH_1 | NC   |
+| 0x04        | RESET_STREAM         | {{frame-reset-stream}}         | __01 |      |
+| 0x05        | STOP_SENDING         | {{frame-stop-sending}}         | __01 |      |
+| 0x06        | CRYPTO               | {{frame-crypto}}               | IH_1 |      |
+| 0x07        | NEW_TOKEN            | {{frame-new-token}}            | ___1 |      |
+| 0x08 - 0x0f | STREAM               | {{frame-stream}}               | __01 | F    |
+| 0x10        | MAX_DATA             | {{frame-max-data}}             | __01 |      |
+| 0x11        | MAX_STREAM_DATA      | {{frame-max-stream-data}}      | __01 |      |
+| 0x12 - 0x13 | MAX_STREAMS          | {{frame-max-streams}}          | __01 |      |
+| 0x14        | DATA_BLOCKED         | {{frame-data-blocked}}         | __01 |      |
+| 0x15        | STREAM_DATA_BLOCKED  | {{frame-stream-data-blocked}}  | __01 |      |
+| 0x16 - 0x17 | STREAMS_BLOCKED      | {{frame-streams-blocked}}      | __01 |      |
+| 0x18        | NEW_CONNECTION_ID    | {{frame-new-connection-id}}    | __01 | P    |
+| 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01 |      |
+| 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01 | P    |
+| 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01 | P    |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01 |      |
+| 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1 |      |
 {: #frame-types title="Frame Types"}
 
-The "Packets" column in {{frame-types}} lists the types of packets that each
-frame type could appear in, indicated by the following characters:
+The "Pkts" column in {{frame-types}} lists the types of packets that each frame
+type could appear in, indicated by the following characters:
 
 I:
 
@@ -3346,8 +3346,9 @@ ih:
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
 that all frames can appear in 1-RTT packets.
 
-The "Special" column in  {{frame-types}} identifies special rules governing the
-identified frame type, as indicated by the following characters:
+The "Spec" column in  {{frame-types}} summarizes any special rules governing the
+processing or generation of the frame type, as indicated by the following
+characters:
 
 N:
 : Packets containing only frames with this marking are not ack-eliciting; see
