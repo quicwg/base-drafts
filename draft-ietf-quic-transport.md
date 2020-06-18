@@ -3816,25 +3816,29 @@ validation using ECT(1) counts.
 
 #### Receiving ACK Frames {#ecn-ack}
 
-An endpoint that sets ECT(0) or ECT(1) codepoints on packets it transmits MUST
-use the following steps on receiving an ACK frame to validate ECN.
+An endpoint that sets ECT(0) or ECT(1) codepoints on packets records the ECN
+counts it has received in ACK frames. When processing an ACK frame, the
+endpoint MUST validate the increase in ECN counts based on the markings that
+were applied to packets that are newly acknowledged.
+
+ECN validation involves the following checks:
 
 * If this ACK frame newly acknowledges a packet that the endpoint sent with
-  either ECT(0) or ECT(1) codepoints set, and if no ECN feedback is present in
-  the ACK frame, validation fails.  This step protects against both a network
-  element that zeroes out ECN bits and a peer that is unable to access ECN
-  markings, since the peer could respond without ECN feedback in these cases.
+  either ECT(0) or ECT(1) codepoints set, ECN feedback MUST be present in the
+  ACK frame.  This step protects against both a network element that zeroes out
+  ECN bits and a peer that is unable to access ECN markings, since the peer
+  could respond without ECN feedback in either case.
 
-* For validation to succeed, the total increase in ECT(0), ECT(1), and CE counts
-  MUST be no smaller than the total number of QUIC packets sent with an ECT
-  codepoint that are newly acknowledged in this ACK frame.  This step detects
-  any network remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT.
+* For validation to succeed, the sum of the increases to ECT(0), ECT(1), and
+  CE counts in the ACK frame MUST be equal to the number of newly acknowledged
+  packets that were sent with an ECT codepoint.  This step detects any network
+  remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT or a network that
+  adds markings to unmarked packets.
 
 * Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
-  count, MUST be no smaller than the number of packets sent with the
-  corresponding ECT codepoint that are newly acknowledged in this ACK frame.
-  This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
-  vice versa).
+  count, MUST NOT exceed the number of packets sent with the corresponding ECT
+  codepoint that are newly acknowledged in this ACK frame.  This step detects
+  any erroneous network remarking from ECT(0) to ECT(1) (or vice versa).
 
 Processing ECN counts out of order can result in validation failure.  An
 endpoint SHOULD NOT perform this validation if this ACK frame does not advance
