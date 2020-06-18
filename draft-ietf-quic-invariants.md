@@ -96,10 +96,10 @@ the protocol can change between different versions.
 might be made based on knowledge of QUIC version 1; these do not apply to every
 version of QUIC.
 
-This standard imposes normative requirements on intermediaries and tools that seek
-to observe and/or process QUIC packets. Following these requirements will allow
-these entities to function properly as QUIC evolves, and allow that evolution to
-continue.
+This standard imposes normative requirements on intermediaries and tools that
+seek to observe and/or process QUIC packets. Following these requirements will
+allow these entities to function properly as QUIC evolves, and allow that
+evolution to continue.
 
 
 # Conventions and Definitions
