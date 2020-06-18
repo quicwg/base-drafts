@@ -3365,8 +3365,8 @@ P:
 F:
 : The content of the STREAM frame are flow controlled; see {{flow-control}}.
 
-The "Packets" and "Special" columns in  {{frame-types}} does not form part of
-the IANA registry; see {{iana-frames}}.
+The "Pkts" and "Spec" columns in  {{frame-types}} does not form part of the IANA
+registry; see {{iana-frames}}.
 
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
 error of type FRAME_ENCODING_ERROR.
@@ -6901,7 +6901,7 @@ parameter registration is expected for most registrations; see
 needs to describe the format and assigned semantics of any fields in the frame.
 
 The initial contents of this registry are tabulated in {{frame-types}}.  Note
-that the registry does not include the "Packets" and "Special" columns from
+that the registry does not include the "Pkts" and "Spec" columns from
 {{frame-types}}.
 
 
