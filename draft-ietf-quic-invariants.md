@@ -108,10 +108,12 @@ evolution to continue.
 
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
-This document uses the term "intermediaries" to refer to routers, load
-balancers, traffic classifiers, measurement devices, and any other entity that
-observes, measures, or otherwise processes QUIC packets. Some intermediaries
-might have the ability to drop QUIC packets based on their observable contents.
+This document uses the term "intermediaries" to refer devices, besides
+endpoints, that in some way interface with the contents of QUIC Packets. It
+includes routers, load balancers, traffic classifiers, measurement devices, and
+any other entity that observes, measures, or otherwise processes QUIC packets.
+Some intermediaries might have the ability to drop QUIC packets based on their
+observable contents.
 
 The definition of "intermediaries" explicity excludes QUIC proxies that fully
 terminate a QUIC connection to one endpoint and open a different QUIC
@@ -194,6 +196,11 @@ cannot associate with a QUIC version.
 Specifications for intermediaries SHOULD document any implicit assumptions they
 are making about endpoint behavior beyond the invariants in this document, and
 the impact if future versions of QUIC violate those assumptions.
+
+QUIC incorporates mechanisms for endpoints to detect packet tampering, and
+interventions by intermediaries are often less helpful as the protocol evolves.
+Specifications for intermediaries SHOULD, where possible, include mechanisms
+for explicit consent and/or consent from QUIC endpoints.
 
 
 # QUIC Packet Headers
