@@ -3830,10 +3830,9 @@ ECN validation involves the following checks:
   could respond without ECN feedback in either case.
 
 * For validation to succeed, the sum of the increases to ECT(0), ECT(1), and
-  CE counts in the ACK frame MUST be equal to the number of newly acknowledged
+  CE counts in the ACK frame MUST be at least the number of newly acknowledged
   packets that were sent with an ECT codepoint.  This step detects any network
-  remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT or a network that
-  adds markings to unmarked packets.
+  remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT.
 
 * Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
   count, MUST NOT exceed the number of packets sent with the corresponding ECT
