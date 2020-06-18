@@ -191,10 +191,9 @@ Intermediaries MUST NOT implement a default behavior of dropping packets of QUIC
 versions they do not understand, or packets that have a connection ID they
 cannot associate with a QUIC version.
 
-Future specifications for intermediaries SHOULD document any implicit
-assumptions they are making about endpoint behavior beyond the invariants in
-this document, and the impact if future versions of QUIC violate those
-assumptions.
+Specifications for intermediaries SHOULD document any implicit assumptions they
+are making about endpoint behavior beyond the invariants in this document, and
+the impact if future versions of QUIC violate those assumptions.
 
 
 # QUIC Packet Headers
