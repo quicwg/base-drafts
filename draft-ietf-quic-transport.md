@@ -3825,20 +3825,31 @@ ECN validation involves the following checks:
 
 * If this ACK frame newly acknowledges a packet that the endpoint sent with
   either ECT(0) or ECT(1) codepoints set, ECN validation fails if ECN counts
-  are not present in the ACK frame.  This step protects against both a network
-  element that zeroes out ECN bits and a peer that is unable to access ECN
+  are not present in the ACK frame.  This check protects against both a network
+  element that removes ECN markings or a peer that is unable to access ECN
   markings, since the peer could respond without ECN feedback in either case.
 
-* ECN validation fails if the sum of the increases to ECT(0), ECT(1), and CE
-  counts in the ACK frame are less than the number of newly acknowledged
-  packets that were sent with an ECT codepoint.  This step detects any
-  network remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT.
+* ECN validation fails if the sum of the increase in ECT(0) and ECT(1) counts,
+  plus any increase in the ECN-CE count is less than the number of packets sent
+  with the corresponding ECT codepoint. This check can detect removal of ECN
+  markings.
 
-* ECN validation fails if any increase in either ECT(0) or ECT(1) counts, plus
-  any increase in the CE count, exceeds the number of packets sent with the
-  corresponding ECT codepoint that are newly acknowledged in this ACK frame.
-  This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
-  vice versa).
+* ECN validation fails if any unaccounted for increase in the sum of ECT(0) and
+  ECN-CE counts, plus any unaccounted for increase in the sum of ECT(1) and
+  ECN-CE counts, less any unaccounted for increase in the sum of the ECT(0),
+  ECT(1), and ECN-CE counts is not between zero and the overall increase to the
+  ECN-CE count from this ACK frame.  An unaccounted for increase is determined
+  by subtracting the number of newly acknowledged packets that were originally
+  sent with the corresponding mark from the increase in counts reported in the
+  ACK frame.  This check can detect erroneous changes between ECT(0) and
+  ECT(1) markings in the network.
+
+An endpoint MAY also validate total counts based on the total number of packets
+that it sent with with a given marking.  In that case, ECN validation can also
+be performed based on total counts rather than increases.  As a special case,
+an endpoint that never applies a particular marking can fail validation when a
+non-zero count for that marking is received.  This check can detect when
+packets are marked ECT(0) or ECT(1) in the network.
 
 Processing ECN counts out of order can result in validation failure.  An
 endpoint SHOULD NOT perform this validation if this ACK frame does not advance
