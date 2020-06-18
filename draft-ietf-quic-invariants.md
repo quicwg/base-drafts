@@ -96,12 +96,30 @@ the protocol can change between different versions.
 might be made based on knowledge of QUIC version 1; these do not apply to every
 version of QUIC.
 
+This standard imposes normative requirements on intermediaries and tools that seek
+to observe and/or process QUIC packets. Following these requirements will allow
+these entities to function properly as QUIC evolves, and allow that evolution to
+continue.
+
 
 # Conventions and Definitions
 
 {::boilerplate bcp14}
 
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
+
+This document uses the term "intermediaries" to refer to routers, load
+balancers, traffic classifiers, measurement devices, and any other entity that
+observes, measures, or otherwise processes QUIC packets. Some intermediaries
+might have the ability to drop QUIC packets based on their observable contents.
+
+The definition of "intermediaries" explicity excludes QUIC proxies that fully
+terminate a QUIC connection to one endpoint and open a different QUIC
+(or other transport protocol) connection to the other endpoint.
+
+An intermediary is said to "understand" a QUIC version if it has implemented the
+necessary algorithms to parse the relevant packets and monitor the relevant
+behaviors for that version beyond the invariants described in this document.
 
 
 # An Extremely Abstract Description of QUIC
@@ -154,6 +172,29 @@ Example Structure {
 }
 ~~~
 {: #fig-ex-format title="Example Format"}
+
+
+# Requirements for Intermediaries
+
+An intermediary MAY observe the QUIC version in certain packets, statefully note
+the version associated with the connection IDs (see {{connection-id}}) in the
+packet, and if it understands that version, parse and process packets with one
+of those connection IDs without regard for the invariants in this document.
+
+Intermediaries MUST implement a mode that, if they cannot associate a version
+with a packet's connection ID or do not understand the associated QUIC version,
+uses only the invariant fields described in this document to execute its
+function(s). This might mean that the intermediary cannot accomplish its
+function(s) at all, or that it implements a default behavior.
+
+Intermediaries MUST NOT implement a default behavior of dropping packets of QUIC
+versions they do not understand, or packets that have a connection ID they
+cannot associate with a QUIC version.
+
+Future specifications for intermediaries SHOULD document any implicit
+assumptions they are making about endpoint behavior beyond the invariants in
+this document, and the impact if future versions of QUIC violate those
+assumptions.
 
 
 # QUIC Packet Headers
@@ -234,7 +275,7 @@ and is not constrained by this specification.
 The remainder of the packet has version-specific semantics.
 
 
-## Connection ID
+## Connection ID {#connection-id}
 
 A connection ID is an opaque field of arbitrary length.
 
