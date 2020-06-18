@@ -3553,7 +3553,7 @@ too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
 size, at the cost of increased retransmissions from the sender. This is
 necessary if an ACK frame would be too large to fit in a packet, however
 receivers MAY also limit ACK frame size further to preserve space for other
-frames or to limit the bandwidth that acknowledgments consume.
+frames or to limit the capacity that acknowledgments consume.
 
 A receiver MUST retain an ACK Range unless it can ensure that it will not
 subsequently accept packets with numbers in that range. Maintaining a minimum
