@@ -3464,10 +3464,10 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
-that do not follow guidance offered above. However, an implementation should only
-deviate from these requirements after careful consideration of the performance
-implications of a change, for connections made by the endpoint and for other
-users of the network.
+that do not follow guidance offered above. However, an implementation should
+only deviate from these requirements after careful consideration of the
+performance implications of a change, for connections made by the endpoint and
+for other users of the network.
 
 An endpoint that is only sending ACK frames will not receive acknowledgments
 from its peer unless those acknowledgements are included in packets with
