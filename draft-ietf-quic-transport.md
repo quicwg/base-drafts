@@ -3355,15 +3355,15 @@ N:
   {{generating-acks}}.
 
 C:
-: Packets containing only ACK frames do not count toward bytes in flight for
-  congestion control purposes; see {{QUIC-RECOVERY}}.
+: Packets containing only frames with this marking do not count toward bytes
+  in flight for congestion control purposes; see {{QUIC-RECOVERY}}.
 
 P:
 : Packets containing only frames with this marking can be used to probe new
   network paths during connection migration; see {{probing}}.
 
 F:
-: The content of the STREAM frame are flow controlled; see {{flow-control}}.
+: The content of frames with this marking are flow controlled; see {{flow-control}}.
 
 The "Pkts" and "Spec" columns in  {{frame-types}} does not form part of the IANA
 registry; see {{iana-frames}}.
