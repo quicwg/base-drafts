@@ -3816,11 +3816,12 @@ validation using ECT(1) counts.
 
 #### Receiving ACK Frames {#ecn-ack}
 
-Erroneous application of markings in the network can result in ECN marking
-providing bad information.  Before using ECN counts, an endpoint validates the
-ECN counts by comparing the counts in each ACK frame it processes against the
-last ACK frame that was successfully processed.  The increase in ECN counts is
-validated based on the markings that were applied to packets that are newly
+Erroneous application of ECN marks in the network can result in degraded
+connection performance.  An endpoint that receives an ACK frame with ECN
+counts therefore validates the counts before using them. An endpoint validates
+these counts by comparing newly received counts against those from the last
+successfully processed ACK frame. Any increase in ECN counts is validated
+based on the markings that were applied to packets that are newly
 acknowledged in the ACK frame.
 
 If an ACK frame newly acknowledges a packet that the endpoint sent with either
@@ -3848,7 +3849,7 @@ validation when a non-zero count for the corresponding marking is received.
 This check can detect when packets are marked ECT(0) or ECT(1) in the network.
 
 Processing ECN counts out of order can result in validation failure.  An
-endpoint SHOULD skip ECN validation when an ACK frame does not increase the
+endpoint SHOULD skip ECN validation on an ACK frame that does not increase the
 largest acknowledged packet number.
 
 
