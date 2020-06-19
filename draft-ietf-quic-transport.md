@@ -3464,7 +3464,7 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
-that do not follow guidance offered above. However, an endpoint should only
+that do not follow guidance offered above. However, an implementation should only
 deviate from these requirements after careful consideration of the performance
 implications of a change, for connections made by the endpoint and for other
 users of the network.
@@ -3551,8 +3551,8 @@ SHOULD stop tracking those acknowledged ACK Ranges.
 It is possible that retaining many ACK Ranges could cause an ACK frame to become
 too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
 size, at the cost of increased retransmissions from the sender. This is
-necessary if an ACK frame would be too large to fit in a packet, however
-receivers MAY also limit ACK frame size further to preserve space for other
+necessary if an ACK frame would be too large to fit in a packet.
+Receivers MAY also limit ACK frame size further to preserve space for other
 frames or to limit the capacity that acknowledgments consume.
 
 A receiver MUST retain an ACK Range unless it can ensure that it will not
