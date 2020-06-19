@@ -3363,7 +3363,8 @@ P:
   network paths during connection migration; see {{probing}}.
 
 F:
-: The content of frames with this marking are flow controlled; see {{flow-control}}.
+: The content of frames with this marking are flow controlled; see
+  {{flow-control}}.
 
 The "Pkts" and "Spec" columns in  {{frame-types}} does not form part of the IANA
 registry; see {{iana-frames}}.
