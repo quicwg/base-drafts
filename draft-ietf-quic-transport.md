@@ -3831,10 +3831,10 @@ ECN bits or a peer that is unable to access ECN markings.
 
 ECN validation fails if the sum of the increase in ECT(0) and ECN-CE counts is
 less than the number of newly acknowledged packets that were originally sent
-with an ECT(0) marking.  Similarly, if the sum of the increases to ECT(1) and
-ECN-CE counts is less than the number of newly acknowledged packets sent with
-an ECT(1) marking.  These checks can detect removal of ECN markings in the
-network.
+with an ECT(0) marking.  Similarly, ECN validation fails if the sum of the
+increases to ECT(1) and ECN-CE counts is less than the number of newly
+acknowledged packets sent with an ECT(1) marking.  These checks can detect
+removal of ECN markings in the network.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and ECN-CE
