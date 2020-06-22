@@ -45,7 +45,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: "Archive HTML and Text"
+    - name: "Save HTML"
       uses: actions/upload-artifact@v2
       with:
-        path: ["*.html", "*.txt"]
+        path: "*.html"
+
+    - name: "Save Text"
+      uses: actions/upload-artifact@v2
+      with:
+        path: "*.txt"
