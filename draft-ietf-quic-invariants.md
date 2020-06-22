@@ -189,9 +189,10 @@ uses only the invariant fields described in this document to execute its
 function(s). This might mean that the intermediary cannot accomplish its
 function(s) at all, or that it implements a default behavior.
 
-Intermediaries MUST NOT implement a default behavior of dropping packets of QUIC
-versions they do not understand, or packets that have a connection ID they
-cannot associate with a QUIC version.
+Intermediaries MUST NOT drop QUIC packets with versions they do not understand,
+or packets that have a connection ID they cannot associate with a QUIC version,
+solely for those reasons. Doing so would break QUIC's address migration and
+version negotiation mechanisms.
 
 Specifications for intermediaries SHOULD document any implicit assumptions they
 are making about endpoint behavior beyond the invariants in this document, and
