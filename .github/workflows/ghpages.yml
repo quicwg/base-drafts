@@ -45,12 +45,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: "Save HTML"
+    - name: "Save HTML Output"
       uses: actions/upload-artifact@v2
       with:
+        name: "Draft Output"
         path: "*.html"
 
-    - name: "Save Text"
+    - name: "Save Text Output"
       uses: actions/upload-artifact@v2
       with:
+        name: "Draft Output"
         path: "*.txt"
