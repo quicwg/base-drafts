@@ -195,7 +195,7 @@ cannot associate with a QUIC version.
 
 Specifications for intermediaries SHOULD document any implicit assumptions they
 are making about endpoint behavior beyond the invariants in this document, and
-the impact if future versions of QUIC violate those assumptions.
+the impact if future versions of QUIC do not conform to those assumptions.
 
 QUIC incorporates mechanisms for endpoints to detect packet tampering, and
 interventions by intermediaries are often less helpful as the protocol evolves.
