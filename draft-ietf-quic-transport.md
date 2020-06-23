@@ -3840,35 +3840,41 @@ validation using ECT(1) counts.
 
 #### Receiving ACK Frames {#ecn-ack}
 
-An endpoint that sets ECT(0) or ECT(1) codepoints on packets it transmits MUST
-use the following steps on receiving an ACK frame to validate ECN.
+Erroneous application of ECN marks in the network can result in degraded
+connection performance.  An endpoint that receives an ACK frame with ECN
+counts therefore validates the counts before using them. It performs this
+validation by comparing newly received counts against those from the last
+successfully processed ACK frame. Any increase in ECN counts is validated
+based on the markings that were applied to packets that are newly
+acknowledged in the ACK frame.
 
-* If this ACK frame newly acknowledges a packet that the endpoint sent with
-  either ECT(0) or ECT(1) codepoints set, and if no ECN feedback is present in
-  the ACK frame, validation fails.  This step protects against both a network
-  element that zeroes out ECN bits and a peer that is unable to access ECN
-  markings, since the peer could respond without ECN feedback in these cases.
+If an ACK frame newly acknowledges a packet that the endpoint sent with either
+ECT(0) or ECT(1) codepoints set, ECN validation fails if ECN counts are not
+present in the ACK frame.  This check detects a network element that zeroes out
+ECN bits or a peer that is unable to access ECN markings.
 
-* For validation to succeed, the total increase in ECT(0), ECT(1), and CE counts
-  MUST be no smaller than the total number of QUIC packets sent with an ECT
-  codepoint that are newly acknowledged in this ACK frame.  This step detects
-  any network remarking from ECT(0), ECT(1), or CE codepoints to Not-ECT.
-
-* Any increase in either ECT(0) or ECT(1) counts, plus any increase in the CE
-  count, MUST be no smaller than the number of packets sent with the
-  corresponding ECT codepoint that are newly acknowledged in this ACK frame.
-  This step detects any erroneous network remarking from ECT(0) to ECT(1) (or
-  vice versa).
-
-Processing ECN counts out of order can result in validation failure.  An
-endpoint SHOULD NOT perform this validation if this ACK frame does not advance
-the largest packet number acknowledged in this connection.
+ECN validation fails if the sum of the increase in ECT(0) and ECN-CE counts is
+less than the number of newly acknowledged packets that were originally sent
+with an ECT(0) marking.  Similarly, ECN validation fails if the sum of the
+increases to ECT(1) and ECN-CE counts is less than the number of newly
+acknowledged packets sent with an ECT(1) marking.  These checks can detect
+removal of ECN markings in the network.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
-It is therefore possible for the total increase in ECT(0), ECT(1), and CE counts
-to be greater than the number of packets acknowledged in an ACK frame.  When
-this happens, and if validation succeeds, the local reference counts MUST be
-increased to match the counts in the ACK frame.
+It is therefore possible for the total increase in ECT(0), ECT(1), and ECN-CE
+counts to be greater than the number of packets acknowledged in an ACK frame.
+This is why counts are permitted to be larger than might be accounted for by
+newly acknowledged packets.
+
+ECN validation MAY fail if the total count for an ECT(0) or ECT(1) marking
+exceeds the total number of packets sent with the corresponding marking.   In
+particular, an endpoint that never applies a particular marking can fail
+validation when a non-zero count for the corresponding marking is received.
+This check can detect when packets are marked ECT(0) or ECT(1) in the network.
+
+Processing ECN counts out of order can result in validation failure.  An
+endpoint SHOULD skip ECN validation on an ACK frame that does not increase the
+largest acknowledged packet number.
 
 
 #### Validation Outcomes
