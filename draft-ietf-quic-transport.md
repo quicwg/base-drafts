@@ -3818,8 +3818,8 @@ validation using ECT(1) counts.
 
 Erroneous application of ECN marks in the network can result in degraded
 connection performance.  An endpoint that receives an ACK frame with ECN
-counts therefore validates the counts before using them. An endpoint validates
-these counts by comparing newly received counts against those from the last
+counts therefore validates the counts before using them. It performs this
+validation by comparing newly received counts against those from the last
 successfully processed ACK frame. Any increase in ECN counts is validated
 based on the markings that were applied to packets that are newly
 acknowledged in the ACK frame.
