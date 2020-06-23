@@ -1749,7 +1749,7 @@ values for 0-RTT.  This includes initial_max_data and either
 initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
-A server MAY choose to store and recover the previously sent values of the
+A server MAY store and recover the previously sent values of the
 max_idle_timout, max_udp_payload_size, and disable_active_migration parameters
 and reject 0-RTT if it selects smaller values. Lowering the values of these
 parameters while also accepting 0-RTT data could degrade the performance of the
