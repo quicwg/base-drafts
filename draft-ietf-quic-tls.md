@@ -414,7 +414,8 @@ than or equal to the former, the handshake is confirmed.
 
 In order to drive the handshake, TLS depends on being able to send and receive
 handshake messages. There are two basic functions on this interface: one where
-QUIC requests handshake messages and one where QUIC provides handshake packets.
+QUIC requests handshake messages and one where QUIC provides bytes that comprise
+handshake messages.
 
 Before starting the handshake QUIC provides TLS with the transport parameters
 (see {{quic_parameters}}) that it wishes to carry.
@@ -429,14 +430,15 @@ the packet type and keys that are used for protecting data.
 
 Each encryption level is associated with a different sequence of bytes, which is
 reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
-bytes to be sent, they are appended to the current flow. Any packet that
-includes the CRYPTO frame is protected using keys from the corresponding
-encryption level. Four encryption levels are used, producing keys for Initial,
-0-RTT, Handshake, and 1-RTT packets. CRYPTO frames are carried in just three of
-these levels, omitting the 0-RTT level. These four levels correspond to three
-packet number spaces: Initial and Handshake encrypted packets use their own
-separate spaces; 0-RTT and 1-RTT packets use the application data packet number
-space.
+bytes to be sent, they are appended to the handshake bytes for the current
+encryption level. Any packet that includes the CRYPTO frame is protected using
+keys from the corresponding encryption level.
+
+Four encryption levels are used, producing keys for Initial, 0-RTT, Handshake,
+and 1-RTT packets. CRYPTO frames are carried in just three of these levels,
+omitting the 0-RTT level. These four levels correspond to three packet number
+spaces: Initial and Handshake encrypted packets use their own separate spaces;
+0-RTT and 1-RTT packets use the application data packet number space.
 
 QUIC takes the unprotected content of TLS handshake records as the content of
 CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
@@ -451,10 +453,10 @@ encryption level and is an error if they are received from the TLS stack.
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
 network, it proceeds as follows:
 
-- If the packet was in the TLS receiving encryption level, sequence the data
-  into the input flow as usual. As with STREAM frames, the offset is used to
-  find the proper location in the data sequence.  If the result of this process
-  is that new data is available, then it is delivered to TLS in order.
+- If the packet uses the current TLS receiving encryption level, sequence the
+  data into the input flow as usual. As with STREAM frames, the offset is used
+  to find the proper location in the data sequence.  If the result of this
+  process is that new data is available, then it is delivered to TLS in order.
 
 - If the packet is from a previously installed encryption level, it MUST NOT
   contain data which extends past the end of previously received data in that
@@ -463,13 +465,21 @@ network, it proceeds as follows:
 
 - If the packet is from a new encryption level, it is saved for later processing
   by TLS.  Once TLS moves to receiving from this encryption level, saved data
-  can be provided.  When providing data from any new encryption level to TLS, if
-  there is data from a previous encryption level that TLS has not consumed, this
-  MUST be treated as a connection error of type PROTOCOL_VIOLATION.
+  can be provided to TLS.  When providing data from any new encryption level to
+  TLS, if there is data from a previous encryption level that TLS has not
+  consumed, this MUST be treated as a connection error of type
+  PROTOCOL_VIOLATION.
 
 Each time that TLS is provided with new data, new handshake bytes are requested
 from TLS.  TLS might not provide any bytes if the handshake messages it has
 received are incomplete or it has no data to send.
+
+The content of CRYPTO frames might either be processed incrementally by TLS or
+buffered until complete messages or flights are available.  TLS is responsible
+for buffering handshake bytes that have arrived in order.  QUIC is responsible
+for buffering handshake bytes that arrive out of order or for encryption levels
+that are not yet ready.  QUIC does not provide any means of flow control for
+CRYPTO frames; see Section 7.5 of {{QUIC-TRANSPORT}}.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake bytes that TLS needs to send.  TLS also provides QUIC with the
