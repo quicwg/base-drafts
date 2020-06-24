@@ -2177,9 +2177,10 @@ packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 # AEAD Algorithm Analysis
 
 This section documents analyses used in deriving AEAD algorithm limits for
-AEAD_AES_128_GCM, AEAD_AES_128_CCM, and AEAD_AES_256_GCM. The analyses that follow
-use symbols for multiplication (*), division (/), and exponentiation (^), plus
-parentheses for establishing precedence. The following symbols are also used:
+AEAD_AES_128_GCM, AEAD_AES_128_CCM, and AEAD_AES_256_GCM. The analyses that
+follow use symbols for multiplication (*), division (/), and exponentiation (^),
+plus parentheses for establishing precedence. The following symbols are also
+used:
 
 t:
 
@@ -2209,10 +2210,10 @@ o:
 
 : The amount of offline ideal cipher queries made by an adversary.
 
-The analyses that follow rely on a count of the number of block operations involved
-in producing each message. For simplicity, and to match the analysis of other AEAD
-functions in {{AEBounds}}, this analysis assumes a packet length of 2^10 blocks;
-that is, a packet size limit of 2^14 bytes.
+The analyses that follow rely on a count of the number of block operations
+involved in producing each message. For simplicity, and to match the analysis of
+other AEAD functions in {{AEBounds}}, this analysis assumes a packet length of
+2^10 blocks; that is, a packet size limit of 2^14 bytes.
 
 For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
 of: the length of the associated data in blocks, the length of the ciphertext
@@ -2228,8 +2229,9 @@ overestimation of the number of operations.
 used in TLS 1.3 and QUIC. This section documents this analysis using several
 simplifying assumptions:
 
-- The number of ciphertext blocks an attacker uses in forgery attempts is bounded
-by v * l, the number of forgery attempts and the size of each packet (in blocks).
+- The number of ciphertext blocks an attacker uses in forgery attempts is
+bounded by v * l, the number of forgery attempts and the size of each packet (in
+blocks).
 
 - The amount of offline work done by an attacker does not dominate other factors
 in the analysis.
@@ -2239,8 +2241,9 @@ The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 
 ### Confidentiality Limit
 
-For confidentiality, Equation (1) in {{?GCM-MU}} establishes that an attacker gains
-a distinguishing advantage between a real and random AEAD algorithm of no more than:
+For confidentiality, Equation (1) in {{?GCM-MU}} establishes that an attacker
+gains a distinguishing advantage between a real and random AEAD algorithm of no
+more than:
 
 ~~~
 ((q + v) * l)^2 / 2^128
