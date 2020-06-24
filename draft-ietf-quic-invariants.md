@@ -386,7 +386,10 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC endpoints change the version they speak if they are sent a Version
   Negotiation packet
 
-* The version field in a QUIC long header is the same in both directions
+* The Version field in a QUIC long header is the same in both directions
+
+* A QUIC packet with a particular value in the Version field means that the
+  corresponding version of QUIC is in use
 
 * Only one connection at a time is established between any pair of QUIC
   endpoints
