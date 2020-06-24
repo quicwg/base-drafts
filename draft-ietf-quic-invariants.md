@@ -112,6 +112,23 @@ endpoints use QUIC packets to establish a QUIC connection, which is shared
 protocol state between those endpoints.
 
 
+# Scope
+
+To the extent that other entities are able to participate in communication
+between QUIC endpoints, a goal of the QUIC design is to provide technical
+measures that prevent interaction with a QUIC connection by entities other than
+QUIC endpoints.  However, these technical measures are limited in what they can
+protect and could vary between versions.
+
+This document defines what parts of the QUIC protocol are not permitted to vary
+between versions.  As a consequence, this also guarantees a minimal amount of
+information that is made available to entities other than QUIC endpoints.
+
+Limited interaction with QUIC connections is permitted by entities other than
+endpoints, such as load balancers or measurement devices, where interactions are
+expressly enabled by endpoints.
+
+
 # Notational Conventions
 
 Packet diagrams in this document use a format defined in {{QUIC-TRANSPORT}} to
