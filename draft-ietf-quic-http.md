@@ -107,11 +107,11 @@ semantics over a new transport protocol, QUIC.
 HTTP/1.1 {{?HTTP11=I-D.ietf-httpbis-messaging}} is a TCP mapping which uses
 whitespace-delimited text fields to convey HTTP messages.  While these exchanges
 are human-readable, using whitespace for message formatting leads to parsing
-complexity and motivates tolerance of variant behavior. Because each
-connection can transfer only a single HTTP request or response at a time in each
-direction, multiple parallel TCP connections are often used, reducing the
-ability of the congestion controller to effectively manage traffic between
-endpoints.
+complexity and motivates tolerance of variant behavior.  Because HTTP/1.x does
+not include a multiplexing layer, multiple TCP connections are often used to
+service requests in parallel. However, that has a negative impact on congestion
+control and network efficiency, since TCP does not share congestion control
+across multiple connections.
 
 HTTP/2 {{?HTTP2=RFC7540}} introduced a binary framing and multiplexing layer to
 improve latency without modifying the transport layer.  However, because the
