@@ -946,7 +946,8 @@ If a max_streams transport parameter or MAX_STREAMS frame is received with a
 value greater than 2^60, this would allow a maximum stream ID that cannot be
 expressed as a variable-length integer; see {{integer-encoding}}.
 If either is received, the connection MUST be closed immediately with a
-connection error of type STREAM_LIMIT_ERROR; see {{immediate-close}}.
+connection error of type FRAME_ENCODING_ERROR or STREAM_LIMIT_ERROR; see
+{{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a frame with a stream ID exceeding the limit it has sent MUST treat
@@ -5695,7 +5696,7 @@ Maximum Streams:
   can be opened over the lifetime of the connection.  This value cannot exceed
   2^60, as it is not possible to encode stream IDs larger than 2^62-1.
   Receipt of a frame that permits opening of a stream larger than this limit
-  MUST be treated as a FRAME_ENCODING_ERROR.
+  MUST be treated as a FRAME_ENCODING_ERROR or STREAM_LIMIT_ERROR.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received which states a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
