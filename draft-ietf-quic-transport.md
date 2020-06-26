@@ -968,6 +968,24 @@ signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
+## Flow Control Performance
+
+Unlike TCP, QUIC decouples flow control from congestion control. This can
+release pressure on implementing a good flow control algorithm that governs both
+how limits are increased and when new limits are advertised. An endpoint can
+use flow control to constrain resource commitments without an optimized
+algorithm by allocating buffers for receiving data that are significantly larger
+than the bandwidth-delay product (BDP).  That is, by a factor of 2 or more.
+
+An endpoint that is unable to ensure that a peer has flow control credit in the
+order of the current BDP will have receive throughput limited by flow control
+and not other limiting factors like congestion control.  Timely sending of
+updates to flow control limits can improve performance, however an excessive
+rate of updates can also adversely affect performance.
+
+This document does not specify techniques for tuning flow control performance
+where resources allocated to receiving data are limited.
+
 
 # Connections {#connections}
 
