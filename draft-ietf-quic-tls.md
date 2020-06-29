@@ -1540,7 +1540,7 @@ discarded.
 
 This document sets usage limits for AEAD algorithms to ensure that overuse does
 not give an adversary a disproportionate advantage in attacking the
-confidentiality and integrity of communications.
+confidentiality and integrity of communications when using QUIC.
 
 The usage limits defined in TLS 1.3 exist for protection against attacks
 on confidentiality and apply to successful applications of AEAD protection. The
