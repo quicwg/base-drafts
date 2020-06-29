@@ -1351,7 +1351,7 @@ OnLossDetectionTimeout():
   earliest_loss_time, pn_space = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
-    lost_packets = DetectLostPackets(pn_space)
+    lost_packets = DetectAndRemoveLostPackets(pn_space)
     assert(!lost_packets.empty())
     OnPacketsLost(lost_packets)
     SetLossDetectionTimer()
@@ -1577,7 +1577,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked from DetectLostPackets when packets are deemed lost.
+Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
    InPersistentCongestion(lost_packets):
