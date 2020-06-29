@@ -2266,7 +2266,7 @@ For integrity, Theorem (4.3) in {{?GCM-MU}} establishes that an attacker gains
 an advantage in successfully forging a packet of no more than:
 
 ~~~
-(1 / 2^(8 * n)) + ((2 * v) / 2^2*n) + ((2 * o * v) / 2^(k + n))
+(1 / 2^(8 * n)) + ((2 * v) / 2^(2 * n)) + ((2 * o * v) / 2^(k + n))
         + (n * (v + (v * l)) / 2^k)
 ~~~
 
