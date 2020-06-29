@@ -1567,18 +1567,15 @@ AEAD_AES_128_CCM, the confidentiality limit is 2^23 encrypted packets; see
 
 In addition to counting packets sent, endpoints MUST count the number of
 received packets that fail authentication during the lifetime of a connection.
-If the number of packets sent or fail authentication within the connection
-(across all keys) exceeds a limit that is specific to the AEAD in use, the
-endpoint MUST immediately close the connection and not attempt to process any
-further packets.  Applying a limit reduces the probability that an attacker can
-successfully forge a packet; see {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
-
-A connection MUST be closed if the number of packets that fail authentication
-exceed the integrity limit for the selected AEAD. For AEAD_AES_128_GCM, and the
-integrity limit is 2^54 encrypted or forged packets; see {{gcm-bounds}}.  For
-AEAD_CHACHA20_POLY1305, the limit on number of packets that fail authentication
-is 2^36; see {{AEBounds}}.  For AEAD_AES_128_CCM, the integrity limit is 2^23.5
-forged packets; see {{ccm-bounds}}.
+If the total number of received packets that fail authentication within the
+connection, across all keys, exceeds the integrity limit for the selected AEAD,
+the endpoint MUST immediately close the connection and not process any more
+packets. For AEAD_AES_128_GCM, the integrity limit is 2^54 forged packets; see
+{{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is 2^36
+forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
+is 2^23.5 forged packets; see {{ccm-bounds}}. Applying this limit reduces the
+probability that an attacker can successfully forge a packet; see {{AEBounds}},
+{{ROBUST}}, and {{?GCM-MU}}.
 
 Future analyses and specifications MAY relax confidentiality or integrity limits
 for an AEAD.
