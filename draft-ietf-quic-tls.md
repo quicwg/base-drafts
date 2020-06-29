@@ -1550,27 +1550,31 @@ after any record fails an authentication check. In comparison, QUIC ignores any
 packet that cannot be authenticated, allowing multiple forgery attempts.
 
 Endpoints MUST count the number of encrypted packets for each set of keys. If
-the number of encrypted packets with the same key exceeds a limit that is
-specific to the AEAD in use, the endpoint MUST stop using those keys. If a key
-update is not possible, the endpoint MUST immediately close the connection.
-Applying a limit reduces the probability that an attacker can distinguish the
-AEAD in use from a random permutation; see {{AEBounds}}, {{ROBUST}}, and
-{{?GCM-MU=DOI.10.1145/3243734.3243816}}.
+the total number of encrypted packets with the same key exceeds the
+confidentiality limit for the selected AEAD, the endpoint MUST stop using those
+keys. Endpoints MUST initiate a key update before the number of encrypted
+packets reaches the confidentiality limit for the selected AEAD. If a key update
+is not possible, the endpoint MUST stop using the connection for anything other
+than stateless resets. It is RECOMMENDED that endpoints immediately close the
+connection with a connection error of type PROTOCOL_VIOLATION before reaching a
+state where key updates are not possible.
 
-Endpoints MUST initiate a key update before the number of encrypted packets
-reaches the confidentiality limit for the selected AEAD. For AEAD_AES_128_GCM
-and AEAD_AES_256_GCM, the confidentiality limit is 2^27 encrypted packets; see
-{{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the confidentiality limit is greater
-than the number of possible packets (2^62) and so can be disregarded. For
-AEAD_AES_128_CCM, the confidentiality limit is 2^23 encrypted packets; see
-{{ccm-bounds}}.
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^27
+encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
+confidentiality limit is greater than the number of possible packets (2^62) and
+so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23
+encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
+that an attacker can distinguish the AEAD in use from a random permutation; see
+{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
 
 In addition to counting packets sent, endpoints MUST count the number of
 received packets that fail authentication during the lifetime of a connection.
 If the total number of received packets that fail authentication within the
 connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection and not process any more
-packets. For AEAD_AES_128_GCM, the integrity limit is 2^54 forged packets; see
+packets.
+
+For AEAD_AES_128_GCM, the integrity limit is 2^54 forged packets; see
 {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is 2^36
 forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
 is 2^23.5 forged packets; see {{ccm-bounds}}. Applying this limit reduces the
@@ -2263,8 +2267,8 @@ For integrity, Theorem (4.3) in {{?GCM-MU}} establishes that an attacker gains
 an advantage in successfully forging a packet of no more than:
 
 ~~~
-(1 / 2^(8 * n)) + ((2 * v) / 2^(2 * n)) + ((2 * o * v) / 2^(k + n))
-        + (n * (v + (v * l)) / 2^k)
+(1 / 2^(8 * n)) + ((2 * v) / 2^(2 * n))
+        + ((2 * o * v) / 2^(k + n)) + (n * (v + (v * l)) / 2^k)
 ~~~
 
 The goal is to limit this advantage to 2^-57, to match the target in
