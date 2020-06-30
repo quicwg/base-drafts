@@ -2565,14 +2565,14 @@ in compliance with {{!RFC6437}}, unless the local API does not allow
 setting IPv6 flow labels.
 
 The IPv6 flow label SHOULD be a pseudo-random function of the source and
-destination addresses, source and destination UDP ports, and the destination
-connection ID.  The flow label generation MUST be designed to minimize the
+destination addresses, source and destination UDP ports, and the Destination
+Connection ID field.  The flow label generation MUST be designed to minimize the
 chances of linkability with a previously used flow label, as this would enable
 correlating activity on multiple paths; see {{migration-linkability}}.
 
 A possible implementation is to compute the flow label as a cryptographic hash
-function of the source and destination addresses, source and destination UDP
-ports, destination connection IDs, and a local secret.
+function of the source and destination addresses, source and destination
+UDP ports, Destination Connection ID field, and a local secret.
 
 # Connection Termination {#termination}
 
@@ -5052,7 +5052,7 @@ Preferred Address {
   IPv4 Port (16),
   IPv6 Address (128),
   IPv6 Port (16),
-  CID Length (8),
+  Connection ID Length (8),
   Connection ID (..),
   Stateless Reset Token (128),
 }
