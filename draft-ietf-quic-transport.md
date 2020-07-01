@@ -5052,7 +5052,7 @@ preferred_address (0x0d):
 : The preferred_address transport parameter contains an address and port for
   both IP version 4 and 6.  The four-byte IPv4 Address field is followed by the
   associated two-byte IPv4 Port field.  This is followed by a 16-byte IPv6
-  Address field and two-byte IPv6 Address field.  After address and port pairs,
+  Address field and two-byte IPv6 Port field.  After address and port pairs,
   a Connection ID Length field describes the length of the following Connection
   ID field.  Finally, a 16-byte Stateless Reset Token field includes the
   stateless reset token associated with the connection ID.  The format of this
