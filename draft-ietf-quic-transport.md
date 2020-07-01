@@ -3142,11 +3142,11 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation packets use authenticated
-encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
-and integrity protection.  Retry packets use AEAD to provide integrity
-protection.  Details of packet protection are found in {{QUIC-TLS}}; this
-section includes an overview of the process.
+All QUIC packets except Version Negotiation packets use authenticated encryption
+with associated data (AEAD) {{!RFC5116}} to provide confidentiality and
+integrity protection.  Retry packets use AEAD to provide integrity protection.
+Details of packet protection are found in {{QUIC-TLS}}; this section includes an
+overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
 packet protection is not effective confidentiality protection.  Initial
