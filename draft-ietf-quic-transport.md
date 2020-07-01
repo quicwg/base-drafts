@@ -4549,13 +4549,9 @@ packets.
 
 After a client receives a Retry packet, 0-RTT packets are likely to have been
 lost or discarded by the server.  A client SHOULD attempt to resend data in
-0-RTT packets after it sends a new Initial packet.
-
-A client MUST NOT reset the packet number it uses for 0-RTT packets, since the
-keys used to protect 0-RTT packets will not change as a result of responding to
-a Retry packet.  Sending packets with the same packet number in that case is
-likely to compromise the packet protection for all 0-RTT packets because the
-same key and nonce could be used to protect different content.
+0-RTT packets after it sends a new Initial packet.  New packet numbers MUST be
+used for any new packets that are sent; as defined in {{retry-continue}},
+reusing packet numbers could compromise packet protection.
 
 A client only receives acknowledgments for its 0-RTT packets once the handshake
 is complete.  Consequently, a server might expect 0-RTT packets to start with a
@@ -4706,7 +4702,7 @@ A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
 
-#### Continuing a Handshake After Retry
+#### Continuing a Handshake After Retry {#retry-continue}
 
 The next Initial packet from the client uses the connection ID and token values
 from the Retry packet; see {{negotiating-connection-ids}}.  Aside from this,
@@ -4721,7 +4717,12 @@ packets to the connection ID provided by the server.  A client MUST NOT change
 the cryptographic handshake message it sends in response to receiving a Retry.
 
 A client MUST NOT reset the packet number for any packet number space after
-processing a Retry packet; {{packet-0rtt}} contains more information on this.
+processing a Retry packet. This applies to 0-RTT packets in particular as those
+contain confidential information that is most likely to need transmission.  The
+keys used to protect packets will not change as a result of responding to a
+Retry packet.  Sending packets with the same packet number is likely to
+compromise the packet protection for those packets because the same key and
+nonce could be used to protect different content.
 
 A server acknowledges the use of a Retry packet for a connection using the
 retry_source_connection_id transport parameter; see
