@@ -2129,11 +2129,6 @@ contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
 acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
 validation, since the acknowledgment can be spoofed by a malicious peer.
 
-Note that receipt on a different local address does not result in path
-validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting. It is possible that a valid PATH_RESPONSE
-might be received in the future.
-
 
 ## Failed Path Validation
 
@@ -2249,9 +2244,11 @@ verifies ECN capability as described in {{ecn}}.
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
 be received on any path, return reachability on the new path is not established.
-To establish return reachability on the new path, an endpoint MAY concurrently
-initiate path validation {{migrate-validate}} on the new path or it MAY choose
-to wait for the peer to send the next non-probing frame to its new address.
+No method is provided to establish return reachability as endpoint independently
+determine reachability on each direction of a path.  To establish reachability
+on the new path, an endpoint MAY concurrently initiate path validation
+{{migrate-validate}} on the new path.  An endpoint MAY defer path validation
+until after a peer sends the next non-probing frame to its new address.
 
 
 ## Responding to Connection Migration {#migration-response}
