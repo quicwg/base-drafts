@@ -88,9 +88,11 @@ IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
 versions of QUIC.  By documenting the properties that can't change, this
-document aims to preserve the ability to change any other aspect of the
-protocol.  Thus, unless specifically described in this document, any aspect of
-the protocol can change between different versions.
+document aims to preserve the ability for QUIC endpoints to negotiate changes to
+any other aspect of the protocol.  As a consequence, this also guarantees a
+minimal amount of information that is made available to entities other than
+endpoints.  Unless specifically described in this document, any aspect of the
+protocol can change between different versions.
 
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
