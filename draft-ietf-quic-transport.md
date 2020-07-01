@@ -5983,7 +5983,7 @@ CONNECTION_CLOSE Frame {
 ~~~
 {: #fig-connection-close title="CONNECTION_CLOSE Frame Format"}
 
-CONNECTION_CLOSE frames contain the following field:
+CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
