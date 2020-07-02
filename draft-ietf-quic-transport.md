@@ -2731,10 +2731,10 @@ endpoints MAY send the exact same packet.
 Note:
 
 : Allowing retransmission of a closing packet is an exception to the requirement
-  for new packet numbers for every packet in {{packet-numbers}}. Sending new
-  packet numbers is primarily of advantage to loss recovery and congestion
-  control, which are not expected to be relevant for a closed connection.
-  Retransmitting the final packet requires less state.
+  that a new packet number be used for each packet in {{packet-numbers}}.
+  Sending new packet numbers is primarily of advantage to loss recovery and
+  congestion control, which are not expected to be relevant for a closed
+  connection. Retransmitting the final packet requires less state.
 
 New packets from unverified addresses could be used to create an amplification
 attack; see {{address-validation}}.  To avoid this, endpoints MUST either limit
