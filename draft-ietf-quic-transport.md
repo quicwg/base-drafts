@@ -736,8 +736,10 @@ discarded upon receipt.
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
 frame if the stream is in the Ready or Send state.  If the stream is in the
-"Data Sent" state and any outstanding data is declared lost, an endpoint SHOULD
-send a RESET_STREAM frame in lieu of a retransmission.
+"Data Sent" state, an endpoint MAY defer sending the RESET_STREAM frame until
+the packets containing outstanding data are acknowledged or declared lost.  If
+any outstanding data is declared lost, the endpoint SHOULD send a RESET_STREAM
+frame instead of retransmitting the data.
 
 An endpoint SHOULD copy the error code from the STOP_SENDING frame to the
 RESET_STREAM frame it sends, but MAY use any application error code.  The
