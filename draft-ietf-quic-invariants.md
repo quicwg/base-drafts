@@ -91,7 +91,7 @@ versions of QUIC.  By documenting the properties that can't change, this
 document aims to preserve the ability for QUIC endpoints to negotiate changes to
 any other aspect of the protocol.  As a consequence, this also guarantees a
 minimal amount of information that is made available to entities other than
-endpoints.  Unless specifically described in this document, any aspect of the
+endpoints.  Unless specifically prohibited in this document, any aspect of the
 protocol can change between different versions.
 
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
