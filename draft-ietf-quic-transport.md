@@ -2244,7 +2244,7 @@ verifies ECN capability as described in {{ecn}}.
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
 be received on any path, return reachability on the new path is not established.
-No method is provided to establish return reachability as endpoint independently
+No method is provided to establish return reachability, as endpoints independently
 determine reachability on each direction of a path.  To establish reachability
 on the new path, an endpoint MAY concurrently initiate path validation
 {{migrate-validate}} on the new path.  An endpoint MAY defer path validation
