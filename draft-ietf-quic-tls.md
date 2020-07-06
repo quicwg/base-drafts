@@ -1560,7 +1560,7 @@ is RECOMMENDED that endpoints immediately close the connection with a connection
 error of type PROTOCOL_VIOLATION before reaching a state where key updates are
 not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^24.5
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25.5
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
 confidentiality limit is greater than the number of possible packets (2^62) and
 so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
@@ -1575,7 +1575,7 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection and not process any more
 packets.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^24.5 forged
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 forged
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
 2^36 forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
 is 2^23.5 forged packets; see {{ccm-bounds}}. Applying this limit reduces the
@@ -2176,6 +2176,7 @@ The protected packet is the smallest possible packet size of 21 bytes.
 packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
+
 # AEAD Algorithm Analysis
 
 This section documents analyses used in deriving AEAD algorithm limits for
@@ -2225,6 +2226,7 @@ is, `2l = 2^11`). This simplification is based on the packet containing all of
 the associated data and ciphertext. This results in a negligible 1 to 3 block
 overestimation of the number of operations.
 
+
 ## Analysis AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
 
 {{?GCM-MU}} specify concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM as
@@ -2248,18 +2250,18 @@ gains a distinguishing advantage between a real and random AEAD algorithm of no
 more than:
 
 ~~~
-((q + v) * l)^2 / 2^128
+(q * l)^2 / 2^128
 ~~~
 
 For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-(q + v) <= 2^25.5
+q <= 2^25.5
 ~~~
 
-Assuming `v = q`, endpoints cannot protect more than 2^24.5 packets in a single
-connection without causing an attacker to gain an larger advantage than the
-target of 2^-57.
+Thus, endpoints cannot protect more than 2^25.5 packets in a single connection
+without causing an attacker to gain an larger advantage than the target of
+2^-57.
 
 ### Integrity Limit
 
@@ -2287,14 +2289,12 @@ approximation:
 v <= 2^182
 ~~~
 
-This is substantially larger than the limit for AEAD_AES_128_GCM.
+This is substantially larger than the limit for AEAD_AES_128_GCM.  However, this
+document recommends that the same limit be applied to both functions as either
+limit is acceptably large.
 
-However, as the confidentiality limit depends on an assumption of `v = q`, the
-total number of forged packets cannot exceed 2^24.5 packets without degrading
-the margins for confidentiality.  Thus, this document recommends tolerating no
-more than 2^24.5 possible forgery attempts.
 
-# Analysis of AEAD_AES_128_CCM Usage Limits {#ccm-bounds}
+## Analysis of AEAD_AES_128_CCM Usage Limits {#ccm-bounds}
 
 TLS {{?TLS13}} and {{AEBounds}} do not specify per-connection limits on usage
 for AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits
@@ -2343,10 +2343,10 @@ without a significant effect on the result. This produces the relation:
 v + q <= 2^24.5
 ~~~
 
-Noting that this is the same value as the confidentiality limit, the value can
-be adjusted to allow `v` and `q` to be the same value.  This leads to an upper
-limit on both `v` and `q` of 2^23.5. That is, endpoints cannot attempt to
-protect or authenticate more than 2^23.5 packets with the same set of keys
+Noting that this is the same value as the confidentiality limit, the
+confidentiality limit can be adjusted to allow `v` and `q` to be the same value.
+Thus the limit for both `v` and `q` is 2^23.5. That is, endpoints cannot attempt
+to protect or authenticate more than 2^23.5 packets with the same set of keys
 without causing an attacker to gain an larger advantage than the target of
 2^-57 in forging packets.
 
