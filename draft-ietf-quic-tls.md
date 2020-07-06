@@ -2305,7 +2305,7 @@ section documents that analysis.
 analysis. The results of that analysis are used to derive usage limits that are
 based on those chosen in {{?TLS13}}.
 
-## Confidentiality Limits
+### Confidentiality Limits
 
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
@@ -2326,7 +2326,7 @@ keys without causing an attacker to gain an larger advantage than the target of
 2^-57.  Note however that the integrity limits further constrain this value.
 
 
-## Integrity Limits
+### Integrity Limits
 
 For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains an advantage over an ideal PRP of no more than:
