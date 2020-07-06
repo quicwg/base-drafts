@@ -1559,10 +1559,10 @@ than stateless resets. It is RECOMMENDED that endpoints immediately close the
 connection with a connection error of type PROTOCOL_VIOLATION before reaching a
 state where key updates are not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^27
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^24.5
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
 confidentiality limit is greater than the number of possible packets (2^62) and
-so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23
+so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
 encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
 that an attacker can distinguish the AEAD in use from a random permutation; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
@@ -1574,9 +1574,9 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection and not process any more
 packets.
 
-For AEAD_AES_128_GCM, the integrity limit is 2^54 forged packets; see
-{{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is 2^36
-forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^24.5 forged
+packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
+2^36 forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
 is 2^23.5 forged packets; see {{ccm-bounds}}. Applying this limit reduces the
 probability that an attacker can successfully forge a packet; see {{AEBounds}},
 {{ROBUST}}, and {{?GCM-MU}}.
@@ -2250,16 +2250,15 @@ more than:
 ((q + v) * l)^2 / 2^128
 ~~~
 
-For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
-results in the relation:
+For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-(q + v) <= 2^28
+(q + v) <= 2^25.5
 ~~~
 
-Assuming `v = q`, endpoints cannot protect more than 2^27 packets in a single
+Assuming `v = q`, endpoints cannot protect more than 2^24.5 packets in a single
 connection without causing an attacker to gain an larger advantage than the
-target of 2^-60.
+target of 2^-57.
 
 ### Integrity Limit
 
@@ -2271,10 +2270,9 @@ an advantage in successfully forging a packet of no more than:
         + ((2 * o * v) / 2^(k + n)) + (n * (v + (v * l)) / 2^k)
 ~~~
 
-The goal is to limit this advantage to 2^-57, to match the target in
-{{?TLS13}}. For AEAD_AES_128_GCM, the fourth term in this inequality dominates
-the rest, so the others can be removed without affecting the result. This
-produces the following approximation:
+The goal is to limit this advantage to 2^-57.  For AEAD_AES_128_GCM, the fourth
+term in this inequality dominates the rest, so the others can be removed without
+significant effect on the result. This produces the following approximation:
 
 ~~~
 v <= 2^54
@@ -2288,9 +2286,12 @@ approximation:
 v <= 2^182
 ~~~
 
-This is substantially larger than the limit for AEAD_AES_128_GCM. However,
-this document recommends that the smaller limit from AEAD_AES_128_GCM also
-apply to AEAD_AES_256_GCM.
+This is substantially larger than the limit for AEAD_AES_128_GCM.
+
+However, as the confidentiality limit depends on an assumption of `v = q`, the
+total number of forged packets cannot exceed 2^24.5 packets without degrading
+the margins for confidentiality.  Thus, this document recommends tolerating no
+more than 2^24.5 possible forgery attempts.
 
 # Analysis of AEAD_AES_128_CCM Usage Limits {#ccm-bounds}
 
@@ -2313,16 +2314,15 @@ no more than:
 (2l * q)^2 / 2^n
 ~~~
 
-For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
-results in the relation:
+For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-q <= 2^23
+q <= 2^24.5
 ~~~
 
 That is, endpoints cannot protect more than 2^23 packets with the same set of
 keys without causing an attacker to gain an larger advantage than the target of
-2^-60.
+2^-57.  Note however that the integrity limits further constrain this value.
 
 
 ## Integrity Limits
@@ -2334,19 +2334,20 @@ gains an advantage over an ideal PRP of no more than:
 v / 2^t + (2l * (v + q))^2 / 2^n
 ~~~
 
-The goal is to limit this advantage to 2^-57, to match the target in
-{{?TLS13}}. As `t` and `n` are both 128, the first term is negligible relative
-to the second, so that term can be removed without a significant effect on the
-result. This produces the relation:
+The goal is to limit this advantage to 2^-57.  As `t` and `n` are both 128, the
+first term is negligible relative to the second, so that term can be removed
+without a significant effect on the result. This produces the relation:
 
 ~~~
 v + q <= 2^24.5
 ~~~
 
-Using the previously-established value of 2^23 for `q` and rounding, this leads
-to an upper limit on `v` of 2^23.5. That is, endpoints cannot attempt to
-authenticate more than 2^23.5 packets with the same set of keys without causing
-an attacker to gain an larger advantage than the target of 2^-57.
+Noting that this is the same value as the confidentiality limit, the value can
+be adjusted to allow `v` and `q` to be the same value.  This leads to an upper
+limit on both `v` and `q` of 2^23.5. That is, endpoints cannot attempt to
+protect or authenticate more than 2^23.5 packets with the same set of keys
+without causing an attacker to gain an larger advantage than the target of
+2^-57 in forging packets.
 
 
 # Change Log
