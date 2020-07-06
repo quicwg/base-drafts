@@ -972,9 +972,9 @@ described in {{QUIC-TRANSPORT}}.
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
 Some AEAD functions have limits for how many packets can be encrypted under the
-same key and IV (see for example {{AEBounds}}).  This might be lower than the
-packet number limit.  An endpoint MUST initiate a key update ({{key-update}})
-prior to exceeding any limit set for the AEAD that is in use.
+same key and IV; see {{aead-limits}}.  This might be lower than the packet
+number limit.  An endpoint MUST initiate a key update ({{key-update}}) prior to
+exceeding any limit set for the AEAD that is in use.
 
 
 ## Header Protection {#header-protect}
@@ -1536,7 +1536,7 @@ After this period, old read keys and their corresponding secrets SHOULD be
 discarded.
 
 
-## Limits on AEAD Usage
+## Limits on AEAD Usage {#aead-limits}
 
 This document sets usage limits for AEAD algorithms to ensure that overuse does
 not give an adversary a disproportionate advantage in attacking the
@@ -1552,12 +1552,13 @@ packet that cannot be authenticated, allowing multiple forgery attempts.
 Endpoints MUST count the number of encrypted packets for each set of keys. If
 the total number of encrypted packets with the same key exceeds the
 confidentiality limit for the selected AEAD, the endpoint MUST stop using those
-keys. Endpoints MUST initiate a key update before the number of encrypted
-packets reaches the confidentiality limit for the selected AEAD. If a key update
-is not possible, the endpoint MUST stop using the connection for anything other
-than stateless resets. It is RECOMMENDED that endpoints immediately close the
-connection with a connection error of type PROTOCOL_VIOLATION before reaching a
-state where key updates are not possible.
+keys. Endpoints MUST initiate a key update before sending more protected packets
+than the confidentiality limit for the selected AEAD permits. If a key update
+is not possible or integrity limits are reached, the endpoint MUST stop using
+the connection and only send stateless resets in response receiving packets. It
+is RECOMMENDED that endpoints immediately close the connection with a connection
+error of type PROTOCOL_VIOLATION before reaching a state where key updates are
+not possible.
 
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^24.5
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
