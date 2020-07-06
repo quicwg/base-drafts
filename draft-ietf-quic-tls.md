@@ -658,9 +658,10 @@ Note:
   size of certificate chains is critical to performance in QUIC as servers are
   limited to sending 3 bytes for every byte received prior to validating the
   client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
-  certificate chain can managed by limiting the number of names or extensions;
-  using keys with small public key representations, like ECDSA; or, by using
-  certificate compression {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
+  certificate chain can be managed by limiting the number of names or
+  extensions; using keys with small public key representations, like ECDSA; or,
+  by using certificate compression
+  {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
 
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
@@ -767,8 +768,8 @@ In TLS over TCP, the HelloRetryRequest feature (see Section 4.1.4 of
 well as for a stateless round-trip check. From the perspective of QUIC, this
 just looks like additional messages carried in Initial packets. Although it is
 in principle possible to use this feature for address verification in QUIC,
-QUIC implementations SHOULD instead use the Retry feature; see Section 8.1 of
-{{QUIC-TRANSPORT}}. HelloRetryRequest is still used to request key shares.
+QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
+{{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
 
 
 ## TLS Errors {#tls-errors}
@@ -1805,8 +1806,8 @@ by an attacker.
 
 QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
-unverified source address, the server is forbidden to send more than three times
-more bytes than it has received; see Section 8.1 of {{QUIC-TRANSPORT}}. Finally,
+unverified source address, the server is forbidden to send more than three UDP
+datagrams in its first flight (see Section 8.1 of {{QUIC-TRANSPORT}}). Finally,
 because acknowledgements of Handshake packets are authenticated, a blind
 attacker cannot forge them.  Put together, these defenses limit the level of
 amplification.
