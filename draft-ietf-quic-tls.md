@@ -975,7 +975,7 @@ order are left-padded with zeros to the size of the IV.  The exclusive OR of the
 padded packet number and the IV forms the AEAD nonce.
 
 The associated data, A, for the AEAD is the contents of the QUIC header,
-starting from the initial byte of either the short or long header, up to and
+starting from the first byte of either the short or long header, up to and
 including the unprotected packet number.
 
 The input plaintext, P, for the AEAD is the payload of the QUIC packet, as
@@ -1090,9 +1090,9 @@ Short Header Packet {
 Before a TLS cipher suite can be used with QUIC, a header protection algorithm
 MUST be specified for the AEAD used with that cipher suite.  This document
 defines algorithms for AEAD_AES_128_GCM, AEAD_AES_128_CCM, AEAD_AES_256_GCM (all
-AES AEADs are defined in {{!AEAD=RFC5116}}), and AEAD_CHACHA20_POLY1305 (defined
-in {{!CHACHA=RFC8439}}).  Prior to TLS selecting a cipher suite, AES header
-protection is used ({{hp-aes}}), matching the AEAD_AES_128_GCM packet
+these AES AEADs are defined in {{!AEAD=RFC5116}}), and AEAD_CHACHA20_POLY1305
+(defined in {{!CHACHA=RFC8439}}).  Prior to TLS selecting a cipher suite, AES
+header protection is used ({{hp-aes}}), matching the AEAD_AES_128_GCM packet
 protection.
 
 
@@ -1636,8 +1636,7 @@ messages, that tampering will cause the TLS handshake to fail.
 
 # QUIC-Specific Adjustments to the TLS Handshake
 
-Because QUIC provides different capabilities than TCP, certain aspects of the
-TLS handshake are different when used with QUIC.
+Certain aspects of the TLS handshake are different when used with QUIC.
 
 QUIC also requires additional features from TLS.  In addition to negotiation of
 cryptographic parameters, the TLS handshake carries and authenticates values for
