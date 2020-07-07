@@ -1560,7 +1560,7 @@ is RECOMMENDED that endpoints immediately close the connection with a connection
 error of type PROTOCOL_VIOLATION before reaching a state where key updates are
 not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25.5
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
 confidentiality limit is greater than the number of possible packets (2^62) and
 so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
@@ -2245,21 +2245,22 @@ The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 
 ### Confidentiality Limit
 
-For confidentiality, Equation (1) in {{?GCM-MU}} establishes that an attacker
-gains a distinguishing advantage between a real and random AEAD algorithm of no
-more than:
+For confidentiality, Theorum (4.3) in {{?GCM-MU}} establish that - for a single
+user that does not repeat nonces - the dominant term in determining the
+distinguishing advantage between a real and random AEAD algorithm gained by an
+attacker is:
 
 ~~~
-(q * l)^2 / 2^128
+2 * (q * l)^2 / 2^128
 ~~~
 
 For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-q <= 2^25.5
+q <= 2^25
 ~~~
 
-Thus, endpoints cannot protect more than 2^25.5 packets in a single connection
+Thus, endpoints cannot protect more than 2^25 packets in a single connection
 without causing an attacker to gain an larger advantage than the target of
 2^-57.
 
