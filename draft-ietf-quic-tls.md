@@ -950,8 +950,8 @@ All QUIC packets other than Version Negotiation are protected with an AEAD
 algorithm ({{!AEAD}}). Prior to establishing a shared secret, packets are
 protected with AEAD_AES_128_GCM.  Retry packets use the AEAD for integrity
 protection only, as described in {{retry-integrity}}.  Initial packets use a key
-derived from the Destination Connection ID in the client's first Initial packet
-(see {{initial-secrets}}). This provides protection against off-path attackers
+derived from the Destination Connection ID in the client's first Initial packet;
+see {{initial-secrets}}. This provides protection against off-path attackers
 and robustness against QUIC-version-unaware middleboxes, but not against on-path
 attackers.
 
