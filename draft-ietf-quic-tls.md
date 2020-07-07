@@ -1765,9 +1765,10 @@ Note:
 : TLS session tickets and address validation tokens are used to carry QUIC
   configuration information between connections.  Specifically, to enable a
   server to efficiently recover state that is used in connection establishment
-  and address validation.  These have no application-level semantics; clients
-  MUST treat them as opaque values.  The potential for reuse of these tokens
-  means that they require stronger protections against replay.
+  and address validation.  These MUST NOT be used to communicate application
+  semantics between endpoints; clients MUST treat them as opaque values.  The
+  potential for reuse of these tokens means that they require stronger
+  protections against replay.
 
 A server that accepts 0-RTT on a connection incurs a higher cost than accepting
 a connection without 0-RTT.  This includes higher processing and computation
