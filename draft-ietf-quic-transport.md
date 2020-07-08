@@ -2681,9 +2681,8 @@ ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
 
-There is no minimum value for max_idle_timeout.  To avoid excessively small idle
-timeout periods, endpoints MUST increase the idle timeout period to be at least
-three times the current Probe Timeout (PTO).
+To avoid excessively small idle timeout periods, endpoints MUST increase the
+idle timeout period to be at least three times the current Probe Timeout (PTO).
 
 
 ### Liveness Testing
