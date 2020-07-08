@@ -527,12 +527,17 @@ no ack-eliciting packets in flight, the PTO is set from that moment.
 
 When setting the PTO timer, the ApplicationData packet number space (Section
 4.1.1 of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
-the PTO for ApplicationData prevents a client from retransmitting a 0-RTT packet
-on a PTO expiration before confirming that the server is able to decrypt 0-RTT
-packets, and prevents a server from sending a 1-RTT packet on a PTO expiration
-before the client obtains the keys to decrypt the 1-RTT packet (Section 4.1.4 of
-{{QUIC-TLS}}) or before the server obtains the keys to process an
-acknowledgement.
+the PTO for ApplicationData prevents unnecessary transmissions on a PTO
+expiration, such as:
+
+* an endpoint sending probe packets before obtaining the keys to process an
+  acknowledgement,
+
+* a client sending 0-RTT probe packets before confirming that the server is able
+  to decrypt 0-RTT packets, or
+
+* a server sending 1-RTT probe packets before the client obtains the keys to
+  decrypt 1-RTT packets (Section 4.1.4 of {{QUIC-TLS}}).
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout.
