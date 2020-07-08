@@ -534,7 +534,8 @@ might take longer to respond to packets during the handshake than otherwise.  To
 protect such a server from repeated client probes, the PTO backoff is not reset
 at a client that is not yet certain that the server has finished validating the
 client's address. That is, a client does not reset the PTO backoff factor on
-receiving acknowledgements until the handshake is confirmed.
+receiving acknowledgements until it receives a HANDSHAKE_DONE frame or an
+acknowledgement for one of its Handshake or 1-RTT packets.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
