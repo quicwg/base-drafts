@@ -3503,7 +3503,7 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
-that do not follow guidance offered above. However, an implementation should
+that do not follow the guidance offered above. However, an implementation should
 only deviate from these requirements after careful consideration of the
 performance implications of a change, for connections made by the endpoint and
 for other users of the network.
