@@ -2667,8 +2667,7 @@ source address.
 If a max_idle_timeout is specified by either peer in its transport parameters
 ({{transport-parameter-definitions}}), the connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-both peers max_idle_timeout values and three times the current Probe Timeout
-(PTO).
+both peers max_idle_timeout values.
 
 Each endpoint advertises a max_idle_timeout, but the effective value
 at an endpoint is computed as the minimum of the two advertised values. By
@@ -2681,6 +2680,10 @@ processed successfully. An endpoint also restarts its idle timer when sending an
 ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
+
+There is no minimum value for max_idle_timeout.  To avoid excessively small idle
+timeout periods, endpoints MUST increase the idle timeout period to be at least
+three times the current Probe Timeout (PTO).
 
 
 ### Liveness Testing
