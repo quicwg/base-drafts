@@ -5921,7 +5921,7 @@ type PROTOCOL_VIOLATION.
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
 contained.  The peer MAY treat this as a connection error of type
-FRAME_ENCODING_ERROR.
+PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
