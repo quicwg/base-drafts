@@ -525,14 +525,17 @@ set based on the latest RTT information and for the last sent ack-eliciting
 packet in the correct packet number space. When the PTO expires and there are
 no ack-eliciting packets in flight, the PTO is set from that moment.
 
+When setting the PTO timer, the ApplicationData packet number space (Section
+4.1.1 of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
+the PTO for ApplicationData prevents a client from retransmitting a 0-RTT packet
+on a PTO expiration before confirming that the server is able to decrypt 0-RTT
+packets, and prevents a server from sending a 1-RTT packet on a PTO expiration
+before the client obtains the keys to decrypt the 1-RTT packet (Section 4.1.4 of
+{{QUIC-TLS}}) or before the server obtains the keys to process an
+acknowledgement.
+
 When ack-eliciting packets in multiple packet number spaces are in flight,
-the timer MUST be set for the packet number space with the earliest timeout,
-with one exception. The Application Data packet number space (Section 4.1.1
-of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
-the PTO for Application Data prevents a client from retransmitting a 0-RTT
-packet on a PTO expiration before confirming that the server is able to
-decrypt 0-RTT packets, and prevents a server from sending a 1-RTT packet on
-a PTO expiration before it has the keys to process an acknowledgement.
+the timer MUST be set for the packet number space with the earliest timeout.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff factor is reset
