@@ -2873,8 +2873,8 @@ indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
 of the packet header.  The remainder of the first byte and an arbitrary number
-of bytes following it that are set to unpredictable values.  The last 16 bytes
-of the datagram contain a Stateless Reset Token.
+of bytes following it that are set to values that SHOULD be indistinguishable
+from random.  The last 16 bytes of the datagram contain a Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear to
 be a packet with a short header.  For the stateless reset to appear as a valid
@@ -5950,9 +5950,8 @@ Data:
 
 : This 8-byte field contains arbitrary data.
 
-A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
-to ensure that it is easier to receive the packet than it is to guess the value
-correctly.
+Including 64 bits of entropy in a PATH_CHALLENGE frame ensures that it is easier
+to receive the packet than it is to guess the value correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.
