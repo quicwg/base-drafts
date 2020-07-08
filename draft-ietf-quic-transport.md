@@ -304,9 +304,7 @@ Example Structure {
 # Streams {#streams}
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
-application. Streams can be unidirectional or bidirectional.  An alternative
-view of QUIC unidirectional streams is a "message" abstraction of practically
-unlimited length.
+application. Streams can be unidirectional or bidirectional.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
