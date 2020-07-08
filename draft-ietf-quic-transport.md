@@ -3354,7 +3354,9 @@ ih:
   packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
-that all frames can appear in 1-RTT packets.
+that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
+a frame in a packet type that is not permitted as a connection error of type
+PROTOCOL_VIOLATION.
 
 The "Spec" column in  {{frame-types}} summarizes any special rules governing the
 processing or generation of the frame type, as indicated by the following
