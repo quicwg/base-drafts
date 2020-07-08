@@ -2323,18 +2323,20 @@ because the entity at the source address does not have the necessary
 cryptographic keys to read or respond to the PATH_CHALLENGE frame that is sent
 to it even if it wanted to.
 
-To protect the connection from failing due to such a spurious migration, an
-endpoint MUST revert to using the last validated peer address when validation of
-a new peer address fails.
+To protect the connection from failing due to such a spurious
+migration, an endpoint MUST revert to using the last validated peer
+address when validation of a new peer address fails. Additionally,
+receipt of packets with higher packet numbers from the legitimate peer
+address will trigger another connection migration.  This will cause
+the validation of the address of the spurious migration to be
+abandoned, thus containing migrations initiated by the attacker
+injecting a single packet.
 
 If an endpoint has no state about the last validated peer address, it MUST close
 the connection silently by discarding all connection state. This results in new
 packets on the connection being handled generically. For instance, an endpoint
 MAY send a stateless reset in response to any further incoming packets.
 
-Note that receipt of packets with higher packet numbers from the legitimate peer
-address will trigger another connection migration.  This will cause the
-validation of the address of the spurious migration to be abandoned.
 
 
 ### Off-Path Packet Forwarding {#off-path-forward}
