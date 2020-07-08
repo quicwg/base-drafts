@@ -1530,12 +1530,13 @@ Connection ID is chosen by the recipient of the packet and is used to provide
 consistent routing; the Source Connection ID is used to set the Destination
 Connection ID used by the peer.
 
-During the handshake, packets with the long header ({{long-header}}) are used to
-establish the connection IDs in each direction. Each endpoint uses the Source
-Connection ID field to specify the connection ID that is used in the Destination
-Connection ID field of packets being sent to them. Upon receiving a packet, each
-endpoint sets the Destination Connection ID it sends to match the value of the
-Source Connection ID that it receives.
+During the handshake, packets with the long header ({{long-header}})
+are used to establish the connection IDs in each direction. Each
+endpoint uses the Source Connection ID field to specify the connection
+ID that is used in the Destination Connection ID field of packets
+being sent to them. Upon receiving the first packet from the peer,
+each endpoint sets the Destination Connection ID it sends to match the
+value of the Source Connection ID that it receives.
 
 When an Initial packet is sent by a client that has not previously received an
 Initial or Retry packet from the server, the client populates the Destination
