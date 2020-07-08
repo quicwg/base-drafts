@@ -1300,10 +1300,10 @@ When implementing the server role, applications need to be able to:
 
 - listen for incoming connections, which prepares for the exchange described in
   {{handshake}};
-- if Early Data is supported, embed application-controlled data in the TLS
+- if 0-RTT data is supported, embed application-controlled data in the TLS
   resumption ticket sent to the client; and
-- if Early Data is supported, retrieve application-controlled data from the
-  client's resumption ticket and enable rejecting Early Data based on that
+- if 0-RTT data is supported, retrieve application-controlled data from the
+  client's resumption ticket and enable rejecting 0-RTT data based on that
   information.
 
 In either role, applications need to be able to:
