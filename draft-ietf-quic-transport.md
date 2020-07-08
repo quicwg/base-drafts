@@ -2672,7 +2672,9 @@ source address.
 
 If a max_idle_timeout is specified by either peer in its transport parameters
 ({{transport-parameter-definitions}}), the connection is silently closed
-and its state is discarded when it remains idle for longer than the minimum of
+and its state is discarded when it remains idle for longer than either
+
+the minimum of
 both peers max_idle_timeout values and three times the current Probe Timeout
 (PTO).
 
@@ -2801,7 +2803,7 @@ sent in a packet that uses a lower packet protection level.  More specifically:
   send a CONNECTION_CLOSE frame in both Handshake and Initial packets to ensure
   that at least one of them is processable by the client.
 
-* A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured of
+* A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured that
   the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame in an
   Initial packet makes it more likely that the server can receive the close
   signal, even if the application error code might not be received.
