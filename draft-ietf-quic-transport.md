@@ -5531,9 +5531,9 @@ NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame takes the form 0b00001XXX (or the set of values from 0x08 to 0x0f).  The
-value of the three low-order bits of the frame type determines the fields that
-are present in the frame.
+frame type field takes the form 0b00001XXX (or the set of values from 0x08 to
+0x0f).  The value of the three low-order bits of the frame type determines the
+fields that are present in the frame.
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present.  When set
