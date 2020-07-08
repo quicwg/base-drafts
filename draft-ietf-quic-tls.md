@@ -504,8 +504,7 @@ generating these keys, an endpoint SHOULD buffer received packets marked as
 protected by the keys being generated, and process them once those keys become
 available.  If the keys are generated asynchronously, an endpoint MAY continue
 responding to the received packets that were processable while waiting for TLS
-to provide these keys.  >>>>>>> allow endpoints to generate traffic keys
-asynchronously, write down the expectations in relation
+to provide these keys.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
