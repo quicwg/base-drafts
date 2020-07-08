@@ -1167,7 +1167,8 @@ expected keys are available.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
 Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-it commits changes to state before discovering an error.
+processing of the contents of these packets prior to discovering an error
+results in changes to the state of a connection that cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
