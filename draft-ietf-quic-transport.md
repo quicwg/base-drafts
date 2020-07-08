@@ -803,6 +803,8 @@ entire connection.  This leads to two levels of data flow control in QUIC:
 * Connection flow control, which prevents senders from exceeding a receiver's
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
+  
+Senders MUST not send data in excess of either limit.
 
 A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
@@ -810,12 +812,10 @@ MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise larger limits.
 
 A receiver can advertise a larger limit for a stream by sending a
-MAX_STREAM_DATA frame with the Stream ID field set appropriately. A
-MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream. A
-receiver could use the current offset of data consumed to determine the flow
-control offset to be advertised. A receiver MAY send MAX_STREAM_DATA frames in
-multiple packets in order to make sure that the sender receives an update before
-running out of flow control, even if one of the packets is lost.
+MAX_STREAM_DATA frame with corresponding Stream ID field. A
+MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a
+stream. A receiver could use the current offset of data consumed to
+determine the flow control offset to be advertised.
 
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
@@ -849,7 +849,7 @@ DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
 and MAX_DATA frames, but this section offers a few considerations.
 
-To avoid blocking a sender, a receiver can send a MAX_STREAM_DATA or MAX_DATA
+To avoid blocking a sender, a receiver MAY send a MAX_STREAM_DATA or MAX_DATA
 frame multiple times within a round trip or send it early enough to allow for
 recovery from loss of the frame.
 
