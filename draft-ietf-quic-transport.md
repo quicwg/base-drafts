@@ -357,7 +357,10 @@ Within each type, streams are created with numerically increasing stream IDs.  A
 stream ID that is used out of order results in all streams of that type with
 lower-numbered stream IDs also being opened.
 
-The first bidirectional stream opened by the client has a stream ID of 0.
+For example, the first bidirectional stream opened by the client has a
+stream ID of 0 and the first bidirectional stream opened by the server
+has a stream ID of 1.
+
 
 ## Sending and Receiving Data
 
