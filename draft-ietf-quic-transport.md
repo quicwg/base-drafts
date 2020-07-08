@@ -1205,8 +1205,8 @@ the packet is sufficiently long.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
-IDs - the local address and port.  If the packet doesn't match an existing
-connection, the server continues below.
+IDs - the local address and port.  These packets are processed using the
+selected connection, otherwise the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
