@@ -890,12 +890,12 @@ matching stream and ignore further data arriving on that stream.  Without the
 offset included in RESET_STREAM, the two endpoints could disagree on
 the number of bytes that count towards connection flow control.
 
-To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}}) includes the
-final size of data sent on the stream.  On receiving a RESET_STREAM frame, a
-receiver definitively knows how many bytes were sent on that stream before the
-RESET_STREAM frame, and the receiver MUST use the final size of the stream to
-account for all bytes sent on the stream in its connection level flow
-controller.
+To remedy this issue, a RESET_STREAM frame ({{frame-reset-stream}})
+includes the final size of data sent on the stream.  On receiving a
+RESET_STREAM frame, a receiver knows how many bytes the sender claims
+were sent on that stream before the RESET_STREAM frame, and the
+receiver MUST use the final size of the stream to account for all
+bytes sent on the stream in its connection level flow controller.
 
 RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
 stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
