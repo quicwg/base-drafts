@@ -4407,9 +4407,8 @@ than 20 bytes.
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 which the server supports.
 
-A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
-by a client.  Receiving another Initial packet implicitly acknowledges a Version
-Negotiation packet.
+A Version Negotiation packet is not acknowledged.  It is only sent in response
+to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
 
 The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
