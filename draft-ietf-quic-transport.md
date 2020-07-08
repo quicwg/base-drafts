@@ -263,10 +263,12 @@ x (A..B):
   values in this format always end on an octet boundary
 
 x (?) = C:
-: Indicates that x has a fixed value of C
+: Indicates that x has a fixed value of C with the length described by
+  ?, as above.
 
 x (?) = C..D:
-: Indicates that x has a value in the range from C to D, inclusive
+: Indicates that x has a value in the range from C to D, inclusive,
+  with the encoding described by ?, as above.
 
 \[x (E)\]:
 : Indicates that x is optional (and has length of E)
