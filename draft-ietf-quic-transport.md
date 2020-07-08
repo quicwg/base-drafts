@@ -4721,7 +4721,7 @@ The next Initial packet from the client uses the connection ID and token values
 from the Retry packet; see {{negotiating-connection-ids}}.  Aside from this,
 the Initial packet sent by the client is subject to the same restrictions as the
 first Initial packet.  A client MUST use the same cryptographic handshake
-message it includes in this packet.  A server MAY treat a packet that
+message it included in this packet.  A server MAY treat a packet that
 contains a different cryptographic handshake message as a connection error or
 discard it.
 
