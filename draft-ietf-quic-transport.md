@@ -224,9 +224,9 @@ Address:
 
 Connection ID:
 
-: An opaque identifier that is used to identify a QUIC connection at an
+: An identifier that is used to identify a QUIC connection at an
   endpoint.  Each endpoint sets a value for its peer to include in packets sent
-  towards the endpoint.
+  towards the endpoint; this value is opaque to the peer.
 
 Stream:
 
