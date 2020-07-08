@@ -1426,12 +1426,10 @@ properties:
 
    * a client is optionally authenticated,
 
-   * every connection produces distinct and unrelated keys,
+   * every connection produces distinct and unrelated keys, and
 
    * keying material is usable for packet protection for both 0-RTT and 1-RTT
-     packets, and
-
-   * 1-RTT keys have forward secrecy
+     packets
 
 * authenticated values for transport parameters of both endpoints, and
   confidentiality protection for server transport parameters (see
