@@ -3161,7 +3161,7 @@ packet protection is not effective confidentiality protection.  Initial
 protection only exists to ensure that the sender of the packet is on the network
 path. Any entity that receives the Initial packet from a client can recover the
 keys necessary to remove packet protection or to generate packets that will be
-successfully authenticated.
+successfully authenticated. Retry packets are protected using a fixed key.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
