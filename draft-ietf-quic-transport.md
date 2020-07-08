@@ -1321,8 +1321,8 @@ In either role, applications need to be able to:
 
 # Version Negotiation {#version-negotiation}
 
-Version negotiation ensures that client and server agree to a QUIC version
-that is mutually supported. A server sends a Version Negotiation packet in
+Version negotiation allows a server to indicate that it does not support
+the version the client used. A server sends a Version Negotiation packet in
 response to each packet that might initiate a new connection; see
 {{packet-handling}} for details.
 
