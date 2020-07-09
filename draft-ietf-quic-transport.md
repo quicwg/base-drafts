@@ -4458,9 +4458,10 @@ Initial Packet {
 {: #initial-format title="Initial Packet"}
 
 The Initial packet contains a long header as well as the Length and Packet
-Number fields.  The first byte contains the Reserved and Packet Number Length
-bits.  Between the Source Connection ID and Length fields, there are two
-additional fields specific to the Initial packet.
+Number fields; see {{long-header}}.  The first byte contains the Reserved and
+Packet Number Length bits; see also {{long-header}}.  Between the Source
+Connection ID and Length fields, there are two additional fields specific to
+the Initial packet.
 
 Token Length:
 
