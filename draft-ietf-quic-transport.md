@@ -6853,8 +6853,7 @@ for a frame type {{iana-frames}} of 61 could be requested.
 All registrations made by Standards Track publications MUST be permanent.
 
 All registrations in this document are assigned a permanent status and list as
-contact both the IESG (ietf@ietf.org) and the QUIC working group
-([quic@ietf.org](mailto:quic@ietf.org)).
+contact the IETF (quic@ietf.org).
 
 
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
