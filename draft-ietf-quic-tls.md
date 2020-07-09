@@ -2344,12 +2344,9 @@ without a significant effect on the result. This produces the relation:
 v + q <= 2^24.5
 ~~~
 
-Noting that this is the same value as the confidentiality limit, the
-confidentiality limit can be adjusted to allow `v` and `q` to be the same value.
-Thus the limit for both `v` and `q` is 2^23.5. That is, endpoints cannot attempt
-to protect or authenticate more than 2^23.5 packets with the same set of keys
-without causing an attacker to gain an larger advantage than the target of
-2^-57 in forging packets.
+Assuming `q = v`, endpoints cannot attempt to protect or authenticate more than 
+2^23.5 packets with the same set of keys without causing an attacker to gain an larger 
+advantage than the target of 2^-57 in forging packets.
 
 
 # Change Log
