@@ -540,7 +540,8 @@ expiration, such as:
   decrypt 1-RTT packets (Section 4.1.4 of {{QUIC-TLS}}).
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
-the timer MUST be set for the packet number space with the earliest timeout.
+the timer MUST be set to the earlier value of the Initial and Handshake packet
+number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff factor is reset
