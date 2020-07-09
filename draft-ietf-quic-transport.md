@@ -2257,11 +2257,11 @@ validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
 validation until after a peer sends the next non-probing frame to its new
 address.
 
-Path validation is necessary verify that reachability of a peer on a new
-network path.  Acknowledgments cannot be used for path validation as they
-contain insufficient entropy and might be spoofed.  No method is provided to
-establish return reachability, as endpoints independently determine
-reachability on each direction of a path.
+Path validation is necessary verify reachability of a peer on a new network
+path.  Acknowledgments cannot be used for path validation as they contain
+insufficient entropy and might be spoofed.  No method is provided to establish
+return reachability, as endpoints independently determine reachability on each
+direction of a path.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -3289,7 +3289,7 @@ Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
 Packet Payload {
-  Frame (..) ...,
+  Frame (8..) ...,
 }
 ~~~
 {: #packet-frames title="QUIC Payload"}
