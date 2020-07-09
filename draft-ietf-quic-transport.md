@@ -444,15 +444,20 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either the send or receive side causes the stream
 to open in both directions.
 
+These state machines shown in this section are largely informative.  This
+document uses stream states to describe rules for when and how different types
+of frames can be sent and the reactions that are expected when different types
+of frames are received.  Though these state machines are intended to be useful
+in implementing QUIC, these states aren't intended to constrain implementations.
+An implementation can define a different state machine as long as its behavior
+is consistent with an implementation that implements these states.
+
 Note:
 
-: These states are largely informative.  This document uses stream states to
-  describe rules for when and how different types of frames can be sent and the
-  reactions that are expected when different types of frames are received.
-  Though these state machines are intended to be useful in implementing QUIC,
-  these states aren't intended to constrain implementations.  An implementation
-  can define a different state machine as long as its behavior is consistent
-  with an implementation that implements these states.
+: In some cases, a single event or action can cause a transition through
+  multiple states.  For instance, sending STREAM with a FIN bit set can cause
+  two state transitions for a sending stream: from the Ready state to the Send
+  state, and from the Send state to the Data Sent state.
 
 
 ## Sending Stream States {#stream-send-states}
