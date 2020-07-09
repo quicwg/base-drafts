@@ -842,6 +842,9 @@ congestion, as TCP does with a Retransmission Timeout (RTO) {{?RFC5681}}.
 The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
 approximately equivalent to two TLPs before an RTO in TCP.
 
+Persistent congestion can not be determined until there is at least one RTT
+sample since smoothed_rtt and rttvar have unknown values.
+
 This duration is computed as follows:
 
 ~~~
