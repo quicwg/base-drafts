@@ -600,9 +600,10 @@ could result in a newer version of TLS than 1.3 being negotiated if both
 endpoints support that version.  This is acceptable provided that the features
 of TLS 1.3 that are used by QUIC are supported by the newer version.
 
-A badly configured TLS implementation could negotiate TLS 1.2 or another older
-version of TLS.  An endpoint MUST terminate the connection if a version of TLS
-older than 1.3 is negotiated.
+Clients MUST NOT offer TLS versions older than 1.3.  A badly configured TLS
+implementation could negotiate TLS 1.2 or another older version of TLS.  An
+endpoint MUST terminate the connection if a version of TLS older than 1.3 is
+negotiated.
 
 
 ## ClientHello Size {#clienthello-size}
