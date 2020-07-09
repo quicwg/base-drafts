@@ -970,10 +970,10 @@ longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
 ## Flow Control Performance
 
-An endpoint that is unable to ensure that a peer has flow control credit in the
+An endpoint that is unable to ensure that a peer has flow control credit on the
 order of the current BDP will have receive throughput limited by flow control
 and not other limiting factors like congestion control.  Timely sending of
-updates to flow control limits can improve performance, however an excessive
+updates to flow control limits can improve performance. However, an excessive
 rate of updates can also adversely affect performance.
 
 This document does not specify techniques for tuning flow control performance
