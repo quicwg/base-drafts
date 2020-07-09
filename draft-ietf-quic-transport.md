@@ -1705,13 +1705,18 @@ connection IDs during the handshake; see {{cid-auth}}.
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-Both endpoints store the value of the server transport parameters from
-a connection and apply them to any 0-RTT packets that are sent in
-subsequent connections to that peer, except for transport parameters that
-are explicitly excluded. Remembered transport parameters apply to the new
-connection until the handshake completes and the client starts sending
-1-RTT packets. Once the handshake completes, the client uses the transport
-parameters established in the handshake.
+Using 0-RTT depends on both client and server using protocol parameters that
+were negotiated from a previous connection.  To enable 0-RTT, endpoints store
+the value of the server transport parameters from a connection and apply them
+to any 0-RTT packets that are sent in subsequent connections to that peer.  This
+information is stored with any information required by the application
+protocol or cryptographic handshake; see Section 4.6 of {{QUIC-TLS}}.
+
+Remembered transport parameters apply to the new connection until the handshake
+completes and the client starts sending 1-RTT packets.  Once the handshake
+completes, the client uses the transport parameters established in the
+handshake.  Not all transport parameters are remembered, as some do not apply to
+future connections or they have no effect on use of 0-RTT.
 
 The definition of new transport parameters ({{new-transport-parameters}}) MUST
 specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
