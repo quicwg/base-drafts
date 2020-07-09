@@ -534,7 +534,7 @@ acknowledgments. This occurs when the client sends 0-RTT packets as the server
 might not accept 0-RTT and the client will not have 1-RTT keys for processing
 acknowledgments until the handshake completes. This occurs for 1-RTT packets as
 either endpoint might not have the ability to read until the handshake is
-complete or confirmed.
+complete.
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set to the earlier value of the Initial and Handshake packet
