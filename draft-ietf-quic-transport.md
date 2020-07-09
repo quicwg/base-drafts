@@ -4657,9 +4657,9 @@ Retry Packet {
 {: #retry-format title="Retry Packet"}
 
 A Retry packet (shown in {{retry-format}}) does not contain any protected
-fields. The value in the Unused field is selected randomly by the server. In
-addition to the fields from the long header, it contains these additional
-fields:
+fields.  The value in the Unused field is set to an arbitrary value by the
+server; a client MUST ignore these bits.  In addition to the fields from the
+long header, it contains these additional fields:
 
 Retry Token:
 
