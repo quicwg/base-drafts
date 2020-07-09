@@ -2568,11 +2568,12 @@ preferred address.  If path validation of the server's preferred address fails
 but validation of the server's original address succeeds, the client MAY migrate
 to its new address and continue sending to the server's original address.
 
-If the connection to the server's preferred address is not from the same client
-address, the server MUST protect against potential attacks as described in
-{{address-spoofing}} and {{on-path-spoofing}}.  In addition to intentional
-simultaneous migration, this might also occur because the client's access
-network used a different NAT binding for the server's preferred address.
+If packets received at the server's preferred address have a different source
+address than observed from the client during the handshake, the server MUST
+protect against potential attacks as described in {{address-spoofing}} and
+{{on-path-spoofing}}.  In addition to intentional simultaneous migration, this
+might also occur because the client's access network used a different NAT
+binding for the server's preferred address.
 
 Servers SHOULD initiate path validation to the client's new address upon
 receiving a probe packet from a different address.  Servers MUST NOT send more
