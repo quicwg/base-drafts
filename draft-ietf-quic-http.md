@@ -99,19 +99,20 @@ code and issues list for this draft can be found at
 
 HTTP semantics {{!SEMANTICS=I-D.ietf-httpbis-semantics}} are used for a broad
 range of services on the Internet. These semantics have most commonly been used
-with two different TCP mappings, HTTP/1.1 and HTTP/2.  HTTP/3 supports the same
-semantics over a new transport protocol, QUIC.
+with HTTP/1.1, over a variety of transport and session layers, and with HTTP/2
+over TLS. HTTP/3 supports the same semantics over a new transport protocol,
+QUIC.
 
 ## Prior versions of HTTP
 
-HTTP/1.1 {{?HTTP11=I-D.ietf-httpbis-messaging}} is a TCP mapping which uses
-whitespace-delimited text fields to convey HTTP messages.  While these exchanges
-are human-readable, using whitespace for message formatting leads to parsing
-complexity and motivates tolerance of variant behavior.  Because HTTP/1.x does
-not include a multiplexing layer, multiple TCP connections are often used to
-service requests in parallel. However, that has a negative impact on congestion
-control and network efficiency, since TCP does not share congestion control
-across multiple connections.
+HTTP/1.1 {{?HTTP11=I-D.ietf-httpbis-messaging}} uses whitespace-delimited text
+fields to convey HTTP messages.  While these exchanges are human-readable, using
+whitespace for message formatting leads to parsing complexity and excessive
+tolerance of variant behavior.  Because HTTP/1.x does not include a multiplexing
+layer, multiple TCP connections are often used to service requests in parallel.
+However, that has a negative impact on congestion control and network
+efficiency, since TCP does not share congestion control across multiple
+connections.
 
 HTTP/2 {{?HTTP2=RFC7540}} introduced a binary framing and multiplexing layer to
 improve latency without modifying the transport layer.  However, because the
