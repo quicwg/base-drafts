@@ -225,8 +225,8 @@ Address:
 Connection ID:
 
 : An opaque identifier that is used to identify a QUIC connection at an
-  endpoint.  Each endpoint sets one or more values for its peer to include in
-  packets sent towards the endpoint.
+  endpoint.  Each endpoint selects one or more Connection IDs for its peer to
+  include in packets sent towards the endpoint.
 
 Stream:
 
@@ -235,7 +235,7 @@ Stream:
 
 Application:
 
-: An entity running on an endpoint that uses QUIC to send and receive data.
+: An entity that uses QUIC to send and receive data.
 
 
 ## Notational Conventions
@@ -353,9 +353,10 @@ one of four types, as summarized in {{stream-id-types}}.
 | 0x3  | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-Within each type, streams are created with numerically increasing stream IDs.  A
-stream ID that is used out of order results in all streams of that type with
-lower-numbered stream IDs also being opened.
+The stream space for each type begins at the minimum value (0x0 through 0x3
+respectively); successive streams of each type are created with numerically
+increasing stream IDs.  A stream ID that is used out of order results in all
+streams of that type with lower-numbered stream IDs also being opened.
 
 
 ## Sending and Receiving Data
@@ -1155,9 +1156,9 @@ discarded if they indicate a different protocol version than that of the
 connection, or if the removal of packet protection is unsuccessful once the
 expected keys are available.
 
-Invalid packets without effective confidentiality protection, such as Initial,
-Retry, or Version Negotiation, MAY be discarded.  An endpoint MUST generate a
-connection error if it commits changes to state before discovering an error.
+Invalid packets without packet protection, such as Initial, Retry, or Version
+Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
+it commits changes to state before discovering an error.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -1179,7 +1180,7 @@ that packet.
 ### Server Packet Handling {#server-pkt-handling}
 
 If a server receives a packet that indicates an unsupported version but is large
-enough to initiate a new connection for any one supported version, the server
+enough to initiate a new connection for any supported version, the server
 SHOULD send a Version Negotiation packet as described in {{send-vn}}.  A server
 MAY limit the number of packets to which it responds with a Version Negotiation
 packet.  Servers MUST drop smaller packets that specify unsupported versions.
@@ -2481,7 +2482,8 @@ connection to a preferred server address.
 
 Migrating a connection to a new server address mid-connection is left for future
 work. If a client receives packets from a new server address when the client has
-not initiated a migration, the client SHOULD discard these packets.
+not initiated a migration to that address, the client SHOULD discard these
+packets.
 
 ### Communicating a Preferred Address
 
@@ -3520,9 +3522,9 @@ send an ACK frame in response.
 ### Managing ACK Ranges
 
 When an ACK frame is sent, one or more ranges of acknowledged packets are
-included.  Including older packets reduces the chance of spurious
-retransmissions caused by losing previously sent ACK frames, at the cost of
-larger ACK frames.
+included.  Including acknowledgements for older packets reduces the chance of
+spurious retransmissions caused by losing previously sent ACK frames, at the
+cost of larger ACK frames.
 
 ACK frames SHOULD always acknowledge the most recently received packets, and the
 more out-of-order the packets are, the more important it is to send an updated
@@ -3816,7 +3818,7 @@ packets on a new path to a peer:
   new path to the peer ({{!RFC8311}}).
 
 * If all packets that were sent with the ECT(0) codepoint are eventually deemed
-  lost ({{QUIC-RECOVERY}}), validation is deemed to have failed.
+  lost (Section 6 of {{QUIC-RECOVERY}}), validation is deemed to have failed.
 
 To reduce the chances of misinterpreting congestive loss as packets dropped by a
 faulty network element, an endpoint could set the ECT(0) codepoint for only the
@@ -3824,9 +3826,9 @@ first ten outgoing packets on a path, or for a period of three RTTs, whichever
 occurs first.
 
 Other methods of probing paths for ECN support are possible, as are different
-marking strategies. Implementations MAY use other methods; see {{?RFC8311}}.
-Implementations that use the ECT(1) codepoint need to perform ECN validation
-using ECT(1) counts.
+marking strategies. Implementations MAY use other methods defined in RFCs; see
+{{?RFC8311}}. Implementations that use the ECT(1) codepoint need to perform ECN
+validation using ECT(1) counts.
 
 
 #### Receiving ACK Frames {#ecn-ack}
@@ -5811,7 +5813,7 @@ NEW_CONNECTION_ID frames contain the following fields:
 Sequence Number:
 
 : The sequence number assigned to the connection ID by the sender, encoded as a
-  variable-length integer.  See {{issue-cid}}.
+  variable-length integer; see {{issue-cid}}.
 
 Retire Prior To:
 
