@@ -2095,10 +2095,11 @@ receive packets without first having sent a packet on that path. Effective NAT
 traversal needs additional synchronization mechanisms that are not provided
 here.
 
-An endpoint MAY bundle PATH_CHALLENGE and PATH_RESPONSE frames that are used for
-path validation with other frames.  In particular, an endpoint may pad a packet
-carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may bundle a
-PATH_RESPONSE with its own PATH_CHALLENGE.
+An endpoint MAY bundle PATH_CHALLENGE and PATH_RESPONSE frames that are used
+for path validation with other frames.  In particular, an endpoint may pad a
+packet carrying a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU)
+discovery, or an endpoint may bundle a PATH_RESPONSE with its own
+PATH_CHALLENGE.
 
 When probing a new path, an endpoint might want to ensure that its peer has an
 unused connection ID available for responses. The endpoint can send
