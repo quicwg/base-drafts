@@ -4530,10 +4530,11 @@ Initial keys are discarded.
 ### 0-RTT {#packet-0rtt}
 
 A 0-RTT packet uses long headers with a type value of 0x1, followed by the
-Length and Packet Number fields. The first byte contains the Reserved and Packet
-Number Length bits.  It is used to carry "early" data from the client to the
-server as part of the first flight, prior to handshake completion. As part of
-the TLS handshake, the server can accept or reject this early data.
+Length and Packet Number fields; see {{long-header}}.  The first byte contains
+the Reserved and Packet Number Length bits; see {{long-header}}.  A 0-RTT packet
+is used to carry "early" data from the client to the server as part of the
+first flight, prior to handshake completion.  As part of the TLS handshake, the
+server can accept or reject this early data.
 
 See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
@@ -4591,9 +4592,10 @@ data limits).
 ### Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x2, followed by the
-Length and Packet Number fields.  The first byte contains the Reserved and
-Packet Number Length bits.  It is used to carry acknowledgments and
-cryptographic handshake messages from the server and client.
+Length and Packet Number fields; see {{long-header}}.  The first byte contains
+the Reserved and Packet Number Length bits; see {{long-header}}.  It is used
+to carry cryptographic handshake messages and acknowledgments from the server
+and client.
 
 ~~~
 Handshake Packet {
