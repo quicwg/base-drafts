@@ -690,23 +690,46 @@ Client SHOULD NOT reuse tickets as that allows entities other than the server
 to correlate connections; see Section C.4 of {{!TLS13}}.
 
 
-## Enabling 0-RTT {#enable-0rtt}
+## 0-RTT
+
+The 0-RTT feature in QUIC allows a client to send application data before the
+handshake is complete.  This is made possible by reusing negotiated parameters
+from a previous connection.  To enable this, 0-RTT depends on the client
+remembering critical parameters and providing the server with a TLS session
+ticket that allows the server to recover the same information.
+
+This information includes parameters that determine TLS state, as governed by
+{{!TLS13}}, QUIC transport parameters, the chosen application protocol, and any
+information the application protocol might need; see {{app-0rtt}}.  This
+information determines how 0-RTT packets and their contents are formed.
+
+{{!TLS13}} sets a limit of 7 days on the time between the original connection
+and any attempt to use 0-RTT.  There are other constraints on 0-RTT usage,
+notably those caused by the potential exposure to replay attack; see {{replay}}.
+
+
+### Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
 NewSessionTicket message that contains the "early_data" extension with a
-max_early_data_size of 0xffffffff; the amount of data which the client can send
-in 0-RTT is controlled by the "initial_max_data" transport parameter supplied
-by the server.  Servers MUST NOT send the "early_data" extension with a
-max_early_data_size set to any value other than 0xffffffff.  A client MUST
-treat receipt of a NewSessionTicket that contains an "early_data" extension
-with any other value as a connection error of type PROTOCOL_VIOLATION.
+max_early_data_size of 0xffffffff.  The TLS max_early_data_size parameter is not
+used in QUIC, the amount of data which the client can send in 0-RTT is
+controlled by the "initial_max_data" transport parameter supplied by the server.
+
+Servers MUST NOT send the "early_data" extension with a max_early_data_size set
+to any value other than 0xffffffff.  A client MUST treat receipt of a
+NewSessionTicket that contains an "early_data" extension with any other value as
+a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
-the ClientHello message of a subsequent handshake (see Section 4.2.10 of
-{{!TLS13}}). It then sends the application data in 0-RTT packets.
+the ClientHello message of a subsequent handshake; see Section 4.2.10 of
+{{!TLS13}}. It then sends application data in 0-RTT packets.
+
+A client that attempts 0-RTT might also provide an address validation token if
+the server has sent a NEW_TOKEN frame; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 
-## Accepting and Rejecting 0-RTT
+### Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
 EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
@@ -724,11 +747,11 @@ might be incorrect.  This includes the choice of application protocol, transport
 parameters, and any application configuration.  The client therefore MUST reset
 the state of all streams, including application state bound to those streams.
 
-A client MAY attempt to send 0-RTT again if it receives a Retry or Version
-Negotiation packet.  These packets do not signify rejection of 0-RTT.
+A client MAY reattempt 0-RTT if it receives a Retry or Version Negotiation
+packet.  These packets do not signify rejection of 0-RTT.
 
 
-## Validating 0-RTT Configuration
+### Validating 0-RTT Configuration {#app-0rtt}
 
 When a server receives a ClientHello with the "early_data" extension, it has to
 decide whether to accept or reject early data from the client. Some of this
@@ -1742,7 +1765,7 @@ Use of TLS session tickets allows servers and possibly other entities to
 correlate connections made by the same client; see {{resumption}} for details.
 
 
-## Replay Attacks with 0-RTT
+## Replay Attacks with 0-RTT {#replay}
 
 As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
 exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
