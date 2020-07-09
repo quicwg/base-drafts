@@ -990,8 +990,8 @@ prior to exceeding any limit set for the AEAD that is in use.
 ## Header Protection {#header-protect}
 
 Parts of QUIC packet headers, in particular the Packet Number field, are
-protected using a key that is derived separate to the packet protection key and
-IV.  The key derived using the "quic hp" label is used to provide
+protected using a key that is derived separately from the packet protection key
+and IV.  The key derived using the "quic hp" label is used to provide
 confidentiality protection for those fields that are not exposed to on-path
 elements.
 

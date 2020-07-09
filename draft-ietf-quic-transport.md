@@ -1195,8 +1195,8 @@ the packet is sufficiently long.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
-IDs - the local address and port.  If the packet doesn't match an existing
-connection, the server continues below.
+IDs - the local address and port.  These packets are processed using the
+selected connection, otherwise the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
@@ -2114,11 +2114,6 @@ contains the data that was sent in a previous PATH_CHALLENGE frame. Receipt of
 an acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
 validation, since the acknowledgment can be spoofed by a malicious peer.
 
-Note that receipt on a different local address does not result in path
-validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting. It is possible that a valid PATH_RESPONSE
-might be received in the future.
-
 
 ## Failed Path Validation
 
@@ -2234,9 +2229,12 @@ verifies ECN capability as described in {{ecn}}.
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
 be received on any path, return reachability on the new path is not established.
-To establish return reachability on the new path, an endpoint MAY concurrently
-initiate path validation ({{migrate-validate}}) on the new path or it MAY choose
-to wait for the peer to send the next non-probing frame to its new address.
+No method is provided to establish return reachability, as endpoints
+independently determine reachability on each direction of a path.  To establish
+reachability on the new path, an endpoint MAY concurrently initiate path
+validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
+validation until after a peer sends the next non-probing frame to its new
+address.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -2702,8 +2700,9 @@ A connection will time out if no packets are sent or received for a period
 longer than the time negotiated using the max_idle_timeout transport parameter;
 see {{termination}}.  However, state in middleboxes might time out earlier than
 that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
-experience shows that sending packets every 15 to 30 seconds is necessary to
-prevent the majority of middleboxes from losing state for UDP flows.
+experience shows that sending packets every 30 seconds is necessary to prevent
+the majority of middleboxes from losing state for UDP flows
+{{?GATEWAY=DOI.10.1145/1879141.1879174}}.
 
 
 ## Immediate Close {#immediate-close}
@@ -2857,8 +2856,8 @@ indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
 of the packet header.  The remainder of the first byte and an arbitrary number
-of bytes following it are set to unpredictable values.  The last 16 bytes of the
-datagram contain a Stateless Reset Token.
+of bytes following it are set to values that SHOULD be indistinguishable
+from random.  The last 16 bytes of the datagram contain a Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear to
 be a packet with a short header.  For the stateless reset to appear as a valid
@@ -3126,11 +3125,11 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation packets use authenticated
-encryption with additional data (AEAD) {{!RFC5116}} to provide confidentiality
-and integrity protection.  Retry packets use AEAD to provide integrity
-protection.  Details of packet protection are found in {{QUIC-TLS}}; this
-section includes an overview of the process.
+All QUIC packets except Version Negotiation packets use authenticated encryption
+with associated data (AEAD) {{!RFC5116}} to provide confidentiality and
+integrity protection.  Retry packets use AEAD to provide integrity protection.
+Details of packet protection are found in {{QUIC-TLS}}; this section includes an
+overview of the process.
 
 Initial packets are protected using keys that are statically derived. This
 packet protection is not effective confidentiality protection.  Initial
@@ -4392,9 +4391,8 @@ than 20 bytes.
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 which the server supports.
 
-A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
-by a client.  Receiving another Initial packet implicitly acknowledges a Version
-Negotiation packet.
+A Version Negotiation packet is not acknowledged.  It is only sent in response
+to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
 
 The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
@@ -5936,9 +5934,8 @@ Data:
 
 : This 8-byte field contains arbitrary data.
 
-A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
-to ensure that it is easier to receive the packet than it is to guess the value
-correctly.
+Including 64 bits of entropy in a PATH_CHALLENGE frame ensures that it is easier
+to receive the packet than it is to guess the value correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.
