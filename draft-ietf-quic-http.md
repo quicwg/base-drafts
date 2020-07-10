@@ -494,8 +494,8 @@ this point, the QUIC stream is fully closed.
 When a stream is closed, this indicates the end of an HTTP message. Because some
 messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
 messages once enough of the message has been received to make progress.  If a
-client stream terminates without enough of the HTTP message to provide a
-complete response, the server SHOULD abort its response with the error code
+client-initiated stream terminates without enough of the HTTP message to provide
+a complete response, the server SHOULD abort its response with the error code
 H3_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
@@ -507,8 +507,8 @@ code H3_NO_ERROR SHOULD be used when requesting that the client stop sending on
 the request stream.  Clients MUST NOT discard complete responses as a result of
 having their request terminated abruptly, though clients can always discard
 responses at their discretion for other reasons.  If the server sends a partial
-or complete response but does not abort reading, clients SHOULD continue sending
-the body of the request and close the stream normally.
+or complete response but does not abort reading the request, clients SHOULD
+continue sending the body of the request and close the stream normally.
 
 
 ### Field Formatting and Compression {#header-formatting}
