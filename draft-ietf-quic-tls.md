@@ -659,7 +659,7 @@ Note:
   limited to sending 3 bytes for every byte received prior to validating the
   client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
   certificate chain can be managed by limiting the number of names or
-  extensions; using keys with small public key representations, like ECDSA; or,
+  extensions; using keys with small public key representations, like ECDSA; or
   by using certificate compression
   {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
 
