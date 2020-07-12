@@ -652,6 +652,18 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
+Note:
+
+: Where servers provide certificates for authentication, the size of
+  the certificate chain can consume a large number of bytes.  Controlling the
+  size of certificate chains is critical to performance in QUIC as servers are
+  limited to sending 3 bytes for every byte received prior to validating the
+  client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
+  certificate chain can be managed by limiting the number of names or
+  extensions; using keys with small public key representations, like ECDSA; or
+  by using certificate compression
+  {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
+
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
 The requirements for client authentication vary based on application protocol
