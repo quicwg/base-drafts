@@ -1521,7 +1521,7 @@ newly acked_packets from sent_packets.
      return sent_time <= congestion_recovery_start_time
 
    OnPacketsAcked(acked_packets):
-     for (packet in acked_packets):
+     for packet in acked_packets:
        // Remove from bytes_in_flight.
        bytes_in_flight -= packet.size
        if (InCongestionRecovery(packet.time_sent)):
@@ -1591,7 +1591,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
-     for (lost_packet : lost_packets):
+     for lost_packet in lost_packets:
        bytes_in_flight -= lost_packet.size
      CongestionEvent(lost_packets.largest().time_sent)
 
