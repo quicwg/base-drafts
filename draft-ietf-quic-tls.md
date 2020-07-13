@@ -548,7 +548,7 @@ use.
 ### TLS Interface Summary
 
 {{exchange-summary}} summarizes the exchange between QUIC and TLS for both
-client and server. Solid arrows indicate packets that carry CRYPTO frames;
+client and server. Solid arrows indicate packets that carry handshake data;
 dashed arrows show where application data can be sent.  Each arrow is tagged
 with the encryption level used for that transmission.
 
