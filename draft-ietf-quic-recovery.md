@@ -640,8 +640,8 @@ spaces.
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
 
-When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent. A probe packet SHOULD carry new data when possible.
+When the PTO timer expires, new or previously sent unacknowledged data MUST
+be sent if available. A probe packet SHOULD carry new data when possible.
 A probe packet MAY carry retransmitted unacknowledged data when new data is
 unavailable, when flow control does not permit new data to be sent, or to
 opportunistically reduce loss recovery delay.  Implementations MAY use
