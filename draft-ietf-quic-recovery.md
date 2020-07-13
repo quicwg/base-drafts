@@ -1304,11 +1304,11 @@ GetPtoTimeAndSpace():
   return pto_timeout, pto_space
 
 PeerCompletedAddressValidation():
-  # Assume clients validate the server's address implicitly.
+  // Assume clients validate the server's address implicitly.
   if (endpoint is server):
     return true
-  # Servers complete address validation when a
-  # protected packet is received.
+  // Servers complete address validation when a
+  // protected packet is received.
   return has received Handshake ACK ||
        has received 1-RTT ACK ||
        has received HANDSHAKE_DONE
