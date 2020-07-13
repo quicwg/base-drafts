@@ -548,47 +548,50 @@ use.
 ### TLS Interface Summary
 
 {{exchange-summary}} summarizes the exchange between QUIC and TLS for both
-client and server. Each arrow is tagged with the encryption level used for that
-transmission.
+client and server. Solid arrows indicate packets that carry handshake data;
+dashed arrows show where application data can be sent.  Each arrow is tagged
+with the encryption level used for that transmission.
 
 ~~~
 Client                                                    Server
+======                                                    ======
 
 Get Handshake
                      Initial ------------->
-                                              Handshake Received
 Install tx 0-RTT Keys
-                     0-RTT --------------->
+                     0-RTT - - - - - - - ->
+
+                                              Handshake Received
                                                    Get Handshake
                      <------------- Initial
-Handshake Received
-Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-Handshake Received
                                            Install tx 1-RTT keys
-                     <--------------- 1-RTT
+                     <- - - - - - - - 1-RTT
+
+Handshake Received (Initial)
+Install Handshake keys
+Handshake Received (Handshake)
 Get Handshake
-Handshake Complete
                      Handshake ----------->
-                                              Handshake Received
-                                           Install rx 1-RTT keys
-                                              Handshake Complete
+Handshake Complete
 Install 1-RTT keys
-                     1-RTT --------------->
-                                                   Get Handshake
-                     <--------------- 1-RTT
-Handshake Received
+                     1-RTT - - - - - - - ->
+
+                                              Handshake Received
+                                              Handshake Complete
+                                           Install rx 1-RTT keys
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 {{exchange-summary}} shows the multiple packets that form a single "flight" of
 messages being processed individually, to show what incoming messages trigger
-different actions.  New handshake messages are requested after all incoming
-packets have been processed.  This process might vary depending on how QUIC
-implementations and the packets they receive are structured.
+different actions.  New handshake messages are requested after incoming packets
+have been processed.  This process varies based on the structure of endpoint
+implementations and the order in which packets arrive; this is intended to
+illustrate the steps involved in a single handshake exchange.
 
 
 ## TLS Version {#tls-version}
