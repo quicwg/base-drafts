@@ -6369,14 +6369,17 @@ endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
 be arranged so that packets with a given connection ID always arrive at an
 instance that has connection state, unless that connection is no longer active.
 
+More generally, servers MUST NOT generate a stateless reset if a connection with
+the corresponding connection ID could be active.
+
 In the case of a cluster that uses dynamic load balancing, it's possible that a
-change in load balancer configuration could happen while an active instance
-retains connection state; even if an instance retains connection state, the
+change in load balancer configuration could occur while an active instance
+retains connection state.  Even if an instance retains connection state, the
 change in routing and resulting stateless reset will result in the connection
 being terminated.  If there is no chance in the packet being routed to the
-correct instance, it is better to send a stateless reset than wait for
-connections to time out.  However, this is acceptable only if the routing cannot
-be influenced by an attacker.
+correct instance in this new configuration, it is better to send a stateless
+reset than wait for connections to time out.  However, this is acceptable only
+if the routing cannot be influenced by an attacker.
 
 
 ## Version Downgrade {#version-downgrade}
