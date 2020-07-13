@@ -211,11 +211,11 @@ Endpoint:
 
 Client:
 
-: The endpoint initiating a QUIC connection.
+: The endpoint that initiates a QUIC connection.
 
 Server:
 
-: The endpoint accepting an incoming QUIC connection.
+: The endpoint that accepts a QUIC connection.
 
 Address:
 
