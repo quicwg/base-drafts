@@ -1242,7 +1242,9 @@ A server in a deployment that does not implement a solution to maintain
 connection continuity when the client address changes SHOULD indicate migration
 is not supported using the disable_active_migration transport parameter.  The
 disable_active_migration transport parameter does not prohibit connection
-migration after a client has acted on a preferred_address transport parameter.
+migration after a client has acted on a preferred_address transport parameter;
+such a prohibition can be indicated using the Disable Migration field in that
+transport parameter.
 
 Server deployments that use this simple form of load balancing MUST avoid the
 creation of a stateless reset oracle; see {{reset-oracle}}.
@@ -2178,12 +2180,16 @@ before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 
 If the peer sent the disable_active_migration transport parameter, an endpoint
 also MUST NOT send packets (including probing packets; see {{probing}}) from a
-different local address to the address the peer used during the handshake. An
-endpoint that has sent this transport parameter, but detects that a peer has
-nonetheless migrated to a different remote address MUST either drop the incoming
-packets on that path without generating a stateless reset or proceed with path
-validation and allow the peer to migrate. Generating a stateless reset or
-closing the connection would allow third parties in the network to cause
+different local address to the address the peer used during the handshake. If
+the server sets the Disable Migration field in the preferred_address transport
+parameter, the client MUST NOT send packets from a different local address to
+the server's preferred address.
+
+An endpoint that has asked its peer to disable migration but detects that a
+peer has nonetheless migrated to a different remote address MUST either drop the
+incoming packets on that path without generating a stateless reset or proceed
+with path validation and allow the peer to migrate. Generating a stateless reset
+or closing the connection would allow third parties in the network to cause
 connections to close by spoofing or otherwise manipulating observed traffic.
 
 Not all changes of peer address are intentional, or active, migrations. The peer
@@ -5052,11 +5058,13 @@ preferred_address (0x0d):
 : The preferred_address transport parameter contains an address and port for
   both IP version 4 and 6.  The four-byte IPv4 Address field is followed by the
   associated two-byte IPv4 Port field.  This is followed by a 16-byte IPv6
-  Address field and two-byte IPv6 Port field.  After address and port pairs,
-  a Connection ID Length field describes the length of the following Connection
-  ID field.  Finally, a 16-byte Stateless Reset Token field includes the
-  stateless reset token associated with the connection ID.  The format of this
-  transport parameter is shown in {{fig-preferred-address}}.
+  Address field and two-byte IPv6 Port field.  After address and port pairs, a
+  one-byte Disable Migration field indicates whether active migration is
+  permitted (0x0) or prohibited (0x1); all other values are invalid. Next, a
+  Connection ID Length field describes the length of the following Connection ID
+  field.  Finally, a 16-byte Stateless Reset Token field includes the stateless
+  reset token associated with the connection ID.  The format of this transport
+  parameter is shown in {{fig-preferred-address}}.
 
 : The Connection ID field and the Stateless Reset Token field contain an
   alternative connection ID that has a sequence number of 1; see {{issue-cid}}.
@@ -5078,6 +5086,7 @@ Preferred Address {
   IPv4 Port (16),
   IPv6 Address (128),
   IPv6 Port (16),
+  Disable Migration (8),
   Connection ID Length (8),
   Connection ID (..),
   Stateless Reset Token (128),
@@ -7068,7 +7077,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Integrate QUIC-specific language from draft-ietf-tsvwg-datagram-plpmtud
   (#3695, #3702)
 - disable_active_migration does not apply to the addresses offered in
-  server_preferred_address (#3608, #3670)
+  preferred_address (#3608, #3670)
 
 ## Since draft-ietf-quic-transport-27
 
