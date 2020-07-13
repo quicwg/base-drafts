@@ -480,9 +480,9 @@ The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see Section 10.2 of {{!SEMANTICS}}) precede a final
-response to the same request.  Interim responses do not contain a payload body
-or trailers.
+informational responses (1xx; see Section 10.2 of {{!SEMANTICS}}) precede a
+final response to the same request.  Interim responses do not contain a payload
+body or trailers.
 
 An HTTP request/response exchange fully consumes a client-initiated
 bidirectional QUIC stream. After sending a request, a client MUST close the
