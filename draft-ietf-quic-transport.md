@@ -138,8 +138,7 @@ stream creation and to bound the amount of data that can be sent.
 The QUIC handshake combines negotiation of cryptographic and transport
 parameters.  The handshake is structured to permit the exchange of application
 data as soon as possible.  This includes an option for clients to send data
-immediately (0-RTT) as possible, which might require prior communication to
-enable.
+immediately (0-RTT), which might require prior communication to enable.
 
 QUIC connections are not strictly bound to a single network path.  Connection
 migration uses connection identifiers to allow connections to transfer to a new
@@ -147,9 +146,8 @@ network path.
 
 Frames are used in QUIC to communicate between endpoints.  Multiple frames are
 assembled into packets.  QUIC authenticates all packets and encrypts as much as
-is practical to avoid incurring a dependency on middleboxes.  QUIC packets are
-carried in UDP datagrams to better facilitate deployment in existing systems and
-networks.
+is practical.  QUIC packets are carried in UDP datagrams to better facilitate
+deployment in existing systems and networks.
 
 {{fig-hs}} shows a simplied handshake and the exchange of packets and frames
 that are used to advance the handshake.  Exchange of application data during the
