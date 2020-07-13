@@ -1026,7 +1026,7 @@ ack_eliciting:
 : A boolean that indicates whether a packet is ack-eliciting.
   If true, it is expected that an acknowledgement will be received,
   though the peer could delay sending the ACK frame containing it
-  by up to the MaxAckDelay.
+  by up to the max_ack_delay.
 
 in_flight:
 : A boolean that indicates whether the packet counts towards bytes in
