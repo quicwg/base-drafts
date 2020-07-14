@@ -444,15 +444,20 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either the send or receive side causes the stream
 to open in both directions.
 
+These state machines shown in this section are largely informative.  This
+document uses stream states to describe rules for when and how different types
+of frames can be sent and the reactions that are expected when different types
+of frames are received.  Though these state machines are intended to be useful
+in implementing QUIC, these states aren't intended to constrain implementations.
+An implementation can define a different state machine as long as its behavior
+is consistent with an implementation that implements these states.
+
 Note:
 
-: These states are largely informative.  This document uses stream states to
-  describe rules for when and how different types of frames can be sent and the
-  reactions that are expected when different types of frames are received.
-  Though these state machines are intended to be useful in implementing QUIC,
-  these states aren't intended to constrain implementations.  An implementation
-  can define a different state machine as long as its behavior is consistent
-  with an implementation that implements these states.
+: In some cases, a single event or action can cause a transition through
+  multiple states.  For instance, sending STREAM with a FIN bit set can cause
+  two state transitions for a sending stream: from the Ready state to the Send
+  state, and from the Send state to the Data Sent state.
 
 
 ## Sending Stream States {#stream-send-states}
@@ -833,10 +838,11 @@ If a sender has sent data up to the limit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
 DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
 control limits.  If a sender is blocked for a period longer than the idle
-timeout ({{idle-timeout}}), the connection might be closed even when data is
-available for transmission.  To keep the connection from closing, a sender that
-is flow control limited SHOULD periodically send a STREAM_DATA_BLOCKED or
-DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
+timeout ({{idle-timeout}}), the receiver might close the connection even when
+the sender has data that is available for transmission.  To keep the connection
+from closing, a sender that is flow control limited SHOULD periodically send a
+STREAM_DATA_BLOCKED or DATA_BLOCKED frame when it has no ack-eliciting packets
+in flight.
 
 
 ## Increasing Flow Control Limits {#fc-credit}
@@ -1705,13 +1711,18 @@ connection IDs during the handshake; see {{cid-auth}}.
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
-Both endpoints store the value of the server transport parameters from
-a connection and apply them to any 0-RTT packets that are sent in
-subsequent connections to that peer, except for transport parameters that
-are explicitly excluded. Remembered transport parameters apply to the new
-connection until the handshake completes and the client starts sending
-1-RTT packets. Once the handshake completes, the client uses the transport
-parameters established in the handshake.
+Using 0-RTT depends on both client and server using protocol parameters that
+were negotiated from a previous connection.  To enable 0-RTT, endpoints store
+the value of the server transport parameters from a connection and apply them
+to any 0-RTT packets that are sent in subsequent connections to that peer.  This
+information is stored with any information required by the application
+protocol or cryptographic handshake; see Section 4.6 of {{QUIC-TLS}}.
+
+Remembered transport parameters apply to the new connection until the handshake
+completes and the client starts sending 1-RTT packets.  Once the handshake
+completes, the client uses the transport parameters established in the
+handshake.  Not all transport parameters are remembered, as some do not apply to
+future connections or they have no effect on use of 0-RTT.
 
 The definition of new transport parameters ({{new-transport-parameters}}) MUST
 specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
@@ -2086,9 +2097,10 @@ traversal needs additional synchronization mechanisms that are not provided
 here.
 
 An endpoint MAY include PATH_CHALLENGE and PATH_RESPONSE frames that are used
-for path validation with other frames.  In particular, an endpoint may pad a
-packet carrying a PATH_CHALLENGE for PMTU discovery, or an endpoint may include
-a PATH_RESPONSE with its own PATH_CHALLENGE.
+for path validation with other frames.  In particular, an endpoint can pad a
+packet carrying a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU)
+discovery (see {{pmtud}}), or an endpoint can include a PATH_RESPONSE with its
+own PATH_CHALLENGE.
 
 When probing a new path, an endpoint might want to ensure that its peer has an
 unused connection ID available for responses. The endpoint can send
@@ -2242,15 +2254,16 @@ rate. Therefore, the endpoint resets its congestion controller, as described in
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
 
-Receiving acknowledgments for data sent on the new path serves as proof of the
-peer's reachability from the new address.  Note that since acknowledgments may
-be received on any path, return reachability on the new path is not established.
-No method is provided to establish return reachability, as endpoints
-independently determine reachability on each direction of a path.  To establish
-reachability on the new path, an endpoint MAY concurrently initiate path
+To establish reachability on the new path, an endpoint initiates path
 validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
 validation until after a peer sends the next non-probing frame to its new
 address.
+
+Path validation is necessary to verify reachability of a peer on a new network
+path.  Acknowledgments cannot be used for path validation as they contain
+insufficient entropy and might be spoofed.  No method is provided to establish
+return reachability, as endpoints independently determine reachability on each
+direction of a path.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -2556,11 +2569,12 @@ preferred address.  If path validation of the server's preferred address fails
 but validation of the server's original address succeeds, the client MAY migrate
 to its new address and continue sending to the server's original address.
 
-If the connection to the server's preferred address is not from the same client
-address, the server MUST protect against potential attacks as described in
-{{address-spoofing}} and {{on-path-spoofing}}.  In addition to intentional
-simultaneous migration, this might also occur because the client's access
-network used a different NAT binding for the server's preferred address.
+If packets received at the server's preferred address have a different source
+address than observed from the client during the handshake, the server MUST
+protect against potential attacks as described in {{address-spoofing}} and
+{{on-path-spoofing}}.  In addition to intentional simultaneous migration, this
+might also occur because the client's access network used a different NAT
+binding for the server's preferred address.
 
 Servers SHOULD initiate path validation to the client's new address upon
 receiving a probe packet from a different address.  Servers MUST NOT send more
@@ -3280,7 +3294,7 @@ Negotiation, Stateless Reset, and Retry packets do not contain frames.
 
 ~~~
 Packet Payload {
-  Frame (..) ...,
+  Frame (8..) ...,
 }
 ~~~
 {: #packet-frames title="QUIC Payload"}
@@ -4452,9 +4466,10 @@ Initial Packet {
 {: #initial-format title="Initial Packet"}
 
 The Initial packet contains a long header as well as the Length and Packet
-Number fields.  The first byte contains the Reserved and Packet Number Length
-bits.  Between the Source Connection ID and Length fields, there are two
-additional fields specific to the Initial packet.
+Number fields; see {{long-header}}.  The first byte contains the Reserved and
+Packet Number Length bits; see also {{long-header}}.  Between the Source
+Connection ID and Length fields, there are two additional fields specific to
+the Initial packet.
 
 Token Length:
 
@@ -4521,10 +4536,11 @@ Initial keys are discarded.
 ### 0-RTT {#packet-0rtt}
 
 A 0-RTT packet uses long headers with a type value of 0x1, followed by the
-Length and Packet Number fields. The first byte contains the Reserved and Packet
-Number Length bits.  It is used to carry "early" data from the client to the
-server as part of the first flight, prior to handshake completion. As part of
-the TLS handshake, the server can accept or reject this early data.
+Length and Packet Number fields; see {{long-header}}.  The first byte contains
+the Reserved and Packet Number Length bits; see {{long-header}}.  A 0-RTT packet
+is used to carry "early" data from the client to the server as part of the
+first flight, prior to handshake completion.  As part of the TLS handshake, the
+server can accept or reject this early data.
 
 See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
 limitations.
@@ -4582,9 +4598,10 @@ for exceeding stream data limits).
 ### Handshake Packet {#packet-handshake}
 
 A Handshake packet uses long headers with a type value of 0x2, followed by the
-Length and Packet Number fields.  The first byte contains the Reserved and
-Packet Number Length bits.  It is used to carry acknowledgments and
-cryptographic handshake messages from the server and client.
+Length and Packet Number fields; see {{long-header}}.  The first byte contains
+the Reserved and Packet Number Length bits; see {{long-header}}.  It is used
+to carry cryptographic handshake messages and acknowledgments from the server
+and client.
 
 ~~~
 Handshake Packet {
@@ -4650,9 +4667,9 @@ Retry Packet {
 {: #retry-format title="Retry Packet"}
 
 A Retry packet (shown in {{retry-format}}) does not contain any protected
-fields. The value in the Unused field is selected randomly by the server. In
-addition to the fields from the long header, it contains these additional
-fields:
+fields.  The value in the Unused field is set to an arbitrary value by the
+server; a client MUST ignore these bits.  In addition to the fields from the
+long header, it contains these additional fields:
 
 Retry Token:
 
@@ -6859,8 +6876,7 @@ for a frame type ({{iana-frames}}) of 61 could be requested.
 All registrations made by Standards Track publications MUST be permanent.
 
 All registrations in this document are assigned a permanent status and list as
-contact both the IESG (ietf@ietf.org) and the QUIC working group
-(quic@ietf.org).
+contact the IETF (quic@ietf.org).
 
 
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
