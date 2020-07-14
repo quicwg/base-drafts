@@ -928,7 +928,9 @@ Some requests or pushes might already be in transit:
   - Upon receipt of a GOAWAY frame, if the client has already sent requests with
     a Stream ID greater than or equal to the identifier received in a GOAWAY
     frame, those requests will not be processed.  Clients can safely retry
-    unprocessed requests on a different connection.
+    unprocessed requests on a different connection.  A client that is unable to
+    retry requests loses all requests that are in flight when the server closes
+    the connection.
 
     Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
     server might have been processed; their status cannot be known until a
@@ -950,13 +952,11 @@ connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
-A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  An endpoint MAY send multiple GOAWAY
-frames indicating different identifiers, but the identifier in each frame MUST
-NOT be greater than the identifier in any previous frame, since clients might
-already have retried unprocessed requests on another connection.  Receiving a
-GOAWAY containing a larger identifier than previously received MUST be treated
-as a connection error of type H3_ID_ERROR.
+An endpoint MAY send multiple GOAWAY frames indicating different identifiers,
+but the identifier in each frame MUST NOT be greater than the identifier in any
+previous frame, since clients might already have retried unprocessed requests on
+another connection.  Receiving a GOAWAY containing a larger identifier than
+previously received MUST be treated as a connection error of type H3_ID_ERROR.
 
 An endpoint that is attempting to gracefully shut down a connection can send a
 GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
@@ -972,8 +972,8 @@ continue fulfilling pushes which have already been promised, and the client can
 continue granting push credit as needed; see {{frame-max-push-id}}. A smaller
 value indicates the client will reject pushes with Push IDs greater than or
 equal to this value.  Like the server, the client MAY send subsequent GOAWAY
-frames so long as the specified Push ID is strictly smaller than all previously
-sent values.
+frames so long as the specified Push ID is not greater than any previously
+sent value.
 
 Even when a GOAWAY indicates that a given request or push will not be processed
 or accepted upon receipt, the underlying transport resources still exist.  The
