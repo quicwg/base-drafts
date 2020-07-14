@@ -845,7 +845,7 @@ approximately equivalent to two TLPs before an RTO in TCP.
 This duration is computed as follows:
 
 ~~~
-(smoothed_rtt + 4 * rttvar + max_ack_delay) *
+(smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay) *
     kPersistentCongestionThreshold
 ~~~
 
