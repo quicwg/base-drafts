@@ -224,9 +224,9 @@ Address:
 
 Connection ID:
 
-: An opaque identifier that is used to identify a QUIC connection at an
-  endpoint.  Each endpoint selects one or more Connection IDs for its peer to
-  include in packets sent towards the endpoint.
+: An identifier that is used to identify a QUIC connection at an endpoint.
+  Each endpoint selects one or more Connection IDs for its peer to include in
+  packets sent towards the endpoint.  This value is opaque to the peer.
 
 Stream:
 
@@ -263,10 +263,12 @@ x (A..B):
   values in this format always end on an octet boundary
 
 x (?) = C:
-: Indicates that x has a fixed value of C
+: Indicates that x has a fixed value of C with the length described by
+  ?, as above
 
 x (?) = C..D:
-: Indicates that x has a value in the range from C to D, inclusive
+: Indicates that x has a value in the range from C to D, inclusive,
+  with the length described by ?, as above
 
 \[x (E)\]:
 : Indicates that x is optional (and has length of E)
@@ -302,9 +304,7 @@ Example Structure {
 # Streams {#streams}
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
-application. Streams can be unidirectional or bidirectional.  An alternative
-view of QUIC unidirectional streams is a "message" abstraction of practically
-unlimited length.
+application. Streams can be unidirectional or bidirectional.
 
 Streams can be created by sending data. Other processes associated with stream
 management - ending, cancelling, and managing flow control - are all designed to
@@ -799,18 +799,18 @@ entire connection.  This leads to two levels of data flow control in QUIC:
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
 
+Senders MUST not send data in excess of either limit.
+
 A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
 MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise larger limits.
 
 A receiver can advertise a larger limit for a stream by sending a
-MAX_STREAM_DATA frame with the Stream ID field set appropriately. A
+MAX_STREAM_DATA frame with the corresponding stream ID. A
 MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream. A
 receiver could use the current offset of data consumed to determine the flow
-control offset to be advertised. A receiver MAY send MAX_STREAM_DATA frames in
-multiple packets in order to make sure that the sender receives an update before
-running out of flow control, even if one of the packets is lost.
+control offset to be advertised.
 
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
@@ -844,7 +844,7 @@ DATA_BLOCKED frame when it has no ack-eliciting packets in flight.
 Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
 and MAX_DATA frames, but this section offers a few considerations.
 
-To avoid blocking a sender, a receiver can send a MAX_STREAM_DATA or MAX_DATA
+To avoid blocking a sender, a receiver MAY send a MAX_STREAM_DATA or MAX_DATA
 frame multiple times within a round trip or send it early enough to allow for
 recovery from loss of the frame.
 
@@ -1322,8 +1322,8 @@ In either role, applications need to be able to:
 
 # Version Negotiation {#version-negotiation}
 
-Version negotiation ensures that client and server agree to a QUIC version
-that is mutually supported. A server sends a Version Negotiation packet in
+Version negotiation allows a server to indicate that it does not support
+the version the client used.  A server sends a Version Negotiation packet in
 response to each packet that might initiate a new connection; see
 {{packet-handling}} for details.
 
@@ -1529,12 +1529,13 @@ Connection ID is chosen by the recipient of the packet and is used to provide
 consistent routing; the Source Connection ID is used to set the Destination
 Connection ID used by the peer.
 
-During the handshake, packets with the long header ({{long-header}}) are used to
-establish the connection IDs in each direction. Each endpoint uses the Source
-Connection ID field to specify the connection ID that is used in the Destination
-Connection ID field of packets being sent to them. Upon receiving a packet, each
-endpoint sets the Destination Connection ID it sends to match the value of the
-Source Connection ID that it receives.
+During the handshake, packets with the long header ({{long-header}}) are used
+to establish the connection IDs used by both endpoints. Each endpoint uses the
+Source Connection ID field to specify the connection ID that is used in the
+Destination Connection ID field of packets being sent to them. After processing
+the first Initial packet, each endpoint sets the Destination Connection ID
+field in subsequent packets it sends to the value of the Source Connection ID
+field that it received.
 
 When an Initial packet is sent by a client that has not previously received an
 Initial or Retry packet from the server, the client populates the Destination
@@ -2318,17 +2319,17 @@ cryptographic keys to read or respond to the PATH_CHALLENGE frame that is sent
 to it even if it wanted to.
 
 To protect the connection from failing due to such a spurious migration, an
-endpoint MUST revert to using the last validated peer address when validation of
-a new peer address fails.
+endpoint MUST revert to using the last validated peer address when validation
+of a new peer address fails.  Additionally, receipt of packets with higher
+packet numbers from the legitimate peer address will trigger another connection
+migration.  This will cause the validation of the address of the spurious
+migration to be abandoned, thus containing migrations initiated by the attacker
+injecting a single packet.
 
 If an endpoint has no state about the last validated peer address, it MUST close
 the connection silently by discarding all connection state. This results in new
 packets on the connection being handled generically. For instance, an endpoint
 MAY send a stateless reset in response to any further incoming packets.
-
-Note that receipt of packets with higher packet numbers from the legitimate peer
-address will trigger another connection migration.  This will cause the
-validation of the address of the spurious migration to be abandoned.
 
 
 ### Off-Path Packet Forwarding {#off-path-forward}
@@ -2507,10 +2508,10 @@ Servers MAY communicate a preferred address of each address family (IPv4 and
 IPv6) to allow clients to pick the one most suited to their network attachment.
 
 Once the handshake is confirmed, the client SHOULD select one of the two
-server's preferred addresses and initiate path validation (see
-{{migrate-validate}}) of that address using any previously unused active
-connection ID, taken from either the preferred_address transport parameter or
-a NEW_CONNECTION_ID frame.
+addresses provided by the server and initiate path validation (see
+{{migrate-validate}}).  A client constructs packets using any previously unused
+active connection ID, taken from either the preferred_address transport
+parameter or a NEW_CONNECTION_ID frame.
 
 If path validation succeeds, the client SHOULD immediately begin sending all
 future packets to the new server address using the new connection ID and
@@ -2796,9 +2797,9 @@ sent in a packet that uses a lower packet protection level.  More specifically:
   that at least one of them is processable by the client.
 
 * A client that sends CONNECTION_CLOSE in a 0-RTT packet cannot be assured that
-  the server has accepted 0-RTT and so sending a CONNECTION_CLOSE frame in an
-  Initial packet makes it more likely that the server can receive the close
-  signal, even if the application error code might not be received.
+  the server has accepted 0-RTT.  Sending a CONNECTION_CLOSE frame in an Initial
+  packet makes it more likely that the server can receive the close signal, even
+  if the application error code might not be received.
 
 * Prior to confirming the handshake, a peer might be unable to process 1-RTT
   packets, so an endpoint SHOULD send CONNECTION_CLOSE in both Handshake and
@@ -3495,8 +3496,8 @@ the IP header SHOULD be acknowledged immediately, to reduce the peer's response
 time to congestion events.
 
 The algorithms in {{QUIC-RECOVERY}} are expected to be resilient to receivers
-that do not follow guidance offered above. However, an implementation should
-only deviate from these requirements after careful consideration of the
+that do not follow the guidance offered above. However, an implementation
+should only deviate from these requirements after careful consideration of the
 performance implications of a change, for connections made by the endpoint and
 for other users of the network.
 
@@ -4336,7 +4337,7 @@ Reserved Bits:
   packet types.  These bits are protected using header protection; see Section
   5.4 of {{QUIC-TLS}}. The value included prior to protection MUST be set to 0.
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits, after removing both packet and header protection, as a connection error
+  bits after removing both packet and header protection as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
   header protection can expose the endpoint to attacks; see Section 9.3 of
   {{QUIC-TLS}}.
@@ -4715,7 +4716,7 @@ The next Initial packet from the client uses the connection ID and token values
 from the Retry packet; see {{negotiating-connection-ids}}.  Aside from this,
 the Initial packet sent by the client is subject to the same restrictions as the
 first Initial packet.  A client MUST use the same cryptographic handshake
-message it includes in this packet.  A server MAY treat a packet that
+message it included in this packet.  A server MAY treat a packet that
 contains a different cryptographic handshake message as a connection error or
 discard it.
 
@@ -5532,9 +5533,9 @@ NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
 ## STREAM Frames {#frame-stream}
 
 STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame takes the form 0b00001XXX (or the set of values from 0x08 to 0x0f).  The
-value of the three low-order bits of the frame type determines the fields that
-are present in the frame.
+frame Type field takes the form 0b00001XXX (or the set of values from 0x08 to
+0x0f).  The three low-order bits of the frame type determine the fields that
+are present in the frame:
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present.  When set
