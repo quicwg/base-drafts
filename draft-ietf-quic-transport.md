@@ -1158,7 +1158,8 @@ expected keys are available.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
 Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-it commits changes to state before discovering an error.
+processing of the contents of these packets prior to discovering an error
+resulted in changes to the state of a connection that cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -1196,7 +1197,7 @@ the packet is sufficiently long.
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
 IDs - the local address and port.  These packets are processed using the
-selected connection, otherwise the server continues below.
+selected connection; otherwise, the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
@@ -1416,12 +1417,10 @@ properties:
 
    * a client is optionally authenticated,
 
-   * every connection produces distinct and unrelated keys,
+   * every connection produces distinct and unrelated keys, and
 
    * keying material is usable for packet protection for both 0-RTT and 1-RTT
-     packets, and
-
-   * 1-RTT keys have forward secrecy
+     packets
 
 * authenticated values for transport parameters of both endpoints, and
   confidentiality protection for server transport parameters (see
@@ -2650,8 +2649,7 @@ source address.
 If a max_idle_timeout is specified by either peer in its transport parameters
 ({{transport-parameter-definitions}}), the connection is silently closed
 and its state is discarded when it remains idle for longer than the minimum of
-both peers max_idle_timeout values and three times the current Probe Timeout
-(PTO).
+both peers max_idle_timeout values.
 
 Each endpoint advertises a max_idle_timeout, but the effective value
 at an endpoint is computed as the minimum of the two advertised values. By
@@ -2664,6 +2662,9 @@ processed successfully. An endpoint also restarts its idle timer when sending an
 ack-eliciting packet if no other ack-eliciting packets have been sent since last
 receiving and processing a packet. Restarting this timer when sending a packet
 ensures that connections are not closed after new activity is initiated.
+
+To avoid excessively small idle timeout periods, endpoints MUST increase the
+idle timeout period to be at least three times the current Probe Timeout (PTO).
 
 
 ### Liveness Testing
@@ -3170,8 +3171,9 @@ Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
 receiver will be able to process all the packets in a single pass. A packet
 with a short header does not include a length, so it can only be the last
-packet included in a UDP datagram. An endpoint SHOULD NOT coalesce multiple
-packets at the same encryption level.
+packet included in a UDP datagram.  An endpoint SHOULD include multiple frames
+in a single packet if they are to be sent at the same encryption level, instead
+of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
 UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
@@ -5027,12 +5029,20 @@ disable_active_migration (0x0c):
 preferred_address (0x0d):
 
 : The server's preferred address is used to effect a change in server address at
-  the end of the handshake, as described in {{preferred-address}}.  The format
-  of this transport parameter is shown in {{fig-preferred-address}}.  This
-  transport parameter is only sent by a server. Servers MAY choose to only send
+  the end of the handshake, as described in {{preferred-address}}.  This
+  transport parameter is only sent by a server.  Servers MAY choose to only send
   a preferred address of one address family by sending an all-zero address and
   port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
   network byte order.
+
+: The preferred_address transport parameter contains an address and port for
+  both IP version 4 and 6.  The four-byte IPv4 Address field is followed by the
+  associated two-byte IPv4 Port field.  This is followed by a 16-byte IPv6
+  Address field and two-byte IPv6 Port field.  After address and port pairs,
+  a Connection ID Length field describes the length of the following Connection
+  ID field.  Finally, a 16-byte Stateless Reset Token field includes the
+  stateless reset token associated with the connection ID.  The format of this
+  transport parameter is shown in {{fig-preferred-address}}.
 
 : The Connection ID field and the Stateless Reset Token field contain an
   alternative connection ID that has a sequence number of 1; see {{issue-cid}}.
@@ -6357,14 +6367,18 @@ endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
 be arranged so that packets with a given connection ID always arrive at an
 instance that has connection state, unless that connection is no longer active.
 
+More generally, servers MUST NOT generate a stateless reset if a connection with
+the corresponding connection ID could be active on any endpoint using the same
+static key.
+
 In the case of a cluster that uses dynamic load balancing, it is possible that a
-change in load balancer configuration could happen while an active instance
-retains connection state; even if an instance retains connection state, the
+change in load balancer configuration could occur while an active instance
+retains connection state.  Even if an instance retains connection state, the
 change in routing and resulting stateless reset will result in the connection
-being terminated.  If there is no chance of the packet being routed to the
-correct instance, it is better to send a stateless reset than wait for
-connections to time out.  However, this is acceptable only if the routing cannot
-be influenced by an attacker.
+being terminated.  If there is no chance in the packet being routed to the
+correct instance, it is better to send a stateless reset than wait the connection
+to time out.  However, this is acceptable only if the routing cannot be
+influenced by an attacker.
 
 
 ## Version Downgrade {#version-downgrade}

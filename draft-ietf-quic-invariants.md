@@ -291,11 +291,15 @@ Version Negotiation Packet {
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
-The Version Negotiation packet contains a list of Supported Version fields, each
-identifying a version that the endpoint sending the packet supports.  The
-Supported Version fields follow the Version field.  A Version Negotiation packet
-contains no other fields.  An endpoint MUST ignore a packet that contains no
-Supported Version fields, or a truncated Supported Version.
+Only the most significant bit of the first byte of a Version Negotiation packet
+has any defined value.  The remaining 7 bits, labeled Unused, can be set to any
+value when sending and MUST be ignored on receipt.
+
+After the Source Connection ID field, the Version Negotiation packet contains a
+list of Supported Version fields, each identifying a version that the endpoint
+sending the packet supports.  A Version Negotiation packet contains no other
+fields.  An endpoint MUST ignore a packet that contains no Supported Version
+fields, or a truncated Supported Version.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
 Specific QUIC versions define mechanisms to authenticate the packet as part of
