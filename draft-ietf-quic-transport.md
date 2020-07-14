@@ -128,12 +128,11 @@ QUIC establishes a connection, which is a stateful interaction between a client
 and server. The primary purpose of a connection is to support the exchange of
 data by an application protocol.
 
-Streams ({{streams}}) are the primary means by which an application protocol
-exchanges information.  Streams are ordered sequences of bytes.  Two types of
-stream can be created: bidirectional streams allow both endpoints to send data;
-unidirectional streams allow a single endpoint to send.  Endpoints can create
-streams without prior negotiation.  A credit-based scheme is used to limit
-stream creation and to bound the amount of data that can be sent.
+Streams are means by which an application protocol exchanges information.
+Streams are ordered sequences of bytes.  Two types of stream can be created:
+bidirectional streams allow both endpoints to send data; unidirectional streams
+allow a single endpoint to send.  A credit-based scheme is used to limit stream
+creation and to bound the amount of data that can be sent.
 
 The QUIC handshake combines negotiation of cryptographic and transport
 parameters.  The handshake is structured to permit the exchange of application
@@ -144,9 +143,9 @@ QUIC connections are not strictly bound to a single network path.  Connection
 migration uses connection identifiers to allow connections to transfer to a new
 network path.
 
-Frames are used in QUIC to communicate between endpoints.  Multiple frames are
-assembled into packets.  QUIC authenticates all packets and encrypts as much as
-is practical.  QUIC packets are carried in UDP datagrams to better facilitate
+Frames are used in QUIC to communicate between endpoints.  One or more frames
+are assembled into packets.  QUIC authenticates all packets and encrypts as much
+as is practical.  QUIC packets are carried in UDP datagrams to better facilitate
 deployment in existing systems and networks.
 
 {{fig-hs}} shows a simplied handshake and the exchange of packets and frames
