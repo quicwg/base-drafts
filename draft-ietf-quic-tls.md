@@ -498,12 +498,10 @@ handshake, new data is requested from TLS after providing received data.
 
 ### Encryption Level Changes
 
-As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as keys at a given encryption level become available to TLS,
-TLS indicates to QUIC that reading or writing keys at that encryption level are
-available.  These events are not asynchronous; they always occur immediately
-after TLS is provided with new handshake bytes, or after TLS produces handshake
-bytes.
+As keys at a given encryption level become available to TLS, TLS indicates to
+QUIC that reading or writing keys at that encryption level are available.  These
+events are not asynchronous; they always occur immediately after TLS is provided
+with new handshake bytes, or after TLS produces handshake bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
