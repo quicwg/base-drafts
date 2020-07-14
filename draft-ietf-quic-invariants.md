@@ -334,8 +334,8 @@ requires that middleboxes retain state for every connection ID they see.
 
 The Version Negotiation packet described in this document is not
 integrity-protected; it only has modest protection against insertion by off-path
-attackers.  A QUIC version that uses a Version Negotiation packet MUST define a
-mechanism to authenticate the values the packet contains.
+attackers.  An endpoint MUST authenticate the contents of a Version Negotiation
+packet if it attempts a different QUIC version as a result.
 
 
 # IANA Considerations
