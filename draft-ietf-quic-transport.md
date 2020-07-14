@@ -6370,7 +6370,8 @@ be arranged so that packets with a given connection ID always arrive at an
 instance that has connection state, unless that connection is no longer active.
 
 More generally, servers MUST NOT generate a stateless reset if a connection with
-the corresponding connection ID could be active on any endpoint using the same static key.
+the corresponding connection ID could be active on any endpoint using the same
+static key.
 
 In the case of a cluster that uses dynamic load balancing, it's possible that a
 change in load balancer configuration could occur while an active instance
