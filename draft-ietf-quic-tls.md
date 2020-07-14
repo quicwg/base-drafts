@@ -793,13 +793,13 @@ requirements for determining whether to accept or reject early data.
 
 ## HelloRetryRequest
 
-In TLS over TCP, the HelloRetryRequest feature (see Section 4.1.4 of
-{{!TLS13}}) can be used to correct a client's incorrect KeyShare extension as
-well as for a stateless round-trip check. From the perspective of QUIC, this
-just looks like additional messages carried in Initial packets. Although it is
-in principle possible to use this feature for address verification in QUIC,
-QUIC implementations SHOULD instead use the Retry feature (see Section 8.1 of
-{{QUIC-TRANSPORT}}). HelloRetryRequest is still used to request key shares.
+The HelloRetryRequest message (see Section 4.1.4 of {{!TLS13}}) can be used to
+request that a client provide new information, such as a key share, or to
+validate some characteristic of the client.  From the perspective of QUIC,
+HelloRetryRequest is not differentiated from other cryptographic handshake
+messages that are carried in Initial packets. Although it is in principle
+possible to use this feature for address verification, QUIC implementations
+SHOULD instead use the Retry feature; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 
 ## TLS Errors {#tls-errors}
