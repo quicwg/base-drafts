@@ -6376,9 +6376,9 @@ change in load balancer configuration could occur while an active instance
 retains connection state.  Even if an instance retains connection state, the
 change in routing and resulting stateless reset will result in the connection
 being terminated.  If there is no chance in the packet being routed to the
-correct instance, it is better to send a stateless reset than wait the connection
-to time out.  However, this is acceptable only if the routing cannot be
-influenced by an attacker.
+correct instance, it is better to send a stateless reset than wait for the
+connection to time out.  However, this is acceptable only if the routing cannot
+be influenced by an attacker.
 
 
 ## Version Downgrade {#version-downgrade}
