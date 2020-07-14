@@ -2408,8 +2408,8 @@ v + q <= 2^24.5
 ~~~
 
 Assuming `q = v`, endpoints cannot attempt to protect or authenticate more than
-2^23.5 packets with the same set of keys without causing an attacker to gain an larger
-advantage than the target of 2^-57 in forging packets.
+2^23.5 packets with the same set of keys without causing an attacker to gain a
+larger advantage in forging packets than the target of 2^-57.
 
 
 # Change Log
