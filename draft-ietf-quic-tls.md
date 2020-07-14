@@ -950,7 +950,8 @@ TLS 1.3; see {{initial-secrets}}.
 ## Initial Secrets {#initial-secrets}
 
 Initial packets apply the packet protection process, but use a secret derived
-from the Destination Connection ID field from the client's Initial packet.
+from the Destination Connection ID field from the client's first Initial
+packet.
 
 This secret is determined by using HKDF-Extract (see Section 2.2 of
 {{!HKDF=RFC5869}}) with a salt of 0xafbfec289993d24c9e9786f19c6111e04390a899
