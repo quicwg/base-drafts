@@ -565,11 +565,6 @@ PATH_RESPONSE to set the initial RTT (see kInitialRtt in
 {{constants-of-interest}}) for a new path, but the delay SHOULD NOT be
 considered an RTT sample.
 
-Prior to handshake completion, when few to none RTT samples have been
-generated, it is possible that the probe timer expiration is due to an
-incorrect RTT estimate at the client. To allow the client to improve its RTT
-estimate, the new packet that it sends MUST be ack-eliciting.
-
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
 as described below in {{discarding-packets}}. When Initial or Handshake keys are
@@ -623,11 +618,11 @@ its first flight.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-in the packet number space as a probe, unless there is no data available to
-send.  An endpoint MAY send up to two full-sized datagrams containing
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single lost datagram or transmit data from multiple packet number spaces.
-All probe packets sent on a PTO MUST be ack-eliciting.
+in the packet number space as a probe.  An endpoint MAY send up to two
+full-sized datagrams containing ack-eliciting packets, to avoid an expensive
+consecutive PTO expiration due to a single lost datagram or transmit data
+from multiple packet number spaces. All probe packets sent on a PTO MUST be
+ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
