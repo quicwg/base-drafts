@@ -3187,9 +3187,9 @@ Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
 receiver will be able to process all the packets in a single pass. A packet
 with a short header does not include a length, so it can only be the last
-packet included in a UDP datagram. An endpoint SHOULD include multiple frames in
-a single packet rather than coalesce multiple packets at the same encryption
-level.
+packet included in a UDP datagram.  An endpoint SHOULD include multiple frames
+in a single packet if they are to be sent at the same encryption level, instead
+of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
 UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
