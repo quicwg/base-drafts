@@ -960,6 +960,19 @@ peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses not to send STREAMS_BLOCKED frames.
 
 
+## Flow Control Performance
+
+An endpoint that is unable to ensure that a peer has flow control credit on the
+order of the current BDP will have receive throughput limited by flow control.
+Lost packets can cause gaps in the receive buffer, delaying the application
+from consuming data and freeing up flow control window.
+
+Sending timely updates of flow control limits can improve performance.
+Sending packets only to provide flow control updates can increase network
+load and adversely affect performance. Sending flow control updates along with
+other frames, such as ACK frames, reduces the cost of those updates.
+
+
 # Connections {#connections}
 
 QUIC's connection establishment combines version negotiation with the
