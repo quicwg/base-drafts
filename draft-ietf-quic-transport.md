@@ -1538,8 +1538,11 @@ Initial or Retry packet from the server, the client populates the Destination
 Connection ID field with an unpredictable value.  This Destination Connection ID
 MUST be at least 8 bytes in length.  Until a packet is received from the server,
 the client MUST use the same Destination Connection ID value on all packets in
-this connection. This Destination Connection ID is used to determine packet
-protection keys for Initial packets.
+this connection.
+
+The Destination Connection ID field from the first Initial packet sent by a
+client is used to determine packet protection keys for Initial packets.  These
+keys change after receiving a Retry packet; see Section 5.2 of {{QUIC-TLS}}.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the Source Connection ID Length field to indicate the length.
