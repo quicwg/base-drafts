@@ -972,7 +972,7 @@ continue fulfilling pushes which have already been promised, and the client can
 continue granting push credit as needed; see {{frame-max-push-id}}. A smaller
 value indicates the client will reject pushes with Push IDs greater than or
 equal to this value.  Like the server, the client MAY send subsequent GOAWAY
-frames so long as the specified Push ID is not greater than any previously
+frames so long as the specified Push ID is no greater than any previously
 sent value.
 
 Even when a GOAWAY indicates that a given request or push will not be processed
