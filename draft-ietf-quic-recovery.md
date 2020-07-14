@@ -1203,7 +1203,7 @@ OnAckReceived(ack, pn_space):
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
-      now - sent_packets[pn_space][ack.largest_acked].time_sent
+      now() - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
     if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
