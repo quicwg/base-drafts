@@ -976,10 +976,10 @@ order of the current BDP will have receive throughput limited by flow control.
 Lost packets can cause gaps in the receive buffer, delaying the application
 from consuming data and freeing up flow control window.
 
-Timely sending of updates to flow control limits can improve performance.
-Sending of packets just to provide flow control updates can increase network
+Sending timely updates of flow control limits can improve performance.
+Sending packets only to provide flow control updates can increase network
 load and adversely affect performance. Sending flow control updates along with
-other frames, such as ACK frames, can reduce the cost of those updates.
+other frames, such as ACK frames, reduces the cost of those updates.
 
 
 # Connections {#connections}
