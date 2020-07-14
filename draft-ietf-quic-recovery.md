@@ -565,11 +565,6 @@ PATH_RESPONSE to set the initial RTT (see kInitialRtt in
 {{constants-of-interest}}) for a new path, but the delay SHOULD NOT be
 considered an RTT sample.
 
-Prior to handshake completion, when few to none RTT samples have been
-generated, it is possible that the probe timer expiration is due to an
-incorrect RTT estimate at the client. To allow the client to improve its RTT
-estimate, the new packet that it sends MUST be ack-eliciting.
-
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
 as described below in {{discarding-packets}}. When Initial or Handshake keys are
