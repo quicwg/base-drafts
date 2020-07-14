@@ -3522,8 +3522,9 @@ performance.
 
 On the other hand, reducing the frequency of packets that carry only
 acknowledgements reduces packet transmission and processing cost at both
-endpoints. It can also improve connection throughput on severely asymmetric
-links; see Section 3 of {{?RFC3449}}.
+endpoints. It can improve connection throughput on severely asymmetric links
+and reduce the volume of acknowledgment traffic using return path capacity;
+see Section 3 of {{?RFC3449}}.
 
 A receiver SHOULD send an ACK frame after receiving at least two ack-eliciting
 packets. This recommendation is general in nature and consistent with
