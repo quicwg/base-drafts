@@ -703,10 +703,10 @@ This information includes parameters that determine TLS state, as governed by
 information the application protocol might need; see {{app-0rtt}}.  This
 information determines how 0-RTT packets and their contents are formed.
 
-To ensure that the same information is available to both endpoints, all information
-used to establish 0-RTT comes from the same connection.  Endpoints cannot
-selectively disregard information that might alter the sending or processing of
-0-RTT.
+To ensure that the same information is available to both endpoints, all
+information used to establish 0-RTT comes from the same connection.  Endpoints
+cannot selectively disregard information that might alter the sending or
+processing of 0-RTT.
 
 {{!TLS13}} sets a limit of 7 days on the time between the original connection
 and any attempt to use 0-RTT.  There are other constraints on 0-RTT usage,
