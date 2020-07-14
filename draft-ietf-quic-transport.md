@@ -968,17 +968,18 @@ signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially for
 longer if the peer chooses to not send STREAMS_BLOCKED frames.
 
+
 ## Flow Control Performance
 
 An endpoint that is unable to ensure that a peer has flow control credit on the
 order of the current BDP will have receive throughput limited by flow control.
 Lost packets can cause gaps in the receive buffer, delaying the application
-from consuming data and freeing up flow control window. Timely sending of
-updates to flow control limits can improve performance. However, an excessive
-rate of updates can also adversely affect performance.
+from consuming data and freeing up flow control window.
 
-This document does not specify techniques for tuning flow control performance
-where resources allocated to receiving data are limited.
+Timely sending of updates to flow control limits can improve performance.
+Sending of packets just to provide flow control updates can increase network
+load and adversely affect performance. Sending flow control updates along with
+other frames, such as ACK frames, can reduce the cost of those updates.
 
 
 # Connections {#connections}
