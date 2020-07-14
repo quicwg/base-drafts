@@ -299,7 +299,7 @@ Supported Version fields, or a truncated Supported Version.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
 Specific QUIC versions might include protocol elements that allow endpoints to
-detect when the set of supported versions is modified or corrupted.
+detect modification or corruption in the set of supported versions.
 
 An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
