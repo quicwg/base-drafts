@@ -1165,10 +1165,11 @@ discarded if they indicate a different protocol version than that of the
 connection, or if the removal of packet protection is unsuccessful once the
 expected keys are available.
 
-Invalid packets without packet protection, such as Initial, Retry, or Version
-Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-processing of the contents of these packets prior to discovering an error
-resulted in changes to the state of a connection that cannot be reverted.
+Invalid packets that lack strong integrity protection, such as Initial, Retry,
+or Version Negotiation, MAY be discarded. An endpoint MUST generate a
+connection error if processing of the contents of these packets prior to
+discovering an error resulted in changes to the state of a connection that
+cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -3139,30 +3140,35 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation packets use authenticated encryption
-with associated data (AEAD) {{!RFC5116}} to provide confidentiality and
-integrity protection.  Retry packets use AEAD to provide integrity protection.
-Details of packet protection are found in {{QUIC-TLS}}; this section includes an
-overview of the process.
+QUIC packets have different levels of cryptographic protection based on the
+type of packet. Details of packet protection are found in {{QUIC-TLS}}; this
+section includes an overview of the protections that are provided.
 
-Initial packets are protected using keys that are statically derived. This
-packet protection is not effective confidentiality protection.  Initial
-protection only exists to ensure that the sender of the packet is on the network
-path. Any entity that receives the Initial packet from a client can recover the
-keys necessary to remove packet protection or to generate packets that will be
+Version Negotiation packets have no cryptographic protection; see
+{{QUIC-INVARIANTS}}.
+
+Retry packets use an authenticated encryption with associated data (AEAD;
+{{?AEAD=RFC5116}}) function to protect against accidental modification.
+
+Initial packets use an AEAD with keys that are statically derived. This does
+not provide effective confidentiality protection. Initial protection exists to
+ensure that the sender of the packet is on the network path. Any entity that
+receives the Initial packet from a client can recover the keys that will allow
+them to read the contents of packets or generate packets that will be
 successfully authenticated.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
 short header are used to identify which encryption keys are used. Packets
-protected with 0-RTT and 1-RTT keys are expected to have confidentiality and
-data origin authentication; the cryptographic handshake ensures that only the
+protected with 0-RTT and 1-RTT keys are expected to have strong confidentiality
+and integrity protection; the cryptographic handshake ensures that only the
 communicating endpoints receive the corresponding keys.
 
-The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is applied;
-see {{QUIC-TLS}} for details.  The underlying packet number increases with each
-packet sent in a given packet number space; see {{packet-numbers}} for details.
+The Packet Number field that appears in some packet types contains a packet
+number, which has additional confidentiality protection that is applied as part
+of header protection; see Section 5.4 of {{QUIC-TLS}} for details. The
+underlying packet number increases with each packet sent in a given packet
+number space; see {{packet-numbers}} for details.
 
 
 ## Coalescing Packets {#packet-coalesce}
