@@ -498,12 +498,10 @@ handshake, new data is requested from TLS after providing received data.
 
 ### Encryption Level Changes
 
-As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as keys at a given encryption level become available to TLS,
-TLS indicates to QUIC that reading or writing keys at that encryption level are
-available.  These events are not asynchronous; they always occur immediately
-after TLS is provided with new handshake bytes, or after TLS produces handshake
-bytes.
+As keys at a given encryption level become available to TLS, TLS indicates to
+QUIC that reading or writing keys at that encryption level are available.  These
+events are not asynchronous; they always occur immediately after TLS is provided
+with new handshake bytes, or after TLS produces handshake bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -548,47 +546,50 @@ use.
 ### TLS Interface Summary
 
 {{exchange-summary}} summarizes the exchange between QUIC and TLS for both
-client and server. Each arrow is tagged with the encryption level used for that
-transmission.
+client and server. Solid arrows indicate packets that carry handshake data;
+dashed arrows show where application data can be sent.  Each arrow is tagged
+with the encryption level used for that transmission.
 
 ~~~
 Client                                                    Server
+======                                                    ======
 
 Get Handshake
                      Initial ------------->
-                                              Handshake Received
 Install tx 0-RTT Keys
-                     0-RTT --------------->
+                     0-RTT - - - - - - - ->
+
+                                              Handshake Received
                                                    Get Handshake
                      <------------- Initial
-Handshake Received
-Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-Handshake Received
                                            Install tx 1-RTT keys
-                     <--------------- 1-RTT
+                     <- - - - - - - - 1-RTT
+
+Handshake Received (Initial)
+Install Handshake keys
+Handshake Received (Handshake)
 Get Handshake
-Handshake Complete
                      Handshake ----------->
-                                              Handshake Received
-                                           Install rx 1-RTT keys
-                                              Handshake Complete
+Handshake Complete
 Install 1-RTT keys
-                     1-RTT --------------->
-                                                   Get Handshake
-                     <--------------- 1-RTT
-Handshake Received
+                     1-RTT - - - - - - - ->
+
+                                              Handshake Received
+                                              Handshake Complete
+                                           Install rx 1-RTT keys
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 {{exchange-summary}} shows the multiple packets that form a single "flight" of
 messages being processed individually, to show what incoming messages trigger
-different actions.  New handshake messages are requested after all incoming
-packets have been processed.  This process might vary depending on how QUIC
-implementations and the packets they receive are structured.
+different actions.  New handshake messages are requested after incoming packets
+have been processed.  This process varies based on the structure of endpoint
+implementations and the order in which packets arrive; this is intended to
+illustrate the steps involved in a single handshake exchange.
 
 
 ## TLS Version {#tls-version}
@@ -600,9 +601,10 @@ could result in a newer version of TLS than 1.3 being negotiated if both
 endpoints support that version.  This is acceptable provided that the features
 of TLS 1.3 that are used by QUIC are supported by the newer version.
 
-A badly configured TLS implementation could negotiate TLS 1.2 or another older
-version of TLS.  An endpoint MUST terminate the connection if a version of TLS
-older than 1.3 is negotiated.
+Clients MUST NOT offer TLS versions older than 1.3.  A badly configured TLS
+implementation could negotiate TLS 1.2 or another older version of TLS.  An
+endpoint MUST terminate the connection if a version of TLS older than 1.3 is
+negotiated.
 
 
 ## ClientHello Size {#clienthello-size}
@@ -651,6 +653,18 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
+Note:
+
+: Where servers provide certificates for authentication, the size of
+  the certificate chain can consume a large number of bytes.  Controlling the
+  size of certificate chains is critical to performance in QUIC as servers are
+  limited to sending 3 bytes for every byte received prior to validating the
+  client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
+  certificate chain can be managed by limiting the number of names or
+  extensions; using keys with small public key representations, like ECDSA; or
+  by using certificate compression
+  {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
+
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
 The requirements for client authentication vary based on application protocol
@@ -690,23 +704,51 @@ Client SHOULD NOT reuse tickets as that allows entities other than the server
 to correlate connections; see Section C.4 of {{!TLS13}}.
 
 
-## Enabling 0-RTT {#enable-0rtt}
+## 0-RTT
+
+The 0-RTT feature in QUIC allows a client to send application data before the
+handshake is complete.  This is made possible by reusing negotiated parameters
+from a previous connection.  To enable this, 0-RTT depends on the client
+remembering critical parameters and providing the server with a TLS session
+ticket that allows the server to recover the same information.
+
+This information includes parameters that determine TLS state, as governed by
+{{!TLS13}}, QUIC transport parameters, the chosen application protocol, and any
+information the application protocol might need; see {{app-0rtt}}.  This
+information determines how 0-RTT packets and their contents are formed.
+
+To ensure that the same information is available to both endpoints, all
+information used to establish 0-RTT comes from the same connection.  Endpoints
+cannot selectively disregard information that might alter the sending or
+processing of 0-RTT.
+
+{{!TLS13}} sets a limit of 7 days on the time between the original connection
+and any attempt to use 0-RTT.  There are other constraints on 0-RTT usage,
+notably those caused by the potential exposure to replay attack; see {{replay}}.
+
+
+### Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
 NewSessionTicket message that contains the early_data extension with a
-max_early_data_size of 0xffffffff; the amount of data which the client can send
-in 0-RTT is controlled by the initial_max_data transport parameter supplied by
-the server.  Servers MUST NOT send the early_data extension with a
-max_early_data_size set to any value other than 0xffffffff.  A client MUST treat
-receipt of a NewSessionTicket that contains an early_data extension with any
-other value as a connection error of type PROTOCOL_VIOLATION.
+max_early_data_size of 0xffffffff.  The TLS max_early_data_size parameter is not
+used in QUIC.  The amount of data that the client can send in 0-RTT is
+controlled by the initial_max_data transport parameter supplied by the server.
+
+Servers MUST NOT send the early_data extension with a max_early_data_size field
+set to any value other than 0xffffffff.  A client MUST treat receipt of a
+NewSessionTicket that contains an early_data extension with any other value as
+a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the early_data extension in
-the ClientHello message of a subsequent handshake (see Section 4.2.10 of
-{{!TLS13}}). It then sends the application data in 0-RTT packets.
+the ClientHello message of a subsequent handshake; see Section 4.2.10 of
+{{!TLS13}}. It then sends application data in 0-RTT packets.
+
+A client that attempts 0-RTT might also provide an address validation token if
+the server has sent a NEW_TOKEN frame; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 
-## Accepting and Rejecting 0-RTT
+### Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
 EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
@@ -724,11 +766,11 @@ might be incorrect.  This includes the choice of application protocol, transport
 parameters, and any application configuration.  The client therefore MUST reset
 the state of all streams, including application state bound to those streams.
 
-A client MAY attempt to send 0-RTT again if it receives a Retry or Version
-Negotiation packet.  These packets do not signify rejection of 0-RTT.
+A client MAY reattempt 0-RTT if it receives a Retry or Version Negotiation
+packet.  These packets do not signify rejection of 0-RTT.
 
 
-## Validating 0-RTT Configuration
+### Validating 0-RTT Configuration {#app-0rtt}
 
 When a server receives a ClientHello with the early_data extension, it has to
 decide whether to accept or reject early data from the client. Some of this
@@ -1746,7 +1788,7 @@ Use of TLS session tickets allows servers and possibly other entities to
 correlate connections made by the same client; see {{resumption}} for details.
 
 
-## Replay Attacks with 0-RTT
+## Replay Attacks with 0-RTT {#replay}
 
 As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
 exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
@@ -1767,9 +1809,12 @@ those produced by the application protocol that QUIC serves.
 Note:
 
 : TLS session tickets and address validation tokens are used to carry QUIC
-  configuration information between connections.  These MUST NOT be used to
-  carry application semantics.  The potential for reuse of these tokens means
-  that they require stronger protections against replay.
+  configuration information between connections.  Specifically, to enable a
+  server to efficiently recover state that is used in connection establishment
+  and address validation.  These MUST NOT be used to communicate application
+  semantics between endpoints; clients MUST treat them as opaque values.  The
+  potential for reuse of these tokens means that they require stronger
+  protections against replay.
 
 A server that accepts 0-RTT on a connection incurs a higher cost than accepting
 a connection without 0-RTT.  This includes higher processing and computation

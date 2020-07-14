@@ -1167,7 +1167,8 @@ expected keys are available.
 
 Invalid packets without packet protection, such as Initial, Retry, or Version
 Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-it commits changes to state before discovering an error.
+processing of the contents of these packets prior to discovering an error
+resulted in changes to the state of a connection that cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -1205,8 +1206,8 @@ the packet is sufficiently long.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
-IDs - the local address and port.  If the packet doesn't match an existing
-connection, the server continues below.
+IDs - the local address and port.  These packets are processed using the
+selected connection; otherwise, the server continues below.
 
 If the packet is an Initial packet fully conforming with the specification, the
 server proceeds with the handshake ({{handshake}}). This commits the server to
@@ -1426,12 +1427,10 @@ properties:
 
    * a client is optionally authenticated,
 
-   * every connection produces distinct and unrelated keys,
+   * every connection produces distinct and unrelated keys, and
 
    * keying material is usable for packet protection for both 0-RTT and 1-RTT
-     packets, and
-
-   * 1-RTT keys have forward secrecy
+     packets
 
 * authenticated values for transport parameters of both endpoints, and
   confidentiality protection for server transport parameters (see
@@ -2129,11 +2128,6 @@ contains the data that was sent in a previous PATH_CHALLENGE. Receipt of an
 acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
 validation, since the acknowledgment can be spoofed by a malicious peer.
 
-Note that receipt on a different local address does not result in path
-validation failure, as it might be a result of a forwarded packet (see
-{{off-path-forward}}) or misrouting. It is possible that a valid PATH_RESPONSE
-might be received in the future.
-
 
 ## Failed Path Validation
 
@@ -2249,9 +2243,12 @@ verifies ECN capability as described in {{ecn}}.
 Receiving acknowledgments for data sent on the new path serves as proof of the
 peer's reachability from the new address.  Note that since acknowledgments may
 be received on any path, return reachability on the new path is not established.
-To establish return reachability on the new path, an endpoint MAY concurrently
-initiate path validation {{migrate-validate}} on the new path or it MAY choose
-to wait for the peer to send the next non-probing frame to its new address.
+No method is provided to establish return reachability, as endpoints
+independently determine reachability on each direction of a path.  To establish
+reachability on the new path, an endpoint MAY concurrently initiate path
+validation {{migrate-validate}} on the new path.  An endpoint MAY defer path
+validation until after a peer sends the next non-probing frame to its new
+address.
 
 
 ## Responding to Connection Migration {#migration-response}
@@ -2873,8 +2870,8 @@ indistinguishable from a regular packet with a short header.
 
 A stateless reset uses an entire UDP datagram, starting with the first two bits
 of the packet header.  The remainder of the first byte and an arbitrary number
-of bytes following it that are set to unpredictable values.  The last 16 bytes
-of the datagram contain a Stateless Reset Token.
+of bytes following it that are set to values that SHOULD be indistinguishable
+from random.  The last 16 bytes of the datagram contain a Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear to
 be a packet with a short header.  For the stateless reset to appear as a valid
@@ -3187,8 +3184,9 @@ Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
 receiver will be able to process all the packets in a single pass. A packet
 with a short header does not include a length, so it can only be the last
-packet included in a UDP datagram. An endpoint SHOULD NOT coalesce multiple
-packets at the same encryption level.
+packet included in a UDP datagram.  An endpoint SHOULD include multiple frames
+in a single packet if they are to be sent at the same encryption level, instead
+of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
 UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
@@ -4407,9 +4405,8 @@ than 20 bytes.
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 which the server supports.
 
-A Version Negotiation packet cannot be explicitly acknowledged in an ACK frame
-by a client.  Receiving another Initial packet implicitly acknowledges a Version
-Negotiation packet.
+A Version Negotiation packet is not acknowledged.  It is only sent in response
+to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
 
 The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
@@ -5044,12 +5041,20 @@ disable_active_migration (0x0c):
 preferred_address (0x0d):
 
 : The server's preferred address is used to effect a change in server address at
-  the end of the handshake, as described in {{preferred-address}}.  The format
-  of this transport parameter is shown in {{fig-preferred-address}}.  This
-  transport parameter is only sent by a server. Servers MAY choose to only send
+  the end of the handshake, as described in {{preferred-address}}.  This
+  transport parameter is only sent by a server.  Servers MAY choose to only send
   a preferred address of one address family by sending an all-zero address and
   port (0.0.0.0:0 or ::.0) for the other family. IP addresses are encoded in
   network byte order.
+
+: The preferred_address transport parameter contains an address and port for
+  both IP version 4 and 6.  The four-byte IPv4 Address field is followed by the
+  associated two-byte IPv4 Port field.  This is followed by a 16-byte IPv6
+  Address field and two-byte IPv6 Port field.  After address and port pairs,
+  a Connection ID Length field describes the length of the following Connection
+  ID field.  Finally, a 16-byte Stateless Reset Token field includes the
+  stateless reset token associated with the connection ID.  The format of this
+  transport parameter is shown in {{fig-preferred-address}}.
 
 : The Connection ID field and the Stateless Reset Token field contain an
   alternative connection ID that has a sequence number of 1; see {{issue-cid}}.
@@ -5950,9 +5955,8 @@ Data:
 
 : This 8-byte field contains arbitrary data.
 
-A PATH_CHALLENGE frame containing 8 bytes that are hard to guess is sufficient
-to ensure that it is easier to receive the packet than it is to guess the value
-correctly.
+Including 64 bits of entropy in a PATH_CHALLENGE frame ensures that it is easier
+to receive the packet than it is to guess the value correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.
@@ -6374,14 +6378,18 @@ endpoints that share a static key for stateless reset (see {{reset-token}}) MUST
 be arranged so that packets with a given connection ID always arrive at an
 instance that has connection state, unless that connection is no longer active.
 
+More generally, servers MUST NOT generate a stateless reset if a connection with
+the corresponding connection ID could be active on any endpoint using the same
+static key.
+
 In the case of a cluster that uses dynamic load balancing, it's possible that a
-change in load balancer configuration could happen while an active instance
-retains connection state; even if an instance retains connection state, the
+change in load balancer configuration could occur while an active instance
+retains connection state.  Even if an instance retains connection state, the
 change in routing and resulting stateless reset will result in the connection
 being terminated.  If there is no chance in the packet being routed to the
-correct instance, it is better to send a stateless reset than wait for
-connections to time out.  However, this is acceptable only if the routing cannot
-be influenced by an attacker.
+correct instance in this new configuration, it is better to send a stateless
+reset than wait for connections to time out.  However, this is acceptable only
+if the routing cannot be influenced by an attacker.
 
 
 ## Version Downgrade {#version-downgrade}

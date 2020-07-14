@@ -1062,7 +1062,7 @@ kGranularity:
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The value recommended in
-{{pto-handshake}} is 500ms.
+{{pto-handshake}} is 333ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1131,8 +1131,8 @@ follows:
    loss_detection_timer.reset()
    pto_count = 0
    latest_rtt = 0
-   smoothed_rtt = initial_rtt
-   rttvar = initial_rtt / 2
+   smoothed_rtt = kInitialRtt
+   rttvar = kInitialRtt / 2
    min_rtt = 0
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
