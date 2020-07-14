@@ -2098,8 +2098,8 @@ here.
 An endpoint MAY bundle PATH_CHALLENGE and PATH_RESPONSE frames that are used
 for path validation with other frames.  In particular, an endpoint may pad a
 packet carrying a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU)
-discovery, or an endpoint may bundle a PATH_RESPONSE with its own
-PATH_CHALLENGE.
+discovery (see {{pmtud}}), or an endpoint may bundle a PATH_RESPONSE with its
+own PATH_CHALLENGE.
 
 When probing a new path, an endpoint might want to ensure that its peer has an
 unused connection ID available for responses. The endpoint can send
@@ -2258,7 +2258,7 @@ validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
 validation until after a peer sends the next non-probing frame to its new
 address.
 
-Path validation is necessary verify reachability of a peer on a new network
+Path validation is necessary to verify reachability of a peer on a new network
 path.  Acknowledgments cannot be used for path validation as they contain
 insufficient entropy and might be spoofed.  No method is provided to establish
 return reachability, as endpoints independently determine reachability on each
