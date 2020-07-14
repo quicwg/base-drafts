@@ -618,11 +618,11 @@ its first flight.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-in the packet number space as a probe, unless there is no data available to
-send.  An endpoint MAY send up to two full-sized datagrams containing
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single lost datagram or transmit data from multiple packet number spaces.
-All probe packets sent on a PTO MUST be ack-eliciting.
+in the packet number space as a probe.  An endpoint MAY send up to two
+full-sized datagrams containing ack-eliciting packets, to avoid an expensive
+consecutive PTO expiration due to a single lost datagram or transmit data
+from multiple packet number spaces. All probe packets sent on a PTO MUST be
+ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
