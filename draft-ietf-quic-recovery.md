@@ -1062,7 +1062,7 @@ kGranularity:
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The value recommended in
-{{pto-handshake}} is 500ms.
+{{pto-handshake}} is 333ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1131,8 +1131,8 @@ follows:
    loss_detection_timer.reset()
    pto_count = 0
    latest_rtt = 0
-   smoothed_rtt = initial_rtt
-   rttvar = initial_rtt / 2
+   smoothed_rtt = kInitialRtt
+   rttvar = kInitialRtt / 2
    min_rtt = 0
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1351,7 +1351,7 @@ OnLossDetectionTimeout():
   earliest_loss_time, pn_space = GetLossTimeAndSpace()
   if (earliest_loss_time != 0):
     // Time threshold loss Detection
-    lost_packets = DetectLostPackets(pn_space)
+    lost_packets = DetectAndRemoveLostPackets(pn_space)
     assert(!lost_packets.empty())
     OnPacketsLost(lost_packets)
     SetLossDetectionTimer()
@@ -1577,7 +1577,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 
 ## On Packets Lost
 
-Invoked from DetectLostPackets when packets are deemed lost.
+Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
    InPersistentCongestion(lost_packets):
@@ -1628,6 +1628,10 @@ OnPacketNumberSpaceDiscarded(pn_space):
 > publication of a final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-recovery-28
+
+- Refactored pseudocode to correct PTO calculation (#3564, #3674, #3681)
 
 ## Since draft-ietf-quic-recovery-27
 

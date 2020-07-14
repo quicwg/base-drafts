@@ -134,7 +134,7 @@ HTTP fields:
 
 HTTP field line:
 
-: A name-value pair sent as part of an HTTP field section.  See Section 4 of
+: A name-value pair sent as part of an HTTP field section.  See Section 5 of
   {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
 
 HTTP field value:
@@ -349,7 +349,7 @@ section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
 to the value of the Required Insert Count.
 
-An Insert Count Increment instruction {{insert-count-increment}} increases the
+An Insert Count Increment instruction ({{insert-count-increment}}) increases the
 Known Received Count by its Increment parameter.  See {{new-table-entries}} for
 guidance.
 
@@ -1615,6 +1615,10 @@ return encoderBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-15
+
+No changes
 
 ## Since draft-ietf-quic-qpack-14
 

@@ -7,15 +7,18 @@
 
 'use strict';
 require('buffer');
-var crypto = require('crypto');
+const assert = require('assert');
+const crypto = require('crypto');
 
-var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
-var SHA256 = 'sha256';
-var AES_GCM = 'aes-128-gcm';
-var AES_ECB = 'aes-128-ecb';
+const INITIAL_SALT = Buffer.from('afbfec289993d24c9e9786f19c6111e04390a899', 'hex');
+const RETRY_KEY = Buffer.from('ccce187ed09a09d05728155a6cb96be1', 'hex');
+const RETRY_NONCE = Buffer.from('e54930f97f2136f0530a8c1c', 'hex');
+const SHA256 = 'sha256';
+const AES_GCM = 'aes-128-gcm';
+const AES_ECB = 'aes-128-ecb';
 
-const draft_version = 28;
-var version = 'ff0000' + draft_version.toString(16);
+const draft_version = 29;
+const version = 'ff0000' + draft_version.toString(16);
 
 function chunk(s, n) {
   return (new Array(Math.ceil(s.length / n)))
@@ -268,6 +271,18 @@ function hex_cid(cid) {
   return '0' + (cid.length / 2).toString(16) + cid;
 }
 
+// Verify that the retry keys are correct.
+function derive_retry() {
+  let secret = Buffer.from('8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c', 'hex');
+  let qhkdf = new QHKDF(new HMAC(SHA256), secret);
+  let key = qhkdf.expand_label("quic key", 16);
+  log('retry key', key);
+  assert.deepStrictEqual(key, RETRY_KEY);
+  let nonce = qhkdf.expand_label("quic iv", 12);
+  log('retry nonce', nonce);
+  assert.deepStrictEqual(nonce, RETRY_NONCE);
+}
+
 function retry(dcid, scid, odcid) {
   var pfx = Buffer.from(hex_cid(odcid), 'hex');
   var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
@@ -277,10 +292,7 @@ function retry(dcid, scid, odcid) {
   var aad = Buffer.concat([pfx, header]);
   log('retry aad', aad);
 
-  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
-  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
-
-  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
+  var gcm = crypto.createCipheriv(AES_GCM, RETRY_KEY, RETRY_NONCE);
   gcm.setAAD(aad);
   gcm.update('');
   gcm.final();
@@ -325,18 +337,20 @@ var cid = '8394c8f03e515708';
 var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
 // This is a client Initial.  Unfortunately, the ClientHello currently omits
 // the transport_parameters extension.
-var crypto_frame = '060040c4' +
-    '010000c003036660261ff947cea49cce6cfad687f457cf1b14531ba14131a0e8' +
-    'f309a1d0b9c4000006130113031302010000910000000b000900000673657276' +
-    '6572ff01000100000a00140012001d0017001800190100010101020103010400' +
-    '230000003300260024001d00204cfdfcd178b784bf328cae793b136f2aedce00' +
-    '5ff183d7bb1495207236647037002b0003020304000d0020001e040305030603' +
-    '020308040805080604010501060102010402050206020202002d00020101001c' +
-    '00024001';
+var crypto_frame = '060040f1' +
+    '010000ed0303ebf8fa56f12939b9584a3896472ec40bb863cfd3e86804fe3a47' +
+    'f06a2b69484c00000413011302010000c000000010000e00000b6578616d706c' +
+    '652e636f6dff01000100000a00080006001d0017001800100007000504616c70' +
+    '6e000500050100000000003300260024001d00209370b2c9caa47fbabaf4559f' +
+    'edba753de171fa71f50f1ce15d43e994ec74d748002b0003020304000d001000' +
+    '0e0403050306030203080408050806002d00020101001c00024001ffa5003204' +
+    '08ffffffffffffffff05048000ffff07048000ffff0801100104800075300901' +
+    '100f088394c8f03e51570806048000ffff';
+
 test('client', cid, ci_hdr, 2, crypto_frame);
 
 // This should be a valid server Initial.
-var frames = '0d0000000018410a' +
+var frames = '02000000000600405a' +
     '020000560303eefce7f7b37ba1d163' +
     '2e96677825ddf73988cfc79825df566dc5430b9a04' +
     '5a1200130100002e00330024001d00209d3c940d89' +
@@ -346,5 +360,6 @@ var scid = 'f067a5502a4262b5';
 var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
 
+derive_retry();
 retry('', scid, cid);
 chacha20(654360564, Buffer.from('01', 'hex'));

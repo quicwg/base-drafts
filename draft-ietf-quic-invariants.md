@@ -139,6 +139,9 @@ x (E) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
   length E)
 
+This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.
+
 {{fig-ex-format}} shows an example structure:
 
 ~~~
@@ -153,7 +156,7 @@ Example Structure {
 {: #fig-ex-format title="Example Format"}
 
 
-# QUIC Packet Headers
+# QUIC Packets
 
 QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
 This section describes the invariant characteristics of a QUIC packet.  A
@@ -163,6 +166,9 @@ the invariant properties only describe the first packet in a datagram.
 QUIC defines two types of packet header: long and short.  Packets with long
 headers are identified by the most significant bit of the first byte being set;
 packets with a short header have that bit cleared.
+
+QUIC packets might be integrity protected, including the header.  However, QUIC
+Version Negotiation packets are not integrity protected; see {{vn}}.
 
 Aside from the values described here, the payload of QUIC packets is
 version-specific and of arbitrary length.
@@ -177,9 +183,9 @@ Long Header Packet {
   Header Form (1) = 1,
   Version-Specific Bits (7),
   Version (32),
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Version-Specific Data (..),
 }
@@ -189,17 +195,19 @@ Long Header Packet {
 A QUIC packet with a long header has the high bit of the first byte set to 1.
 All other bits in that byte are version specific.
 
-The next four bytes include a 32-bit Version field (see {{version}}).
+The next four bytes include a 32-bit Version field.  Versions are described in
+{{version}}.
 
-The next byte contains the length in bytes of the Destination Connection ID (see
-{{connection-id}}) field that follows it.  This length is encoded as an 8-bit
-unsigned integer.  The Destination Connection ID field follows the DCID Length
-field and is between 0 and 255 bytes in length.
+The next byte contains the length in bytes of the Destination Connection ID
+field that follows it.  This length is encoded as an 8-bit unsigned integer.
+The Destination Connection ID field follows the Destination Connection ID Length
+field and is between 0 and 255 bytes in length.  Connection IDs are described in
+{{connection-id}}.
 
 The next byte contains the length in bytes of the Source Connection ID field
-that follows it.  This length is encoded as a 8-bit unsigned integer.  The
-Source Connection ID field follows the SCID Length field and is between 0 and
-255 bytes in length.
+that follows it.  This length is encoded as an 8-bit unsigned integer.  The
+Source Connection ID field follows the Source Connection ID Length field and is
+between 0 and 255 bytes in length.
 
 The remainder of the packet contains version-specific content.
 
@@ -223,7 +231,7 @@ A QUIC packet with a short header has the high bit of the first byte set to 0.
 A QUIC packet with a short header includes a Destination Connection ID
 immediately following the first byte.  The short header does not include the
 Connection ID Lengths, Source Connection ID, or Version fields.  The length of
-the Destination Connection ID is not specified in packets with a short header
+the Destination Connection ID is not encoded in packets with a short header
 and is not constrained by this specification.
 
 The remainder of the packet has version-specific semantics.
@@ -235,11 +243,11 @@ A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
-connection to be delivered to the wrong endpoint.  The connection ID is used by
-endpoints and the intermediaries that support them to ensure that each QUIC
-packet can be delivered to the correct instance of an endpoint.  At the
-endpoint, the connection ID is used to identify which QUIC connection the packet
-is intended for.
+connection to be delivered to the wrong QUIC endpoint.  The connection ID
+is used by endpoints and the intermediaries that support them to ensure that
+each QUIC packet can be delivered to the correct instance of an endpoint.  At
+the endpoint, the connection ID is used to identify which QUIC connection the
+packet is intended for.
 
 The connection ID is chosen by each endpoint using version-specific methods.
 Packets for the same QUIC connection might use different connection ID values.
@@ -248,8 +256,8 @@ Packets for the same QUIC connection might use different connection ID values.
 ## Version
 
 QUIC versions are identified with a 32-bit integer, encoded in network byte
-order.  Version 0 is reserved for version negotiation (see
-{{version-negotiation}}).  All other version numbers are potentially valid.
+order.  Version 0 is reserved for version negotiation (see {{vn}}).  All other
+version numbers are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
@@ -257,7 +265,7 @@ not QUIC.  Future documents might describe additional properties which apply to
 a specific QUIC version, or to a range of QUIC versions.
 
 
-# Version Negotiation {#version-negotiation}
+# Version Negotiation {#vn}
 
 A QUIC endpoint that receives a packet with a long header and a version it
 either does not understand or does not support might send a Version Negotiation
@@ -274,24 +282,28 @@ Version Negotiation Packet {
   Header Form (1) = 1,
   Unused (7),
   Version (32) = 0,
-  DCID Length (8),
+  Destination Connection ID Length (8),
   Destination Connection ID (0..2040),
-  SCID Length (8),
+  Source Connection ID Length (8),
   Source Connection ID (0..2040),
   Supported Version (32) ...,
 }
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
-The Version Negotiation packet contains a list of Supported Version fields, each
-identifying a version that the endpoint sending the packet supports.  The
-Supported Version fields follow the Version field.  A Version Negotiation packet
-contains no other fields.  An endpoint MUST ignore a packet that contains no
-Supported Version fields, or a truncated Supported Version.
+Only the most significant bit of the first byte of a Version Negotiation packet
+has any defined value.  The remaining 7 bits, labeled Unused, can be set to any
+value when sending and MUST be ignored on receipt.
+
+After the Source Connection ID field, the Version Negotiation packet contains a
+list of Supported Version fields, each identifying a version that the endpoint
+sending the packet supports.  A Version Negotiation packet contains no other
+fields.  An endpoint MUST ignore a packet that contains no Supported Version
+fields, or a truncated Supported Version.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
-A specific QUIC version might authenticate the packet as part of its connection
-establishment process.
+Specific QUIC versions define mechanisms to authenticate the packet as part of
+the connection establishment process.
 
 An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
@@ -345,7 +357,7 @@ a new version is deployed.
 
 This section lists a sampling of incorrect assumptions that might be made based
 on knowledge of QUIC version 1.  Some of these statements are not even true for
-QUIC version 1.  This is not an exhaustive list, it is intended to be
+QUIC version 1.  This is not an exhaustive list; it is intended to be
 illustrative only.
 
 The following statements are NOT guaranteed to be true for every QUIC version:
@@ -358,9 +370,8 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 
 * The first packets exchanged on a flow use the long header
 
-* QUIC forbids acknowledgments of packets that only contain ACK frames,
-  therefore the last packet before a long period of quiescence might be assumed
-  to contain an acknowledgment
+* The last packet before a long period of quiescence might be assumed
+  to contain only an acknowledgment
 
 * QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
   exchanges during connection establishment

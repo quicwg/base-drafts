@@ -49,10 +49,10 @@ $ make
 ```
 
 This requires that you have the necessary software installed.  See [the
-instructions](https://github.com/martinthomson/i-d-template/blob/master/doc/SETUP.md).
+instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
 
 
 ## Contributing
 
 See our
-[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md).
+[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md).
