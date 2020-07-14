@@ -906,7 +906,8 @@ QUIC packets have varying protections depending on their type:
   {{retry-integrity}}.
 
 * Initial packets use AEAD_AES_128_GCM with keys derived from the Destination
-  Connection ID field of the client Initial packet; see {{initial-secrets}}.
+  Connection ID field of the first Initial packet sent by the client; see
+  {{initial-secrets}}.
 
 * All other packets have strong cryptographic protections for confidentiality
   and integrity, using keys and algorithms negotiated by TLS.
