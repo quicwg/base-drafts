@@ -609,8 +609,8 @@ To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
 subject to address validation limits; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
-Peers can also use coalesced packets to ensure that each datagram elicits at
-least one acknowledgement.  For example, clients can coalesce an Initial packet
+Endpoints can also use coalesced packets to ensure that each datagram elicits at
+least one acknowledgement.  For example, a client can coalesce an Initial packet
 containing PING and PADDING frames with a 0-RTT data packet and a server can
 coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
@@ -1018,7 +1018,7 @@ ack_eliciting:
 : A boolean that indicates whether a packet is ack-eliciting.
   If true, it is expected that an acknowledgement will be received,
   though the peer could delay sending the ACK frame containing it
-  by up to the MaxAckDelay.
+  by up to the max_ack_delay.
 
 in_flight:
 : A boolean that indicates whether the packet counts towards bytes in
@@ -1189,7 +1189,7 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
-  // DetectNewlyAckedPackets finds packets that are newly
+  // DetectAndRemoveAckedPackets finds packets that are newly
   // acknowledged and removes them from sent_packets.
   newly_acked_packets =
       DetectAndRemoveAckedPackets(ack, pn_space)
@@ -1296,11 +1296,11 @@ GetPtoTimeAndSpace():
   return pto_timeout, pto_space
 
 PeerCompletedAddressValidation():
-  # Assume clients validate the server's address implicitly.
+  // Assume clients validate the server's address implicitly.
   if (endpoint is server):
     return true
-  # Servers complete address validation when a
-  # protected packet is received.
+  // Servers complete address validation when a
+  // protected packet is received.
   return has received Handshake ACK ||
        has received 1-RTT ACK ||
        has received HANDSHAKE_DONE
@@ -1513,7 +1513,7 @@ newly acked_packets from sent_packets.
      return sent_time <= congestion_recovery_start_time
 
    OnPacketsAcked(acked_packets):
-     for (packet in acked_packets):
+     for packet in acked_packets:
        // Remove from bytes_in_flight.
        bytes_in_flight -= packet.size
        if (InCongestionRecovery(packet.time_sent)):
@@ -1583,7 +1583,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
-     for (lost_packet : lost_packets):
+     for lost_packet in lost_packets:
        bytes_in_flight -= lost_packet.size
      CongestionEvent(lost_packets.largest().time_sent)
 
