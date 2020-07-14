@@ -1154,7 +1154,7 @@ Pseudocode for OnPacketSent follows:
      if (ack_eliciting):
        time_of_last_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
-     sent_packets[pn_space][packet_number].size = sent_bytes
+     sent_packets[pn_space][packet_number].sent_bytes = sent_bytes
      SetLossDetectionTimer()
 ~~~
 
@@ -1515,7 +1515,7 @@ newly acked_packets from sent_packets.
    OnPacketsAcked(acked_packets):
      for packet in acked_packets:
        // Remove from bytes_in_flight.
-       bytes_in_flight -= packet.size
+       bytes_in_flight -= packet.sent_bytes
        if (InCongestionRecovery(packet.time_sent)):
          // Do not increase congestion window in recovery period.
          return
@@ -1525,10 +1525,10 @@ newly acked_packets from sent_packets.
          return
        if (congestion_window < ssthresh):
          // Slow start.
-         congestion_window += packet.size
+         congestion_window += packet.sent_bytes
          return
        // Congestion avoidance.
-       congestion_window += max_datagram_size * acked_packet.size
+       congestion_window += max_datagram_size * acked_packet.sent_bytes
            / congestion_window
 ~~~
 
@@ -1584,7 +1584,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for lost_packet in lost_packets:
-       bytes_in_flight -= lost_packet.size
+       bytes_in_flight -= lost_packet.sent_bytes
      CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
