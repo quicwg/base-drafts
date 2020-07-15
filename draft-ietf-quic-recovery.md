@@ -1512,24 +1512,30 @@ newly acked_packets from sent_packets.
    InCongestionRecovery(sent_time):
      return sent_time <= congestion_recovery_start_time
 
-   OnPacketsAcked(acked_packets):
-     for packet in acked_packets:
-       // Remove from bytes_in_flight.
-       bytes_in_flight -= packet.sent_bytes
-       if (InCongestionRecovery(packet.time_sent)):
-         // Do not increase congestion window in recovery period.
-         return
-       if (IsAppOrFlowControlLimited()):
-         // Do not increase congestion_window if application
-         // limited or flow control limited.
-         return
-       if (congestion_window < ssthresh):
-         // Slow start.
-         congestion_window += packet.sent_bytes
-         return
-       // Congestion avoidance.
-       congestion_window += max_datagram_size * acked_packet.sent_bytes
-           / congestion_window
+  OnPacketsAcked(acked_packets):
+    for acked_packet in acked_packets:
+      OnPacketAcked(acked_packet)
+
+  OnPacketAcked(packet):
+    // Remove from bytes_in_flight.
+    bytes_in_flight -= packet.sent_bytes
+
+    // Do not increase congestion_window if application
+    // limited or flow control limited.
+    if (IsAppOrFlowControlLimited())
+        return
+
+    // Do not increase congestion window in recovery period.
+    if (InCongestionRecovery(packet.time_sent)):
+        return
+
+    if (congestion_window < ssthresh):
+        // Slow start.
+        congestion_window += packet.sent_bytes
+    else:
+        // Congestion avoidance.
+        congestion_window += max_datagram_size * acked_packet.sent_bytes
+            / congestion_window
 ~~~
 
 
