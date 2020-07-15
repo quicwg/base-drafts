@@ -156,7 +156,7 @@ Example Structure {
 {: #fig-ex-format title="Example Format"}
 
 
-# QUIC Packet Headers
+# QUIC Packets
 
 QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
 This section describes the invariant characteristics of a QUIC packet.  A
@@ -166,6 +166,9 @@ the invariant properties only describe the first packet in a datagram.
 QUIC defines two types of packet header: long and short.  Packets with long
 headers are identified by the most significant bit of the first byte being set;
 packets with a short header have that bit cleared.
+
+QUIC packets might be integrity protected, including the header.  However, QUIC
+Version Negotiation packets are not integrity protected; see {{vn}}.
 
 Aside from the values described here, the payload of QUIC packets is
 version-specific and of arbitrary length.
@@ -253,9 +256,9 @@ Packets for the same QUIC connection might use different connection ID values.
 ## Version
 
 The Version field contains a 4-byte identifier.  This value can be used by
-endpoints to identify a QUIC Version.  A Version field with a value of 0 is
-reserved for version negotiation (see {{version-negotiation}}).  All other
-version numbers are potentially valid.
+endpoints to identify a QUIC Version.  A Version field with a value of
+0x00000000 is reserved for version negotiation; see {{version-negotiation}}.
+All other version numbers are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
@@ -263,7 +266,7 @@ not QUIC.  Future documents might describe additional properties which apply to
 a specific QUIC version, or to a range of QUIC versions.
 
 
-# Version Negotiation {#version-negotiation}
+# Version Negotiation {#vn}
 
 A QUIC endpoint that receives a packet with a long header and a version it
 either does not understand or does not support might send a Version Negotiation

@@ -431,8 +431,8 @@ the packet type and keys that are used for protecting data.
 Each encryption level is associated with a different sequence of bytes, which is
 reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
 bytes to be sent, they are appended to the handshake bytes for the current
-encryption level. Any packet that includes the CRYPTO frame is protected using
-keys from the corresponding encryption level.
+encryption level. The encryption level then determines the type of packet that
+the resulting CRYPTO frame is carried in; see {{packet-types-keys}}.
 
 Four encryption levels are used, producing keys for Initial, 0-RTT, Handshake,
 and 1-RTT packets. CRYPTO frames are carried in just three of these levels,
@@ -498,12 +498,10 @@ handshake, new data is requested from TLS after providing received data.
 
 ### Encryption Level Changes
 
-As keys for new encryption levels become available, TLS provides QUIC with those
-keys.  Separately, as keys at a given encryption level become available to TLS,
-TLS indicates to QUIC that reading or writing keys at that encryption level are
-available.  These events are not asynchronous; they always occur immediately
-after TLS is provided with new handshake bytes, or after TLS produces handshake
-bytes.
+As keys at a given encryption level become available to TLS, TLS indicates to
+QUIC that reading or writing keys at that encryption level are available.  These
+events are not asynchronous; they always occur immediately after TLS is provided
+with new handshake bytes, or after TLS produces handshake bytes.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -548,47 +546,50 @@ use.
 ### TLS Interface Summary
 
 {{exchange-summary}} summarizes the exchange between QUIC and TLS for both
-client and server. Each arrow is tagged with the encryption level used for that
-transmission.
+client and server. Solid arrows indicate packets that carry handshake data;
+dashed arrows show where application data can be sent.  Each arrow is tagged
+with the encryption level used for that transmission.
 
 ~~~
 Client                                                    Server
+======                                                    ======
 
 Get Handshake
                      Initial ------------->
-                                              Handshake Received
 Install tx 0-RTT Keys
-                     0-RTT --------------->
+                     0-RTT - - - - - - - ->
+
+                                              Handshake Received
                                                    Get Handshake
                      <------------- Initial
-Handshake Received
-Install Handshake keys
                                            Install rx 0-RTT keys
                                           Install Handshake keys
                                                    Get Handshake
                      <----------- Handshake
-Handshake Received
                                            Install tx 1-RTT keys
-                     <--------------- 1-RTT
+                     <- - - - - - - - 1-RTT
+
+Handshake Received (Initial)
+Install Handshake keys
+Handshake Received (Handshake)
 Get Handshake
-Handshake Complete
                      Handshake ----------->
-                                              Handshake Received
-                                           Install rx 1-RTT keys
-                                              Handshake Complete
+Handshake Complete
 Install 1-RTT keys
-                     1-RTT --------------->
-                                                   Get Handshake
-                     <--------------- 1-RTT
-Handshake Received
+                     1-RTT - - - - - - - ->
+
+                                              Handshake Received
+                                              Handshake Complete
+                                           Install rx 1-RTT keys
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
 {{exchange-summary}} shows the multiple packets that form a single "flight" of
 messages being processed individually, to show what incoming messages trigger
-different actions.  New handshake messages are requested after all incoming
-packets have been processed.  This process might vary depending on how QUIC
-implementations and the packets they receive are structured.
+different actions.  New handshake messages are requested after incoming packets
+have been processed.  This process varies based on the structure of endpoint
+implementations and the order in which packets arrive; this is intended to
+illustrate the steps involved in a single handshake exchange.
 
 
 ## TLS Version {#tls-version}
@@ -600,9 +601,10 @@ could result in a newer version of TLS than 1.3 being negotiated if both
 endpoints support that version.  This is acceptable provided that the features
 of TLS 1.3 that are used by QUIC are supported by the newer version.
 
-A badly configured TLS implementation could negotiate TLS 1.2 or another older
-version of TLS.  An endpoint MUST terminate the connection if a version of TLS
-older than 1.3 is negotiated.
+Clients MUST NOT offer TLS versions older than 1.3.  A badly configured TLS
+implementation could negotiate TLS 1.2 or another older version of TLS.  An
+endpoint MUST terminate the connection if a version of TLS older than 1.3 is
+negotiated.
 
 
 ## ClientHello Size {#clienthello-size}
@@ -651,6 +653,18 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
+Note:
+
+: Where servers provide certificates for authentication, the size of
+  the certificate chain can consume a large number of bytes.  Controlling the
+  size of certificate chains is critical to performance in QUIC as servers are
+  limited to sending 3 bytes for every byte received prior to validating the
+  client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
+  certificate chain can be managed by limiting the number of names or
+  extensions; using keys with small public key representations, like ECDSA; or
+  by using certificate compression
+  {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
+
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
 The requirements for client authentication vary based on application protocol
@@ -690,23 +704,51 @@ Client SHOULD NOT reuse tickets as that allows entities other than the server
 to correlate connections; see Section C.4 of {{!TLS13}}.
 
 
-## Enabling 0-RTT {#enable-0rtt}
+## 0-RTT
+
+The 0-RTT feature in QUIC allows a client to send application data before the
+handshake is complete.  This is made possible by reusing negotiated parameters
+from a previous connection.  To enable this, 0-RTT depends on the client
+remembering critical parameters and providing the server with a TLS session
+ticket that allows the server to recover the same information.
+
+This information includes parameters that determine TLS state, as governed by
+{{!TLS13}}, QUIC transport parameters, the chosen application protocol, and any
+information the application protocol might need; see {{app-0rtt}}.  This
+information determines how 0-RTT packets and their contents are formed.
+
+To ensure that the same information is available to both endpoints, all
+information used to establish 0-RTT comes from the same connection.  Endpoints
+cannot selectively disregard information that might alter the sending or
+processing of 0-RTT.
+
+{{!TLS13}} sets a limit of 7 days on the time between the original connection
+and any attempt to use 0-RTT.  There are other constraints on 0-RTT usage,
+notably those caused by the potential exposure to replay attack; see {{replay}}.
+
+
+### Enabling 0-RTT {#enable-0rtt}
 
 To communicate their willingness to process 0-RTT data, servers send a
 NewSessionTicket message that contains the "early_data" extension with a
-max_early_data_size of 0xffffffff; the amount of data which the client can send
-in 0-RTT is controlled by the "initial_max_data" transport parameter supplied
-by the server.  Servers MUST NOT send the "early_data" extension with a
-max_early_data_size set to any value other than 0xffffffff.  A client MUST
-treat receipt of a NewSessionTicket that contains an "early_data" extension
-with any other value as a connection error of type PROTOCOL_VIOLATION.
+max_early_data_size of 0xffffffff.  The TLS max_early_data_size parameter is not
+used in QUIC.  The amount of data which the client can send in 0-RTT is
+controlled by the "initial_max_data" transport parameter supplied by the server.
+
+Servers MUST NOT send the "early_data" extension with a max_early_data_size set
+to any value other than 0xffffffff.  A client MUST treat receipt of a
+NewSessionTicket that contains an "early_data" extension with any other value as
+a connection error of type PROTOCOL_VIOLATION.
 
 A client that wishes to send 0-RTT packets uses the "early_data" extension in
-the ClientHello message of a subsequent handshake (see Section 4.2.10 of
-{{!TLS13}}). It then sends the application data in 0-RTT packets.
+the ClientHello message of a subsequent handshake; see Section 4.2.10 of
+{{!TLS13}}. It then sends application data in 0-RTT packets.
+
+A client that attempts 0-RTT might also provide an address validation token if
+the server has sent a NEW_TOKEN frame; see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 
-## Accepting and Rejecting 0-RTT
+### Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
 EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
@@ -724,11 +766,11 @@ might be incorrect.  This includes the choice of application protocol, transport
 parameters, and any application configuration.  The client therefore MUST reset
 the state of all streams, including application state bound to those streams.
 
-A client MAY attempt to send 0-RTT again if it receives a Retry or Version
-Negotiation packet.  These packets do not signify rejection of 0-RTT.
+A client MAY reattempt 0-RTT if it receives a Retry or Version Negotiation
+packet.  These packets do not signify rejection of 0-RTT.
 
 
-## Validating 0-RTT Configuration
+### Validating 0-RTT Configuration {#app-0rtt}
 
 When a server receives a ClientHello with the "early_data" extension, it has to
 decide whether to accept or reject early data from the client. Some of this
@@ -990,8 +1032,8 @@ prior to exceeding any limit set for the AEAD that is in use.
 ## Header Protection {#header-protect}
 
 Parts of QUIC packet headers, in particular the Packet Number field, are
-protected using a key that is derived separate to the packet protection key and
-IV.  The key derived using the "quic hp" label is used to provide
+protected using a key that is derived separately from the packet protection key
+and IV.  The key derived using the "quic hp" label is used to provide
 confidentiality protection for those fields that are not exposed to on-path
 elements.
 
@@ -1742,7 +1784,7 @@ Use of TLS session tickets allows servers and possibly other entities to
 correlate connections made by the same client; see {{resumption}} for details.
 
 
-## Replay Attacks with 0-RTT
+## Replay Attacks with 0-RTT {#replay}
 
 As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
 exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
@@ -1763,9 +1805,12 @@ those produced by the application protocol that QUIC serves.
 Note:
 
 : TLS session tickets and address validation tokens are used to carry QUIC
-  configuration information between connections.  These MUST NOT be used to
-  carry application semantics.  The potential for reuse of these tokens means
-  that they require stronger protections against replay.
+  configuration information between connections.  Specifically, to enable a
+  server to efficiently recover state that is used in connection establishment
+  and address validation.  These MUST NOT be used to communicate application
+  semantics between endpoints; clients MUST treat them as opaque values.  The
+  potential for reuse of these tokens means that they require stronger
+  protections against replay.
 
 A server that accepts 0-RTT on a connection incurs a higher cost than accepting
 a connection without 0-RTT.  This includes higher processing and computation
@@ -1988,13 +2033,14 @@ contains the following CRYPTO frame, plus enough PADDING frames to make a 1162
 byte payload:
 
 ~~~
-060040c4010000c003036660261ff947 cea49cce6cfad687f457cf1b14531ba1
-4131a0e8f309a1d0b9c4000006130113 031302010000910000000b0009000006
-736572766572ff01000100000a001400 12001d00170018001901000101010201
-03010400230000003300260024001d00 204cfdfcd178b784bf328cae793b136f
-2aedce005ff183d7bb14952072366470 37002b0003020304000d0020001e0403
-05030603020308040805080604010501 060102010402050206020202002d0002
-0101001c00024001
+060040f1010000ed0303ebf8fa56f129 39b9584a3896472ec40bb863cfd3e868
+04fe3a47f06a2b69484c000004130113 02010000c000000010000e00000b6578
+616d706c652e636f6dff01000100000a 00080006001d00170018001000070005
+04616c706e0005000501000000000033 00260024001d00209370b2c9caa47fba
+baf4559fedba753de171fa71f50f1ce1 5d43e994ec74d748002b000302030400
+0d0010000e0403050306030203080408 050806002d00020101001c00024001ff
+a500320408ffffffffffffffff050480 00ffff07048000ffff08011001048000
+75300901100f088394c8f03e51570806 048000ffff
 ~~~
 
 The unprotected header includes the connection ID and a 4 byte packet number
@@ -2009,30 +2055,30 @@ Because the header uses a 4 byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = fb66bc5f93032b7ddd89fe0ff15d9c4f
+sample = fb66bc6a93032b50dd8973972d149421
 
 mask = AES-ECB(hp, sample)[0..4]
-     = d64a952459
+     = 1e9cdb9909
 
 header[0] ^= mask[0] & 0x0f
-     = c5
+     = cd
 header[18..21] ^= mask[1..4]
-     = 4a95245b
-header = c5ff00001d088394c8f03e5157080000449e4a95245b
+     = 9cdb990b
+header = cdff00001d088394c8f03e5157080000449e9cdb990b
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-c5ff00001d088394c8f03e5157080000 449e4a95245bfb66bc5f93032b7ddd89
-fe0ff15d9c4f7050fccdb71c1cd80512 d4431643a53aafa1b0b518b44968b18b
-8d3e7a4d04c30b3ed9410325b2abb2da fb1c12f8b70479eb8df98abcaf95dd8f
-3d1c78660fbc719f88b23c8aef6771f3 d50e10fdfb4c9d92386d44481b6c52d5
-9e5538d3d3942de9f13a7f8b702dc317 24180da9df22714d01003fc5e3d165c9
-50e630b8540fbd81c9df0ee63f949970 26c4f2e1887a2def79050ac2d86ba318
-e0b3adc4c5aa18bcf63c7cf8e85f5692 49813a2236a7e72269447cd1c755e451
-f5e77470eb3de64c8849d29282069802 9cfa18e5d66176fe6e5ba4ed18026f90
-900a5b4980e2f58e39151d5cd685b109 29636d4f02e7fad2a5a458249f5c0298
+cdff00001d088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
+73972d149421874d3849e3708d71354e a33bcdc356f3ea6e2a1a1bd7c3d14003
+8d3e784d04c30a2cdb40c32523aba2da fe1c1bf3d27a6be38fe38ae033fbb071
+3c1c73661bb6639795b42b97f77068ea d51f11fbf9489af2501d09481e6c64d4
+b8551cd3cea70d830ce2aeeec789ef55 1a7fbe36b3f7e1549a9f8d8e153b3fac
+3fb7b7812c9ed7c20b4be190ebd89956 26e7f0fc887925ec6f0606c5d36aa81b
+ebb7aacdc4a31bb5f23d55faef5c5190 5783384f375a43235b5c742c78ab1bae
+0a188b75efbde6b3774ed61282f9670a 9dea19e1566103ce675ab4e21081fb58
+60340a1e88e4f10e39eae25cd685b109 29636d4f02e7fad2a5a458249f5c0298
 a6d53acbe41a7fc83fa7cc01973f7a74 d1237a51974e097636b6203997f921d0
 7bc1940a6f2d0de9f5a11432946159ed 6cc21df65c4ddd1115f86427259a196c
 7148b25b6478b0dc7766e1c4d1b1f515 9f90eabc61636226244642ee148b464c
@@ -2061,7 +2107,7 @@ edb42d2af89a9c9122b07acbc29e5e72 2df8615c343702491098478a389c9872
 a10b0c9875125e257c7bfdf27eef4060 bd3d00f4c14fd3e3496c38d3c5d1a566
 8c39350effbc2d16ca17be4ce29f02ed 969504dda2a8c6b9ff919e693ee79e09
 089316e7d1d89ec099db3b2b268725d8 88536a4b8bf9aee8fb43e82a4d919d48
-43b1ca70a2d8d3f725ead1391377dcc0
+1802771a449b30f3fa2289852607b660
 ~~~
 
 
@@ -2071,10 +2117,10 @@ The server sends the following payload in response, including an ACK frame, a
 CRYPTO frame, and no PADDING frames:
 
 ~~~
-0d0000000018410a020000560303eefc e7f7b37ba1d1632e96677825ddf73988
-cfc79825df566dc5430b9a045a120013 0100002e00330024001d00209d3c940d
-89690b84d08a60993c144eca684d1081 287c834d5311bcf32bb9da1a002b0002
-0304
+02000000000600405a020000560303ee fce7f7b37ba1d1632e96677825ddf739
+88cfc79825df566dc5430b9a045a1200 130100002e00330024001d00209d3c94
+0d89690b84d08a60993c144eca684d10 81287c834d5311bcf32bb9da1a002b00
+020304
 ~~~
 
 The header from the server includes a new connection ID and a 2-byte packet
@@ -2096,11 +2142,11 @@ header = caff00001d0008f067a5502a4262b5004074aaf2
 The final protected packet is then:
 
 ~~~
-caff00001d0008f067a5502a4262b500 4074aaf2f007823a5d3a1207c86ee491
-32824f0465243d082d868b107a38092b c80528664cbf9456ebf27673fb5fa506
-1ab573c9f001b81da028a00d52ab00b1 5bebaa70640e106cf2acd043e9c6b441
-1c0a79637134d8993701fe779e58c2fe 753d14b0564021565ea92e57bc6faf56
-dfc7a40870e6
+c7ff00001d0008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
+6782a2167e3479c0f7f6395dc2c91676 302fe6d70bb7cbeb117b4ddb7d173498
+44fd61dae200b8338e1b932976b61d91 e64a02e9e0ee72e3a6f63aba4ceeeec5
+be2f24f2d86027572943533846caa13e 6f163fb257473dcca25396e88724f1e5
+d964dedee9b633
 ~~~
 
 
