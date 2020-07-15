@@ -1182,6 +1182,12 @@ When an ACK frame is received, it may newly acknowledge any number of packets.
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
+IncludesAckEliciting(packets):
+  for packet in packets:
+    if (packet.ack_eliciting):
+      return true
+  return false
+
 OnAckReceived(ack, pn_space):
   if (largest_acked_packet[pn_space] == infinite):
     largest_acked_packet[pn_space] = ack.largest_acked
