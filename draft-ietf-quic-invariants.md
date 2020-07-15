@@ -252,10 +252,10 @@ Packets for the same QUIC connection might use different connection ID values.
 
 ## Version
 
-The Version field contains a 32-bit integer, encoded in network byte order.
-This value can be used by endpoints to identify a QUIC Version.  A Version field
-with a value of 0 is reserved for version negotiation (see
-{{version-negotiation}}).  All other version numbers are potentially valid.
+The Version field contains a 4-byte identifier.  This value can be used by
+endpoints to identify a QUIC Version.  A Version field with a value of 0 is
+reserved for version negotiation (see {{version-negotiation}}).  All other
+version numbers are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
