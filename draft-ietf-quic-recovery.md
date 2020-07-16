@@ -1154,7 +1154,8 @@ Pseudocode for OnPacketSent follows:
      if (ack_eliciting):
        time_of_last_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
-     sent_packets[pn_space][packet_number].sent_bytes = sent_bytes
+     sent_packets[pn_space][packet_number].sent_bytes =
+       sent_bytes
      SetLossDetectionTimer()
 ~~~
 
