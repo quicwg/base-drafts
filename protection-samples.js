@@ -6,19 +6,28 @@
 
 
 'use strict';
-var buffer = require('buffer');
-var crypto = require('crypto');
-var assert = require('assert');
+require('buffer');
+const assert = require('assert');
+const crypto = require('crypto');
 
-var INITIAL_SALT = Buffer.from('c3eef712c72ebb5a11a7d2432bb46365bef9f502', 'hex');
-var SHA256 = 'sha256';
-var AES_GCM = 'aes-128-gcm';
-var AES_ECB = 'aes-128-ecb';
+const INITIAL_SALT = Buffer.from('afbfec289993d24c9e9786f19c6111e04390a899', 'hex');
+const RETRY_KEY = Buffer.from('ccce187ed09a09d05728155a6cb96be1', 'hex');
+const RETRY_NONCE = Buffer.from('e54930f97f2136f0530a8c1c', 'hex');
+const SHA256 = 'sha256';
+const AES_GCM = 'aes-128-gcm';
+const AES_ECB = 'aes-128-ecb';
 
-var version = 'ff000019';
+const draft_version = 29;
+const version = 'ff0000' + draft_version.toString(16);
+
+function chunk(s, n) {
+  return (new Array(Math.ceil(s.length / n)))
+    .fill()
+    .map((_, i) => s.slice(i * n, i * n + n));
+}
 
 function log(m, k) {
-  console.log(m + ' [' + k.length + ']: ' + k.toString('hex'));
+  console.log(m + ' [' + k.length + ']: ' + chunk(k.toString('hex'), 32).join(' '));
 };
 
 class HMAC {
@@ -74,6 +83,22 @@ class QHKDF {
   }
 }
 
+// XOR b into a.
+function xor(a, b) {
+    a.forEach((_, i) => {
+      a[i] ^= b[i];
+    });
+}
+
+function applyNonce(iv, counter) {
+  var nonce = Buffer.from(iv);
+  const m = nonce.readUIntBE(nonce.length - 6, 6);
+  const x = ((m ^ counter) & 0xffffff) +
+     ((((m / 0x1000000) ^ (counter / 0x1000000)) & 0xffffff) * 0x1000000);
+  nonce.writeUIntBE(x, nonce.length - 6, 6);
+  return nonce;
+}
+
 class InitialProtection {
   constructor(label, cid) {
     var qhkdf = QHKDF.extract(SHA256, INITIAL_SALT, cid);
@@ -89,12 +114,7 @@ class InitialProtection {
   }
 
   generateNonce(counter) {
-    var nonce = Buffer.from(this.iv);
-    var m = nonce.readUIntBE(nonce.length - 6, 6);
-    var x = ((m ^ counter) & 0xffffff) +
-        ((((m / 0x1000000) ^ (counter / 0x1000000)) & 0xffffff) * 0x1000000);
-    nonce.writeUIntBE(x, nonce.length - 6, 6);
-    return nonce;
+    return applyNonce(this.iv, counter);
   }
 
   // Returns the encrypted data with authentication tag appended.  The AAD is
@@ -132,17 +152,10 @@ class InitialProtection {
     log('hp sample', sample);
     // var ctr = crypto.createCipheriv('aes-128-ctr', this.hp, sample);
     // var mask = ctr.update(Buffer.alloc(5));
-    var ecb = crypto.createCipheriv('aes-128-ecb', this.hp, Buffer.alloc(0));
+    var ecb = crypto.createCipheriv(AES_ECB, this.hp, Buffer.alloc(0));
     var mask = ecb.update(sample);
     log('hp mask', mask);
     return mask;
-  }
-
-  // XOR b into a.
-  xor(a, b) {
-    a.forEach((_, i) => {
-      a[i] ^= b[i];
-    });
   }
 
   // hdr is everything before the length field
@@ -168,7 +181,7 @@ class InitialProtection {
 
     var mask = this.hpMask(payload.slice(4 - pn_len, 20 - pn_len));
     aad[0] ^= mask[0] & (0x1f >> (aad[0] >> 7));
-    this.xor(aad.slice(pn_offset), mask.slice(1));
+    xor(aad.slice(pn_offset), mask.slice(1));
     log('masked header', aad);
     return Buffer.concat([aad, payload]);
   }
@@ -207,7 +220,7 @@ class InitialProtection {
     var hdr = Buffer.from(data.slice(0, hdr_len + pn_len));
     hdr[0] = octet0;
     log('header', hdr);
-    this.xor(hdr.slice(hdr_len), mask.slice(1));
+    xor(hdr.slice(hdr_len), mask.slice(1));
     log('unmasked header', hdr);
     var pn = hdr.readUIntBE(hdr_len, pn_len);
     // Important: this doesn't recover PN based on expected value.
@@ -258,6 +271,18 @@ function hex_cid(cid) {
   return '0' + (cid.length / 2).toString(16) + cid;
 }
 
+// Verify that the retry keys are correct.
+function derive_retry() {
+  let secret = Buffer.from('8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c', 'hex');
+  let qhkdf = new QHKDF(new HMAC(SHA256), secret);
+  let key = qhkdf.expand_label("quic key", 16);
+  log('retry key', key);
+  assert.deepStrictEqual(key, RETRY_KEY);
+  let nonce = qhkdf.expand_label("quic iv", 12);
+  log('retry nonce', nonce);
+  assert.deepStrictEqual(nonce, RETRY_NONCE);
+}
+
 function retry(dcid, scid, odcid) {
   var pfx = Buffer.from(hex_cid(odcid), 'hex');
   var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
@@ -267,14 +292,44 @@ function retry(dcid, scid, odcid) {
   var aad = Buffer.concat([pfx, header]);
   log('retry aad', aad);
 
-  var key = Buffer.from('4d32ecdb2a2133c841e4043df27d4430', 'hex');
-  var nonce = Buffer.from('4d1611d05513a552c587d575', 'hex');
-
-  var gcm = crypto.createCipheriv(AES_GCM, key, nonce);
+  var gcm = crypto.createCipheriv(AES_GCM, RETRY_KEY, RETRY_NONCE);
   gcm.setAAD(aad);
   gcm.update('');
   gcm.final();
   log('retry', Buffer.concat([header, gcm.getAuthTag()]));
+}
+
+// A simple ChaCha20-Poly1305 packet.
+function chacha20(pn, payload) {
+  log('chacha20poly1305 pn=' + pn.toString(), payload);
+  let header = Buffer.alloc(4);
+  header.writeUIntBE(0x42, 0, 1);
+  header.writeUIntBE(pn & 0xffffff, 1, 3);
+  log('unprotected header', header);
+  const key = Buffer.from('c6d98ff3441c3fe1b2182094f69caa2e' +
+                          'd4b716b65488960a7a984979fb23e1c8', 'hex');
+  const iv = Buffer.from('e0459b3474bdd0e44a41c144', 'hex');
+  const nonce = applyNonce(iv, pn);
+  log('nonce', nonce);
+  let aead = crypto.createCipheriv('ChaCha20-Poly1305', key, nonce, { authTagLength: 16 });
+  aead.setAAD(header);
+  const e = aead.update(payload);
+  aead.final();
+  let ct = Buffer.concat([e, aead.getAuthTag()]);
+  log('ciphertext', ct);
+
+  const sample = ct.slice(1, 17);
+  log('sample', sample);
+  const hp = Buffer.from('25a282b9e82f06f21f488917a4fc8f1b' +
+                         '73573685608597d0efcb076b0ab7a7a4', 'hex');
+  let chacha = crypto.createCipheriv('ChaCha20', hp, sample);
+  const mask = chacha.update(Buffer.alloc(5));
+  log('mask', mask);
+  let packet = Buffer.concat([header, ct]);
+  header[0] ^= mask[0] & 0x1f;
+  xor(header.slice(1), mask.slice(1));
+  log('header', header);
+  log('protected packet', Buffer.concat([header, ct]));
 }
 
 var cid = '8394c8f03e515708';
@@ -282,18 +337,20 @@ var cid = '8394c8f03e515708';
 var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
 // This is a client Initial.  Unfortunately, the ClientHello currently omits
 // the transport_parameters extension.
-var crypto_frame = '060040c4' +
-    '010000c003036660261ff947cea49cce6cfad687f457cf1b14531ba14131a0e8' +
-    'f309a1d0b9c4000006130113031302010000910000000b000900000673657276' +
-    '6572ff01000100000a00140012001d0017001800190100010101020103010400' +
-    '230000003300260024001d00204cfdfcd178b784bf328cae793b136f2aedce00' +
-    '5ff183d7bb1495207236647037002b0003020304000d0020001e040305030603' +
-    '020308040805080604010501060102010402050206020202002d00020101001c' +
-    '00024001';
+var crypto_frame = '060040f1' +
+    '010000ed0303ebf8fa56f12939b9584a3896472ec40bb863cfd3e86804fe3a47' +
+    'f06a2b69484c00000413011302010000c000000010000e00000b6578616d706c' +
+    '652e636f6dff01000100000a00080006001d0017001800100007000504616c70' +
+    '6e000500050100000000003300260024001d00209370b2c9caa47fbabaf4559f' +
+    'edba753de171fa71f50f1ce15d43e994ec74d748002b0003020304000d001000' +
+    '0e0403050306030203080408050806002d00020101001c00024001ffa5003204' +
+    '08ffffffffffffffff05048000ffff07048000ffff0801100104800075300901' +
+    '100f088394c8f03e51570806048000ffff';
+
 test('client', cid, ci_hdr, 2, crypto_frame);
 
 // This should be a valid server Initial.
-var frames = '0d0000000018410a' +
+var frames = '02000000000600405a' +
     '020000560303eefce7f7b37ba1d163' +
     '2e96677825ddf73988cfc79825df566dc5430b9a04' +
     '5a1200130100002e00330024001d00209d3c940d89' +
@@ -303,4 +360,6 @@ var scid = 'f067a5502a4262b5';
 var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
 
+derive_retry();
 retry('', scid, cid);
+chacha20(654360564, Buffer.from('01', 'hex'));
