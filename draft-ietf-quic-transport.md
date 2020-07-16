@@ -109,7 +109,7 @@ code and issues list for this draft can be found at
 
 --- middle
 
-# Introduction
+# Overview
 
 QUIC is a multiplexed and secure general-purpose transport protocol that
 provides:
@@ -124,10 +124,36 @@ provides:
 
 * Authenticated and encrypted header and payload
 
-QUIC uses UDP as a substrate to avoid requiring changes to legacy client
-operating systems and middleboxes.  QUIC authenticates all of its headers and
-encrypts most of the data it exchanges, including its signaling, to avoid
-incurring a dependency on middleboxes.
+QUIC establishes a connection, which is a stateful interaction between a client
+and server. The primary purpose of a connection is to support the structured
+exchange of data by an application protocol.
+
+Streams are means by which an application protocol exchanges information.
+Streams are ordered sequences of bytes. Two types of stream can be created:
+bidirectional streams, which allow both endpoints to send data; and
+unidirectional streams, which allow a single endpoint to send. A credit-based
+scheme is used to limit stream creation and to bound the amount of data that
+can be sent.
+
+The QUIC handshake combines negotiation of cryptographic and transport
+parameters.  The handshake is structured to permit the exchange of application
+data as soon as possible.  This includes an option for clients to send data
+immediately (0-RTT), which might require prior communication to enable.
+
+QUIC connections are not strictly bound to a single network path.  Connection
+migration uses connection identifiers to allow connections to transfer to a new
+network path.
+
+Frames are used in QUIC to communicate between endpoints.  One or more frames
+are assembled into packets.  QUIC authenticates all packets and encrypts as much
+as is practical.  QUIC packets are carried in UDP datagrams to better facilitate
+deployment in existing systems and networks.
+
+Once established, multiple options are provided for connection termination.
+Applications can manage a graceful shutdown, endpoints can negotiate a timeout
+period, errors can cause immediate connection teardown, and a stateless
+mechanism provides for termination of connections after one endpoint has lost
+state.
 
 
 ## Document Structure
@@ -981,13 +1007,31 @@ other frames, such as ACK frames, reduces the cost of those updates.
 
 # Connections {#connections}
 
-QUIC's connection establishment combines version negotiation with the
-cryptographic and transport handshakes to reduce connection establishment
-latency, as described in {{handshake}}. During connection establishment, each
-side validates the peer's address, as described in {{address-validation}}.  Once
-established, a connection may migrate to a different IP or port at either
-endpoint as described in {{migration}}.  Finally, a connection may be terminated
-by either endpoint, as described in {{termination}}.
+A QUIC connection is shared state between a client and a server.
+
+Each connection starts with a handshake phase, during which the two endpoints
+establish a shared secret using the cryptographic handshake protocol
+{{QUIC-TLS}} and negotiate the application protocol. The handshake
+({{handshake}}) confirms that both endpoints are willing to communicate
+({{validate-handshake}}) and establishes parameters for the connection
+({{transport-parameters}}).
+
+An application protocol can use the connection during the handshake phase with
+some limitations.  0-RTT allows application data to be sent by a client before
+receiving a response from the server.  However, 0-RTT provides no protection
+against replay attacks; see Section 9.2 of {{QUIC-TLS}}.  A server can also send
+application data to a client before it receives the final cryptographic
+handshake messages that allow it to confirm the identity and liveness of the
+client.  These capabilities allow an application protocol to offer the option of
+trading some security guarantees for reduced latency.
+
+The use of connection IDs ({{connection-id}}) allows connections to migrate to a
+new network path, both as a direct choice of an endpoint and when forced by a
+change in a middlebox.  {{migration}} describes mitigations for the security and
+privacy issues associated with migration.
+
+For connections that are no longer needed or desired, there are several ways for
+a client and server to terminate a connection ({{termination}}).
 
 
 ## Connection ID {#connection-id}
@@ -1257,38 +1301,6 @@ migration after a client has acted on a preferred_address transport parameter.
 Server deployments that use this simple form of load balancing MUST avoid the
 creation of a stateless reset oracle; see {{reset-oracle}}.
 
-## Life of a QUIC Connection {#connection-lifecycle}
-
-A QUIC connection is a stateful interaction between a client and server, the
-primary purpose of which is to support the exchange of data by an application
-protocol.  Streams ({{streams}}) are the primary means by which an application
-protocol exchanges information.
-
-Each connection starts with a handshake phase, during which client and server
-establish a shared secret using the cryptographic handshake protocol
-{{QUIC-TLS}} and negotiate the application protocol.  The handshake
-({{handshake}}) confirms that both endpoints are willing to communicate
-({{validate-handshake}}) and establishes parameters for the connection
-({{transport-parameters}}).
-
-An application protocol can also operate in a limited fashion during the
-handshake phase.  0-RTT allows application data to be sent by a client before
-receiving any response from the server.  However, 0-RTT lacks certain key
-security guarantees. In particular, there is no protection against replay
-attacks in 0-RTT; see {{QUIC-TLS}}.  Separately, a server can also send
-application data to a client before it receives the final cryptographic
-handshake messages that allow it to confirm the identity and liveness of the
-client.  These capabilities allow an application protocol to offer the option to
-trade some security guarantees for reduced latency.
-
-The use of connection IDs ({{connection-id}}) allows connections to migrate to a
-new network path, both as a direct choice of an endpoint and when forced by a
-change in a middlebox.  {{migration}} describes mitigations for the security and
-privacy issues associated with migration.
-
-For connections that are no longer needed or desired, there are several ways for
-a client and server to terminate a connection ({{termination}}).
-
 
 ## Required Operations on Connections
 
@@ -1455,6 +1467,27 @@ The CRYPTO frame can be sent in different packet number spaces
 ({{packet-numbers}}).  The offsets used by CRYPTO frames to ensure ordered
 delivery of cryptographic handshake data start from zero in each packet number
 space.
+
+{{fig-hs}} shows a simplied handshake and the exchange of packets and frames
+that are used to advance the handshake.  Exchange of application data during the
+handshake is enabled where possible, shown with a '*'.  Once completed,
+endpoints are able to exchange application data.
+
+~~~drawing
+Client                                               Server
+
+Initial (CRYPTO)
+0-RTT (*)              ---------->
+                                           Initial (CRYPTO)
+                                         Handshake (CRYPTO)
+                       <----------                1-RTT (*)
+Handshake (CRYPTO)
+1-RTT (*)              ---------->
+                       <---------- 1-RTT (HANDSHAKE_DONE,*)
+
+1-RTT (*)              <=========>                1-RTT (*)
+~~~
+{: #fig-hs title="Simplified QUIC Handshake"}
 
 Endpoints MUST explicitly negotiate an application protocol.  This avoids
 situations where there is a disagreement about the protocol that is in use.
