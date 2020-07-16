@@ -1505,6 +1505,10 @@ ssthresh:
   the mode is slow start and the window grows by the number of bytes
   acknowledged.
 
+bytes_acked:
+: Records number of bytes acked and used during congestion
+  avoidance, for incrementing the congestion window.
+
 
 ## Initialization
 
@@ -1518,6 +1522,7 @@ congestion_recovery_start_time = 0
 ssthresh = infinite
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   ecn_ce_counters[pn_space] = 0
+bytes_acked = 0
 ~~~
 
 
@@ -1560,9 +1565,10 @@ OnPacketAcked(acked_packet):
     congestion_window += acked_packet.sent_bytes
   else:
     // Congestion avoidance.
-    congestion_window +=
-      max_datagram_size * acked_packet.sent_bytes
-      / congestion_window
+    bytes_acked += acked_packet.sent_bytes
+    if (bytes_acked >= congestion_window):
+      bytes_acked -= congestion_window
+      congestion_window += max_datagram_size
 ~~~
 
 
@@ -1579,6 +1585,7 @@ OnCongestionEvent(sent_time):
   if (!InCongestionRecovery(sent_time)):
     congestion_recovery_start_time = now()
     congestion_window *= kLossReductionFactor
+    bytes_acked *= kLossReductionFactor
     congestion_window = max(congestion_window, kMinimumWindow)
     ssthresh = congestion_window
     // A packet can be sent to speed up loss recovery.
@@ -1627,6 +1634,7 @@ OnPacketsLost(lost_packets):
   // Collapse congestion window if persistent congestion
   if (InPersistentCongestion(lost_packets.largest())):
     congestion_window = kMinimumWindow
+    bytes_acked = 0
 ~~~
 
 ## Upon dropping Initial or Handshake keys
