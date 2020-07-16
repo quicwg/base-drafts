@@ -4251,6 +4251,9 @@ arrives after many higher-numbered packets have been received.  An endpoint
 SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
+Prior to any acknowledgements being received for a packet number space, there is
+no largest acknowledge packet, so the full packet number is encoded in the header.
+
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
 numbers, including the new packet.
@@ -4607,11 +4610,7 @@ used for any new packets that are sent; as described in {{retry-continue}},
 reusing packet numbers could compromise packet protection.
 
 A client only receives acknowledgments for its 0-RTT packets once the handshake
-is complete.  Consequently, a server might expect 0-RTT packets to start with a
-packet number of 0.  Therefore, in determining the length of the packet number
-encoding for 0-RTT packets, a client MUST assume that all packets up to the
-current packet number are in flight, starting from a packet number of 0.  Thus,
-0-RTT packets could need to use a longer packet number encoding.
+is complete.
 
 A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
