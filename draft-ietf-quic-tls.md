@@ -1022,7 +1022,7 @@ of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
 header protection scheme is defined for the cipher suite.  This document defines
 a header protection scheme for all cipher suites defined in {{!TLS13}} aside
 from TLS_AES_128_CCM_8_SHA256.  These cipher suites have a 16-byte
-authentication tag and produce an output 16 bytes larger than their input. 
+authentication tag and produce an output 16 bytes larger than their input.
 
 Note:
 
