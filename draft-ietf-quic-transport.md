@@ -4252,7 +4252,8 @@ SHOULD use a large enough packet number encoding to allow the packet number to
 be recovered even if the packet arrives after packets that are sent afterwards.
 
 Prior to any acknowledgements being received for a packet number space, there is
-no largest acknowledge packet, so the full packet number is encoded in the header.
+no largest acknowledge packet, so the full packet number is encoded in the
+header.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
