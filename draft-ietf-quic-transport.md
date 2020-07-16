@@ -4578,7 +4578,7 @@ likely to compromise the packet protection for all 0-RTT packets because the
 same key and nonce could be used to protect different content.
 
 A client only receives acknowledgments for its 0-RTT packets once the handshake
-is complete, as defined in the Handshake Complete section of {{QUIC-TLS}}.
+is complete, as defined Section 4.1.1 of {{QUIC-TLS}}.
 Consequently, a server might expect 0-RTT packets to start with a
 packet number of 0.  Therefore, in determining the length of the packet number
 encoding for 0-RTT packets, a client MUST assume that all packets up to the
