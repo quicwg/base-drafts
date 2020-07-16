@@ -594,8 +594,8 @@ at least 1200 bytes.
 
 A client could have received and acknowledged a Handshake packet, causing it to
 discard state for the Initial packet number space, but not sent any
-ack-eliciting Handshake packets.  In this case, when the Initial packet number
-space is discarded, the PTO is set from the current time.
+ack-eliciting Handshake packets.  In this case, the PTO timer starts at the
+time that the Initial packet number space is discarded.
 
 ### Speeding Up Handshake Completion
 
