@@ -1694,7 +1694,7 @@ is used for agreeing on an application protocol, endpoints MUST use ALPN for
 this purpose.
 
 When using ALPN, endpoints MUST immediately close a connection (see Section
-10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+10.2 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
 code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
 While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
 use error 0x178 to terminate a connection when ALPN negotiation fails.

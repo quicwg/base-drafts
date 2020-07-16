@@ -892,7 +892,7 @@ do so if approaching the idle timeout.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
-described in Section 10.2.2 of {{QUIC-TRANSPORT}}. If the client is not
+described in Section 10.1.2 of {{QUIC-TRANSPORT}}. If the client is not
 expecting a response from the server, allowing an idle connection to time out is
 preferred over expending effort maintaining a connection that might not be
 needed.  A gateway MAY maintain connections in anticipation of need rather than
