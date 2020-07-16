@@ -1362,7 +1362,7 @@ OnLossDetectionTimeout():
     _, pn_space = GetPtoTimeAndSpace()
     SendOneOrTwoAckElicitingPackets(pn_space)
   else:
-    assert(endpoint is client without 1-RTT keys)
+    assert(!PeerCompletedAddressValidation())
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
     // a Handshake packet proves address ownership.
