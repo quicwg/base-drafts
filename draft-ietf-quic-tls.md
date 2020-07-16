@@ -1017,12 +1017,12 @@ used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256 cipher
 suite, the AEAD_AES_128_GCM function is used.
 
-QUIC can use any of the ciphersuites defined in {{!TLS13}} with the exception of
-TLS_AES_128_CCM_8_SHA256.  A ciphersuite MUST NOT be negotiated unless a header
-protection scheme is defined for the ciphersuite.  This document defines a
-header protection scheme for all ciphersuites defined in {{!TLS13}} aside from
-TLS_AES_128_CCM_8_SHA256.  These ciphersuites have a 16-byte authentication tag
-and produce an output 16 bytes larger than their input.
+QUIC can use any of the cipher suites defined in {{!TLS13}} with the exception
+of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
+header protection scheme is defined for the cipher suite.  This document defines
+a header protection scheme for all cipher suites defined in {{!TLS13}} aside
+from TLS_AES_128_CCM_8_SHA256.  These cipher suites have a 16-byte
+authentication tag and produce an output 16 bytes larger than their input. 
 
 Note:
 
