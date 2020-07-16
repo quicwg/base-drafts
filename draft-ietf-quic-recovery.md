@@ -1154,7 +1154,8 @@ Pseudocode for OnPacketSent follows:
      if (ack_eliciting):
        time_of_last_ack_eliciting_packet[pn_space] = now()
      OnPacketSentCC(sent_bytes)
-     sent_packets[pn_space][packet_number].size = sent_bytes
+     sent_packets[pn_space][packet_number].sent_bytes =
+       sent_bytes
      SetLossDetectionTimer()
 ~~~
 
@@ -1182,6 +1183,12 @@ When an ACK frame is received, it may newly acknowledge any number of packets.
 Pseudocode for OnAckReceived and UpdateRtt follow:
 
 ~~~
+IncludesAckEliciting(packets):
+  for packet in packets:
+    if (packet.ack_eliciting):
+      return true
+  return false
+
 OnAckReceived(ack, pn_space):
   if (largest_acked_packet[pn_space] == infinite):
     largest_acked_packet[pn_space] = ack.largest_acked
@@ -1203,7 +1210,7 @@ OnAckReceived(ack, pn_space):
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
-      now - sent_packets[pn_space][ack.largest_acked].time_sent
+      now() - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
     if (pn_space == ApplicationData):
       ack_delay = ack.ack_delay
@@ -1509,27 +1516,34 @@ Invoked from loss detection's OnAckReceived and is supplied with the
 newly acked_packets from sent_packets.
 
 ~~~
-   InCongestionRecovery(sent_time):
-     return sent_time <= congestion_recovery_start_time
+  InCongestionRecovery(sent_time):
+    return sent_time <= congestion_recovery_start_time
 
-   OnPacketsAcked(acked_packets):
-     for packet in acked_packets:
-       // Remove from bytes_in_flight.
-       bytes_in_flight -= packet.size
-       if (InCongestionRecovery(packet.time_sent)):
-         // Do not increase congestion window in recovery period.
-         return
-       if (IsAppOrFlowControlLimited()):
-         // Do not increase congestion_window if application
-         // limited or flow control limited.
-         return
-       if (congestion_window < ssthresh):
-         // Slow start.
-         congestion_window += packet.size
-         return
-       // Congestion avoidance.
-       congestion_window += max_datagram_size * acked_packet.size
-           / congestion_window
+  OnPacketsAcked(acked_packets):
+    for acked_packet in acked_packets:
+      OnPacketAcked(acked_packet)
+
+  OnPacketAcked(acked_packet):
+    // Remove from bytes_in_flight.
+    bytes_in_flight -= acked_packet.sent_bytes
+
+    // Do not increase congestion_window if application
+    // limited or flow control limited.
+    if (IsAppOrFlowControlLimited())
+      return
+
+    // Do not increase congestion window in recovery period.
+    if (InCongestionRecovery(acked_packet.time_sent)):
+      return
+
+    if (congestion_window < ssthresh):
+      // Slow start.
+      congestion_window += acked_packet.sent_bytes
+    else:
+      // Congestion avoidance.
+      congestion_window +=
+        max_datagram_size * acked_packet.sent_bytes
+        / congestion_window
 ~~~
 
 
@@ -1584,7 +1598,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
      for lost_packet in lost_packets:
-       bytes_in_flight -= lost_packet.size
+       bytes_in_flight -= lost_packet.sent_bytes
      CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
