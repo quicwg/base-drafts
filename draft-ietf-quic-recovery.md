@@ -565,11 +565,6 @@ PATH_RESPONSE to set the initial RTT (see kInitialRtt in
 {{constants-of-interest}}) for a new path, but the delay SHOULD NOT be
 considered an RTT sample.
 
-Prior to handshake completion, when few to no RTT samples have been
-generated, it is possible that the probe timer expiration is due to an
-incorrect RTT estimate at the client. To allow the client to improve its RTT
-estimate, the new packet that it sends MUST be ack-eliciting.
-
 Initial packets and Handshake packets could be never acknowledged, but they are
 removed from bytes in flight when the Initial and Handshake keys are discarded,
 as described below in {{discarding-packets}}. When Initial or Handshake keys are
@@ -614,8 +609,8 @@ To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
 subject to the address validation limits in Section 8.1 of {{QUIC-TRANSPORT}}.
 
-Peers can also use coalesced packets to ensure that each datagram elicits at
-least one acknowledgement.  For example, clients can coalesce an Initial packet
+Endpoints can also use coalesced packets to ensure that each datagram elicits at
+least one acknowledgement.  For example, a client can coalesce an Initial packet
 containing PING and PADDING frames with a 0-RTT data packet and a server can
 coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
@@ -623,11 +618,11 @@ its first flight.
 ### Sending Probe Packets
 
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
-in the packet number space as a probe, unless there is no data available to
-send.  An endpoint MAY send up to two full-sized datagrams containing
-ack-eliciting packets, to avoid an expensive consecutive PTO expiration due
-to a single lost datagram or transmit data from multiple packet number spaces.
-All probe packets sent on a PTO MUST be ack-eliciting.
+in the packet number space as a probe.  An endpoint MAY send up to two
+full-sized datagrams containing ack-eliciting packets, to avoid an expensive
+consecutive PTO expiration due to a single lost datagram or transmit data
+from multiple packet number spaces. All probe packets sent on a PTO MUST be
+ack-eliciting.
 
 In addition to sending data in the packet number space for which the timer
 expired, the sender SHOULD send ack-eliciting packets from other packet
@@ -640,14 +635,11 @@ spaces.
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
 packet number to eliminate the ack delay.
 
-When the PTO timer expires, and there is new or previously sent unacknowledged
-data, it MUST be sent. A probe packet SHOULD carry new data when possible.
-A probe packet MAY carry retransmitted unacknowledged data when new data is
-unavailable, when flow control does not permit new data to be sent, or to
-opportunistically reduce loss recovery delay.  Implementations MAY use
-alternative strategies for determining the content of probe packets,
-including sending new or retransmitted data based on the application's
-priorities.
+When the PTO timer expires, an ack-eliciting packet MUST be sent.  An endpoint
+SHOULD include new data in this packet.  Previously sent data MAY be sent if
+no new data can be sent.  Implementations MAY use alternative strategies for
+determining the content of probe packets, including sending new or
+retransmitted data based on the application's priorities.
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
@@ -711,7 +703,7 @@ before Initial packets, early 0-RTT packets will be declared lost, but that
 is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
-be acknowledged or declared lost.  However, Initial secrets are destroyed as
+be acknowledged or declared lost.  However, Initial secrets are discarded as
 soon as handshake keys are available to both client and server; see Section
 4.11.1 of {{QUIC-TLS}}.
 
@@ -845,7 +837,7 @@ which is approximately equivalent to two TLPs before an RTO in TCP.
 This duration is computed as follows:
 
 ~~~
-(smoothed_rtt + 4 * rttvar + max_ack_delay) *
+(smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay) *
     kPersistentCongestionThreshold
 ~~~
 
@@ -1026,7 +1018,7 @@ ack_eliciting:
 : A boolean that indicates whether a packet is ack-eliciting.
   If true, it is expected that an acknowledgement will be received,
   though the peer could delay sending the ACK frame containing it
-  by up to the MaxAckDelay.
+  by up to the max_ack_delay.
 
 in_flight:
 : A boolean that indicates whether the packet counts towards bytes in
@@ -1062,7 +1054,7 @@ kGranularity:
 
 kInitialRtt:
 : The RTT used before an RTT sample is taken. The value recommended in
-{{pto-handshake}} is 500ms.
+{{pto-handshake}} is 333ms.
 
 kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
@@ -1131,8 +1123,8 @@ follows:
    loss_detection_timer.reset()
    pto_count = 0
    latest_rtt = 0
-   smoothed_rtt = initial_rtt
-   rttvar = initial_rtt / 2
+   smoothed_rtt = kInitialRtt
+   rttvar = kInitialRtt / 2
    min_rtt = 0
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
@@ -1197,7 +1189,7 @@ OnAckReceived(ack, pn_space):
     largest_acked_packet[pn_space] =
         max(largest_acked_packet[pn_space], ack.largest_acked)
 
-  // DetectNewlyAckedPackets finds packets that are newly
+  // DetectAndRemoveAckedPackets finds packets that are newly
   // acknowledged and removes them from sent_packets.
   newly_acked_packets =
       DetectAndRemoveAckedPackets(ack, pn_space)
@@ -1304,11 +1296,11 @@ GetPtoTimeAndSpace():
   return pto_timeout, pto_space
 
 PeerCompletedAddressValidation():
-  # Assume clients validate the server's address implicitly.
+  // Assume clients validate the server's address implicitly.
   if (endpoint is server):
     return true
-  # Servers complete address validation when a
-  # protected packet is received.
+  // Servers complete address validation when a
+  // protected packet is received.
   return has received Handshake ACK ||
        has received 1-RTT ACK ||
        has received HANDSHAKE_DONE
@@ -1520,7 +1512,7 @@ newly acked_packets from sent_packets.
      return sent_time <= congestion_recovery_start_time
 
    OnPacketsAcked(acked_packets):
-     for (packet in acked_packets):
+     for packet in acked_packets:
        // Remove from bytes_in_flight.
        bytes_in_flight -= packet.size
        if (InCongestionRecovery(packet.time_sent)):
@@ -1590,7 +1582,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
-     for (lost_packet : lost_packets):
+     for lost_packet in lost_packets:
        bytes_in_flight -= lost_packet.size
      CongestionEvent(lost_packets.largest().time_sent)
 
