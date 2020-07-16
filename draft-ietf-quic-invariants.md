@@ -88,9 +88,11 @@ IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
 versions of QUIC.  By documenting the properties that can't change, this
-document aims to preserve the ability to change any other aspect of the
-protocol.  Thus, unless specifically described in this document, any aspect of
-the protocol can change between different versions.
+document aims to preserve the ability for QUIC endpoints to negotiate changes to
+any other aspect of the protocol.  As a consequence, this also guarantees a
+minimal amount of information that is made available to entities other than
+endpoints.  Unless specifically prohibited in this document, any aspect of the
+protocol can change between different versions.
 
 {{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
@@ -291,15 +293,19 @@ Version Negotiation Packet {
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
-The Version Negotiation packet contains a list of Supported Version fields, each
-identifying a version that the endpoint sending the packet supports.  The
-Supported Version fields follow the Version field.  A Version Negotiation packet
-contains no other fields.  An endpoint MUST ignore a packet that contains no
-Supported Version fields, or a truncated Supported Version.
+Only the most significant bit of the first byte of a Version Negotiation packet
+has any defined value.  The remaining 7 bits, labeled Unused, can be set to any
+value when sending and MUST be ignored on receipt.
+
+After the Source Connection ID field, the Version Negotiation packet contains a
+list of Supported Version fields, each identifying a version that the endpoint
+sending the packet supports.  A Version Negotiation packet contains no other
+fields.  An endpoint MUST ignore a packet that contains no Supported Version
+fields, or a truncated Supported Version.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
-Specific QUIC versions define mechanisms to authenticate the packet as part of
-the connection establishment process.
+Specific QUIC versions might include protocol elements that allow endpoints to
+detect modification or corruption in the set of supported versions.
 
 An endpoint MUST include the value from the Source Connection ID field of the
 packet it receives in the Destination Connection ID field.  The value for Source
@@ -334,8 +340,8 @@ requires that middleboxes retain state for every connection ID they see.
 
 The Version Negotiation packet described in this document is not
 integrity-protected; it only has modest protection against insertion by off-path
-attackers.  QUIC versions MUST define a mechanism that authenticates the values
-it contains.
+attackers.  An endpoint MUST authenticate the contents of a Version Negotiation
+packet if it attempts a different QUIC version as a result.
 
 
 # IANA Considerations

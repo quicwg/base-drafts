@@ -928,7 +928,9 @@ Some requests or pushes might already be in transit:
   - Upon receipt of a GOAWAY frame, if the client has already sent requests with
     a Stream ID greater than or equal to the identifier received in a GOAWAY
     frame, those requests will not be processed.  Clients can safely retry
-    unprocessed requests on a different connection.
+    unprocessed requests on a different connection.  A client that is unable to
+    retry requests loses all requests that are in flight when the server closes
+    the connection.
 
     Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
     server might have been processed; their status cannot be known until a
@@ -950,13 +952,11 @@ connection, the client cannot know if the server started to process that POST
 request if the server does not send a GOAWAY frame to indicate what streams it
 might have acted on.
 
-A client that is unable to retry requests loses all requests that are in flight
-when the server closes the connection.  An endpoint MAY send multiple GOAWAY
-frames indicating different identifiers, but the identifier in each frame MUST
-NOT be greater than the identifier in any previous frame, since clients might
-already have retried unprocessed requests on another connection.  Receiving a
-GOAWAY containing a larger identifier than previously received MUST be treated
-as a connection error of type H3_ID_ERROR.
+An endpoint MAY send multiple GOAWAY frames indicating different identifiers,
+but the identifier in each frame MUST NOT be greater than the identifier in any
+previous frame, since clients might already have retried unprocessed requests on
+another connection.  Receiving a GOAWAY containing a larger identifier than
+previously received MUST be treated as a connection error of type H3_ID_ERROR.
 
 An endpoint that is attempting to gracefully shut down a connection can send a
 GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
@@ -972,8 +972,8 @@ continue fulfilling pushes which have already been promised, and the client can
 continue granting push credit as needed; see {{frame-max-push-id}}. A smaller
 value indicates the client will reject pushes with Push IDs greater than or
 equal to this value.  Like the server, the client MAY send subsequent GOAWAY
-frames so long as the specified Push ID is strictly smaller than all previously
-sent values.
+frames so long as the specified Push ID is no greater than any previously
+sent value.
 
 Even when a GOAWAY indicates that a given request or push will not be processed
 or accepted upon receipt, the underlying transport resources still exist.  The
@@ -1819,14 +1819,14 @@ to buffer the entire header field section.  Since there is no hard limit to the
 size of a field section, some endpoints could be forced to commit a large amount
 of available memory for header fields.
 
-An endpoint can use the SETTINGS_MAX_HEADER_LIST_SIZE ({{settings-parameters}})
-setting to advise peers of limits that might apply on the size of field
-sections. This setting is only advisory, so endpoints MAY choose to send field
-sections that exceed this limit and risk having the request or response being
-treated as malformed.  This setting is specific to a connection, so any request
-or response could encounter a hop with a lower, unknown limit.  An intermediary
-can attempt to avoid this problem by passing on values presented by different
-peers, but they are not obligated to do so.
+An endpoint can use the SETTINGS_MAX_FIELD_SECTION_SIZE
+({{settings-parameters}}) setting to advise peers of limits that might apply on
+the size of field sections. This setting is only advisory, so endpoints MAY
+choose to send field sections that exceed this limit and risk having the request
+or response being treated as malformed.  This setting is specific to a
+connection, so any request or response could encounter a hop with a lower,
+unknown limit.  An intermediary can attempt to avoid this problem by passing on
+values presented by different peers, but they are not obligated to do so.
 
 A server that receives a larger field section than it is willing to handle can
 send an HTTP 431 (Request Header Fields Too Large) status code {{?RFC6585}}.  A
@@ -2331,8 +2331,9 @@ SETTINGS_MAX_FRAME_SIZE:
 : This setting has no equivalent in HTTP/3.  Specifying it in the SETTINGS frame
   is an error.
 
-SETTINGS_MAX_FIELD_SECTION_SIZE:
-: See {{settings-parameters}}.
+SETTINGS_MAX_HEADER_LIST_SIZE:
+: This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.  See
+  {{settings-parameters}}.
 
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
 long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
