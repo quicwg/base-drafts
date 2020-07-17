@@ -415,10 +415,10 @@ but SHOULD avoid creating multiple connections with the same configuration.
 
 Servers are encouraged to maintain open connections for as long as possible but
 are permitted to terminate idle connections if necessary.  When either endpoint
-chooses to close the HTTP/3 session, the terminating endpoint SHOULD first send
-a GOAWAY frame ({{connection-shutdown}}) so that both endpoints can reliably
-determine whether previously sent frames have been processed and gracefully
-complete or terminate any necessary remaining tasks.
+chooses to close the HTTP/3 connection, the terminating endpoint SHOULD first
+send a GOAWAY frame ({{connection-shutdown}}) so that both endpoints can
+reliably determine whether previously sent frames have been processed and
+gracefully complete or terminate any necessary remaining tasks.
 
 A server that does not wish clients to reuse connections for a particular origin
 can indicate that it is not authoritative for a request by sending a 421
