@@ -913,9 +913,9 @@ QUIC packets have varying protections depending on their type:
   and integrity, using keys and algorithms negotiated by TLS.
 
 This section describes how packet protection is applied to Handshake packets,
-0-RTT packets, and 1-RTT packets. The same packet protection
-process is applied to Initial packets. However, as it is trivial to determine
-the keys used for Initial packets, these packets are not considered to have confidentiality or
+0-RTT packets, and 1-RTT packets. The same packet protection process is applied
+to Initial packets. However, as it is trivial to determine the keys used for
+Initial packets, these packets are not considered to have confidentiality or
 integrity protection. Retry packets use a fixed key and so similarly lack
 confidentiality and integrity protection.
 

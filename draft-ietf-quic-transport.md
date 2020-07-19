@@ -3168,12 +3168,12 @@ Version Negotiation packets have no cryptographic protection; see
 Retry packets use an authenticated encryption with associated data function
 (AEAD; {{?AEAD=RFC5116}}) to protect against accidental modification.
 
-Initial packets use an AEAD with keys that are derived using a value that is visible on the wire, and therefore does
-not provide effective confidentiality protection. Initial protection exists to
-ensure that the sender of the packet is on the network path. Any entity that
-receives the Initial packet from a client can recover the keys that will allow
-them to read the contents of packets or generate packets that will be
-successfully authenticated.
+Initial packets use an AEAD with keys that are derived using a value that is
+visible on the wire, and therefore does not provide effective confidentiality
+protection. Initial protection exists to ensure that the sender of the packet is
+on the network path. Any entity that receives the Initial packet from a client
+can recover the keys that will allow them to read the contents of packets or
+generate packets that will be successfully authenticated.
 
 All other packets are protected with keys derived from the cryptographic
 handshake. The type of the packet from the long header or key phase from the
@@ -3182,11 +3182,11 @@ protected with 0-RTT and 1-RTT keys are expected to have strong confidentiality
 and integrity protection; the cryptographic handshake ensures that only the
 communicating endpoints receive the corresponding keys.
 
-The Packet Number field that appears in some packet types
-has additional confidentiality protection that is applied as part
-of header protection; see Section 5.4 of {{QUIC-TLS}} for details. The
-underlying packet number increases with each packet sent in a given packet
-number space; see {{packet-numbers}} for details.
+The Packet Number field that appears in some packet types has alternative
+confidentiality protection that is applied as part of header protection; see
+Section 5.4 of {{QUIC-TLS}} for details. The underlying packet number increases
+with each packet sent in a given packet number space; see {{packet-numbers}} for
+details.
 
 
 ## Coalescing Packets {#packet-coalesce}
