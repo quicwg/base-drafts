@@ -1216,6 +1216,7 @@ OnAckReceived(ack, pn_space):
   if (newly_acked_packets.largest().packet_number ==
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
+    has_prior_rtt_sample
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
@@ -1587,6 +1588,10 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
    InPersistentCongestion(lost_packets):
+     // Persistent congestion cannot be declared on the
+     // first RTT sample.
+     if (has prior rtt sample):
+       return
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
