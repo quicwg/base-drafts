@@ -1877,8 +1877,8 @@ endpoints.  In particular, receipt of a packet protected with Handshake keys
 confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.  Servers MAY treat the
-receipt of a packet using a server generated destination connection ID with at least 64 bits
-of entropy as address validation.
+receipt of a packet using a server generated destination connection ID with
+at least 64 bits of entropy as address validation.
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
