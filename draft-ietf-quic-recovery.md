@@ -843,10 +843,10 @@ The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
 approximately equivalent to two TLPs before an RTO in TCP.
 
 The persistent congestion period SHOULD NOT start until there is at
-least one RTT sample.  Prior to an RTT sample, the duration cannot be correctly
-calculated.  Waiting for one RTT sample also avoids spuriously declaring
-persistent congestion when the initial RTT is larger than the actual RTT,
-leading to an insufficient number of PTOs.
+least one RTT sample.  Prior to an RTT sample, the duration cannot be
+correctly calculated.  Waiting for one RTT sample also avoids spuriously
+declaring persistent congestion when the initial RTT is larger than the
+actual RTT, leading to an insufficient number of PTOs.
 
 This duration is computed as follows:
 
