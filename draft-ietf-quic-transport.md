@@ -3177,9 +3177,10 @@ and generate Initial packets that will be successfully authenticated at either
 endpoint.
 
 All other packets are protected with keys derived from the cryptographic
-handshake. The cryptographic handshake ensures that only the communicating
-endpoints receive the corresponding keys.  Packets protected with 0-RTT and
-1-RTT keys are expected to have strong confidentiality and integrity protection.
+handshake.  The cryptographic handshake ensures that only the communicating
+endpoints receive the corresponding keys for Handshake, 0-RTT, and 1-RTT
+packets.  Packets protected with 0-RTT and 1-RTT keys have strong
+confidentiality and integrity protection.
 
 The Packet Number field that appears in some packet types has alternative
 confidentiality protection that is applied as part of header protection; see
