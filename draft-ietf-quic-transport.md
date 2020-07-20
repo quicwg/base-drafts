@@ -4243,17 +4243,17 @@ only the least significant bits of the packet number.
 The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
 
-The sender MUST use a packet number size able to represent more than twice as
-large a range than the difference between the largest acknowledged packet and
-packet number being sent.  A peer receiving the packet will then correctly
-decode the packet number, unless the packet is delayed in transit such that it
-arrives after many higher-numbered packets have been received.  An endpoint
-SHOULD use a large enough packet number encoding to allow the packet number to
-be recovered even if the packet arrives after packets that are sent afterwards.
+Prior to receiving an acknowledgement for a packet number space, the full packet
+number MUST be included.
 
-Prior to any acknowledgements being received for a packet number space, there is
-no largest acknowledge packet, so the full packet number is encoded in the
-header.
+After an acknowledgement is received for a packet number space, the sender MUST
+use a packet number size able to represent more than twice as large a range than
+the difference between the largest acknowledged packet and packet number being
+sent.  A peer receiving the packet will then correctly decode the packet number,
+unless the packet is delayed in transit such that it arrives after many
+higher-numbered packets have been received.  An endpoint SHOULD use a large enough
+packet number encoding to allow the packet number to be recovered even if the
+packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
