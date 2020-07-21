@@ -841,33 +841,38 @@ This duration is computed as follows:
     kPersistentCongestionThreshold
 ~~~
 
-For example, assume:
+The following example illustrates how persistent congestion can be
+established. Assume:
 
 ~~~
-smoothed_rtt = 1
-rttvar = 0
-max_ack_delay = 0
+smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay = 1.5
 kPersistentCongestionThreshold = 3
 ~~~
 
-If an ack-eliciting packet is sent at time t = 0, the following scenario would
-illustrate persistent congestion:
+Consider the following sequence of events:
 
-| Time | Action                 |
-|:-----|:-----------------------|
-| t=0  | Send Pkt #1 (App Data) |
-| t=1  | Send Pkt #2 (PTO 1)    |
-| t=3  | Send Pkt #3 (PTO 2)    |
-| t=7  | Send Pkt #4 (PTO 3)    |
-| t=8  | Recv ACK of Pkt #4     |
+| Time   | Action                 |
+|:-------|:-----------------------|
+| t=0    | Send Pkt #1 (App Data) |
+| t=1    | Send Pkt #2 (App Data) |
+| t=1.2  | Recv ack of Pkt #1     |
+| t=2    | Send Pkt #3 (App Data) |
+| t=3    | Send Pkt #4 (App Data) |
+| t=4    | Send Pkt #5 (App Data) |
+| t=5    | Send Pkt #6 (App Data) |
+| t=7.5  | Send Pkt #7 (PTO 1)    |
+| t=10.5 | Send Pkt #8 (PTO 2)    |
+| t=10.7 | Recv Ack of Pkt #8     |
 
-The first three packets are determined to be lost when the acknowledgement of
-packet 4 is received at t = 8.  The congestion period is calculated as the time
-between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
-persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
-Because the threshold was reached and because none of the packets between the
-oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion.
+Packets 2 through 7 are declared lost when the acknowledgement for packet 8 is
+received at t = 10.7.
+
+The congestion period is calculated as the time between the oldest and newest
+lost packets: 7.5 - 1 = 6.5.  The duration for establishing persistent
+congestion is: 1.5 * 3 = 4.5.  Because the threshold was reached and because
+none of the packets between the oldest and the newest lost packets were
+acknowledged, the network is considered to have experienced persistent
+congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
