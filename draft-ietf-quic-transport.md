@@ -3240,9 +3240,10 @@ in a single packet if they are to be sent at the same encryption level, instead
 of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
-UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
-into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets with
-a different Destination Connection ID than the first packet in the datagram.
+UDP datagram.  Senders MUST NOT coalesce QUIC packets with different connection
+IDs into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  The receiver of coalesced QUIC packets MUST individually process each
