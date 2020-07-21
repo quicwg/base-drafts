@@ -1165,10 +1165,11 @@ desired. They MAY also be sent on connections where no data is currently being
 transferred. Endpoints MUST NOT consider these streams to have any meaning upon
 receipt.
 
-The payload and length of the stream are selected in any manner the
-implementation chooses.  Implementations MAY terminate these streams cleanly, or
-MAY abruptly terminate them.  When terminating abruptly, the error code
-H3_NO_ERROR or a reserved error code ({{http-error-codes}}) SHOULD be used.
+The payload and length of the stream are selected in any manner the sending
+implementation chooses.  When sending a reserved stream type, the implementation
+MAY either terminate the stream cleanly or reset it.  When resetting the stream,
+the error code H3_NO_ERROR or a reserved error code ({{http-error-codes}})
+SHOULD be used.
 
 
 # HTTP Framing Layer {#http-framing-layer}
