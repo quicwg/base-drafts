@@ -3168,13 +3168,13 @@ Version Negotiation packets have no cryptographic protection; see
 Retry packets use an authenticated encryption with associated data function
 (AEAD; {{?AEAD=RFC5116}}) to protect against accidental modification.
 
-Initial packets use an AEAD with keys that are derived using a value that is
-visible on the wire, and therefore does not provide effective confidentiality
-protection. Initial protection exists to ensure that the sender of the packet is
-on the network path. Any entity that receives an Initial packet from a client
-can recover the keys that will allow them to both read the contents of the packet
-and generate Initial packets that will be successfully authenticated at either
-endpoint.
+Initial packets use an AEAD, the keys for which are derived using a value that
+is visible on the wire. Initial packets therefore do not have effective
+confidentiality protection. Initial protection exists to ensure that the sender
+of the packet is on the network path. Any entity that receives an Initial packet
+from a client can recover the keys that will allow them to both read the
+contents of the packet and generate Initial packets that will be successfully
+authenticated at either endpoint.
 
 All other packets are protected with keys derived from the cryptographic
 handshake.  The cryptographic handshake ensures that only the communicating
