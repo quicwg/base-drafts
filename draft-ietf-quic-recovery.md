@@ -1216,7 +1216,6 @@ OnAckReceived(ack, pn_space):
   if (newly_acked_packets.largest().packet_number ==
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
-    has_prior_rtt_sample
     latest_rtt =
       now - sent_packets[pn_space][ack.largest_acked].time_sent
     ack_delay = 0
