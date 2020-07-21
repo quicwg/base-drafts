@@ -704,8 +704,8 @@ is expected to be infrequent.
 
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  However, Initial secrets are discarded as
-soon as handshake keys are available to both client and server; see Section
-4.11.1 of {{QUIC-TLS}}.
+soon as handshake keys are proven to be available to both client and server;
+see Section 4.11.1 of {{QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
 
