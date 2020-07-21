@@ -875,8 +875,8 @@ have experienced persistent congestion. Note that this example shows the
 occurrence of PTOs, but that is not required for persistent congestion to be
 established.
 
-When persistent congestion is declared, the sender's congestion window MUST be
-reduced to the minimum congestion window (kMinimumWindow).  This response of
+When persistent congestion is established, the sender's congestion window MUST
+be reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 ({{RFC5681}}) after Tail Loss Probes (TLP; see {{RACK}}).
