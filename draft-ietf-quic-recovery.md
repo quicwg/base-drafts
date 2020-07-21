@@ -1586,7 +1586,7 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
-   InPersistentCongestion(lost_packets):
+   InPersistentCongestion(largest_lost):
      // Persistent congestion cannot be declared on the
      // first RTT sample.
      if (is first rtt sample):
@@ -1595,9 +1595,9 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
-     // largest newly lost packet, including the edges, are
-     // marked lost
-     return AreAllPacketsLost(lost_packets, congestion_period)
+     // largest newly lost packet, including the edges and
+     // across all packet number spaces, are marked lost.
+     return AreAllPacketsLost(largest_lost, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
@@ -1606,7 +1606,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
      CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(lost_packets)):
+     if (InPersistentCongestion(lost_packets.largest())):
        congestion_window = kMinimumWindow
 ~~~
 
