@@ -582,7 +582,7 @@ received from the client, because packets sent on PTO count against the
 anti-amplification limit. Note that the server could fail to validate the
 client's address even if 0-RTT is accepted.
 
-Since the server could be blocked until more bytes are received from the
+Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
