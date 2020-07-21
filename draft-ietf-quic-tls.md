@@ -988,7 +988,7 @@ packet, where the Destination Connection ID is selected by the server.
 
 Future versions of QUIC SHOULD generate a new salt value, thus ensuring that
 the keys are different for each version of QUIC.  This prevents a middlebox that
-only recognizes one version of QUIC from seeing or modifying the contents of
+recognizes only one version of QUIC from seeing or modifying the contents of
 packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
