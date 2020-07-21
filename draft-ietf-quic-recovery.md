@@ -117,7 +117,7 @@ In-flight:
 
 : Packets are considered in-flight when they are ack-eliciting or contain a
   PADDING frame, and they have been sent but are not acknowledged, declared
-  lost, or abandoned along with old keys.
+  lost, or discarded along with old keys.
 
 # Design of the QUIC Transmission Machinery
 
@@ -222,7 +222,7 @@ more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 ## Probe Timeout Replaces RTO and TLP
 
-QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
+QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
 delay instead of using a fixed minimum timeout. QUIC does not collapse the
 congestion window until persistent congestion ({{persistent-congestion}}) is
@@ -395,7 +395,7 @@ time out (see {{pto}}) to ensure acknowledgements are received. This section
 provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
-as by retransmitting the data, sending an updated frame, or abandoning the
+as by retransmitting the data, sending an updated frame, or discarding the
 frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
 Loss detection is separate per packet number space, unlike RTT measurement and
@@ -436,12 +436,13 @@ The RECOMMENDED initial value for the packet reordering threshold
 ({{?RFC5681}}, {{?RFC6675}}).  In order to remain similar to TCP,
 implementations SHOULD NOT use a packet threshold less than 3; see {{?RFC5681}}.
 
-Some networks may exhibit higher degrees of reordering, causing a sender to
-detect spurious losses.  Algorithms that increase the reordering threshold after
-spuriously detecting losses, such as TCP-NCR ({{?RFC4653}}), have proven to be
-useful in TCP and are expected to be at least as useful in QUIC.  Re-ordering
-could be more common with QUIC than TCP, because network elements cannot observe
-and fix the order of out-of-order packets.
+Some networks may exhibit higher degrees of packet reordering, causing a sender
+to detect spurious losses. Additionally, packet reordering could be more common
+with QUIC than TCP, because network elements that could observe and fix the
+order of reordered TCP packets cannot do it with QUIC. Algorithms that increase
+the reordering threshold after spuriously detecting losses, such as RACK
+{{?RACK}}, have proven to be useful in TCP and are expected to at least as
+useful in QUIC.
 
 ### Time Threshold {#time-threshold}
 
@@ -870,10 +871,12 @@ between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
 Because the threshold was reached and because none of the packets between the
 oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion.
+have experienced persistent congestion. Note that this example shows the
+occurrence of PTOs, but that is not required for persistent congestion to be
+established.
 
-When persistent congestion is established, the sender's congestion window MUST
-be reduced to the minimum congestion window (kMinimumWindow).  This response of
+When persistent congestion is declared, the sender's congestion window MUST be
+reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 ({{RFC5681}}) after Tail Loss Probes (TLP; see {{RACK}}).
@@ -960,8 +963,9 @@ sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 
 Packets that carry only ACK frames can be heuristically identified by observing
 packet size.  Acknowledgement patterns may expose information about link
-characteristics or application behavior.  Endpoints can use PADDING frames or
-bundle acknowledgments with other frames to reduce leaked information.
+characteristics or application behavior.  To reduce leaked information,
+endpoints can use PADDING frames, at a potential cost to performance, or bundle
+acknowledgments with other frames.
 
 ## Misreporting ECN Markings
 
