@@ -667,30 +667,35 @@ this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
-Clients can cancel requests by resetting and aborting the request stream with an
-error code of H3_REQUEST_CANCELLED ({{http-error-codes}}).  When the client
-aborts reading a response, it indicates that this response is no longer of
-interest. Implementations SHOULD cancel requests by abruptly terminating any
-directions of a stream that are still open.
+Once a request has been sent, it MAY be cancelled by either endpoint.  Clients
+cancel requests if the response is no longer of interest; servers cancel
+requests if they are unable to or choose not to respond.  When possible, it is
+RECOMMENDED that servers send an HTTP response with an appropriate status code
+rather than canceling a request it has already begun processing.
 
-When the server rejects a request without performing any application processing,
-it SHOULD abort its response stream with the error code H3_REQUEST_REJECTED.
-In this context, "processed" means that some data from the stream was passed to
-some higher layer of software that might have taken some action as a result. The
-client can treat requests rejected by the server as though they had never been
-sent at all, thereby allowing them to be retried later on a new connection.
-Servers MUST NOT use the H3_REQUEST_REJECTED error code for requests which
-were partially or fully processed.  When a server abandons a response after
-partial processing, it SHOULD abort its response stream with the error code
-H3_REQUEST_CANCELLED.
+Implementations SHOULD cancel requests by abruptly terminating any
+directions of a stream that are still open.  This means resetting the
+sending parts of streams and aborting reading on receiving parts of streams;
+see Section 2.4 of [QUIC-TRANSPORT].
 
-When a client resets a request with the error code H3_REQUEST_CANCELLED, a
-server MAY abruptly terminate the response using the error code
-H3_REQUEST_REJECTED if no processing was performed.  Clients MUST NOT use the
-H3_REQUEST_REJECTED error code, except when a server has requested closure of
-the request stream with this error code.
+When the server cancels a request without performing any application processing,
+the request is considered "rejected."  The server SHOULD abort its response
+stream with the error code H3_REQUEST_REJECTED. In this context, "processed"
+means that some data from the stream was passed to some higher layer of software
+that might have taken some action as a result. The client can treat requests
+rejected by the server as though they had never been sent at all, thereby
+allowing them to be retried later on a new connection. Servers MUST NOT use the
+H3_REQUEST_REJECTED error code for requests which were partially or fully
+processed.  When a server abandons a response after partial processing, it
+SHOULD abort its response stream with the error code H3_REQUEST_CANCELLED.
 
-If a stream is cancelled after receiving a complete response, the client MAY
+Client SHOULD use the error code H3_REQUEST_CANCELLED to cancel requests.  Upon
+receipt of this error code, a server MAY abruptly terminate the response using
+the error code H3_REQUEST_REJECTED if no processing was performed.  Clients MUST
+NOT use the H3_REQUEST_REJECTED error code, except when a server has requested
+closure of the request stream with this error code.
+
+If a stream is canceled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
 after receiving a partial response, the response SHOULD NOT be used.
 Automatically retrying such requests is not possible, unless this is otherwise
@@ -907,9 +912,9 @@ graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
 The GOAWAY frame contains an identifier that indicates to the receiver the range
 of requests or pushes that were or might be processed in this connection.  The
 server sends a client-initiated bidirectional Stream ID; the client sends a Push
-ID.  Requests or pushes with the indicated identifier or greater are rejected by
-the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
-were processed.
+ID.  Requests or pushes with the indicated identifier or greater are rejected
+({{request-cancellation}}) by the sender of the GOAWAY.  This identifier MAY be
+zero if no requests or pushes were processed.
 
 The information in the GOAWAY frame enables a client and server to agree on
 which requests or pushes were accepted prior to the connection shutdown. Upon
