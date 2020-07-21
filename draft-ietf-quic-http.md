@@ -799,25 +799,34 @@ indicated request.  This trades off network usage against a potential latency
 gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
 but uses different mechanisms.
 
-Each server push is identified by a unique Push ID. This Push ID is used in one
-or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
-fields, then included with the push stream which ultimately fulfills those
-promises. When the same Push ID is promised on multiple request streams, the
-decompressed request field sections MUST contain the same fields in the
-same order, and both the name and the value in each field MUST be exact
-matches.
+Each server push is identified by a unique Push ID, which is used to refer to
+the push in various contexts throughout the lifetime of the connection.
 
-Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
-frame; see {{frame-max-push-id}}. A server cannot use server push until it
-receives a MAX_PUSH_ID frame. A client sends additional MAX_PUSH_ID frames to
-control the number of pushes that a server can promise. A server SHOULD use Push
-IDs sequentially, starting at 0. A client MUST treat receipt of a push stream
-with a Push ID that is greater than the maximum Push ID as a connection error of
-type H3_ID_ERROR.
+The Push ID space begins at zero, and ends at a maximum value set by the
+MAX_PUSH_ID frame; see {{frame-max-push-id}}.  Server push is only enabled on a
+connection when a client sends a MAX_PUSH_ID frame.  A client sends additional
+MAX_PUSH_ID frames to control the number of pushes that a server can promise.  A
+server SHOULD use Push IDs sequentially.  A client MUST treat receipt of a push
+stream with a Push ID that is greater than the maximum Push ID as a connection
+error of type H3_ID_ERROR.
 
-The header section of the request message is carried by a PUSH_PROMISE frame
-(see {{frame-push-promise}}) on the request stream which generated the push.
-This allows the server push to be associated with a client request.
+The Push ID is used in one or more PUSH_PROMISE frames ({{frame-push-promise}})
+that carry the header section of the request message.  These frames are sent on
+the request stream which generated the push.  This allows the server push to be
+associated with a client request.  When the same Push ID is promised on multiple
+request streams, the decompressed request field sections MUST contain the same
+fields in the same order, and both the name and the value in each field MUST be
+exact matches.
+
+The Push ID is then included with the push stream which ultimately fulfills
+those promises; see {{push-streams}}.  The push stream identifies the Push ID of
+the promise that it fulfills, then contains a response to the promised request
+as described in {{request-response}}.
+
+Finally, the Push ID can be used in CANCEL_PUSH frames; see
+{{frame-cancel-push}}.  Clients use this frame to indicate they do not wish to
+receive a promised resource.  Servers use this frame to indicate they will not
+be fulfilling a previous promise.
 
 Not all requests can be pushed.  A server MAY push requests which have the
 following properties:
@@ -846,11 +855,6 @@ important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
 or DATA frames that reference the promised responses.  This reduces the chance
 that a client requests a resource that will be pushed by the server.
 
-When a server later fulfills a promise, the server push response is conveyed on
-a push stream; see {{push-streams}}. The push stream identifies the Push ID of
-the promise that it fulfills, then contains a response to the promised request
-using the same format described for responses in {{request-response}}.
-
 Due to reordering, push stream data can arrive before the corresponding
 PUSH_PROMISE frame.  When a client receives a new push stream with an
 as-yet-unknown Push ID, both the associated client request and the pushed
@@ -859,9 +863,8 @@ expectation of the matching PUSH_PROMISE. The client can use stream flow control
 (see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
 commit to the pushed stream.
 
-If a promised server push is not needed by the client, the client SHOULD send a
-CANCEL_PUSH frame. If the push stream is already open or opens after sending the
-CANCEL_PUSH frame, the client can abort reading the stream with an error code of
+Push stream data can also arrive after a client has canceled a push. In this
+case, the client can abort reading the stream with an error code of
 H3_REQUEST_CANCELLED. This asks the server not to transfer additional data and
 indicates that it will be discarded upon receipt.
 
@@ -907,9 +910,9 @@ graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
 The GOAWAY frame contains an identifier that indicates to the receiver the range
 of requests or pushes that were or might be processed in this connection.  The
 server sends a client-initiated bidirectional Stream ID; the client sends a Push
-ID.  Requests or pushes with the indicated identifier or greater are rejected by
-the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
-were processed.
+ID ({{server-push}}).  Requests or pushes with the indicated identifier or
+greater are rejected by the sender of the GOAWAY.  This identifier MAY be zero
+if no requests or pushes were processed.
 
 The information in the GOAWAY frame enables a client and server to agree on
 which requests or pushes were accepted prior to the connection shutdown. Upon
@@ -1275,8 +1278,8 @@ error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
 push prior to the push stream being received.  The CANCEL_PUSH frame identifies
-a server push by Push ID (see {{frame-push-promise}}), encoded as a
-variable-length integer.
+a server push by Push ID (see {{server-push}}), encoded as a variable-length
+integer.
 
 When a client sends CANCEL_PUSH, it is indicating that it does not wish to
 receive the promised resource.  The server SHOULD abort sending the resource,
