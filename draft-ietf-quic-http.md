@@ -84,7 +84,7 @@ subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
-([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
+(quic@ietf.org), which is archived at
 [](https://mailarchive.ietf.org/arch/search/?email_list=quic).
 
 Working Group information can be found at [](https://github.com/quicwg); source
@@ -97,7 +97,7 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-HTTP semantics {{!SEMANTICS=I-D.ietf-httpbis-semantics}} are used for a broad
+HTTP semantics ({{!SEMANTICS=I-D.ietf-httpbis-semantics}}) are used for a broad
 range of services on the Internet. These semantics have most commonly been used
 with HTTP/1.1, over a variety of transport and session layers, and with HTTP/2
 over TLS. HTTP/3 supports the same semantics over a new transport protocol,
@@ -105,7 +105,7 @@ QUIC.
 
 ## Prior versions of HTTP
 
-HTTP/1.1 {{?HTTP11=I-D.ietf-httpbis-messaging}} uses whitespace-delimited text
+HTTP/1.1 ({{?HTTP11=I-D.ietf-httpbis-messaging}}) uses whitespace-delimited text
 fields to convey HTTP messages.  While these exchanges are human-readable, using
 whitespace for message formatting leads to parsing complexity and excessive
 tolerance of variant behavior.  Because HTTP/1.x does not include a multiplexing
@@ -114,8 +114,8 @@ However, that has a negative impact on congestion control and network
 efficiency, since TCP does not share congestion control across multiple
 connections.
 
-HTTP/2 {{?HTTP2=RFC7540}} introduced a binary framing and multiplexing layer to
-improve latency without modifying the transport layer.  However, because the
+HTTP/2 ({{?HTTP2=RFC7540}}) introduced a binary framing and multiplexing layer
+to improve latency without modifying the transport layer.  However, because the
 parallel nature of HTTP/2's multiplexing is not visible to TCP's loss recovery
 mechanisms, a lost or reordered packet causes all active transactions to
 experience a stall regardless of whether that transaction was directly impacted
@@ -127,9 +127,9 @@ The QUIC transport protocol incorporates stream multiplexing and per-stream flow
 control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, it has the capability to improve the performance of HTTP compared to
-a TCP mapping.  QUIC also incorporates TLS 1.3 {{?TLS13=RFC8446}} at the
-transport layer, offering comparable security to running TLS over TCP, with
-the improved connection setup latency of TCP Fast Open {{?TFO=RFC7413}}.
+a TCP mapping.  QUIC also incorporates TLS 1.3 ({{?TLS13=RFC8446}}) at the
+transport layer, offering comparable security to running TLS over TCP, with the
+improved connection setup latency of TCP Fast Open ({{?TFO=RFC7413}}).
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -161,16 +161,16 @@ consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
 
-Server push is an interaction mode introduced in HTTP/2 {{?HTTP2}} which permits
-a server to push a request-response exchange to a client in anticipation of the
-client making the indicated request.  This trades off network usage against a
-potential latency gain.  Several HTTP/3 frames are used to manage server push,
-such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
+Server push is an interaction mode introduced in HTTP/2 ({{?HTTP2}}) which
+permits a server to push a request-response exchange to a client in anticipation
+of the client making the indicated request.  This trades off network usage
+against a potential latency gain.  Several HTTP/3 frames are used to manage
+server push, such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response fields are compressed for transmission.
-Because HPACK {{?HPACK=RFC7541}} relies on in-order transmission of compressed
+Because HPACK ({{?HPACK=RFC7541}}) relies on in-order transmission of compressed
 field sections (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
-QPACK [QPACK].  QPACK uses separate unidirectional streams to modify and track
+QPACK ([QPACK]).  QPACK uses separate unidirectional streams to modify and track
 field table state, while encoded field sections refer to the state of the table
 without modifying it.
 
@@ -267,6 +267,9 @@ Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
 in Section 2.2 of {{!SEMANTICS}}.  Intermediaries act as both client and server
 at different times.
 
+Packet diagrams in this document use the format defined in Section 1.3 of
+{{QUIC-TRANSPORT}} to illustrate the order and size of fields.
+
 
 # Connection Setup and Management {#connection-setup}
 
@@ -295,8 +298,7 @@ experimental implementation based on draft-ietf-quic-http-09 which reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
 syntax defined in Section 5.4.1.1 of {{!SEMANTICS}}. Experimenters are
-encouraged to coordinate their experiments on the
-[quic@ietf.org](mailto:quic@ietf.org) mailing list.
+encouraged to coordinate their experiments on the quic@ietf.org mailing list.
 
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
@@ -331,7 +333,7 @@ default port associated with the scheme.
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
 the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
-using the Application Layer Protocol Negotiation (ALPN) {{!RFC7301}} token
+using the Application Layer Protocol Negotiation (ALPN; see {{!RFC7301}}) token
 defined in {{connection-establishment}}.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
@@ -343,8 +345,9 @@ Alt-Svc: h3=":50781"
 ~~~
 
 On receipt of an Alt-Svc record indicating HTTP/3 support, a client MAY attempt
-to establish a QUIC connection to the indicated host and port and, if
-successful, send HTTP requests using the mapping described in this document.
+to establish a QUIC connection to the indicated host and port; if this
+connection is successful, the client can send HTTP requests using the mapping
+described in this document.
 
 ### Other Schemes
 
@@ -373,7 +376,7 @@ QUIC transport versions with HTTP/3 MAY be defined by future specifications.
 QUIC version 1 uses TLS version 1.3 or greater as its handshake protocol.
 HTTP/3 clients MUST support a mechanism to indicate the target host to the
 server during the TLS handshake.  If the server is identified by a DNS name,
-clients MUST send the Server Name Indication (SNI) {{!RFC6066}} TLS extension
+clients MUST send the Server Name Indication (SNI; {{!RFC6066}}) TLS extension
 unless an alternative mechanism to indicate the target host is used.
 
 QUIC connections are established as described in {{QUIC-TRANSPORT}}. During
@@ -409,7 +412,7 @@ of {{!SEMANTICS}} for more detail on authoritative access.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
 pair, where the host is derived from a URI, a selected alternative service
-{{!ALTSVC}}, or a configured proxy.  A client MAY open multiple connections to
+({{!ALTSVC}}), or a configured proxy.  A client MAY open multiple connections to
 the same IP address and UDP port using different transport or TLS configurations
 but SHOULD avoid creating multiple connections with the same configuration.
 
@@ -433,7 +436,8 @@ of {{?HTTP2}}.
 A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
 A client MUST send only a single request on a given stream. A server sends zero
 or more interim HTTP responses on the same stream as the request, followed by a
-single final HTTP response, as detailed below.
+single final HTTP response, as detailed below.  See Section 10 of {{!SEMANTICS}}
+for a description of interim and final HTTP responses.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
 {{push-streams}}.  A server sends zero or more interim HTTP responses, followed
@@ -446,21 +450,24 @@ response following a final HTTP response MUST be treated as malformed
 
 An HTTP message (request or response) consists of:
 
-1. the header field section (see Section 5 of {{!SEMANTICS}}), sent as a single
-   HEADERS frame (see {{frame-headers}}),
+1. the header field section, sent as a single HEADERS frame (see
+   {{frame-headers}}),
 
-2. optionally, the payload body, if present (see Section 7.3.3 of
-   {{!SEMANTICS}}), sent as a series of DATA frames (see {{frame-data}}),
+2. optionally, the payload body, if present, sent as a series of DATA frames
+   (see {{frame-data}}),
 
-3. optionally, the trailer field section, if present (see Section 5.6 of
-   {{!SEMANTICS}}), sent as a single HEADERS frame.
+3. optionally, the trailer field section, if present, sent as a single HEADERS
+   frame.
+
+Header and trailer field sections are described in Section 5 of {{!SEMANTICS}};
+the payload body is described in Section 7.3.3 of {{!SEMANTICS}}.
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
 any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
 is considered invalid.
 
-A server MAY send one or more PUSH_PROMISE frames (see {{frame-push-promise}})
+A server MAY send one or more PUSH_PROMISE frames ({{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
 details.  These frames are not permitted in pushed responses; a pushed response
@@ -480,9 +487,9 @@ The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-informational responses (1xx; see Section 10.2 of {{!SEMANTICS}}) precede a
-final response to the same request.  Interim responses do not contain a payload
-body or trailers.
+interim responses (1xx; see Section 10.2 of {{!SEMANTICS}}) precede a final
+response to the same request.  Interim responses do not contain a payload body
+or trailers.
 
 An HTTP request/response exchange fully consumes a client-initiated
 bidirectional QUIC stream. After sending a request, a client MUST close the
@@ -491,12 +498,12 @@ MUST NOT make stream closure dependent on receiving a response to their request.
 After sending a final response, the server MUST close the stream for sending. At
 this point, the QUIC stream is fully closed.
 
-When a stream is closed, this indicates the end of an HTTP message. Because some
-messages are large or unbounded, endpoints SHOULD begin processing partial HTTP
-messages once enough of the message has been received to make progress.  If a
-client-initiated stream terminates without enough of the HTTP message to provide
-a complete response, the server SHOULD abort its response with the error code
-H3_REQUEST_INCOMPLETE.
+When a stream is closed, this indicates the end of the final HTTP message.
+Because some messages are large or unbounded, endpoints SHOULD begin processing
+partial HTTP messages once enough of the message has been received to make
+progress.  If a client-initiated stream terminates without enough of the HTTP
+message to provide a complete response, the server SHOULD abort its response
+with the error code H3_REQUEST_INCOMPLETE.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -618,7 +625,7 @@ either an ":authority" pseudo-header field or a "Host" header field.  If these
 fields are present, they MUST NOT be empty.  If both fields are present, they
 MUST contain the same value.  If the scheme does not have a mandatory authority
 component and none is provided in the request target, the request MUST NOT
-contain the ":authority" pseudo-header and "Host" header fields.
+contain the ":authority" pseudo-header or "Host" header fields.
 
 An HTTP request that omits mandatory pseudo-header fields or contains invalid
 values for those pseudo-header fields is malformed ({{malformed}}).
@@ -640,12 +647,12 @@ HTTP/3 uses QPACK field compression as described in [QPACK], a variation of
 HPACK which allows the flexibility to avoid compression-induced head-of-line
 blocking.  See that document for additional details.
 
-To allow for better compression efficiency, the "Cookie" field {{!RFC6265}} MAY
-be split into separate field lines, each with one or more cookie-pairs, before
-compression. If a decompressed field section contains multiple cookie field
-lines, these MUST be concatenated into a single octet string using the two-octet
-delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed into a
-context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
+To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
+MAY be split into separate field lines, each with one or more cookie-pairs,
+before compression. If a decompressed field section contains multiple cookie
+field lines, these MUST be concatenated into a single octet string using the
+two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
+into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
 
 #### Header Size Constraints
@@ -674,15 +681,14 @@ interest. Implementations SHOULD cancel requests by abruptly terminating any
 directions of a stream that are still open.
 
 When the server rejects a request without performing any application processing,
-it SHOULD abort its response stream with the error code H3_REQUEST_REJECTED.
-In this context, "processed" means that some data from the stream was passed to
+it SHOULD abort its response stream with the error code H3_REQUEST_REJECTED. In
+this context, "processed" means that some data from the stream was passed to
 some higher layer of software that might have taken some action as a result. The
 client can treat requests rejected by the server as though they had never been
-sent at all, thereby allowing them to be retried later on a new connection.
-Servers MUST NOT use the H3_REQUEST_REJECTED error code for requests which
-were partially or fully processed.  When a server abandons a response after
-partial processing, it SHOULD abort its response stream with the error code
-H3_REQUEST_CANCELLED.
+sent at all, thereby allowing them to be retried later.  Servers MUST NOT use
+the H3_REQUEST_REJECTED error code for requests which were partially or fully
+processed.  When a server abandons a response after partial processing, it
+SHOULD abort its response stream with the error code H3_REQUEST_CANCELLED.
 
 When a client resets a request with the error code H3_REQUEST_CANCELLED, a
 server MAY abruptly terminate the response using the error code
@@ -721,11 +727,11 @@ not acting as a tunnel) MUST NOT forward a malformed request or response.
 Malformed requests or responses that are detected MUST be treated as a stream
 error ({{errors}}) of type H3_GENERAL_PROTOCOL_ERROR.
 
-For malformed requests, a server MAY send an HTTP response prior to closing or
-resetting the stream.  Clients MUST NOT accept a malformed response.  Note that
-these requirements are intended to protect against several types of common
-attacks against HTTP; they are deliberately strict because being permissive can
-expose implementations to these vulnerabilities.
+For malformed requests, a server MAY send an HTTP response indicating the error
+prior to closing or resetting the stream.  Clients MUST NOT accept a malformed
+response.  Note that these requirements are intended to protect against several
+types of common attacks against HTTP; they are deliberately strict because being
+permissive can expose implementations to these vulnerabilities.
 
 
 ## The CONNECT Method {#connect}
@@ -758,22 +764,23 @@ is successfully established, the proxy sends a HEADERS frame containing a 2xx
 series status code to the client, as defined in Section 10.3 of {{!SEMANTICS}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
-connection. Any DATA frame sent by the client is transmitted by the proxy to the
-TCP server; data received from the TCP server is packaged into DATA frames by
-the proxy. Note that the size and number of TCP segments is not guaranteed to
-map predictably to the size and number of HTTP DATA or QUIC STREAM frames.
+connection. The payload of any DATA frame sent by the client is transmitted by
+the proxy to the TCP server; data received from the TCP server is packaged into
+DATA frames by the proxy. Note that the size and number of TCP segments is not
+guaranteed to map predictably to the size and number of HTTP DATA or QUIC STREAM
+frames.
 
-Once the CONNECT method has completed, only DATA frames are permitted
-to be sent on the stream.  Extension frames MAY be used if specifically
-permitted by the definition of the extension.  Receipt of any other frame type
-MUST be treated as a connection error of type H3_FRAME_UNEXPECTED.
+Once the CONNECT method has completed, only DATA frames are permitted to be sent
+on the stream.  Extension frames MAY be used if specifically permitted by the
+definition of the extension.  Receipt of any other known frame type MUST be
+treated as a connection error of type H3_FRAME_UNEXPECTED.
 
 The TCP connection can be closed by either peer. When the client ends the
 request stream (that is, the receive stream at the proxy enters the "Data Recvd"
 state), the proxy will set the FIN bit on its connection to the TCP server. When
-the proxy receives a packet with the FIN bit set, it will terminate the send
-stream that it sends to the client. TCP connections which remain half-closed in
-a single direction are not invalid, but are often handled poorly by servers, so
+the proxy receives a packet with the FIN bit set, it will close the send stream
+that it sends to the client. TCP connections which remain half-closed in a
+single direction are not invalid, but are often handled poorly by servers, so
 clients SHOULD NOT close a stream for sending while they still expect to receive
 data from the target of the CONNECT.
 
@@ -796,16 +803,15 @@ or 101 (Switching Protocols) informational status code (Section 10.2.2 of
 Server push is an interaction mode which permits a server to push a
 request-response exchange to a client in anticipation of the client making the
 indicated request.  This trades off network usage against a potential latency
-gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
-but uses different mechanisms.
+gain.  HTTP/3 server push is similar to what is described in Section 8.2 of
+{{?HTTP2}}, but uses different mechanisms.
 
 Each server push is identified by a unique Push ID. This Push ID is used in one
-or more PUSH_PROMISE frames (see {{frame-push-promise}}) that carry the request
+or more PUSH_PROMISE frames ({{frame-push-promise}}) that carry the request
 fields, then included with the push stream which ultimately fulfills those
 promises. When the same Push ID is promised on multiple request streams, the
-decompressed request field sections MUST contain the same fields in the
-same order, and both the name and the value in each field MUST be exact
-matches.
+decompressed request field sections MUST contain the same fields in the same
+order, and both the name and the value in each field MUST be exact matches.
 
 Server push is only enabled on a connection when a client sends a MAX_PUSH_ID
 frame; see {{frame-max-push-id}}. A server cannot use server push until it
@@ -841,7 +847,7 @@ requests using a PUSH_PROMISE frame with the same Push ID on multiple request
 streams.  These associations do not affect the operation of the protocol, but
 MAY be considered by user agents when deciding how to use pushed resources.
 
-Ordering of a PUSH_PROMISE in relation to certain parts of the response is
+Ordering of a PUSH_PROMISE frame in relation to certain parts of the response is
 important. The server SHOULD send PUSH_PROMISE frames prior to sending HEADERS
 or DATA frames that reference the promised responses.  This reduces the chance
 that a client requests a resource that will be pushed by the server.
@@ -869,8 +875,8 @@ Pushed responses that are cacheable (see Section 3 of
 {{!CACHING=I-D.ietf-httpbis-cache}}) can be stored by the client, if it
 implements an HTTP cache.  Pushed responses are considered successfully
 validated on the origin server (e.g., if the "no-cache" cache response directive
-is present (Section 5.2.2.3 of {{!CACHING}})) at the time the pushed response is
-received.
+is present; see Section 5.2.2.3 of {{!CACHING}}) at the time the pushed response
+is received.
 
 Pushed responses that are not cacheable MUST NOT be stored by any HTTP cache.
 They MAY be made available to the application separately.
@@ -907,9 +913,9 @@ graceful shutdown of a connection by sending a GOAWAY frame ({{frame-goaway}}).
 The GOAWAY frame contains an identifier that indicates to the receiver the range
 of requests or pushes that were or might be processed in this connection.  The
 server sends a client-initiated bidirectional Stream ID; the client sends a Push
-ID.  Requests or pushes with the indicated identifier or greater are rejected by
-the sender of the GOAWAY.  This identifier MAY be zero if no requests or pushes
-were processed.
+ID ({{server-push}}).  Requests or pushes with the indicated identifier or
+greater are rejected by the sender of the GOAWAY.  This identifier MAY be zero
+if no requests or pushes were processed.
 
 The information in the GOAWAY frame enables a client and server to agree on
 which requests or pushes were accepted prior to the connection shutdown. Upon
@@ -968,12 +974,10 @@ can be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
 GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
-continue fulfilling pushes which have already been promised, and the client can
-continue granting push credit as needed; see {{frame-max-push-id}}. A smaller
-value indicates the client will reject pushes with Push IDs greater than or
-equal to this value.  Like the server, the client MAY send subsequent GOAWAY
-frames so long as the specified Push ID is no greater than any previously
-sent value.
+continue fulfilling pushes which have already been promised. A smaller value
+indicates the client will reject pushes with Push IDs greater than or equal to
+this value.  Like the server, the client MAY send subsequent GOAWAY frames so
+long as the specified Push ID is no greater than any previously sent value.
 
 Even when a GOAWAY indicates that a given request or push will not be processed
 or accepted upon receipt, the underlying transport resources still exist.  The
@@ -983,7 +987,7 @@ state.
 Once all accepted requests and pushes have been processed, the endpoint can
 permit the connection to become idle, or MAY initiate an immediate closure of
 the connection.  An endpoint that completes a graceful shutdown SHOULD use the
-H3_NO_ERROR code when closing the connection.
+H3_NO_ERROR error code when closing the connection.
 
 If a client has consumed all available bidirectional stream IDs with requests,
 the server need not send a GOAWAY frame, since the client is unable to make
@@ -1064,11 +1068,11 @@ Unidirectional Stream Header {
 ~~~~~~~~~~
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
-Some stream types are reserved ({{stream-grease}}).  Two stream types are
-defined in this document: control streams ({{control-streams}}) and push streams
-({{push-streams}}).  [QPACK] defines two additional stream types.  Other stream
-types can be defined by extensions to HTTP/3; see {{extensions}} for more
-details.
+Two stream types are defined in this document: control streams
+({{control-streams}}) and push streams ({{push-streams}}).  [QPACK] defines two
+additional stream types.  Other stream types can be defined by extensions to
+HTTP/3; see {{extensions}} for more details.  Some stream types are reserved
+({{stream-grease}}).
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
 sensitive to the creation and exchange of data on unidirectional streams.
@@ -1094,8 +1098,9 @@ create additional streams as allowed by their peer.
 If the stream header indicates a stream type which is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
 unknown. Recipients of unknown stream types MAY abort reading of the stream with
-an error code of H3_STREAM_CREATION_ERROR, but MUST NOT consider such streams
-to be a connection error of any kind.
+an error code of H3_STREAM_CREATION_ERROR or a reserved error code
+({{http-error-codes}}), but MUST NOT consider such streams to be a connection
+error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types which could modify the state or semantics of
@@ -1167,8 +1172,7 @@ receipt.
 
 The payload and length of the stream are selected in any manner the
 implementation chooses.  Implementations MAY terminate these streams cleanly, or
-MAY abruptly terminate them.  When terminating abruptly, the error code
-H3_NO_ERROR or a reserved error code ({{http-error-codes}}) SHOULD be used.
+MAY abruptly terminate them.
 
 
 # HTTP Framing Layer {#http-framing-layer}
@@ -1225,20 +1229,19 @@ A frame includes the following fields:
 Each frame's payload MUST contain exactly the fields identified in its
 description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
-identified fields MUST be treated as a connection error of type
+identified fields MUST be treated as a connection error ({{errors}}) of type
 H3_FRAME_ERROR.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
-this MUST be treated as a connection error ({{errors}}) of type
-H3_FRAME_ERROR. Streams which terminate abruptly may be reset at any point in
-a frame.
+this MUST be treated as a connection error ({{errors}}) of type H3_FRAME_ERROR.
+Streams which terminate abruptly may be reset at any point in a frame.
 
 ## Frame Definitions {#frames}
 
 ### DATA {#frame-data}
 
 DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
-associated with an HTTP request or response payload.
+associated with an HTTP request or response payload body.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on a control stream, the recipient MUST respond with a
@@ -1267,7 +1270,7 @@ HEADERS Frame {
 ~~~~~~~~~~
 {: #fig-headers title="HEADERS Frame"}
 
-HEADERS frames can only be sent on request / push streams.  If a HEADERS frame
+HEADERS frames can only be sent on request or push streams.  If a HEADERS frame
 is received on a control stream, the recipient MUST respond with a connection
 error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
@@ -1275,8 +1278,8 @@ error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
 The CANCEL_PUSH frame (type=0x3) is used to request cancellation of a server
 push prior to the push stream being received.  The CANCEL_PUSH frame identifies
-a server push by Push ID (see {{frame-push-promise}}), encoded as a
-variable-length integer.
+a server push by Push ID (see {{server-push}}), encoded as a variable-length
+integer.
 
 When a client sends CANCEL_PUSH, it is indicating that it does not wish to
 receive the promised resource.  The server SHOULD abort sending the resource,
@@ -1289,13 +1292,13 @@ terminate the stream or MAY take no action.
 When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
 a promise.  The client cannot expect the corresponding promise to be fulfilled,
 unless it has already received and processed the promised response. A server
-SHOULD send a CANCEL_PUSH even if it has opened the corresponding stream.
+SHOULD send a CANCEL_PUSH frame even if it has opened the corresponding stream.
 
-Sending CANCEL_PUSH has no direct effect on the state of existing push streams.
-A client SHOULD NOT send a CANCEL_PUSH when it has already received a
-corresponding push stream.  A push stream could arrive after a client has sent
-CANCEL_PUSH, because a server might not have processed the CANCEL_PUSH. The
-client SHOULD abort reading the stream with an error code of
+Sending a CANCEL_PUSH frame has no direct effect on the state of existing push
+streams. A client SHOULD NOT send a CANCEL_PUSH frame when it has already
+received a corresponding push stream.  A push stream could arrive after a client
+has sent a CANCEL_PUSH frame, because a server might not have processed the
+CANCEL_PUSH. The client SHOULD abort reading the stream with an error code of
 H3_REQUEST_CANCELLED.
 
 A CANCEL_PUSH frame is sent on the control stream.  Receiving a CANCEL_PUSH
@@ -1313,9 +1316,9 @@ CANCEL_PUSH Frame {
 
 The CANCEL_PUSH frame carries a Push ID encoded as a variable-length integer.
 The Push ID identifies the server push that is being cancelled; see
-{{frame-push-promise}}.  If a CANCEL_PUSH frame is received which references a
-Push ID greater than currently allowed on the connection, this MUST be treated
-as a connection error of type H3_ID_ERROR.
+{{server-push}}.  If a CANCEL_PUSH frame is received which references a Push ID
+greater than currently allowed on the connection, this MUST be treated as a
+connection error of type H3_ID_ERROR.
 
 If the client receives a CANCEL_PUSH frame, that frame might identify a Push ID
 that has not yet been mentioned by a PUSH_PROMISE frame due to reordering.  If a
@@ -1417,10 +1420,11 @@ For servers, the initial value of each client setting is the default value.
 
 For clients using a 1-RTT QUIC connection, the initial value of each server
 setting is the default value.  1-RTT keys will always become available prior to
-SETTINGS arriving, even if the server sends SETTINGS immediately. Clients SHOULD
-NOT wait indefinitely for SETTINGS to arrive before sending requests, but SHOULD
-process received datagrams in order to increase the likelihood of processing
-SETTINGS before sending the first request.
+the packet containing SETTINGS being processed by QUIC, even if the server sends
+SETTINGS immediately.  Clients SHOULD NOT wait indefinitely for SETTINGS to
+arrive before sending requests, but SHOULD process received datagrams in order
+to increase the likelihood of processing SETTINGS before sending the first
+request.
 
 When a 0-RTT QUIC connection is being used, the initial value of each server
 setting is the value used in the previous session. Clients SHOULD store the
@@ -1491,14 +1495,14 @@ times. If a client receives a Push ID that has already been promised and detects
 a mismatch, it MUST respond with a connection error of type
 H3_GENERAL_PROTOCOL_ERROR. If the decompressed field sections match exactly, the
 client SHOULD associate the pushed content with each stream on which a
-PUSH_PROMISE was received.
+PUSH_PROMISE frame was received.
 
 Allowing duplicate references to the same Push ID is primarily to reduce
 duplication caused by concurrent requests.  A server SHOULD avoid reusing a Push
 ID over a long period.  Clients are likely to consume server push responses and
-not retain them for reuse over time.  Clients that see a PUSH_PROMISE that uses
-a Push ID that they have already consumed and discarded are forced to ignore the
-PUSH_PROMISE.
+not retain them for reuse over time.  Clients that see a PUSH_PROMISE frame that
+uses a Push ID that they have already consumed and discarded are forced to
+ignore the promise.
 
 If a PUSH_PROMISE frame is received on the control stream, the client MUST
 respond with a connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
@@ -1564,16 +1568,16 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 MAX_PUSH_ID Frame {
   Type (i) = 0x1,
   Length (i),
-  Push ID (..),
+  Push ID (i),
 }
 ~~~~~~~~~~
 {: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
-the maximum value for a Push ID that the server can use; see
-{{frame-push-promise}}.  A MAX_PUSH_ID frame cannot reduce the maximum Push ID;
-receipt of a MAX_PUSH_ID that contains a smaller value than previously received
-MUST be treated as a connection error of type H3_ID_ERROR.
+the maximum value for a Push ID that the server can use; see {{server-push}}.  A
+MAX_PUSH_ID frame cannot reduce the maximum Push ID; receipt of a MAX_PUSH_ID
+frame that contains a smaller value than previously received MUST be treated as
+a connection error of type H3_ID_ERROR.
 
 ### Reserved Frame Types {#frame-reserved}
 
@@ -1606,7 +1610,8 @@ outstanding requests before making this choice.
 Because new error codes can be defined without negotiation (see {{extensions}}),
 use of an error code in an unexpected context or receipt of an unknown error
 code MUST be treated as equivalent to H3_NO_ERROR.  However, closing a stream
-can have other effects regardless of the error code; see {{request-response}}.
+can have other effects regardless of the error code; for example, see
+{{request-response}}.
 
 This section describes HTTP/3-specific error codes which can be used to express
 the cause of a connection or stream error.
@@ -1747,7 +1752,7 @@ or responses containing invalid field names MUST be treated as malformed
 ({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
 or response containing an invalid field name into an HTTP/1.1 message.
 
-Similarly, HTTP/3 allows field values that are not valid. While most of the
+Similarly, HTTP/3 can transport field values that are not valid. While most
 values that can be encoded will not alter field parsing, carriage return (CR,
 ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL, ASCII 0x0)
 might be exploited by an attacker if they are translated verbatim. Any request
@@ -1820,8 +1825,8 @@ size of a field section, some endpoints could be forced to commit a large amount
 of available memory for header fields.
 
 An endpoint can use the SETTINGS_MAX_FIELD_SECTION_SIZE
-({{settings-parameters}}) setting to advise peers of limits that might apply on
-the size of field sections. This setting is only advisory, so endpoints MAY
+({{header-size-constraints}}) setting to advise peers of limits that might apply
+on the size of field sections. This setting is only advisory, so endpoints MAY
 choose to send field sections that exceed this limit and risk having the request
 or response being treated as malformed.  This setting is specific to a
 connection, so any request or response could encounter a hop with a lower,
@@ -1829,12 +1834,12 @@ unknown limit.  An intermediary can attempt to avoid this problem by passing on
 values presented by different peers, but they are not obligated to do so.
 
 A server that receives a larger field section than it is willing to handle can
-send an HTTP 431 (Request Header Fields Too Large) status code {{?RFC6585}}.  A
-client can discard responses that it cannot process.
+send an HTTP 431 (Request Header Fields Too Large) status code ({{?RFC6585}}).
+A client can discard responses that it cannot process.
 
 ### CONNECT Issues
 
-The CONNECT method can be used to create disproportionate load on an proxy,
+The CONNECT method can be used to create disproportionate load on a proxy,
 since stream creation is relatively inexpensive when compared to the creation
 and maintenance of a TCP connection.  A proxy might also maintain some resources
 for a TCP connection beyond the closing of the stream that carries the CONNECT
@@ -1857,8 +1862,8 @@ correct.
 
 Implementations communicating on a secure channel MUST NOT compress content that
 includes both confidential and attacker-controlled data unless separate
-compression dictionaries are used for each source of data.  Compression MUST NOT
-be used if the source of data cannot be reliably determined.
+compression contexts are used for each source of data.  Compression MUST NOT be
+used if the source of data cannot be reliably determined.
 
 Further considerations regarding the compression of fields sections are
 described in {{QPACK}}.
@@ -1969,7 +1974,7 @@ the HTTP working group (ietf-http-wg@w3.org).
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
 Frame Type" registry governs a 62-bit space.  This registry follows the QUIC
 registry policy; see {{iana-policy}}.  Permanent registrations in this registry
-are assigned using the Specification Required policy {{!RFC8126}}, except for
+are assigned using the Specification Required policy ({{!RFC8126}}), except for
 values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
 using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
@@ -2017,9 +2022,9 @@ NOT be assigned by IANA.
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
 registry governs a 62-bit space.  This registry follows the QUIC registry
 policy; see {{iana-policy}}.  Permanent registrations in this registry are
-assigned using the Specification Required policy {{!RFC8126}}, except for values
-between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned using
-Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
+assigned using the Specification Required policy ({{!RFC8126}}), except for
+values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
+using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
@@ -2059,9 +2064,9 @@ NOT be assigned by IANA.
 This document establishes a registry for HTTP/3 error codes. The "HTTP/3 Error
 Code" registry manages a 62-bit space.  This registry follows the QUIC registry
 policy; see {{iana-policy}}.  Permanent registrations in this registry are
-assigned using the Specification Required policy {{!RFC8126}}, except for values
-between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned using
-Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
+assigned using the Specification Required policy ({{!RFC8126}}), except for
+values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
+using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
 Registrations for error codes are required to include a description
@@ -2069,16 +2074,19 @@ of the error code.  An expert reviewer is advised to examine new
 registrations for possible duplication with existing error codes.
 Use of existing registrations is to be encouraged, but not mandated.
 
-In addition to common fields as described in {{iana-policy}}, permanent
-registrations in this registry MUST include the following fields:
+In addition to common fields as described in {{iana-policy}}, this registry
+includes two additional fields. Permanent registrations in this registry SHOULD
+include the following field:
 
 Name:
 : A name for the error code.  Specifying an error code name is optional.
 
+Permanent registrations in this registry MUST include the following field:
+
 Description:
 : A brief description of the error code semantics.
 
-The entries in the {{iana-error-table}} are registered by this document.
+The entries in {{iana-error-table}} are registered by this document.
 
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                              | Value      | Description                              | Specification          |
@@ -2111,7 +2119,7 @@ NOT be assigned by IANA.
 This document establishes a registry for HTTP/3 unidirectional stream types. The
 "HTTP/3 Stream Type" registry governs a 62-bit space.  This registry follows the
 QUIC registry policy; see {{iana-policy}}.  Permanent registrations in this
-registry are assigned using the Specification Required policy {{!RFC8126}},
+registry are assigned using the Specification Required policy ({{!RFC8126}}),
 except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
 assigned using Standards Action or IESG Approval as defined in Section 4.9 and
 4.10 of {{!RFC8126}}.
@@ -2127,7 +2135,7 @@ Sender:
   "Client", "Server", or "Both".
 
 Specifications for permanent registrations MUST include a description of the
-stream type, including the layout semantics of the stream contents.
+stream type, including the layout and semantics of the stream contents.
 
 The entries in the following table are registered by this document.
 
@@ -2156,13 +2164,13 @@ either to take advantage of QUIC features (like streams) or to accommodate
 important shortcomings (such as a lack of total ordering). These differences
 make HTTP/3 similar to HTTP/2 in key aspects, such as the relationship of
 requests and responses to streams. However, the details of the HTTP/3 design are
-substantially different than HTTP/2.
+substantially different from HTTP/2.
 
 These departures are noted in this section.
 
 ## Streams {#h2-streams}
 
-HTTP/3 permits use of a larger number of streams (2^62-1) than HTTP/2.  The
+HTTP/3 permits use of a larger number of streams (2^62-1) than HTTP/2.  The same
 considerations about exhaustion of stream identifier space apply, though the
 space is significantly larger such that it is likely that other limits in QUIC
 are reached first, such as the limit on the connection flow control window.
@@ -2246,7 +2254,7 @@ Because the Flags field is not present in generic HTTP/3 frames, those frames
 which depend on the presence of flags need to allocate space for flags as part
 of their frame payload.
 
-Other than this issue, frame type HTTP/2 extensions are typically portable to
+Other than these issue, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
 and would be portable to HTTP/2 in the same manner.
@@ -2265,7 +2273,7 @@ PRIORITY (0x2):
   signaling priority.
 
 RST_STREAM (0x3):
-: RST_STREAM frames do not exist, since QUIC provides stream lifecycle
+: RST_STREAM frames do not exist in HTTP/3, since QUIC provides stream lifecycle
   management.  The same code point is used for the CANCEL_PUSH frame
   ({{frame-cancel-push}}).
 
@@ -2274,12 +2282,13 @@ SETTINGS (0x4):
   {{frame-settings}} and {{h2-settings}}.
 
 PUSH_PROMISE (0x5):
-: The PUSH_PROMISE does not reference a stream; instead the push stream
+: The PUSH_PROMISE frame does not reference a stream; instead the push stream
   references the PUSH_PROMISE frame using a Push ID.  See
   {{frame-push-promise}}.
 
 PING (0x6):
-: PING frames do not exist, since QUIC provides equivalent functionality.
+: PING frames do not exist in HTTP/3, since QUIC provides equivalent
+  functionality.
 
 GOAWAY (0x7):
 : GOAWAY does not contain an error code.  In the client to server direction,
@@ -2287,11 +2296,11 @@ GOAWAY (0x7):
   See {{frame-goaway}}.
 
 WINDOW_UPDATE (0x8):
-: WINDOW_UPDATE frames do not exist, since QUIC provides flow control.
+: WINDOW_UPDATE frames do not exist in HTTP/3, since QUIC provides flow control.
 
 CONTINUATION (0x9):
-: CONTINUATION frames do not exist; instead, larger HEADERS/PUSH_PROMISE
-  frames than HTTP/2 are permitted.
+: CONTINUATION frames do not exist in HTTP/3; instead, larger
+  HEADERS/PUSH_PROMISE frames than HTTP/2 are permitted.
 
 Frame types defined by extensions to HTTP/2 need to be separately registered for
 HTTP/3 if still applicable.  The IDs of frames defined in {{?HTTP2}} have been
@@ -2315,17 +2324,18 @@ SETTINGS_HEADER_TABLE_SIZE:
 : See [QPACK].
 
 SETTINGS_ENABLE_PUSH:
-: This is removed in favor of the MAX_PUSH_ID which provides a more granular
-  control over server push.
+: This is removed in favor of the MAX_PUSH_ID frame which provides a more
+  granular control over server push.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+  Specifying the SETTINGS_MAX_CONCURRENT_STREAMS parameter in the SETTINGS frame
+  is an error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
 : QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial transport handshake.  Specifying
-  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+  specified in the initial transport handshake.  Specifying the
+  SETTINGS_INITIAL_WINDOW_SIZE parameter in the SETTINGS frame is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
 : This setting has no equivalent in HTTP/3.  Specifying it in the SETTINGS frame
@@ -2348,7 +2358,7 @@ the settings identifier space in HTTP/3 is substantially larger (62 bits versus
 16 bits), so many HTTP/3 settings have no equivalent HTTP/2 code point. See
 {{iana-settings}}.
 
-As QUIC streams might arrive out of order, endpoints are advised to not wait for
+As QUIC streams might arrive out of order, endpoints are advised not to wait for
 the peers' settings to arrive before responding to other streams.  See
 {{settings-initialization}}.
 
@@ -2367,7 +2377,7 @@ NO_ERROR (0x0):
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to H3_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. This includes H3_FRAME_UNEXPECTED
+  specific error codes have been defined. Such cases include H3_FRAME_UNEXPECTED
   and H3_CLOSED_CRITICAL_STREAM defined in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
@@ -2406,7 +2416,7 @@ INADEQUATE_SECURITY (0xc):
 : Not applicable, since QUIC is assumed to provide sufficient security on all
   connections.
 
-H3_1_1_REQUIRED (0xd):
+HTTP_1_1_REQUIRED (0xd):
 : H3_VERSION_FALLBACK in {{http-error-codes}}.
 
 Error codes need to be defined for HTTP/2 and HTTP/3 separately.  See
@@ -2429,9 +2439,10 @@ intermediary that receives an HTTP/2 stream error of type REFUSED_STREAM from
 the origin has a clear signal that the request was not processed and that the
 request is safe to retry. Propagating this error condition to the client as an
 HTTP/3 stream error of type H3_REQUEST_REJECTED allows the client to take the
-action it deems most appropriate. In the reverse direction the intermediary
+action it deems most appropriate. In the reverse direction, the intermediary
 might deem it beneficial to pass on client request cancellations that are
-indicated by terminating a stream with H3_REQUEST_CANCELLED.
+indicated by terminating a stream with H3_REQUEST_CANCELLED; see
+{{request-cancellation}}.
 
 Conversion between errors is described in the logical mapping. The error codes
 are defined in non-overlapping spaces in order to protect against accidental
