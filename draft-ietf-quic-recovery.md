@@ -837,38 +837,39 @@ approximately equivalent to two TLPs before an RTO in TCP.
 This duration is computed as follows:
 
 ~~~
-(smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay) *
-    kPersistentCongestionThreshold
+PTO * kPersistentCongestionThreshold
 ~~~
+
+where PTO is computed as described in {{computing-pto}}.
 
 The following example illustrates how persistent congestion can be
 established. Assume:
 
 ~~~
-smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay = 1.5
+PTO = 1.5
 kPersistentCongestionThreshold = 3
 ~~~
 
 Consider the following sequence of events:
 
-| Time   | Action                 |
-|:-------|:-----------------------|
-| t=0    | Send Pkt #1 (App Data) |
-| t=1    | Send Pkt #2 (App Data) |
-| t=1.2  | Recv ack of Pkt #1     |
-| t=2    | Send Pkt #3 (App Data) |
-| t=3    | Send Pkt #4 (App Data) |
-| t=4    | Send Pkt #5 (App Data) |
-| t=5    | Send Pkt #6 (App Data) |
-| t=7.5  | Send Pkt #7 (PTO 1)    |
-| t=10.5 | Send Pkt #8 (PTO 2)    |
-| t=10.7 | Recv Ack of Pkt #8     |
+| Time  | Action                 |
+|:------|:-----------------------|
+| t=0   | Send Pkt #1 (App Data) |
+| t=1   | Send Pkt #2 (App Data) |
+| t=1.2 | Recv ack of Pkt #1     |
+| t=2   | Send Pkt #3 (App Data) |
+| t=3   | Send Pkt #4 (App Data) |
+| t=4   | Send Pkt #5 (App Data) |
+| t=5   | Send Pkt #6 (App Data) |
+| t=6.5 | Send Pkt #7 (PTO 1)    |
+| t=9.5 | Send Pkt #8 (PTO 2)    |
+| t=9.7 | Recv Ack of Pkt #8     |
 
 Packets 2 through 7 are declared lost when the acknowledgement for packet 8 is
-received at t = 10.7.
+received at t = 9.7.
 
 The congestion period is calculated as the time between the oldest and newest
-lost packets: 7.5 - 1 = 6.5.  The duration for establishing persistent
+lost packets: 6.5 - 1 = 5.5.  The duration for establishing persistent
 congestion is: 1.5 * 3 = 4.5.  Because the threshold was reached and because
 none of the packets between the oldest and the newest lost packets were
 acknowledged, the network is considered to have experienced persistent
