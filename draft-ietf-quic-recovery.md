@@ -877,12 +877,15 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 ## Pacing {#pacing}
 
-This document does not specify a pacer, but it is RECOMMENDED that a sender pace
-sending of all in-flight packets based on input from the congestion
-controller.  Sending multiple packets into the network without any delay between
-them creates a packet burst that might cause short-term congestion and losses.
-Implementations MUST either use pacing or another method to limit such bursts
-to the initial congestion window; see {{initial-cwnd}}.
+A sender SHOULD pace sending of all in-flight packets based on input from the
+congestion controller. Sending multiple packets into the network without any
+delay between them creates a packet burst that might cause short-term congestion
+and losses.
+
+A sender SHOULD either use pacing or another method to limit such bursts to the
+initial congestion window; see {{initial-cwnd}}. A sender might have prior
+knowledge that the network path to the receiver has deep buffers, and might
+therefore allow larger bursts.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
