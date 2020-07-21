@@ -846,7 +846,7 @@ The persistent congestion period SHOULD NOT start until there is at
 least one RTT sample.  Prior to an RTT sample, the duration cannot be
 correctly calculated.  Waiting for one RTT sample also avoids spuriously
 declaring persistent congestion when the initial RTT is larger than the
-actual RTT, leading to an insufficient number of PTOs.
+actual RTT.
 
 This duration is computed as follows:
 
