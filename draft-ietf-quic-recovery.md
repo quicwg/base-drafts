@@ -854,13 +854,13 @@ Consider the following sequence of events:
 
 | Time  |          Action            |
 |:------|:---------------------------|
-| t=0   | Send packet #1 (App Data)  |
-| t=1   | Send packet #2 (App Data)  |
+| t=0   | Send packet #1 (app data)  |
+| t=1   | Send packet #2 (app data)  |
 | t=1.2 | Recv acknowledgement of #1 |
-| t=2   | Send packet #3 (App Data)  |
-| t=3   | Send packet #4 (App Data)  |
-| t=4   | Send packet #5 (App Data)  |
-| t=5   | Send packet #6 (App Data)  |
+| t=2   | Send packet #3 (app data)  |
+| t=3   | Send packet #4 (app data)  |
+| t=4   | Send packet #5 (app data)  |
+| t=5   | Send packet #6 (app data)  |
 | t=6.5 | Send packet #7 (PTO 1)     |
 | t=9.5 | Send packet #8 (PTO 2)     |
 | t=9.7 | Recv acknowledgement of #8 |
