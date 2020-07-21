@@ -398,6 +398,9 @@ If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or abandoning the
 frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
+Loss detection is separate per packet number space, unlike RTT measurement and
+congestion control, because RTT and congestion control are properties of the
+path, whereas loss detection also relies upon key availability.
 
 ## Acknowledgement-Based Detection {#ack-loss-detection}
 
