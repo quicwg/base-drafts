@@ -871,9 +871,7 @@ between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
 persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
 Because the threshold was reached and because none of the packets between the
 oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion. Note that this example shows the
-occurrence of PTOs, but that is not required for persistent congestion to be
-established.
+have experienced persistent congestion.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
