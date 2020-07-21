@@ -428,14 +428,16 @@ A QUIC implementation SHOULD provide ways in which an application can indicate
 the relative priority of streams.  An implementation uses information provided
 by the application to determine how to allocate resources to active streams.
 
-## Required Operations on Streams {#stream-operations}
+## Operations on Streams {#stream-operations}
 
-There are certain operations that an application MUST be able to perform when
-interacting with QUIC streams.  This document does not specify an API, but
-any implementation of this version of QUIC MUST expose the ability to perform
-the operations described in this section on a QUIC stream.
+This document does not define an API for QUIC, but instead defines a set of
+functions on streams that application protocols can rely upon.  An application
+protocol can assume that an implementation of QUIC provides an interface that
+includes the operations described in this section.  An implementation designed
+for use with a specific application protocol might provide those operations that
+are used by that protocol.
 
-On the sending part of a stream, application protocols need to be able to:
+On the sending part of a stream, an application protocol can:
 
 - write data, understanding when stream flow control credit
   ({{data-flow-control}}) has successfully been reserved to send the written
@@ -445,16 +447,17 @@ On the sending part of a stream, application protocols need to be able to:
 - reset the stream (abrupt termination), resulting in a RESET_STREAM frame
   ({{frame-reset-stream}}) if the stream was not already in a terminal state.
 
-On the receiving part of a stream, application protocols need to be able to:
+On the receiving part of a stream, an application protocol can:
 
 - read data; and
 - abort reading of the stream and request closure, possibly resulting in a
   STOP_SENDING frame ({{frame-stop-sending}}).
 
-Applications also need to be informed of state changes on streams, including
-when the peer has opened or reset a stream, when a peer aborts reading on a
-stream, when new data is available, and when data can or cannot be written to
-the stream due to flow control.
+An application protocol can also request to be informed of state changes on
+streams, including when the peer has opened or reset a stream, when a peer
+aborts reading on a stream, when new data is available, and when data can or
+cannot be written to the stream due to flow control.
+
 
 # Stream States {#stream-states}
 
@@ -1302,20 +1305,22 @@ Server deployments that use this simple form of load balancing MUST avoid the
 creation of a stateless reset oracle; see {{reset-oracle}}.
 
 
-## Required Operations on Connections
+## Operations on Connections
 
-There are certain operations that an application MUST be able to perform when
-interacting with the QUIC transport.  This document does not specify an API, but
-any implementation of this version of QUIC MUST expose the ability to perform
-the operations described in this section on a QUIC connection.
+This document does not define an API for QUIC, but instead defines a set of
+functions for QUIC connections that application protocols can rely upon.  An
+application protocol can assume that an implementation of QUIC provides an
+interface that includes the operations described in this section.  An
+implementation designed for use with a specific application protocol might
+provide those operations that are used by that protocol.
 
-When implementing the client role, applications need to be able to:
+When implementing the client role, an application protocol can:
 
 - open a connection, which begins the exchange described in {{handshake}};
 - enable Early Data when available; and
 - be informed when Early Data has been accepted or rejected by a server.
 
-When implementing the server role, applications need to be able to:
+When implementing the server role, an application protocol can:
 
 - listen for incoming connections, which prepares for the exchange described in
   {{handshake}};
@@ -1325,7 +1330,7 @@ When implementing the server role, applications need to be able to:
   client's resumption ticket and enable rejecting Early Data based on that
   information.
 
-In either role, applications need to be able to:
+In either role, an application protocol can:
 
 - configure minimum values for the initial number of permitted streams of each
   type, as communicated in the transport parameters ({{transport-parameters}});
