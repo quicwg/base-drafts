@@ -852,18 +852,18 @@ kPersistentCongestionThreshold = 3
 
 Consider the following sequence of events:
 
-| Time  | Action                 |
-|:------|:-----------------------|
-| t=0   | Send Pkt #1 (App Data) |
-| t=1   | Send Pkt #2 (App Data) |
-| t=1.2 | Recv ack of Pkt #1     |
-| t=2   | Send Pkt #3 (App Data) |
-| t=3   | Send Pkt #4 (App Data) |
-| t=4   | Send Pkt #5 (App Data) |
-| t=5   | Send Pkt #6 (App Data) |
-| t=6.5 | Send Pkt #7 (PTO 1)    |
-| t=9.5 | Send Pkt #8 (PTO 2)    |
-| t=9.7 | Recv Ack of Pkt #8     |
+| Time  |          Action            |
+|:------|:---------------------------|
+| t=0   | Send packet #1 (App Data)  |
+| t=1   | Send packet #2 (App Data)  |
+| t=1.2 | Recv acknowledgement of #1 |
+| t=2   | Send packet #3 (App Data)  |
+| t=3   | Send packet #4 (App Data)  |
+| t=4   | Send packet #5 (App Data)  |
+| t=5   | Send packet #6 (App Data)  |
+| t=6.5 | Send packet #7 (PTO 1)     |
+| t=9.5 | Send packet #8 (PTO 2)     |
+| t=9.7 | Recv acknowledgement of #8 |
 
 Packets 2 through 7 are declared lost when the acknowledgement for packet 8 is
 received at t = 9.7.
