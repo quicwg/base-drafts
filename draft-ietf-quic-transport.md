@@ -434,8 +434,8 @@ This document does not define an API for QUIC, but instead defines a set of
 functions on streams that application protocols can rely upon.  An application
 protocol can assume that an implementation of QUIC provides an interface that
 includes the operations described in this section.  An implementation designed
-for use with a specific application protocol might provide only those operations that
-are used by that protocol.
+for use with a specific application protocol might provide only those operations
+that are used by that protocol.
 
 On the sending part of a stream, an application protocol can:
 
