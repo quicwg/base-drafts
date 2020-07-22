@@ -1589,7 +1589,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
    InPersistentCongestion(largest_lost):
      // Persistent congestion cannot be declared on the
      // first RTT sample.
-     if (is first rtt sample):
+     if (is first RTT sample):
        return false
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
