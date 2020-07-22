@@ -816,7 +816,7 @@ the request stream which generated the push.  This allows the server push to be
 associated with a client request.  When the same Push ID is promised on multiple
 request streams, the decompressed request field sections MUST contain the same
 fields in the same order, and both the name and the value in each field MUST be
-exact matches.
+identical.
 
 The Push ID is then included with the push stream that ultimately fulfills
 those promises; see {{push-streams}}.  The push stream identifies the Push ID of
