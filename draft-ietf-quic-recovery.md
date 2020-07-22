@@ -1129,6 +1129,10 @@ follows:
    smoothed_rtt = kInitialRtt
    rttvar = kInitialRtt / 2
    min_rtt = 0
+   // max_ack_delay is initialized to 0 and
+   // updated when transport parameters are exchanged.
+   // If a peer does not specify max_ack_delay,
+   // it is set to 25ms.
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
