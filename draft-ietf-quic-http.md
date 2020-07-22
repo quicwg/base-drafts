@@ -818,7 +818,7 @@ request streams, the decompressed request field sections MUST contain the same
 fields in the same order, and both the name and the value in each field MUST be
 exact matches.
 
-The Push ID is then included with the push stream which ultimately fulfills
+The Push ID is then included with the push stream that ultimately fulfills
 those promises; see {{push-streams}}.  The push stream identifies the Push ID of
 the promise that it fulfills, then contains a response to the promised request
 as described in {{request-response}}.
