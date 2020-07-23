@@ -962,8 +962,8 @@ sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 Packets that carry only ACK frames can be heuristically identified by observing
 packet size.  Acknowledgement patterns may expose information about link
 characteristics or application behavior.  To reduce leaked information,
-endpoints can use PADDING frames, at a potential cost to performance, or bundle
-acknowledgments with other frames.
+endpoints can bundle acknowledgments with other frames, or they can use PADDING
+frames at a potential cost to performance.
 
 ## Misreporting ECN Markings
 
