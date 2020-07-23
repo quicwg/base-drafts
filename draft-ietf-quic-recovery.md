@@ -301,7 +301,7 @@ An RTT sample MUST NOT be generated on receiving an ACK frame that does not
 newly acknowledge at least one ack-eliciting packet. A peer usually does not
 send an ACK frame when only non-ack-eliciting packets are received. Therefore
 an ACK frame that contains acknowledgements for only non-ack-eliciting packets
-could include an arbitrarily large Ack Delay value.  Ignoring
+could include an arbitrarily large ACK Delay value.  Ignoring
 such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
 computations.
 
@@ -341,7 +341,7 @@ field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 For packets sent in the Application Data packet number space, a peer limits
 any delay in sending an acknowledgement for an ack-eliciting packet to no
 greater than the value it advertised in the max_ack_delay transport parameter.
-Consequently, when a peer reports an Ack Delay that is greater than its
+Consequently, when a peer reports an ACK Delay that is greater than its
 max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
@@ -350,10 +350,10 @@ part of path delay and incorporated into the smoothed_rtt estimate.
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
-- MUST ignore the Ack Delay field of the ACK frame for packets sent in the
+- MUST ignore the ACK Delay field of the ACK frame for packets sent in the
   Initial and Handshake packet number space.
 
-- MUST use the lesser of the value reported in Ack Delay field of the ACK frame
+- MUST use the lesser of the value reported in ACK Delay field of the ACK frame
   and the peer's max_ack_delay transport parameter.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
@@ -378,7 +378,7 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = min(Ack Delay in ACK Frame, max_ack_delay)
+ack_delay = min(ACK Delay in ACK frame, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
@@ -1695,7 +1695,7 @@ No significant changes.
 
 - Path validation can be used as initial RTT value (#2644, #2687)
 - max_ack_delay transport parameter defaults to 0 (#2638, #2646)
-- Ack Delay only measures intentional delays induced by the implementation
+- ACK delay only measures intentional delays induced by the implementation
   (#2596, #2786)
 
 ## Since draft-ietf-quic-recovery-19
@@ -1804,8 +1804,8 @@ No significant changes.
 
 ## Since draft-ietf-quic-recovery-07
 
-- Include Ack Delay in RTO(and TLP) computations (#981)
-- Ack Delay in SRTT computation (#961)
+- Include ACK delay in RTO(and TLP) computations (#981)
+- ACK delay in SRTT computation (#961)
 - Default RTT and Slow Start (#590)
 - Many editorial fixes.
 
