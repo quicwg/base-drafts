@@ -2254,7 +2254,7 @@ Because the Flags field is not present in generic HTTP/3 frames, those frames
 which depend on the presence of flags need to allocate space for flags as part
 of their frame payload.
 
-Other than these issue, frame type HTTP/2 extensions are typically portable to
+Other than these issues, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
 and would be portable to HTTP/2 in the same manner.
