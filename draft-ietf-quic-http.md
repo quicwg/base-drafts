@@ -1542,7 +1542,7 @@ See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 ### MAX_PUSH_ID {#frame-max-push-id}
 
-The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
+The MAX_PUSH_ID frame (type=0xd) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in PUSH_PROMISE and CANCEL_PUSH frames.
 Consequently, this also limits the number of push streams that the server can
@@ -2004,7 +2004,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 | GOAWAY           |  0x7   | {{frame-goaway}}           |
 | Reserved         |  0x8   | N/A                        |
 | Reserved         |  0x9   | N/A                        |
-| MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
+| MAX_PUSH_ID      |  0xd   | {{frame-max-push-id}}      |
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
