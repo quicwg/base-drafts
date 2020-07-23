@@ -1168,8 +1168,8 @@ receipt.
 The payload and length of the stream are selected in any manner the sending
 implementation chooses.  When sending a reserved stream type, the implementation
 MAY either terminate the stream cleanly or reset it.  When resetting the stream,
-the error code H3_NO_ERROR or a reserved error code ({{http-error-codes}})
-SHOULD be used.
+either the H3_NO_ERROR error code or a reserved error code
+({{http-error-codes}}) SHOULD be used.
 
 
 # HTTP Framing Layer {#http-framing-layer}
