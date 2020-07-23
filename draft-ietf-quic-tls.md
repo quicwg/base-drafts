@@ -1890,7 +1890,7 @@ can only be detected once the packet protection is removed.
 
 An attacker could guess values for packet numbers or Key Phase and have an
 endpoint confirm guesses through timing side channels.  Similarly, guesses for
-the packet number length can be trialed and exposed.  If the recipient of a
+the packet number length can be tried and exposed.  If the recipient of a
 packet discards packets with duplicate packet numbers without attempting to
 remove packet protection they could reveal through timing side-channels that the
 packet number matches a received packet.  For authentication to be free from
