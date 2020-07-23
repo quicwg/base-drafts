@@ -2432,17 +2432,14 @@ The capacity available on the new path might not be the same as the old path.
 Packets sent on the old path MUST NOT contribute to congestion control or RTT
 estimation for the new path.
 
-On confirming a peer's ownership of its new address, an endpoint MUST
+On confirming a peer's ownership of its new address, an endpoint SHOULD
 immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Appendices A.3 and B.3 in {{QUIC-RECOVERY}})
-unless it has knowledge that a previous send rate or round-trip time estimate is
-valid for the new path.  For instance, an endpoint might infer that a change in
-only the client's port number is indicative of a NAT rebinding, meaning that the
-new path is likely to have similar bandwidth and round-trip time. However, this
-determination will be imperfect.  If the determination is incorrect, the
-congestion controller and the RTT estimator are expected to adapt to the new
-path.  Generally, implementations are advised to be cautious when using previous
-values on a new path.
+unless the change is only to the other endpoint's port number.  Because
+port-only changes are commonly the result of NAT rebinding or other middlebox
+activity, an endpoint MAY instead retain its congestion control state and
+round-trip estimate in those cases instead of reverting to initial values, as a
+conservative implementation would.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
