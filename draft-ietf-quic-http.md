@@ -1395,6 +1395,10 @@ settings to have any meaning upon receipt.
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
+Setting identifiers which were used in HTTP/2 where there is no corresponding
+HTTP/3 setting have also been reserved ({{iana-settings}}). These settings MUST
+NOT be sent, and receipt MAY be treated as an error of type H3_SETTINGS_ERROR.
+
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
@@ -2316,20 +2320,26 @@ SETTINGS_HEADER_TABLE_SIZE:
 
 SETTINGS_ENABLE_PUSH:
 : This is removed in favor of the MAX_PUSH_ID which provides a more granular
-  control over server push.
+  control over server push.  Specifying a setting with the identifier 0x2
+  (corresponding to the SETTINGS_ENABLE_PUSH parameter) in the HTTP/3 SETTINGS
+  frame is an error.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying SETTINGS_MAX_CONCURRENT_STREAMS in the SETTINGS frame is an error.
+  Specifying a setting with the identifier 0x3 (corresponding to the
+  SETTINGS_MAX_CONCURRENT_STREAMS parameter) in the HTTP/3 SETTINGS frame is an
+  error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
 : QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial transport handshake.  Specifying
-  SETTINGS_INITIAL_WINDOW_SIZE in the SETTINGS frame is an error.
+  specified in the initial transport handshake.  Specifying a setting with the
+  identifier 0x4 (corresponding to the SETTINGS_INITIAL_WINDOW_SIZE parameter)
+  in the HTTP/3 SETTINGS frame is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/3.  Specifying it in the SETTINGS frame
-  is an error.
+: This setting has no equivalent in HTTP/3.  Specifying a setting with the
+  identifier 0x5 (corresponding to the SETTINGS_MAX_FRAME_SIZE parameter) in the
+  HTTP/3 SETTINGS frame is an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
 : This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.  See
