@@ -827,10 +827,7 @@ packets.
 
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time across all the packet number spaces, the
-network is considered to be experiencing persistent congestion.  Commonly, this
-can be established by consecutive PTOs, but since the PTO timer is reset when a
-new ack-eliciting packet is sent, an explicit duration must be used to account
-for those cases where PTOs do not occur or are substantially delayed. The
+network is considered to be experiencing persistent congestion.  The
 rationale for this threshold is to enable a sender to use initial PTOs for
 aggressive probing, as TCP does with Tail Loss Probe (TLP; see {{RACK}}), before
 establishing persistent congestion, as TCP does with a Retransmission Timeout
