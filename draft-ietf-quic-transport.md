@@ -2439,7 +2439,11 @@ unless the change is only to the other endpoint's port number.  Because
 port-only changes are commonly the result of NAT rebinding or other middlebox
 activity, an endpoint MAY instead retain its congestion control state and
 round-trip estimate in those cases instead of reverting to initial values, as a
-conservative implementation would.
+conservative implementation would. In cases where congestion control state
+retained from an old path is used on a new path with substantially different
+characteristics, a sender may transmit too aggressively until the congestion
+controller and the RTT estimator have adapted. Generally, implementations are
+advised to be cautious when using previous values on a new path.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
