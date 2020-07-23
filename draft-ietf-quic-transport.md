@@ -6070,9 +6070,9 @@ Error Code:
 
 : A variable-length integer error code which indicates the reason for
   closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
-  from the space defined in {{error-codes}}.  A CONNECTION_CLOSE frame of
-  type 0x1d uses codes from the application protocol error code space;
-  see {{app-error-codes}}.
+  from the space defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame
+  of type 0x1d uses codes from the application protocol error code space; see
+  {{app-error-codes}}.
 
 Frame Type:
 
@@ -6146,12 +6146,16 @@ An IANA registry is used to manage the assignment of frame types; see
 {{iana-frames}}.
 
 
-# Transport Error Codes {#error-codes}
+# Error Codes {#error-codes}
 
-QUIC error codes are 62-bit unsigned integers.
+QUIC transport error codes and application error codes are 62-bit unsigned
+integers.
+
+## Transport Error Codes {#transport-error-codes}
 
 This section lists the defined QUIC transport error codes that may be used in a
-CONNECTION_CLOSE frame.  These errors apply to the entire connection.
+CONNECTION_CLOSE frame with a type of 0x1c.  These errors apply to the entire
+connection.
 
 NO_ERROR (0x0):
 
@@ -6244,8 +6248,7 @@ unable or unwilling to use more specific codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 62-bit unsigned integers, but the
-management of application error codes is left to application protocols.
+The management of application error codes is left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
 ({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
 the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
