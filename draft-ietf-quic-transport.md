@@ -3515,8 +3515,8 @@ guidance offered below seeks to strike this balance.
 ### Sending ACK Frames {#sending-acknowledgements}
 
 Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
-MUST be acknowledged at least once within the maximum ACK delay. An endpoint
-communicates its maximum delay using the max_ack_delay transport parameter; see
+MUST be acknowledged at least once within the maximum delay an endpoint
+communicated using the max_ack_delay transport parameter; see
 {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
 contract: an endpoint promises to never intentionally delay acknowledgments of
 an ack-eliciting packet by more than the indicated value. If it does, any excess
@@ -5290,8 +5290,9 @@ ACK Delay:
   to the power of the value of the ack_delay_exponent transport parameter set by
   the sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling
   in this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the ACK delay
-  for Initial and Handshake packets, a sender SHOULD send a value of 0.
+  the cost of lower resolution.  Because the receiver doesn't use the value in
+  the ACK Delay field for Initial and Handshake packets, a sender SHOULD send a
+  value of 0.
 
 ACK Range Count:
 
