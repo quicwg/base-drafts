@@ -1468,7 +1468,7 @@ The CRYPTO frame can be sent in different packet number spaces
 delivery of cryptographic handshake data start from zero in each packet number
 space.
 
-{{fig-hs}} shows a simplied handshake and the exchange of packets and frames
+{{fig-hs}} shows a simplified handshake and the exchange of packets and frames
 that are used to advance the handshake.  Exchange of application data during the
 handshake is enabled where possible, shown with a '*'.  Once completed,
 endpoints are able to exchange application data.
@@ -1796,7 +1796,7 @@ initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
 A server MAY store and recover the previously sent values of the
-max_idle_timout, max_udp_payload_size, and disable_active_migration parameters
+max_idle_timeout, max_udp_payload_size, and disable_active_migration parameters
 and reject 0-RTT if it selects smaller values. Lowering the values of these
 parameters while also accepting 0-RTT data could degrade the performance of the
 connection. Specifically, lowering the max_udp_payload_size could result in
@@ -3509,7 +3509,7 @@ guidance offered below seeks to strike this balance.
 ### Sending ACK Frames {#sending-acknowledgements}
 
 Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
-MUST be acknowledged at least once within the maximum ack delay. An endpoint
+MUST be acknowledged at least once within the maximum ACK delay. An endpoint
 communicates its maximum delay using the max_ack_delay transport parameter; see
 {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
 contract: an endpoint promises to never intentionally delay acknowledgments of
@@ -3667,12 +3667,12 @@ acknowledgements.
 
 An endpoint measures the delays intentionally introduced between the time the
 packet with the largest packet number is received and the time an acknowledgment
-is sent.  The endpoint encodes this delay in the Ack Delay field of an ACK
+is sent.  The endpoint encodes this delay in the ACK Delay field of an ACK
 frame; see {{frame-ack}}.  This allows the receiver of the ACK to adjust for any
 intentional delays, which is important for getting a better estimate of the path
 RTT when acknowledgments are delayed.  A packet might be held in the OS kernel
 or elsewhere on the host before being processed.  An endpoint MUST NOT include
-delays that it does not control when populating the Ack Delay field in an ACK
+delays that it does not control when populating the ACK Delay field in an ACK
 frame.
 
 ### ACK Frames and Packet Protection
@@ -3720,7 +3720,7 @@ containing that information is acknowledged.
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
-* ACK frames carry the most recent set of acknowledgements and the Ack Delay
+* ACK frames carry the most recent set of acknowledgements and the ACK delay
   from the largest acknowledged packet, as described in
   {{sending-acknowledgements}}. Delaying the transmission of packets
   containing ACK frames or resending old ACK frames can cause the peer to
@@ -5284,7 +5284,7 @@ ACK Delay:
   to the power of the value of the ack_delay_exponent transport parameter set by
   the sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling
   in this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
+  the cost of lower resolution.  Because the receiver doesn't use the ACK delay
   for Initial and Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
@@ -6208,19 +6208,19 @@ CONNECTION_ID_LIMIT_ERROR (0x9):
 : The number of connection IDs provided by the peer exceeds the advertised
   active_connection_id_limit.
 
-PROTOCOL_VIOLATION (0xA):
+PROTOCOL_VIOLATION (0xa):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-INVALID_TOKEN (0xB):
+INVALID_TOKEN (0xb):
 : A server received a client Initial that contained an invalid Token field.
 
-APPLICATION_ERROR (0xC):
+APPLICATION_ERROR (0xc):
 
 : The application or application protocol caused the connection to be closed.
 
-CRYPTO_BUFFER_EXCEEDED (0xD):
+CRYPTO_BUFFER_EXCEEDED (0xd):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
@@ -7027,10 +7027,10 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
-| 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
-| 0xC   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
-| 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0xa   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
+| 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
@@ -7475,7 +7475,7 @@ Substantial editorial reorganization; no technical changes.
 - You don't always need the draining period (#871)
 - Stateless reset clarified as version-specific (#930, #986)
 - initial_max_stream_id_x transport parameters are optional (#970, #971)
-- Ack Delay assumes a default value during the handshake (#1007, #1009)
+- ACK delay assumes a default value during the handshake (#1007, #1009)
 - Removed transport parameters from NewSessionTicket (#1015)
 
 ## Since draft-ietf-quic-transport-07
