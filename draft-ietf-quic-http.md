@@ -454,7 +454,7 @@ An HTTP message (request or response) consists of:
    {{frame-headers}}),
 
 2. optionally, the payload body, if present, sent as a series of DATA frames
-   (see {{frame-data}}),
+   (see {{frame-data}}), and
 
 3. optionally, the trailer field section, if present, sent as a single HEADERS
    frame.
@@ -2287,7 +2287,7 @@ PUSH_PROMISE (0x5):
   {{frame-push-promise}}.
 
 PING (0x6):
-: PING frames do not exist in HTTP/3, since QUIC provides equivalent
+: PING frames do not exist in HTTP/3, as QUIC provides equivalent
   functionality.
 
 GOAWAY (0x7):
