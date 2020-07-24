@@ -2435,7 +2435,7 @@ estimation for the new path.
 On confirming a peer's ownership of its new address, an endpoint SHOULD
 immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Appendices A.3 and B.3 in {{QUIC-RECOVERY}})
-unless the change is only to the other endpoint's port number.  Because
+unless the only change is the other endpoint's port number.  Because
 port-only changes are commonly the result of NAT rebinding or other middlebox
 activity, an endpoint MAY instead retain its congestion control state and
 round-trip estimate in those cases instead of reverting to initial values, as a
