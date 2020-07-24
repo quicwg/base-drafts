@@ -1834,10 +1834,10 @@ client can discard responses that it cannot process.
 
 ### CONNECT Issues
 
-The CONNECT method can be used to create disproportionate load on an proxy,
-since stream creation is relatively inexpensive when compared to the creation
-and maintenance of a TCP connection.  A proxy might also maintain some resources
-for a TCP connection beyond the closing of the stream that carries the CONNECT
+The CONNECT method can be used to create disproportionate load on a proxy, since
+stream creation is relatively inexpensive when compared to the creation and
+maintenance of a TCP connection.  A proxy might also maintain some resources for
+a TCP connection beyond the closing of the stream that carries the CONNECT
 request, since the outgoing TCP connection remains in the TIME_WAIT state.
 Therefore, a proxy cannot rely on QUIC stream limits alone to control the
 resources consumed by CONNECT requests.
