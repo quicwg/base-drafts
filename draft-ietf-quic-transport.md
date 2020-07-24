@@ -3805,7 +3805,7 @@ packets containing an outdated frame, such as a MAX_DATA frame carrying a
 smaller maximum data than one found in an older packet.
 
 A sender SHOULD avoid retransmitting information from packets once they are
-acknowledged, including from packets that are acknowledged after being declared
+acknowledged. This includes packets that are acknowledged after being declared
 lost. Doing so requires senders to retain information about packets after they
 are declared lost. A sender can discard this information after a period of time
 elapses, such as three times the PTO (Section 6.2 of {{QUIC-RECOVERY}}), or on
