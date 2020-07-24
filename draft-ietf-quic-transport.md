@@ -3667,13 +3667,13 @@ acknowledgements.
 
 An endpoint measures the delays intentionally introduced between the time the
 packet with the largest packet number is received and the time an acknowledgment
-is sent.  The endpoint encodes this delay in the ACK Delay field of an ACK
-frame; see {{frame-ack}}.  This allows the receiver of the ACK to adjust for any
-intentional delays, which is important for getting a better estimate of the path
-RTT when acknowledgments are delayed.  A packet might be held in the OS kernel
-or elsewhere on the host before being processed.  An endpoint MUST NOT include
-delays that it does not control when populating the ACK Delay field in an ACK
-frame.
+is sent.  The endpoint encodes this acknowledgement delay in the ACK Delay field
+of an ACK frame; see {{frame-ack}}.  This allows the receiver of the ACK frame
+to adjust for any intentional delays, which is important for getting a better
+estimate of the path RTT when acknowledgments are delayed.  A packet might be
+held in the OS kernel or elsewhere on the host before being processed.  An
+endpoint MUST NOT include delays that it does not control when populating the
+ACK Delay field in an ACK frame.
 
 ### ACK Frames and Packet Protection
 
@@ -3720,11 +3720,11 @@ containing that information is acknowledged.
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
-* ACK frames carry the most recent set of acknowledgements and the ACK delay
-  from the largest acknowledged packet, as described in
-  {{sending-acknowledgements}}. Delaying the transmission of packets
-  containing ACK frames or resending old ACK frames can cause the peer to
-  generate an inflated RTT sample or unnecessarily disable ECN.
+* ACK frames carry the most recent set of acknowledgements and the
+  acknowledgement delay from the largest acknowledged packet, as described in
+  {{sending-acknowledgements}}. Delaying the transmission of packets containing
+  ACK frames or resending old ACK frames can cause the peer to generate an
+  inflated RTT sample or unnecessarily disable ECN.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
@@ -5071,20 +5071,20 @@ initial_max_streams_uni (0x09):
 
 ack_delay_exponent (0x0a):
 
-: The ACK delay exponent is an integer value indicating an
-  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  If this value is absent, a default value of 3 is assumed (indicating a
-  multiplier of 8). Values above 20 are invalid.
+: The acknowledgement delay exponent is an integer value indicating an exponent
+  used to decode the ACK Delay field in the ACK frame ({{frame-ack}}). If this
+  value is absent, a default value of 3 is assumed (indicating a multiplier of
+  8). Values above 20 are invalid.
 
 max_ack_delay (0x0b):
 
-: The maximum ACK delay is an integer value indicating the
-  maximum amount of time in milliseconds by which the endpoint will delay
-  sending acknowledgments.  This value SHOULD include the receiver's expected
-  delays in alarms firing.  For example, if a receiver sets a timer for 5ms
-  and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
-  of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
-  Values of 2^14 or greater are invalid.
+: The maximum acknowledgement delay is an integer value indicating the maximum
+  amount of time in milliseconds by which the endpoint will delay sending
+  acknowledgments.  This value SHOULD include the receiver's expected delays in
+  alarms firing.  For example, if a receiver sets a timer for 5ms and alarms
+  commonly fire up to 1ms late, then it should send a max_ack_delay of 6ms.  If
+  this value is absent, a default of 25 milliseconds is assumed. Values of 2^14
+  or greater are invalid.
 
 disable_active_migration (0x0c):
 
@@ -5279,14 +5279,14 @@ ACK Delay:
 
 : A variable-length integer representing the time delta in microseconds between
   when the ACK frame was sent and when the largest acknowledged packet, as
-  indicated in the Largest Acknowledged field, was received by this peer.  The
-  value of the ACK Delay field is scaled by multiplying the encoded value by 2
-  to the power of the value of the ack_delay_exponent transport parameter set by
-  the sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling
-  in this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the value in
-  the ACK Delay field for Initial and Handshake packets, a sender SHOULD send a
-  value of 0.
+  indicated in the Largest Acknowledged field, was received by this peer.  This
+  acknowledgement delay in the ACK Delay field is scaled by multiplying the
+  encoded value by 2 to the power of the value of the ack_delay_exponent
+  transport parameter set by the sender of the ACK frame; see
+  {{transport-parameter-definitions}}.  Scaling in this fashion allows for a
+  larger range of values with a shorter encoding at the cost of lower
+  resolution.  Because the receiver doesn't use the value in the ACK Delay field
+  of Initial and Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
 
