@@ -883,9 +883,9 @@ delay between them creates a packet burst that might cause short-term congestion
 and losses.
 
 A sender SHOULD either use pacing or another method to limit such bursts to the
-initial congestion window; see {{initial-cwnd}}. A sender might have prior
-knowledge that the network path to the receiver has deep buffers, and might
-therefore allow larger bursts.
+initial congestion window; see {{initial-cwnd}}. A sender with prior knowledge
+that the network path to the receiver has deep buffers might allow larger
+bursts.
 
 An implementation should take care to architect its congestion controller to
 work well with a pacer.  For instance, a pacer might wrap the congestion
