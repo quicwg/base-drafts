@@ -519,8 +519,8 @@ immediately.
 A sender recomputes and may need to reset its PTO timer every time an
 ack-eliciting packet is sent or acknowledged, when the handshake is confirmed,
 or when Initial or Handshake keys are discarded. This ensures the PTO is always
-set based on the latest RTT information and for the last sent packet in the
-correct packet number space.
+set based on the latest RTT information and for the last sent ack-eliciting
+packet in the correct packet number space.
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout,
@@ -576,7 +576,7 @@ discarded, the PTO and loss detection timers MUST be reset, because discarding
 keys indicates forward progress and the loss detection timer might have been set
 for a now discarded packet number space.
 
-#### Before Address Validation
+#### Before Server Address Validation
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
