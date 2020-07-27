@@ -883,7 +883,7 @@ congestion controller.
 Sending multiple packets into the network without any delay between them creates
 a packet burst that might cause short-term congestion and losses. Senders MUST
 either use pacing or limit such bursts. Senders SHOULD limit bursts to the
-initial congestion window; see {{initial-cwnd}}. A sender with prior knowledge
+initial congestion window; see {{initial-cwnd}}. A sender with knowledge
 that the network path to the receiver has deep buffers might allow larger
 bursts.
 
