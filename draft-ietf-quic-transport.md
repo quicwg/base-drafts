@@ -3808,8 +3808,8 @@ A sender SHOULD avoid retransmitting information from packets once they are
 acknowledged. This includes packets that are acknowledged after being declared
 lost. Doing so requires senders to retain information about packets after they
 are declared lost. A sender can discard this information after a period of time
-elapses, such as three times the PTO (Section 6.2 of {{QUIC-RECOVERY}}), or on
-other events, such as reaching a memory limit.
+elapses, such as a PTO (Section 6.2 of {{QUIC-RECOVERY}}), or on other events,
+such as reaching a memory limit.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
