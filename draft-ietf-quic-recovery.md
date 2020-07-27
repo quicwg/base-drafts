@@ -1506,7 +1506,7 @@ ssthresh:
   acknowledged.
 
 bytes_acked:
-: Records number of bytes acked, and used for incrementing
+:  Number of bytes acknowledged which have not yet been used to increment
   the congestion window during congestion avoidance.
 
 
