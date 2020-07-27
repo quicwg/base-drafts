@@ -1598,8 +1598,8 @@ QUIC allows the application to abruptly terminate (reset) individual streams or
 the entire connection; see Sections 2.4 and 5.3 of {{QUIC-TRANSPORT}}.  These
 are referred to as "stream errors" or "connection errors" (see Section 11 of
 {{QUIC-TRANSPORT}}) and have associated error codes, but do not necessarily
-have to be errors.  For example, a stream can be reset if the requested resource
-is no longer needed.
+indicate a problem with the connection or either implementation.  For example, a
+stream can be reset if the requested resource is no longer needed.
 
 An endpoint MAY choose to treat a stream error as a connection error under
 certain circumstances.  Implementations need to consider the impact on
