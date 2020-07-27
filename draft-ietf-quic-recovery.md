@@ -580,7 +580,7 @@ discarded, the PTO and loss detection timers MUST be reset, because discarding
 keys indicates forward progress and the loss detection timer might have been set
 for a now discarded packet number space.
 
-#### Before Server Address Validation
+#### Before Address Validation
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
