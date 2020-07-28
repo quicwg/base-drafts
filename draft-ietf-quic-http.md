@@ -1621,7 +1621,7 @@ H3_NO_ERROR (0x100):
   there is no error to signal.
 
 H3_GENERAL_PROTOCOL_ERROR (0x101):
-: Peer violated protocol requirements in a way which doesn't match a more
+: Peer violated protocol requirements in a way which does not match a more
   specific error code, or endpoint declines to use the more specific error code.
 
 H3_INTERNAL_ERROR (0x102):
@@ -1712,7 +1712,7 @@ signal that this is acceptable.  Coordinating when such a revised layout comes
 into effect could prove complex.  As such, allocating new identifiers for
 new definitions of existing protocol elements is likely to be more effective.
 
-This document doesn't mandate a specific method for negotiating the use of an
+This document does not mandate a specific method for negotiating the use of an
 extension but notes that a setting ({{settings-parameters}}) could be used for
 that purpose.  If both peers set a value that indicates willingness to use the
 extension, then the extension can be used.  If a setting is used for extension
@@ -1802,7 +1802,7 @@ All these features -- i.e., server push, unknown protocol elements, field
 compression -- have legitimate uses.  These features become a burden only when
 they are used unnecessarily or to excess.
 
-An endpoint that doesn't monitor this behavior exposes itself to a risk of
+An endpoint that does not monitor this behavior exposes itself to a risk of
 denial-of-service attack.  Implementations SHOULD track the use of these
 features and set limits on their use.  An endpoint MAY treat activity that is
 suspicious as a connection error ({{errors}}) of type H3_EXCESSIVE_LOAD, but

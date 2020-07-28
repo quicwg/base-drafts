@@ -685,7 +685,7 @@ either unidirectional stream type MUST be treated as a connection error of type
 H3_CLOSED_CRITICAL_STREAM.
 
 An endpoint MAY avoid creating an encoder stream if it's not going to be used
-(for example if its encoder doesn't wish to use the dynamic table, or if the
+(for example if its encoder does not wish to use the dynamic table, or if the
 maximum size of the dynamic table permitted by the peer is zero).
 
 An endpoint MAY avoid creating a decoder stream if its decoder sets the maximum
@@ -1308,7 +1308,7 @@ used.  If HPACK is used for re-encoding, the never indexed literal
 representation (see Section 6.2.3 of [RFC7541]) MUST be used.
 
 The choice to mark that a header field should never be indexed
-depends on several factors. Since QPACK doesn't protect against guessing an
+depends on several factors. Since QPACK does not protect against guessing an
 entire header field value, short or low-entropy values are more readily
 recovered by an adversary. Therefore, an encoder might choose not to index
 values with low entropy.
@@ -1577,7 +1577,7 @@ for line in field_lines:
       dynamicIndex = dynamicTable.add(line)
 
   if dynamicIndex is None:
-    # Couldn't index it, literal
+    # Could not index it, literal
     if nameIndex is None or isStaticName:
       # Encodes a literal with a static name or literal name
       encodeLiteral(streamBuffer, nameIndex, line)
