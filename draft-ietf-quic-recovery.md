@@ -827,7 +827,7 @@ packets.
 When a sender establishes loss of all in-flight packets sent over a long enough
 duration, the network is considered to be experiencing persistent congestion.
 
-### Duration {#duration}
+### Duration {#pc-duration}
 
 The persistent congestion duration is computed as follows:
 
@@ -868,8 +868,8 @@ following conditions are true:
 
 * there are at least two ack-eliciting packets that are declared lost;
 
-* the duration between the send times of these two packets exceeds the
-  persistent congestion duration ({{duration}}); and
+* the duration between the send times of these packets exceeds the
+  persistent congestion duration ({{pc-duration}}); and
 
 * all packets sent between those times are declared lost.
 
@@ -883,7 +883,7 @@ When persistent congestion is declared, the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow).  This response of
 collapsing the congestion window on persistent congestion is functionally
 similar to a sender's response on a Retransmission Timeout (RTO) in TCP
-({{RFC5681}}) after Tail Loss Probes (TLP; see {{RACK}}).
+({{RFC5681}}) after Tail Loss Probes ({{RACK}}).
 
 ### Example
 
