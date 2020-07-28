@@ -826,15 +826,25 @@ packets.
 
 When an ACK frame is received that establishes loss of all in-flight packets
 sent over a long enough period of time, the network is considered to be
-experiencing persistent congestion.  Commonly, this can be established by
-consecutive PTOs, but since the PTO timer is reset when a new ack-eliciting
-packet is sent, an explicit duration must be used to account for those cases
-where PTOs do not occur or are substantially delayed. The rationale for this
-threshold is to enable a sender to use initial PTOs for aggressive probing, as
-TCP does with Tail Loss Probe (TLP; see {{RACK}}), before establishing
-persistent congestion, as TCP does with a Retransmission Timeout (RTO; see
-{{?RFC5681}}). The RECOMMENDED value for kPersistentCongestionThreshold is 3,
-which is approximately equivalent to two TLPs before an RTO in TCP.
+experiencing persistent congestion.
+
+A sender declares persistent congestion on receiving an acknowledgement that:
+
+- 
+
+While this can be established by consecutive PTOs, but since the PTO timer is
+reset when a new ack-eliciting packet is sent, an explicit duration must be used
+to account for those cases where PTOs do not occur or are substantially delayed.
+
+The rationale for this threshold is to enable a sender to use initial PTOs for
+aggressive probing, as TCP does with Tail Loss Probe (TLP; see {{RACK}}), before
+establishing persistent congestion, as TCP does with a Retransmission Timeout
+(RTO; see {{?RFC5681}}).
+
+The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
+approximately equivalent to two TLPs before an RTO in TCP.
+
+
 
 The persistent congestion period SHOULD NOT start until there is at
 least one RTT sample.  Prior to an RTT sample, the duration cannot be
