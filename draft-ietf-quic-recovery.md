@@ -117,7 +117,7 @@ In-flight:
 
 : Packets are considered in-flight when they are ack-eliciting or contain a
   PADDING frame, and they have been sent but are not acknowledged, declared
-  lost, or abandoned along with old keys.
+  lost, or discarded along with old keys.
 
 # Design of the QUIC Transmission Machinery
 
@@ -222,7 +222,7 @@ more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 ## Probe Timeout Replaces RTO and TLP
 
-QUIC uses a probe timeout (see {{pto}}), with a timer based on TCP's RTO
+QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgement
 delay instead of using a fixed minimum timeout. QUIC does not collapse the
 congestion window until persistent congestion ({{persistent-congestion}}) is
@@ -301,7 +301,7 @@ An RTT sample MUST NOT be generated on receiving an ACK frame that does not
 newly acknowledge at least one ack-eliciting packet. A peer usually does not
 send an ACK frame when only non-ack-eliciting packets are received. Therefore
 an ACK frame that contains acknowledgements for only non-ack-eliciting packets
-could include an arbitrarily large Ack Delay value.  Ignoring
+could include an arbitrarily large ACK Delay value.  Ignoring
 such ACK frames avoids complications in subsequent smoothed_rtt and rttvar
 computations.
 
@@ -341,7 +341,7 @@ field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 For packets sent in the Application Data packet number space, a peer limits
 any delay in sending an acknowledgement for an ack-eliciting packet to no
 greater than the value it advertised in the max_ack_delay transport parameter.
-Consequently, when a peer reports an Ack Delay that is greater than its
+Consequently, when a peer reports an ACK Delay that is greater than its
 max_ack_delay, the delay is attributed to reasons out of the peer's control,
 such as scheduler latency at the peer or loss of previous ACK frames.  Any
 delays beyond the peer's max_ack_delay are therefore considered effectively
@@ -350,10 +350,10 @@ part of path delay and incorporated into the smoothed_rtt estimate.
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
-- MUST ignore the Ack Delay field of the ACK frame for packets sent in the
+- MUST ignore the ACK Delay field of the ACK frame for packets sent in the
   Initial and Handshake packet number space.
 
-- MUST use the lesser of the value reported in Ack Delay field of the ACK frame
+- MUST use the lesser of the value reported in ACK Delay field of the ACK frame
   and the peer's max_ack_delay transport parameter.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
@@ -378,7 +378,7 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = min(Ack Delay in ACK Frame, max_ack_delay)
+ack_delay = min(ACK Delay in ACK frame, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
@@ -395,7 +395,7 @@ time out (see {{pto}}) to ensure acknowledgements are received. This section
 provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
-as by retransmitting the data, sending an updated frame, or abandoning the
+as by retransmitting the data, sending an updated frame, or discarding the
 frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
 
 Loss detection is separate per packet number space, unlike RTT measurement and
@@ -436,12 +436,13 @@ The RECOMMENDED initial value for the packet reordering threshold
 ({{?RFC5681}}, {{?RFC6675}}).  In order to remain similar to TCP,
 implementations SHOULD NOT use a packet threshold less than 3; see {{?RFC5681}}.
 
-Some networks may exhibit higher degrees of reordering, causing a sender to
-detect spurious losses.  Algorithms that increase the reordering threshold after
-spuriously detecting losses, such as TCP-NCR ({{?RFC4653}}), have proven to be
-useful in TCP and are expected to be at least as useful in QUIC.  Re-ordering
-could be more common with QUIC than TCP, because network elements cannot observe
-and fix the order of out-of-order packets.
+Some networks may exhibit higher degrees of packet reordering, causing a sender
+to detect spurious losses. Additionally, packet reordering could be more common
+with QUIC than TCP, because network elements that could observe and fix the
+order of reordered TCP packets cannot do that for QUIC. Algorithms that increase
+the reordering threshold after spuriously detecting losses, such as RACK
+{{?RACK}}, have proven to be useful in TCP and are expected to at least as
+useful in QUIC.
 
 ### Time Threshold {#time-threshold}
 
@@ -597,8 +598,8 @@ at least 1200 bytes.
 
 A client could have received and acknowledged a Handshake packet, causing it to
 discard state for the Initial packet number space, but not sent any
-ack-eliciting Handshake packets.  In this case, the PTO is set from the current
-time.
+ack-eliciting Handshake packets.  In this case, the PTO timer is armed from the
+time that the Initial packet number space is discarded.
 
 ### Speeding Up Handshake Completion
 
@@ -840,37 +841,49 @@ which is approximately equivalent to two TLPs before an RTO in TCP.
 This duration is computed as follows:
 
 ~~~
-(smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay) *
+(smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay) *
     kPersistentCongestionThreshold
 ~~~
 
-For example, assume:
+Unlike the PTO computation in {{pto}}, persistent congestion includes the
+max_ack_delay irrespective of the packet number spaces in which losses are
+established.
+
+The following example illustrates how persistent congestion can be
+established. Assume:
 
 ~~~
-smoothed_rtt = 1
-rttvar = 0
-max_ack_delay = 0
+smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay = 2
 kPersistentCongestionThreshold = 3
 ~~~
 
-If an ack-eliciting packet is sent at time t = 0, the following scenario would
-illustrate persistent congestion:
+Consider the following sequence of events:
 
-| Time | Action                 |
-|:-----|:-----------------------|
-| t=0  | Send Pkt #1 (App Data) |
-| t=1  | Send Pkt #2 (PTO 1)    |
-| t=3  | Send Pkt #3 (PTO 2)    |
-| t=7  | Send Pkt #4 (PTO 3)    |
-| t=8  | Recv ACK of Pkt #4     |
+| Time   |          Action            |
+|:-------|:---------------------------|
+| t=0    | Send packet #1 (app data)  |
+| t=1    | Send packet #2 (app data)  |
+| t=1.2  | Recv acknowledgement of #1 |
+| t=2    | Send packet #3 (app data)  |
+| t=3    | Send packet #4 (app data)  |
+| t=4    | Send packet #5 (app data)  |
+| t=5    | Send packet #6 (app data)  |
+| t=6    | Send packet #7 (app data)  |
+| t=8    | Send packet #8 (PTO 1)     |
+| t=12   | Send packet #9 (PTO 2)     |
+| t=12.2 | Recv acknowledgement of #9 |
 
-The first three packets are determined to be lost when the acknowledgement of
-packet 4 is received at t = 8.  The congestion period is calculated as the time
-between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
-persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
-Because the threshold was reached and because none of the packets between the
-oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion.
+Packets 2 through 8 are declared lost when the acknowledgement for packet 9 is
+received at t = 12.2.
+
+The congestion period is calculated as the time between the oldest and newest
+lost packets: 8 - 1 = 7.  The duration for establishing persistent congestion
+is: 2 * 3 = 6.  Because the threshold was reached and because none of the
+packets between the oldest and the newest lost packets were acknowledged, the
+network is considered to have experienced persistent congestion.
+
+While this example shows the occurrence of PTOs, they are not required for
+persistent congestion to be established.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -960,8 +973,9 @@ sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 
 Packets that carry only ACK frames can be heuristically identified by observing
 packet size.  Acknowledgement patterns may expose information about link
-characteristics or application behavior.  Endpoints can use PADDING frames or
-bundle acknowledgments with other frames to reduce leaked information.
+characteristics or application behavior.  To reduce leaked information,
+endpoints can bundle acknowledgments with other frames, or they can use PADDING
+frames at a potential cost to performance.
 
 ## Misreporting ECN Markings
 
@@ -1693,7 +1707,7 @@ No significant changes.
 
 - Path validation can be used as initial RTT value (#2644, #2687)
 - max_ack_delay transport parameter defaults to 0 (#2638, #2646)
-- Ack Delay only measures intentional delays induced by the implementation
+- ACK delay only measures intentional delays induced by the implementation
   (#2596, #2786)
 
 ## Since draft-ietf-quic-recovery-19
@@ -1802,8 +1816,8 @@ No significant changes.
 
 ## Since draft-ietf-quic-recovery-07
 
-- Include Ack Delay in RTO(and TLP) computations (#981)
-- Ack Delay in SRTT computation (#961)
+- Include ACK delay in RTO(and TLP) computations (#981)
+- ACK delay in SRTT computation (#961)
 - Default RTT and Slow Start (#590)
 - Many editorial fixes.
 
