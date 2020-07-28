@@ -805,10 +805,10 @@ refer to the push in various contexts throughout the lifetime of the connection.
 The Push ID space begins at zero, and ends at a maximum value set by the
 MAX_PUSH_ID frame; see {{frame-max-push-id}}.  In particular, a server is not
 able to push until after the client sends a MAX_PUSH_ID frame.  A client sends
-additional MAX_PUSH_ID frames to control the number of pushes that a server can
-promise.  A server SHOULD use Push IDs sequentially, beginning from zero.  A
-client MUST treat receipt of a push stream with a Push ID that is greater than
-the maximum Push ID as a connection error of type H3_ID_ERROR.
+MAX_PUSH_ID frames to control the number of pushes that a server can promise.  A
+server SHOULD use Push IDs sequentially, beginning from zero.  A client MUST
+treat receipt of a push stream with a Push ID that is greater than the maximum
+Push ID as a connection error of type H3_ID_ERROR.
 
 The Push ID is used in one or more PUSH_PROMISE frames ({{frame-push-promise}})
 that carry the header section of the request message.  These frames are sent on
