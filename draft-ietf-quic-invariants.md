@@ -263,7 +263,7 @@ version numbers are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
-not QUIC.  Future documents might describe additional properties which apply to
+not QUIC.  Future documents might describe additional properties that apply to
 a specific QUIC version, or to a range of QUIC versions.
 
 
