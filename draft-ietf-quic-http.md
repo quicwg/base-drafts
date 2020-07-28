@@ -1397,7 +1397,8 @@ value the implementation selects.
 
 Setting identifiers which were used in HTTP/2 where there is no corresponding
 HTTP/3 setting have also been reserved ({{iana-settings}}). These settings MUST
-NOT be sent, and receipt MAY be treated as an error of type H3_SETTINGS_ERROR.
+NOT be sent, and their receipt MUST be treated as an error of type
+H3_SETTINGS_ERROR.
 
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
@@ -2310,8 +2311,10 @@ frame of the control stream, and thereafter cannot change.  This eliminates many
 corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
-are retained in HTTP/3 have the same value as in HTTP/2.
+superseded by QUIC transport parameters in HTTP/3.  The HTTP-level options that
+are retained in HTTP/3 have the same value as in HTTP/2.  The superseded
+settings are reserved, and their receipt is an error.  See
+{{settings-parameters}} for discussion of both the retained and reserved values.
 
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
@@ -2342,8 +2345,7 @@ SETTINGS_MAX_FRAME_SIZE:
   HTTP/3 SETTINGS frame is an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
-: This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.  See
-  {{settings-parameters}}.
+: This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.
 
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
 long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
