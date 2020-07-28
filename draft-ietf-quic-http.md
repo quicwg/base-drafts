@@ -926,7 +926,7 @@ connection to send additional requests.
 Some requests or pushes might already be in transit:
 
   - Upon receipt of a GOAWAY frame, if the client has already sent requests with
-    a Stream ID greater than or equal to the identifier received in a GOAWAY
+    a Stream ID greater than or equal to the identifier contained in the GOAWAY
     frame, those requests will not be processed.  Clients can safely retry
     unprocessed requests on a different connection.  A client that is unable to
     retry requests loses all requests that are in flight when the server closes
@@ -941,8 +941,8 @@ Some requests or pushes might already be in transit:
     these requests were not processed.
 
   - If a server receives a GOAWAY frame after having promised pushes with a Push
-    ID greater than or equal to the identifier received in a GOAWAY frame, those
-    pushes will not be accepted.
+    ID greater than or equal to the identifier contained in the GOAWAY frame,
+    those pushes will not be accepted.
 
 Servers SHOULD send a GOAWAY frame when the closing of a connection is known
 in advance, even if the advance notice is small, so that the remote peer can
