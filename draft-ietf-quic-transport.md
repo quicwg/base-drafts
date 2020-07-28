@@ -5284,7 +5284,7 @@ Largest Acknowledged:
 ACK Delay:
 
 : A variable-length integer representing the time delta in microseconds between
-  when the ACK frame was sent and when the largest acknowledged packet, as
+  when the largest acknowledged packet, as indicated by the
   indicated in the Largest Acknowledged field, was received by this peer.  This
   acknowledgement delay in the ACK Delay field is scaled by multiplying the
   encoded value by 2 to the power of the value of the ack_delay_exponent
