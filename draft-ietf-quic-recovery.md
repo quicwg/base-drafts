@@ -520,7 +520,7 @@ A sender recomputes and may need to reset its PTO timer every time an
 ack-eliciting packet is sent or acknowledged, when the handshake is confirmed,
 or when Initial or Handshake keys are discarded. This ensures the PTO is always
 set based on the latest RTT information and for the last sent ack-eliciting
-packet in the correct packet number space. When the PTO is armed and there are
+packet in the correct packet number space. When the PTO expires and there are
 no ack-eliciting packets in flight, the PTO is set from the current time.
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
