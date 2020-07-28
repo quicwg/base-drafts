@@ -1008,8 +1008,8 @@ packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
 After a packet is declared lost, the endpoint can still maintain state for it
-for an amount of time, such as a PTO, to allow for packet reordering. This
-enables a sender to detect spurious retransmissions.
+for an amount of time to allow for packet reordering; see Section 13.3 of
+{{QUIC-TRANSPORT}}. This enables a sender to detect spurious retransmissions.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
