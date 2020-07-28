@@ -841,37 +841,49 @@ which is approximately equivalent to two TLPs before an RTO in TCP.
 This duration is computed as follows:
 
 ~~~
-(smoothed_rtt + max(4 * rttvar, kGranularity) + max_ack_delay) *
+(smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay) *
     kPersistentCongestionThreshold
 ~~~
 
-For example, assume:
+Unlike the PTO computation in {{pto}}, persistent congestion includes the
+max_ack_delay irrespective of the packet number spaces in which losses are
+established.
+
+The following example illustrates how persistent congestion can be
+established. Assume:
 
 ~~~
-smoothed_rtt = 1
-rttvar = 0
-max_ack_delay = 0
+smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay = 2
 kPersistentCongestionThreshold = 3
 ~~~
 
-If an ack-eliciting packet is sent at time t = 0, the following scenario would
-illustrate persistent congestion:
+Consider the following sequence of events:
 
-| Time | Action                 |
-|:-----|:-----------------------|
-| t=0  | Send Pkt #1 (App Data) |
-| t=1  | Send Pkt #2 (PTO 1)    |
-| t=3  | Send Pkt #3 (PTO 2)    |
-| t=7  | Send Pkt #4 (PTO 3)    |
-| t=8  | Recv ACK of Pkt #4     |
+| Time   |          Action            |
+|:-------|:---------------------------|
+| t=0    | Send packet #1 (app data)  |
+| t=1    | Send packet #2 (app data)  |
+| t=1.2  | Recv acknowledgement of #1 |
+| t=2    | Send packet #3 (app data)  |
+| t=3    | Send packet #4 (app data)  |
+| t=4    | Send packet #5 (app data)  |
+| t=5    | Send packet #6 (app data)  |
+| t=6    | Send packet #7 (app data)  |
+| t=8    | Send packet #8 (PTO 1)     |
+| t=12   | Send packet #9 (PTO 2)     |
+| t=12.2 | Recv acknowledgement of #9 |
 
-The first three packets are determined to be lost when the acknowledgement of
-packet 4 is received at t = 8.  The congestion period is calculated as the time
-between the oldest and newest lost packets: (3 - 0) = 3.  The duration for
-persistent congestion is equal to: (1 * kPersistentCongestionThreshold) = 3.
-Because the threshold was reached and because none of the packets between the
-oldest and the newest packets are acknowledged, the network is considered to
-have experienced persistent congestion.
+Packets 2 through 8 are declared lost when the acknowledgement for packet 9 is
+received at t = 12.2.
+
+The congestion period is calculated as the time between the oldest and newest
+lost packets: 8 - 1 = 7.  The duration for establishing persistent congestion
+is: 2 * 3 = 6.  Because the threshold was reached and because none of the
+packets between the oldest and the newest lost packets were acknowledged, the
+network is considered to have experienced persistent congestion.
+
+While this example shows the occurrence of PTOs, they are not required for
+persistent congestion to be established.
 
 When persistent congestion is established, the sender's congestion window MUST
 be reduced to the minimum congestion window (kMinimumWindow).  This response of
