@@ -685,10 +685,12 @@ stream with the error code H3_REQUEST_REJECTED. In this context, "processed"
 means that some data from the stream was passed to some higher layer of software
 that might have taken some action as a result. The client can treat requests
 rejected by the server as though they had never been sent at all, thereby
-allowing them to be retried later. Servers MUST NOT use the H3_REQUEST_REJECTED
-error code for requests which were partially or fully processed.  When a server
-abandons a response after partial processing, it SHOULD abort its response
-stream with the error code H3_REQUEST_CANCELLED.
+allowing them to be retried later.
+
+Servers MUST NOT use the H3_REQUEST_REJECTED error code for requests which were
+partially or fully processed.  When a server abandons a response after partial
+processing, it SHOULD abort its response stream with the error code
+H3_REQUEST_CANCELLED.
 
 Client SHOULD use the error code H3_REQUEST_CANCELLED to cancel requests.  Upon
 receipt of this error code, a server MAY abruptly terminate the response using
