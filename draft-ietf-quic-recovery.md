@@ -863,10 +863,12 @@ correctly calculated.  Waiting for one RTT sample also avoids spuriously
 declaring persistent congestion when the initial RTT is larger than the
 actual RTT.
 
-### Declaring Persistent Congestion
+### Establishing Persistent Congestion
 
-A sender declares persistent congestion on receiving an acknowledgement, if the
-following conditions are true:
+A sender establishes persistent congestion on receiving an acknowledgement, if
+the following conditions are true:
+
+* a prior RTT sample exists;
 
 * there are at least two ack-eliciting packets that are declared lost;
 
@@ -875,11 +877,16 @@ following conditions are true:
 
 * all packets sent between those times are declared lost.
 
+Before the first RTT sample, a sender arms its PTO timer based on the initial
+RTT ({{pto-handshake}}), which could be substantially larger than the actual
+RTT. Requiring a prior RTT sample prevents a sender from establishing persistent
+congestion with potentially too few probes.
+
 Since network congestion is not affected by packet number spaces, persistent
-congestion SHOULD be established across packet number spaces. A sender that does
-not have state for all packet number spaces or an implementation that cannot
-compare send times across packet number spaces MAY use state for just the packet
-number space that was acknowledged.
+congestion SHOULD consider packets sent across packet number spaces. A sender
+that does not have state for all packet number spaces or an implementation that
+cannot compare send times across packet number spaces MAY use state for just the
+packet number space that was acknowledged.
 
 When persistent congestion is declared, the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow).  This response of
@@ -889,8 +896,8 @@ similar to a sender's response on a Retransmission Timeout (RTO) in TCP
 
 ### Example
 
-The following example illustrates how persistent congestion can be
-established. Assume:
+The following example illustrates how a sender might establish persistent
+congestion. Assume:
 
 ~~~
 smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay = 2
@@ -917,10 +924,10 @@ Packets 2 through 8 are declared lost when the acknowledgement for packet 9 is
 received at t = 12.2.
 
 The congestion period is calculated as the time between the oldest and newest
-lost packets: 8 - 1 = 7.  The duration for establishing persistent congestion
-is: 2 * 3 = 6.  Because the threshold was reached and because none of the
-packets between the oldest and the newest lost packets were acknowledged, the
-network is considered to have experienced persistent congestion.
+lost packets: 8 - 1 = 7.  The persistent congestion duration is: 2 * 3 = 6.
+Because the threshold was reached and because none of the packets between the
+oldest and the newest lost packets were acknowledged, the network is considered
+to have experienced persistent congestion.
 
 While this example shows the occurrence of PTOs, they are not required for
 persistent congestion to be established.
