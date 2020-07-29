@@ -5277,15 +5277,16 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer representing the time delta in microseconds between
-  when the ACK frame was sent and when the largest acknowledged packet, as
-  indicated in the Largest Acknowledged field, was received by this peer.  The
-  value of the ACK Delay field is scaled by multiplying the encoded value by 2
-  to the power of the value of the ack_delay_exponent transport parameter set by
-  the sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling
-  in this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
-  for Initial and Handshake packets, a sender SHOULD send a value of 0.
+: A variable-length integer representing the intentional delay in microseconds
+  between when the largest acknowledged packet, as indicated in the Largest
+  Acknowledged field, was received, and when the ACK frame was sent;
+  see {{host-delay}}.  The value of the ACK Delay field is scaled by
+  multiplying the encoded value by 2 to the power of the value of the
+  ack_delay_exponent transport parameter set by the sender of the ACK frame;
+  see {{transport-parameter-definitions}}.  Scaling in this fashion allows for
+  a larger range of values with a shorter encoding at the cost of lower
+  resolution.  Because the receiver doesn't use the ACK Delay for Initial and
+  Handshake packets, a sender SHOULD send a value of 0.
 
 ACK Range Count:
 
