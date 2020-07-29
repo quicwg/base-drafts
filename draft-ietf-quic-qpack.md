@@ -1153,7 +1153,7 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 
 #  Configuration
 
-QPACK defines two settings that are included in the HTTP/3 SETTINGS frame:
+QPACK defines two settings for the HTTP/3 SETTINGS frame:
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : The default value is zero.  See {{header-table-dynamic}} for usage.  This is
