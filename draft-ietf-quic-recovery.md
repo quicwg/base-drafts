@@ -857,30 +857,25 @@ time, even when no acknowledgments are being received. The use of a duration
 enables a sender to establish persistent congestion without depending on the
 occurrence of PTOs.
 
-The persistent congestion period SHOULD NOT start until there is at
-least one RTT sample.  Prior to an RTT sample, the duration cannot be
-correctly calculated.  Waiting for one RTT sample also avoids spuriously
-declaring persistent congestion when the initial RTT is larger than the
-actual RTT.
-
 ### Establishing Persistent Congestion
 
 A sender establishes persistent congestion on receiving an acknowledgement, if
 the following conditions are true:
 
-* a prior RTT sample exists;
-
 * there are at least two ack-eliciting packets that are declared lost;
+
+* a prior RTT sample existed at the time these packets were sent;
 
 * the duration between the send times of these packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
 
 * all packets sent between those times are declared lost.
 
-Before the first RTT sample, a sender arms its PTO timer based on the initial
-RTT ({{pto-handshake}}), which could be substantially larger than the actual
-RTT. Requiring a prior RTT sample prevents a sender from establishing persistent
-congestion with potentially too few probes.
+The persistent congestion period SHOULD NOT start until there is at least one
+RTT sample. Before the first RTT sample, a sender arms its PTO timer based on
+the initial RTT ({{pto-handshake}}), which could be substantially larger than
+the actual RTT. Requiring a prior RTT sample prevents a sender from establishing
+persistent congestion with potentially too few probes.
 
 Since network congestion is not affected by packet number spaces, persistent
 congestion SHOULD consider packets sent across packet number spaces. A sender
