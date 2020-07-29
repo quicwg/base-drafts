@@ -1741,6 +1741,13 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 Endpoints use transport parameters to authenticate the negotiation of
 connection IDs during the handshake; see {{cid-auth}}.
 
+When sent by the client, transport parameters are not specific to a particular
+ALPN being negotiated.  Therefore, a client cannot have application protocol
+specific values in the transport parameters.  Application protocols should take
+this into account when designing versioning schemes, and not place restrictions
+on the values in the transport parameters that might prevent protocol changes
+in future version of the application protocol.
+
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
