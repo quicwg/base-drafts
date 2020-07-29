@@ -848,12 +848,14 @@ establishing persistent congestion, as TCP does with a Retransmission Timeout
 The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
 approximately equivalent to two TLPs before an RTO in TCP.
 
-This design uses an explicit duration instead of consecutive PTO events since
-the PTO timer is restarted every time an ack-eliciting packet is sent. An
-application that sends data with silence periods can restart the PTO timer every
-time it sends, potentially preventing the PTO timer from expiring for a long
-period of time. A consequence of this design is that persistent congestion can
-be established without the occurrence of any PTOs.
+This design does not use consecutive PTO events to establish persistent
+congestion, since a PTO expiration is controlled by application patterns in
+addition to network activity. For example, a sender that sends small amounts of
+data with silence periods between them restarts the PTO timer every time it
+sends, potentially preventing the PTO timer from expiring for a long period of
+time, even when no acknowledgments are being received. The use of a duration
+enables a sender to establish persistent congestion without depending on the
+occurrence of PTOs.
 
 The persistent congestion period SHOULD NOT start until there is at
 least one RTT sample.  Prior to an RTT sample, the duration cannot be
