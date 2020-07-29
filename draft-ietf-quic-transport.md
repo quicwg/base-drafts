@@ -1878,6 +1878,10 @@ confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
+Additionally, a server MAY consider the client address valididated if the
+client uses a connection ID chosen by the server and the connection ID contains
+at least 64 bits of entropy.
+
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
 magnitude of any amplification attack that can be mounted using spoofed source
