@@ -1045,7 +1045,7 @@ The primary function of a connection ID is to ensure that changes in addressing
 at lower protocol layers (UDP, IP) don't cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
-deployment-specific) method which will allow packets with that connection ID to
+deployment-specific) method that will allow packets with that connection ID to
 be routed back to the endpoint and to be identified by the endpoint upon
 receipt.
 
@@ -3033,7 +3033,7 @@ sends a Stateless Reset to another server it might receive another Stateless
 Reset in response, which could lead to an infinite exchange.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
-the packet which triggered it, unless it maintains state sufficient to prevent
+the packet that triggered it, unless it maintains state sufficient to prevent
 looping.  In the event of a loop, this results in packets eventually being too
 small to trigger a response.
 
@@ -3084,7 +3084,7 @@ Disposing of connection state prior to the end of the closing or draining period
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
 packets on the connection do not induce a response, such as those that are able
-to close the UDP socket, MAY use an abbreviated draining period which can allow
+to close the UDP socket, MAY use an abbreviated draining period to allow
 for faster resource recovery.  Servers that retain an open socket for accepting
 new connections SHOULD NOT exit the closing or draining period early.
 
@@ -3224,7 +3224,7 @@ packet sent in a given packet number space; see {{packet-numbers}} for details.
 ## Coalescing Packets {#packet-coalesce}
 
 Initial ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), and Handshake
-({{packet-handshake}}) packets contain a Length field, which determines the end
+({{packet-handshake}}) packets contain a Length field that determines the end
 of the packet.  The length includes both the Packet Number and Payload
 fields, both of which are confidentiality protected and initially of unknown
 length. The length of the Payload field is learned once header protection is
@@ -3291,7 +3291,7 @@ As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
 Conceptually, a packet number space is the context in which a packet can be
 processed and acknowledged.  Initial packets can only be sent with Initial
-packet protection keys and acknowledged in packets which are also Initial
+packet protection keys and acknowledged in packets that are also Initial
 packets.  Similarly, Handshake packets are sent at the Handshake encryption
 level and can only be acknowledged in Handshake packets.
 
@@ -3531,7 +3531,7 @@ endpoint MUST NOT send more than one such packet in response to receiving an
 ack-eliciting packet.
 
 An endpoint MUST NOT send a non-ack-eliciting packet in response to a
-non-ack-eliciting packet, even if there are packet gaps which precede the
+non-ack-eliciting packet, even if there are packet gaps that precede the
 received packet. This avoids an infinite feedback loop of acknowledgements,
 which could prevent the connection from ever becoming idle.  Non-ack-eliciting
 packets are eventually acknowledged when the endpoint sends an ACK frame in
@@ -4331,8 +4331,8 @@ Type-Specific Bits:
 Version:
 
 : The QUIC Version is a 32-bit field that follows the first byte.  This field
-  indicates which version of QUIC is in use and determines how the rest of the
-  protocol fields are interpreted.
+  indicates the version of QUIC that is in use and determines how the rest of
+  the protocol fields are interpreted.
 
 Destination Connection ID Length:
 
@@ -4401,7 +4401,7 @@ Reserved Bits:
 
 Packet Number Length:
 
-: In packet types which contain a Packet Number field, the least significant two
+: In packet types that contain a Packet Number field, the least significant two
   bits (those with a mask of 0x03) of byte 0 contain the length of the packet
   number, encoded as an unsigned, two-bit integer that is one less than the
   length of the packet number field in bytes.  That is, the length of the packet
@@ -4466,7 +4466,7 @@ limit, Version Negotiation packets could carry Connection IDs that are longer
 than 20 bytes.
 
 The remainder of the Version Negotiation packet is a list of 32-bit versions
-which the server supports.
+that the server supports.
 
 A Version Negotiation packet is not acknowledged.  It is only sent in response
 to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
@@ -4800,7 +4800,7 @@ PROTOCOL_VIOLATION.
 
 ## Short Header Packets {#short-header}
 
-This version of QUIC defines a single packet type which uses the
+This version of QUIC defines a single packet type that uses the
 short packet header.
 
 ~~~
@@ -4961,7 +4961,7 @@ Transport Parameter {
 The Transport Parameter Length field contains the length of the Transport
 Parameter Value field.
 
-QUIC encodes transport parameters into a sequence of bytes, which are then
+QUIC encodes transport parameters into a sequence of bytes, which is then
 included in the cryptographic handshake.
 
 
@@ -5309,7 +5309,7 @@ First ACK Range:
 
 ACK Ranges:
 
-: Contains additional ranges of packets which are alternately not
+: Contains additional ranges of packets that are alternately not
   acknowledged (Gap) and acknowledged (ACK Range); see {{ack-ranges}}.
 
 ECN Counts:
@@ -5454,7 +5454,7 @@ Stream ID:
 Application Protocol Error Code:
 
 : A variable-length integer containing the application protocol error
-  code (see {{app-error-codes}}) which indicates why the stream is being
+  code (see {{app-error-codes}}) that indicates why the stream is being
   closed.
 
 Final Size:
@@ -5766,9 +5766,9 @@ Maximum Streams:
   Receipt of a frame that permits opening of a stream larger than this limit
   MUST be treated as a FRAME_ENCODING_ERROR.
 
-Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+Loss or reordering can cause a MAX_STREAMS frame to be received that state a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
-which do not increase the stream limit MUST be ignored.
+that do not increase the stream limit MUST be ignored.
 
 An endpoint MUST NOT open more streams than permitted by the current stream
 limit set by its peer.  For instance, a server that receives a unidirectional
@@ -5831,7 +5831,7 @@ STREAM_DATA_BLOCKED frames contain the following fields:
 
 Stream ID:
 
-: A variable-length integer indicating the stream which is blocked due to flow
+: A variable-length integer indicating the stream that is blocked due to flow
   control.
 
 Maximum Stream Data:
@@ -6074,7 +6074,7 @@ CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
-: A variable-length integer error code which indicates the reason for
+: A variable-length integer error code that indicates the reason for
   closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
   from the space defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame
   of type 0x1d uses codes from the application protocol error code space; see
@@ -6272,7 +6272,7 @@ ability of an attacker to interfere with existing connections.
 Once a connection is established QUIC endpoints might accept some
 unauthenticated ICMP packets (see {{pmtud}}), but the use of these packets
 is extremely limited.  The only other type of packet that an endpoint might
-accept is a stateless reset ({{stateless-reset}}) which relies on the token
+accept is a stateless reset ({{stateless-reset}}), which relies on the token
 being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
@@ -6463,7 +6463,7 @@ be influenced by an attacker.
 ## Version Downgrade {#version-downgrade}
 
 This document defines QUIC Version Negotiation packets in
-{{version-negotiation}}, which can be used to negotiate the QUIC version used
+{{version-negotiation}} that can be used to negotiate the QUIC version used
 between two endpoints. However, this document does not specify how this
 negotiation will be performed between this version and subsequent future
 versions.  In particular, Version Negotiation packets do not contain any
@@ -6548,9 +6548,9 @@ path are limited.
 Computing the server's first flight for a full handshake is potentially
 expensive, requiring both a signature and a key exchange computation. In order
 to prevent computational DoS attacks, the Retry packet provides a cheap token
-exchange mechanism which allows servers to validate a client's IP address prior
+exchange mechanism that allows servers to validate a client's IP address prior
 to doing any expensive computations at the cost of a single round trip. After a
-successful handshake, servers can issue new tokens to a client which will allow
+successful handshake, servers can issue new tokens to a client, which will allow
 new connection establishment without incurring this cost.
 
 
@@ -6600,7 +6600,7 @@ future time; this is true for any observer of any packet on any network.
 
 A blind attacker, one who injects packets without being able to observe valid
 packets for a connection, is unlikely to be successful, since packet protection
-ensures that valid packets are only generated by endpoints which possess the
+ensures that valid packets are only generated by endpoints that possess the
 key material established during the handshake; see {{handshake}} and
 {{handshake-properties}}. Similarly, any active attacker that observes packets
 and attempts to insert new data or modify existing data in those packets should
