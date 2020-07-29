@@ -1176,8 +1176,9 @@ either the H3_NO_ERROR error code or a reserved error code
 
 HTTP frames are carried on QUIC streams, as described in {{stream-mapping}}.
 HTTP/3 defines three stream types: control stream, request stream, and push
-stream. This section describes HTTP/3 frame formats and their permitted stream types; see {{stream-frame-mapping}} for an overview.  A
-comparison between HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
+stream. This section describes HTTP/3 frame formats and their permitted stream
+types; see {{stream-frame-mapping}} for an overview.  A comparison between
+HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 
 | Frame          | Control Stream | Request Stream | Push Stream | Section                  |
 | -------------- | -------------- | -------------- | ----------- | ------------------------ |
