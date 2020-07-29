@@ -884,7 +884,7 @@ Sending multiple packets into the network without any delay between them creates
 a packet burst that might cause short-term congestion and losses. Senders MUST
 either use pacing or limit such bursts. Senders SHOULD limit bursts to the
 initial congestion window; see {{initial-cwnd}}. A sender with knowledge that
-the network path to the receiver can absorb larger bursts may use a higher
+the network path to the receiver can absorb larger bursts MAY use a higher
 limit.
 
 An implementation should take care to architect its congestion controller to
