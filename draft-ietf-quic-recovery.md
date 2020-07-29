@@ -840,20 +840,20 @@ Note that unlike the PTO computation in {{pto}}, this duration includes the
 max_ack_delay irrespective of the packet number spaces in which losses are
 established.
 
-This duration is intended to allow a sender to use initial PTOs for aggressive
-probing, as TCP does with Tail Loss Probe (TLP; see {{RACK}}), before
+This duration allows a sender to send enough packets, including some in response
+to PTO expiration, as TCP does with Tail Loss Probe ({{RACK}}), before
 establishing persistent congestion, as TCP does with a Retransmission Timeout
-(RTO; see {{?RFC5681}}).
+({{?RFC5681}}).
 
 The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
 approximately equivalent to two TLPs before an RTO in TCP.
 
 This design uses an explicit duration instead of consecutive PTO events since
 the PTO timer is restarted every time an ack-eliciting packet is sent. An
-application that trickles data restarts the PTO timer repeatedly, preventing the
-PTO timer from expiring for a potentially long period of time. A consequence of
-this design is that persistent congestion can be established without the
-occurrence of any PTOs.
+application that sends data with silence periods can restart the PTO timer every
+time it sends, potentially preventing the PTO timer from expiring for a long
+period of time. A consequence of this design is that persistent congestion can
+be established without the occurrence of any PTOs.
 
 The persistent congestion period SHOULD NOT start until there is at
 least one RTT sample.  Prior to an RTT sample, the duration cannot be
