@@ -1593,7 +1593,8 @@ Invoked when an ACK frame with an ECN section is received from the peer.
      // this could be a new congestion event.
      if (ack.ce_counter > ecn_ce_counters[pn_space]):
        ecn_ce_counters[pn_space] = ack.ce_counter
-       OnCongestionEvent(sent_packets[ack.largest_acked].time_sent)
+       sent_time = sent_packets[ack.largest_acked].time_sent
+       OnCongestionEvent(sent_time)
 ~~~
 
 
