@@ -836,9 +836,8 @@ The persistent congestion duration is computed as follows:
     kPersistentCongestionThreshold
 ~~~
 
-Note that unlike the PTO computation in {{pto}}, this duration includes the
-max_ack_delay irrespective of the packet number spaces in which losses are
-established.
+Unlike the PTO computation in {{pto}}, this duration includes the max_ack_delay
+irrespective of the packet number spaces in which losses are established.
 
 This duration allows a sender to send enough packets, including some in response
 to PTO expiration, as TCP does with Tail Loss Probe ({{RACK}}), before
