@@ -5277,16 +5277,16 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer encoding the intentional delay between when the
-  largest acknowledged packet, as indicated in the Largest Acknowledged field,
-  was received, and when the ACK frame was sent; see {{host-delay}}.
-  The acknowledgement delay in microseconds is the value of the ACK Delay
-  field multiplied by 2 to the power of the ack_delay_exponent transport
-  parameter sent by the sender of the ACK frame;
-  see {{transport-parameter-definitions}}.  Scaling in this fashion allows for
-  a larger range of values with a shorter encoding at the cost of lower
-  resolution.  Because the receiver doesn't use the ACK Delay for Initial and
-  Handshake packets, a sender SHOULD send a value of 0.
+: A variable-length integer encoding the acknowledgement delay in
+  microseconds; see {{host-delay}}. It is decoded by multiplying the
+  value in the field by 2 to the power of the ack_delay_exponent transport
+  parameter sent by the sender of the ACK frame; see
+  {{transport-parameter-definitions}}.  This encoding allows for a large
+  range of values, although it sacrifices some resolution.
+  
+  Since the acknowledgement delay is not used for Initial and Handshake
+  packets, the ACK Delay field in acknowledgements for those packet types
+  SHOULD be set to 0.
 
 ACK Range Count:
 
