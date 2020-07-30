@@ -5291,9 +5291,9 @@ ACK Delay:
   microseconds; see {{host-delay}}. It is decoded by multiplying the
   value in the field by 2 to the power of the ack_delay_exponent transport
   parameter sent by the sender of the ACK frame; see
-  {{transport-parameter-definitions}}. Scaling in this way allows for a
-  large range of values with a shorter encoding at the cost of lower
-  resolution.
+  {{transport-parameter-definitions}}. Compared to simply expressing
+  the delay as an integer, this encoding allows for a larger range of
+  values within the same number of bytes, at the cost of lower resolution.
 
 ACK Range Count:
 
