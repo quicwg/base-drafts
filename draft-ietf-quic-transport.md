@@ -1741,15 +1741,14 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 Endpoints use transport parameters to authenticate the negotiation of
 connection IDs during the handshake; see {{cid-auth}}.
 
-Protocol negotiation with Application Layer Protocol Negotiation (ALPN; see
-{{?ALPN=RFC7301}}) allows clients to offer multiple application protocols with
-connection attempts. The single set of transport parameters offered by a client
-apply to all application protocols that the client offers. Application protocols
-can make recommendations about the values for transport parameters, such as
-suggesting minimum values for stream or flow control limits. Application
-protocols that place hard constraints on transport parameters could make it
-impossible for clients to attempt a connection that includes other application
-protocols with different constraints.
+Application Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
+clients to offer multiple application protocols during connection
+establishment. The transport parameters that a client includes during the
+handshake apply to all application protocols that the client offers. Application
+protocols can recommend values for transport parameters, such as the initial
+flow control limits. However, application protocols that require values for
+transport parameters will make it impossible for a client to offer multiple
+application protocols with conflicting requirements.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
