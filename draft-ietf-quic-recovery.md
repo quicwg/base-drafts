@@ -1316,8 +1316,8 @@ GetPtoTimeAndSpace():
       // Skip Application Data until handshake complete.
       if (handshake is not complete):
         return pto_timeout, pto_space
-      // Include max_ack_delay and backoff for Application Data.
-      duration += max_ack_delay * (2 ^ pto_count)
+      // Include max_ack_delay for Application Data.
+      duration += max_ack_delay
 
     t = time_of_last_ack_eliciting_packet[space] + duration
     if (t < pto_timeout):
