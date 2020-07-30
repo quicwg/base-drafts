@@ -593,9 +593,9 @@ until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
 Handshake or 1-RTT packets and has not received a HANDSHAKE_DONE frame,
-even if there are no packets in flight. If Handshake keys are available to the
-client, it MUST send a Handshake packet, and otherwise it MUST send an Initial
-packet in a UDP datagram of at least 1200 bytes.
+even if there are no packets in flight. When the PTO fires, the client MUST
+send a Handshake packet if it has Handshake keys, otherwise it MUST
+send an Initial packet in a UDP datagram of at least 1200 bytes.
 
 ### Speeding Up Handshake Completion
 
