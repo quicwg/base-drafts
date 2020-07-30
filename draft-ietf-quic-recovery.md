@@ -839,6 +839,12 @@ persistent congestion, as TCP does with a Retransmission Timeout (RTO; see
 {{?RFC5681}}). The RECOMMENDED value for kPersistentCongestionThreshold is 3,
 which is approximately equivalent to two TLPs before an RTO in TCP.
 
+The persistent congestion period SHOULD NOT start until there is at
+least one RTT sample.  Prior to an RTT sample, the duration cannot be
+correctly calculated.  Waiting for one RTT sample also avoids spuriously
+declaring persistent congestion when the initial RTT is larger than the
+actual RTT.
+
 This duration is computed as follows:
 
 ~~~
@@ -1603,14 +1609,18 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
-   InPersistentCongestion(lost_packets):
+   InPersistentCongestion(largest_lost):
+     // Persistent congestion cannot be declared on the
+     // first RTT sample.
+     if (is first RTT sample):
+       return false
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
      congestion_period = pto * kPersistentCongestionThreshold
      // Determine if all packets in the time period before the
-     // largest newly lost packet, including the edges, are
-     // marked lost
-     return AreAllPacketsLost(lost_packets, congestion_period)
+     // largest newly lost packet, including the edges and
+     // across all packet number spaces, are marked lost.
+     return AreAllPacketsLost(largest_lost, congestion_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
@@ -1619,7 +1629,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
      CongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(lost_packets)):
+     if (InPersistentCongestion(lost_packets.largest())):
        congestion_window = kMinimumWindow
 ~~~
 
