@@ -5286,7 +5286,7 @@ ACK Delay:
 : A variable-length integer representing the time delta in microseconds between
   when the largest acknowledged packet, as indicated in the Largest Acknowledged
   field, was received and the ACK frame was sent. The ACK Delay field carries
-  this encoded time delta. It is decoded by multiplying the value in the ACK
+  this encoded time difference. It is decoded by multiplying the value in the ACK
   Delay field by 2 to the power of the value of the ack_delay_exponent transport
   parameter set by the sender of the ACK frame; see
   {{transport-parameter-definitions}}.  Scaling in this fashion allows for a
