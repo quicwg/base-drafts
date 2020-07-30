@@ -378,7 +378,7 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = min(ACK Delay in ACK frame, max_ack_delay)
+ack_delay = min(acknowledgement delay from ACK frame, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
