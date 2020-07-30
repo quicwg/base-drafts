@@ -3681,6 +3681,10 @@ held in the OS kernel or elsewhere on the host before being processed.  An
 endpoint MUST NOT include delays that it does not control when populating the
 ACK Delay field in an ACK frame.
 
+Since the acknowledgement delay is not used for Initial and Handshake
+packets, the ACK Delay field in acknowledgements for those packet types
+SHOULD be set to 0.
+
 ### ACK Frames and Packet Protection
 
 ACK frames MUST only be carried in a packet that has the same packet number
@@ -5283,16 +5287,13 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer representing the time delta in microseconds between
-  when the largest acknowledged packet, as indicated in the Largest Acknowledged
-  field, was received and the ACK frame was sent. The ACK Delay field carries
-  this encoded time difference. It is decoded by multiplying the value in the
-  ACK Delay field by 2 to the power of the value of the ack_delay_exponent
-  transport parameter set by the sender of the ACK frame; see
-  {{transport-parameter-definitions}}.  Scaling in this fashion allows for a
-  larger range of values with a shorter encoding at the cost of lower
-  resolution.  Because the receiver doesn't use the value in the ACK Delay field
-  of Initial and Handshake packets, a sender SHOULD send a value of 0.
+: A variable-length integer encoding the acknowledgement delay in
+  microseconds; see {{host-delay}}. It is decoded by multiplying the
+  value in the field by 2 to the power of the ack_delay_exponent transport
+  parameter sent by the sender of the ACK frame; see
+  {{transport-parameter-definitions}}. Compared to simply expressing
+  the delay as an integer, this encoding allows for a larger range of
+  values within the same number of bytes, at the cost of lower resolution.
 
 ACK Range Count:
 
