@@ -521,8 +521,9 @@ immediately.
 A sender recomputes and may need to reset its PTO timer every time an
 ack-eliciting packet is sent or acknowledged, when the handshake is confirmed,
 or when Initial or Handshake keys are discarded. This ensures the PTO is always
-set based on the latest RTT information and for the last sent packet in the
-correct packet number space.
+set based on the latest RTT information and for the last sent ack-eliciting
+packet in the correct packet number space. When the PTO expires and there are
+no ack-eliciting packets in flight, the PTO is set from that moment.
 
 When ack-eliciting packets in multiple packet number spaces are in flight,
 the timer MUST be set for the packet number space with the earliest timeout,
@@ -593,15 +594,10 @@ client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets, and has not received a HANDSHAKE_DONE frame.
-If Handshake keys are available to the client, it MUST send a Handshake
-packet, and otherwise it MUST send an Initial packet in a UDP datagram of
-at least 1200 bytes.
-
-A client could have received and acknowledged a Handshake packet, causing it to
-discard state for the Initial packet number space, but not sent any
-ack-eliciting Handshake packets.  In this case, the PTO timer is armed from the
-time that the Initial packet number space is discarded.
+Handshake or 1-RTT packets and has not received a HANDSHAKE_DONE frame,
+even if there are no packets in flight. When the PTO fires, the client MUST
+send a Handshake packet if it has Handshake keys, otherwise it MUST
+send an Initial packet in a UDP datagram of at least 1200 bytes.
 
 ### Speeding Up Handshake Completion
 
