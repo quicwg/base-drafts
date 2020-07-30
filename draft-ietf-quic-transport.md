@@ -3675,6 +3675,10 @@ or elsewhere on the host before being processed.  An endpoint MUST NOT include
 delays that it does not control when populating the Ack Delay field in an ACK
 frame.
 
+Since the acknowledgement delay is not used for Initial and Handshake
+packets, the ACK Delay field in acknowledgements for those packet types
+SHOULD be set to 0.
+
 ### ACK Frames and Packet Protection
 
 ACK frames MUST only be carried in a packet that has the same packet number
@@ -5283,10 +5287,6 @@ ACK Delay:
   parameter sent by the sender of the ACK frame; see
   {{transport-parameter-definitions}}.  This encoding allows for a large
   range of values, although it sacrifices some resolution.
-  
-  Since the acknowledgement delay is not used for Initial and Handshake
-  packets, the ACK Delay field in acknowledgements for those packet types
-  SHOULD be set to 0.
 
 ACK Range Count:
 
