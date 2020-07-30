@@ -111,7 +111,7 @@ Ack-eliciting frames:
 Ack-eliciting packets:
 
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
-  within the maximum ack delay and are called ack-eliciting packets.
+  within the maximum acknowledgement delay and are called ack-eliciting packets.
 
 In-flight:
 
@@ -288,10 +288,11 @@ latest_rtt = ack_time - send_time_of_largest_acked
 ~~~
 
 An RTT sample is generated using only the largest acknowledged packet in the
-received ACK frame.  This is because a peer reports ACK delays for only the
-largest acknowledged packet in an ACK frame.  While the reported ACK delay is
-not used by the RTT sample measurement, it is used to adjust the RTT sample in
-subsequent computations of smoothed_rtt and rttvar ({{smoothed-rtt}}).
+received ACK frame.  This is because a peer reports acknowledgment delays for
+only the largest acknowledged packet in an ACK frame.  While the reported
+acknowledgment delay is not used by the RTT sample measurement, it is used to
+adjust the RTT sample in subsequent computations of smoothed_rtt and rttvar
+({{smoothed-rtt}}).
 
 To avoid generating multiple RTT samples for a single packet, an ACK frame
 SHOULD NOT be used to update RTT estimates if it does not newly acknowledge the
@@ -318,9 +319,9 @@ latest_rtt on subsequent samples.  In this document, min_rtt is used by loss
 detection to reject implausibly small rtt samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for ACK delays reported by the peer.  Doing so allows the endpoint
-to set a lower bound for the smoothed_rtt based entirely on what it observes
-(see {{smoothed-rtt}}), and limits potential underestimation due to
+not adjust for acknowledgment delays reported by the peer.  Doing so allows the
+endpoint to set a lower bound for the smoothed_rtt based entirely on what it
+observes (see {{smoothed-rtt}}), and limits potential underestimation due to
 erroneously-reported delays by the peer.
 
 The RTT for a network path may change over time.  If a path's actual RTT
@@ -336,16 +337,16 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for acknowledgement delays. These delays are computed using the ACK Delay
-field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
-For packets sent in the Application Data packet number space, a peer limits
-any delay in sending an acknowledgement for an ack-eliciting packet to no
-greater than the value it advertised in the max_ack_delay transport parameter.
-Consequently, when a peer reports an ACK Delay that is greater than its
-max_ack_delay, the delay is attributed to reasons out of the peer's control,
-such as scheduler latency at the peer or loss of previous ACK frames.  Any
-delays beyond the peer's max_ack_delay are therefore considered effectively
-part of path delay and incorporated into the smoothed_rtt estimate.
+for acknowledgement delays. These delays are computed using the ACK Delay field
+of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}. For packets
+sent in the Application Data packet number space, a peer limits any delay in
+sending an acknowledgement for an ack-eliciting packet to no greater than the
+value it advertised in the max_ack_delay transport parameter. Consequently, when
+a peer reports an acknowledgment delay that is greater than its max_ack_delay,
+the delay is attributed to reasons out of the peer's control, such as scheduler
+latency at the peer or loss of previous ACK frames.  Any delays beyond the
+peer's max_ack_delay are therefore considered effectively part of path delay and
+incorporated into the smoothed_rtt estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
@@ -637,7 +638,7 @@ because the peer might only have receive keys for one of the two packet number
 spaces.
 
 If the sender wants to elicit a faster acknowledgement on PTO, it can skip a
-packet number to eliminate the ack delay.
+packet number to eliminate the acknowledgment delay.
 
 When the PTO timer expires, an ack-eliciting packet MUST be sent.  An endpoint
 SHOULD include new data in this packet.  Previously sent data MAY be sent if
@@ -1101,8 +1102,8 @@ rttvar:
 : The RTT variation, computed as described in {{smoothed-rtt}}.
 
 min_rtt:
-: The minimum RTT seen in the connection, ignoring ack delay, as described
-  in {{min-rtt}}.
+: The minimum RTT seen in the connection, ignoring acknowledgment delay, as
+  described in {{min-rtt}}.
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
@@ -1256,11 +1257,11 @@ UpdateRtt(ack_delay):
     rttvar = latest_rtt / 2
     return
 
-  // min_rtt ignores ack delay.
+  // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay
   ack_delay = min(ack_delay, max_ack_delay)
-  // Adjust for ack delay if plausible.
+  // Adjust for acknowledgment delay if plausible.
   adjusted_rtt = latest_rtt
   if (latest_rtt > min_rtt + ack_delay):
     adjusted_rtt = latest_rtt - ack_delay
