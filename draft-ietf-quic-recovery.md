@@ -1574,7 +1574,7 @@ detected. May start a new recovery period and reduces the congestion
 window.
 
 ~~~
-   CongestionEvent(sent_time):
+   OnCongestionEvent(sent_time):
      // Start a new congestion event if packet was sent after the
      // start of the previous congestion recovery period.
      if (!InCongestionRecovery(sent_time)):
@@ -1597,7 +1597,8 @@ Invoked when an ACK frame with an ECN section is received from the peer.
      // this could be a new congestion event.
      if (ack.ce_counter > ecn_ce_counters[pn_space]):
        ecn_ce_counters[pn_space] = ack.ce_counter
-       CongestionEvent(sent_packets[ack.largest_acked].time_sent)
+       sent_time = sent_packets[ack.largest_acked].time_sent
+       OnCongestionEvent(sent_time)
 ~~~
 
 
@@ -1623,7 +1624,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
      // Remove lost packets from bytes_in_flight.
      for lost_packet in lost_packets:
        bytes_in_flight -= lost_packet.sent_bytes
-     CongestionEvent(lost_packets.largest().time_sent)
+     OnCongestionEvent(lost_packets.largest().time_sent)
 
      // Collapse congestion window if persistent congestion
      if (InPersistentCongestion(lost_packets.largest())):
