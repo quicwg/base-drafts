@@ -1281,7 +1281,7 @@ TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
 
 A client generally receives 1-RTT keys at the same time as the handshake
-completes.  Even if it has 1-RTT secrets, a client also MUST NOT process
+completes.  Even if it has 1-RTT secrets, a client MUST NOT process
 incoming 1-RTT protected packets before the TLS handshake is complete.
 
 
