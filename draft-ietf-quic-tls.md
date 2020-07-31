@@ -1255,8 +1255,8 @@ handshake messages from a client, it is missing assurances on the client state:
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
 
-Therefore, the server's use of 1-RTT keys is limited to sending data before
-the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+Therefore, the server's use of 1-RTT keys before the handshake is complete is
+limited to sending data.  A server MUST NOT process incoming 1-RTT protected
 packets before the TLS handshake is complete.  Because sending acknowledgments
 indicates that all frames in a packet have been processed, a server cannot send
 acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
