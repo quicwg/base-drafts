@@ -1746,9 +1746,9 @@ clients to offer multiple application protocols during connection
 establishment. The transport parameters that a client includes during the
 handshake apply to all application protocols that the client offers. Application
 protocols can recommend values for transport parameters, such as the initial
-flow control limits. However, application protocols that require values for
-transport parameters will make it impossible for a client to offer multiple
-application protocols with conflicting requirements.
+flow control limits. However, application protocols that set constraints on
+values for transport parameters could make it impossible for a client to offer
+multiple application protocols if these constraints conflict.
 
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
