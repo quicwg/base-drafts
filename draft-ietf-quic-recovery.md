@@ -313,22 +313,38 @@ retain sufficient history is an open research question.
 
 ## Estimating min_rtt {#min-rtt}
 
-min_rtt is the minimum RTT observed for a given network path.  min_rtt is set
-to the latest_rtt on the first RTT sample, and to the lesser of min_rtt and
-latest_rtt on subsequent samples.  In this document, min_rtt is used by loss
-detection to reject implausibly small rtt samples.
+min_rtt is the sender's estimate of the minimum RTT observed for a given network
+path. In this document, min_rtt is used by loss detection to reject implausibly
+small rtt samples.
+
+min_rtt MUST be set to the latest_rtt on the first RTT sample. min_rtt MUST be
+set to the lesser of min_rtt and latest_rtt ({{latest-rtt}}) on all other
+samples.
 
 An endpoint uses only locally observed times in computing the min_rtt and does
-not adjust for acknowledgment delays reported by the peer.  Doing so allows the
+not adjust for acknowledgment delays reported by the peer. Doing so allows the
 endpoint to set a lower bound for the smoothed_rtt based entirely on what it
 observes (see {{smoothed-rtt}}), and limits potential underestimation due to
 erroneously-reported delays by the peer.
 
-The RTT for a network path may change over time.  If a path's actual RTT
-decreases, the min_rtt will adapt immediately on the first low sample.  If
-the path's actual RTT increases, the min_rtt will not adapt to it, allowing
+The RTT for a network path may change over time. If a path's actual RTT
+decreases, the min_rtt will adapt immediately on the first low sample.  If the
+path's actual RTT increases however, the min_rtt will not adapt to it, allowing
 future RTT samples that are smaller than the new RTT to be included in
 smoothed_rtt.
+
+Endpoints SHOULD set the min_rtt to the newest RTT sample after persistent
+congestion is established. This is to allow a connection to reset its estimate
+of min_rtt and smoothed_rtt ({{smoothed-rtt}}) after a disruptive network event,
+and because it is possible that an increase in path delay resulted in persistent
+congestion being incorrectly declared.
+
+Endpoints MAY set the min_rtt to the newest RTT sample at other times in the
+connection, such as when traffic volume is low, to refresh the
+value. Implementations should be careful not to refresh this value too
+frequently, since the actual minimum RTT of the path may not be frequently
+observable.
+
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
