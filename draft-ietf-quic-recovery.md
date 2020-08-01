@@ -839,8 +839,8 @@ The persistent congestion duration is computed as follows:
 Unlike the PTO computation in {{pto}}, this duration includes the max_ack_delay
 irrespective of the packet number spaces in which losses are established.
 
-This duration allows a sender to send enough packets, including some in response
-to PTO expiration, as TCP does with Tail Loss Probe ({{RACK}}), before
+This duration allows a sender to send as many packets, including some in
+response to PTO expiration, as TCP does with Tail Loss Probe ({{RACK}}), before
 establishing persistent congestion, as TCP does with a Retransmission Timeout
 ({{?RFC5681}}).
 
@@ -848,27 +848,25 @@ The RECOMMENDED value for kPersistentCongestionThreshold is 3, which is
 approximately equivalent to two TLPs before an RTO in TCP.
 
 This design does not use consecutive PTO events to establish persistent
-congestion, since a PTO expiration is controlled by application patterns in
-addition to network activity. For example, a sender that sends small amounts of
-data with silence periods between them restarts the PTO timer every time it
-sends, potentially preventing the PTO timer from expiring for a long period of
-time, even when no acknowledgments are being received. The use of a duration
-enables a sender to establish persistent congestion without depending on the
-occurrence of PTOs.
+congestion, since application patterns impact PTO expirations. For example, a
+sender that sends small amounts of data with silence periods between them
+restarts the PTO timer every time it sends, potentially preventing the PTO timer
+from expiring for a long period of time, even when no acknowledgments are being
+received. The use of a duration enables a sender to establish persistent
+congestion without depending on the occurrence of PTOs.
 
 ### Establishing Persistent Congestion
 
-A sender establishes persistent congestion on receiving an acknowledgement, if
-the following conditions are true:
+A sender establishes persistent congestion on receiving an acknowledgement if at
+least two ack-eliciting packets are declared lost, and:
 
-* there are at least two ack-eliciting packets that are declared lost;
+* a prior RTT sample existed when both packets were sent;
 
-* a prior RTT sample existed at the time these packets were sent;
-
-* the duration between the send times of these packets exceeds the
+* the duration between the send times of these two packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
 
-* all packets sent between those times are declared lost.
+* all packets, across all packet number spaces, sent between those two send
+  times are declared lost.
 
 The persistent congestion period SHOULD NOT start until there is at least one
 RTT sample. Before the first RTT sample, a sender arms its PTO timer based on
@@ -883,10 +881,8 @@ cannot compare send times across packet number spaces MAY use state for just the
 packet number space that was acknowledged.
 
 When persistent congestion is declared, the sender's congestion window MUST be
-reduced to the minimum congestion window (kMinimumWindow).  This response of
-collapsing the congestion window on persistent congestion is functionally
-similar to a sender's response on a Retransmission Timeout (RTO) in TCP
-({{RFC5681}}) after Tail Loss Probes ({{RACK}}).
+reduced to the minimum congestion window (kMinimumWindow), similar to a TCP
+sender's response on an RTO ({{RFC5681}}).
 
 ### Example
 
