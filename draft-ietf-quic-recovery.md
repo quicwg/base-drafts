@@ -767,20 +767,20 @@ While in slow start, QUIC increases the congestion window by the
 number of bytes acknowledged when each acknowledgment is processed, resulting
 in exponential growth of the congestion window.
 
-QUIC exits slow start upon loss or upon increase in the ECN-CE counter.
-When slow start is exited, the congestion window halves and the slow start
-threshold is set to the new congestion window.  QUIC re-enters slow start
-any time the congestion window is less than the slow start threshold,
-which only occurs after persistent congestion is declared.
+QUIC MUST exit slow start and enter congestion avoidance upon loss or upon
+increase in the ECN-CE counter. When slow start is exited, the congestion
+window halves and the slow start threshold is set to the new congestion
+window.  QUIC re-enters slow start any time the congestion window is less
+than the slow start threshold, which only occurs after persistent congestion
+is declared.
 
 ## Congestion Avoidance
 
-Slow start exits to congestion avoidance.  Congestion avoidance uses an
-Additive Increase Multiplicative Decrease (AIMD) approach that increases
-the congestion window by one maximum packet size per congestion window
-acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
-the congestion window, sets the slow start threshold to the new
-congestion window, and then enters the recovery period.
+Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
+approach that MUST increase the congestion window by one maximum packet size
+per congestion window acknowledged.  When a loss or ECN-CE marking is
+detected, the congestion window MUST be halved and the slow start threshold
+MUST be set to the new congestion window.
 
 ## Recovery Period
 
