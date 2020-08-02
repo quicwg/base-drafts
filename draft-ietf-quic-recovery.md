@@ -853,7 +853,7 @@ sender that sends small amounts of data with silence periods between them
 restarts the PTO timer every time it sends, potentially preventing the PTO timer
 from expiring for a long period of time, even when no acknowledgments are being
 received. The use of a duration enables a sender to establish persistent
-congestion without depending on the occurrence of PTOs.
+congestion without depending on PTO expiration.
 
 ### Establishing Persistent Congestion
 
@@ -919,8 +919,8 @@ Because the threshold was reached and because none of the packets between the
 oldest and the newest lost packets were acknowledged, the network is considered
 to have experienced persistent congestion.
 
-While this example shows the occurrence of PTOs, they are not required for
-persistent congestion to be established.
+While this example shows PTO expiration, they are not required for persistent
+congestion to be established.
 
 
 ## Pacing {#pacing}
