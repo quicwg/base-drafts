@@ -339,11 +339,11 @@ of min_rtt and smoothed_rtt ({{smoothed-rtt}}) after a disruptive network event,
 and because it is possible that an increase in path delay resulted in persistent
 congestion being incorrectly declared.
 
-Endpoints MAY set the min_rtt to the newest RTT sample at other times in the
-connection, such as when traffic volume is low, to refresh the
-value. Implementations should be careful not to refresh this value too
-frequently, since the actual minimum RTT of the path may not be frequently
-observable.
+Endpoints MAY re-establish the min_rtt at other times in the connection, such as
+when traffic volume is low and an acknowledgement is received with a low
+acknowledgement delay. Implementations should be careful not to refresh this
+value too frequently, since the actual minimum RTT of the path may not be
+frequently observable.
 
 
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
