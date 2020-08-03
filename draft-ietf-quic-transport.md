@@ -3617,8 +3617,6 @@ spuriously retransmitting the frames it contains.  An ACK frame is expected
 to fit within a single QUIC packet.  If it does not, then older ranges
 (those with the smallest packet numbers) are omitted.
 
-### Limiting ACK Ranges {#ack-limiting}
-
 A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
 sends in ACK frames, both to limit the size of ACK frames and to avoid resource
 exhaustion. After receiving acknowledgments for an ACK frame, the receiver
