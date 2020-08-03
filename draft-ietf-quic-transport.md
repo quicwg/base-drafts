@@ -3571,6 +3571,9 @@ non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
 ack-eliciting packet has been received to include an ACK frame with outgoing
 frames.
 
+A receiver MUST NOT send an ack-eliciting frame in all packets that would
+otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
+acknowledgements.
 
 ### Acknowledgement Frequency
 
@@ -3614,29 +3617,6 @@ spuriously retransmitting the frames it contains.  An ACK frame is expected
 to fit within a single QUIC packet.  If it does not, then older ranges
 (those with the smallest packet numbers) are omitted.
 
-{{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for
-determining what packets to acknowledge in each ACK frame.  Though the goal of
-these algorithms is to generate an acknowledgment for every packet that is
-processed, it is still possible for acknowledgments to be lost.  A sender cannot
-expect to receive an acknowledgment for every packet that the receiver
-processes.
-
-
-### Receiver Tracking of ACK Frames {#ack-tracking}
-
-When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
-receiver can stop acknowledging packets less than or equal to the largest
-acknowledged in the sent ACK frame.
-
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
-reordering. In cases with ACK frame loss and reordering, this approach does not
-guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and all
-subsequent ACK frames containing them could be lost. In this case, the loss
-recovery algorithm could cause spurious retransmissions, but the sender will
-continue making forward progress.
-
 ### Limiting ACK Ranges {#ack-limiting}
 
 A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
@@ -3666,6 +3646,19 @@ validation at a sender and including a lower value than what was included in a
 previous ACK frame could cause ECN to be unnecessarily disabled; see
 {{ecn-validation}}.
 
+{{ack-tracking}} describes an exemplary approach for determining what packets
+to acknowledge in each ACK frame.  Though the goal of this algorithm is to
+generate an acknowledgment for every packet that is processed, it is still
+possible for acknowledgments to be lost.  A sender cannot expect to receive
+an acknowledgment for every packet that the receiver processes.
+
+### Limiting Ranges by Tracking ACK Frames {#ack-tracking}
+
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
+
 A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
 not receive an acknowledgement for a long period of time.  This could cause the
 receiver to maintain state for a large number of ACK frames for a long period of
@@ -3673,10 +3666,13 @@ time, and ACK frames it sends could be unnecessarily large.  In such a case, a
 receiver could send a PING or other small ack-eliciting frame occasionally,
 such as once per round trip, to elicit an ACK from the peer.
 
-A receiver MUST NOT send an ack-eliciting frame in all packets that would
-otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
-acknowledgements.
-
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
+reordering. In cases with ACK frame loss and reordering, this approach does not
+guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order and all
+subsequent ACK frames containing them could be lost. In this case, the loss
+recovery algorithm could cause spurious retransmissions, but the sender will
+continue making forward progress.
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
