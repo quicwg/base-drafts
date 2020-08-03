@@ -3688,11 +3688,11 @@ to adjust for any intentional delays, which is important for getting a better
 estimate of the path RTT when acknowledgments are delayed.  A packet might be
 held in the OS kernel or elsewhere on the host before being processed.  An
 endpoint MUST NOT include delays that it does not control when populating the
-ACK Delay field in an ACK frame.
+ACK Delay field in an ACK frame, but endpoints SHOULD include delays caused
+by lack of available decryption keys.
 
-Since the acknowledgement delay is not used for Initial and Handshake
-packets, the ACK Delay field in acknowledgements for those packet types
-SHOULD be set to 0.
+Since the acknowledgement delay is not used for Initial packets, the ACK Delay
+field in Initial acknowledgements SHOULD be set to 0.
 
 ### ACK Frames and Packet Protection
 
