@@ -348,11 +348,11 @@ latency at the peer or loss of previous ACK frames.  Any delays beyond the
 peer's max_ack_delay are therefore considered effectively part of path delay and
 incorporated into the smoothed_rtt estimate.
 
-The first ACK frame in the Handshake and ApplicationData packet number spaces can
-be greatly delayed due to a lack of decryption keys at the time they're received.
-For these two ACK frames, the max_ack_delay MAY be ignored if the sender chooses.
-Note that if there are no prior RTT samples, ignoring max_ack_delay has no
-impact.
+The first ACK frame in the Handshake and ApplicationData packet number spaces
+can be greatly delayed due to a lack of decryption keys at the time they're
+received. For these two ACK frames, the max_ack_delay MAY be ignored if the
+sender chooses. If the delayed ACK frame is the first RTT sample, ignoring
+max_ack_delay has no impact.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
