@@ -1094,7 +1094,9 @@ max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
   acknowledgments for packets in the Application Data packet number space. The
   actual ack_delay in a received ACK frame may be larger due to late timers,
-  reordering, or lost ACK frames.
+  reordering, or lost ACK frames. max_ack_delay is initialized to 0 and
+  updated when transport parameters are exchanged. If a peer does not
+  specify max_ack_delay, it is set to 25ms.
 
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
@@ -1129,10 +1131,6 @@ follows:
    smoothed_rtt = kInitialRtt
    rttvar = kInitialRtt / 2
    min_rtt = 0
-   // max_ack_delay is initialized to 0 and
-   // updated when transport parameters are exchanged.
-   // If a peer does not specify max_ack_delay,
-   // it is set to 25ms.
    max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
