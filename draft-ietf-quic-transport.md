@@ -474,9 +474,10 @@ These state machines shown in this section are largely informative.  This
 document uses stream states to describe rules for when and how different types
 of frames can be sent and the reactions that are expected when different types
 of frames are received.  Though these state machines are intended to be useful
-in implementing QUIC, these states aren't intended to constrain implementations.
-An implementation can define a different state machine as long as its behavior
-is consistent with an implementation that implements these states.
+in implementing QUIC, these states are not intended to constrain
+implementations. An implementation can define a different state machine as long
+as its behavior is consistent with an implementation that implements these
+states.
 
 Note:
 
@@ -1042,7 +1043,7 @@ selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP) do not cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
 deployment-specific) method that will allow packets with that connection ID to
@@ -1230,7 +1231,7 @@ resulted in changes to the state of a connection that cannot be reverted.
 Valid packets sent to clients always include a Destination Connection ID that
 matches a value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the local address and port to identify a
-connection.  Packets that don't match an existing connection are discarded.
+connection.  Packets that do not match an existing connection are discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
 connection that are encrypted with a key it has not yet computed. The client MAY
@@ -2530,8 +2531,8 @@ A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
 UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that don't experience NAT rebindings or
-genuine migrations.  Changing port number can cause a peer to reset its
+migration are exercised even for clients that do not experience NAT rebindings
+or genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
@@ -2855,7 +2856,7 @@ To support this process, a token is sent by endpoints.  The token is carried in
 the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
 specify a stateless_reset_token transport parameter during the handshake that
 applies to the connection ID that it selected during the handshake; clients
-cannot use this transport parameter because their transport parameters don't
+cannot use this transport parameter because their transport parameters do not
 have confidentiality protection.  These tokens are protected by encryption, so
 only client and server know their value.  Tokens are invalidated when their
 associated connection ID is retired via a RETIRE_CONNECTION_ID frame
@@ -6065,7 +6066,7 @@ type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
 is used to signal an error with the application that uses QUIC.
 
-If there are open streams that haven't been explicitly closed, they are
+If there are open streams that have not been explicitly closed, they are
 implicitly closed when the connection is closed.
 
 The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
@@ -7071,7 +7072,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    // expected_pn - pn_hwin and less than or equal to
    // expected_pn + pn_hwin
    //
-   // This means we can't just strip the trailing bits from
+   // This means we cannot just strip the trailing bits from
    // expected_pn and add the truncated_pn because that might
    // yield a value outside the window.
    //
