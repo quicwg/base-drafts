@@ -167,7 +167,7 @@ Layer     |                      Records                      |
 Each Handshake layer message (e.g., Handshake, Alerts, and Application Data) is
 carried as a series of typed TLS records by the Record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
-transport (typically TCP) which provides sequencing and guaranteed delivery.
+transport (typically TCP), which provides sequencing and guaranteed delivery.
 
 The TLS authenticated key exchange occurs between two endpoints: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -187,11 +187,11 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake in which the client is able to send Application Data
+ * A full 1-RTT handshake, in which the client is able to send Application Data
    after one round trip and the server immediately responds after receiving the
    first handshake message from the client.
 
- * A 0-RTT handshake in which the client uses information it has previously
+ * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
    Application Data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
@@ -306,9 +306,9 @@ protection being called out specially.
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
 
-Unlike TLS over TCP, QUIC applications which want to send data do not send it
+Unlike TLS over TCP, QUIC applications that want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
-frames or other frame types which are then carried in QUIC packets.
+frames or other frame types, which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
@@ -341,7 +341,7 @@ data packet number space:
   number space.
 
 - ACK frames MAY appear in any packet number space, but can only acknowledge
-  packets which appeared in that packet number space.  However, as noted below,
+  packets that appeared in that packet number space.  However, as noted below,
   0-RTT packets cannot contain ACK frames.
 
 - All other frame types MUST only be sent in the application data packet number
@@ -459,7 +459,7 @@ network, it proceeds as follows:
   process is that new data is available, then it is delivered to TLS in order.
 
 - If the packet is from a previously installed encryption level, it MUST NOT
-  contain data which extends past the end of previously received data in that
+  contain data that extends past the end of previously received data in that
   flow. Implementations MUST treat any violations of this requirement as a
   connection error of type PROTOCOL_VIOLATION.
 
@@ -1061,7 +1061,7 @@ Header protection is applied after packet protection is applied (see {{aead}}).
 The ciphertext of the packet is sampled and used as input to an encryption
 algorithm.  The algorithm used depends on the negotiated AEAD.
 
-The output of this algorithm is a 5-byte mask which is applied to the protected
+The output of this algorithm is a 5-byte mask that is applied to the protected
 header fields using exclusive OR.  The least significant bits of the first byte
 of the packet are masked by the least significant bits of the first mask byte,
 and the packet number is masked with the remaining bytes.  Any unused bytes of
@@ -1298,8 +1298,8 @@ handshake messages from a client, it is missing assurances on the client state:
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
 
-Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
-the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+Therefore, the server's use of 1-RTT keys before the handshake is complete is
+limited to sending data.  A server MUST NOT process incoming 1-RTT protected
 packets before the TLS handshake is complete.  Because sending acknowledgments
 indicates that all frames in a packet have been processed, a server cannot send
 acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
@@ -1322,6 +1322,10 @@ acknowledged.  This enables immediate server processing for those packets.
 A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
+
+A client generally receives 1-RTT keys at the same time as the handshake
+completes.  Even if it has 1-RTT secrets, a client MUST NOT process
+incoming 1-RTT protected packets before the TLS handshake is complete.
 
 
 ## Retry Packet Integrity {#retry-integrity}
@@ -1668,7 +1672,7 @@ For example, an attacker could inject a packet containing an ACK frame that
 makes it appear that a packet had not been received or to create a false
 impression of the state of the connection (e.g., by modifying the ACK Delay).
 Note that such a packet could cause a legitimate packet to be dropped as a
-duplicate.  Implementations SHOULD use caution in relying on any data which is
+duplicate.  Implementations SHOULD use caution in relying on any data that is
 contained in Initial packets that is not otherwise authenticated.
 
 It is also possible for the attacker to tamper with data that is carried in
@@ -1853,7 +1857,7 @@ limit the level of amplification.
 ## Header Protection Analysis {#header-protect-analysis}
 
 {{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
-algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection uses the output of the packet
 protection AEAD to derive `sample`, and then encrypts the header field using

@@ -257,13 +257,14 @@ Packets for the same QUIC connection might use different connection ID values.
 
 ## Version
 
-QUIC versions are identified with a 32-bit integer, encoded in network byte
-order.  Version 0 is reserved for version negotiation (see {{vn}}).  All other
-version numbers are potentially valid.
+The Version field contains a 4-byte identifier.  This value can be used by
+endpoints to identify a QUIC Version.  A Version field with a value of
+0x00000000 is reserved for version negotiation; see {{vn}}.  All other values
+are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
-not QUIC.  Future documents might describe additional properties which apply to
+not QUIC.  Future documents might describe additional properties that apply to
 a specific QUIC version, or to a range of QUIC versions.
 
 
@@ -395,7 +396,10 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC endpoints change the version they speak if they are sent a Version
   Negotiation packet
 
-* The version field in a QUIC long header is the same in both directions
+* The Version field in a QUIC long header is the same in both directions
+
+* A QUIC packet with a particular value in the Version field means that the
+  corresponding version of QUIC is in use
 
 * Only one connection at a time is established between any pair of QUIC
   endpoints

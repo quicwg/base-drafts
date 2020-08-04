@@ -152,16 +152,16 @@ Field section:
 
 Representation:
 
-: An instruction which represents a field line, possibly by reference to the
+: An instruction that represents a field line, possibly by reference to the
   dynamic and static tables.
 
 Encoder:
 
-: An implementation which encodes field sections.
+: An implementation that encodes field sections.
 
 Decoder:
 
-: An implementation which decodes encoded field sections.
+: An implementation that decodes encoded field sections.
 
 Absolute Index:
 
@@ -169,7 +169,7 @@ Absolute Index:
 
 Base:
 
-: A reference point for relative and post-base indices.  Representations which
+: A reference point for relative and post-base indices.  Representations that
   reference dynamic table entries are relative to a Base.
 
 Insert Count:
@@ -230,7 +230,7 @@ while the decoder is relatively simple.
 ### Limits on Dynamic Table Insertions {#blocked-insertion}
 
 Inserting entries into the dynamic table might not be possible if the table
-contains entries which cannot be evicted.
+contains entries that cannot be evicted.
 
 A dynamic table entry cannot be evicted immediately after insertion, even if it
 has never been referenced. Once the insertion of a dynamic table entry has been
@@ -241,7 +241,7 @@ because those references are guaranteed to be processed before the instruction
 evicting the entry.
 
 If the dynamic table does not contain enough room for a new entry without
-evicting other entries, and the entries which would be evicted are not
+evicting other entries, and the entries that would be evicted are not
 evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
 that uses the dynamic table has to keep track of each dynamic table entry
@@ -297,14 +297,14 @@ When the decoder receives an encoded field section with a Required Insert Count
 greater than its own Insert Count, the stream cannot be processed immediately,
 and is considered "blocked"; see {{blocked-decoding}}.
 
-The decoder specifies an upper bound on the number of streams which can be
+The decoder specifies an upper bound on the number of streams that can be
 blocked using the SETTINGS_QPACK_BLOCKED_STREAMS setting; see {{configuration}}.
-An encoder MUST limit the number of streams which could become blocked to the
+An encoder MUST limit the number of streams that could become blocked to the
 value of SETTINGS_QPACK_BLOCKED_STREAMS at all times. If a decoder encounters
 more blocked streams than it promised to support, it MUST treat this as a
 connection error of type QPACK_DECOMPRESSION_FAILED.
 
-Note that the decoder might not become blocked on every stream which risks
+Note that the decoder might not become blocked on every stream that risks
 becoming blocked.
 
 An encoder can decide whether to risk having a stream become blocked. If
@@ -312,7 +312,7 @@ permitted by the value of SETTINGS_QPACK_BLOCKED_STREAMS, compression efficiency
 can often be improved by referencing dynamic table entries that are still in
 transit, but if there is loss or reordering the stream can become blocked at the
 decoder.  An encoder can avoid the risk of blocking by only referencing dynamic
-table entries which have been acknowledged, but this could mean using literals.
+table entries that have been acknowledged, but this could mean using literals.
 Since literals make the encoded field section larger, this can result in the
 encoder becoming blocked on congestion or flow control limits.
 
@@ -435,13 +435,13 @@ acknowledged before using it.
 ### Invalid References
 
 If the decoder encounters a reference in a field line representation to a
-dynamic table entry which has already been evicted or which has an absolute
+dynamic table entry that has already been evicted or that has an absolute
 index greater than or equal to the declared Required Insert Count
 ({{header-prefix}}), it MUST treat this as a connection error of type
 QPACK_DECOMPRESSION_FAILED.
 
 If the decoder encounters a reference in an encoder instruction to a dynamic
-table entry which has already been evicted, it MUST treat this as a connection
+table entry that has already been evicted, it MUST treat this as a connection
 error of type QPACK_ENCODER_STREAM_ERROR.
 
 
@@ -548,7 +548,7 @@ encoder stream.
 
 ### Absolute Indexing {#indexing}
 
-Each entry possesses an absolute index which is fixed for the lifetime of that
+Each entry possesses an absolute index that is fixed for the lifetime of that
 entry. The first entry inserted has an absolute index of "0"; indices increase
 by one with each insertion.
 
@@ -700,7 +700,7 @@ An encoder sends encoder instructions on the encoder stream to set the capacity
 of the dynamic table and add dynamic table entries.  Instructions adding table
 entries can use existing entries to avoid transmitting redundant information.
 The name can be transmitted as a reference to an existing entry in the static or
-the dynamic table or as a string literal.  For entries which already exist in
+the dynamic table or as a string literal.  For entries that already exist in
 the dynamic table, the full entry can also be used by reference, creating a
 duplicate entry.
 
@@ -709,7 +709,7 @@ This section specifies the following encoder instructions.
 ### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
 An encoder informs the decoder of a change to the dynamic table capacity using
-an instruction which begins with the '001' three-bit pattern.  This is followed
+an instruction that begins with the '001' three-bit pattern.  This is followed
 by the new dynamic table capacity represented as an integer with a 5-bit prefix;
 see {{prefixed-integers}}.
 
@@ -728,7 +728,7 @@ the decoder.  The decoder MUST treat a new dynamic table capacity value that
 exceeds this limit as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 
 Reducing the dynamic table capacity can cause entries to be evicted; see
-{{eviction}}.  This MUST NOT cause the eviction of entries which are not
+{{eviction}}.  This MUST NOT cause the eviction of entries that are not
 evictable; see {{blocked-insertion}}.  Changing the capacity of the dynamic
 table is not acknowledged as this instruction does not insert an entry.
 
@@ -816,7 +816,7 @@ This section specifies the following decoder instructions.
 
 After processing an encoded field section whose declared Required Insert Count
 is not zero, the decoder emits a Section Acknowledgement instruction.  The
-instruction begins with the '1' one-bit pattern which is followed by the field
+instruction begins with the '1' one-bit pattern, followed by the field
 section's associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
 
@@ -844,7 +844,7 @@ see {{known-received-count}}.
 
 When a stream is reset or reading is abandoned, the decoder emits a Stream
 Cancellation instruction. The instruction begins with the '01' two-bit
-pattern, which is followed by the stream ID of the affected stream encoded as a
+pattern, followed by the stream ID of the affected stream encoded as a
 6-bit prefix integer.
 
 This instruction is used as described in {{state-synchronization}}.
@@ -1000,7 +1000,7 @@ A single-pass encoder determines the Base before encoding a field section.  If
 the encoder inserted entries in the dynamic table while encoding the field
 section, Required Insert Count will be greater than the Base, so the encoded
 difference is negative and the sign bit is set to 1.  If the field section was
-not encoded using representations which reference the most recent entry in the
+not encoded using representations that reference the most recent entry in the
 table and did not insert any new entries, the Base will be greater than the
 Required Insert Count, so the delta will be positive and the sign bit is set to
 0.
@@ -1153,7 +1153,7 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 
 #  Configuration
 
-QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
+QPACK defines two settings for the HTTP/3 SETTINGS frame:
 
   SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
   : The default value is zero.  See {{header-table-dynamic}} for usage.  This is
@@ -1166,7 +1166,7 @@ QPACK defines two settings which are included in the HTTP/3 SETTINGS frame.
 # Error Handling {#error-handling}
 
 The following error codes are defined for HTTP/3 to indicate failures of
-QPACK which prevent the connection from continuing:
+QPACK that prevent the connection from continuing:
 
 QPACK_DECOMPRESSION_FAILED (0x200):
 : The decoder failed to interpret an encoded field section and is not able to
@@ -1376,7 +1376,7 @@ header list for other reasons; even if QPACK does not force this to occur,
 application constraints might make this necessary.
 
 While the negotiated limit on the dynamic table size accounts for much of the
-memory that can be consumed by a QPACK implementation, data which cannot be
+memory that can be consumed by a QPACK implementation, data that cannot be
 immediately sent due to flow control is not affected by this limit.
 Implementations should limit the size of unsent data, especially on the decoder
 stream where flexibility to choose what to send is limited.  Possible responses
@@ -1441,7 +1441,7 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 
 # Static Table
 
-This table was generated by analyzing actual internet traffic in 2018 and
+This table was generated by analyzing actual Internet traffic in 2018 and
 including the most common headers, after filtering out some unsupported and
 non-standard values. Due to this methodology, some of the entries may be
 inconsistent or appear multiple times with similar but not identical values.
