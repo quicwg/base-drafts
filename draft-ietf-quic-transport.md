@@ -2712,8 +2712,11 @@ An implementation of QUIC might provide applications with an option to defer an
 idle timeout.  This facility could be used when the application wishes to avoid
 losing state that has been associated with an open connection, but does not
 expect to exchange application data for some time.  With this option, an
-endpoint could send a PING frame periodically to defer an idle timeout; see
-{{frame-ping}}.
+endpoint could send a PING frame ({{frame-ping}}) periodically, which will cause
+the peer to restart its idle timeout period.  Sending a packet containing a PING
+frame also restarts the idle timeout for the endpoint if this is the first
+ack-eliciting packet sent since receiving a packet or when an acknowledgment is
+received.
 
 Application protocols that use QUIC SHOULD provide guidance on when deferring an
 idle timeout is appropriate.  Unnecessary sending of PING frames could have a
