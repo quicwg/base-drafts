@@ -363,12 +363,15 @@ When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
 - MUST ignore the ACK Delay field of the ACK frame for packets sent in the
-  Initial and Handshake packet number space, except for the first ACK frame
-  received in Handshake.
+  Initial packet number space.
+
+- MUST ignore the ACK Delay field of the ACK frame for packets sent in the
+  Handshake packet number space, unless the ACK frame only acknowledges
+  packets sent prior to the peer having decryption keys.
 
 - MUST use the lesser of the value reported in ACK Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter, unless it's the first ACK
-  frame received for Handshake or ApplicationData.
+  and the peer's max_ack_delay transport parameter, unless the ACK frame only
+  acknowledges packets sent prior to the peer having decryption keys.
 
 - MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
   min_rtt.  This limits the underestimation that a misreporting peer can cause
