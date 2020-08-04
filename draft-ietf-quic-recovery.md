@@ -530,9 +530,9 @@ When setting the PTO timer, the ApplicationData packet number space (Section
 arming the PTO timer on ApplicationData prevents an endpoint from retransmitting
 data in packets when the peer might not yet have the keys necessary to process
 them or when the endpoint does not yet have the keys necessary to process their
-acknowledgements. For instance, this can happen when a client retransmits data
+acknowledgements. For instance, this could happen if a client retransmitted data
 sent in 0-RTT packets to the server before confirming that the server is able to
-decrypt 0-RTT packets. Or it can happen when a server retransmits data sent in
+decrypt 0-RTT packets. Or it could happen if a server retransmitted data sent in
 1-RTT packets while the client verifies the server's certificate and therefore
 cannot read 1-RTT packets yet.
 
