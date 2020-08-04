@@ -344,14 +344,14 @@ When 0-RTT or 1-RTT ack-eliciting packets are received, a peer does not delay
 acknowledging them any longer than the period it advertised in the max_ack_delay
 transport parameter; see Section 18.2 of {{QUIC-TRANSPORT}}.
 
-However, an endpoint SHOULD use ignore max_ack_delay until the handshake is
-confirmed (Section 4.1.2 of {{QUIC-TLS}}). Prior to handshake confirmation, the
-peer's reported acknowledgement delays might exceed the peer's max_ack_delay
-because it might buffer undecryptable packets and acknowledge them when the
-requisite keys become available to it. Since these delays, when they occur, are
-measurable and limited to the handshake, the endpoint can use the delays without
-limiting them to the max_ack_delay and avoid unnecessarily inflating the
-smoothed_rtt estimate.
+However, an endpoint MAY ignore max_ack_delay until the handshake is confirmed
+(Section 4.1.2 of {{QUIC-TLS}}). Prior to handshake confirmation, the peer's
+reported acknowledgement delays might exceed the peer's max_ack_delay because it
+might buffer undecryptable packets and acknowledge them when the requisite keys
+become available to it. Since these delays, when they occur, are measurable and
+limited to the handshake, the endpoint can use the delays without limiting them
+to the max_ack_delay and avoid unnecessarily inflating the smoothed_rtt
+estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than its max_ack_delay are attributed to unintentional but
@@ -363,10 +363,10 @@ smoothed_rtt estimate.
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
-- MUST ignore the ACK Delay field of the ACK frame for packets sent in the
-  Initial and Handshake packet number space.
+- MAY ignore the ACK Delay field of the ACK frame for packets sent in the
+  Initial packet number space.
 
-- MUST ignore the peer's max_ack_delay until the handshake is confirmed,
+- MAY ignore the peer's max_ack_delay until the handshake is confirmed,
 
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
@@ -1254,10 +1254,7 @@ OnAckReceived(ack, pn_space):
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now() - newly_acked_packets.largest().time_sent
-    ack_delay = 0
-    if (pn_space == ApplicationData):
-      ack_delay = ack.ack_delay
-    UpdateRtt(ack_delay)
+    UpdateRtt(ack.ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
