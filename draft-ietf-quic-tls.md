@@ -895,7 +895,29 @@ keeping track of missing packet numbers.
 # Packet Protection {#packet-protection}
 
 As with TLS over TCP, QUIC protects packets with keys derived from the TLS
-handshake, using the AEAD algorithm negotiated by TLS.
+handshake, using the AEAD algorithm {{!AEAD}} negotiated by TLS.
+
+QUIC packets have varying protections depending on their type:
+
+* Version Negotiation packets have no cryptographic protection.
+
+* Retry packets use AEAD_AES_128_GCM to provide protection against accidental
+  modification or insertion by off-path adversaries; see
+  {{retry-integrity}}.
+
+* Initial packets use AEAD_AES_128_GCM with keys derived from the Destination
+  Connection ID field of the first Initial packet sent by the client; see
+  {{initial-secrets}}.
+
+* All other packets have strong cryptographic protections for confidentiality
+  and integrity, using keys and algorithms negotiated by TLS.
+
+This section describes how packet protection is applied to Handshake packets,
+0-RTT packets, and 1-RTT packets. The same packet protection process is applied
+to Initial packets. However, as it is trivial to determine the keys used for
+Initial packets, these packets are not considered to have confidentiality or
+integrity protection. Retry packets use a fixed key and so similarly lack
+confidentiality and integrity protection.
 
 
 ## Packet Protection Keys {#protection-keys}
@@ -923,13 +945,28 @@ KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
 and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
-TLS 1.3 (see {{initial-secrets}}).
+TLS 1.3; see {{initial-secrets}}.
 
 
 ## Initial Secrets {#initial-secrets}
 
-Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's Initial packet. Specifically:
+Initial packets apply the packet protection process, but use a secret derived
+from the Destination Connection ID field from the client's first Initial
+packet.
+
+This secret is determined by using HKDF-Extract (see Section 2.2 of
+{{!HKDF=RFC5869}}) with a salt of 0xafbfec289993d24c9e9786f19c6111e04390a899
+and a IKM of the Destination Connection ID field. This produces an intermediate
+pseudorandom key (PRK) that is used to derive two separate secrets for sending
+and receiving.
+
+The secret used by clients to construct Initial packets uses the PRK and the
+label "client in" as input to the HKDF-Expand-Label function to produce a 32
+byte secret; packets constructed by the server use the same process with the
+label "server in".  The hash function for HKDF when deriving initial secrets
+and keys is SHA-256 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+
+This process in pseudocode is:
 
 ~~~
 initial_salt = 0xafbfec289993d24c9e9786f19c6111e04390a899
@@ -944,24 +981,20 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
                                           Hash.length)
 ~~~
 
-The hash function for HKDF when deriving initial secrets and keys is SHA-256
-{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
-
 The connection ID used with HKDF-Expand-Label is the Destination Connection ID
 in the Initial packet sent by the client.  This will be a randomly-selected
 value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
-The value of initial_salt is a 20-byte sequence shown in the figure in
-hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
-thus ensuring that the keys are different for each version of QUIC. This
-prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of packets from future versions.
+Future versions of QUIC SHOULD generate a new salt value, thus ensuring that
+the keys are different for each version of QUIC.  This prevents a middlebox that
+recognizes only one version of QUIC from seeing or modifying the contents of
+packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for protecting Initial packets change when a server sends a
+The secrets used for constructing Initial packets change when a server sends a
 Retry packet to use the connection ID value selected by the server.  The secrets
 do not change when a client changes the Destination Connection ID it uses in
 response to an Initial packet from the server.
@@ -974,7 +1007,7 @@ Note:
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
-{{test-vectors}} contains test vectors for packet encryption.
+{{test-vectors}} contains sample Initial packets.
 
 
 ## AEAD Usage {#aead}
@@ -983,19 +1016,6 @@ The Authenticated Encryption with Associated Data (AEAD; see {{!AEAD}}) function
 used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256 cipher
 suite, the AEAD_AES_128_GCM function is used.
-
-Packets are protected prior to applying header protection ({{header-protect}}).
-The unprotected packet header is part of the associated data (A).  When removing
-packet protection, an endpoint first removes the header protection.
-
-All QUIC packets other than Version Negotiation are protected with an AEAD
-algorithm ({{!AEAD}}). Prior to establishing a shared secret, packets are
-protected with AEAD_AES_128_GCM.  Retry packets use the AEAD for integrity
-protection only, as described in {{retry-integrity}}.  Initial packets use a key
-derived from the Destination Connection ID in the client's first Initial packet;
-see {{initial-secrets}}. This provides protection against off-path attackers
-and robustness against QUIC-version-unaware middleboxes, but not against on-path
-attackers.
 
 QUIC can use any of the cipher suites defined in {{!TLS13}} with the exception
 of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
@@ -1009,6 +1029,11 @@ Note:
 : An endpoint MUST NOT reject a ClientHello that offers a cipher suite that it
   does not support, or it would be impossible to deploy a new cipher suite.
   This also applies to TLS_AES_128_CCM_8_SHA256.
+
+When constructing packets, the AEAD function is applied prior to applying
+header protection; see {{header-protect}}. The unprotected packet header is part
+of the associated data (A). When processing packets, an endpoint first
+removes the header protection.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
