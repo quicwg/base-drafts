@@ -2692,8 +2692,8 @@ idle timeout period to be at least three times the current Probe Timeout (PTO).
 ### Liveness Testing
 
 An endpoint that sends packets close to the effective timeout risks having
-them be discarded at the peer, since the peer might enter its draining state
-before these packets arrive.
+them be discarded at the peer, since the idle timeout period might have expired
+at the peer before these packets arrive.
 
 An endpoint can send a PING or another ack-eliciting frame to test the
 connection for liveness if the peer could time out soon, such as within a PTO;
