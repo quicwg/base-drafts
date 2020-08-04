@@ -349,11 +349,11 @@ peer's max_ack_delay are therefore considered effectively part of path delay and
 incorporated into the smoothed_rtt estimate.
 
 ACK frames in the Handshake and ApplicationData packet number spaces are
-delayed when the receiver lacks the decryption keys to process them immediately
-and instead sends an ACK frame after the keys become available. For ACK frames
-which only acknowledge packets sent prior to the receiver having the decryption
-keys, the max_ack_delay MAY be ignored. Note that if the delayed ACK frame
-is the first RTT sample, ignoring max_ack_delay has no impact.
+delayed when the receiver lacks the decryption keys to process packets
+immediately and instead sends an ACK frame after the keys become available.
+For ACK frames which only acknowledge packets sent prior to the receiver having
+the decryption keys, the max_ack_delay MAY be ignored. Note that if the delayed
+ACK frame is the first RTT sample, ignoring max_ack_delay has no impact.
 
 The server can receive 1-RTT packets containing ACK frames before the decryption
 keys are available. If the packet is buffered and later processed, the server
