@@ -1890,7 +1890,7 @@ Marten Seemann,
 Martin Duke,
 Martin Thomson,
 Nick Banks,
-Praveen Balasubramaniam.
+Praveen Balasubramanian.
 
 # Acknowledgments
 {:numbered="false"}
