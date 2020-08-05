@@ -370,7 +370,7 @@ endpoint:
 
 - MAY ignore the acknowledgement delay for Initial packets,
 
-- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed,
+- MAY ignore the peer's max_ack_delay until the handshake is confirmed,
 
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
