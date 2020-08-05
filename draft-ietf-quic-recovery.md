@@ -351,7 +351,7 @@ ack-eliciting 0-RTT, or 1-RTT packets for any longer than the period that it
 advertised in the max_ack_delay transport parameter (Section 18.2 of
 {{QUIC-TRANSPORT}}).
 
-Since the peer might report large acknowledgement delays during the handshake,
+As the peer might report large acknowledgement delays during the handshake,
 the endpoint MAY ignore max_ack_delay until the handshake is confirmed (Section
 4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
 occur, are likely to be non-repeating and limited to the handshake, the endpoint
@@ -411,7 +411,7 @@ An endpoint might postpone the processing of acknowledgements when the
 corresponding decryption keys are not immediately available. For example, a
 client might receive an acknowledgement for a 0-RTT packet that it cannot
 decrypt because 1-RTT packet protection keys are not yet available to it. In
-such cases, an endpoint can ignore such local delays in its round-trip time
+such cases, an endpoint SHOULD ignore such local delays in its round-trip time
 sample until the handshake is confirmed.
 
 
