@@ -2402,9 +2402,6 @@ duplicate.  If the attacker is able to continue forwarding packets, it might be
 able to cause migration to a path via the attacker.  This places the attacker on
 path, giving it the ability to observe or drop all subsequent packets.
 
-Unlike the attack described in {{on-path-spoofing}}, the attacker can ensure
-that the new path is successfully validated.
-
 This style of attack relies on the attacker using a path that is approximately
 as fast as the direct path between endpoints.  The attack is more reliable if
 relatively few packets are sent or if packet loss coincides with the attempted
