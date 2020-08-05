@@ -340,18 +340,19 @@ The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for acknowledgement delays. These delays are computed using the ACK Delay
 field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
-When 0-RTT or 1-RTT ack-eliciting packets are received, a peer does not delay
+When 0-RTT or 1-RTT ack-eliciting packets are received, a peer MUST NOT delay
 acknowledging them any longer than the period it advertised in the max_ack_delay
-transport parameter; see Section 18.2 of {{QUIC-TRANSPORT}}.
+transport parameter (Section 18.2 of {{QUIC-TRANSPORT}}), with the following
+exception.  Prior to handshake confirmation, the peer might not have the packet
+protection keys for these packets when they are received. It might therefore
+buffer them and acknowledge them when the requisite keys become available.
 
-However, an endpoint MAY ignore max_ack_delay until the handshake is confirmed
-(Section 4.1.2 of {{QUIC-TLS}}). Prior to handshake confirmation, the peer's
-reported acknowledgement delays might exceed the peer's max_ack_delay because it
-might buffer undecryptable packets and acknowledge them when the requisite keys
-become available to it. Since these delays, when they occur, are measurable and
-limited to the handshake, the endpoint can use the delays without limiting them
-to the max_ack_delay and avoid unnecessarily inflating the smoothed_rtt
-estimate.
+Since the peer might report large acknowledgement delays, the endpoint MAY
+ignore max_ack_delay until the handshake is confirmed (Section 4.1.2 of
+{{QUIC-TLS}}). Since these acknowledgement delays, when they occur, are
+measurable and limited to the handshake, the endpoint can use them without
+limiting them to the max_ack_delay and avoid unnecessarily inflating the
+smoothed_rtt estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than its max_ack_delay are attributed to unintentional but
