@@ -353,10 +353,10 @@ advertised in the max_ack_delay transport parameter (Section 18.2 of
 
 Since the peer might report large acknowledgement delays during the handshake,
 the endpoint MAY ignore max_ack_delay until the handshake is confirmed (Section
-4.1.2 of {{QUIC-TLS}}). Since these acknowledgement delays, when they occur, are
-measurable and limited to the handshake, the endpoint can use them without
-limiting them to the max_ack_delay and avoid unnecessarily inflating the
-smoothed_rtt estimate.
+4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
+occur, are likely to be non-repeating and limited to the handshake, the endpoint
+can use them without limiting them to the max_ack_delay and avoid unnecessarily
+inflating the smoothed_rtt estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than its max_ack_delay are attributed to unintentional but
@@ -368,10 +368,9 @@ smoothed_rtt estimate.
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
 
-- MAY ignore the ACK Delay field of the ACK frame for packets sent in the
-  Initial packet number space.
+- MAY ignore the acknowledgement delay for Initial packets,
 
-- MAY ignore the peer's max_ack_delay until the handshake is confirmed,
+- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed,
 
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
