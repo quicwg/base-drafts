@@ -407,6 +407,13 @@ rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 ~~~
 
+An endpoint might postpone the processing of acknowledgements when the
+corresponding decryption keys are not immediately available. For example, a
+client might receive an acknowledgement for a 0-RTT packet that it cannot
+decrypt because 1-RTT packet protection keys are not yet available to it. In
+such cases, an endpoint can ignore such local delays in its round-trip time
+sample until the handshake is confirmed.
+
 
 # Loss Detection {#loss-detection}
 
