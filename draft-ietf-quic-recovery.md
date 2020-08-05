@@ -340,19 +340,9 @@ The calculation of smoothed_rtt uses path latency after adjusting RTT samples
 for acknowledgement delays. These delays are computed using the ACK Delay
 field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
-A peer MUST immediately acknowledge all ack-eliciting Initial packets.
-
-Prior to handshake confirmation, a peer might not have the packet protection
-keys for Handshake, 0-RTT, or 1-RTT packets when they are received. It might
-therefore buffer them and acknowledge them when the requisite keys become
-available. When this is not the case, the peer MUST immediately acknowledge all
-ack-eliciting Handshake packets, and MUST NOT delay acknowledgement of
-ack-eliciting 0-RTT, or 1-RTT packets for any longer than the period that it
-advertised in the max_ack_delay transport parameter (Section 18.2 of
-{{QUIC-TRANSPORT}}).
-
-As the peer might report large acknowledgement delays during the handshake,
-the endpoint MAY ignore max_ack_delay until the handshake is confirmed (Section
+As the peer might report acknowledgement delays that are larger than the peer's
+max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}), the
+endpoint MAY ignore max_ack_delay until the handshake is confirmed (Section
 4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
 occur, are likely to be non-repeating and limited to the handshake, the endpoint
 can use them without limiting them to the max_ack_delay and avoid unnecessarily
@@ -370,7 +360,7 @@ endpoint:
 
 - MAY ignore the acknowledgement delay for Initial packets,
 
-- MAY ignore the peer's max_ack_delay until the handshake is confirmed,
+- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed,
 
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
@@ -397,8 +387,9 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = acknowledgement delay from ACK frame
-ack_delay = min(ack_delay, max_ack_delay)
+ack_delay = decoded acknowledgement delay from ACK frame
+if (handshake confirmed):
+    ack_delay = min(ack_delay, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
@@ -541,8 +532,9 @@ and max_ack_delay, to account for the maximum time by which a receiver might
 delay sending an acknowledgement.
 
 When the PTO is armed for Initial or Handshake packet number spaces, the
-max_ack_delay in the PTO period computation is set to 0, as specified in 13.2.1
-of {{QUIC-TRANSPORT}}.
+max_ack_delay in the PTO period computation is set to 0, since the peer is
+expected to acknowledge these packets immediately; see 13.2.1 of
+{{QUIC-TRANSPORT}}.
 
 The PTO period MUST be at least kGranularity, to avoid the timer expiring
 immediately.
@@ -551,10 +543,10 @@ When ack-eliciting packets in multiple packet number spaces are in flight, the
 timer MUST be set to the earlier value of the Initial and Handshake packet
 number spaces.
 
-An endpoint MUST NOT set its PTO timer for 0-RTT and 1-RTT packets until the
-handshake is confirmed. Doing so prevents the endpoint from retransmitting
-information in packets when either the peer does not yet have the keys to
-process them or the endpoint does not yet have the keys to process their
+An endpoint MUST NOT set its PTO timer for the application data packet number
+space until the handshake is confirmed. Doing so prevents the endpoint from
+retransmitting information in packets when either the peer does not yet have the
+keys to process them or the endpoint does not yet have the keys to process their
 acknowledgements. For example, this can happen when a client sends 0-RTT packets
 to the server; it does so without knowing whether the server will be able to
 decrypt them. Similarly, this can happen when a server sends 1-RTT packets
@@ -1292,8 +1284,9 @@ UpdateRtt(ack_delay):
 
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
-  // Limit ack_delay by max_ack_delay
-  ack_delay = min(ack_delay, max_ack_delay)
+  // Limit ack_delay to max_ack_delay after handshake confirmation.
+  if (handshake confirmed):
+    ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for acknowledgment delay if plausible.
   adjusted_rtt = latest_rtt
   if (latest_rtt > min_rtt + ack_delay):
@@ -1341,8 +1334,8 @@ GetPtoTimeAndSpace():
     if (no in-flight packets in space):
         continue;
     if (space == ApplicationData):
-      // Skip Application Data until handshake complete.
-      if (handshake is not complete):
+      // Skip Application Data until handshake confirmed.
+      if (handshake is not confirmed):
         return pto_timeout, pto_space
       // Include max_ack_delay and backoff for Application Data.
       duration += max_ack_delay * (2 ^ pto_count)

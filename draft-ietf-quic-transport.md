@@ -3530,10 +3530,18 @@ communicated using the max_ack_delay transport parameter; see
 contract: an endpoint promises to never intentionally delay acknowledgments of
 an ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious or delayed
-retransmissions from the peer. For Initial and Handshake packets, a
-max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay value
+retransmissions from the peer. A sender uses the receiver's max_ack_delay value
 in determining timeouts for timer-based retransmission, as detailed in Section
 6.2 of {{QUIC-RECOVERY}}.
+
+An endpoint MUST immediately acknowledge all ack-eliciting Initial and Handshake
+packets and MUST NOT delay acknowledgement of ack-eliciting 0-RTT, or 1-RTT
+packets for any longer than the period that it advertised in the max_ack_delay
+transport parameter (Section 18.2 of {{QUIC-TRANSPORT}}), with the following
+exception. Prior to handshake confirmation, an endpoint might not have packet
+protection keys for decrypting Handshake, 0-RTT, or 1-RTT packets when they are
+received. It might therefore buffer them and acknowledge them when the requisite
+keys become available.
 
 Since packets containing only ACK frames are not congestion controlled, an
 endpoint MUST NOT send more than one such packet in response to receiving an
@@ -3690,6 +3698,11 @@ held in the OS kernel or elsewhere on the host before being processed.  An
 endpoint MUST NOT include delays that it does not control when populating the
 ACK Delay field in an ACK frame, but endpoints SHOULD include buffering delays
 caused by unavailability of decryption keys.
+
+When the measured acknowledgement delay is larger than its max_ack_delay, an
+endpoint SHOULD report the measured delay. This information is especially useful
+during the handshake when delays might be large; see
+{{sending-acknowledgements}}.
 
 ### ACK Frames and Packet Protection
 
