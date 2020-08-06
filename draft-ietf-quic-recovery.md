@@ -341,8 +341,8 @@ congestion being incorrectly declared.
 
 Endpoints MAY re-establish the min_rtt at other times in the connection, such as
 when traffic volume is low and an acknowledgement is received with a low
-acknowledgement delay. Implementations should be careful not to refresh this
-value too frequently, since the actual minimum RTT of the path may not be
+acknowledgement delay. Implementations SHOULD NOT refresh the min_rtt
+value too often, since the actual minimum RTT of the path is not
 frequently observable.
 
 
