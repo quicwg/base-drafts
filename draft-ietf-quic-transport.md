@@ -2739,11 +2739,6 @@ After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
 closing state; see {{closing}}. After receiving a CONNECTION_CLOSE frame,
 endpoints enter the draining state; see {{draining}}.
 
-The closing and draining connection states exist to ensure that connections
-close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for at least three times the current Probe Timeout
-(PTO) interval as defined in {{QUIC-RECOVERY}}.
-
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocols negotiates a
 graceful shutdown.  The application protocol exchanges whatever messages that
@@ -2752,15 +2747,20 @@ the application requests that the connection be closed.  When the application
 closes the connection, a CONNECTION_CLOSE frame with an appropriate error code
 will be used to signal closure.
 
-Disposing of connection state prior to the end of the closing or draining period
+The closing and draining connection states exist to ensure that connections
+close cleanly and that delayed or reordered packets are properly discarded.
+These states SHOULD persist for at least three times the current Probe Timeout
+(PTO) interval as defined in {{QUIC-RECOVERY}}.
+
+Disposing of connection state prior to the exiting the closing or draining state
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
 packets on the connection do not induce a response, such as those that are able
-to close the UDP socket, MAY use an abbreviated draining period to allow
+to close the UDP socket, MAY end these states earlier to allow
 for faster resource recovery.  Servers that retain an open socket for accepting
-new connections SHOULD NOT exit the closing or draining period early.
+new connections SHOULD NOT end the closing or draining states early.
 
-Once the closing or draining period has ended, an endpoint SHOULD discard all
+Once the closing or draining state ends, an endpoint SHOULD discard all
 connection state.  This results in new packets on the connection being handled
 generically.  For instance, an endpoint MAY send a stateless reset in response
 to any further incoming packets.
@@ -2768,27 +2768,29 @@ to any further incoming packets.
 
 ### Closing Connection State {#closing}
 
-An endpoint enters a closing period after initiating an immediate close.
-
-During the closing period, an endpoint that sends a CONNECTION_CLOSE frame
-SHOULD respond to any incoming packet that can be decrypted with another packet
-containing a CONNECTION_CLOSE frame. An endpoint that is closing is not
-required to process the frames contained in packets. Such an endpoint SHOULD
-limit the number of packets it generates containing a CONNECTION_CLOSE frame.
-For instance, an endpoint could wait for a progressively increasing number of
-received packets or amount of time before responding to received packets.
+An endpoint enters a closing state after initiating an immediate close.
 
 In the closing state, an endpoint retains only enough information to generate a
 packet containing a CONNECTION_CLOSE frame and to identify packets as belonging
-to the connection. The endpoint's selected connection ID and the QUIC version
-are sufficient information to identify packets for a closing connection; an
-endpoint can discard all other connection state. An endpoint MAY retain packet
+to the connection. An endpoint in the closing state sends a packet containing a
+CONNECTION_CLOSE frame in response to any incoming packet that it attributes to
+the connection.
+
+An endpoint SHOULD limit the rate at which it generates packets in the closing
+state. For instance, an endpoint could wait for a progressively increasing
+number of received packets or amount of time before responding to received
+packets.
+
+The endpoint's selected connection ID and the QUIC version are sufficient
+information to identify packets for a closing connection; an endpoint MAY
+discard all other connection state. An endpoint that is closing is not required
+to process the frames contained in packets. An endpoint MAY retain packet
 protection keys for incoming packets to allow it to read and process a
 CONNECTION_CLOSE frame.
 
-An endpoint MAY drop packet protection keys when starting the closing period
+An endpoint MAY drop packet protection keys when entering the closing state
 and send a packet containing a CONNECTION_CLOSE in response to any UDP datagram
-that is received. However, an endpoint without the packet protection keys
+that is received. However, an endpoint that discards packet protection keys
 cannot identify and discard invalid packets. To avoid being used for an
 amplication attack, such endpoints MUST limit the cumulative size of packets
 containing a CONNECTION_CLOSE frame to 3 times the cumulative size of the
@@ -2804,14 +2806,14 @@ Note:
   congestion control, which are not expected to be relevant for a closed
   connection. Retransmitting the final packet requires less state.
 
-While in the closing period, an endpoint could receive packets from a new
-source address, indicating a connection migration; see {{migration}}. New
-packets from unverified addresses could be used to create an amplification
-attack; see {{address-validation}}. To avoid being used for an amplication
-attack, an endpoint in the closing state MUST either discard packets received
-from unvalidated addresses or limit the cumulative size of packets it sends to
-unvalidated addresses to 3 times the size of packets it receives from the
-address.
+While in the closing state, an endpoint could receive packets from a new
+source address, indicating a connection migration; see {{migration}}. An
+endpoint that discards information about validated addresses might be used to
+create an amplification attack; see {{address-validation}}. To avoid being used
+for an amplication attack, an endpoint in the closing state MUST either discard
+packets received from unvalidated addresses or limit the cumulative size of
+packets it sends to unvalidated addresses to 3 times the size of packets it
+receives from the address.
 
 An endpoint is not expected to handle key updates when it is closing. A key
 update might prevent the endpoint from moving from the closing state to
@@ -2830,12 +2832,12 @@ An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
 containing a CONNECTION_CLOSE frame before entering the draining state, using a
 CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
 send further packets, which could result in a constant exchange of
-CONNECTION_CLOSE frames until the closing period on either peer ends.
+CONNECTION_CLOSE frames until either endpoint exits the closing state.
 
 An endpoint MAY transition from the closing state to the draining state if it
 receives a CONNECTION_CLOSE frame or stateless reset, either of which indicate
-that the peer is also closing or draining.  The draining period SHOULD end when
-the closing period would have ended.  In other words, the endpoint can use the
+that the peer is also closing or draining.  The draining state SHOULD end when
+the closing state would have ended.  In other words, the endpoint uses the
 same end time, but cease retransmission of the closing packet.
 
 
