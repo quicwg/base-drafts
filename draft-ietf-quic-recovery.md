@@ -387,9 +387,9 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = decoded acknowledgement delay from ACK frame
+ack_delay = decoded ACK Delay field from ACK frame
 if (handshake confirmed):
-    ack_delay = min(ack_delay, max_ack_delay)
+  ack_delay = min(ack_delay, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
@@ -1284,7 +1284,7 @@ UpdateRtt(ack_delay):
 
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
-  // Limit ack_delay to max_ack_delay after handshake confirmation.
+  // Apply max_ack_delay after handshake confirmation.
   if (handshake confirmed):
     ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for acknowledgment delay if plausible.
