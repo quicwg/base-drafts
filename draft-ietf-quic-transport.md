@@ -3691,11 +3691,13 @@ packet with the largest packet number is received and the time an acknowledgment
 is sent.  The endpoint encodes this acknowledgement delay in the ACK Delay field
 of an ACK frame; see {{frame-ack}}.  This allows the receiver of the ACK frame
 to adjust for any intentional delays, which is important for getting a better
-estimate of the path RTT when acknowledgments are delayed.  A packet might be
-held in the OS kernel or elsewhere on the host before being processed.  An
-endpoint MUST NOT include delays that it does not control when populating the
-ACK Delay field in an ACK frame, but endpoints SHOULD include buffering delays
-caused by unavailability of decryption keys.
+estimate of the path RTT when acknowledgments are delayed.
+
+A packet might be held in the OS kernel or elsewhere on the host before being
+processed.  An endpoint MUST NOT include delays that it does not control when
+populating the ACK Delay field in an ACK frame. However, endpoints SHOULD
+include buffering delays caused by unavailability of decryption keys, since
+these delays can be large and are likely to be non-repeating.
 
 When the measured acknowledgement delay is larger than its max_ack_delay, an
 endpoint SHOULD report the measured delay. This information is especially useful

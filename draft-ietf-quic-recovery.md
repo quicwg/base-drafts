@@ -346,13 +346,13 @@ endpoint SHOULD ignore max_ack_delay until the handshake is confirmed (Section
 4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
 occur, are likely to be non-repeating and limited to the handshake, the endpoint
 can use them without limiting them to the max_ack_delay and avoid unnecessarily
-inflating the smoothed_rtt estimate.
+inflating the RTT estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than the peer's max_ack_delay are attributed to
 unintentional but potentially repeating delays, such as scheduler latency at the
 peer or loss of previous acknowledgements. Therefore, these extra delays are
-considered effectively part of path delay and incorporated into the smoothed_rtt
+considered effectively part of path delay and incorporated into the RTT
 estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
@@ -394,7 +394,7 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = decoded ACK Delay field from ACK frame
+ack_delay = decoded acknowledgement delay from ACK frame
 if (handshake confirmed):
   ack_delay = min(ack_delay, max_ack_delay)
 adjusted_rtt = latest_rtt
@@ -1249,8 +1249,9 @@ OnAckReceived(ack, pn_space):
   if (newly_acked_packets.empty()):
     return
 
-  // If the largest acknowledged is newly acked and
-  // at least one ack-eliciting was newly acked, update the RTT.
+  // Update the RTT if the largest acknowledged is newly acked
+  // and at least one ack-eliciting was newly acked.
+
   if (newly_acked_packets.largest().packet_number ==
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
