@@ -373,7 +373,7 @@ Additionaly, an endpoint might postpone the processing of acknowledgements when
 the corresponding decryption keys are not immediately available. For example, a
 client might receive an acknowledgement for a 0-RTT packet that it cannot
 decrypt because 1-RTT packet protection keys are not yet available to it. In
-such cases, an endpoint SHOULD ignore such local delays in its round-trip time
+such cases, an endpoint SHOULD ignore such local delays in its RTT
 sample until the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
