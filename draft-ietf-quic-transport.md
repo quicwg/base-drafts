@@ -2774,15 +2774,15 @@ endpoint can discard all other connection state. An endpoint MAY retain packet
 protection keys for incoming packets to allow it to read and process a
 CONNECTION_CLOSE frame.
 
-An endpoint MAY drop packet protection keys when entering the closing period
-({{draining}}) and send a packet containing a CONNECTION_CLOSE in response to
-any UDP datagram that is received. However, an endpoint without the packet
-protection keys cannot identify and discard invalid packets. To avoid being
-used for an amplication attack, such endpoints MUST limit the cumulative size
-of packets containing a CONNECTION_CLOSE frame to 3 times the cumulative size
-of the packets that cause those packets to be sent. To minimize the state that
-an endpoint maintains for a closing connection, endpoints MAY send the exact
-same packet.
+An endpoint MAY drop packet protection keys when starting the closing period
+and send a packet containing a CONNECTION_CLOSE in response to any UDP datagram
+that is received. However, an endpoint without the packet protection keys
+cannot identify and discard invalid packets. To avoid being used for an
+amplication attack, such endpoints MUST limit the cumulative size of packets
+containing a CONNECTION_CLOSE frame to 3 times the cumulative size of the
+packets that cause those packets to be sent. To minimize the state that an
+endpoint maintains for a closing connection, endpoints MAY send the exact same
+packet.
 
 Note:
 
