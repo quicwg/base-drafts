@@ -342,18 +342,18 @@ field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
 As the peer might report acknowledgement delays that are larger than the peer's
 max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}), the
-endpoint MAY ignore max_ack_delay until the handshake is confirmed (Section
+endpoint SHOULD ignore max_ack_delay until the handshake is confirmed (Section
 4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
 occur, are likely to be non-repeating and limited to the handshake, the endpoint
 can use them without limiting them to the max_ack_delay and avoid unnecessarily
 inflating the smoothed_rtt estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
-peer that are greater than its max_ack_delay are attributed to unintentional but
-potentially repeating delays, such as scheduler latency at the peer or loss of
-previous acknowledgements. Any delays beyond the peer's max_ack_delay are
-therefore considered effectively part of path delay and incorporated into the
-smoothed_rtt estimate.
+peer that are greater than the peer's max_ack_delay are attributed to
+unintentional but potentially repeating delays, such as scheduler latency at the
+peer or loss of previous acknowledgements. Therefore, these extra delays are
+considered effectively part of path delay and incorporated into the smoothed_rtt
+estimate.
 
 When adjusting an RTT sample using peer-reported acknowledgement delays, an
 endpoint:
