@@ -3534,14 +3534,12 @@ retransmissions from the peer. A sender uses the receiver's max_ack_delay value
 in determining timeouts for timer-based retransmission, as detailed in Section
 6.2 of {{QUIC-RECOVERY}}.
 
-An endpoint MUST immediately acknowledge all ack-eliciting Initial and Handshake
-packets and MUST NOT delay acknowledgement of ack-eliciting 0-RTT, or 1-RTT
-packets for any longer than the period that it advertised in the max_ack_delay
-transport parameter ({{transport-parameter-definitions}}), with the following
-exception. Prior to handshake confirmation, an endpoint might not have packet
-protection keys for decrypting Handshake, 0-RTT, or 1-RTT packets when they are
-received. It might therefore buffer them and acknowledge them when the requisite
-keys become available.
+An endpoint MUST acknowledge all ack-eliciting Initial and Handshake packets
+immediately and all ack-eliciting 0-RTT and 1-RTT packets within its advertised
+max_ack_delay, with the following exception. Prior to handshake confirmation, an
+endpoint might not have packet protection keys for decrypting Handshake, 0-RTT,
+or 1-RTT packets when they are received. It might therefore buffer them and
+acknowledge them when the requisite keys become available.
 
 Since packets containing only ACK frames are not congestion controlled, an
 endpoint MUST NOT send more than one such packet in response to receiving an
