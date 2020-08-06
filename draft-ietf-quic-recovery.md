@@ -365,16 +365,16 @@ endpoint:
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
 
-- MUST NOT apply the adjustments above if the resulting round-trip time sample
-  is smaller than the min_rtt.  This limits the underestimation of the
-  smoothed_rtt because of a misreporting peer.
+- MUST NOT apply the adjustments above if the resulting RTT sample is smaller
+  than the min_rtt.  This limits the underestimation of the smoothed_rtt because
+  of a misreporting peer.
 
 Additionaly, an endpoint might postpone the processing of acknowledgements when
 the corresponding decryption keys are not immediately available. For example, a
 client might receive an acknowledgement for a 0-RTT packet that it cannot
 decrypt because 1-RTT packet protection keys are not yet available to it. In
-such cases, an endpoint SHOULD ignore such local delays in its RTT
-sample until the handshake is confirmed.
+such cases, an endpoint SHOULD ignore such local delays in its RTT sample until
+the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
