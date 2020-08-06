@@ -3537,7 +3537,7 @@ in determining timeouts for timer-based retransmission, as detailed in Section
 An endpoint MUST immediately acknowledge all ack-eliciting Initial and Handshake
 packets and MUST NOT delay acknowledgement of ack-eliciting 0-RTT, or 1-RTT
 packets for any longer than the period that it advertised in the max_ack_delay
-transport parameter (Section 18.2 of {{QUIC-TRANSPORT}}), with the following
+transport parameter ({{transport-parameter-definitions}}), with the following
 exception. Prior to handshake confirmation, an endpoint might not have packet
 protection keys for decrypting Handshake, 0-RTT, or 1-RTT packets when they are
 received. It might therefore buffer them and acknowledge them when the requisite
