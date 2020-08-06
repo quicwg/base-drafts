@@ -2835,10 +2835,10 @@ send further packets, which could result in a constant exchange of
 CONNECTION_CLOSE frames until either endpoint exits the closing state.
 
 An endpoint MAY transition from the closing state to the draining state if it
-receives a CONNECTION_CLOSE frame or stateless reset, either of which indicate
-that the peer is also closing or draining.  The draining state SHOULD end when
-the closing state would have ended.  In other words, the endpoint uses the
-same end time, but cease retransmission of the closing packet.
+receives a CONNECTION_CLOSE frame, which indicates that the peer is also
+closing or draining. In this case, the draining state SHOULD end when the
+closing state would have ended. In other words, the endpoint uses the same end
+time, but cease retransmission of the closing packet.
 
 
 ### Immediate Close During the Handshake {#immediate-close-hs}
