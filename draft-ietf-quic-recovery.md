@@ -369,6 +369,13 @@ endpoint:
   is smaller than the min_rtt.  This limits the underestimation of the
   smoothed_rtt because of a misreporting peer.
 
+Additionaly, an endpoint might postpone the processing of acknowledgements when
+the corresponding decryption keys are not immediately available. For example, a
+client might receive an acknowledgement for a 0-RTT packet that it cannot
+decrypt because 1-RTT packet protection keys are not yet available to it. In
+such cases, an endpoint SHOULD ignore such local delays in its round-trip time
+sample until the handshake is confirmed.
+
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
 When there are no samples for a network path, and on the first RTT sample for
@@ -397,14 +404,6 @@ smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 ~~~
-
-An endpoint might postpone the processing of acknowledgements when the
-corresponding decryption keys are not immediately available. For example, a
-client might receive an acknowledgement for a 0-RTT packet that it cannot
-decrypt because 1-RTT packet protection keys are not yet available to it. In
-such cases, an endpoint SHOULD ignore such local delays in its round-trip time
-sample until the handshake is confirmed.
-
 
 # Loss Detection {#loss-detection}
 
