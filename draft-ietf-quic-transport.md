@@ -2888,14 +2888,15 @@ be a packet with a short header.  For the stateless reset to appear as a valid
 QUIC packet, the Unpredictable Bits field needs to include at least 38 bits of
 data (or 5 bytes, less the two fixed bits).
 
-A minimum size of 21 bytes does not guarantee that a stateless reset is
-difficult to distinguish from other packets if the recipient requires the use of
-a connection ID.  To prevent a resulting stateless reset from being trivially
-distinguishable from a valid packet, all packets sent by an endpoint SHOULD be
-padded to at least 22 bytes longer than the minimum connection ID that the
-endpoint might use.  An endpoint that sends a stateless reset in response to a
-packet that is 43 bytes or less in length SHOULD send a stateless reset that is
-one byte shorter than the packet it responds to.
+The resulting minimum size of 21 bytes does not guarantee that a stateless reset
+is difficult to distinguish from other packets if the recipient requires the use
+of a connection ID. To achieve that end, the endpoint SHOULD pad all packets it
+sends to at least 22 bytes longer than the minimum connection ID that it might
+request the peer to include in packets that the peer sends.  This ensures that
+any stateless reset sent by the peer is indistinguishable from a valid packet
+sent to the endpoint.  An endpoint that sends a stateless reset in response to a
+packet that is 43 bytes or shorter SHOULD send a stateless reset that is one
+byte shorter than the packet it responds to.
 
 These values assume that the Stateless Reset Token is the same length as the
 minimum expansion of the packet protection AEAD.  Additional unpredictable bytes
