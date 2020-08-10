@@ -3620,7 +3620,9 @@ to fit within a single QUIC packet.  If it does not, then older ranges
 A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
 sends in ACK frames, both to limit the size of ACK frames and to avoid resource
 exhaustion. After receiving acknowledgments for an ACK frame, the receiver
-SHOULD stop tracking those acknowledged ACK Ranges.
+SHOULD stop tracking those acknowledged ACK Ranges.  Senders can expect
+acknowledgements for most packets, but QUIC does not guarantee receipt of an
+acknowledgment for every packet that the receiver processes.
 
 It is possible that retaining many ACK Ranges could cause an ACK frame to become
 too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
@@ -3647,8 +3649,7 @@ previous ACK frame could cause ECN to be unnecessarily disabled; see
 {{ack-tracking}} describes an exemplary approach for determining what packets
 to acknowledge in each ACK frame.  Though the goal of this algorithm is to
 generate an acknowledgment for every packet that is processed, it is still
-possible for acknowledgments to be lost.  A sender cannot expect to receive
-an acknowledgment for every packet that the receiver processes.
+possible for acknowledgments to be lost.
 
 ### Limiting Ranges by Tracking ACK Frames {#ack-tracking}
 
