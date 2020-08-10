@@ -4807,6 +4807,8 @@ responding to a Retry packet. However, the data sent in these packets could be
 different than what was sent earlier. Sending these new packets with the same
 packet number is likely to compromise the packet protection for those packets
 because the same key and nonce could be used to protect different content.
+A server MAY abort the connection if it detects that the client reset the
+packet number.
 
 A server acknowledges the use of a Retry packet for a connection using the
 retry_source_connection_id transport parameter; see
