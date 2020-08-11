@@ -2715,8 +2715,9 @@ expect to exchange application data for some time.  With this option, an
 endpoint could send a PING frame ({{frame-ping}}) periodically, which will cause
 the peer to restart its idle timeout period.  Sending a packet containing a PING
 frame also restarts the idle timeout for the endpoint if this is the first
-ack-eliciting packet sent since receiving a packet.  The idle time also restarts
-when an acknowledgment for the packet is received.
+ack-eliciting packet sent since receiving a packet.  Sending a PING frame causes
+the peer to respond with an acknowledgment, which also restarts the idle
+timeout.
 
 Application protocols that use QUIC SHOULD provide guidance on when deferring an
 idle timeout is appropriate.  Unnecessary sending of PING frames could have a
