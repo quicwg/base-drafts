@@ -799,7 +799,7 @@ indicated request.  This trades off network usage against a potential latency
 gain.  HTTP/3 server push is similar to what is described in HTTP/2 {{?HTTP2}},
 but uses different mechanisms.
 
-Each server push is assigned a unique Push ID by the server which is used to
+Each server push is assigned a unique Push ID by the server.  The Push ID is used to
 refer to the push in various contexts throughout the lifetime of the connection.
 
 The Push ID space begins at zero, and ends at a maximum value set by the
