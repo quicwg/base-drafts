@@ -2093,13 +2093,11 @@ registrations for possible duplication with existing error codes.
 Use of existing registrations is to be encouraged, but not mandated.
 
 In addition to common fields as described in {{iana-policy}}, this registry
-includes two additional fields. Permanent registrations in this registry SHOULD
+includes two additional fields.  Permanent registrations in this registry MUST
 include the following field:
 
 Name:
-: A name for the error code.  Specifying an error code name is optional.
-
-Permanent registrations in this registry MUST include the following field:
+: A name for the error code.
 
 Description:
 : A brief description of the error code semantics.
