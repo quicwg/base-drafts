@@ -2752,7 +2752,7 @@ close cleanly and that delayed or reordered packets are properly discarded.
 These states SHOULD persist for at least three times the current Probe Timeout
 (PTO) interval as defined in {{QUIC-RECOVERY}}.
 
-Disposing of connection state prior to the exiting the closing or draining state
+Disposing of connection state prior to exiting the closing or draining state
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
 packets on the connection do not induce a response, such as those that are able
