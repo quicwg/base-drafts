@@ -2755,14 +2755,13 @@ These states SHOULD persist for at least three times the current Probe Timeout
 Disposing of connection state prior to exiting the closing or draining state
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
-packets on the connection do not induce a response, such as those that are able
+packets do not induce a response, such as those that are able
 to close the UDP socket, MAY end these states earlier to allow
 for faster resource recovery.  Servers that retain an open socket for accepting
 new connections SHOULD NOT end the closing or draining states early.
 
 Once the closing or draining state ends, an endpoint SHOULD discard all
-connection state.  This results in new packets on the connection being handled
-generically.  For instance, an endpoint MAY send a stateless reset in response
+connection state.  An endpoint MAY send a stateless reset in response
 to any further incoming packets.
 
 
@@ -2807,13 +2806,10 @@ Note:
   connection. Retransmitting the final packet requires less state.
 
 While in the closing state, an endpoint could receive packets from a new
-source address, indicating a connection migration; see {{migration}}. An
-endpoint that discards information about validated addresses might be used to
-create an amplification attack; see {{address-validation}}. To avoid being used
-for an amplication attack, an endpoint in the closing state MUST either discard
-packets received from unvalidated addresses or limit the cumulative size of
-packets it sends to unvalidated addresses to 3 times the size of packets it
-receives from the address.
+source address, possibly indicating a connection migration; see {{migration}}.
+An endpoint in the closing state MUST either discard packets received from
+unvalidated addresses or limit the cumulative size of packets it sends to
+unvalidated addresses to 3 times the size of packets it receives from the address.
 
 An endpoint is not expected to handle key updates when it is closing. A key
 update might prevent the endpoint from moving from the closing state to
