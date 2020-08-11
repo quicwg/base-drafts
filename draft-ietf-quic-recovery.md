@@ -777,10 +777,10 @@ is declared.
 ## Congestion Avoidance
 
 Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
-approach that MUST increase the congestion window by one maximum packet size
-per congestion window acknowledged.  When a loss or ECN-CE marking is
-detected, the congestion window MUST be halved and the slow start threshold
-MUST be set to the new congestion window.
+approach that typically and at most increases the congestion window by one
+maximum packet size per congestion window acknowledged.  When a loss or
+ECN-CE marking is detected, the congestion window MUST be halved and the
+slow start threshold MUST be set to the new congestion window.
 
 ## Recovery Period
 
