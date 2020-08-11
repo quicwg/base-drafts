@@ -1398,7 +1398,7 @@ value the implementation selects.
 
 Setting identifiers which were used in HTTP/2 where there is no corresponding
 HTTP/3 setting have also been reserved ({{iana-settings}}). These settings MUST
-NOT be sent, and their receipt MUST be treated as an error of type
+NOT be sent, and their receipt MUST be treated as a connection error of type
 H3_SETTINGS_ERROR.
 
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
