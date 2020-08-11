@@ -87,7 +87,7 @@ new versions are developed and deployed.  All of these invariants are
 IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
-versions of QUIC.  By documenting the properties that can't change, this
+versions of QUIC.  By documenting the properties that cannot change, this
 document aims to preserve the ability for QUIC endpoints to negotiate changes to
 any other aspect of the protocol.  As a consequence, this also guarantees a
 minimal amount of information that is made available to entities other than
@@ -244,7 +244,7 @@ The remainder of the packet has version-specific semantics.
 A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP, and below) do not cause packets for a QUIC
 connection to be delivered to the wrong QUIC endpoint.  The connection ID
 is used by endpoints and the intermediaries that support them to ensure that
 each QUIC packet can be delivered to the correct instance of an endpoint.  At
@@ -257,13 +257,14 @@ Packets for the same QUIC connection might use different connection ID values.
 
 ## Version
 
-QUIC versions are identified with a 32-bit integer, encoded in network byte
-order.  Version 0 is reserved for version negotiation (see {{vn}}).  All other
-version numbers are potentially valid.
+The Version field contains a 4-byte identifier.  This value can be used by
+endpoints to identify a QUIC Version.  A Version field with a value of
+0x00000000 is reserved for version negotiation; see {{vn}}.  All other values
+are potentially valid.
 
 The properties described in this document apply to all versions of QUIC. A
 protocol that does not conform to the properties described in this document is
-not QUIC.  Future documents might describe additional properties which apply to
+not QUIC.  Future documents might describe additional properties that apply to
 a specific QUIC version, or to a range of QUIC versions.
 
 
@@ -395,7 +396,10 @@ The following statements are NOT guaranteed to be true for every QUIC version:
 * QUIC endpoints change the version they speak if they are sent a Version
   Negotiation packet
 
-* The version field in a QUIC long header is the same in both directions
+* The Version field in a QUIC long header is the same in both directions
+
+* A QUIC packet with a particular value in the Version field means that the
+  corresponding version of QUIC is in use
 
 * Only one connection at a time is established between any pair of QUIC
   endpoints
