@@ -474,9 +474,10 @@ These state machines shown in this section are largely informative.  This
 document uses stream states to describe rules for when and how different types
 of frames can be sent and the reactions that are expected when different types
 of frames are received.  Though these state machines are intended to be useful
-in implementing QUIC, these states aren't intended to constrain implementations.
-An implementation can define a different state machine as long as its behavior
-is consistent with an implementation that implements these states.
+in implementing QUIC, these states are not intended to constrain
+implementations. An implementation can define a different state machine as long
+as its behavior is consistent with an implementation that implements these
+states.
 
 Note:
 
@@ -1042,10 +1043,10 @@ selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP) do not cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
-deployment-specific) method which will allow packets with that connection ID to
+deployment-specific) method that will allow packets with that connection ID to
 be routed back to the endpoint and to be identified by the endpoint upon
 receipt.
 
@@ -1219,10 +1220,11 @@ discarded if they indicate a different protocol version than that of the
 connection, or if the removal of packet protection is unsuccessful once the
 expected keys are available.
 
-Invalid packets without packet protection, such as Initial, Retry, or Version
-Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-processing of the contents of these packets prior to discovering an error
-resulted in changes to the state of a connection that cannot be reverted.
+Invalid packets that lack strong integrity protection, such as Initial, Retry,
+or Version Negotiation, MAY be discarded. An endpoint MUST generate a
+connection error if processing the contents of these packets prior to
+discovering an error resulted in changes to connection state that
+cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -1230,7 +1232,7 @@ resulted in changes to the state of a connection that cannot be reverted.
 Valid packets sent to clients always include a Destination Connection ID that
 matches a value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the local address and port to identify a
-connection.  Packets that don't match an existing connection are discarded.
+connection.  Packets that do not match an existing connection are discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
 connection that are encrypted with a key it has not yet computed. The client MAY
@@ -1468,7 +1470,7 @@ The CRYPTO frame can be sent in different packet number spaces
 delivery of cryptographic handshake data start from zero in each packet number
 space.
 
-{{fig-hs}} shows a simplied handshake and the exchange of packets and frames
+{{fig-hs}} shows a simplified handshake and the exchange of packets and frames
 that are used to advance the handshake.  Exchange of application data during the
 handshake is enabled where possible, shown with a '*'.  Once completed,
 endpoints are able to exchange application data.
@@ -1741,6 +1743,15 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 Endpoints use transport parameters to authenticate the negotiation of
 connection IDs during the handshake; see {{cid-auth}}.
 
+Application Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
+clients to offer multiple application protocols during connection
+establishment. The transport parameters that a client includes during the
+handshake apply to all application protocols that the client offers. Application
+protocols can recommend values for transport parameters, such as the initial
+flow control limits. However, application protocols that set constraints on
+values for transport parameters could make it impossible for a client to offer
+multiple application protocols if these constraints conflict.
+
 
 ### Values of Transport Parameters for 0-RTT {#zerortt-parameters}
 
@@ -1796,7 +1807,7 @@ initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
 A server MAY store and recover the previously sent values of the
-max_idle_timout, max_udp_payload_size, and disable_active_migration parameters
+max_idle_timeout, max_udp_payload_size, and disable_active_migration parameters
 and reject 0-RTT if it selects smaller values. Lowering the values of these
 parameters while also accepting 0-RTT data could degrade the performance of the
 connection. Specifically, lowering the max_udp_payload_size could result in
@@ -1877,6 +1888,10 @@ endpoints.  In particular, receipt of a packet protected with Handshake keys
 confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
+
+Additionally, a server MAY consider the client address valididated if the
+client uses a connection ID chosen by the server and the connection ID contains
+at least 64 bits of entropy.
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
@@ -2387,9 +2402,6 @@ duplicate.  If the attacker is able to continue forwarding packets, it might be
 able to cause migration to a path via the attacker.  This places the attacker on
 path, giving it the ability to observe or drop all subsequent packets.
 
-Unlike the attack described in {{on-path-spoofing}}, the attacker can ensure
-that the new path is successfully validated.
-
 This style of attack relies on the attacker using a path that is approximately
 as fast as the direct path between endpoints.  The attack is more reliable if
 relatively few packets are sent or if packet loss coincides with the attempted
@@ -2517,8 +2529,8 @@ A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
 UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that don't experience NAT rebindings or
-genuine migrations.  Changing port number can cause a peer to reset its
+migration are exercised even for clients that do not experience NAT rebindings
+or genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
@@ -2734,10 +2746,11 @@ An endpoint is allowed to drop the packet protection keys when entering the
 closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
 response to any UDP datagram that is received.  However, an endpoint without the
 packet protection keys cannot identify and discard invalid packets.  To avoid
-creating an unwitting amplification attack, such endpoints MUST reduce the
-frequency with which it sends packets containing a CONNECTION_CLOSE frame.  To
-minimize the state that an endpoint maintains for a closing connection,
-endpoints MAY send the exact same packet.
+creating an unwitting amplification attack, such endpoints MUST limit the
+cumulative size of packets containing a CONNECTION_CLOSE frame to 3 times the
+cumulative size of the packets that cause those packets to be sent.  To minimize
+the state that an endpoint maintains for a closing connection, endpoints MAY
+send the exact same packet.
 
 Note:
 
@@ -2841,7 +2854,7 @@ To support this process, a token is sent by endpoints.  The token is carried in
 the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
 specify a stateless_reset_token transport parameter during the handshake that
 applies to the connection ID that it selected during the handshake; clients
-cannot use this transport parameter because their transport parameters don't
+cannot use this transport parameter because their transport parameters do not
 have confidentiality protection.  These tokens are protected by encryption, so
 only client and server know their value.  Tokens are invalidated when their
 associated connection ID is retired via a RETIRE_CONNECTION_ID frame
@@ -2872,14 +2885,15 @@ be a packet with a short header.  For the stateless reset to appear as a valid
 QUIC packet, the Unpredictable Bits field needs to include at least 38 bits of
 data (or 5 bytes, less the two fixed bits).
 
-A minimum size of 21 bytes does not guarantee that a stateless reset is
-difficult to distinguish from other packets if the recipient requires the use of
-a connection ID.  To prevent a resulting stateless reset from being trivially
-distinguishable from a valid packet, all packets sent by an endpoint SHOULD be
-padded to at least 22 bytes longer than the minimum connection ID that the
-endpoint might use.  An endpoint that sends a stateless reset in response to a
-packet that is 43 bytes or less in length SHOULD send a stateless reset that is
-one byte shorter than the packet it responds to.
+The resulting minimum size of 21 bytes does not guarantee that a stateless reset
+is difficult to distinguish from other packets if the recipient requires the use
+of a connection ID. To achieve that end, the endpoint SHOULD pad all packets it
+sends to at least 22 bytes longer than the minimum connection ID that it might
+request the peer to include in packets that the peer sends.  This ensures that
+any stateless reset sent by the peer is indistinguishable from a valid packet
+sent to the endpoint.  An endpoint that sends a stateless reset in response to a
+packet that is 43 bytes or shorter SHOULD send a stateless reset that is one
+byte shorter than the packet it responds to.
 
 These values assume that the Stateless Reset Token is the same length as the
 minimum expansion of the packet protection AEAD.  Additional unpredictable bytes
@@ -3028,7 +3042,7 @@ sends a Stateless Reset to another server it might receive another Stateless
 Reset in response, which could lead to an infinite exchange.
 
 An endpoint MUST ensure that every Stateless Reset that it sends is smaller than
-the packet which triggered it, unless it maintains state sufficient to prevent
+the packet that triggered it, unless it maintains state sufficient to prevent
 looping.  In the event of a loop, this results in packets eventually being too
 small to trigger a response.
 
@@ -3079,7 +3093,7 @@ Disposing of connection state prior to the end of the closing or draining period
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
 packets on the connection do not induce a response, such as those that are able
-to close the UDP socket, MAY use an abbreviated draining period which can allow
+to close the UDP socket, MAY use an abbreviated draining period to allow
 for faster resource recovery.  Servers that retain an open socket for accepting
 new connections SHOULD NOT exit the closing or draining period early.
 
@@ -3190,36 +3204,41 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation packets use authenticated encryption
-with associated data (AEAD) {{!RFC5116}} to provide confidentiality and
-integrity protection.  Retry packets use AEAD to provide integrity protection.
-Details of packet protection are found in {{QUIC-TLS}}; this section includes an
-overview of the process.
+QUIC packets have different levels of cryptographic protection based on the
+type of packet. Details of packet protection are found in {{QUIC-TLS}}; this
+section includes an overview of the protections that are provided.
 
-Initial packets are protected using keys that are statically derived. This
-packet protection is not effective confidentiality protection.  Initial
-protection only exists to ensure that the sender of the packet is on the network
-path. Any entity that receives the Initial packet from a client can recover the
-keys necessary to remove packet protection or to generate packets that will be
-successfully authenticated.
+Version Negotiation packets have no cryptographic protection; see
+{{QUIC-INVARIANTS}}.
+
+Retry packets use an authenticated encryption with associated data function
+(AEAD; {{?AEAD=RFC5116}}) to protect against accidental modification.
+
+Initial packets use an AEAD, the keys for which are derived using a value that
+is visible on the wire. Initial packets therefore do not have effective
+confidentiality protection. Initial protection exists to ensure that the sender
+of the packet is on the network path. Any entity that receives an Initial packet
+from a client can recover the keys that will allow them to both read the
+contents of the packet and generate Initial packets that will be successfully
+authenticated at either endpoint.
 
 All other packets are protected with keys derived from the cryptographic
-handshake. The type of the packet from the long header or key phase from the
-short header are used to identify which encryption keys are used. Packets
-protected with 0-RTT and 1-RTT keys are expected to have confidentiality and
-data origin authentication; the cryptographic handshake ensures that only the
-communicating endpoints receive the corresponding keys.
+handshake.  The cryptographic handshake ensures that only the communicating
+endpoints receive the corresponding keys for Handshake, 0-RTT, and 1-RTT
+packets.  Packets protected with 0-RTT and 1-RTT keys have strong
+confidentiality and integrity protection.
 
-The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is applied;
-see {{QUIC-TLS}} for details.  The underlying packet number increases with each
-packet sent in a given packet number space; see {{packet-numbers}} for details.
+The Packet Number field that appears in some packet types has alternative
+confidentiality protection that is applied as part of header protection; see
+Section 5.4 of {{QUIC-TLS}} for details. The underlying packet number increases
+with each packet sent in a given packet number space; see {{packet-numbers}} for
+details.
 
 
 ## Coalescing Packets {#packet-coalesce}
 
 Initial ({{packet-initial}}), 0-RTT ({{packet-0rtt}}), and Handshake
-({{packet-handshake}}) packets contain a Length field, which determines the end
+({{packet-handshake}}) packets contain a Length field that determines the end
 of the packet.  The length includes both the Packet Number and Payload
 fields, both of which are confidentiality protected and initially of unknown
 length. The length of the Payload field is learned once header protection is
@@ -3240,9 +3259,10 @@ in a single packet if they are to be sent at the same encryption level, instead
 of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
-UDP datagram.  Senders MUST NOT coalesce QUIC packets for different connections
-into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets with
-a different Destination Connection ID than the first packet in the datagram.
+UDP datagram.  Senders MUST NOT coalesce QUIC packets with different connection
+IDs into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets
+with a different Destination Connection ID than the first packet in the
+datagram.
 
 Every QUIC packet that is coalesced into a single UDP datagram is separate and
 complete.  The receiver of coalesced QUIC packets MUST individually process each
@@ -3285,7 +3305,7 @@ As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
 Conceptually, a packet number space is the context in which a packet can be
 processed and acknowledged.  Initial packets can only be sent with Initial
-packet protection keys and acknowledged in packets which are also Initial
+packet protection keys and acknowledged in packets that are also Initial
 packets.  Similarly, Handshake packets are sent at the Handshake encryption
 level and can only be acknowledged in Handshake packets.
 
@@ -3402,7 +3422,9 @@ ih:
   packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
-that all frames can appear in 1-RTT packets.
+that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
+a frame in a packet type that is not permitted as a connection error of type
+PROTOCOL_VIOLATION.
 
 The "Spec" column in  {{frame-types}} summarizes any special rules governing the
 processing or generation of the frame type, as indicated by the following
@@ -3509,8 +3531,8 @@ guidance offered below seeks to strike this balance.
 ### Sending ACK Frames {#sending-acknowledgements}
 
 Every packet SHOULD be acknowledged at least once, and ack-eliciting packets
-MUST be acknowledged at least once within the maximum ack delay. An endpoint
-communicates its maximum delay using the max_ack_delay transport parameter; see
+MUST be acknowledged at least once within the maximum delay an endpoint
+communicated using the max_ack_delay transport parameter; see
 {{transport-parameter-definitions}}.  max_ack_delay declares an explicit
 contract: an endpoint promises to never intentionally delay acknowledgments of
 an ack-eliciting packet by more than the indicated value. If it does, any excess
@@ -3525,7 +3547,7 @@ endpoint MUST NOT send more than one such packet in response to receiving an
 ack-eliciting packet.
 
 An endpoint MUST NOT send a non-ack-eliciting packet in response to a
-non-ack-eliciting packet, even if there are packet gaps which precede the
+non-ack-eliciting packet, even if there are packet gaps that precede the
 received packet. This avoids an infinite feedback loop of acknowledgements,
 which could prevent the connection from ever becoming idle.  Non-ack-eliciting
 packets are eventually acknowledged when the endpoint sends an ACK frame in
@@ -3667,13 +3689,17 @@ acknowledgements.
 
 An endpoint measures the delays intentionally introduced between the time the
 packet with the largest packet number is received and the time an acknowledgment
-is sent.  The endpoint encodes this delay in the Ack Delay field of an ACK
-frame; see {{frame-ack}}.  This allows the receiver of the ACK to adjust for any
-intentional delays, which is important for getting a better estimate of the path
-RTT when acknowledgments are delayed.  A packet might be held in the OS kernel
-or elsewhere on the host before being processed.  An endpoint MUST NOT include
-delays that it does not control when populating the Ack Delay field in an ACK
-frame.
+is sent.  The endpoint encodes this acknowledgement delay in the ACK Delay field
+of an ACK frame; see {{frame-ack}}.  This allows the receiver of the ACK frame
+to adjust for any intentional delays, which is important for getting a better
+estimate of the path RTT when acknowledgments are delayed.  A packet might be
+held in the OS kernel or elsewhere on the host before being processed.  An
+endpoint MUST NOT include delays that it does not control when populating the
+ACK Delay field in an ACK frame.
+
+Since the acknowledgement delay is not used for Initial and Handshake
+packets, the ACK Delay field in acknowledgements for those packet types
+SHOULD be set to 0.
 
 ### ACK Frames and Packet Protection
 
@@ -3720,11 +3746,11 @@ containing that information is acknowledged.
   unless the endpoint has sent a RESET_STREAM for that stream.  Once an endpoint
   sends a RESET_STREAM frame, no further STREAM frames are needed.
 
-* ACK frames carry the most recent set of acknowledgements and the Ack Delay
-  from the largest acknowledged packet, as described in
-  {{sending-acknowledgements}}. Delaying the transmission of packets
-  containing ACK frames or resending old ACK frames can cause the peer to
-  generate an inflated RTT sample or unnecessarily disable ECN.
+* ACK frames carry the most recent set of acknowledgements and the
+  acknowledgement delay from the largest acknowledged packet, as described in
+  {{sending-acknowledgements}}. Delaying the transmission of packets containing
+  ACK frames or resending old ACK frames can cause the peer to generate an
+  inflated RTT sample or unnecessarily disable ECN.
 
 * Cancellation of stream transmission, as carried in a RESET_STREAM frame, is
   sent until acknowledged or until all stream data is acknowledged by the peer
@@ -4325,8 +4351,8 @@ Type-Specific Bits:
 Version:
 
 : The QUIC Version is a 32-bit field that follows the first byte.  This field
-  indicates which version of QUIC is in use and determines how the rest of the
-  protocol fields are interpreted.
+  indicates the version of QUIC that is in use and determines how the rest of
+  the protocol fields are interpreted.
 
 Destination Connection ID Length:
 
@@ -4395,7 +4421,7 @@ Reserved Bits:
 
 Packet Number Length:
 
-: In packet types which contain a Packet Number field, the least significant two
+: In packet types that contain a Packet Number field, the least significant two
   bits (those with a mask of 0x03) of byte 0 contain the length of the packet
   number, encoded as an unsigned, two-bit integer that is one less than the
   length of the packet number field in bytes.  That is, the length of the packet
@@ -4460,7 +4486,7 @@ limit, Version Negotiation packets could carry Connection IDs that are longer
 than 20 bytes.
 
 The remainder of the Version Negotiation packet is a list of 32-bit versions
-which the server supports.
+that the server supports.
 
 A Version Negotiation packet is not acknowledged.  It is only sent in response
 to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
@@ -4564,7 +4590,7 @@ first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.11.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
+Section 4.9.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
 control state; see Section 6.4 of {{QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
@@ -4794,7 +4820,7 @@ PROTOCOL_VIOLATION.
 
 ## Short Header Packets {#short-header}
 
-This version of QUIC defines a single packet type which uses the
+This version of QUIC defines a single packet type that uses the
 short packet header.
 
 ~~~
@@ -4955,7 +4981,7 @@ Transport Parameter {
 The Transport Parameter Length field contains the length of the Transport
 Parameter Value field.
 
-QUIC encodes transport parameters into a sequence of bytes, which are then
+QUIC encodes transport parameters into a sequence of bytes, which is then
 included in the cryptographic handshake.
 
 
@@ -5071,20 +5097,20 @@ initial_max_streams_uni (0x09):
 
 ack_delay_exponent (0x0a):
 
-: The ACK delay exponent is an integer value indicating an
-  exponent used to decode the ACK Delay field in the ACK frame ({{frame-ack}}).
-  If this value is absent, a default value of 3 is assumed (indicating a
-  multiplier of 8). Values above 20 are invalid.
+: The acknowledgement delay exponent is an integer value indicating an exponent
+  used to decode the ACK Delay field in the ACK frame ({{frame-ack}}). If this
+  value is absent, a default value of 3 is assumed (indicating a multiplier of
+  8). Values above 20 are invalid.
 
 max_ack_delay (0x0b):
 
-: The maximum ACK delay is an integer value indicating the
-  maximum amount of time in milliseconds by which the endpoint will delay
-  sending acknowledgments.  This value SHOULD include the receiver's expected
-  delays in alarms firing.  For example, if a receiver sets a timer for 5ms
-  and alarms commonly fire up to 1ms late, then it should send a max_ack_delay
-  of 6ms.  If this value is absent, a default of 25 milliseconds is assumed.
-  Values of 2^14 or greater are invalid.
+: The maximum acknowledgement delay is an integer value indicating the maximum
+  amount of time in milliseconds by which the endpoint will delay sending
+  acknowledgments.  This value SHOULD include the receiver's expected delays in
+  alarms firing.  For example, if a receiver sets a timer for 5ms and alarms
+  commonly fire up to 1ms late, then it should send a max_ack_delay of 6ms.  If
+  this value is absent, a default of 25 milliseconds is assumed. Values of 2^14
+  or greater are invalid.
 
 disable_active_migration (0x0c):
 
@@ -5277,15 +5303,13 @@ Largest Acknowledged:
 
 ACK Delay:
 
-: A variable-length integer representing the time delta in microseconds between
-  when the ACK frame was sent and when the largest acknowledged packet, as
-  indicated in the Largest Acknowledged field, was received by this peer.  The
-  value of the ACK Delay field is scaled by multiplying the encoded value by 2
-  to the power of the value of the ack_delay_exponent transport parameter set by
-  the sender of the ACK frame; see {{transport-parameter-definitions}}.  Scaling
-  in this fashion allows for a larger range of values with a shorter encoding at
-  the cost of lower resolution.  Because the receiver doesn't use the ACK Delay
-  for Initial and Handshake packets, a sender SHOULD send a value of 0.
+: A variable-length integer encoding the acknowledgement delay in
+  microseconds; see {{host-delay}}. It is decoded by multiplying the
+  value in the field by 2 to the power of the ack_delay_exponent transport
+  parameter sent by the sender of the ACK frame; see
+  {{transport-parameter-definitions}}. Compared to simply expressing
+  the delay as an integer, this encoding allows for a larger range of
+  values within the same number of bytes, at the cost of lower resolution.
 
 ACK Range Count:
 
@@ -5303,7 +5327,7 @@ First ACK Range:
 
 ACK Ranges:
 
-: Contains additional ranges of packets which are alternately not
+: Contains additional ranges of packets that are alternately not
   acknowledged (Gap) and acknowledged (ACK Range); see {{ack-ranges}}.
 
 ECN Counts:
@@ -5448,7 +5472,7 @@ Stream ID:
 Application Protocol Error Code:
 
 : A variable-length integer containing the application protocol error
-  code (see {{app-error-codes}}) which indicates why the stream is being
+  code (see {{app-error-codes}}) that indicates why the stream is being
   closed.
 
 Final Size:
@@ -5760,9 +5784,9 @@ Maximum Streams:
   Receipt of a frame that permits opening of a stream larger than this limit
   MUST be treated as a FRAME_ENCODING_ERROR.
 
-Loss or reordering can cause a MAX_STREAMS frame to be received which states a
+Loss or reordering can cause a MAX_STREAMS frame to be received that state a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
-which do not increase the stream limit MUST be ignored.
+that do not increase the stream limit MUST be ignored.
 
 An endpoint MUST NOT open more streams than permitted by the current stream
 limit set by its peer.  For instance, a server that receives a unidirectional
@@ -5825,7 +5849,7 @@ STREAM_DATA_BLOCKED frames contain the following fields:
 
 Stream ID:
 
-: A variable-length integer indicating the stream which is blocked due to flow
+: A variable-length integer indicating the stream that is blocked due to flow
   control.
 
 Maximum Stream Data:
@@ -5985,7 +6009,7 @@ type PROTOCOL_VIOLATION.
 The sequence number specified in a RETIRE_CONNECTION_ID frame MUST NOT refer
 to the Destination Connection ID field of the packet in which the frame is
 contained.  The peer MAY treat this as a connection error of type
-FRAME_ENCODING_ERROR.
+PROTOCOL_VIOLATION.
 
 An endpoint cannot send this frame if it was provided with a zero-length
 connection ID by its peer.  An endpoint that provides a zero-length connection
@@ -6048,7 +6072,7 @@ type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
 is used to signal an error with the application that uses QUIC.
 
-If there are open streams that haven't been explicitly closed, they are
+If there are open streams that have not been explicitly closed, they are
 implicitly closed when the connection is closed.
 
 The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
@@ -6068,11 +6092,11 @@ CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
-: A variable-length integer error code which indicates the reason for
+: A variable-length integer error code that indicates the reason for
   closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
-  from the space defined in {{error-codes}}.  A CONNECTION_CLOSE frame of
-  type 0x1d uses codes from the application protocol error code space;
-  see {{app-error-codes}}.
+  from the space defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame
+  of type 0x1d uses codes from the application protocol error code space; see
+  {{app-error-codes}}.
 
 Frame Type:
 
@@ -6146,12 +6170,16 @@ An IANA registry is used to manage the assignment of frame types; see
 {{iana-frames}}.
 
 
-# Transport Error Codes {#error-codes}
+# Error Codes {#error-codes}
 
-QUIC error codes are 62-bit unsigned integers.
+QUIC transport error codes and application error codes are 62-bit unsigned
+integers.
+
+## Transport Error Codes {#transport-error-codes}
 
 This section lists the defined QUIC transport error codes that may be used in a
-CONNECTION_CLOSE frame.  These errors apply to the entire connection.
+CONNECTION_CLOSE frame with a type of 0x1c.  These errors apply to the entire
+connection.
 
 NO_ERROR (0x0):
 
@@ -6208,19 +6236,19 @@ CONNECTION_ID_LIMIT_ERROR (0x9):
 : The number of connection IDs provided by the peer exceeds the advertised
   active_connection_id_limit.
 
-PROTOCOL_VIOLATION (0xA):
+PROTOCOL_VIOLATION (0xa):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-INVALID_TOKEN (0xB):
+INVALID_TOKEN (0xb):
 : A server received a client Initial that contained an invalid Token field.
 
-APPLICATION_ERROR (0xC):
+APPLICATION_ERROR (0xc):
 
 : The application or application protocol caused the connection to be closed.
 
-CRYPTO_BUFFER_EXCEEDED (0xD):
+CRYPTO_BUFFER_EXCEEDED (0xd):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
@@ -6244,8 +6272,7 @@ unable or unwilling to use more specific codes.
 
 ## Application Protocol Error Codes {#app-error-codes}
 
-Application protocol error codes are 62-bit unsigned integers, but the
-management of application error codes is left to application protocols.
+The management of application error codes is left to application protocols.
 Application protocol error codes are used for the RESET_STREAM frame
 ({{frame-reset-stream}}), the STOP_SENDING frame ({{frame-stop-sending}}), and
 the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
@@ -6263,7 +6290,7 @@ ability of an attacker to interfere with existing connections.
 Once a connection is established QUIC endpoints might accept some
 unauthenticated ICMP packets (see {{pmtud}}), but the use of these packets
 is extremely limited.  The only other type of packet that an endpoint might
-accept is a stateless reset ({{stateless-reset}}) which relies on the token
+accept is a stateless reset ({{stateless-reset}}), which relies on the token
 being kept secret until it is used.
 
 During the creation of a connection, QUIC only provides protection against
@@ -6454,7 +6481,7 @@ be influenced by an attacker.
 ## Version Downgrade {#version-downgrade}
 
 This document defines QUIC Version Negotiation packets in
-{{version-negotiation}}, which can be used to negotiate the QUIC version used
+{{version-negotiation}} that can be used to negotiate the QUIC version used
 between two endpoints. However, this document does not specify how this
 negotiation will be performed between this version and subsequent future
 versions.  In particular, Version Negotiation packets do not contain any
@@ -6539,9 +6566,9 @@ path are limited.
 Computing the server's first flight for a full handshake is potentially
 expensive, requiring both a signature and a key exchange computation. In order
 to prevent computational DoS attacks, the Retry packet provides a cheap token
-exchange mechanism which allows servers to validate a client's IP address prior
+exchange mechanism that allows servers to validate a client's IP address prior
 to doing any expensive computations at the cost of a single round trip. After a
-successful handshake, servers can issue new tokens to a client which will allow
+successful handshake, servers can issue new tokens to a client, which will allow
 new connection establishment without incurring this cost.
 
 
@@ -6591,7 +6618,7 @@ future time; this is true for any observer of any packet on any network.
 
 A blind attacker, one who injects packets without being able to observe valid
 packets for a connection, is unlikely to be successful, since packet protection
-ensures that valid packets are only generated by endpoints which possess the
+ensures that valid packets are only generated by endpoints that possess the
 key material established during the handshake; see {{handshake}} and
 {{handshake-properties}}. Similarly, any active attacker that observes packets
 and attempts to insert new data or modify existing data in those packets should
@@ -7027,10 +7054,10 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
 | 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
-| 0xA   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xB   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
-| 0xC   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
-| 0xD   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0xa   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
+| 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
@@ -7051,7 +7078,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    // expected_pn - pn_hwin and less than or equal to
    // expected_pn + pn_hwin
    //
-   // This means we can't just strip the trailing bits from
+   // This means we cannot just strip the trailing bits from
    // expected_pn and add the truncated_pn because that might
    // yield a value outside the window.
    //
@@ -7475,7 +7502,7 @@ Substantial editorial reorganization; no technical changes.
 - You don't always need the draining period (#871)
 - Stateless reset clarified as version-specific (#930, #986)
 - initial_max_stream_id_x transport parameters are optional (#970, #971)
-- Ack Delay assumes a default value during the handshake (#1007, #1009)
+- ACK delay assumes a default value during the handshake (#1007, #1009)
 - Removed transport parameters from NewSessionTicket (#1015)
 
 ## Since draft-ietf-quic-transport-07
