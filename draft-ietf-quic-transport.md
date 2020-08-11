@@ -2714,10 +2714,10 @@ losing state that has been associated with an open connection, but does not
 expect to exchange application data for some time.  With this option, an
 endpoint could send a PING frame ({{frame-ping}}) periodically, which will cause
 the peer to restart its idle timeout period.  Sending a packet containing a PING
-frame also restarts the idle timeout for the endpoint if this is the first
+frame restarts the idle timeout for this endpoint also if this is the first
 ack-eliciting packet sent since receiving a packet.  Sending a PING frame causes
 the peer to respond with an acknowledgment, which also restarts the idle
-timeout.
+timeout for the endpoint.
 
 Application protocols that use QUIC SHOULD provide guidance on when deferring an
 idle timeout is appropriate.  Unnecessary sending of PING frames could have a
