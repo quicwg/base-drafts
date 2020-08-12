@@ -2827,9 +2827,9 @@ is in the draining state.
 
 An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
 containing a CONNECTION_CLOSE frame before entering the draining state, using a
-NO_ERROR code if appropriate.  An endpoint MUST NOT
-send further packets, which could result in a constant exchange of
-CONNECTION_CLOSE frames until either endpoint exits the closing state.
+NO_ERROR code if appropriate.  An endpoint MUST NOT send further packets, which
+could result in a constant exchange of CONNECTION_CLOSE frames until either
+endpoint exits the closing state.
 
 An endpoint MAY transition from the closing state to the draining state if it
 receives a CONNECTION_CLOSE frame, which indicates that the peer is also
