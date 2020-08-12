@@ -2689,8 +2689,8 @@ idle timeout period to be at least three times the current Probe Timeout (PTO).
 ### Liveness Testing
 
 An endpoint that sends packets close to the effective timeout risks having
-them be discarded at the peer, since the peer might enter its draining state
-before these packets arrive.
+them be discarded at the peer, since the idle timeout period might have expired
+at the peer before these packets arrive.
 
 An endpoint can send a PING or another ack-eliciting frame to test the
 connection for liveness if the peer could time out soon, such as within a PTO;
@@ -2709,8 +2709,12 @@ An implementation of QUIC might provide applications with an option to defer an
 idle timeout.  This facility could be used when the application wishes to avoid
 losing state that has been associated with an open connection, but does not
 expect to exchange application data for some time.  With this option, an
-endpoint could send a PING frame periodically to defer an idle timeout; see
-{{frame-ping}}.
+endpoint could send a PING frame ({{frame-ping}}) periodically, which will cause
+the peer to restart its idle timeout period.  Sending a packet containing a PING
+frame restarts the idle timeout for this endpoint also if this is the first
+ack-eliciting packet sent since receiving a packet.  Sending a PING frame causes
+the peer to respond with an acknowledgment, which also restarts the idle
+timeout for the endpoint.
 
 Application protocols that use QUIC SHOULD provide guidance on when deferring an
 idle timeout is appropriate.  Unnecessary sending of PING frames could have a
