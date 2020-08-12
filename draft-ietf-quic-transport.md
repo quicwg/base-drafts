@@ -2767,7 +2767,7 @@ to any further incoming packets.
 
 ### Closing Connection State {#closing}
 
-An endpoint enters a closing state after initiating an immediate close.
+An endpoint enters the closing state after initiating an immediate close.
 
 In the closing state, an endpoint retains only enough information to generate a
 packet containing a CONNECTION_CLOSE frame and to identify packets as belonging
@@ -2814,7 +2814,7 @@ address.
 
 An endpoint is not expected to handle key updates when it is closing. A key
 update might prevent the endpoint from moving from the closing state to
-draining, but it otherwise has no impact.
+the draining state, but it otherwise has no impact.
 
 
 ### Draining Connection State {#draining}
@@ -2827,7 +2827,7 @@ is in the draining state.
 
 An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
 containing a CONNECTION_CLOSE frame before entering the draining state, using a
-CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
+NO_ERROR code if appropriate.  An endpoint MUST NOT
 send further packets, which could result in a constant exchange of
 CONNECTION_CLOSE frames until either endpoint exits the closing state.
 
@@ -2835,7 +2835,7 @@ An endpoint MAY transition from the closing state to the draining state if it
 receives a CONNECTION_CLOSE frame, which indicates that the peer is also
 closing or draining. In this case, the draining state SHOULD end when the
 closing state would have ended. In other words, the endpoint uses the same end
-time, but cease retransmission of the closing packet.
+time, but ceases retransmission of the closing packet.
 
 
 ### Immediate Close During the Handshake {#immediate-close-hs}
