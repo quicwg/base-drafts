@@ -6372,10 +6372,10 @@ vulnerable service with a controlled payload, that service might perform
 actions that are attributed to the attacker's peer, but decided by the
 attacker.
 
-For example, cross-site request forgery {{?CSRF=DOI.10.1.1.147.1445}} exploits
-on the Web cause a client to issue requests that include authorization cookies
-{{?COOKIE=RFC6265}}, allowing one site access to information and actions that
-are intended to be restricted to a different site.
+For example, cross-site request forgery {{?CSRF=DOI.10.1145/1455770.1455782}}
+exploits on the Web cause a client to issue requests that include authorization
+cookies {{?COOKIE=RFC6265}}, allowing one site access to information and
+actions that are intended to be restricted to a different site.
 
 As QUIC runs over UDP, the primary attack modality of concern is one where an
 attacker can select the IP address and port to which a peer sends UDP datagrams
