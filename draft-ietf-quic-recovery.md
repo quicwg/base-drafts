@@ -1000,9 +1000,10 @@ limits and so no advantage is gained by doing so.
 
 Endpoints choose the congestion controller that they use. Congestion controllers
 respond to reports of ECN-CE by reducing their rate, but the response may vary.
-Markings can be treated as equivalent to loss ({{?RFC3168}}), but other responses
-can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}). Failure to correctly
-respond to information about ECN markings is therefore difficult to detect.
+Markings can be treated as equivalent to loss ({{?RFC3168}}), but other
+responses can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}). Failure to
+correctly respond to information about ECN markings is therefore difficult to
+detect.
 
 
 # IANA Considerations
