@@ -4947,8 +4947,8 @@ When a client receives a short header packet that increases the highest packet
 number seen by the client from the server on a given network path, it sets the
 spin value for that path to the inverse of the spin bit in the received packet.
 
-An endpoint resets the spin value for a network path to zero when sending the
-first packet of a given connection with a new connection ID.
+An endpoint resets the spin value for a network path to zero when changing the
+connection ID being used on that network path.
 
 With this mechanism, the server reflects the spin value received, while the
 client 'spins' it after one RTT. On-path observers can measure the time
