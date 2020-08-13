@@ -6167,6 +6167,11 @@ CRYPTO_BUFFER_EXCEEDED (0xD):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
+AEAD_LIMIT_REACHED (0xE):
+
+: An endpoint has reached the confidentiality or integrity limit for the AEAD
+  algorithm used by the given connection.
+
 CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for

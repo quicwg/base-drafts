@@ -1603,16 +1603,22 @@ number of attempts to forge packets. TLS achieves this by closing connections
 after any record fails an authentication check. In comparison, QUIC ignores any
 packet that cannot be authenticated, allowing multiple forgery attempts.
 
+QUIC accounts for AEAD confidentiality and integrity limits separately. The
+confidentiality limit applies to the number of packets encrypted with a given
+key. The integrity limit applies to the number of packets decrypted within a
+given connection. Details on enforcing these limits for each AEAD algorithm
+follow below.
+
 Endpoints MUST count the number of encrypted packets for each set of keys. If
 the total number of encrypted packets with the same key exceeds the
 confidentiality limit for the selected AEAD, the endpoint MUST stop using those
 keys. Endpoints MUST initiate a key update before sending more protected packets
 than the confidentiality limit for the selected AEAD permits. If a key update
 is not possible or integrity limits are reached, the endpoint MUST stop using
-the connection and only send stateless resets in response receiving packets. It
-is RECOMMENDED that endpoints immediately close the connection with a connection
-error of type PROTOCOL_VIOLATION before reaching a state where key updates are
-not possible.
+the connection and only send stateless resets in response to receiving packets.
+It is RECOMMENDED that endpoints immediately close the connection with a
+connection error of type AEAD_LIMIT_REACHED before reaching a state where key
+updates are not possible.
 
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
@@ -1626,8 +1632,8 @@ In addition to counting packets sent, endpoints MUST count the number of
 received packets that fail authentication during the lifetime of a connection.
 If the total number of received packets that fail authentication within the
 connection, across all keys, exceeds the integrity limit for the selected AEAD,
-the endpoint MUST immediately close the connection and not process any more
-packets.
+the endpoint MUST immediately close the connection with a connection error of
+type AEAD_LIMIT_REACHED and not process any more packets.
 
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 forged
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
