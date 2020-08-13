@@ -779,9 +779,10 @@ is declared.
 Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
 approach that typically increases the congestion window by one maximum packet
 size per congestion window acknowledged, and MUST NOT increase the congestion
-window faster.  When a loss or ECN-CE marking is detected, the congestion
-window MUST be halved and the slow start threshold MUST be set to the new
-congestion window.
+window faster.  When a loss or ECN-CE marking is detected, the sender MUST
+reduce the cwnd. NewReno halves the congestion window, sets the slow start
+threshold to the new congestion window, and then enters the recovery period.
+[RFC8511] specifies an alternate cwnd reduction.
 
 ## Recovery Period
 
@@ -997,11 +998,11 @@ Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
 limits and so no advantage is gained by doing so.
 
-Endpoints choose the congestion controller that they use.  Though congestion
-controllers generally treat reports of ECN-CE markings as equivalent to loss
-({{?RFC8311}}), the exact response for each controller could be different.
-Failure to correctly respond to information about ECN markings is therefore
-difficult to detect.
+Endpoints choose the congestion controller that they use. Congestion controllers
+respond to reports of ECN-CE by reducing their rate, but the response may vary.
+Markings can be treated as equivalent to loss ({{?RFC3168}}), but other responses
+can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}). Failure to correctly
+respond to information about ECN markings is therefore difficult to detect.
 
 
 # IANA Considerations
