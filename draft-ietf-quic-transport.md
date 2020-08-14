@@ -6449,23 +6449,19 @@ the handshake ensures that - for a new connection - a client will not send
 other types of packet to a destination that does not understand QUIC and is
 willing to accept connections.
 
-Unlike other packets, packet protection provides good protection against
-control over the contents of Initial packets. The choice of an unpredictable
-Destination Connection ID by clients ensures that servers are unable to control
-any of the encryption portion of Initial packets.
+Initial packet protection (Section 5.2 of {{QUIC-TLS}}) makes it difficult for
+servers to control the content of Initial packets. A client choosing an
+unpredictable Destination Connection ID ensures that servers are unable to
+control any of the encrypted portion of Initial packets. However, the Token
+field is open to server control and does allow a server to use clients to mount
+request forgery attacks.
 
-The only field in an Initial packets that is open to server control is the
-Token field. This field does allow a server to use clients to mount request
-forgery attacks.
+Use of tokens provided with the NEW_TOKEN frame ({{validate-future}}) offers
+the only option for request forgery during connection establishment.
 
-It is the use of tokens provided with the NEW_TOKEN frame ({{validate-future}})
-that offers the only option for request forgery during connection
-establishment.
-
-Use of tokens provided as part of NEW_TOKEN is optional. Request forgery
-attacks that rely on the Token field can be avoided if clients do not include a
-value when the server address has changed from when the NEW_TOKEN frame was
-received.
+Clients are not obligated to use the NEW_TOKEN frame. Request forgery attacks
+that rely on the Token field can be avoided if clients do not include a value
+when the server address has changed from when the NEW_TOKEN frame was received.
 
 Clients MUST NOT send a token received in a NEW_TOKEN frame from one server
 address in an Initial packet that is sent to a different server address. As
