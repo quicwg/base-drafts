@@ -2437,7 +2437,7 @@ immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Appendices A.3 and B.3 in {{QUIC-RECOVERY}})
 unless the only change is the other endpoint's port number.  Because
 port-only changes are commonly the result of NAT rebinding or other middlebox
-activity, an endpoint MAY instead retain its congestion control state and
+activity, the endpoint MAY instead retain its congestion control state and
 round-trip estimate in those cases instead of reverting to initial values.
 In cases where congestion control state
 retained from an old path is used on a new path with substantially different
