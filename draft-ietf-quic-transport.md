@@ -6403,7 +6403,7 @@ Control over the destination of UDP datagrams presents three options for
 request forgery attack:
 
 * initial connection establishment ({{handshake}}), where a server is able to
-  choose where a client sends datagrams;
+  choose where a client sends datagrams, for example by populating DNS records;
 
 * preferred addresses ({{preferred-address}}), where a server is able to choose
   where a client sends datagrams; and
