@@ -6434,9 +6434,10 @@ packets. Successful control over datagram content then only requires that the
 attacker be able to predict the packet number and placement of frames in
 packets with some amount of reliability.
 
-Limiting control over datagram content is considered infeasible. The primary
-focus of subsequent sections is analysis of the ways in which datagrams are
-sent prior to address validation.
+This section assumes that limiting control over datagram content is not
+feasible. The focus of the mitigations in subsequent sections is on limiting
+the ways to use datagrams that are sent prior to address validation for request
+forgery.
 
 
 ### Request Forgery with Initial Packets
