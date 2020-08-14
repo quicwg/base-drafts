@@ -5217,16 +5217,16 @@ As described in {{frames}}, packets contain one or more frames. This section
 describes the format and semantics of the core QUIC frame types.
 
 
-## PADDING Frame {#frame-padding}
+## PADDING Frames {#frame-padding}
 
-The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+A PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
 traffic analysis for protected packets.
 
-As shown in {{padding-format}}, a PADDING frame has no content.  That is, a
-PADDING frame consists of the single byte that identifies the frame as a PADDING
-frame.
+PADDING frames are formatted as shown in {{padding-format}}, which shows that
+PADDING frames have no content. That is, a PADDING frame consists of the single
+byte that identifies the frame as a PADDING frame.
 
 ~~~
 PADDING Frame {
@@ -5236,11 +5236,13 @@ PADDING Frame {
 {: #padding-format title="PADDING Frame Format"}
 
 
-## PING Frame {#frame-ping}
+## PING Frames {#frame-ping}
 
 Endpoints can use PING frames (type=0x01) to verify that their peers are still
-alive or to check reachability to the peer. As shown in {{ping-format}}, a PING
-frame has no content.
+alive or to check reachability to the peer.
+
+PING frames are formatted as shown in {{ping-format}}, which shows that PING
+frames have no content.
 
 ~~~
 PING Frame {
@@ -5281,7 +5283,7 @@ Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
 implicitly acknowledged by the next Initial packet sent by the client.
 
-An ACK frame is shown in {{ack-format}}.
+ACK frames are formatted as shown in {{ack-format}}.
 
 ~~~
 ACK Frame {
@@ -5442,7 +5444,7 @@ CE Count:
 ECN counts are maintained separately for each packet number space.
 
 
-## RESET_STREAM Frame {#frame-reset-stream}
+## RESET_STREAM Frames {#frame-reset-stream}
 
 An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate the
 sending part of a stream.
@@ -5454,7 +5456,7 @@ discard any data that it already received on that stream.
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
 terminate the connection with error STREAM_STATE_ERROR.
 
-The RESET_STREAM frame is shown in {{fig-reset-stream}}.
+RESET_STREAM frames are formatted as shown in {{fig-reset-stream}}.
 
 ~~~
 RESET_STREAM Frame {
@@ -5485,7 +5487,7 @@ Final Size:
   RESET_STREAM sender, in unit of bytes; see {{final-size}}.
 
 
-## STOP_SENDING Frame {#frame-stop-sending}
+## STOP_SENDING Frames {#frame-stop-sending}
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  STOP_SENDING
@@ -5498,7 +5500,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 STOP_SENDING frame for a receive-only stream MUST terminate the connection with
 error STREAM_STATE_ERROR.
 
-The STOP_SENDING frame is shown in {{fig-stop-sending}}.
+STOP_SENDING frames are formatted as shown in {{fig-stop-sending}}.
 
 ~~~
 STOP_SENDING Frame {
@@ -5521,16 +5523,16 @@ Application Protocol Error Code:
   sender is ignoring the stream; see {{app-error-codes}}.
 
 
-## CRYPTO Frame {#frame-crypto}
+## CRYPTO Frames {#frame-crypto}
 
-The CRYPTO frame (type=0x06) is used to transmit cryptographic handshake
-messages. It can be sent in all packet types except 0-RTT. The CRYPTO frame
-offers the cryptographic protocol an in-order stream of bytes.  CRYPTO frames
-are functionally identical to STREAM frames, except that they do not bear a
-stream identifier; they are not flow controlled; and they do not carry markers
-for optional offset, optional length, and the end of the stream.
+A CRYPTO frame (type=0x06) is used to transmit cryptographic handshake messages.
+It can be sent in all packet types except 0-RTT. The CRYPTO frame offers the
+cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
+functionally identical to STREAM frames, except that they do not bear a stream
+identifier; they are not flow controlled; and they do not carry markers for
+optional offset, optional length, and the end of the stream.
 
-The CRYPTO frame is shown in {{fig-crypto}}.
+CRYPTO frames are formatted as shown in {{fig-crypto}}.
 
 ~~~
 CRYPTO Frame {
@@ -5573,12 +5575,12 @@ level. The stream does not have an explicit end, so CRYPTO frames do not have a
 FIN bit.
 
 
-## NEW_TOKEN Frame {#frame-new-token}
+## NEW_TOKEN Frames {#frame-new-token}
 
 A server sends a NEW_TOKEN frame (type=0x07) to provide the client with a token
 to send in the header of an Initial packet for a future connection.
 
-The NEW_TOKEN frame is shown in {{fig-new-token}}.
+NEW_TOKEN frames are formatted as shown in {{fig-new-token}}.
 
 ~~~
 NEW_TOKEN Frame {
@@ -5636,7 +5638,7 @@ An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
 receives a STREAM frame for a locally-initiated stream that has not yet been
 created, or for a send-only stream.
 
-The STREAM frames are shown in {{fig-stream}}.
+STREAM frames are formatted as shown in {{fig-stream}}.
 
 ~~~
 STREAM Frame {
@@ -5683,12 +5685,12 @@ frame that exceeds this limit MUST be treated as a connection error of type
 FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
-## MAX_DATA Frame {#frame-max-data}
+## MAX_DATA Frames {#frame-max-data}
 
-The MAX_DATA frame (type=0x10) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
+A MAX_DATA frame (type=0x10) is used in flow control to inform the peer of the
+maximum amount of data that can be sent on the connection as a whole.
 
-The MAX_DATA frame is shown in {{fig-max-data}}.
+MAX_DATA frames are formatted as shown in {{fig-max-data}}.
 
 ~~~
 MAX_DATA Frame {
@@ -5713,9 +5715,9 @@ maximum data value that it has sent.  This includes violations of remembered
 limits in Early Data; see {{zerortt-parameters}}.
 
 
-## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+## MAX_STREAM_DATA Frames {#frame-max-stream-data}
 
-The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
+A MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 A MAX_STREAM_DATA frame can be sent for streams in the Recv state; see
@@ -5725,7 +5727,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
 with error STREAM_STATE_ERROR.
 
-The MAX_STREAM_DATA frame is shown in {{fig-max-stream-data}}.
+MAX_STREAM_DATA frames are formatted as shown in {{fig-max-stream-data}}.
 
 ~~~
 MAX_STREAM_DATA Frame {
@@ -5763,12 +5765,12 @@ of remembered limits in Early Data; see {{zerortt-parameters}}.
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+A MAX_STREAMS frame (type=0x12 or 0x13) inform the peer of the cumulative
 number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
 with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
 with a type of 0x13 applies to unidirectional streams.
 
-The MAX_STREAMS frames are shown in {{fig-max-streams}};
+MAX_STREAMS frames are formatted as shown in {{fig-max-streams}};
 
 ~~~
 MAX_STREAMS Frame {
@@ -5804,14 +5806,14 @@ describe the number of streams that can be opened concurrently.  The limit
 includes streams that have been closed as well as those that are open.
 
 
-## DATA_BLOCKED Frame {#frame-data-blocked}
+## DATA_BLOCKED Frames {#frame-data-blocked}
 
 A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
 data, but is unable to do so due to connection-level flow control; see
 {{flow-control}}.  DATA_BLOCKED frames can be used as input to tuning of flow
 control algorithms; see {{fc-credit}}.
 
-The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.
+DATA_BLOCKED frames are formatted as shown in {{fig-data-blocked}}.
 
 ~~~
 DATA_BLOCKED Frame {
@@ -5829,7 +5831,7 @@ Maximum Data:
   blocking occurred.
 
 
-## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
+## STREAM_DATA_BLOCKED Frames {#frame-stream-data-blocked}
 
 A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x15) when it wishes to
 send data, but is unable to do so due to stream-level flow control.  This frame
@@ -5838,7 +5840,8 @@ is analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
 MUST terminate the connection with error STREAM_STATE_ERROR.
 
-The STREAM_DATA_BLOCKED frame is shown in {{fig-stream-data-blocked}}.
+STREAM_DATA_BLOCKED frames are formatted as shown in
+{{fig-stream-data-blocked}}.
 
 ~~~
 STREAM_DATA_BLOCKED Frame {
@@ -5873,7 +5876,7 @@ of type 0x17 is used to indicate reaching the unidirectional stream limit.
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
 
-The STREAMS_BLOCKED frames are shown in {{fig-streams-blocked}}.
+STREAMS_BLOCKED frames are formatted as shown in {{fig-streams-blocked}}.
 
 ~~~
 STREAMS_BLOCKED Frame {
@@ -5894,13 +5897,13 @@ Maximum Streams:
   FRAME_ENCODING_ERROR.
 
 
-## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+## NEW_CONNECTION_ID Frames {#frame-new-connection-id}
 
 An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
 alternative connection IDs that can be used to break linkability when migrating
 connections; see {{migration-linkability}}.
 
-The NEW_CONNECTION_ID frame is shown in {{fig-new-connection-id}}.
+NEW_CONNECTION_ID frames are formatted as shown in {{fig-new-connection-id}}.
 
 ~~~
 NEW_CONNECTION_ID Frame {
@@ -5978,7 +5981,7 @@ that retires the newly received connection ID, unless it has already done so
 for that sequence number.
 
 
-## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
+## RETIRE_CONNECTION_ID Frames {#frame-retire-connection-id}
 
 An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
 will no longer use a connection ID that was issued by its peer. This may include
@@ -5990,7 +5993,8 @@ peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 Retiring a connection ID invalidates the stateless reset token associated with
 that connection ID.
 
-The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
+RETIRE_CONNECTION_ID frames are formatted as shown in
+{{fig-retire-connection-id}}.
 
 ~~~
 RETIRE_CONNECTION_ID Frame {
@@ -6021,12 +6025,12 @@ ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
 type PROTOCOL_VIOLATION.
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## PATH_CHALLENGE Frames {#frame-path-challenge}
 
 Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
 peer and for path validation during connection migration.
 
-The PATH_CHALLENGE frame is shown in {{fig-path-challenge}}.
+PATH_CHALLENGE frames are formatted as shown in {{fig-path-challenge}}.
 
 ~~~
 PATH_CHALLENGE Frame {
@@ -6049,11 +6053,12 @@ The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.
 
 
-## PATH_RESPONSE Frame {#frame-path-response}
+## PATH_RESPONSE Frames {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
-frame.  Its format, shown in {{fig-path-response}} is identical to the
-PATH_CHALLENGE frame ({{frame-path-challenge}}).
+A PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE frame.
+
+PATH_RESPONSE frames are formatted as shown in {{fig-path-response}}, which is
+identical to the PATH_CHALLENGE frame ({{frame-path-challenge}}).
 
 ~~~
 PATH_RESPONSE Frame {
@@ -6079,7 +6084,7 @@ is used to signal an error with the application that uses QUIC.
 If there are open streams that have not been explicitly closed, they are
 implicitly closed when the connection is closed.
 
-The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
+CONNECTION_CLOSE frames are formatted as shown in {{fig-connection-close}}.
 
 ~~~
 CONNECTION_CLOSE Frame {
@@ -6128,11 +6133,13 @@ can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
 APPLICATION_ERROR in an Initial or a Handshake packet.
 
 
-## HANDSHAKE_DONE Frame {#frame-handshake-done}
+## HANDSHAKE_DONE Frames {#frame-handshake-done}
 
-The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
-the handshake to the client.  As shown in {{handshake-done-format}}, a
-HANDSHAKE_DONE frame has no content.
+The server uses a HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
+the handshake to the client.
+
+HANDSHAKE_DONE frames are formatted as shown in {{handshake-done-format}}, which
+shows that HANDSHAKE_DONE frames have no content.
 
 ~~~
 HANDSHAKE_DONE Frame {
