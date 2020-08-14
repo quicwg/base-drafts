@@ -6424,12 +6424,12 @@ packets offers a server control over other bytes of Initial packets; see
 {{packet-initial}}.
 
 There are no measures in the protocol to prevent indirect control over the
-encrypted portions of packets. it is necessary to assume that endpoints are
+encrypted portions of packets. It is necessary to assume that endpoints are
 able to control the contents of frames that a peer sends, especially those
 frames that convey application data, such as STREAM frames. Though this depends
 to some degree on details of the application protocol, some control is possible
 in many protocol usage contexts. As the attacker has access to packet
-protection keys, they are able to predict how a peer will encrypt future
+protection keys, they are likely to be capable of predicting how a peer will encrypt future
 packets. Successful control over datagram content then only requires that the
 attacker be able to predict the packet number and placement of frames in
 packets with some amount of reliability.
@@ -6486,7 +6486,7 @@ thereby preventing the use of subsequent Initial packets for request forgery.
 
 ### Request Forgery with Preferred Addresses
 
-Servers can specify a preferred address, which clients then to migrate to after
+Servers can specify a preferred address, which clients then migrate to after
 confirming the handshake; see {{preferred-address}}.
 
 The Destination Connection ID field of packets that the client sends to a
@@ -6535,7 +6535,7 @@ uses.
 Services offered over loopback interfaces (that is, ::1 or 127.0.0.1) often
 lack proper authentication. Endpoints MAY prevent connection attempts or
 migration to a loopback address. Endpoints SHOULD NOT allow connections or
-migration to a non-loopback address if the same service was previously
+migration to a loopback address if the same service was previously
 available over a different interface or the address was provided by a service
 at a non-loopback address. Endpoints that depend on these capabilities could
 offer an option to disable these protections.
@@ -6550,7 +6550,7 @@ the network that indicates that sending datagrams to unvalidated addresses in a
 given range is not safe.
 
 Endpoints MAY choose to reduce the risk of request forgery by not including
-values from NEW_TOKEN frames in Initial packets or by only sending non-probing
+values from NEW_TOKEN frames in Initial packets or by only sending probing
 frames in packets prior to completing address validation. Note that this might
 not constrain some attacks as it does not prevent an attacker from using the
 Destination Connection ID field.
@@ -6566,7 +6566,7 @@ them.
 
 Note:
 
-: Modifying endpoints to apply these protections is more efficient that
+: Modifying endpoints to apply these protections is more efficient than
   deploying network-based protections, as endpoints don't need to perform
   any additional processing when sending to an address that has been validated.
 
