@@ -6428,11 +6428,11 @@ encrypted portions of packets. It is necessary to assume that endpoints are
 able to control the contents of frames that a peer sends, especially those
 frames that convey application data, such as STREAM frames. Though this depends
 to some degree on details of the application protocol, some control is possible
-in many protocol usage contexts. As the attacker has access to packet
-protection keys, they are likely to be capable of predicting how a peer will encrypt future
+in many protocol usage contexts. As the attacker has access to packet protection
+keys, they are likely to be capable of predicting how a peer will encrypt future
 packets. Successful control over datagram content then only requires that the
-attacker be able to predict the packet number and placement of frames in
-packets with some amount of reliability.
+attacker be able to predict the packet number and placement of frames in packets
+with some amount of reliability.
 
 This section assumes that limiting control over datagram content is not
 feasible. The focus of the mitigations in subsequent sections is on limiting
