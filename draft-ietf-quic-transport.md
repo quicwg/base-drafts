@@ -3558,11 +3558,11 @@ packets are eventually acknowledged when the endpoint sends an ACK frame in
 response to other events.
 
 In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
-frame immediately on receiving an ack-eliciting packet that is out of order. The
-endpoint SHOULD NOT continue sending ACK frames immediately unless more
-ack-eliciting packets are received out of order.  If every subsequent
-ack-eliciting packet arrives out of order, then an ACK frame SHOULD be sent
-immediately for every received ack-eliciting packet.
+frame immediately on receiving an ack-eliciting packet that is out of order from
+other ack-eliciting packets. The endpoint SHOULD NOT continue sending ACK frames
+immediately unless more ack-eliciting packets are received out of order.
+If every subsequent ack-eliciting packet arrives out of order, then an ACK frame
+SHOULD be sent immediately for every received ack-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
