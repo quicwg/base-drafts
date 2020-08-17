@@ -3560,6 +3560,7 @@ response to other events.
 In order to assist loss detection at the sender, an endpoint SHOULD generate
 and send an ACK frame without delay when it receives an ack-eliciting packet
 either:
+
 * When the received packet has a packet number less than another ack-eliciting
   packet that has been received.
 * When the packet has a packet number larger than any other ack-eliciting packet
