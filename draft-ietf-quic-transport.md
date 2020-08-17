@@ -3557,12 +3557,19 @@ which could prevent the connection from ever becoming idle.  Non-ack-eliciting
 packets are eventually acknowledged when the endpoint sends an ACK frame in
 response to other events.
 
-In order to assist loss detection at the sender, an endpoint SHOULD send an ACK
-frame immediately on receiving an ack-eliciting packet that is out of order relative to
-other ack-eliciting packets. The endpoint SHOULD NOT continue sending ACK frames
-immediately unless more ack-eliciting packets are received out of order.
-If every subsequent ack-eliciting packet arrives out of order, then an ACK frame
-SHOULD be sent immediately for every received ack-eliciting packet.
+In order to assist loss detection at the sender, an endpoint SHOULD generate
+and send an ACK frame without delay when it receives an ack-eliciting packet
+either:
+* When the received packet has a packet number less than another ack-eliciting
+  packet that has been received.
+* When the packet has a packet number larger than any other ack-eliciting packet
+  that has been received and there are missing packets between that other packet
+  and this packet.
+
+The endpoint SHOULD NOT continue sending ACK frames immediately unless more
+ack-eliciting packets are received out of order. If every subsequent
+ack-eliciting packet arrives out of order, then an ACK frame is sent immediately
+for every received ack-eliciting packet.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
