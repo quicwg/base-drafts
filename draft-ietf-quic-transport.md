@@ -2824,8 +2824,8 @@ when converting to a CONNECTION_CLOSE of type 0x1c.
 CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
 single UDP datagram; see {{packet-coalesce}}.
 
-An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
-response to unauthenticated information received in Initial or Handshake
+An endpoint can send a CONNECTION_CLOSE frame in an Initial packet.  This might
+be in response to unauthenticated information received in Initial or Handshake
 packets.  Such an immediate close might expose legitimate connections to a
 denial of service.  QUIC does not include defensive measures for on-path attacks
 during the handshake; see {{handshake-dos}}.  However, at the cost of reducing
