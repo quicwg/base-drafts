@@ -733,7 +733,8 @@ window in bytes.
 
 An endpoint MUST NOT send a packet if it would cause bytes_in_flight (see
 {{vars-of-interest}}) to be larger than the congestion window, unless the packet
-is sent on a PTO timer expiration; see {{pto}}.
+is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
+(see {{recovery-period}}).
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -782,7 +783,7 @@ acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
 the congestion window, sets the slow start threshold to the new
 congestion window, and then enters the recovery period.
 
-## Recovery Period
+## Recovery Period {#recovery-period}
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
 detected in congestion avoidance after the congestion window and slow start
