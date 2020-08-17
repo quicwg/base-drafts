@@ -787,7 +787,7 @@ approach that increases the congestion window by one maximum packet size per
 congestion window acknowledged.
 
 When first entering congestion avoidance, when a packet is declared lost, or
-when the ECN-CE count is detected, the congestion controller halves the
+when the ECN-CE count is increased, the congestion controller halves the
 congestion window, reduces the slow start threshold to the resulting size, and
 enters the recovery period.
 
