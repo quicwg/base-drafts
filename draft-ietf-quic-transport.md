@@ -3566,10 +3566,8 @@ either:
   that has been received and there are missing packets between that other packet
   and this packet.
 
-The endpoint SHOULD NOT continue sending ACK frames immediately unless more
-ack-eliciting packets are received out of order. If every subsequent
-ack-eliciting packet arrives out of order, then an ACK frame is sent immediately
-for every received ack-eliciting packet.
+The endpoint SHOULD NOT continue sending ACK frames immediately unless one of
+the above criteria are satisfied.
 
 Similarly, packets marked with the ECN Congestion Experienced (CE) codepoint in
 the IP header SHOULD be acknowledged immediately, to reduce the peer's response
