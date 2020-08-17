@@ -6463,7 +6463,7 @@ Clients are not obligated to use the NEW_TOKEN frame. Request forgery attacks
 that rely on the Token field can be avoided if clients do not include a value
 when the server address has changed from when the NEW_TOKEN frame was received.
 
-Clients MUST NOT send a token received in a NEW_TOKEN frame from one server
+Clients SHOULD NOT send a token received in a NEW_TOKEN frame from one server
 address in an Initial packet that is sent to a different server address. As
 strict equality might reduce the utility of this mechanism, clients MAY employ
 heuristics that result in different server addresses being treated as
