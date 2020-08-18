@@ -1362,9 +1362,14 @@ allows (see {{eviction}}).
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
 HTTP/3, this is realized by setting an appropriate value for the
-QPACK_BLOCKED_STREAMS parameter.  An encoder can limit the amount of state
-memory by only using as many blocked streams as it wishes to support; no
-signaling to the decoder is required.
+QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked consume no
+additional state memory on the encoder.
+
+An encoder allocates memory to track all dynamic table references in
+unacknowledged field sections.  An implementation can directly limit the amount
+of state memory by only using as many references to the dynamic table as it
+wishes to track; no signaling to the decoder is required.  However, limiting
+references to the dynamic table will reduce compression effectiveness.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
 by processing header fields sequentially. A decoder implementation does not need
