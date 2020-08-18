@@ -180,18 +180,50 @@ QPACK is a name, not an acronym.
 
 ## Notational Conventions
 
-Diagrams use the format described in Section 3.1 of {{?RFC2360}}, with the
-following additional conventions:
+Diagrams in this document use a format defined in {{QUIC-TRANSPORT}} to
+illustrate the order and size of fields.
 
-x (A)
+Complex fields are named and then followed by a list of fields surrounded by a
+pair of matching braces. Each field in this list is separated by commas.
+
+Individual fields include length information, plus indications about fixed
+value, optionality, or repetitions. Individual fields use the following
+notational conventions, with all lengths in bits:
+
+x (A):
 : Indicates that x is A bits long
 
-x (A+)
-: Indicates that x uses the prefixed integer encoding defined in
-  {{prefixed-integers}}, beginning with an A-bit prefix.
+x (A..B):
+: Indicates that x can be any length from A to B; A can be omitted to indicate
+  a minimum of zero bits and B can be omitted to indicate no set upper limit;
+  values in this format always end on an octet boundary
 
-x ...
-: Indicates that x is variable-length and extends to the end of the region.
+: In QPACK, these values are encoded as Prefixed Integers, as described in
+  {{prefixed-integers}}
+
+x (?) = C:
+: Indicates that x has a fixed value of C
+
+x (E) ...:
+: Indicates that x is repeated zero or more times (and that each instance is
+  length E)
+
+This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.
+
+{{fig-ex-format}} shows an example structure:
+
+~~~
+Example Structure {
+  One-bit Field (1),
+  7-bit Field with Fixed Value (7) = 61,
+  Arbitrary-Length Field (..),
+  Variable-Length Field (8..24),
+  Repeated Field (8) ...,
+}
+~~~
+{: #fig-ex-format title="Example Format"}
+
 
 # Compression Process Overview
 
@@ -651,10 +683,10 @@ The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
 This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
-single bit flag, denoted as 'H' in this document (indicating whether the string
-is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer,
-and finally Length bytes of data. When Huffman encoding is enabled, the Huffman
-table from Appendix B of [RFC7541] is used without modification.
+single bit flag indicating whether the string is Huffman-coded, followed by the
+Length encoded as a 7-bit prefix integer, and finally Length bytes of data. When
+Huffman encoding is enabled, the Huffman table from Appendix B of [RFC7541] is
+used without modification.
 
 This document expands the definition of string literals and permits them to
 begin other than on a byte boundary.  An "N-bit prefix string literal" begins
@@ -714,10 +746,8 @@ by the new dynamic table capacity represented as an integer with a 5-bit prefix;
 see {{prefixed-integers}}.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 0 | 1 |   Capacity (5+)   |
-+---+---+---+-------------------+
+  Type (3) = 001,
+  Capacity (5..),
 ~~~~~~~~~~
 {:#fig-set-capacity title="Set Dynamic Table Capacity"}
 
@@ -736,25 +766,23 @@ table is not acknowledged as this instruction does not insert an entry.
 
 An encoder adds an entry to the dynamic table where the field name matches the
 field name of an entry stored in the static or the dynamic table using an
-instruction that starts with the '1' one-bit pattern.  The second ('T') bit
-indicates whether the reference is to the static or dynamic table. The 6-bit
-prefix integer ({{prefixed-integers}}) that follows is used to locate the table
-entry for the field name.  When T=1, the number represents the static table
-index; when T=0, the number is the relative index of the entry in the dynamic
-table.
+instruction that starts with the '1' one-bit pattern.  The Table bit indicates
+whether the reference is to the static or dynamic table. The 6-bit prefix
+integer ({{prefixed-integers}}) that follows is used to locate the table entry
+for the field name.  When the Table bit is set, the number represents the static
+table index; when the Table bit is unset, the number is the relative index of
+the entry in the dynamic table.
 
 The field name reference is followed by the field value represented as a string
 literal; see {{string-literals}}.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 1 | T |    Name Index (6+)    |
-   +---+---+-----------------------+
-   | H |     Value Length (7+)     |
-   +---+---------------------------+
-   |  Value String (Length bytes)  |
-   +-------------------------------+
+  Type (1) = 1,
+  Table (1),
+  Name Index (6..),
+  Huffman-Coded (1),
+  Value Length (7..),
+  Value (..),
 ~~~~~~~~~~
 {: title="Insert Field Line -- Indexed Name"}
 
@@ -770,16 +798,13 @@ the value represented as an 8-bit prefix string literal; see
 {{string-literals}}.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 1 | H | Name Length (5+)  |
-   +---+---+---+-------------------+
-   |  Name String (Length bytes)   |
-   +---+---------------------------+
-   | H |     Value Length (7+)     |
-   +---+---------------------------+
-   |  Value String (Length bytes)  |
-   +-------------------------------+
+  Type (2) = 01,
+  Huffman-Coded (1),
+  Name Length (5..),
+  Name (..),
+  Huffman-Coded (1),
+  Value Length (7..),
+  Value(..),
 ~~~~~~~~~~
 {: title="Insert Field Line -- New Name"}
 
@@ -792,10 +817,8 @@ the relative index of the existing entry represented as an integer with a 5-bit
 prefix; see {{prefixed-integers}}.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 0 |    Index (5+)     |
-   +---+---+---+-------------------+
+  Type (3) = 000,
+  Index (5..),
 ~~~~~~~~~~
 {:#fig-index-with-duplication title="Duplicate"}
 
@@ -824,10 +847,8 @@ This instruction is used as described in {{known-received-count}} and
 in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 1 |      Stream ID (7+)       |
-+---+---------------------------+
+  Type (1) = 1,
+  Stream ID (7..),
 ~~~~~~~~~~
 {:#fig-header-ack title="Section Acknowledgement"}
 
@@ -850,10 +871,8 @@ pattern, followed by the stream ID of the affected stream encoded as a
 This instruction is used as described in {{state-synchronization}}.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 1 |     Stream ID (6+)    |
-+---+---+-----------------------+
+  Type (2) = 01,
+  Stream ID (6..),
 ~~~~~~~~~~
 {:#fig-stream-cancel title="Stream Cancellation"}
 
@@ -867,10 +886,8 @@ increases the Known Received Count to the total number of dynamic table
 insertions and duplications processed so far.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 0 |     Increment (6+)    |
-+---+---+-----------------------+
+  Type (2) = 00,
+  Increment (6..),
 ~~~~~~~~~~
 {:#fig-size-sync title="Insert Count Increment"}
 
@@ -893,18 +910,14 @@ protocol.
 
 Each encoded field section is prefixed with two integers.  The Required Insert
 Count is encoded as an integer with an 8-bit prefix after the encoding described
-in {{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value
-with a 7-bit prefix; see {{base}}.
+in {{ric}}).  The Base is encoded as a Sign bit and a Delta Base value with a
+7-bit prefix; see {{base}}.
 
 ~~~~~~~~~~  drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-|   Required Insert Count (8+)  |
-+---+---------------------------+
-| S |      Delta Base (7+)      |
-+---+---------------------------+
-|      Encoded Field Lines    ...
-+-------------------------------+
+  Required Insert Count (8..),
+  Sign (1),
+  Delta Base (7..),
+  Encoded Field Line (8..) ...,
 ~~~~~~~~~~
 {:#fig-base-index title="Encoded Field Section"}
 
@@ -981,16 +994,15 @@ The Base is used to resolve references in the dynamic table as described in
 {{relative-indexing}}.
 
 To save space, the Base is encoded relative to the Required Insert Count using a
-one-bit sign ('S') and the Delta Base value.  A sign bit of 0 indicates that the
-Base is greater than or equal to the value of the Required Insert Count; the
-decoder adds the value of Delta Base to the Required Insert Count to determine
-the value of the Base.  A sign bit of 1 indicates that the Base is less than the
-Required Insert Count; the decoder subtracts the value of Delta Base from the
-Required Insert Count and also subtracts one to determine the value of the Base.
-That is:
+one-bit Sign and the Delta Base value.  A Sign bit of 0 indicates that the Base
+is greater than or equal to the value of the Required Insert Count; the decoder
+adds the value of Delta Base to the Required Insert Count to determine the value
+of the Base.  A Sign bit of 1 indicates that the Base is less than the Required
+Insert Count; the decoder subtracts the value of Delta Base from the Required
+Insert Count and also subtracts one to determine the value of the Base. That is:
 
 ~~~
-   if S == 0:
+   if Sign == 0:
       Base = ReqInsertCount + DeltaBase
    else:
       Base = ReqInsertCount - DeltaBase - 1
@@ -1013,8 +1025,8 @@ A field section that was encoded without references to the dynamic table can use
 any value for the Base; setting Delta Base to zero is one of the most efficient
 encodings.
 
-For example, with a Required Insert Count of 9, a decoder receives an S bit of 1
-and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
+For example, with a Required Insert Count of 9, a decoder receives a Sign bit of
+1 and a Delta Base of 2.  This sets the Base to 6 and enables post-base indexing
 for three entries.  In this example, a relative index of 1 refers to the 5th
 entry that was added to the table; a post-base index of 1 refers to the 8th
 entry.
@@ -1027,19 +1039,18 @@ or an entry in the dynamic table with an absolute index less than the value of
 the Base.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 1 | T |      Index (6+)       |
-+---+---+-----------------------+
+  Type (1) = 1,
+  Table (1),
+  Index (6..),
 ~~~~~~~~~~
 {: title="Indexed Field Line"}
 
-This representation starts with the '1' 1-bit pattern, followed by the 'T' bit
+This representation starts with the '1' 1-bit pattern, followed by the Table bit
 indicating whether the reference is into the static or dynamic table.  The 6-bit
-prefix integer ({{prefixed-integers}}) that follows is used to locate the
-table entry for the field line.  When T=1, the number represents the static
-table index; when T=0, the number is the relative index of the entry in the
-dynamic table.
+prefix integer ({{prefixed-integers}}) that follows is used to locate the table
+entry for the field line.  When Table is set, the number represents the static
+table index; when Table is unset, the number is the relative index of the entry
+in the dynamic table.
 
 
 ### Indexed Field Line With Post-Base Index
@@ -1049,10 +1060,8 @@ in the dynamic table with an absolute index greater than or equal to the value
 of the Base.
 
 ~~~~~~~~~~ drawing
-  0   1   2   3   4   5   6   7
-+---+---+---+---+---+---+---+---+
-| 0 | 0 | 0 | 1 |  Index (4+)   |
-+---+---+---+---+---------------+
+  Type (4) = 0001,
+  Index (4..),
 ~~~~~~~~~~
 {: title="Indexed Field Line with Post-Base Index"}
 
@@ -1069,31 +1078,31 @@ the field name of an entry in the dynamic table with an absolute index less than
 the value of the Base.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 1 | N | T |Name Index (4+)|
-   +---+---+---+---+---------------+
-   | H |     Value Length (7+)     |
-   +---+---------------------------+
-   |  Value String (Length bytes)  |
-   +-------------------------------+
+  Type (2) = 01,
+  Never Indexed (1),
+  Table (1),
+  Name Index (4..),
+  Huffman-Coded (1),
+  Value Length (7..),
+  Value (..),
 ~~~~~~~~~~
 {: title="Literal Field Line With Name Reference"}
 
 This representation starts with the '01' two-bit pattern.  The following bit,
-'N', indicates whether an intermediary is permitted to add this field line to
-the dynamic table on subsequent hops. When the 'N' bit is set, the encoded field
-line MUST always be encoded with a literal representation. In particular, when a
-peer sends a field line that it received represented as a literal field line
-with the 'N' bit set, it MUST use a literal representation to forward this field
-line.  This bit is intended for protecting field values that are not to be put
-at risk by compressing them; see {{security-considerations}} for more details.
+Never Indexed, indicates whether an intermediary is permitted to add this field
+line to the dynamic table on subsequent hops. When the Never Indexed bit is set,
+the encoded field line MUST always be encoded with a literal representation. In
+particular, when a peer sends a field line that it received represented as a
+literal field line with the Never Indexed bit set, it MUST use a literal
+representation to forward this field line.  This bit is intended for protecting
+field values that are not to be put at risk by compressing them; see
+{{security-considerations}} for more details.
 
-The fourth ('T') bit indicates whether the reference is to the static or dynamic
-table.  The 4-bit prefix integer ({{prefixed-integers}}) that follows is used to
-locate the table entry for the field name.  When T=1, the number represents the
-static table index; when T=0, the number is the relative index of the entry in
-the dynamic table.
+The fourth bit, Table, indicates whether the reference is to the static or
+dynamic table.  The 4-bit prefix integer ({{prefixed-integers}}) that follows is
+used to locate the table entry for the field name.  When the Table bit is set,
+the number represents the static table index; when the Table bit is unset, the
+number is the relative index of the entry in the dynamic table.
 
 Only the field name is taken from the dynamic table entry; the field value is
 encoded as an 8-bit prefix string literal; see {{string-literals}}.
@@ -1106,21 +1115,19 @@ field line where the field name matches the field name of a dynamic table entry
 with an absolute index greater than or equal to the value of the Base.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 0 | 0 | N |NameIdx(3+)|
-   +---+---+---+---+---+-----------+
-   | H |     Value Length (7+)     |
-   +---+---------------------------+
-   |  Value String (Length bytes)  |
-   +-------------------------------+
+  Type (4) = 0000,
+  Never Indexed (1),
+  Name Index (3..),
+  Huffman-Coded (1),
+  Value Length (7..),
+  Value (..),
 ~~~~~~~~~~
 {: title="Literal Field Line With Post-Base Name Reference"}
 
 This representation starts with the '0000' four-bit pattern.  The fifth bit is
-the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
-post-base index of the dynamic table entry ({{post-base}}) encoded as an
-integer with a 3-bit prefix; see {{prefixed-integers}}.
+the Never Indexed bit as described in {{literal-name-reference}}.  This is
+followed by a post-base index of the dynamic table entry ({{post-base}}) encoded
+as an integer with a 3-bit prefix; see {{prefixed-integers}}.
 
 Only the field name is taken from the dynamic table entry; the field value is
 encoded as an 8-bit prefix string literal; see {{string-literals}}.
@@ -1132,23 +1139,21 @@ The literal field line without name reference representation encodes a
 field name and a field value as string literals.
 
 ~~~~~~~~~~ drawing
-     0   1   2   3   4   5   6   7
-   +---+---+---+---+---+---+---+---+
-   | 0 | 0 | 1 | N | H |NameLen(3+)|
-   +---+---+---+---+---+-----------+
-   |  Name String (Length bytes)   |
-   +---+---------------------------+
-   | H |     Value Length (7+)     |
-   +---+---------------------------+
-   |  Value String (Length bytes)  |
-   +-------------------------------+
+  Type (3) = 001,
+  Never Indexed (1),
+  Huffman-Coded (1),
+  Name Length (3..),
+  Name (..),
+  Huffman-Coded (1),
+  Value Length (7..),
+  Value (..),
 ~~~~~~~~~~
 {: title="Literal Field Line Without Name Reference"}
 
 This representation begins with the '001' three-bit pattern.  The fourth bit is
-the 'N' bit as described in {{literal-name-reference}}.  The name follows,
-represented as a 4-bit prefix string literal, then the value, represented as an
-8-bit prefix string literal; see {{string-literals}}.
+the Never Indexed bit as described in {{literal-name-reference}}.  The name
+follows, represented as a 4-bit prefix string literal, then the value,
+represented as an 8-bit prefix string literal; see {{string-literals}}.
 
 
 #  Configuration
@@ -1302,10 +1307,10 @@ effective if doing so is avoided on all hops. The never indexed literal bit (see
 particular value was intentionally sent as a literal.
 
 An intermediary MUST NOT re-encode a value that uses a literal representation
-with the 'N' bit set with another representation that would index it. If QPACK
-is used for re-encoding, a literal representation with the 'N' bit set MUST be
-used.  If HPACK is used for re-encoding, the never indexed literal
-representation (see Section 6.2.3 of [RFC7541]) MUST be used.
+with the Never Indexed bit set with another representation that would index it.
+If QPACK is used for re-encoding, a literal representation with the Never
+Indexed bit set MUST be used.  If HPACK is used for re-encoding, the never
+indexed literal representation (see Section 6.2.3 of [RFC7541]) MUST be used.
 
 The choice to mark that a header field should never be indexed
 depends on several factors. Since QPACK does not protect against guessing an
