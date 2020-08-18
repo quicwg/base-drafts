@@ -1368,7 +1368,8 @@ additional state memory on the encoder.
 An encoder allocates memory to track all dynamic table references in
 unacknowledged representations.  Implementations can directly limit the amount
 of state memory by only using as many references to the dynamic table as it
-wishes to track; no signaling to the decoder is required.
+wishes to track; no signaling to the decoder is required.  However, limiting
+references to the dynamic table will reduce compression effectiveness.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
 by processing header fields sequentially. A decoder implementation does not need
