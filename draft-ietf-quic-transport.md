@@ -3564,8 +3564,8 @@ either:
 * when the received packet has a packet number less than another ack-eliciting
   packet that has been received, or
 * when the packet has a packet number larger than the highest-numbered
-  ack-eliciting packet that has been received and there are missing packets between
-  that packet and this packet.
+  ack-eliciting packet that has been received and there are missing packets
+  between that packet and this packet.
 
 The endpoint SHOULD NOT continue sending ACK frames immediately unless one of
 the above criteria are satisfied.
