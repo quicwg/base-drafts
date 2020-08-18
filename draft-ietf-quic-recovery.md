@@ -1517,7 +1517,7 @@ variables as follows:
    bytes_in_flight = 0
    congestion_recovery_start_time = 0
    ssthresh = infinite
-   first_rtt_sample = never
+   first_rtt_sample = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      ecn_ce_counters[pn_space] = 0
 ~~~
@@ -1551,7 +1551,7 @@ newly acked_packets from sent_packets.
     // Remove from bytes_in_flight.
     bytes_in_flight -= acked_packet.sent_bytes
 
-    if (first_rtt_sample is never):
+    if (first_rtt_sample == 0):
       first_rtt_sample = now()
 
     // Do not increase congestion_window if application
@@ -1621,7 +1621,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
      // Only look for persistent congestion if the period
      // starts after getting the first RTT sample.
-     assert(first_rtt_sample is not never)
+     assert(first_rtt_sample != 0)
      if (largest_lost.time_sent - pc_period > first_rtt_sample):
        return false
 
