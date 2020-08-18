@@ -764,7 +764,8 @@ The RECOMMENDED value is 2 * max_datagram_size.
 ## Slow Start
 
 The congestion controller is in slow start any time the congestion window is
-below the slow start threshold.  The congestion controller begins in slow start.
+below the slow start threshold.  The congestion controller begins in slow start
+because the slow start threshold is initialized to an infinite value.
 
 While the congestion controller is in slow start, the congestion window
 increases by the number of bytes acknowledged when each acknowledgment is
