@@ -4901,6 +4901,7 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+
 ### Latency Spin Bit {#spin-bit}
 
 The latency spin bit enables passive latency monitoring from observation points
@@ -4929,28 +4930,28 @@ bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
-value and sets the spin bit in the short header to the currently stored
-value when a packet with a short header is sent out. The spin value is
-initialized to 0 in the endpoint at connection start.  Each endpoint also
-remembers the highest packet number seen from its peer on the connection.
+value for each network path and sets the spin bit in the short header to the
+currently stored value when a packet with a short header is sent on that path.
+The spin value is initialized to 0 in the endpoint for each network path. Each
+endpoint also remembers the highest packet number seen from its peer on each
+path.
 
-When a server receives a short header packet that increments the highest
-packet number seen by the server from the client, it sets the spin value to be
-equal to the spin bit in the received packet.
+When a server receives a short header packet that increases the highest packet
+number seen by the server from the client on a given network path, it sets the
+spin value for that path to be equal to the spin bit in the received packet.
 
-When a client receives a short header packet that increments the highest
-packet number seen by the client from the server, it sets the spin value to the
-inverse of the spin bit in the received packet.
+When a client receives a short header packet that increases the highest packet
+number seen by the client from the server on a given network path, it sets the
+spin value for that path to the inverse of the spin bit in the received packet.
 
-An endpoint resets its spin value to zero when sending the first packet of a
-given connection with a new connection ID. This reduces the risk that transient
-spin bit state can be used to link flows across connection migration or ID
-change.
+An endpoint resets the spin value for a network path to zero when changing the
+connection ID being used on that network path.
 
 With this mechanism, the server reflects the spin value received, while the
 client 'spins' it after one RTT. On-path observers can measure the time
 between two spin bit toggle events to estimate the end-to-end RTT of a
 connection.
+
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
