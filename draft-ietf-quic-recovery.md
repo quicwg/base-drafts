@@ -1503,6 +1503,9 @@ ssthresh:
   the mode is slow start and the window grows by the number of bytes
   acknowledged.
 
+first_rtt_sample:
+: The time that the first RTT sample was obtained.
+
 
 ## Initialization
 
@@ -1514,6 +1517,7 @@ variables as follows:
    bytes_in_flight = 0
    congestion_recovery_start_time = 0
    ssthresh = infinite
+   first_rtt_sample = never
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      ecn_ce_counters[pn_space] = 0
 ~~~
@@ -1546,6 +1550,9 @@ newly acked_packets from sent_packets.
   OnPacketAcked(acked_packet):
     // Remove from bytes_in_flight.
     bytes_in_flight -= acked_packet.sent_bytes
+
+    if (first_rtt_sample is never):
+      first_rtt_sample = now()
 
     // Do not increase congestion_window if application
     // limited or flow control limited.
@@ -1608,17 +1615,20 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
    InPersistentCongestion(largest_lost):
-     // Persistent congestion cannot be declared on the
-     // first RTT sample.
-     if (is first RTT sample):
-       return false
      pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
        max_ack_delay
-     congestion_period = pto * kPersistentCongestionThreshold
+     pc_period = pto * kPersistentCongestionThreshold
+
+     // Only look for persistent congestion if the period
+     // starts after getting the first RTT sample.
+     assert(first_rtt_sample is not never)
+     if (largest_lost.time_sent - pc_period > first_rtt_sample):
+       return false
+
      // Determine if all packets in the time period before the
      // largest newly lost packet, including the edges and
      // across all packet number spaces, are marked lost.
-     return AreAllPacketsLost(largest_lost, congestion_period)
+     return AreAllPacketsLost(largest_lost, pc_period)
 
    OnPacketsLost(lost_packets):
      // Remove lost packets from bytes_in_flight.
