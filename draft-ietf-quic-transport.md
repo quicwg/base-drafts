@@ -3561,11 +3561,11 @@ In order to assist loss detection at the sender, an endpoint SHOULD generate
 and send an ACK frame without delay when it receives an ack-eliciting packet
 either:
 
-* When the received packet has a packet number less than another ack-eliciting
-  packet that has been received.
-* When the packet has a packet number larger than any other ack-eliciting packet
-  that has been received and there are missing packets between that other packet
-  and this packet.
+* when the received packet has a packet number less than another ack-eliciting
+  packet that has been received, or
+* when the packet has a packet number larger than the highest-numbered
+  ack-eliciting packet that has been received and there are missing packets between
+  that packet and this packet.
 
 The endpoint SHOULD NOT continue sending ACK frames immediately unless one of
 the above criteria are satisfied.
