@@ -532,7 +532,7 @@ delay sending an acknowledgement.
 
 When the PTO is armed for Initial or Handshake packet number spaces, the
 max_ack_delay in the PTO period computation is set to 0, since the peer is
-expected to acknowledge these packets immediately; see 13.2.1 of
+expected to not delay these packets intentionally; see 13.2.1 of
 {{QUIC-TRANSPORT}}.
 
 The PTO period MUST be at least kGranularity, to avoid the timer expiring
