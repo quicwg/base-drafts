@@ -783,13 +783,15 @@ The congestion controller is in congestion avoidance any time the congestion
 window is at or above the slow start threshold.
 
 Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
-approach that increases the congestion window by one maximum packet size per
-congestion window acknowledged.
+approach that increases the congestion window by one maximum datagram size per
+congestion window acknowledged. A congestion controller MUST NOT increase the
+congestion window by more than this amount.
 
 When first entering congestion avoidance, when a packet is declared lost, or
-when the ECN-CE count is increased, the congestion controller halves the
-congestion window, reduces the slow start threshold to the resulting size, and
-enters the recovery period.
+when the ECN-CE count is increased, the congestion controller described in this
+document halves the congestion window, reduces the slow start threshold to the
+resulting size, and enters the recovery period. A congestion controller MUST
+reduce the congestion window when a loss or ECN-CE marking is detected.
 
 ## Recovery Period
 
