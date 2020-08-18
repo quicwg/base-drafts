@@ -1538,9 +1538,11 @@ newly acked_packets from sent_packets.
 ~~~
 InCongestionRecovery(sent_time):
   return sent_time <= congestion_recovery_start_time
+
 OnPacketsAcked(acked_packets):
   for acked_packet in acked_packets:
     OnPacketAcked(acked_packet)
+
 OnPacketAcked(acked_packet):
   // Remove from bytes_in_flight.
   bytes_in_flight -= acked_packet.sent_bytes
@@ -1614,6 +1616,7 @@ InPersistentCongestion(largest_lost):
   // largest newly lost packet, including the edges and
   // across all packet number spaces, are marked lost.
   return AreAllPacketsLost(largest_lost, congestion_period)
+
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
