@@ -336,17 +336,17 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
-The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for acknowledgement delays. These delays are computed using the ACK Delay
-field of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+The calculation of smoothed_rtt uses RTT samples after adjusting them for
+acknowledgement delays. These delays are computed using the ACK Delay field of
+the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
-As the peer might report acknowledgement delays that are larger than the peer's
-max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}), the
-endpoint SHOULD ignore max_ack_delay until the handshake is confirmed (Section
-4.1.2 of {{QUIC-TLS}}). Since these large acknowledgement delays, when they
-occur, are likely to be non-repeating and limited to the handshake, the endpoint
-can use them without limiting them to the max_ack_delay and avoid unnecessarily
-inflating the RTT estimate.
+The peer might report acknowledgement delays that are larger than the peer's
+max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
+account for this, the endpoint SHOULD ignore max_ack_delay until the handshake
+is confirmed (Section 4.1.2 of {{QUIC-TLS}}). When they occur, these large
+acknowledgement delays are likely to be non-repeating and limited to the
+handshake. The endpoint can therefore use them without limiting them to the
+max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
 
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than the peer's max_ack_delay are attributed to
@@ -355,8 +355,8 @@ peer or loss of previous acknowledgements. Therefore, these extra delays are
 considered effectively part of path delay and incorporated into the RTT
 estimate.
 
-When adjusting an RTT sample using peer-reported acknowledgement delays, an
-endpoint:
+Therefore, when adjusting an RTT sample using peer-reported acknowledgement
+delays, an endpoint:
 
 - MAY ignore the acknowledgement delay for Initial packets,
 
@@ -365,16 +365,16 @@ endpoint:
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
   after the handshake is confirmed,
 
-- MUST NOT apply the adjustments above if the resulting RTT sample is smaller
-  than the min_rtt.  This limits the underestimation of the smoothed_rtt because
-  of a misreporting peer.
+- MUST NOT subtract the acknowledgement delay from the RTT sample if the
+  resulting value is smaller than the min_rtt.  This limits the underestimation
+  of the smoothed_rtt due to a misreporting peer.
 
-Additionaly, an endpoint might postpone the processing of acknowledgements when
+Additionally, an endpoint might postpone the processing of acknowledgements when
 the corresponding decryption keys are not immediately available. For example, a
 client might receive an acknowledgement for a 0-RTT packet that it cannot
 decrypt because 1-RTT packet protection keys are not yet available to it. In
-such cases, an endpoint SHOULD ignore such local delays in its RTT sample until
-the handshake is confirmed.
+such cases, an endpoint SHOULD subtract such local delays from its RTT sample
+until the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
@@ -1251,7 +1251,6 @@ OnAckReceived(ack, pn_space):
 
   // Update the RTT if the largest acknowledged is newly acked
   // and at least one ack-eliciting was newly acked.
-
   if (newly_acked_packets.largest().packet_number ==
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
