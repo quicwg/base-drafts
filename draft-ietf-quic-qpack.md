@@ -999,8 +999,7 @@ Base, so the encoded difference is negative and the sign bit is set to 1.  If
 the field section was not encoded using representations that reference the most
 recent entry in the table and did not insert any new entries, the Base will be
 greater than the Required Insert Count, so the delta will be positive and the
-sign bit is set to
-0.
+sign bit is set to 0.
 
 An encoder that produces table updates before encoding a field section might set
 Base to the value of Required Insert Count.  In such case, both the sign bit and
