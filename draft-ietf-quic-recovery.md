@@ -1506,6 +1506,10 @@ ssthresh:
 first_rtt_sample:
 : The time that the first RTT sample was obtained.
 
+pc_lost:
+: Lost packets from all packet number spaces that are used in determining
+  persistent congestion.
+
 
 ## Initialization
 
@@ -1544,15 +1548,15 @@ newly acked_packets from sent_packets.
     return sent_time <= congestion_recovery_start_time
 
   OnPacketsAcked(acked_packets):
+    if (first_rtt_sample == 0):
+      first_rtt_sample = now()
+
     for acked_packet in acked_packets:
       OnPacketAcked(acked_packet)
 
   OnPacketAcked(acked_packet):
     // Remove from bytes_in_flight.
     bytes_in_flight -= acked_packet.sent_bytes
-
-    if (first_rtt_sample == 0):
-      first_rtt_sample = now()
 
     // Do not increase congestion_window if application
     // limited or flow control limited.
@@ -1614,31 +1618,37 @@ Invoked when an ACK frame with an ECN section is received from the peer.
 Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
-   InPersistentCongestion(largest_lost):
-     pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
-       max_ack_delay
-     pc_period = pto * kPersistentCongestionThreshold
+InPersistentCongestion(lost_packets):
+  // Consider lost packets across all packet number spaces.
+  pc_lost += lost_packets
 
-     // Only look for persistent congestion if the period
-     // starts after getting the first RTT sample.
-     assert(first_rtt_sample != 0)
-     if (largest_lost.time_sent - pc_period > first_rtt_sample):
-       return false
+  // Disregard packets sent prior to getting an RTT sample.
+  assert(first_rtt_sample != 0)
+  for lost in pc_lost:
+    if lost.time_sent <= first_rtt_sample:
+      pc_lost.remove(lost)
 
-     // Determine if all packets in the time period before the
-     // largest newly lost packet, including the edges and
-     // across all packet number spaces, are marked lost.
-     return AreAllPacketsLost(largest_lost, pc_period)
+  // Find the largest contiguous set of lost packets that
+  // starts and ends with an ack-eliciting packet.
+  (first, last) = FindLargestContiguousLoss(pc_lost)
 
-   OnPacketsLost(lost_packets):
-     // Remove lost packets from bytes_in_flight.
-     for lost_packet in lost_packets:
-       bytes_in_flight -= lost_packet.sent_bytes
-     OnCongestionEvent(lost_packets.largest().time_sent)
+  // Declare persistent congestion if these packets span
+  // a period longer than the persistent congestion period.
+  pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
+    max_ack_delay
+  pc_period = pto * kPersistentCongestionThreshold
+  return (last.time_sent - first.time_sent) > pc_period
 
-     // Collapse congestion window if persistent congestion
-     if (InPersistentCongestion(lost_packets.largest())):
-       congestion_window = kMinimumWindow
+OnPacketsLost(lost_packets):
+  // Remove lost packets from bytes_in_flight.
+  for lost_packet in lost_packets:
+    bytes_in_flight -= lost_packet.sent_bytes
+  OnCongestionEvent(lost_packets.largest().time_sent)
+
+  // Collapse congestion window on persistent congestion.
+  if (InPersistentCongestion(lost_packets)):
+    pc_lost.clear()
+    congestion_window = kMinimumWindow
 ~~~
 
 ## Upon dropping Initial or Handshake keys
