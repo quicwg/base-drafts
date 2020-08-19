@@ -493,39 +493,39 @@ Note:
 data to a peer.
 
 ~~~
-       o
-       | Create Stream (Sending)
-       | Peer Creates Bidirectional Stream
-       v
-   +-------+
-   | Ready | Send RESET_STREAM
-   |       |-----------------------.
-   +-------+                       |
-       |                           |
-       | Send STREAM /             |
-       |      STREAM_DATA_BLOCKED  |
-       |                           |
-       | Peer Creates              |
-       |      Bidirectional Stream |
-       v                           |
-   +-------+                       |
-   | Send  | Send RESET_STREAM     |
-   |       |---------------------->|
-   +-------+                       |
-       |                           |
-       | Send STREAM + FIN         |
-       v                           v
-   +-------+                   +-------+
-   | Data  | Send RESET_STREAM | Reset |
-   | Sent  |------------------>| Sent  |
-   +-------+                   +-------+
-       |                           |
-       | Recv All ACKs             | Recv ACK
-       v                           v
-   +-------+                   +-------+
-   | Data  |                   | Reset |
-   | Recvd |                   | Recvd |
-   +-------+                   +-------+
+               o
+               | Create Stream (Sending)
+               | Peer Creates Bidirectional Stream
+               v
+           +-------+
+           | Ready | Send RESET_STREAM
+           |       |-----------------------.
+           +-------+                       |
+               |                           |
+               | Send STREAM /             |
+               |      STREAM_DATA_BLOCKED  |
+               |                           |
+               | Peer Creates              |
+               |      Bidirectional Stream |
+               v                           |
+           +-------+                       |
+           | Send  | Send RESET_STREAM     |
+       +-->|       |---------------------->|
+Send   |   +-------+                       |
+STREAM |     | |                           |
+       +-----+ | Send STREAM + FIN         |
+               v                           v
+           +-------+                   +-------+
+           | Data  | Send RESET_STREAM | Reset |
+           | Sent  |------------------>| Sent  |
+           +-------+                   +-------+
+               |                           |
+               | Recv All ACKs             | Recv ACK
+               v                           v
+           +-------+                   +-------+
+           | Data  |                   | Reset |
+           | Recvd |                   | Recvd |
+           +-------+                   +-------+
 ~~~
 {: #fig-stream-send-states title="States for Sending Parts of Streams"}
 
@@ -588,37 +588,37 @@ tracks the delivery of data to the application, some of which cannot be observed
 by the sender.
 
 ~~~
-       o
-       | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
-       | Create Bidirectional Stream (Sending)
-       | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
-       | Create Higher-Numbered Stream
-       v
-   +-------+
-   | Recv  | Recv RESET_STREAM
-   |       |-----------------------.
-   +-------+                       |
-       |                           |
-       | Recv STREAM + FIN         |
-       v                           |
-   +-------+                       |
-   | Size  | Recv RESET_STREAM     |
-   | Known |---------------------->|
-   +-------+                       |
-       |                           |
-       | Recv All Data             |
-       v                           v
-   +-------+ Recv RESET_STREAM +-------+
-   | Data  |--- (optional) --->| Reset |
-   | Recvd |  Recv All Data    | Recvd |
-   +-------+<-- (optional) ----+-------+
-       |                           |
-       | App Read All Data         | App Read RST
-       v                           v
-   +-------+                   +-------+
-   | Data  |                   | Reset |
-   | Read  |                   | Read  |
-   +-------+                   +-------+
+              o
+              | Recv STREAM / STREAM_DATA_BLOCKED / RESET_STREAM
+              | Create Bidirectional Stream (Sending)
+              | Recv MAX_STREAM_DATA / STOP_SENDING (Bidirectional)
+              | Create Higher-Numbered Stream
+              v
+          +-------+
+          | Recv  | Recv RESET_STREAM
+       +->|       |-----------------------.
+Recv   |  +-------+                       |
+STREAM |    | |                           |
+       +----+ | Recv STREAM + FIN         |
+              v                           |
+          +-------+                       |
+          | Size  | Recv RESET_STREAM     |
+          | Known |---------------------->|
+          +-------+                       |
+              |                           |
+              | Recv All Data             |
+              v                           v
+          +-------+ Recv RESET_STREAM +-------+
+          | Data  |--- (optional) --->| Reset |
+          | Recvd |  Recv All Data    | Recvd |
+          +-------+<-- (optional) ----+-------+
+              |                           |
+              | App Read All Data         | App Read RST
+              v                           v
+          +-------+                   +-------+
+          | Data  |                   | Reset |
+          | Read  |                   | Read  |
+          +-------+                   +-------+
 ~~~
 {: #fig-stream-recv-states title="States for Receiving Parts of Streams"}
 
