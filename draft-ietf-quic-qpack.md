@@ -889,7 +889,7 @@ protocol.
 
 Each encoded field section is prefixed with two integers.  The Required Insert
 Count is encoded as an integer with an 8-bit prefix using the encoding described
-in {{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value
+in {{ric}}.  The Base is encoded as a sign bit ('S') and a Delta Base value
 with a 7-bit prefix; see {{base}}.
 
 ~~~~~~~~~~  drawing
