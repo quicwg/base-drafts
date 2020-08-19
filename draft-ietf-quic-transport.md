@@ -847,9 +847,9 @@ control offset to be advertised.
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
 all streams.  A receiver maintains a cumulative sum of bytes received on all
-streams, which is used to check for flow control violations. A receiver might
-use a sum of bytes consumed on all streams to determine the maximum data limit
-to be advertised.
+streams, which is used to check for violations of the advertised connection or
+stream data limits. A receiver might use a sum of bytes consumed on all streams
+to determine the maximum data limit to be advertised.
 
 Once a receiver advertises a limit for the connection or a stream, it MAY
 advertise a smaller limit, but this has no effect.
