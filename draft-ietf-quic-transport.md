@@ -3843,11 +3843,8 @@ instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
-and the peer is able to access the ECN codepoint in the IP header.  A network
-path does not support ECN if ECN marked packets get dropped or ECN markings are
-rewritten on the path. An endpoint validates the use of ECN on the path, both
-during connection establishment and when migrating to a new path
-({{migration}}).
+and the peer is able to access the ECN codepoint in the IP header; see
+{{ecn-validation}}.
 
 
 ### ECN Counts
@@ -3892,6 +3889,7 @@ errors are detected.
 Endpoints validate ECN for packets sent on each network path independently.  An
 endpoint thus validates ECN on new connection establishment, when switching to a
 server's preferred address, and on active connection migration to a new path.
+If validation fails, an endpoint could also periodically attempt validation.
 {{ecn-alg}} describes one possible algorithm for testing paths for ECN support.
 
 Even if an endpoint does not use ECN markings on packets it transmits, the
