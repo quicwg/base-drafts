@@ -2296,7 +2296,7 @@ willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
 When migrating, the new path might not support the endpoint's current sending
-rate. Therefore, the endpoint resets its congestion controller and rtt estimate,
+rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
 as described in {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
