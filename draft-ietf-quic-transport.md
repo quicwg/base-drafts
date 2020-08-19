@@ -831,7 +831,7 @@ entire connection.  This leads to two levels of data flow control in QUIC:
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
 
-Senders MUST not send data in excess of either limit.
+Senders MUST NOT send data in excess of either limit.
 
 A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
