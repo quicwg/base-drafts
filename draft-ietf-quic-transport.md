@@ -1076,8 +1076,8 @@ A zero-length connection ID can be used when a connection ID is not needed to
 route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
 failures in the presence of peer connection migration, NAT rebinding, and client
-port reuse; and therefore MUST NOT be done unless an endpoint is certain that
-those protocol features are not in use.
+port reuse. An endpoint MUST NOT use an IP address and port pair for multiple
+connections unless it is certain that those protocol features are not in use.
 
 When an endpoint uses a non-zero-length connection ID, it needs to ensure that
 the peer has a supply of connection IDs from which to choose for packets sent to
@@ -1130,7 +1130,7 @@ An endpoint SHOULD supply a new connection ID when the peer retires a connection
 ID.  If an endpoint provided fewer connection IDs than the peer's
 active_connection_id_limit, it MAY supply a new connection ID when it receives a
 packet with a previously unused connection ID.  An endpoint MAY limit the
-frequency or the total number of connection IDs issued for each connection to
+total number of connection IDs issued for each connection to
 avoid the risk of running out of connection IDs; see {{reset-token}}.  An
 endpoint MAY also limit the issuance of connection IDs to reduce the amount of
 per-path state it maintains, such as path validation status, as its peer
@@ -1232,7 +1232,9 @@ cannot be reverted.
 Valid packets sent to clients always include a Destination Connection ID that
 matches a value the client selects.  Clients that choose to receive
 zero-length connection IDs can use the local address and port to identify a
-connection.  Packets that do not match an existing connection are discarded.
+connection.  Packets that do not match an existing connection, based on
+Destination Connection ID or, if zero-length, local IP address and port,
+are discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
 connection that are encrypted with a key it has not yet computed. The client MAY
@@ -1768,9 +1770,9 @@ completes, the client uses the transport parameters established in the
 handshake.  Not all transport parameters are remembered, as some do not apply to
 future connections or they have no effect on use of 0-RTT.
 
-The definition of new transport parameters ({{new-transport-parameters}}) MUST
-specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
-not store a transport parameter it cannot process.
+The definition of new transport parameters ({{new-transport-parameters}}) is
+REQUIRED to specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A
+client need not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
 ack_delay_exponent, max_ack_delay, initial_source_connection_id,
@@ -1889,7 +1891,7 @@ confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
-Additionally, a server MAY consider the client address valididated if the
+Additionally, a server MAY consider the client address validated if the
 client uses a connection ID chosen by the server and the connection ID contains
 at least 64 bits of entropy.
 
@@ -2402,10 +2404,10 @@ duplicate.  If the attacker is able to continue forwarding packets, it might be
 able to cause migration to a path via the attacker.  This places the attacker on
 path, giving it the ability to observe or drop all subsequent packets.
 
-This style of attack relies on the attacker using a path that is approximately
-as fast as the direct path between endpoints.  The attack is more reliable if
-relatively few packets are sent or if packet loss coincides with the attempted
-attack.
+This style of attack relies on the attacker using a path that has approximately
+the same characteristics as the direct path between endpoints.  The attack is
+more reliable if relatively few packets are sent or if packet loss coincides
+with the attempted attack.
 
 A non-probing packet received on the original path that increases the maximum
 received packet number will cause the endpoint to move back to that path.
@@ -2487,8 +2489,8 @@ different local addresses, as discussed in {{connection-id}}.  For this to be
 effective, endpoints need to ensure that connection IDs they provide cannot be
 linked by any other entity.
 
-At any time, endpoints MAY change the Destination Connection ID they send to a
-value that has not been used on another path.
+At any time, endpoints MAY change the Destination Connection ID they transmit
+with a to value that has not been used on another path.
 
 An endpoint MUST NOT reuse a connection ID when sending from more than one local
 address, for example when initiating connection migration as described in
@@ -2552,10 +2554,10 @@ address shared by multiple servers but would prefer to use a unicast address to
 ensure connection stability. This section describes the protocol for migrating a
 connection to a preferred server address.
 
-Migrating a connection to a new server address mid-connection is left for future
-work. If a client receives packets from a new server address when the client has
-not initiated a migration to that address, the client SHOULD discard these
-packets.
+Migrating a connection to a new server address mid-connection is not supported
+by the version of QUIC specified in this document. If a client receives packets
+from a new server address when the client has not initiated a migration to that
+address, the client SHOULD discard these packets.
 
 ### Communicating a Preferred Address
 
@@ -2571,7 +2573,7 @@ addresses provided by the server and initiate path validation (see
 active connection ID, taken from either the preferred_address transport
 parameter or a NEW_CONNECTION_ID frame.
 
-If path validation succeeds, the client SHOULD immediately begin sending all
+As soon as path validation succeeds, the client SHOULD begin sending all
 future packets to the new server address using the new connection ID and
 discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
@@ -3855,9 +3857,7 @@ during connection establishment and when migrating to a new path
 On receiving a QUIC packet with an ECT or CE codepoint, an ECN-enabled endpoint
 that can access the ECN codepoints from the enclosing IP packet increases the
 corresponding ECT(0), ECT(1), or CE count, and includes these counts in
-subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.  Note that
-this requires being able to read the ECN codepoints from the enclosing IP
-packet, which is not possible on all platforms.
+subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
 
 An IP packet that results in no QUIC packets being processed does not increase
 ECN counts.  A QUIC packet detected by a receiver as a duplicate does not
@@ -3887,7 +3887,7 @@ application data packet number space will be increased by two.
 It is possible for faulty network devices to corrupt or erroneously drop packets
 with ECN markings.  To provide robust connectivity in the presence of such
 devices, each endpoint independently validates ECN counts and disables ECN if
-errors are detected.
+the path is not showing consistent support for ECN.
 
 Endpoints validate ECN for packets sent on each network path independently.  An
 endpoint thus validates ECN on new connection establishment, when switching to a
