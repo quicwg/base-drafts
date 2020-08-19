@@ -889,7 +889,7 @@ protocol.
 
 Each encoded field section is prefixed with two integers.  The Required Insert
 Count is encoded as an integer with an 8-bit prefix using the encoding described
-in {{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value
+in {{ric}}.  The Base is encoded as a sign bit ('S') and a Delta Base value
 with a 7-bit prefix; see {{base}}.
 
 ~~~~~~~~~~  drawing
@@ -1221,9 +1221,10 @@ attack into a linear-time attack.
 ## Applicability to QPACK and HTTP
 
 QPACK mitigates but does not completely prevent attacks modeled on CRIME
-([CRIME]) by forcing a guess to match an entire field value, rather than
+([CRIME]) by forcing a guess to match an entire field line, rather than
 individual characters. An attacker can only learn whether a guess is correct or
-not, so is reduced to a brute force guess for the header field values.
+not, so is reduced to a brute force guess for the field values associated with a
+given field name.
 
 The viability of recovering specific field values therefore depends on the
 entropy of values. As a result, values with high entropy are unlikely to be
@@ -1268,10 +1269,10 @@ tagged as being public. For example, a web browser might make the values of the
 Accept-Encoding header field available in all requests.
 
 An encoder without good knowledge of the provenance of field values might
-instead introduce a penalty for a field name with many different values, such
-that a large number of attempts to guess a field value results in the field not
-being compared to the dynamic table entries in future messages, effectively
-preventing further guesses.
+instead introduce a penalty for many field lines with the same field name and
+different values.  This penalty could cause a large number of attempts to guess
+a field value to result in the field not being compared to the dynamic table
+entries in future messages, effectively preventing further guesses.
 
 Note:
 
