@@ -733,7 +733,8 @@ window in bytes.
 
 An endpoint MUST NOT send a packet if it would cause bytes_in_flight (see
 {{vars-of-interest}}) to be larger than the congestion window, unless the packet
-is sent on a PTO timer expiration; see {{pto}}.
+is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
+(see {{recovery-period}}).
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
@@ -782,7 +783,7 @@ acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
 the congestion window, sets the slow start threshold to the new
 congestion window, and then enters the recovery period.
 
-## Recovery Period
+## Recovery Period {#recovery-period}
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
 detected in congestion avoidance after the congestion window and slow start
@@ -1081,11 +1082,11 @@ kPacketNumberSpace:
 : An enum to enumerate the three packet number spaces.
 
 ~~~
-  enum kPacketNumberSpace {
-    Initial,
-    Handshake,
-    ApplicationData,
-  }
+enum kPacketNumberSpace {
+  Initial,
+  Handshake,
+  ApplicationData,
+}
 ~~~
 
 ## Variables of interest {#ld-vars-of-interest}
@@ -1141,17 +1142,17 @@ At the beginning of the connection, initialize the loss detection variables as
 follows:
 
 ~~~
-   loss_detection_timer.reset()
-   pto_count = 0
-   latest_rtt = 0
-   smoothed_rtt = kInitialRtt
-   rttvar = kInitialRtt / 2
-   min_rtt = 0
-   max_ack_delay = 0
-   for pn_space in [ Initial, Handshake, ApplicationData ]:
-     largest_acked_packet[pn_space] = infinite
-     time_of_last_ack_eliciting_packet[pn_space] = 0
-     loss_time[pn_space] = 0
+loss_detection_timer.reset()
+pto_count = 0
+latest_rtt = 0
+smoothed_rtt = kInitialRtt
+rttvar = kInitialRtt / 2
+min_rtt = 0
+max_ack_delay = 0
+for pn_space in [ Initial, Handshake, ApplicationData ]:
+  largest_acked_packet[pn_space] = infinite
+  time_of_last_ack_eliciting_packet[pn_space] = 0
+  loss_time[pn_space] = 0
 ~~~
 
 
@@ -1163,21 +1164,21 @@ to OnPacketSent are described in detail above in {{sent-packets-fields}}.
 Pseudocode for OnPacketSent follows:
 
 ~~~
- OnPacketSent(packet_number, pn_space, ack_eliciting,
-              in_flight, sent_bytes):
-   sent_packets[pn_space][packet_number].packet_number =
-                                            packet_number
-   sent_packets[pn_space][packet_number].time_sent = now()
-   sent_packets[pn_space][packet_number].ack_eliciting =
-                                            ack_eliciting
-   sent_packets[pn_space][packet_number].in_flight = in_flight
-   if (in_flight):
-     if (ack_eliciting):
-       time_of_last_ack_eliciting_packet[pn_space] = now()
-     OnPacketSentCC(sent_bytes)
-     sent_packets[pn_space][packet_number].sent_bytes =
-       sent_bytes
-     SetLossDetectionTimer()
+OnPacketSent(packet_number, pn_space, ack_eliciting,
+             in_flight, sent_bytes):
+  sent_packets[pn_space][packet_number].packet_number =
+                                           packet_number
+  sent_packets[pn_space][packet_number].time_sent = now()
+  sent_packets[pn_space][packet_number].ack_eliciting =
+                                           ack_eliciting
+  sent_packets[pn_space][packet_number].in_flight = in_flight
+  if (in_flight):
+    if (ack_eliciting):
+      time_of_last_ack_eliciting_packet[pn_space] = now()
+    OnPacketSentCC(sent_bytes)
+    sent_packets[pn_space][packet_number].sent_bytes =
+      sent_bytes
+    SetLossDetectionTimer()
 ~~~
 
 ## On Receiving a Datagram
@@ -1517,13 +1518,13 @@ At the beginning of the connection, initialize the congestion control
 variables as follows:
 
 ~~~
-   congestion_window = kInitialWindow
-   bytes_in_flight = 0
-   congestion_recovery_start_time = 0
-   ssthresh = infinite
-   first_rtt_sample = 0
-   for pn_space in [ Initial, Handshake, ApplicationData ]:
-     ecn_ce_counters[pn_space] = 0
+congestion_window = kInitialWindow
+bytes_in_flight = 0
+congestion_recovery_start_time = 0
+ssthresh = infinite
+first_rtt_sample = 0
+for pn_space in [ Initial, Handshake, ApplicationData ]:
+  ecn_ce_counters[pn_space] = 0
 ~~~
 
 
@@ -1533,8 +1534,8 @@ Whenever a packet is sent, and it contains non-ACK frames, the packet
 increases bytes_in_flight.
 
 ~~~
-   OnPacketSentCC(bytes_sent):
-     bytes_in_flight += bytes_sent
+OnPacketSentCC(bytes_sent):
+  bytes_in_flight += bytes_sent
 ~~~
 
 
@@ -1544,37 +1545,37 @@ Invoked from loss detection's OnAckReceived and is supplied with the
 newly acked_packets from sent_packets.
 
 ~~~
-  InCongestionRecovery(sent_time):
-    return sent_time <= congestion_recovery_start_time
+InCongestionRecovery(sent_time):
+  return sent_time <= congestion_recovery_start_time
 
-  OnPacketsAcked(acked_packets):
-    if (first_rtt_sample == 0):
-      first_rtt_sample = now()
+OnPacketsAcked(acked_packets):
+  if (first_rtt_sample == 0):
+    first_rtt_sample = now()
 
-    for acked_packet in acked_packets:
-      OnPacketAcked(acked_packet)
+  for acked_packet in acked_packets:
+    OnPacketAcked(acked_packet)
 
-  OnPacketAcked(acked_packet):
-    // Remove from bytes_in_flight.
-    bytes_in_flight -= acked_packet.sent_bytes
+OnPacketAcked(acked_packet):
+  // Remove from bytes_in_flight.
+  bytes_in_flight -= acked_packet.sent_bytes
 
-    // Do not increase congestion_window if application
-    // limited or flow control limited.
-    if (IsAppOrFlowControlLimited())
-      return
+  // Do not increase congestion_window if application
+  // limited or flow control limited.
+  if (IsAppOrFlowControlLimited())
+    return
 
-    // Do not increase congestion window in recovery period.
-    if (InCongestionRecovery(acked_packet.time_sent)):
-      return
+  // Do not increase congestion window in recovery period.
+  if (InCongestionRecovery(acked_packet.time_sent)):
+    return
 
-    if (congestion_window < ssthresh):
-      // Slow start.
-      congestion_window += acked_packet.sent_bytes
-    else:
-      // Congestion avoidance.
-      congestion_window +=
-        max_datagram_size * acked_packet.sent_bytes
-        / congestion_window
+  if (congestion_window < ssthresh):
+    // Slow start.
+    congestion_window += acked_packet.sent_bytes
+  else:
+    // Congestion avoidance.
+    congestion_window +=
+      max_datagram_size * acked_packet.sent_bytes
+      / congestion_window
 ~~~
 
 
@@ -1585,16 +1586,16 @@ detected. May start a new recovery period and reduces the congestion
 window.
 
 ~~~
-   OnCongestionEvent(sent_time):
-     // Start a new congestion event if packet was sent after the
-     // start of the previous congestion recovery period.
-     if (!InCongestionRecovery(sent_time)):
-       congestion_recovery_start_time = now()
-       congestion_window *= kLossReductionFactor
-       congestion_window = max(congestion_window, kMinimumWindow)
-       ssthresh = congestion_window
-       // A packet can be sent to speed up loss recovery.
-       MaybeSendOnePacket()
+OnCongestionEvent(sent_time):
+  // Start a new congestion event if packet was sent after the
+  // start of the previous congestion recovery period.
+  if (!InCongestionRecovery(sent_time)):
+    congestion_recovery_start_time = now()
+    congestion_window *= kLossReductionFactor
+    congestion_window = max(congestion_window, kMinimumWindow)
+    ssthresh = congestion_window
+    // A packet can be sent to speed up loss recovery.
+    MaybeSendOnePacket()
 ~~~
 
 
@@ -1603,13 +1604,13 @@ window.
 Invoked when an ACK frame with an ECN section is received from the peer.
 
 ~~~
-   ProcessECN(ack, pn_space):
-     // If the ECN-CE counter reported by the peer has increased,
-     // this could be a new congestion event.
-     if (ack.ce_counter > ecn_ce_counters[pn_space]):
-       ecn_ce_counters[pn_space] = ack.ce_counter
-       sent_time = sent_packets[ack.largest_acked].time_sent
-       OnCongestionEvent(sent_time)
+ProcessECN(ack, pn_space):
+  // If the ECN-CE counter reported by the peer has increased,
+  // this could be a new congestion event.
+  if (ack.ce_counter > ecn_ce_counters[pn_space]):
+    ecn_ce_counters[pn_space] = ack.ce_counter
+    sent_time = sent_packets[ack.largest_acked].time_sent
+    OnCongestionEvent(sent_time)
 ~~~
 
 
