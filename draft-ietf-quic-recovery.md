@@ -1621,7 +1621,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 ~~~
 InPersistentCongestion(lost_packets):
   // Consider lost packets across all packet number spaces.
-  pc_lost += lost_packets
+  pc_lost.append(lost_packets)
 
   // Disregard packets sent prior to getting an RTT sample.
   assert(first_rtt_sample != 0)
