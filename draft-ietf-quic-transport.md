@@ -1776,8 +1776,8 @@ A client MUST NOT use remembered values for the following parameters:
 ack_delay_exponent, max_ack_delay, initial_source_connection_id,
 original_destination_connection_id, preferred_address,
 retry_source_connection_id, and stateless_reset_token. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+server's new values in the handshake instead; if the server does not provide new
+values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
