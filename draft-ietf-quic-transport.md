@@ -3845,6 +3845,10 @@ congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
+Note that supporting ECN requires being able to set and read the ECN codepoints
+from the IP headers of packets carrying QUIC. On platforms where this is not
+possible, QUIC cannot support ECN.
+
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
 path does not support ECN if ECN marked packets get dropped or ECN markings are
