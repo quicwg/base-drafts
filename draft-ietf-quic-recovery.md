@@ -1092,11 +1092,10 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments for packets in the Application Data packet number space. The
-  actual ack_delay in a received ACK frame may be larger due to late timers,
-  reordering, or lost ACK frames. max_ack_delay is initialized to 0 and
-  updated when transport parameters are exchanged. If a peer does not
-  specify max_ack_delay, it is set to 25ms.
+  acknowledgments for packets in the Application Data packet number
+  space, as defined by the eponymous transport parameter (Section 18.2
+  of {{QUIC-TRANSPORT}}). Note that the actual ack_delay in a received
+  ACK frame may be larger due to late timers, reordering, or lost
 
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
