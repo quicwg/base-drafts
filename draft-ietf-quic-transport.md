@@ -1077,7 +1077,8 @@ route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
 failures in the presence of peer connection migration, NAT rebinding, and client
 port reuse. An endpoint MUST NOT use an IP address and port pair for multiple
-connections unless it is certain that those protocol features are not in use.
+connections with zero-length connection IDs, unless it is certain that those
+protocol features are not in use.
 
 When an endpoint uses a non-zero-length connection ID, it needs to ensure that
 the peer has a supply of connection IDs from which to choose for packets sent to
