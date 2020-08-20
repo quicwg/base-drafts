@@ -6390,8 +6390,8 @@ attacks and describes countermeasures that can be implemented by QUIC
 endpoints. These actions are described on the assumption that potential targets
 for request forgery attacks take no action to protect against these attacks.
 While target services are encouraged to implement better protections, such as
-strong authentication that does not rely on implicit signals, the goal of this
-section is to describe mitigations that can be employed unilaterally by a QUIC
+strong authentication that does not rely on implicit signals, this section
+describes mitigations that can be employed unilaterally by a QUIC
 implementation or deployment.
 
 
@@ -6448,9 +6448,9 @@ other types of packet to a destination that does not understand QUIC or is not
 willing to accept a QUIC connection.
 
 Initial packet protection (Section 5.2 of {{QUIC-TLS}}) makes it difficult for
-servers to control the content of Initial packets. A client choosing an
-unpredictable Destination Connection ID ensures that servers are unable to
-control any of the encrypted portion of Initial packets from clients.
+servers to control the content of Initial packets sent by clients. A client
+choosing an unpredictable Destination Connection ID ensures that servers are
+unable to control any of the encrypted portion of Initial packets from clients.
 
 However, the Token field is open to server control and does allow a server to
 use clients to mount request forgery attacks. Use of tokens provided with the
