@@ -1770,8 +1770,8 @@ completes, the client uses the transport parameters established in the
 handshake.  Not all transport parameters are remembered, as some do not apply to
 future connections or they have no effect on use of 0-RTT.
 
-The definition of new transport parameters ({{new-transport-parameters}}) is
-REQUIRED to specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A
+The definition of a new transport parameter ({{new-transport-parameters}}) is
+REQUIRED to specify whether it MUST, MAY, or MUST NOT be stored for 0-RTT. A
 client need not store a transport parameter it cannot process.
 
 A client MUST NOT use remembered values for the following parameters:
