@@ -4358,10 +4358,9 @@ Destination Connection ID Length:
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
   unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
-  Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  Endpoints that receive a version 1 long header with a value larger than 20
+  MUST drop the packet.  In order to properly form a Version Negotiation packet,
+  servers SHOULD be able to read longer connection IDs from other QUIC versions.
 
 Destination Connection ID:
 
@@ -4374,10 +4373,10 @@ Source Connection ID Length:
 : The byte following the Destination Connection ID contains the length in bytes
   of the Source Connection ID field that follows it.  This length is encoded as
   a 8-bit unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20
-  bytes. Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  bytes.  Endpoints that receive a version 1 long header with a value larger
+  than 20 MUST drop the packet.  In order to properly form a Version Negotiation
+  packet, servers SHOULD be able to read longer connection IDs from other QUIC
+  versions.
 
 Source Connection ID:
 
@@ -6379,13 +6378,13 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial sender might intentionally send fragments of stream data in
-order to cause disproportionate receive buffer memory commitment and/or
+An adversarial sender might intentionally send fragments of stream data in an
+attempt to cause disproportionate receive buffer memory commitment and/or
 creation of a large and inefficient data structure.
 
-An adversarial receiver might intentionally not acknowledge packets
-containing stream data in order to force the sender to store the
-unacknowledged stream data for retransmission.
+An adversarial receiver might intentionally not acknowledge packets containing
+stream data in an attempt to force the sender to store the unacknowledged stream
+data for retransmission.
 
 The attack on receivers is mitigated if flow control windows correspond to
 available memory.  However, some receivers will over-commit memory and
