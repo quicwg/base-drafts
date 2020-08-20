@@ -348,6 +348,11 @@ acknowledgement delays are likely to be non-repeating and limited to the
 handshake. The endpoint can therefore use them without limiting them to the
 max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
 
+Ignoring max_ack_delay at the beginning of the connection can lead to a
+substantially inflated smoothed_rtt. Therefore, prior to handshake confirmation,
+an endpoint MAY ignore RTT samples if subtracting the acknowledgement delay
+causes the sample to be less than the min_rtt.
+
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than the peer's max_ack_delay are attributed to
 unintentional but potentially repeating delays, such as scheduler latency at the
