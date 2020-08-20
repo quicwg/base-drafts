@@ -1245,6 +1245,7 @@ UpdateRtt(ack_delay):
   // min_rtt ignores ack delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay
+  // Note that ack_delay is 0 for Initial and Handshake.
   ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for ack delay if plausible.
   adjusted_rtt = latest_rtt
