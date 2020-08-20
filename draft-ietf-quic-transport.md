@@ -1465,8 +1465,9 @@ properties:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-An endpoint verifies support for Explicit Congestion Notification (ECN) in the
-first packets it sends, as described in {{ecn-validation}}.
+An endpoint verifies support for Explicit Congestion Notification (ECN) by
+observing whether the ACK frames acknowledging the first packets it sends carry
+ECN counts, as described in {{ecn-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces
 ({{packet-numbers}}).  The offsets used by CRYPTO frames to ensure ordered
