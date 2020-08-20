@@ -1130,7 +1130,6 @@ follows:
    smoothed_rtt = kInitialRtt
    rttvar = kInitialRtt / 2
    min_rtt = 0
-   max_ack_delay = 0
    for pn_space in [ Initial, Handshake, ApplicationData ]:
      largest_acked_packet[pn_space] = infinite
      time_of_last_ack_eliciting_packet[pn_space] = 0
