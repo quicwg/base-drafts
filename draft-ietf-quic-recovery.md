@@ -776,11 +776,11 @@ is declared.
 
 ## Congestion Avoidance
 
-Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
-approach that typically increases the congestion window by one maximum datagram
-size per congestion window acknowledged, and MUST NOT increase the congestion
-window faster.  When a loss or ECN-CE marking is detected, the sender MUST
-reduce the congestion window. NewReno halves the congestion window, sets the
+NewReno congestion avoidance uses an Additive Increase Multiplicative Decrease
+(AIMD) approach that typically increases the congestion window by one maximum
+datagram size per congestion window acknowledged, and MUST NOT increase the
+congestion window faster.  When a loss or ECN-CE marking is detected, the sender
+MUST reduce the congestion window. NewReno halves the congestion window, sets the
 slow start threshold to the new congestion window, and then enters the recovery
 period.
 
