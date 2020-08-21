@@ -146,8 +146,8 @@ network path.
 
 Frames are used in QUIC to communicate between endpoints.  One or more frames
 are assembled into packets.  QUIC authenticates all packets and encrypts as much
-as is practical.  QUIC packets are carried in UDP datagrams to better facilitate
-deployment in existing systems and networks.
+as is practical.  QUIC packets are conventionally carried in UDP datagrams to
+better facilitate deployment in existing systems and networks.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
@@ -213,8 +213,9 @@ QUIC:
 
 QUIC packet:
 
-: A complete processable unit of QUIC that can be encapsulated in a UDP
-  datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
+: A complete processable unit of QUIC that can be encapsulated in a datagram of
+  the underlying transport protocol (typically, UDP).  Multiple QUIC packets can
+  be encapsulated in a single datagram.
 
 Ack-eliciting Packet:
 
@@ -245,8 +246,10 @@ Server:
 
 Address:
 
-: When used without qualification, the tuple of IP version, IP address, and UDP
-  port number that represents one end of a network path.
+: When used without qualification, the address used by the underlying transport
+  to represent one end of a network path. For example, in the common case that
+  the underlying transport is UDP, it is a tuple of IP version, IP address, and
+  UDP port number.
 
 Connection ID:
 
@@ -263,6 +266,17 @@ Application:
 
 : An entity that uses QUIC to send and receive data.
 
+Underlying transport protocol:
+
+: The underlying protocol with which QUIC packet are sent.  The underlying
+  transport protocol is conventionally UDP over IP.
+
+Underlying transport datagram:
+
+: A message of the underlying transport protocol, which when used by QUIC will
+  contain multiple QUIC packets. Calling this a "datagram" and not a "packet"
+  emphasizes the message-oriented nature of the underlying transport, and helps
+  distinguish these from QUIC packets.
 
 ## Notational Conventions
 
@@ -611,7 +625,7 @@ by the sender.
    +-------+ Recv RESET_STREAM +-------+
    | Data  |--- (optional) --->| Reset |
    | Recvd |  Recv All Data    | Recvd |
-   +-------+<-- (optional) ----+-------+
+   +-------+<-- (optional) ----|-------+
        |                           |
        | App Read All Data         | App Read RST
        v                           v
@@ -1043,7 +1057,7 @@ selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP) do not cause packets for a QUIC
+at lower protocol layers (e.g. UDP, IP) do not cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
 deployment-specific) method that will allow packets with that connection ID to
@@ -1349,9 +1363,9 @@ response to each packet that might initiate a new connection; see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD pad the first UDP datagram they send to the largest of the minimum
-datagram sizes from all versions they support. This ensures that the server
-responds if there is a mutually supported version.
+SHOULD pad the first underlying-protocol datagram they send to the largest of
+the minimum datagram sizes from all versions they support. This ensures that the
+server responds if there is a mutually supported version.
 
 
 ## Sending Version Negotiation Packets {#send-vn}
@@ -1513,11 +1527,12 @@ the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
 Multiple QUIC packets -- even of different packet types -- can be coalesced into
-a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake may
-consist of as few as 4 UDP datagrams, or any number more (subject to limits
-inherent to the protocol, such as congestion control or anti-amplification).
-For instance, the server's first flight contains Initial packets, Handshake
-packets, and "0.5-RTT data" in 1-RTT packets with a short header.
+a single underlying-transport datagram; see {{packet-coalesce}}. As a result,
+this handshake may consist of as few as 4 underlying-transport datagrams, or any
+number more (subject to limits inherent to QUIC, such as congestion control or
+anti-amplification). For instance, the server's first flight contains Initial
+packets, Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short
+header.
 
 ~~~~
 Client                                                  Server
@@ -1902,10 +1917,12 @@ that are uniquely attributed to a single connection. This includes datagrams
 that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
-Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding padding to packets in the datagram as
-necessary. A client that sends padded datagrams allows the server to send more
-data prior to completing address validation.
+Clients MUST ensure that underlying transports datagrams containing Initial
+packets have payloads of at least 1200 bytes, adding padding to packets in the
+datagram as necessary. (The payload is the assembled QUIC packets, and does not
+include any headers associated with the underlying protocol that are also part
+of the datagram.) A client that sends padded datagrams allows the server to send
+more data prior to completing address validation.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
@@ -1915,8 +1932,8 @@ the client has no reason to send additional packets, the server will be unable
 to send more data because it has not validated the client's address. To prevent
 this deadlock, clients MUST send a packet on a probe timeout (PTO, see Section
 6.2 of {{QUIC-RECOVERY}}). Specifically, the client MUST send an Initial packet
-in a UDP datagram that contains at least 1200 bytes if it does not have
-Handshake keys, and otherwise send a Handshake packet.
+in a underlying protocol datagram that contains at least 1200 bytes if it does
+not have Handshake keys, and otherwise send a Handshake packet.
 
 A server might wish to validate the client address before starting the
 cryptographic handshake. QUIC uses a token in the Initial packet to provide
@@ -2526,13 +2543,16 @@ routing of packets across multiple network paths will also allow activity on
 those paths to be linked by entities other than the peer.
 
 A client might wish to reduce linkability by employing a new connection ID and
-source UDP port when sending traffic after a period of inactivity.  Changing the
-UDP port from which it sends packets at the same time might cause the packet to
-appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that do not experience NAT rebindings
-or genuine migrations.  Changing port number can cause a peer to reset its
-congestion state (see {{migration-cc}}), so the port SHOULD only be changed
-infrequently.
+source address when sending traffic after a period of inactivity.  (In
+conventional situations using UDP, the client cannot freely vary the IP address,
+but can much more readily change the UDP port.  Since an address for QUIC when
+using UDP is the tuple of the IP address and UDP port, changing the source port
+along constitutes changing the QUIC address.) So changing the address from which
+it sends packets at the same time might cause the packet to appear as a
+connection migration.  This ensures that the mechanisms that support migration
+are exercised even for clients that do not experience NAT rebindings or genuine
+migrations.  Changing port number can cause a peer to reset its congestion state
+(see {{migration-cc}}), so the port SHOULD only be changed infrequently.
 
 An endpoint that exhausts available connection IDs cannot probe new paths or
 initiate migration, nor can it respond to probes or attempts by its peer to
@@ -2641,15 +2661,17 @@ Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
 in compliance with {{!RFC6437}}, unless the local API does not allow
 setting IPv6 flow labels.
 
-The IPv6 flow label SHOULD be a pseudo-random function of the source and
-destination addresses, source and destination UDP ports, and the Destination
-Connection ID field.  The flow label generation MUST be designed to minimize the
+The flow label generation MUST be designed to minimize the
 chances of linkability with a previously used flow label, as this would enable
 correlating activity on multiple paths; see {{migration-linkability}}.
 
-A possible implementation is to compute the flow label as a cryptographic hash
-function of the source and destination addresses, source and destination
-UDP ports, Destination Connection ID field, and a local secret.
+To that end, the IPv6 flow label SHOULD be a pseudo-random function of the
+overall source and destination addresses, and Destination Connection ID. For
+each of the source and destination addresses that would be the IPv6 address in
+addition to whatever other information makes up the address, which
+conventionally would be the UDP port. A possible implementation compute the flow
+label is a cryptographic hash function of all the above-mentioned parameters and
+also a local secret.
 
 # Connection Termination {#termination}
 
@@ -2725,7 +2747,7 @@ longer than the time negotiated using the max_idle_timeout transport parameter;
 see {{termination}}.  However, state in middleboxes might time out earlier than
 that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
 experience shows that sending packets every 30 seconds is necessary to prevent
-the majority of middleboxes from losing state for UDP flows
+the majority of middleboxes from losing state for underlying-transport flows
 {{?GATEWAY=DOI.10.1145/1879141.1879174}}.
 
 
@@ -2748,7 +2770,7 @@ amount of time before responding to a received packet.
 
 An endpoint is allowed to drop the packet protection keys when entering the
 closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
-response to any UDP datagram that is received.  However, an endpoint without the
+response to any datagram that is received.  However, an endpoint without the
 packet protection keys cannot identify and discard invalid packets.  To avoid
 creating an unwitting amplification attack, such endpoints MUST limit the
 cumulative size of packets containing a CONNECTION_CLOSE frame to 3 times the
@@ -2822,7 +2844,7 @@ the value of the Reason Phrase field and SHOULD use the APPLICATION_ERROR code
 when converting to a CONNECTION_CLOSE of type 0x1c.
 
 CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
-single UDP datagram; see {{packet-coalesce}}.
+single underlying-transport datagram; see {{packet-coalesce}}.
 
 An endpoint can send a CONNECTION_CLOSE frame in an Initial packet.  This might
 be in response to unauthenticated information received in Initial or Handshake
@@ -2879,10 +2901,11 @@ Stateless Reset {
 This design ensures that a stateless reset packet is - to the extent possible -
 indistinguishable from a regular packet with a short header.
 
-A stateless reset uses an entire UDP datagram, starting with the first two bits
-of the packet header.  The remainder of the first byte and an arbitrary number
-of bytes following it are set to values that SHOULD be indistinguishable
-from random.  The last 16 bytes of the datagram contain a Stateless Reset Token.
+A stateless reset uses an entire underlying-transport datagram, starting with
+the first two bits of the packet header.  The remainder of the first byte and an
+arbitrary number of bytes following it are set to values that SHOULD be
+indistinguishable from random.  The last 16 bytes of the datagram contain a
+Stateless Reset Token.
 
 To entities other than its intended recipient, a stateless reset will appear to
 be a packet with a short header.  For the stateless reset to appear as a valid
@@ -2958,14 +2981,14 @@ the packet other than the last 16 bytes for carrying data.
 ### Detecting a Stateless Reset
 
 An endpoint detects a potential stateless reset using the trailing 16 bytes of
-the UDP datagram.  An endpoint remembers all Stateless Reset Tokens associated
-with the connection IDs and remote addresses for datagrams it has recently sent.
-This includes Stateless Reset Tokens from NEW_CONNECTION_ID frames and the
-server's transport parameters but excludes Stateless Reset Tokens associated
-with connection IDs that are either unused or retired.  The endpoint identifies
-a received datagram as a stateless reset by comparing the last 16 bytes of the
-datagram with all Stateless Reset Tokens associated with the remote address on
-which the datagram was received.
+the enclosing datagram.  An endpoint remembers all Stateless Reset Tokens
+associated with the connection IDs and remote addresses for datagrams it has
+recently sent.  This includes Stateless Reset Tokens from NEW_CONNECTION_ID
+frames and the server's transport parameters but excludes Stateless Reset Tokens
+associated with connection IDs that are either unused or retired.  The endpoint
+identifies a received datagram as a stateless reset by comparing the last 16
+bytes of the datagram with all Stateless Reset Tokens associated with the remote
+address on which the datagram was received.
 
 This comparison can be performed for every inbound datagram.  Endpoints MAY skip
 this check if any packet from a datagram is successfully processed.  However,
@@ -3097,9 +3120,10 @@ Disposing of connection state prior to the end of the closing or draining period
 could cause delayed or reordered packets to generate an unnecessary stateless
 reset. Endpoints that have some alternative means to ensure that late-arriving
 packets on the connection do not induce a response, such as those that are able
-to close the UDP socket, MAY use an abbreviated draining period to allow
-for faster resource recovery.  Servers that retain an open socket for accepting
-new connections SHOULD NOT exit the closing or draining period early.
+to close the UDP socket formerly used as the underlying transport, MAY use an
+abbreviated draining period to allow for faster resource recovery.  Servers that
+retain an open socket for accepting new connections SHOULD NOT exit the closing
+or draining period early.
 
 Once the closing or draining period has ended, an endpoint SHOULD discard all
 connection state.  This results in new packets on the connection being handled
@@ -3192,8 +3216,9 @@ prematurely cancelled by either endpoint.
 # Packets and Frames {#packets-frames}
 
 QUIC endpoints communicate by exchanging packets. Packets have confidentiality
-and integrity protection; see {{packet-protected}}. Packets are carried in UDP
-datagrams; see {{packet-coalesce}}.
+and integrity protection; see {{packet-protected}}. Packets are carried in
+datagrams of the underlying transport protocol; see
+{{underlying-transport-protocol}} and {{packet-coalesce}}.
 
 This version of QUIC uses the long packet header during connection
 establishment; see {{long-header}}.  Packets with the long header are Initial
@@ -3204,6 +3229,29 @@ packet with a long header; see {{packet-version}}.
 Packets with the short header are designed for minimal overhead and are used
 after a connection is established and 1-RTT keys are available; see
 {{short-header}}.
+
+## Underlying Transport Protocol {#underlying-transport-protocol}
+
+The underlying protocol is the protocol with which QUIC packet are sent.
+
+This protocol SHOULD NOT have automatic retransmission, ordering, congestion
+control, or other such mechanisms that would overlap with those provided by QUIC
+and therefore not actually enhance the overall quality of service.  This
+protocol SHOULD be message-oriented.
+
+The underlying protocol MUST contain both a source and destination address:
+while the underlying protocol is free to route datagrams by whichever means it
+chooses, and futhermore a source address isn't strictly necessary to route a
+datagram, the QUIC implementation needs to be able to inspect both addresses for
+to implement connection migration.
+
+An underlying datagram MUST correspond to a single IP packet, if it is sent over
+IP.  That means IP fragmentation MUST NOT be used.  When using IPv4
+({{!IPv4=RFC0791}}), the DF bit MUST be set to prevent fragmentation on the
+path.
+
+The underlying transport protocol is conventionally UDP over IP.  Choices other
+than UDP should be considered experimental and might be non-interoperable.
 
 
 ## Protected Packets {#packet-protected}
@@ -3248,30 +3296,30 @@ fields, both of which are confidentiality protected and initially of unknown
 length. The length of the Payload field is learned once header protection is
 removed.
 
-Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
-datagram.  This can reduce the number of UDP datagrams needed to complete the
-cryptographic handshake and start sending data.  This can also be used to
-construct PMTU probes; see {{pmtu-probes-src-cid}}.  Receivers MUST be able to
-process coalesced packets.
+Using the Length field, a sender can coalesce multiple QUIC packets into one
+underlying transport datagram.  This can reduce the number of datagrams needed
+to complete the cryptographic handshake and start sending data.  This can also
+be used to construct PMTU probes; see {{pmtu-probes-src-cid}}.  Receivers MUST
+be able to process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
 receiver will be able to process all the packets in a single pass. A packet
 with a short header does not include a length, so it can only be the last
-packet included in a UDP datagram.  An endpoint SHOULD include multiple frames
+packet included in a datagram.  An endpoint SHOULD include multiple frames
 in a single packet if they are to be sent at the same encryption level, instead
 of coalescing multiple packets at the same encryption level.
 
 Receivers MAY route based on the information in the first packet contained in a
-UDP datagram.  Senders MUST NOT coalesce QUIC packets with different connection
-IDs into a single UDP datagram.  Receivers SHOULD ignore any subsequent packets
+datagram.  Senders MUST NOT coalesce QUIC packets with different connection
+IDs into a single datagram.  Receivers SHOULD ignore any subsequent packets
 with a different Destination Connection ID than the first packet in the
 datagram.
 
-Every QUIC packet that is coalesced into a single UDP datagram is separate and
+Every QUIC packet that is coalesced into a single datagram is separate and
 complete.  The receiver of coalesced QUIC packets MUST individually process each
 QUIC packet and separately acknowledge them, as if they were received as the
-payload of different UDP datagrams.  For example, if decryption fails (because
+payload of different datagrams.  For example, if decryption fails (because
 the keys are not available or any other reason), the receiver MAY either discard
 or buffer the packet for later processing and MUST attempt to process the
 remaining packets.
@@ -3279,7 +3327,7 @@ remaining packets.
 Retry packets ({{packet-retry}}), Version Negotiation packets
 ({{packet-version}}), and packets with a short header ({{short-header}}) do not
 contain a Length field and so cannot be followed by other packets in the same
-UDP datagram.  Note also that there is no situation where a Retry or Version
+datagram.  Note also that there is no situation where a Retry or Version
 Negotiation packet is coalesced with another packet.
 
 
@@ -3842,6 +3890,10 @@ congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
+As {{!RFC3168}} describes the use of ECN for IP, this section assumes the
+underlying transport involves IP packets, and furthermore assumes one datagram
+corresponds to one IP packet. (As always, IP fragmentation is disallowed.)
+
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
 path does not support ECN if ECN marked packets get dropped or ECN markings are
@@ -3873,7 +3925,7 @@ ECN counts.
 Coalesced packets (see {{packet-coalesce}}) mean that several packets can share
 the same IP header.  The ECN counts for the ECN codepoint received in the
 associated IP header are incremented once for each QUIC packet, not per
-enclosing IP packet or UDP datagram.
+enclosing IP packet or datagram.
 
 Each packet number space maintains separate acknowledgement state and separate
 ECN counts.  For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT
@@ -3978,8 +4030,9 @@ later time in the connection.
 
 # Packet Size {#packet-size}
 
-The QUIC packet size includes the QUIC header and protected payload, but not the
-UDP or IP headers.
+The QUIC packet size is just the total size of the QUIC header and protected
+payload. It follows that the sizes of any other headers that are part of the
+underlying datagram and associated with underlying protocols are not counted.
 
 QUIC depends upon a minimum IP packet size of at least 1280 bytes.  This is the
 IPv6 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
@@ -3999,17 +4052,20 @@ known.  However, prior to learning the value of the transport parameter,
 endpoints risk datagrams being lost if they send packets larger than the
 smallest allowed maximum packet size of 1200 bytes.
 
-UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
-({{!IPv4=RFC0791}}), the DF bit MUST be set to prevent fragmentation on the
-path.
+IP fragmentation is prohibited as described in
+{{underlying-transport-protocol}}.
 
+These size restrictions are developed for the UDP + IP case. They MAY by
+violated when using other transports, to the extent that the use of those
+transports is experimental (as is always case per this RFC) and not further
+standardized by other RFCs.
 
 ## Initial Packet Size {#initial-size}
 
-A client MUST expand the payload of all UDP datagrams carrying Initial packets
-to at least the smallest allowed maximum packet size (1200 bytes) by adding
-PADDING frames to the Initial packet or by coalescing the Initial packet; see
-{{packet-coalesce}}.  Sending a UDP datagram of this size ensures that the
+A client MUST expand the payload of all underlying datagrams carrying Initial
+packets to at least the smallest allowed maximum packet size (1200 bytes) by
+adding PADDING frames to the Initial packet or by coalescing the Initial packet;
+see {{packet-coalesce}}.  Sending a datagram of this size ensures that the
 network path from the client to the server supports a reasonable Path Maximum
 Transmission Unit (PMTU).  This also helps reduce the amplitude of amplification
 attacks caused by server responses toward an unverified client address; see
@@ -4018,7 +4074,7 @@ attacks caused by server responses toward an unverified client address; see
 Datagrams containing Initial packets MAY exceed 1200 bytes if the client
 believes that the network path and peer both support the size that it chooses.
 
-A server MUST discard an Initial packet that is carried in a UDP datagram with a
+A server MUST discard an Initial packet that is carried in a datagram with a
 payload that is less than the smallest allowed maximum packet size of 1200
 bytes.  A server MAY also immediately close the connection by sending a
 CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
@@ -4030,12 +4086,16 @@ address of the client; see {{address-validation}}.
 
 ## Path Maximum Transmission Unit
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-packet including the IP header, UDP header, and UDP payload.  The UDP payload
-includes the QUIC packet header, protected payload, and any authentication
-fields.  The PMTU can depend on path characteristics, and can therefore change
-over time.  The largest UDP payload an endpoint sends at any given time is
-referred to as the endpoint's maximum packet size.
+The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire
+underlying packet, including underlying protocol headers. In the conventional
+case of UDP over IP, this includes the IP header, UDP header, and UDP payload.
+The UDP payload in turn includes the QUIC packet header, protected payload, and
+any authentication fields.  The PMTU can depend on path characteristics, and can
+therefore change over time.
+
+The largest payload an endpoint sends at any given time is referred to as the
+endpoint's maximum packet size. This definition contrasts with the PMTU by not
+counting the size of the underlying headers.
 
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
 whether the path to a destination will support a desired maximum packet size
@@ -4084,9 +4144,13 @@ QUIC endpoints using PMTUD SHOULD validate ICMP messages to protect from
 off-path injection as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}.
 This validation SHOULD use the quoted packet supplied in the payload of an ICMP
 message to associate the message with a corresponding transport connection (see
-Section 4.6.1 of {{!DPLPMTUD}}).  ICMP message validation MUST include matching
-IP addresses and UDP ports ({{!RFC8085}}) and, when possible, connection IDs to
-an active QUIC session.  The endpoint SHOULD ignore all ICMP messages that fail
+Section 4.6.1 of {{!DPLPMTUD}}).  Valid ICMP messages MUST be associated with an
+active QUIC session.  In particular, the addresses associated with the ICMP
+message MUST match that of the active QUIC connection.  (In the conventional
+case, the address for QUIC is the IP address + UDP port, in which case the ICMP
+validation is as described in {{!RFC8085}}.)  Additionally, when it is possible
+to recover the QUIC connection ID from the ICMP packet, it must also match the
+active QUIC connection.  The endpoint SHOULD ignore all ICMP messages that fail
 validation.
 
 An endpoint MUST NOT increase PMTU based on ICMP messages; see Section 3, clause
@@ -4129,9 +4193,10 @@ DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section
 
 An endpoint using DPLPMTUD requires the validation of any received ICMP Packet
 Too Big (PTB) message before using the PTB information, as defined in Section
-4.6 of {{!DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an
-ICMP message by using other PL information (e.g., validation of connection IDs
-in the quoted packet of any received ICMP message).
+4.6 of {{!DPLPMTUD}}.  Besides validating the rest of the source and destination
+addresses (e.g. UDP ports in addition to IP addresses), QUIC validates an ICMP
+message by using other PL information (e.g., validation of connection IDs in the
+quoted packet of any received ICMP message).
 
 The considerations for processing ICMP messages described in {{pmtud}} also
 apply if these messages are used by DPLPMTUD.
@@ -4161,12 +4226,13 @@ acknowledged by the peer once the handshake is complete.
 
 One way to construct a PMTU probe is to coalesce (see {{packet-coalesce}}) a
 packet with a long header, such as a Handshake or 0-RTT packet
-({{long-header}}), with a short header packet in a single UDP datagram.  If the
-resulting PMTU probe reaches the endpoint, the packet with the long header will
-be ignored, but the short header packet will be acknowledged.  If the PMTU probe
-causes an ICMP message to be sent, the first part of the probe will be quoted in
-that message.  If the Source Connection ID field is within the quoted portion of
-the probe, that could be used for routing or validation of the ICMP message.
+({{long-header}}), with a short header packet in a single underlying transport
+datagram.  If the resulting PMTU probe reaches the endpoint, the packet with the
+long header will be ignored, but the short header packet will be acknowledged.
+If the PMTU probe causes an ICMP message to be sent, the first part of the probe
+will be quoted in that message.  If the Source Connection ID field is within the
+quoted portion of the probe, that could be used for routing or validation of the
+ICMP message.
 
 Note:
 : The purpose of using a packet with a long header is only to ensure that the
@@ -4492,10 +4558,10 @@ to a packet that indicates an unsupported version; see {{server-pkt-handling}}.
 
 The Version Negotiation packet does not include the Packet Number and Length
 fields present in other packets that use the long header form.  Consequently,
-a Version Negotiation packet consumes an entire UDP datagram.
+a Version Negotiation packet consumes an entire underlying transport datagram.
 
 A server MUST NOT send more than one Version Negotiation packet in response to a
-single UDP datagram.
+single datagram.
 
 See {{version-negotiation}} for a description of the version negotiation
 process.
@@ -4750,8 +4816,8 @@ ID field of subsequent packets that it sends.
 A server MAY send Retry packets in response to Initial and 0-RTT packets.  A
 server can either discard or buffer 0-RTT packets that it receives.  A server
 can send multiple Retry packets as it receives Initial or 0-RTT packets.  A
-server MUST NOT send more than one Retry packet in response to a single UDP
-datagram.
+server MUST NOT send more than one Retry packet in response to a single
+underlying transport datagram.
 
 
 #### Handling a Retry Packet
@@ -5028,9 +5094,9 @@ stateless_reset_token (0x02):
 max_udp_payload_size (0x03):
 
 : The maximum UDP payload size parameter is an integer value that limits the
-  size of UDP payloads that the endpoint is willing to receive.  UDP packets
-  with payloads larger than this limit are not likely to be processed by the
-  receiver.
+  size of underlying datagram payloads that the endpoint is willing to receive.
+  Datagrams with payloads larger than this limit are not likely to be processed
+  by the receiver.
 
 : The default for this parameter is the maximum permitted UDP payload of 65527.
   Values below 1200 are invalid.
@@ -6638,12 +6704,13 @@ endpoint.  Packet protection ensures that the packet payloads can only be
 processed by the endpoints that completed the handshake, and invalid
 packets are ignored by those endpoints.
 
-An attacker can also modify the boundaries between packets and UDP datagrams,
-causing multiple packets to be coalesced into a single datagram, or splitting
-coalesced packets into multiple datagrams. Aside from datagrams containing
-Initial packets, which require padding, modification of how packets are
-arranged in datagrams has no functional effect on a connection, although it
-might change some performance characteristics.
+An attacker can also modify the boundaries between packets and their grouping
+into underlying transport datagrams, causing multiple packets to be coalesced
+into a single datagram, or splitting coalesced packets into multiple
+datagrams. Aside from datagrams containing Initial packets, which require
+padding, modification of how packets are arranged in datagrams has no functional
+effect on a connection, although it might change some performance
+characteristics.
 
 
 ### Connection Migration {#migration-properties}
@@ -6669,7 +6736,7 @@ attacker to establish connectivity on a given path.
 An on-path attacker can:
 
 - Inspect packets
-- Modify IP and UDP packet headers
+- Modify underlying transport headers (e.g. UDP and IP headers)
 - Inject new packets
 - Delay packets
 - Reorder packets
