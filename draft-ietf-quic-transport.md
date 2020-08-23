@@ -5028,7 +5028,7 @@ stateless_reset_token (0x02):
 max_udp_payload_size (0x03):
 
 : The maximum UDP payload size parameter is an integer value that limits the
-  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  size of UDP payloads that the endpoint is willing to receive.  UDP datagrams
   with payloads larger than this limit are not likely to be processed by the
   receiver.
 
