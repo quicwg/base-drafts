@@ -1076,7 +1076,7 @@ A zero-length connection ID can be used when a connection ID is not needed to
 route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
 failures in the presence of peer connection migration, NAT rebinding, and client
-port reuse. An endpoint MUST NOT use an IP address and port pair for multiple
+port reuse. An endpoint MUST NOT use the same IP address and port for multiple
 connections with zero-length connection IDs, unless it is certain that those
 protocol features are not in use.
 
