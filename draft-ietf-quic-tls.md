@@ -167,7 +167,7 @@ Layer     |                      Records                      |
 Each Handshake layer message (e.g., Handshake, Alerts, and Application Data) is
 carried as a series of typed TLS records by the Record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
-transport (typically TCP) which provides sequencing and guaranteed delivery.
+transport (typically TCP), which provides sequencing and guaranteed delivery.
 
 The TLS authenticated key exchange occurs between two endpoints: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -187,11 +187,11 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake in which the client is able to send Application Data
+ * A full 1-RTT handshake, in which the client is able to send Application Data
    after one round trip and the server immediately responds after receiving the
    first handshake message from the client.
 
- * A 0-RTT handshake in which the client uses information it has previously
+ * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
    Application Data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
@@ -306,9 +306,9 @@ protection being called out specially.
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
 
-Unlike TLS over TCP, QUIC applications which want to send data do not send it
+Unlike TLS over TCP, QUIC applications that want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
-frames or other frame types which are then carried in QUIC packets.
+frames or other frame types, which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
@@ -341,7 +341,7 @@ data packet number space:
   number space.
 
 - ACK frames MAY appear in any packet number space, but can only acknowledge
-  packets which appeared in that packet number space.  However, as noted below,
+  packets that appeared in that packet number space.  However, as noted below,
   0-RTT packets cannot contain ACK frames.
 
 - All other frame types MUST only be sent in the application data packet number
@@ -459,7 +459,7 @@ network, it proceeds as follows:
   process is that new data is available, then it is delivered to TLS in order.
 
 - If the packet is from a previously installed encryption level, it MUST NOT
-  contain data which extends past the end of previously received data in that
+  contain data that extends past the end of previously received data in that
   flow. Implementations MUST treat any violations of this requirement as a
   connection error of type PROTOCOL_VIOLATION.
 
@@ -895,7 +895,29 @@ keeping track of missing packet numbers.
 # Packet Protection {#packet-protection}
 
 As with TLS over TCP, QUIC protects packets with keys derived from the TLS
-handshake, using the AEAD algorithm negotiated by TLS.
+handshake, using the AEAD algorithm {{!AEAD}} negotiated by TLS.
+
+QUIC packets have varying protections depending on their type:
+
+* Version Negotiation packets have no cryptographic protection.
+
+* Retry packets use AEAD_AES_128_GCM to provide protection against accidental
+  modification or insertion by off-path adversaries; see
+  {{retry-integrity}}.
+
+* Initial packets use AEAD_AES_128_GCM with keys derived from the Destination
+  Connection ID field of the first Initial packet sent by the client; see
+  {{initial-secrets}}.
+
+* All other packets have strong cryptographic protections for confidentiality
+  and integrity, using keys and algorithms negotiated by TLS.
+
+This section describes how packet protection is applied to Handshake packets,
+0-RTT packets, and 1-RTT packets. The same packet protection process is applied
+to Initial packets. However, as it is trivial to determine the keys used for
+Initial packets, these packets are not considered to have confidentiality or
+integrity protection. Retry packets use a fixed key and so similarly lack
+confidentiality and integrity protection.
 
 
 ## Packet Protection Keys {#protection-keys}
@@ -923,13 +945,28 @@ KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
 and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
-TLS 1.3 (see {{initial-secrets}}).
+TLS 1.3; see {{initial-secrets}}.
 
 
 ## Initial Secrets {#initial-secrets}
 
-Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's Initial packet. Specifically:
+Initial packets apply the packet protection process, but use a secret derived
+from the Destination Connection ID field from the client's first Initial
+packet.
+
+This secret is determined by using HKDF-Extract (see Section 2.2 of
+{{!HKDF=RFC5869}}) with a salt of 0xafbfec289993d24c9e9786f19c6111e04390a899
+and a IKM of the Destination Connection ID field. This produces an intermediate
+pseudorandom key (PRK) that is used to derive two separate secrets for sending
+and receiving.
+
+The secret used by clients to construct Initial packets uses the PRK and the
+label "client in" as input to the HKDF-Expand-Label function to produce a 32
+byte secret; packets constructed by the server use the same process with the
+label "server in".  The hash function for HKDF when deriving initial secrets
+and keys is SHA-256 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+
+This process in pseudocode is:
 
 ~~~
 initial_salt = 0xafbfec289993d24c9e9786f19c6111e04390a899
@@ -944,24 +981,20 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
                                           Hash.length)
 ~~~
 
-The hash function for HKDF when deriving initial secrets and keys is SHA-256
-{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
-
 The connection ID used with HKDF-Expand-Label is the Destination Connection ID
 in the Initial packet sent by the client.  This will be a randomly-selected
 value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
-The value of initial_salt is a 20-byte sequence shown in the figure in
-hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
-thus ensuring that the keys are different for each version of QUIC. This
-prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of packets from future versions.
+Future versions of QUIC SHOULD generate a new salt value, thus ensuring that
+the keys are different for each version of QUIC.  This prevents a middlebox that
+recognizes only one version of QUIC from seeing or modifying the contents of
+packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for protecting Initial packets change when a server sends a
+The secrets used for constructing Initial packets change when a server sends a
 Retry packet to use the connection ID value selected by the server.  The secrets
 do not change when a client changes the Destination Connection ID it uses in
 response to an Initial packet from the server.
@@ -974,7 +1007,7 @@ Note:
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
-{{test-vectors}} contains test vectors for packet encryption.
+{{test-vectors}} contains sample Initial packets.
 
 
 ## AEAD Usage {#aead}
@@ -983,19 +1016,6 @@ The Authenticated Encryption with Associated Data (AEAD; see {{!AEAD}}) function
 used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256 cipher
 suite, the AEAD_AES_128_GCM function is used.
-
-Packets are protected prior to applying header protection ({{header-protect}}).
-The unprotected packet header is part of the associated data (A).  When removing
-packet protection, an endpoint first removes the header protection.
-
-All QUIC packets other than Version Negotiation are protected with an AEAD
-algorithm ({{!AEAD}}). Prior to establishing a shared secret, packets are
-protected with AEAD_AES_128_GCM.  Retry packets use the AEAD for integrity
-protection only, as described in {{retry-integrity}}.  Initial packets use a key
-derived from the Destination Connection ID in the client's first Initial packet;
-see {{initial-secrets}}. This provides protection against off-path attackers
-and robustness against QUIC-version-unaware middleboxes, but not against on-path
-attackers.
 
 QUIC can use any of the cipher suites defined in {{!TLS13}} with the exception
 of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
@@ -1009,6 +1029,11 @@ Note:
 : An endpoint MUST NOT reject a ClientHello that offers a cipher suite that it
   does not support, or it would be impossible to deploy a new cipher suite.
   This also applies to TLS_AES_128_CCM_8_SHA256.
+
+When constructing packets, the AEAD function is applied prior to applying
+header protection; see {{header-protect}}. The unprotected packet header is part
+of the associated data (A). When processing packets, an endpoint first
+removes the header protection.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -1061,7 +1086,7 @@ Header protection is applied after packet protection is applied (see {{aead}}).
 The ciphertext of the packet is sampled and used as input to an encryption
 algorithm.  The algorithm used depends on the negotiated AEAD.
 
-The output of this algorithm is a 5-byte mask which is applied to the protected
+The output of this algorithm is a 5-byte mask that is applied to the protected
 header fields using exclusive OR.  The least significant bits of the first byte
 of the packet are masked by the least significant bits of the first mask byte,
 and the packet number is masked with the remaining bytes.  Any unused bytes of
@@ -1298,8 +1323,8 @@ handshake messages from a client, it is missing assurances on the client state:
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
 
-Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
-the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+Therefore, the server's use of 1-RTT keys before the handshake is complete is
+limited to sending data.  A server MUST NOT process incoming 1-RTT protected
 packets before the TLS handshake is complete.  Because sending acknowledgments
 indicates that all frames in a packet have been processed, a server cannot send
 acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
@@ -1322,6 +1347,10 @@ acknowledged.  This enables immediate server processing for those packets.
 A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
+
+A client generally receives 1-RTT keys at the same time as the handshake
+completes.  Even if it has 1-RTT secrets, a client MUST NOT process
+incoming 1-RTT protected packets before the TLS handshake is complete.
 
 
 ## Retry Packet Integrity {#retry-integrity}
@@ -1668,7 +1697,7 @@ For example, an attacker could inject a packet containing an ACK frame that
 makes it appear that a packet had not been received or to create a false
 impression of the state of the connection (e.g., by modifying the ACK Delay).
 Note that such a packet could cause a legitimate packet to be dropped as a
-duplicate.  Implementations SHOULD use caution in relying on any data which is
+duplicate.  Implementations SHOULD use caution in relying on any data that is
 contained in Initial packets that is not otherwise authenticated.
 
 It is also possible for the attacker to tamper with data that is carried in
@@ -1853,7 +1882,7 @@ limit the level of amplification.
 ## Header Protection Analysis {#header-protect-analysis}
 
 {{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
-algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection uses the output of the packet
 protection AEAD to derive `sample`, and then encrypts the header field using
@@ -1890,7 +1919,7 @@ can only be detected once the packet protection is removed.
 
 An attacker could guess values for packet numbers or Key Phase and have an
 endpoint confirm guesses through timing side channels.  Similarly, guesses for
-the packet number length can be trialed and exposed.  If the recipient of a
+the packet number length can be tried and exposed.  If the recipient of a
 packet discards packets with duplicate packet numbers without attempting to
 remove packet protection they could reveal through timing side-channels that the
 packet number matches a received packet.  For authentication to be free from
