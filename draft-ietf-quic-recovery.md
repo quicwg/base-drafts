@@ -1629,16 +1629,15 @@ InPersistentCongestion(lost_packets):
     if lost.time_sent <= first_rtt_sample:
       pc_lost.remove(lost)
 
-  // Find the largest contiguous set of lost packets that
-  // starts and ends with an ack-eliciting packet.
-  (first, last) = FindLargestContiguousLoss(pc_lost)
+  // Find the duration of the largest contiguous set of lost
+  // packets that starts and ends with an ack-eliciting packet.
+  pc_duration = FindLargestLossPeriod(pc_lost)
 
   // Declare persistent congestion if these packets span
   // a period longer than the persistent congestion period.
   pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
     max_ack_delay
-  pc_period = pto * kPersistentCongestionThreshold
-  return (last.time_sent - first.time_sent) > pc_period
+  return pc_duration > pto * kPersistentCongestionThreshold
 
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
