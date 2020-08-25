@@ -4783,13 +4783,18 @@ acknowledged by a client.
 
 #### Continuing a Handshake After Retry {#retry-continue}
 
-The next Initial packet from the client uses the connection ID and token values
-from the Retry packet; see {{negotiating-connection-ids}}.  Aside from this,
-the Initial packet sent by the client is subject to the same restrictions as the
-first Initial packet.  A client MUST use the same cryptographic handshake
-message it included in this packet.  A server MAY treat a packet that
-contains a different cryptographic handshake message as a connection error or
-discard it.
+Subsequent Initial packets from the client include the connection ID and token
+values from the Retry packet. The client copies the Source Connection ID field
+from the Retry packet to the Destination Connection ID field and uses this
+value until an Initial packet with an updated value is received; see
+{{negotiating-connection-ids}}. The value of the Token field is copied to all
+subsequent Initial packets; see {{validate-retry}}.
+
+Other than updating the Destination Connection ID and Token fields, the Initial
+packet sent by the client is subject to the same restrictions as the first
+Initial packet.  A client MUST use the same cryptographic handshake message it
+included in this packet.  A server MAY treat a packet that contains a different
+cryptographic handshake message as a connection error or discard it.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client MUST NOT change
