@@ -2174,8 +2174,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 ## Path Validation Responses
 
-On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
-echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
+endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+frame unless constrained by congestion control.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
