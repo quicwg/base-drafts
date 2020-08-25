@@ -1631,6 +1631,8 @@ InPersistentCongestion(lost_packets):
 
   // Find the duration of the largest contiguous set of lost
   // packets that starts and ends with an ack-eliciting packet.
+  // Note: Indexing pc_lost by time_sent rather than packet
+  // number might simplify implementation.
   pc_duration = FindLargestLossPeriod(pc_lost)
 
   // Declare persistent congestion if these packets span
