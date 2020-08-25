@@ -1773,7 +1773,7 @@ handshake.  Not all transport parameters are remembered, as some do not apply to
 future connections or they have no effect on use of 0-RTT.
 
 The definition of a new transport parameter ({{new-transport-parameters}}) MUST
-specify whether that storing the transport parameter for 0-RTT is mandatory,
+specify whether storing the transport parameter for 0-RTT is mandatory,
 optional, or prohibited. A client need not store a transport parameter it cannot
 process.
 
