@@ -1491,7 +1491,7 @@ The payload consists of:
 
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
-  ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
+  ID is used in push stream headers ({{server-push}}) and CANCEL_PUSH frames
   ({{frame-cancel-push}}).
 
 Encoded Field Section:
