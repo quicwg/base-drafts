@@ -541,8 +541,8 @@ might take longer to respond to packets during the handshake than otherwise.  To
 protect such a server from repeated client probes, the PTO backoff is not reset
 at a client that is not yet certain that the server has finished validating the
 client's address. That is, a client does not reset the PTO backoff factor on
-receiving acknowledgements until it receives a HANDSHAKE_DONE frame or an
-acknowledgement for one of its Handshake or 1-RTT packets.
+receiving acknowledgements until the handshake is confirmed; see Section 4.1.2
+of {{QUIC-TLS}}.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
@@ -594,10 +594,10 @@ client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
 probe timer if the client has not received an acknowledgement for one of its
-Handshake or 1-RTT packets and has not received a HANDSHAKE_DONE frame,
-even if there are no packets in flight. When the PTO fires, the client MUST
-send a Handshake packet if it has Handshake keys, otherwise it MUST
-send an Initial packet in a UDP datagram of at least 1200 bytes.
+Handshake packets and the handshake is not confirmed (see Section 4.1.2 of
+{{QUIC-TLS}}), even if there are no packets in flight.  When the PTO fires,
+the client MUST send a Handshake packet if it has Handshake keys, otherwise it
+MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
 
 ### Speeding Up Handshake Completion
 
@@ -1331,8 +1331,7 @@ PeerCompletedAddressValidation():
   // Servers complete address validation when a
   // protected packet is received.
   return has received Handshake ACK ||
-       has received 1-RTT ACK ||
-       has received HANDSHAKE_DONE
+       handshake confirmed
 
 SetLossDetectionTimer():
   earliest_loss_time, _ = GetLossTimeAndSpace()
