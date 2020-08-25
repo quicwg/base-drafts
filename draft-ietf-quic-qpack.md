@@ -106,12 +106,12 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-The QUIC transport protocol {{QUIC-TRANSPORT}} is designed to support HTTP
-semantics, and its design subsumes many of the features of HTTP/2 {{?RFC7540}}.
-HTTP/2 uses HPACK {{!RFC7541}} for compression of the header and trailer
-sections.  If HPACK were used for HTTP/3 {{HTTP3}}, it would induce head-of-line
-blocking for field sections due to built-in assumptions of a total ordering
-across frames on all streams.
+The QUIC transport protocol ({{QUIC-TRANSPORT}}) is designed to support HTTP
+semantics, and its design subsumes many of the features of HTTP/2
+({{?RFC7540}}). HTTP/2 uses HPACK ({{!RFC7541}}) for compression of the header
+and trailer sections.  If HPACK were used for HTTP/3 ({{HTTP3}}), it would
+induce head-of-line blocking for field sections due to built-in assumptions of a
+total ordering across frames on all streams.
 
 QPACK reuses core concepts from HPACK, but is redesigned to allow correctness in
 the presence of out-of-order delivery, with flexibility for implementations to
@@ -453,8 +453,8 @@ addressed.
 
 ## Static Table {#header-table-static}
 
-The static table consists of a predefined static list of field lines, each of
-which has a fixed index over time.  Its entries are defined in {{static-table}}.
+The static table consists of a predefined list of field lines, each of which has
+a fixed index over time.  Its entries are defined in {{static-table}}.
 
 All entries in the static table have a name and a value.  However, values can be
 empty (that is, have a length of 0).  Each entry is identified by a unique
@@ -524,7 +524,7 @@ To bound the memory requirements of the decoder, the decoder limits the maximum
 value the encoder is permitted to set for the dynamic table capacity.  In
 HTTP/3, this limit is determined by the value of
 SETTINGS_QPACK_MAX_TABLE_CAPACITY sent by the decoder; see {{configuration}}.
-The encoder MUST not set a dynamic table capacity that exceeds this maximum, but
+The encoder MUST NOT set a dynamic table capacity that exceeds this maximum, but
 it can choose to use a lower dynamic table capacity; see
 {{set-dynamic-capacity}}.
 
@@ -656,7 +656,7 @@ is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer,
 and finally Length bytes of data. When Huffman encoding is enabled, the Huffman
 table from Appendix B of [RFC7541] is used without modification.
 
-This document expands the definition of string literals and permits them to
+This document expands the definition of string literals by permitting them to
 begin other than on a byte boundary.  An "N-bit prefix string literal" begins
 with the same Huffman flag, followed by the length encoded as an (N-1)-bit
 prefix integer.  The prefix size, N, can have a value between 2 and 8 inclusive.
@@ -684,9 +684,9 @@ type H3_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
 either unidirectional stream type MUST be treated as a connection error of type
 H3_CLOSED_CRITICAL_STREAM.
 
-An endpoint MAY avoid creating an encoder stream if it's not going to be used
-(for example if its encoder does not wish to use the dynamic table, or if the
-maximum size of the dynamic table permitted by the peer is zero).
+An endpoint MAY avoid creating an encoder stream if it will not be used (for
+example if its encoder does not wish to use the dynamic table, or if the maximum
+size of the dynamic table permitted by the peer is zero).
 
 An endpoint MAY avoid creating a decoder stream if its decoder sets the maximum
 capacity of the dynamic table to zero.
@@ -703,8 +703,6 @@ The name can be transmitted as a reference to an existing entry in the static or
 the dynamic table or as a string literal.  For entries that already exist in
 the dynamic table, the full entry can also be used by reference, creating a
 duplicate entry.
-
-This section specifies the following encoder instructions.
 
 ### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
@@ -810,8 +808,6 @@ A decoder sends decoder instructions on the decoder stream to inform the encoder
 about the processing of field sections and table updates to ensure consistency
 of the dynamic table.
 
-This section specifies the following decoder instructions.
-
 ### Section Acknowledgement {#header-acknowledgement}
 
 After processing an encoded field section whose declared Required Insert Count
@@ -833,7 +829,7 @@ in {{state-synchronization}}.
 
 If an encoder receives a Section Acknowledgement instruction referring to a
 stream on which every encoded field section with a non-zero Required Insert
-Count has already been acknowledged, that MUST be treated as a connection error
+Count has already been acknowledged, this MUST be treated as a connection error
 of type QPACK_DECODER_STREAM_ERROR.
 
 The Section Acknowledgement instruction might increase the Known Received Count;
@@ -892,8 +888,8 @@ protocol.
 ### Encoded Field Section Prefix {#header-prefix}
 
 Each encoded field section is prefixed with two integers.  The Required Insert
-Count is encoded as an integer with an 8-bit prefix after the encoding described
-in {{ric}}).  The Base is encoded as a sign bit ('S') and a Delta Base value
+Count is encoded as an integer with an 8-bit prefix using the encoding described
+in {{ric}}.  The Base is encoded as a sign bit ('S') and a Delta Base value
 with a 7-bit prefix; see {{base}}.
 
 ~~~~~~~~~~  drawing
@@ -998,12 +994,12 @@ That is:
 
 A single-pass encoder determines the Base before encoding a field section.  If
 the encoder inserted entries in the dynamic table while encoding the field
-section, Required Insert Count will be greater than the Base, so the encoded
-difference is negative and the sign bit is set to 1.  If the field section was
-not encoded using representations that reference the most recent entry in the
-table and did not insert any new entries, the Base will be greater than the
-Required Insert Count, so the delta will be positive and the sign bit is set to
-0.
+section and is referencing them, Required Insert Count will be greater than the
+Base, so the encoded difference is negative and the sign bit is set to 1.  If
+the field section was not encoded using representations that reference the most
+recent entry in the table and did not insert any new entries, the Base will be
+greater than the Required Insert Count, so the delta will be positive and the
+sign bit is set to 0.
 
 An encoder that produces table updates before encoding a field section might set
 Base to the value of Required Insert Count.  In such case, both the sign bit and
@@ -1166,7 +1162,7 @@ QPACK defines two settings for the HTTP/3 SETTINGS frame:
 # Error Handling {#error-handling}
 
 The following error codes are defined for HTTP/3 to indicate failures of
-QPACK that prevent the connection from continuing:
+QPACK that prevent the stream or connection from continuing:
 
 QPACK_DECOMPRESSION_FAILED (0x200):
 : The decoder failed to interpret an encoded field section and is not able to
@@ -1216,18 +1212,18 @@ capabilities, potentially only forcing an increased number of guesses to learn
 the length associated with a given guess. Padding schemes also work directly
 against compression by increasing the number of bits that are transmitted.
 
-Attacks like CRIME [CRIME] demonstrated the existence of these general attacker
-capabilities. The specific attack exploited the fact that DEFLATE {{?RFC1951}}
-removes redundancy based on prefix matching. This permitted the attacker to
-confirm guesses a character at a time, reducing an exponential-time attack into
-a linear-time attack.
+Attacks like CRIME ([CRIME]) demonstrated the existence of these general
+attacker capabilities. The specific attack exploited the fact that DEFLATE
+({{?RFC1951}}) removes redundancy based on prefix matching. This permitted the
+attacker to confirm guesses a character at a time, reducing an exponential-time
+attack into a linear-time attack.
 
 ## Applicability to QPACK and HTTP
 
-QPACK mitigates but does not completely prevent attacks modeled on CRIME [CRIME]
-by forcing a guess to match an entire header field value, rather than individual
-characters. An attacker can only learn whether a guess is correct or not, so is
-reduced to a brute force guess for the header field values.
+QPACK mitigates but does not completely prevent attacks modeled on CRIME
+([CRIME]) by forcing a guess to match an entire header field value, rather than
+individual characters. An attacker can only learn whether a guess is correct or
+not, so is reduced to a brute force guess for the header field values.
 
 The viability of recovering specific header field values therefore depends on
 the entropy of values. As a result, values with high entropy are unlikely to be
@@ -1249,7 +1245,7 @@ intermediary either:
    connection toward a client.
 
 Web browsers also need to assume that requests made on the same connection by
-different web origins {{?RFC6454}} are made by mutually distrustful entities.
+different web origins ({{?RFC6454}}) are made by mutually distrustful entities.
 
 ## Mitigation
 
@@ -1291,20 +1287,20 @@ field value. Disabling access to the dynamic table for a header field might
 occur for shorter values more quickly or with higher probability than for longer
 values.
 
-## Never Indexed Literals
+## Never-Indexed Literals
 
 Implementations can also choose to protect sensitive header fields by not
 compressing them and instead encoding their value as literals.
 
 Refusing to insert a header field into the dynamic table is only
-effective if doing so is avoided on all hops. The never indexed literal bit (see
+effective if doing so is avoided on all hops. The never-indexed literal bit (see
 {{literal-name-reference}}) can be used to signal to intermediaries that a
 particular value was intentionally sent as a literal.
 
 An intermediary MUST NOT re-encode a value that uses a literal representation
 with the 'N' bit set with another representation that would index it. If QPACK
 is used for re-encoding, a literal representation with the 'N' bit set MUST be
-used.  If HPACK is used for re-encoding, the never indexed literal
+used.  If HPACK is used for re-encoding, the never-indexed literal
 representation (see Section 6.2.3 of [RFC7541]) MUST be used.
 
 The choice to mark that a header field should never be indexed
@@ -1323,7 +1319,7 @@ field does not commonly vary between requests and is sent to any server. In that
 case, confirmation that a particular User-Agent value has been used provides
 little value.
 
-Note that these criteria for deciding to use a never indexed literal
+Note that these criteria for deciding to use a never-indexed literal
 representation will evolve over time as new attacks are discovered.
 
 ## Static Huffman Encoding
@@ -1362,9 +1358,14 @@ allows (see {{eviction}}).
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
 HTTP/3, this is realized by setting an appropriate value for the
-QPACK_BLOCKED_STREAMS parameter.  An encoder can limit the amount of state
-memory by only using as many blocked streams as it wishes to support; no
-signaling to the decoder is required.
+QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked consume no
+additional state memory on the encoder.
+
+An encoder allocates memory to track all dynamic table references in
+unacknowledged field sections.  An implementation can directly limit the amount
+of state memory by only using as many references to the dynamic table as it
+wishes to track; no signaling to the decoder is required.  However, limiting
+references to the dynamic table will reduce compression effectiveness.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
 by processing header fields sequentially. A decoder implementation does not need
@@ -1392,9 +1393,9 @@ encoding for integers, or long string literals do not create security
 weaknesses.
 
 An implementation has to set a limit for the values it accepts for integers, as
-well as for the encoded length (see {{prefixed-integers}}). In the same way, it
-has to set a limit to the length it accepts for string literals (see
-{{string-literals}}).
+well as for the encoded length; see {{prefixed-integers}}. In the same way, it
+has to set a limit to the length it accepts for string literals; see
+{{string-literals}}.
 
 
 # IANA Considerations

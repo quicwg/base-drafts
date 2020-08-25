@@ -831,7 +831,7 @@ entire connection.  This leads to two levels of data flow control in QUIC:
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
 
-Senders MUST not send data in excess of either limit.
+Senders MUST NOT send data in excess of either limit.
 
 A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
@@ -847,9 +847,9 @@ control offset to be advertised.
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
 all streams.  A receiver maintains a cumulative sum of bytes received on all
-streams, which is used to check for flow control violations. A receiver might
-use a sum of bytes consumed on all streams to determine the maximum data limit
-to be advertised.
+streams, which is used to check for violations of the advertised connection or
+stream data limits. A receiver might use a sum of bytes consumed on all streams
+to determine the maximum data limit to be advertised.
 
 Once a receiver advertises a limit for the connection or a stream, it MAY
 advertise a smaller limit, but this has no effect.
@@ -970,7 +970,7 @@ If a max_streams transport parameter or MAX_STREAMS frame is received with a
 value greater than 2^60, this would allow a maximum stream ID that cannot be
 expressed as a variable-length integer; see {{integer-encoding}}.
 If either is received, the connection MUST be closed immediately with a
-connection error of type STREAM_LIMIT_ERROR; see {{immediate-close}}.
+connection error of type FRAME_ENCODING_ERROR; see {{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a frame with a stream ID exceeding the limit it has sent MUST treat
@@ -1776,8 +1776,8 @@ A client MUST NOT use remembered values for the following parameters:
 ack_delay_exponent, max_ack_delay, initial_source_connection_id,
 original_destination_connection_id, preferred_address,
 retry_source_connection_id, and stateless_reset_token. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+server's new values in the handshake instead; if the server does not provide new
+values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -2174,8 +2174,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 ## Path Validation Responses
 
-On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
-echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
+endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+frame unless constrained by congestion control.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
@@ -2296,8 +2298,8 @@ willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
 When migrating, the new path might not support the endpoint's current sending
-rate. Therefore, the endpoint resets its congestion controller, as described in
-{{migration-cc}}.
+rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
+as described in {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
@@ -2824,8 +2826,8 @@ when converting to a CONNECTION_CLOSE of type 0x1c.
 CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
 single UDP datagram; see {{packet-coalesce}}.
 
-An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
-response to unauthenticated information received in Initial or Handshake
+An endpoint can send a CONNECTION_CLOSE frame in an Initial packet.  This might
+be in response to unauthenticated information received in Initial or Handshake
 packets.  Such an immediate close might expose legitimate connections to a
 denial of service.  QUIC does not include defensive measures for on-path attacks
 during the handshake; see {{handshake-dos}}.  However, at the cost of reducing
@@ -4358,10 +4360,9 @@ Destination Connection ID Length:
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
   unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
-  Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  Endpoints that receive a version 1 long header with a value larger than 20
+  MUST drop the packet.  In order to properly form a Version Negotiation packet,
+  servers SHOULD be able to read longer connection IDs from other QUIC versions.
 
 Destination Connection ID:
 
@@ -4374,10 +4375,10 @@ Source Connection ID Length:
 : The byte following the Destination Connection ID contains the length in bytes
   of the Source Connection ID field that follows it.  This length is encoded as
   a 8-bit unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20
-  bytes. Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  bytes.  Endpoints that receive a version 1 long header with a value larger
+  than 20 MUST drop the packet.  In order to properly form a Version Negotiation
+  packet, servers SHOULD be able to read longer connection IDs from other QUIC
+  versions.
 
 Source Connection ID:
 
@@ -4901,6 +4902,7 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+
 ### Latency Spin Bit {#spin-bit}
 
 The latency spin bit enables passive latency monitoring from observation points
@@ -4929,28 +4931,28 @@ bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
-value and sets the spin bit in the short header to the currently stored
-value when a packet with a short header is sent out. The spin value is
-initialized to 0 in the endpoint at connection start.  Each endpoint also
-remembers the highest packet number seen from its peer on the connection.
+value for each network path and sets the spin bit in the short header to the
+currently stored value when a packet with a short header is sent on that path.
+The spin value is initialized to 0 in the endpoint for each network path. Each
+endpoint also remembers the highest packet number seen from its peer on each
+path.
 
-When a server receives a short header packet that increments the highest
-packet number seen by the server from the client, it sets the spin value to be
-equal to the spin bit in the received packet.
+When a server receives a short header packet that increases the highest packet
+number seen by the server from the client on a given network path, it sets the
+spin value for that path to be equal to the spin bit in the received packet.
 
-When a client receives a short header packet that increments the highest
-packet number seen by the client from the server, it sets the spin value to the
-inverse of the spin bit in the received packet.
+When a client receives a short header packet that increases the highest packet
+number seen by the client from the server on a given network path, it sets the
+spin value for that path to the inverse of the spin bit in the received packet.
 
-An endpoint resets its spin value to zero when sending the first packet of a
-given connection with a new connection ID. This reduces the risk that transient
-spin bit state can be used to link flows across connection migration or ID
-change.
+An endpoint resets the spin value for a network path to zero when changing the
+connection ID being used on that network path.
 
 With this mechanism, the server reflects the spin value received, while the
 client 'spins' it after one RTT. On-path observers can measure the time
 between two spin bit toggle events to estimate the end-to-end RTT of a
 connection.
+
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
@@ -5027,7 +5029,7 @@ stateless_reset_token (0x02):
 max_udp_payload_size (0x03):
 
 : The maximum UDP payload size parameter is an integer value that limits the
-  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  size of UDP payloads that the endpoint is willing to receive.  UDP datagrams
   with payloads larger than this limit are not likely to be processed by the
   receiver.
 
@@ -6378,13 +6380,13 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial sender might intentionally send fragments of stream data in
-order to cause disproportionate receive buffer memory commitment and/or
+An adversarial sender might intentionally send fragments of stream data in an
+attempt to cause disproportionate receive buffer memory commitment and/or
 creation of a large and inefficient data structure.
 
-An adversarial receiver might intentionally not acknowledge packets
-containing stream data in order to force the sender to store the
-unacknowledged stream data for retransmission.
+An adversarial receiver might intentionally not acknowledge packets containing
+stream data in an attempt to force the sender to store the unacknowledged stream
+data for retransmission.
 
 The attack on receivers is mitigated if flow control windows correspond to
 available memory.  However, some receivers will over-commit memory and
