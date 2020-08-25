@@ -788,13 +788,16 @@ approach that increases the congestion window by one maximum datagram size per
 congestion window acknowledged. A congestion controller MUST NOT increase the
 congestion window by more than this amount.
 
-When first entering congestion avoidance, when a packet is declared lost, or
-when the ECN-CE count is increased, the congestion controller described in this
-document halves the congestion window, reduces the slow start threshold to the
-resulting size, and enters the recovery period. A congestion controller MUST
-reduce the congestion window when a loss or ECN-CE marking is detected.
+The congestion controller described in this document, when not in the
+recovery period ({{recovery}}), MUST take the following steps when first
+entering congestion avoidance, when a packet is declared lost, or when
+the ECN-CE count is increased:
 
-## Recovery Period
+* halve the congestion window,
+* set the slow start threshold to the size of the reduced congestion window, and
+* enter the recovery period.
+
+## Recovery Period {#recovery}
 
 A recovery period is entered when loss or ECN-CE marking of a packet is
 detected in congestion avoidance after the congestion window and slow start
