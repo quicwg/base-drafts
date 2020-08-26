@@ -1111,9 +1111,10 @@ min_rtt:
 
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
-  acknowledgments for packets in the Application Data packet number space. The
-  actual ack_delay in a received ACK frame may be larger due to late timers,
-  reordering, or lost ACK frames.
+  acknowledgments for packets in the Application Data packet number
+  space, as defined by the eponymous transport parameter (Section 18.2
+  of {{QUIC-TRANSPORT}}). Note that the actual ack_delay in a received
+  ACK frame may be larger due to late timers, reordering, or loss.
 
 loss_detection_timer:
 : Multi-modal timer used for loss detection.
@@ -1148,7 +1149,6 @@ latest_rtt = 0
 smoothed_rtt = kInitialRtt
 rttvar = kInitialRtt / 2
 min_rtt = 0
-max_ack_delay = 0
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   largest_acked_packet[pn_space] = infinite
   time_of_last_ack_eliciting_packet[pn_space] = 0
@@ -1264,6 +1264,8 @@ UpdateRtt(ack_delay):
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay
+  // Note that ack_delay is 0 for acknowledgements of
+  // Initial and Handshake packets.
   ack_delay = min(ack_delay, max_ack_delay)
   // Adjust for acknowledgment delay if plausible.
   adjusted_rtt = latest_rtt
