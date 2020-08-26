@@ -1616,20 +1616,21 @@ OnPacketAcked(acked_packet):
 ## On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. May start a new recovery period and reduces the congestion
-window.
+detected. If not in a recovery period, this starts a recovery period and
+reduces the slow start threshold and congestion window immediately.
 
 ~~~
 OnCongestionEvent(sent_time):
-  // Start a new congestion event if packet was sent after the
-  // start of the previous congestion recovery period.
-  if (!InCongestionRecovery(sent_time)):
-    congestion_recovery_start_time = now()
-    congestion_window *= kLossReductionFactor
-    congestion_window = max(congestion_window, kMinimumWindow)
-    ssthresh = congestion_window
-    // A packet can be sent to speed up loss recovery.
-    MaybeSendOnePacket()
+  // No reaction when recovery period.
+  if (InCongestionRecovery(sent_time)):
+    return
+
+  // Enter recovery period.
+  congestion_recovery_start_time = now()
+  ssthresh = congestion_window * kLossReductionFactor
+  congestion_window = max(ssthresh, kMinimumWindow)
+  // A packet can be sent to speed up loss recovery.
+  MaybeSendOnePacket()
 ~~~
 
 
