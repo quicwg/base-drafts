@@ -763,8 +763,8 @@ The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Slow Start
 
-While in slow start, a sender increases the congestion window by the number of
-bytes acknowledged when each acknowledgment is processed, resulting in
+While in slow start, a NewReno sender increases the congestion window by the
+number of bytes acknowledged when each acknowledgment is processed, resulting in
 exponential growth of the congestion window.
 
 A sender MUST exit slow start and enter recovery when a loss is detected or when
@@ -784,9 +784,9 @@ detected or when the ECN-CE counter reported by the peer increases.
 
 ## Recovery Period
 
-A sender enters the recovery period when it detects loss or an ECN-CE mark is
-received. A recovery period ends when a packet sent during the recovery period
-is acknowledged.
+A NewReno sender enters the recovery period when it detects loss or an ECN-CE
+mark is received. A recovery period ends when a packet sent during the recovery
+period is acknowledged.
 
 A sender that is already in a recovery period stays in it and does not re-enter
 it.
