@@ -763,42 +763,50 @@ The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Slow Start
 
-While in slow start, QUIC increases the congestion window by the
-number of bytes acknowledged when each acknowledgment is processed, resulting
-in exponential growth of the congestion window.
+While in slow start, a sender increases the congestion window by the number of
+bytes acknowledged when each acknowledgment is processed, resulting in
+exponential growth of the congestion window.
 
-QUIC MUST exit slow start and enter congestion avoidance upon loss or upon
-increase in the ECN-CE counter. When slow start is exited, the congestion
-window halves and the slow start threshold is set to the new congestion
-window.  QUIC re-enters slow start any time the congestion window is less
-than the slow start threshold, which only occurs after persistent congestion
-is declared.
+A sender MUST exit slow start and enter recovery when a loss is detected or when
+the ECN-CE counter reported by the peer increases.
+
+A sender re-enters slow start any time the congestion window is less than the
+slow start threshold, which only occurs after persistent congestion is declared.
 
 ## Congestion Avoidance
 
-NewReno congestion avoidance uses an Additive Increase Multiplicative Decrease
-(AIMD) approach that typically increases the congestion window by one maximum
-datagram size per congestion window acknowledged, and MUST NOT increase the
-congestion window faster.  When a loss or ECN-CE marking is detected, the sender
-MUST reduce the congestion window. NewReno halves the congestion window, sets
-the slow start threshold to the new congestion window, and then enters the
-recovery period.
+A NewReno sender in congestion avoidance uses an Additive Increase
+Multiplicative Decrease (AIMD) approach that MUST increase the congestion window
+by no more than one maximum datagram size per congestion window acknowledged.
+
+A sender MUST exit congestion avoidance and enter recovery when a loss is
+detected or when the ECN-CE counter reported by the peer increases.
 
 ## Recovery Period
 
-A recovery period is entered when loss or ECN-CE marking of a packet is
-detected in congestion avoidance after the congestion window and slow start
-threshold have been decreased.  A recovery period ends when a packet sent
-during the recovery period is acknowledged.  This is slightly different from
-TCP's definition of recovery, which ends when the lost packet that started
-recovery is acknowledged.
+A sender enters the recovery period when it detects loss or an ECN-CE mark is
+received. A recovery period ends when a packet sent during the recovery period
+is acknowledged.
+
+A sender that is already in a recovery period stays in it and does not re-enter
+it.
+
+On entering recovery, a sender MUST do the following:
+
+* set the slow start threshold to half the value of the congestion window at the
+  moment that loss is detected, and
+
+* set the congestion window to the new value of the slow start
+  threshold. Implementations MAY set the congestion window immediately on
+  detecting loss or use other mechanisms, such as Proportional Rate Reduction
+  ({{?RFC6937}}), to reduce it over the recovery period.
 
 The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during recovery, the congestion window remains unchanged
 irrespective of new losses or increases in the ECN-CE counter.
 
-When entering recovery, a single packet MAY be sent even if bytes in flight
-now exceeds the recently reduced congestion window.  This speeds up loss
+When entering a recovery period, a single packet MAY be sent even if bytes in
+flight now exceeds the recently reduced congestion window.  This speeds up loss
 recovery if the data in the lost packet is retransmitted and is similar to TCP
 as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
 the sender is in recovery, sending any packets in response MUST obey the
