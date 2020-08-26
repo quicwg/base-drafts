@@ -788,18 +788,12 @@ A NewReno sender enters the recovery period when it detects loss or an ECN-CE
 mark is received. A recovery period ends when a packet sent during the recovery
 period is acknowledged.
 
-A sender that is already in a recovery period stays in it and does not re-enter
-it.
-
-On entering recovery, a sender MUST do the following:
-
-* set the slow start threshold to half the value of the congestion window at the
-  moment that loss is detected, and
-
-* set the congestion window to the new value of the slow start
-  threshold. Implementations MAY set the congestion window immediately on
-  detecting loss or use other mechanisms, such as Proportional Rate Reduction
-  ({{?RFC6937}}), to reduce it over the recovery period.
+On entering a recovery period, a sender MUST set the slow start threshold to
+half the value of the congestion window at the moment that loss is detected. The
+congestion window MUST be set to the reduced value of the slow start threshold
+before exiting the recovery period. Implementations MAY set the congestion
+window immediately on entering a recovery period or use other mechanisms, such
+as Proportional Rate Reduction ({{?PRR=RFC6937}}), to reduce it more gradually.
 
 The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during recovery, the congestion window remains unchanged
