@@ -1947,9 +1947,11 @@ servers.
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
 token MUST be repeated by the client in all Initial packets it sends for that
-connection after it receives the Retry packet.  In response to processing an
-Initial containing a token, a server can either abort the connection or permit
-it to proceed.
+connection after it receives the Retry packet.
+
+In response to processing an Initial containing a token that was provided in a
+Retry packet, a server cannot send another Retry packet; it can only refuse the
+connection or permit it to proceed.
 
 As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
