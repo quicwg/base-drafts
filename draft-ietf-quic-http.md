@@ -1587,7 +1587,7 @@ MAX_PUSH_ID Frame {
   Push ID (i),
 }
 ~~~~~~~~~~
-{: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
+{: #fig-max-push title="MAX_PUSH_ID Frame"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use; see {{server-push}}.  A
