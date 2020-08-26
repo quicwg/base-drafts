@@ -3849,7 +3849,7 @@ rate in response, as described in {{QUIC-RECOVERY}}.
 
 Note that supporting ECN requires being able to set and read the ECN codepoints
 in the IP headers of datagrams carrying QUIC packets. On platforms where
-possible, QUIC cannot support ECN.
+ this is not possible, QUIC cannot support ECN.
 
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
