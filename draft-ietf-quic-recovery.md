@@ -810,7 +810,7 @@ declared.
 
 ### Recovery Period {#recovery-period}
 
-A sender enters the recovery period when it detects the loss of a packet or the
+A sender enters a recovery period when it detects the loss of a packet or the
 ECN-CE count reported by its peer increases. A sender that is already in a
 recovery period stays in it and does not re-enter it.
 
