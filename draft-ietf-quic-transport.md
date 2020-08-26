@@ -3914,22 +3914,6 @@ marking strategies. Implementations MAY use other methods defined in RFCs; see
 perform ECN validation using the reported ECT(1) counts.
 
 
-#### ECN Validation Outcomes
-
-If validation fails, then the endpoint MUST disable ECN. It stops setting the
-ECT codepoint in IP packets that it sends, assuming that either the network path
-or the peer does not support ECN.
-
-Even if validation fails, an endpoint MAY revalidate ECN for the same path at
-any later time in the connection. An endpoint could continue to periodically
-attempt validation.
-
-Upon successful validation, an endpoint MAY continue to set an ECT codepoint in
-subsequent packets it sends , with the expectation that the path is ECN-capable.
-Network routing and path elements can however change mid-connection; an endpoint
-MUST disable ECN if validation later fails.
-
-
 #### Receiving ACK Frames with ECN Counts {#ecn-ack}
 
 Erroneous application of CE-marks by the network can result in degraded
@@ -3941,9 +3925,9 @@ ECN markings that were applied to packets that are newly acknowledged in the ACK
 frame.
 
 If an ACK frame newly acknowledges a packet that the endpoint sent setting
-either the ECT(0) or ECT(1) set, ECN validation fails if the ECN counts are not
-present in the ACK frame.  This check detects a network element that zeroes the
-ECN field or a peer that is unable to access ECN the markings.
+either the ECT(0) or ECT(1) codepoint, ECN validation fails if the ECN counts
+are not present in the ACK frame. This check detects a network element that
+zeroes the ECN field or a peer that is unable to access ECN the markings.
 
 ECN validation also fails if the sum of the increase in ECT(0) and ECN-CE counts
 is less than the number of newly acknowledged packets that were originally sent
@@ -3967,6 +3951,22 @@ exceeds the total number of packets sent with each corresponding ECT codepoint.
 In particular, validation will fail when an endpoint receives a non-zero ECN
 count corresponding to an ECT codepoint that it never applied.  This check
 detects when packets are remarked to ECT(0) or ECT(1) in the network.
+
+
+#### ECN Validation Outcomes
+
+If validation fails, then the endpoint MUST disable ECN. It stops setting the
+ECT codepoint in IP packets that it sends, assuming that either the network path
+or the peer does not support ECN.
+
+Even if validation fails, an endpoint MAY revalidate ECN for the same path at
+any later time in the connection. An endpoint could continue to periodically
+attempt validation.
+
+Upon successful validation, an endpoint MAY continue to set an ECT codepoint in
+subsequent packets it sends, with the expectation that the path is ECN-capable.
+Network routing and path elements can however change mid-connection; an endpoint
+MUST disable ECN if validation later fails.
 
 
 # Packet Size {#packet-size}
