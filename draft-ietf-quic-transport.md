@@ -3848,7 +3848,7 @@ instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
 Note that supporting ECN requires being able to set and read the ECN codepoints
-from the IP headers of packets carrying QUIC. On platforms where this is not
+in the IP headers of datagrams carrying QUIC packets. On platforms where
 possible, QUIC cannot support ECN.
 
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
