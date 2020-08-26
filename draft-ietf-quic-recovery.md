@@ -815,7 +815,7 @@ ECN-CE count reported by its peer increases. A sender that is already in a
 recovery period stays in it and does not re-enter it.
 
 On entering a recovery period, a sender MUST set the slow start threshold to
-the half the value of the congestion window at the moment that loss is
+half the value of the congestion window at the moment that loss is
 detected. The congestion window MUST be set to the reduced value of the slow
 start threshold before exiting the recovery period. Implementations MAY set the
 congestion window immediately on entering a recovery period or use other
@@ -823,13 +823,13 @@ mechanisms, such as Proportional Rate Reduction ({{?PRR=RFC6937}}), to reduce
 it more gradually.
 
 The recovery period aims to limit congestion window reduction to once per round
-trip. Therefore during a recovery period, the congestion window remains does
+trip. Therefore during a recovery period, the congestion window does
 not change in response to new losses or increases in the ECN-CE count.
 
 A recovery period ends and the sender enters congestion avoidance when a packet
 sent during the recovery period is acknowledged. This is slightly different
-from TCP's definition of recovery, which ends when the lost packet that started
-recovery is acknowledged.
+from TCP's definition of recovery, which ends when the lost segment that started
+recovery is acknowledged ({{?RFC5681}}).
 
 When entering a recovery period, a single packet MAY be sent even if bytes in
 flight now exceeds the recently reduced congestion window.  This speeds up loss
@@ -1621,7 +1621,7 @@ reduces the slow start threshold and congestion window immediately.
 
 ~~~
 OnCongestionEvent(sent_time):
-  // No reaction when recovery period.
+  // No reaction if already in a recovery period.
   if (InCongestionRecovery(sent_time)):
     return
 
