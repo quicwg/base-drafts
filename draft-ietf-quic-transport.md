@@ -1355,7 +1355,7 @@ SHOULD pad the first UDP datagram they send to the largest of the minimum
 datagram sizes from all versions they support. This ensures that the server
 responds if there is a mutually supported version. A server might not send a
 Version Negotiation packet if the datagram it receives is smaller than the
-minimum size specified in a different version.
+minimum size specified in a different version; see {{initial-size}}.
 
 
 ## Sending Version Negotiation Packets {#send-vn}
