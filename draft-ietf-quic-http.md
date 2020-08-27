@@ -1583,7 +1583,7 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
 MAX_PUSH_ID Frame {
-  Type (i) = 0x1,
+  Type (i) = 0xD,
   Length (i),
   Push ID (i),
 }
