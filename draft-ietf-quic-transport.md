@@ -3232,18 +3232,16 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Underlying Transport Protocol {#underlying-transport-protocol}
 
-The underlying protocol is the protocol with which QUIC packet are sent.
+The underlying protocol is the protocol over which QUIC packets are sent.
 
 This protocol SHOULD NOT have automatic retransmission, ordering, congestion
 control, or other such mechanisms that would overlap with those provided by QUIC
 and therefore not actually enhance the overall quality of service.  This
 protocol SHOULD be message-oriented.
 
-The underlying protocol MUST contain both a source and destination address:
-while the underlying protocol is free to route datagrams by whichever means it
-chooses, and futhermore a source address isn't strictly necessary to route a
-datagram, the QUIC implementation needs to be able to inspect both addresses for
-to implement connection migration.
+The underlying protocol MUST contain both a source and destination address,
+as the QUIC implementation needs to be able to inspect both addresses in
+order to support connection migration.
 
 An underlying datagram MUST correspond to a single IP packet, if it is sent over
 IP.  That means IP fragmentation MUST NOT be used.  When using IPv4
@@ -4030,9 +4028,8 @@ later time in the connection.
 
 # Packet Size {#packet-size}
 
-The QUIC packet size is just the total size of the QUIC header and protected
-payload. It follows that the sizes of any other headers that are part of the
-underlying datagram and associated with underlying protocols are not counted.
+The QUIC packet size includes the QUIC header and protected payload, but not the
+headers of any underlying protocol.
 
 QUIC depends upon a minimum IP packet size of at least 1280 bytes.  This is the
 IPv6 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
