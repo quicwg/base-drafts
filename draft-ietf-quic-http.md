@@ -824,8 +824,9 @@ MAX_PUSH_ID frame; see {{frame-max-push-id}}.  In particular, a server is not
 able to push until after the client sends a MAX_PUSH_ID frame.  A client sends
 MAX_PUSH_ID frames to control the number of pushes that a server can promise.  A
 server SHOULD use Push IDs sequentially, beginning from zero.  A client MUST
-treat receipt of a push stream with a Push ID that is greater than the maximum
-Push ID as a connection error of type H3_ID_ERROR.
+treat receipt of a push stream as a connection error of type H3_ID_ERROR when no
+MAX_PUSH_ID frame has been sent or when the stream references a Push ID that is
+greater than the maximum Push ID.
 
 The Push ID is used in one or more PUSH_PROMISE frames ({{frame-push-promise}})
 that carry the header section of the request message.  These frames are sent on
@@ -1491,7 +1492,7 @@ The payload consists of:
 
 Push ID:
 : A variable-length integer that identifies the server push operation.  A Push
-  ID is used in push stream headers ({{server-push}}), CANCEL_PUSH frames
+  ID is used in push stream headers ({{server-push}}) and CANCEL_PUSH frames
   ({{frame-cancel-push}}).
 
 Encoded Field Section:
@@ -1582,12 +1583,12 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
 MAX_PUSH_ID Frame {
-  Type (i) = 0x1,
+  Type (i) = 0xD,
   Length (i),
   Push ID (i),
 }
 ~~~~~~~~~~
-{: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
+{: #fig-max-push title="MAX_PUSH_ID Frame"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use; see {{server-push}}.  A
