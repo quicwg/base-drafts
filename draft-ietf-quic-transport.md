@@ -2554,15 +2554,16 @@ those paths to be linked by entities other than the peer.
 
 A client might wish to reduce linkability by employing a new connection ID and
 source address when sending traffic after a period of inactivity.  (In
-conventional situations using UDP, the client cannot freely vary the IP address,
-but can much more readily change the UDP port.  Since an address for QUIC when
-using UDP is the tuple of the IP address and UDP port, changing the source port
-along constitutes changing the QUIC address.) So changing the address from which
-it sends packets at the same time might cause the packet to appear as a
-connection migration.  This ensures that the mechanisms that support migration
-are exercised even for clients that do not experience NAT rebindings or genuine
-migrations.  Changing port number can cause a peer to reset its congestion state
-(see {{migration-cc}}), so the port SHOULD only be changed infrequently.
+conventional situations using UDP, the client may not always be able to freely
+vary the IP address, but can much more readily change the UDP port.  Since an
+address for QUIC when using UDP is the tuple of the IP address and UDP port,
+changing the source port along constitutes changing the QUIC address.) So
+changing the address from which it sends packets at the same time might cause
+the packet to appear as a connection migration.  This ensures that the
+mechanisms that support migration are exercised even for clients that do not
+experience NAT rebindings or genuine migrations.  Changing port number can cause
+a peer to reset its congestion state (see {{migration-cc}}), so the port SHOULD
+only be changed infrequently.
 
 An endpoint that exhausts available connection IDs cannot probe new paths or
 initiate migration, nor can it respond to probes or attempts by its peer to
