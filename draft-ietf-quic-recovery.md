@@ -365,12 +365,14 @@ estimate.
 Therefore, when adjusting an RTT sample using peer-reported acknowledgement
 delays, an endpoint:
 
-- MAY ignore the acknowledgement delay for Initial packets,
+- MAY ignore the acknowledgement delay for Initial packets, since these
+  acknowledgements are not delayed by the peer (Section 13.2.1 of
+  {{QUIC-TRANSPORT}});
 
-- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed,
+- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed;
 
 - MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
-  after the handshake is confirmed,
+  after the handshake is confirmed; and
 
 - MUST NOT subtract the acknowledgement delay from the RTT sample if the
   resulting value is smaller than the min_rtt.  This limits the underestimation
