@@ -351,7 +351,7 @@ max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
 Note however that a large acknowledgement delay can result in a substantially
 inflated smoothed_rtt, if there is either an error in the peer's reporting of
 the acknowledgement delay or in the endpoint's min_rtt estimate.  Therefore,
-prior to handshake confirmation, an endpoint can ignore RTT samples if adjusting
+prior to handshake confirmation, an endpoint MAY ignore RTT samples if adjusting
 the RTT sample for acknowledgement delay causes the sample to be less than the
 min_rtt.
 
