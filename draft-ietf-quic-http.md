@@ -803,9 +803,9 @@ with the RST bit set.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of {{?SEMANTICS})
-or 101 (Switching Protocols) informational status code (Section 10.2.2 of
-{{!SEMANTICS}}).
+HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of
+{{?SEMANTICS}) or 101 (Switching Protocols) informational status code (Section
+10.2.2 of {{!SEMANTICS}}).
 
 ## Server Push
 
