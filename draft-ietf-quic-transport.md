@@ -2755,10 +2755,10 @@ detrimental effect on performance.
 A connection will time out if no packets are sent or received for a period
 longer than the time negotiated using the max_idle_timeout transport parameter;
 see {{termination}}.  However, state in middleboxes might time out earlier than
-that.  Though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout interval,
-experience shows that sending packets every 30 seconds is necessary to prevent
-the majority of middleboxes from losing state for underlying-transport flows
-{{?GATEWAY=DOI.10.1145/1879141.1879174}}.
+that.  For example, though REQ-5 in {{?RFC4787}} recommends a 2 minute timeout
+interval for UDP mappings, experience shows that sending packets every 30
+seconds is necessary to prevent the majority of middleboxes from losing state
+for UDP flows {{?GATEWAY=DOI.10.1145/1879141.1879174}}.
 
 
 ## Immediate Close {#immediate-close}
