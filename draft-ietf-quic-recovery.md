@@ -796,7 +796,7 @@ before exiting the recovery period.
 Implementations MAY set the congestion window immediately on entering a recovery
 period or use other mechanisms, such as Proportional Rate Reduction
 ({{?PRR=RFC6937}}), to reduce it more gradually. If the congestion window is
-reduced immediately, a single packet can be sent prior to reduction.  This speeds
+reduced immediately, a single packet can be sent prior to reduction. This speeds
 up loss recovery if the data in the lost packet is retransmitted and is similar
 to TCP as described in Section 5 of {{?RFC6675}}.
 
