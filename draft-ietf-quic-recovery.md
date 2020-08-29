@@ -791,20 +791,18 @@ period is acknowledged.
 On entering a recovery period, a sender MUST set the slow start threshold to
 half the value of the congestion window at the moment that loss is detected. The
 congestion window MUST be set to the reduced value of the slow start threshold
-before exiting the recovery period. Implementations MAY set the congestion
-window immediately on entering a recovery period or use other mechanisms, such
-as Proportional Rate Reduction ({{?PRR=RFC6937}}), to reduce it more gradually.
+before exiting the recovery period.
+
+Implementations MAY set the congestion window immediately on entering a recovery
+period or use other mechanisms, such as Proportional Rate Reduction
+({{?PRR=RFC6937}}), to reduce it more gradually. If the congestion window is
+reduced immediately, a single packet can be sent prior to reduction.  This speeds
+up loss recovery if the data in the lost packet is retransmitted and is similar
+to TCP as described in Section 5 of {{?RFC6675}}.
 
 The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during recovery, the congestion window remains unchanged
 irrespective of new losses or increases in the ECN-CE counter.
-
-When entering a recovery period, a single packet MAY be sent even if bytes in
-flight now exceeds the recently reduced congestion window.  This speeds up loss
-recovery if the data in the lost packet is retransmitted and is similar to TCP
-as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
-the sender is in recovery, sending any packets in response MUST obey the
-congestion window limit.
 
 ## Ignoring Loss of Undecryptable Packets
 
