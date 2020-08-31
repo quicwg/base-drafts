@@ -2312,8 +2312,8 @@ The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 
 ### Confidentiality Limit
 
-For confidentiality, Theorum (4.3) in {{?GCM-MU}} establishes that - for a single
-user that does not repeat nonces - the dominant term in determining the
+For confidentiality, Theorum (4.3) in {{?GCM-MU}} establishes that - for a
+single user that does not repeat nonces - the dominant term in determining the
 distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
 
