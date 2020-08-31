@@ -6506,7 +6506,8 @@ Clients are able to present a spoofed source address as part of an apparent
 connection migration to cause a server to send datagrams to that address.
 
 The Destination Connection ID field in any packets that a server subsequently
-sends to this spoofed address can be used for request forgery.
+sends to this spoofed address can be used for request forgery. A client might
+also be able to influence the ciphertext.
 
 A server that only sends probing packets ({{probing}}) to an address prior to
 address validation provides an attacker with only limited control over the
