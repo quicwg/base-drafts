@@ -2577,7 +2577,10 @@ discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
 
 
-### Responding to Connection Migration
+### Migration to a Preferred Address
+
+A client that migrates to a preferred address MUST validate the address it
+chooses before migrating; see {{forgery-spa}}.
 
 A server might receive a packet addressed to its preferred IP address at any
 time after it accepts a connection.  If this packet contains a PATH_CHALLENGE
@@ -6481,7 +6484,7 @@ address, thereby preventing the use of subsequent Initial packets for request
 forgery.
 
 
-### Request Forgery with Preferred Addresses
+### Request Forgery with Preferred Addresses {#forgery-spa}
 
 Servers can specify a preferred address, which clients then migrate to after
 confirming the handshake; see {{preferred-address}}. The Destination Connection
