@@ -2293,7 +2293,7 @@ the associated data and ciphertext. This results in a negligible 1 to 3 block
 overestimation of the number of operations.
 
 
-## Analysis AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
+## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
 
 {{?GCM-MU}} specify concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM as
 used in TLS 1.3 and QUIC. This section documents this analysis using several
@@ -2312,7 +2312,7 @@ The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 
 ### Confidentiality Limit
 
-For confidentiality, Theorum (4.3) in {{?GCM-MU}} establish that - for a single
+For confidentiality, Theorum (4.3) in {{?GCM-MU}} establishes that - for a single
 user that does not repeat nonces - the dominant term in determining the
 distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
