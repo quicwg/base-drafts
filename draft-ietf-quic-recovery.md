@@ -336,30 +336,54 @@ smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
 samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
-The calculation of smoothed_rtt uses path latency after adjusting RTT samples
-for acknowledgement delays. These delays are computed using the ACK Delay field
-of the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}. For packets
-sent in the Application Data packet number space, a peer limits any delay in
-sending an acknowledgement for an ack-eliciting packet to no greater than the
-value it advertised in the max_ack_delay transport parameter. Consequently, when
-a peer reports an acknowledgment delay that is greater than its max_ack_delay,
-the delay is attributed to reasons out of the peer's control, such as scheduler
-latency at the peer or loss of previous ACK frames.  Any delays beyond the
-peer's max_ack_delay are therefore considered effectively part of path delay and
-incorporated into the smoothed_rtt estimate.
+The calculation of smoothed_rtt uses RTT samples after adjusting them for
+acknowledgement delays. These delays are computed using the ACK Delay field of
+the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
-When adjusting an RTT sample using peer-reported acknowledgement delays, an
-endpoint:
+The peer might report acknowledgement delays that are larger than the peer's
+max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
+account for this, the endpoint SHOULD ignore max_ack_delay until the handshake
+is confirmed (Section 4.1.2 of {{QUIC-TLS}}). When they occur, these large
+acknowledgement delays are likely to be non-repeating and limited to the
+handshake. The endpoint can therefore use them without limiting them to the
+max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
 
-- MUST ignore the ACK Delay field of the ACK frame for packets sent in the
-  Initial and Handshake packet number space.
+Note however that a large acknowledgement delay can result in a substantially
+inflated smoothed_rtt, if there is either an error in the peer's reporting of
+the acknowledgement delay or in the endpoint's min_rtt estimate.  Therefore,
+prior to handshake confirmation, an endpoint MAY ignore RTT samples if adjusting
+the RTT sample for acknowledgement delay causes the sample to be less than the
+min_rtt.
 
-- MUST use the lesser of the value reported in ACK Delay field of the ACK frame
-  and the peer's max_ack_delay transport parameter.
+After the handshake is confirmed, any acknowledgement delays reported by the
+peer that are greater than the peer's max_ack_delay are attributed to
+unintentional but potentially repeating delays, such as scheduler latency at the
+peer or loss of previous acknowledgements. Therefore, these extra delays are
+considered effectively part of path delay and incorporated into the RTT
+estimate.
 
-- MUST NOT apply the adjustment if the resulting RTT sample is smaller than the
-  min_rtt.  This limits the underestimation that a misreporting peer can cause
-  to the smoothed_rtt.
+Therefore, when adjusting an RTT sample using peer-reported acknowledgement
+delays, an endpoint:
+
+- MAY ignore the acknowledgement delay for Initial packets, since these
+  acknowledgements are not delayed by the peer (Section 13.2.1 of
+  {{QUIC-TRANSPORT}});
+
+- SHOULD ignore the peer's max_ack_delay until the handshake is confirmed;
+
+- MUST use the lesser of the acknowledgement delay and the peer's max_ack_delay
+  after the handshake is confirmed; and
+
+- MUST NOT subtract the acknowledgement delay from the RTT sample if the
+  resulting value is smaller than the min_rtt.  This limits the underestimation
+  of the smoothed_rtt due to a misreporting peer.
+
+Additionally, an endpoint might postpone the processing of acknowledgements when
+the corresponding decryption keys are not immediately available. For example, a
+client might receive an acknowledgement for a 0-RTT packet that it cannot
+decrypt because 1-RTT packet protection keys are not yet available to it. In
+such cases, an endpoint SHOULD subtract such local delays from its RTT sample
+until the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
@@ -379,8 +403,9 @@ default values.
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
 ~~~
-ack_delay = acknowledgement delay from ACK frame
-ack_delay = min(ack_delay, max_ack_delay)
+ack_delay = decoded acknowledgement delay from ACK frame
+if (handshake confirmed):
+  ack_delay = min(ack_delay, max_ack_delay)
 adjusted_rtt = latest_rtt
 if (min_rtt + ack_delay < latest_rtt):
   adjusted_rtt = latest_rtt - ack_delay
@@ -388,7 +413,6 @@ smoothed_rtt = 7/8 * smoothed_rtt + 1/8 * adjusted_rtt
 rttvar_sample = abs(smoothed_rtt - adjusted_rtt)
 rttvar = 3/4 * rttvar + 1/4 * rttvar_sample
 ~~~
-
 
 # Loss Detection {#loss-detection}
 
@@ -487,16 +511,18 @@ ack-eliciting packets are not acknowledged within the expected period of
 time or the server may not have validated the client's address.  A PTO enables
 a connection to recover from loss of tail packets or acknowledgements.
 
+As with loss detection, the probe timeout is per packet number space. That is, a
+PTO value is computed per packet number space.
+
 A PTO timer expiration event does not indicate packet loss and MUST NOT cause
 prior unacknowledged packets to be marked as lost. When an acknowledgement
 is received that newly acknowledges packets, loss detection proceeds as
 dictated by packet and time threshold mechanisms; see {{ack-loss-detection}}.
 
-As with loss detection, the probe timeout is per packet number space. The PTO
-algorithm used in QUIC implements the reliability functions of Tail Loss Probe
-({{?RACK}}), RTO ({{?RFC5681}}), and F-RTO ({{?RFC5682}}) algorithms for TCP.
-The timeout computation is based on TCP's retransmission timeout period
-({{?RFC6298}}).
+The PTO algorithm used in QUIC implements the reliability functions of
+Tail Loss Probe {{?RACK}}, RTO {{?RFC5681}}, and F-RTO algorithms for
+TCP {{?RFC5682}}. The timeout computation is based on TCP's retransmission
+timeout period {{?RFC6298}}.
 
 ### Computing PTO
 
@@ -509,30 +535,37 @@ PTO = smoothed_rtt + max(4*rttvar, kGranularity) + max_ack_delay
 
 The PTO period is the amount of time that a sender ought to wait for an
 acknowledgement of a sent packet.  This time period includes the estimated
-network round-trip time (smoothed_rtt), the variation in the estimate
-(4*rttvar), and max_ack_delay, to account for the maximum time by which a
-receiver might delay sending an acknowledgement.  When the PTO is armed for
-Initial or Handshake packet number spaces, the max_ack_delay is 0, as specified
-in 13.2.1 of {{QUIC-TRANSPORT}}.
+network roundtrip-time (smoothed_rtt), the variation in the estimate (4*rttvar),
+and max_ack_delay, to account for the maximum time by which a receiver might
+delay sending an acknowledgement.
 
-The PTO value MUST be set to at least kGranularity, to avoid the timer expiring
+When the PTO is armed for Initial or Handshake packet number spaces, the
+max_ack_delay in the PTO period computation is set to 0, since the peer is
+expected to not delay these packets intentionally; see 13.2.1 of
+{{QUIC-TRANSPORT}}.
+
+The PTO period MUST be at least kGranularity, to avoid the timer expiring
 immediately.
 
-A sender recomputes and may need to reset its PTO timer every time an
-ack-eliciting packet is sent or acknowledged, when the handshake is confirmed,
-or when Initial or Handshake keys are discarded. This ensures the PTO is always
-set based on the latest RTT information and for the last sent ack-eliciting
-packet in the correct packet number space. When the PTO expires and there are
-no ack-eliciting packets in flight, the PTO is set from that moment.
+When ack-eliciting packets in multiple packet number spaces are in flight, the
+timer MUST be set to the earlier value of the Initial and Handshake packet
+number spaces.
 
-When ack-eliciting packets in multiple packet number spaces are in flight,
-the timer MUST be set for the packet number space with the earliest timeout,
-with one exception. The Application Data packet number space (Section 4.1.1
-of {{QUIC-TLS}}) MUST be ignored until the handshake completes. Not arming
-the PTO for Application Data prevents a client from retransmitting a 0-RTT
-packet on a PTO expiration before confirming that the server is able to
-decrypt 0-RTT packets, and prevents a server from sending a 1-RTT packet on
-a PTO expiration before it has the keys to process an acknowledgement.
+An endpoint MUST NOT set its PTO timer for the application data packet number
+space until the handshake is confirmed. Doing so prevents the endpoint from
+retransmitting information in packets when either the peer does not yet have the
+keys to process them or the endpoint does not yet have the keys to process their
+acknowledgements. For example, this can happen when a client sends 0-RTT packets
+to the server; it does so without knowing whether the server will be able to
+decrypt them. Similarly, this can happen when a server sends 1-RTT packets
+before confirming that the client has verified the server's certificate and can
+therefore read these 1-RTT packets.
+
+A sender SHOULD restart its PTO timer every time an ack-eliciting packet is sent
+or acknowledged, when the handshake is confirmed (Section 4.1.2 of
+{{QUIC-TLS}}), or when Initial or Handshake keys are discarded (Section 9 of
+{{QUIC-TLS}}). This ensures the PTO is always set based on the latest estimate
+of the round-trip time and for the correct packet across packet number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff factor is reset
@@ -1226,17 +1259,14 @@ OnAckReceived(ack, pn_space):
   if (newly_acked_packets.empty()):
     return
 
-  // If the largest acknowledged is newly acked and
-  // at least one ack-eliciting was newly acked, update the RTT.
+  // Update the RTT if the largest acknowledged is newly acked
+  // and at least one ack-eliciting was newly acked.
   if (newly_acked_packets.largest().packet_number ==
           ack.largest_acked &&
       IncludesAckEliciting(newly_acked_packets)):
     latest_rtt =
       now() - newly_acked_packets.largest().time_sent
-    ack_delay = 0
-    if (pn_space == ApplicationData):
-      ack_delay = ack.ack_delay
-    UpdateRtt(ack_delay)
+    UpdateRtt(ack.ack_delay)
 
   // Process ECN information if present.
   if (ACK frame contains ECN information):
@@ -1263,10 +1293,12 @@ UpdateRtt(ack_delay):
 
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
-  // Limit ack_delay by max_ack_delay
-  // Note that ack_delay is 0 for acknowledgements of
-  // Initial and Handshake packets.
-  ack_delay = min(ack_delay, max_ack_delay)
+  // Limit ack_delay by max_ack_delay after handshake
+  // confirmation. Note that ack_delay is 0 for
+  // acknowledgements of Initial and Handshake packets.
+  if (handshake confirmed):
+    ack_delay = min(ack_delay, max_ack_delay)
+
   // Adjust for acknowledgment delay if plausible.
   adjusted_rtt = latest_rtt
   if (latest_rtt > min_rtt + ack_delay):
@@ -1314,8 +1346,8 @@ GetPtoTimeAndSpace():
     if (no in-flight packets in space):
         continue;
     if (space == ApplicationData):
-      // Skip Application Data until handshake complete.
-      if (handshake is not complete):
+      // Skip Application Data until handshake confirmed.
+      if (handshake is not confirmed):
         return pto_timeout, pto_space
       // Include max_ack_delay and backoff for Application Data.
       duration += max_ack_delay * (2 ^ pto_count)

@@ -3549,10 +3549,16 @@ communicated using the max_ack_delay transport parameter; see
 contract: an endpoint promises to never intentionally delay acknowledgments of
 an ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious or delayed
-retransmissions from the peer. For Initial and Handshake packets, a
-max_ack_delay of 0 is used. The sender uses the receiver's max_ack_delay value
+retransmissions from the peer. A sender uses the receiver's max_ack_delay value
 in determining timeouts for timer-based retransmission, as detailed in Section
 6.2 of {{QUIC-RECOVERY}}.
+
+An endpoint MUST acknowledge all ack-eliciting Initial and Handshake packets
+immediately and all ack-eliciting 0-RTT and 1-RTT packets within its advertised
+max_ack_delay, with the following exception. Prior to handshake confirmation, an
+endpoint might not have packet protection keys for decrypting Handshake, 0-RTT,
+or 1-RTT packets when they are received. It might therefore buffer them and
+acknowledge them when the requisite keys become available.
 
 Since packets containing only ACK frames are not congestion controlled, an
 endpoint MUST NOT send more than one such packet in response to receiving an
@@ -3699,14 +3705,18 @@ packet with the largest packet number is received and the time an acknowledgment
 is sent.  The endpoint encodes this acknowledgement delay in the ACK Delay field
 of an ACK frame; see {{frame-ack}}.  This allows the receiver of the ACK frame
 to adjust for any intentional delays, which is important for getting a better
-estimate of the path RTT when acknowledgments are delayed.  A packet might be
-held in the OS kernel or elsewhere on the host before being processed.  An
-endpoint MUST NOT include delays that it does not control when populating the
-ACK Delay field in an ACK frame.
+estimate of the path RTT when acknowledgments are delayed.
 
-Since the acknowledgement delay is not used for Initial and Handshake
-packets, the ACK Delay field in acknowledgements for those packet types
-SHOULD be set to 0.
+A packet might be held in the OS kernel or elsewhere on the host before being
+processed.  An endpoint MUST NOT include delays that it does not control when
+populating the ACK Delay field in an ACK frame. However, endpoints SHOULD
+include buffering delays caused by unavailability of decryption keys, since
+these delays can be large and are likely to be non-repeating.
+
+When the measured acknowledgement delay is larger than its max_ack_delay, an
+endpoint SHOULD report the measured delay. This information is especially useful
+during the handshake when delays might be large; see
+{{sending-acknowledgements}}.
 
 ### ACK Frames and Packet Protection
 
