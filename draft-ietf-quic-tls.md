@@ -1635,12 +1635,12 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection with a connection error of
 type AEAD_LIMIT_REACHED and not process any more packets.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 forged
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 invalid
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
-2^36 forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
-is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces the
-probability that an attacker can successfully forge a packet; see {{AEBounds}},
-{{ROBUST}}, and {{?GCM-MU}}.
+2^36 invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity
+limit is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
+the probability that an attacker can successfully forge a packet; see
+{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
 
 Future analyses and specifications MAY relax confidentiality or integrity limits
 for an AEAD.
