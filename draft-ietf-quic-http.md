@@ -1610,7 +1610,8 @@ implementation chooses.
 
 Frame types that were used in HTTP/2 where there is no corresponding HTTP/3
 frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
-sent, and receipt MAY be treated as an error of type H3_FRAME_UNEXPECTED.
+sent, and their receipt MUST be treated as a connection error of type
+H3_FRAME_UNEXPECTED.
 
 
 # Error Handling {#errors}
