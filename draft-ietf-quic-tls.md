@@ -1638,7 +1638,7 @@ type AEAD_LIMIT_REACHED and not process any more packets.
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 forged
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
 2^36 forged packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity limit
-is 2^23.5 forged packets; see {{ccm-bounds}}. Applying this limit reduces the
+is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces the
 probability that an attacker can successfully forge a packet; see {{AEBounds}},
 {{ROBUST}}, and {{?GCM-MU}}.
 
