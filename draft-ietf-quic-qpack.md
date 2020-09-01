@@ -1189,12 +1189,12 @@ This section describes potential areas of security concern with QPACK:
 
 ## Probing Dynamic Table State
 
-QPACK reduces the length of header field encodings by exploiting the redundancy
+QPACK reduces the encoded size of field sections by exploiting the redundancy
 inherent in protocols like HTTP. The ultimate goal of this is to reduce the
 amount of data that is required to send HTTP requests or responses.
 
-The compression context used to encode header fields can be probed by an
-attacker who can both define header fields to be encoded and transmitted and
+The compression context used to encode header and trailer fields can be probed
+by an attacker who can both define fields to be encoded and transmitted and
 observe the length of those fields once they are encoded. When an attacker can
 do both, they can adaptively modify requests in order to confirm guesses about
 the dynamic table state. If a guess is compressed into a shorter length, the
@@ -1208,9 +1208,9 @@ content.
 Note:
 
 : Padding schemes only provide limited protection against an attacker with these
-capabilities, potentially only forcing an increased number of guesses to learn
-the length associated with a given guess. Padding schemes also work directly
-against compression by increasing the number of bits that are transmitted.
+  capabilities, potentially only forcing an increased number of guesses to learn
+  the length associated with a given guess. Padding schemes also work directly
+  against compression by increasing the number of bits that are transmitted.
 
 Attacks like CRIME ([CRIME]) demonstrated the existence of these general
 attacker capabilities. The specific attack exploited the fact that DEFLATE
@@ -1221,12 +1221,13 @@ attack into a linear-time attack.
 ## Applicability to QPACK and HTTP
 
 QPACK mitigates but does not completely prevent attacks modeled on CRIME
-([CRIME]) by forcing a guess to match an entire header field value, rather than
+([CRIME]) by forcing a guess to match an entire field line, rather than
 individual characters. An attacker can only learn whether a guess is correct or
-not, so is reduced to a brute force guess for the header field values.
+not, so is reduced to a brute force guess for the field values associated with a
+given field name.
 
-The viability of recovering specific header field values therefore depends on
-the entropy of values. As a result, values with high entropy are unlikely to be
+The viability of recovering specific field values therefore depends on the
+entropy of values. As a result, values with high entropy are unlikely to be
 recovered successfully. However, values with low entropy remain vulnerable.
 
 Attacks of this nature are possible any time that two mutually distrustful
@@ -1249,51 +1250,51 @@ different web origins ({{?RFC6454}}) are made by mutually distrustful entities.
 
 ## Mitigation
 
-Users of HTTP that require confidentiality for header fields can use values with
-entropy sufficient to make guessing infeasible. However, this is impractical as
-a general solution because it forces all users of HTTP to take steps to mitigate
-attacks. It would impose new constraints on how HTTP is used.
+Users of HTTP that require confidentiality for header or trailer fields can use
+values with entropy sufficient to make guessing infeasible. However, this is
+impractical as a general solution because it forces all users of HTTP to take
+steps to mitigate attacks. It would impose new constraints on how HTTP is used.
 
 Rather than impose constraints on users of HTTP, an implementation of QPACK can
 instead constrain how compression is applied in order to limit the potential for
 dynamic table probing.
 
 An ideal solution segregates access to the dynamic table based on the entity
-that is constructing header fields. Header field values that are added to the
-table are attributed to an entity, and only the entity that created a particular
-value can extract that value.
+that is constructing the message. Field values that are added to the table are
+attributed to an entity, and only the entity that created a particular value can
+extract that value.
 
 To improve compression performance of this option, certain entries might be
 tagged as being public. For example, a web browser might make the values of the
 Accept-Encoding header field available in all requests.
 
-An encoder without good knowledge of the provenance of header fields might
-instead introduce a penalty for a header field with many different values, such
-that a large number of attempts to guess a header field value results in the
-header field not being compared to the dynamic table entries in future messages,
-effectively preventing further guesses.
+An encoder without good knowledge of the provenance of field values might
+instead introduce a penalty for many field lines with the same field name and
+different values.  This penalty could cause a large number of attempts to guess
+a field value to result in the field not being compared to the dynamic table
+entries in future messages, effectively preventing further guesses.
 
 Note:
 
-: Simply removing entries corresponding to the header field from the dynamic
-table can be ineffectual if the attacker has a reliable way of causing values to
-be reinstalled. For example, a request to load an image in a web browser
-typically includes the Cookie header field (a potentially highly valued target
-for this sort of attack), and web sites can easily force an image to be loaded,
-thereby refreshing the entry in the dynamic table.
+: Simply removing entries corresponding to the field from the dynamic table can
+  be ineffectual if the attacker has a reliable way of causing values to be
+  reinstalled. For example, a request to load an image in a web browser
+  typically includes the Cookie header field (a potentially highly valued target
+  for this sort of attack), and web sites can easily force an image to be
+  loaded, thereby refreshing the entry in the dynamic table.
 
-This response might be made inversely proportional to the length of the header
-field value. Disabling access to the dynamic table for a header field might
+This response might be made inversely proportional to the length of the
+field value. Disabling access to the dynamic table for a given field name might
 occur for shorter values more quickly or with higher probability than for longer
 values.
 
 ## Never-Indexed Literals
 
-Implementations can also choose to protect sensitive header fields by not
-compressing them and instead encoding their value as literals.
+Implementations can also choose to protect sensitive fields by not compressing
+them and instead encoding their value as literals.
 
-Refusing to insert a header field into the dynamic table is only
-effective if doing so is avoided on all hops. The never-indexed literal bit (see
+Refusing to insert a field line into the dynamic table is only effective if
+doing so is avoided on all hops. The never-indexed literal bit (see
 {{literal-name-reference}}) can be used to signal to intermediaries that a
 particular value was intentionally sent as a literal.
 
@@ -1303,21 +1304,20 @@ is used for re-encoding, a literal representation with the 'N' bit set MUST be
 used.  If HPACK is used for re-encoding, the never-indexed literal
 representation (see Section 6.2.3 of [RFC7541]) MUST be used.
 
-The choice to mark that a header field should never be indexed
-depends on several factors. Since QPACK does not protect against guessing an
-entire header field value, short or low-entropy values are more readily
-recovered by an adversary. Therefore, an encoder might choose not to index
-values with low entropy.
+The choice to mark that a field value should never be indexed depends on several
+factors. Since QPACK does not protect against guessing an entire field value,
+short or low-entropy values are more readily recovered by an adversary.
+Therefore, an encoder might choose not to index values with low entropy.
 
-An encoder might also choose not to index values for header fields that are
-considered to be highly valuable or sensitive to recovery, such as the Cookie or
+An encoder might also choose not to index values for fields that are considered
+to be highly valuable or sensitive to recovery, such as the Cookie or
 Authorization header fields.
 
-On the contrary, an encoder might prefer indexing values for header fields that
-have little or no value if they were exposed. For instance, a User-Agent header
-field does not commonly vary between requests and is sent to any server. In that
-case, confirmation that a particular User-Agent value has been used provides
-little value.
+On the contrary, an encoder might prefer indexing values for fields that have
+little or no value if they were exposed. For instance, a User-Agent header field
+does not commonly vary between requests and is sent to any server. In that case,
+confirmation that a particular User-Agent value has been used provides little
+value.
 
 Note that these criteria for deciding to use a never-indexed literal
 representation will evolve over time as new attacks are discovered.
@@ -1368,13 +1368,13 @@ wishes to track; no signaling to the decoder is required.  However, limiting
 references to the dynamic table will reduce compression effectiveness.
 
 The amount of temporary memory consumed by an encoder or decoder can be limited
-by processing header fields sequentially. A decoder implementation does not need
-to retain a complete list of header fields while decoding a header block. An
-encoder implementation does not need to retain a complete list of header fields
-while encoding a header block if it is using a single-pass algorithm.  Note
-that it might be necessary for an application to retain a complete
-header list for other reasons; even if QPACK does not force this to occur,
-application constraints might make this necessary.
+by processing field lines sequentially. A decoder implementation does not need
+to retain a complete list of field lines while decoding a field section. An
+encoder implementation does not need to retain a complete list of field lines
+while encoding a field section if it is using a single-pass algorithm.  Note
+that it might be necessary for an application to retain a complete list of field
+lines for other reasons; even if QPACK does not force this to occur, application
+constraints might make this necessary.
 
 While the negotiated limit on the dynamic table size accounts for much of the
 memory that can be consumed by a QPACK implementation, data that cannot be
@@ -1443,11 +1443,11 @@ are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 # Static Table
 
 This table was generated by analyzing actual Internet traffic in 2018 and
-including the most common headers, after filtering out some unsupported and
-non-standard values. Due to this methodology, some of the entries may be
-inconsistent or appear multiple times with similar but not identical values.
-The order of the entries is optimized to encode the most common headers with the
-smallest number of bytes.
+including the most common header fields, after filtering out some unsupported
+and non-standard values. Due to this methodology, some of the entries may be
+inconsistent or appear multiple times with similar but not identical values. The
+order of the entries is optimized to encode the most common header fields with
+the smallest number of bytes.
 
 | Index | Name                             | Value                                                       |
 | ----- | -------------------------------- | ----------------------------------------------------------- |
