@@ -6389,13 +6389,13 @@ attack is successful if an attacker can cause a peer to send a UDP datagram to
 a host that will perform some action based on content in the datagram.
 
 This section discusses ways in which QUIC might be used for request forgery
-attacks and describes countermeasures that can be implemented by QUIC
-endpoints. These actions are described on the assumption that potential targets
-for request forgery attacks take no action to protect against these attacks.
-While target services are encouraged to implement better protections, such as
-strong authentication that does not rely on implicit signals, this section
-describes mitigations that can be employed unilaterally by a QUIC
-implementation or deployment.
+attacks.
+
+This section also describes limited countermeasures that can be implemented by
+QUIC endpoints. These mitigations can be employed unilaterally by a QUIC
+implementation or deployment, without potential targets for request forgery
+attacks taking action. However these countermeasures could be insufficient if
+UDP-based services do not properly authorize requests.
 
 
 ### Control Options for Endpoints
