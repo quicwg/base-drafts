@@ -818,44 +818,46 @@ The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Slow Start
 
-While in slow start, QUIC increases the congestion window by the
-number of bytes acknowledged when each acknowledgment is processed, resulting
-in exponential growth of the congestion window.
+While in slow start, a NewReno sender increases the congestion window by the
+number of bytes acknowledged when each acknowledgment is processed, resulting in
+exponential growth of the congestion window.
 
-QUIC exits slow start upon loss or upon increase in the ECN-CE counter.
-When slow start is exited, the congestion window halves and the slow start
-threshold is set to the new congestion window.  QUIC re-enters slow start
-any time the congestion window is less than the slow start threshold,
-which only occurs after persistent congestion is declared.
+A sender MUST exit slow start and enter recovery when a loss is detected or when
+the ECN-CE counter reported by the peer increases.
+
+A sender re-enters slow start any time the congestion window is less than the
+slow start threshold, which only occurs after persistent congestion is declared.
 
 ## Congestion Avoidance
 
-Slow start exits to congestion avoidance.  Congestion avoidance uses an
-Additive Increase Multiplicative Decrease (AIMD) approach that increases
-the congestion window by one maximum packet size per congestion window
-acknowledged.  When a loss or ECN-CE marking is detected, NewReno halves
-the congestion window, sets the slow start threshold to the new
-congestion window, and then enters the recovery period.
+A NewReno sender in congestion avoidance uses an Additive Increase
+Multiplicative Decrease (AIMD) approach that MUST increase the congestion window
+by no more than one maximum datagram size per congestion window acknowledged.
+
+A sender MUST exit congestion avoidance and enter recovery when a loss is
+detected or when the ECN-CE counter reported by the peer increases.
 
 ## Recovery Period {#recovery-period}
 
-A recovery period is entered when loss or ECN-CE marking of a packet is
-detected in congestion avoidance after the congestion window and slow start
-threshold have been decreased.  A recovery period ends when a packet sent
-during the recovery period is acknowledged.  This is slightly different from
-TCP's definition of recovery, which ends when the lost packet that started
-recovery is acknowledged.
+A NewReno sender enters the recovery period when it detects loss or an ECN-CE
+mark is received. A recovery period ends when a packet sent during the recovery
+period is acknowledged.
+
+On entering a recovery period, a sender MUST set the slow start threshold to
+half the value of the congestion window at the moment that loss is detected. The
+congestion window MUST be set to the reduced value of the slow start threshold
+before exiting the recovery period.
+
+Implementations MAY set the congestion window immediately on entering a recovery
+period or use other mechanisms, such as Proportional Rate Reduction
+({{?PRR=RFC6937}}), to reduce it more gradually. If the congestion window is
+reduced immediately, a single packet can be sent prior to reduction. This speeds
+up loss recovery if the data in the lost packet is retransmitted and is similar
+to TCP as described in Section 5 of {{?RFC6675}}.
 
 The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during recovery, the congestion window remains unchanged
 irrespective of new losses or increases in the ECN-CE counter.
-
-When entering recovery, a single packet MAY be sent even if bytes in flight
-now exceeds the recently reduced congestion window.  This speeds up loss
-recovery if the data in the lost packet is retransmitted and is similar to TCP
-as described in Section 5 of {{?RFC6675}}.  If further packets are lost while
-the sender is in recovery, sending any packets in response MUST obey the
-congestion window limit.
 
 ## Ignoring Loss of Undecryptable Packets
 
@@ -1081,11 +1083,10 @@ Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
 limits and so no advantage is gained by doing so.
 
-Endpoints choose the congestion controller that they use.  Though congestion
-controllers generally treat reports of ECN-CE markings as equivalent to loss
-({{?RFC8311}}), the exact response for each controller could be different.
-Failure to correctly respond to information about ECN markings is therefore
-difficult to detect.
+Endpoints choose the congestion controller that they use. Congestion controllers
+respond to reports of ECN-CE by reducing their rate, but the response may vary.
+Markings can be treated as equivalent to loss ({{?RFC3168}}), but other
+responses can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}).
 
 
 # IANA Considerations
