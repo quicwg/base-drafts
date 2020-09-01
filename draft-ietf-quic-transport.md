@@ -2432,7 +2432,7 @@ The capacity available on the new path might not be the same as the old path.
 Packets sent on the old path MUST NOT contribute to congestion control or RTT
 estimation for the new path.
 
-On confirming a peer's ownership of its new address, an endpoint SHOULD
+On confirming a peer's ownership of its new address, an endpoint MUST
 immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Appendices A.3 and B.3 in {{QUIC-RECOVERY}})
 unless the change is only to the other endpoint's port number.  Because
