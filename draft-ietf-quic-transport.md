@@ -474,9 +474,10 @@ These state machines shown in this section are largely informative.  This
 document uses stream states to describe rules for when and how different types
 of frames can be sent and the reactions that are expected when different types
 of frames are received.  Though these state machines are intended to be useful
-in implementing QUIC, these states aren't intended to constrain implementations.
-An implementation can define a different state machine as long as its behavior
-is consistent with an implementation that implements these states.
+in implementing QUIC, these states are not intended to constrain
+implementations. An implementation can define a different state machine as long
+as its behavior is consistent with an implementation that implements these
+states.
 
 Note:
 
@@ -830,7 +831,7 @@ entire connection.  This leads to two levels of data flow control in QUIC:
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
 
-Senders MUST not send data in excess of either limit.
+Senders MUST NOT send data in excess of either limit.
 
 A receiver sets initial limits for all streams by sending transport parameters
 during the handshake ({{transport-parameters}}).  A receiver sends
@@ -846,9 +847,9 @@ control offset to be advertised.
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
 all streams.  A receiver maintains a cumulative sum of bytes received on all
-streams, which is used to check for flow control violations. A receiver might
-use a sum of bytes consumed on all streams to determine the maximum data limit
-to be advertised.
+streams, which is used to check for violations of the advertised connection or
+stream data limits. A receiver might use a sum of bytes consumed on all streams
+to determine the maximum data limit to be advertised.
 
 Once a receiver advertises a limit for the connection or a stream, it MAY
 advertise a smaller limit, but this has no effect.
@@ -969,7 +970,7 @@ If a max_streams transport parameter or MAX_STREAMS frame is received with a
 value greater than 2^60, this would allow a maximum stream ID that cannot be
 expressed as a variable-length integer; see {{integer-encoding}}.
 If either is received, the connection MUST be closed immediately with a
-connection error of type STREAM_LIMIT_ERROR; see {{immediate-close}}.
+connection error of type FRAME_ENCODING_ERROR; see {{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a frame with a stream ID exceeding the limit it has sent MUST treat
@@ -1042,7 +1043,7 @@ selected by endpoints; each endpoint selects the connection IDs that its peer
 uses.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP) do not cause packets for a QUIC
 connection to be delivered to the wrong endpoint.  Each endpoint selects
 connection IDs using an implementation-specific (and perhaps
 deployment-specific) method that will allow packets with that connection ID to
@@ -1075,8 +1076,9 @@ A zero-length connection ID can be used when a connection ID is not needed to
 route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
 failures in the presence of peer connection migration, NAT rebinding, and client
-port reuse; and therefore MUST NOT be done unless an endpoint is certain that
-those protocol features are not in use.
+port reuse. An endpoint MUST NOT use the same IP address and port for multiple
+connections with zero-length connection IDs, unless it is certain that those
+protocol features are not in use.
 
 When an endpoint uses a non-zero-length connection ID, it needs to ensure that
 the peer has a supply of connection IDs from which to choose for packets sent to
@@ -1129,7 +1131,7 @@ An endpoint SHOULD supply a new connection ID when the peer retires a connection
 ID.  If an endpoint provided fewer connection IDs than the peer's
 active_connection_id_limit, it MAY supply a new connection ID when it receives a
 packet with a previously unused connection ID.  An endpoint MAY limit the
-frequency or the total number of connection IDs issued for each connection to
+total number of connection IDs issued for each connection to
 avoid the risk of running out of connection IDs; see {{reset-token}}.  An
 endpoint MAY also limit the issuance of connection IDs to reduce the amount of
 per-path state it maintains, such as path validation status, as its peer
@@ -1219,18 +1221,21 @@ discarded if they indicate a different protocol version than that of the
 connection, or if the removal of packet protection is unsuccessful once the
 expected keys are available.
 
-Invalid packets without packet protection, such as Initial, Retry, or Version
-Negotiation, MAY be discarded.  An endpoint MUST generate a connection error if
-processing of the contents of these packets prior to discovering an error
-resulted in changes to the state of a connection that cannot be reverted.
+Invalid packets that lack strong integrity protection, such as Initial, Retry,
+or Version Negotiation, MAY be discarded. An endpoint MUST generate a
+connection error if processing the contents of these packets prior to
+discovering an error resulted in changes to connection state that
+cannot be reverted.
 
 
 ### Client Packet Handling {#client-pkt-handling}
 
 Valid packets sent to clients always include a Destination Connection ID that
-matches a value the client selects.  Clients that choose to receive
-zero-length connection IDs can use the local address and port to identify a
-connection.  Packets that don't match an existing connection are discarded.
+matches a value the client selects.  Clients that choose to receive zero-length
+connection IDs can use the local address and port to identify a connection.
+Packets that do not match an existing connection, based on Destination
+Connection ID or, if this value is zero-length, local IP address and port, are
+discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
 connection that are encrypted with a key it has not yet computed. The client MAY
@@ -1253,9 +1258,8 @@ The first packet for an unsupported version can use different semantics and
 encodings for any version-specific field.  In particular, different packet
 protection keys might be used for different versions.  Servers that do not
 support a particular version are unlikely to be able to decrypt the payload of
-the packet.  Servers SHOULD NOT attempt to decode or decrypt a packet from an
-unknown version, but instead send a Version Negotiation packet, provided that
-the packet is sufficiently long.
+the packet or properly interpret the result.  Servers SHOULD respond with a
+Version Negotiation packet, provided that the datagram is sufficiently long.
 
 Packets with a supported version, or no version field, are matched to a
 connection using the connection ID or - for packets with zero-length connection
@@ -1349,7 +1353,9 @@ The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
 SHOULD pad the first UDP datagram they send to the largest of the minimum
 datagram sizes from all versions they support. This ensures that the server
-responds if there is a mutually supported version.
+responds if there is a mutually supported version. A server might not send a
+Version Negotiation packet if the datagram it receives is smaller than the
+minimum size specified in a different version; see {{initial-size}}.
 
 
 ## Sending Version Negotiation Packets {#send-vn}
@@ -1460,8 +1466,9 @@ properties:
 * authenticated negotiation of an application protocol (TLS uses ALPN
   {{?RFC7301}} for this purpose)
 
-An endpoint verifies support for Explicit Congestion Notification (ECN) in the
-first packets it sends, as described in {{ecn-validation}}.
+An endpoint verifies support for Explicit Congestion Notification (ECN) by
+observing whether the ACK frames acknowledging the first packets it sends carry
+ECN counts, as described in {{ecn-validation}}.
 
 The CRYPTO frame can be sent in different packet number spaces
 ({{packet-numbers}}).  The offsets used by CRYPTO frames to ensure ordered
@@ -1766,16 +1773,17 @@ completes, the client uses the transport parameters established in the
 handshake.  Not all transport parameters are remembered, as some do not apply to
 future connections or they have no effect on use of 0-RTT.
 
-The definition of new transport parameters ({{new-transport-parameters}}) MUST
-specify whether they MUST, MAY, or MUST NOT be stored for 0-RTT. A client need
-not store a transport parameter it cannot process.
+The definition of a new transport parameter ({{new-transport-parameters}}) MUST
+specify whether storing the transport parameter for 0-RTT is mandatory,
+optional, or prohibited. A client need not store a transport parameter it cannot
+process.
 
 A client MUST NOT use remembered values for the following parameters:
 ack_delay_exponent, max_ack_delay, initial_source_connection_id,
 original_destination_connection_id, preferred_address,
 retry_source_connection_id, and stateless_reset_token. The client MUST use the
-server's new values in the handshake instead, and absent new values from the
-server, the default value.
+server's new values in the handshake instead; if the server does not provide new
+values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server. The server can remember these transport
@@ -1887,7 +1895,7 @@ confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
-Additionally, a server MAY consider the client address valididated if the
+Additionally, a server MAY consider the client address validated if the
 client uses a connection ID chosen by the server and the connection ID contains
 at least 64 bits of entropy.
 
@@ -1941,9 +1949,11 @@ servers.
 Upon receiving the client's Initial packet, the server can request address
 validation by sending a Retry packet ({{packet-retry}}) containing a token. This
 token MUST be repeated by the client in all Initial packets it sends for that
-connection after it receives the Retry packet.  In response to processing an
-Initial containing a token, a server can either abort the connection or permit
-it to proceed.
+connection after it receives the Retry packet.
+
+In response to processing an Initial containing a token that was provided in a
+Retry packet, a server cannot send another Retry packet; it can only refuse the
+connection or permit it to proceed.
 
 As long as it is not possible for an attacker to generate a valid token for
 its own address (see {{token-integrity}}) and the client is able to return
@@ -2172,8 +2182,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 ## Path Validation Responses
 
-On receiving a PATH_CHALLENGE frame, an endpoint MUST respond immediately by
-echoing the data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.
+On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
+endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+frame unless constrained by congestion control.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
@@ -2294,8 +2306,8 @@ willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
 When migrating, the new path might not support the endpoint's current sending
-rate. Therefore, the endpoint resets its congestion controller, as described in
-{{migration-cc}}.
+rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
+as described in {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
@@ -2400,13 +2412,10 @@ duplicate.  If the attacker is able to continue forwarding packets, it might be
 able to cause migration to a path via the attacker.  This places the attacker on
 path, giving it the ability to observe or drop all subsequent packets.
 
-Unlike the attack described in {{on-path-spoofing}}, the attacker can ensure
-that the new path is successfully validated.
-
-This style of attack relies on the attacker using a path that is approximately
-as fast as the direct path between endpoints.  The attack is more reliable if
-relatively few packets are sent or if packet loss coincides with the attempted
-attack.
+This style of attack relies on the attacker using a path that has approximately
+the same characteristics as the direct path between endpoints.  The attack is
+more reliable if relatively few packets are sent or if packet loss coincides
+with the attempted attack.
 
 A non-probing packet received on the original path that increases the maximum
 received packet number will cause the endpoint to move back to that path.
@@ -2448,14 +2457,15 @@ estimation for the new path.
 On confirming a peer's ownership of its new address, an endpoint MUST
 immediately reset the congestion controller and round-trip time estimator for
 the new path to initial values (see Appendices A.3 and B.3 in {{QUIC-RECOVERY}})
-unless it has knowledge that a previous send rate or round-trip time estimate is
-valid for the new path.  For instance, an endpoint might infer that a change in
-only the client's port number is indicative of a NAT rebinding, meaning that the
-new path is likely to have similar bandwidth and round-trip time. However, this
-determination will be imperfect.  If the determination is incorrect, the
-congestion controller and the RTT estimator are expected to adapt to the new
-path.  Generally, implementations are advised to be cautious when using previous
-values on a new path.
+unless the only change in the peer's address is its port number.  Because
+port-only changes are commonly the result of NAT rebinding or other middlebox
+activity, the endpoint MAY instead retain its congestion control state and
+round-trip estimate in those cases instead of reverting to initial values.
+In cases where congestion control state
+retained from an old path is used on a new path with substantially different
+characteristics, a sender may transmit too aggressively until the congestion
+controller and the RTT estimator have adapted. Generally, implementations are
+advised to be cautious when using previous values on a new path.
 
 There may be apparent reordering at the receiver when an endpoint sends data and
 probes from/to multiple addresses during the migration period, since the two
@@ -2488,8 +2498,8 @@ different local addresses, as discussed in {{connection-id}}.  For this to be
 effective, endpoints need to ensure that connection IDs they provide cannot be
 linked by any other entity.
 
-At any time, endpoints MAY change the Destination Connection ID they send to a
-value that has not been used on another path.
+At any time, endpoints MAY change the Destination Connection ID they transmit
+with to a value that has not been used on another path.
 
 An endpoint MUST NOT reuse a connection ID when sending from more than one local
 address, for example when initiating connection migration as described in
@@ -2530,8 +2540,8 @@ A client might wish to reduce linkability by employing a new connection ID and
 source UDP port when sending traffic after a period of inactivity.  Changing the
 UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that don't experience NAT rebindings or
-genuine migrations.  Changing port number can cause a peer to reset its
+migration are exercised even for clients that do not experience NAT rebindings
+or genuine migrations.  Changing port number can cause a peer to reset its
 congestion state (see {{migration-cc}}), so the port SHOULD only be changed
 infrequently.
 
@@ -2553,10 +2563,10 @@ address shared by multiple servers but would prefer to use a unicast address to
 ensure connection stability. This section describes the protocol for migrating a
 connection to a preferred server address.
 
-Migrating a connection to a new server address mid-connection is left for future
-work. If a client receives packets from a new server address when the client has
-not initiated a migration to that address, the client SHOULD discard these
-packets.
+Migrating a connection to a new server address mid-connection is not supported
+by the version of QUIC specified in this document. If a client receives packets
+from a new server address when the client has not initiated a migration to that
+address, the client SHOULD discard these packets.
 
 ### Communicating a Preferred Address
 
@@ -2572,7 +2582,7 @@ addresses provided by the server and initiate path validation (see
 active connection ID, taken from either the preferred_address transport
 parameter or a NEW_CONNECTION_ID frame.
 
-If path validation succeeds, the client SHOULD immediately begin sending all
+As soon as path validation succeeds, the client SHOULD begin sending all
 future packets to the new server address using the new connection ID and
 discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
@@ -2690,8 +2700,8 @@ idle timeout period to be at least three times the current Probe Timeout (PTO).
 ### Liveness Testing
 
 An endpoint that sends packets close to the effective timeout risks having
-them be discarded at the peer, since the peer might enter its draining state
-before these packets arrive.
+them be discarded at the peer, since the idle timeout period might have expired
+at the peer before these packets arrive.
 
 An endpoint can send a PING or another ack-eliciting frame to test the
 connection for liveness if the peer could time out soon, such as within a PTO;
@@ -2710,8 +2720,12 @@ An implementation of QUIC might provide applications with an option to defer an
 idle timeout.  This facility could be used when the application wishes to avoid
 losing state that has been associated with an open connection, but does not
 expect to exchange application data for some time.  With this option, an
-endpoint could send a PING frame periodically to defer an idle timeout; see
-{{frame-ping}}.
+endpoint could send a PING frame ({{frame-ping}}) periodically, which will cause
+the peer to restart its idle timeout period.  Sending a packet containing a PING
+frame restarts the idle timeout for this endpoint also if this is the first
+ack-eliciting packet sent since receiving a packet.  Sending a PING frame causes
+the peer to respond with an acknowledgment, which also restarts the idle
+timeout for the endpoint.
 
 Application protocols that use QUIC SHOULD provide guidance on when deferring an
 idle timeout is appropriate.  Unnecessary sending of PING frames could have a
@@ -2734,24 +2748,66 @@ streams to immediately become closed; open streams can be assumed to be
 implicitly reset.
 
 After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
-closing state.
+closing state; see {{closing}}. After receiving a CONNECTION_CLOSE frame,
+endpoints enter the draining state; see {{draining}}.
 
-During the closing period, an endpoint that sends a CONNECTION_CLOSE frame
-SHOULD respond to any incoming packet that can be decrypted with another packet
-containing a CONNECTION_CLOSE frame.  Such an endpoint SHOULD limit the number
-of packets it generates containing a CONNECTION_CLOSE frame.  For instance, an
-endpoint could wait for a progressively increasing number of received packets or
-amount of time before responding to a received packet.
+An immediate close can be used after an application protocol has arranged to
+close a connection.  This might be after the application protocol negotiates a
+graceful shutdown.  The application protocol can exchange messages that are
+needed for both application endpoints to agree that the connection can be
+closed, after which the application requests that QUIC close the connection.
+When QUIC consequently closes the connection, a CONNECTION_CLOSE frame with an
+application-supplied error code will be used to signal closure to the peer.
 
-An endpoint is allowed to drop the packet protection keys when entering the
-closing period ({{draining}}) and send a packet containing a CONNECTION_CLOSE in
-response to any UDP datagram that is received.  However, an endpoint without the
-packet protection keys cannot identify and discard invalid packets.  To avoid
-creating an unwitting amplification attack, such endpoints MUST limit the
-cumulative size of packets containing a CONNECTION_CLOSE frame to 3 times the
-cumulative size of the packets that cause those packets to be sent.  To minimize
-the state that an endpoint maintains for a closing connection, endpoints MAY
-send the exact same packet.
+The closing and draining connection states exist to ensure that connections
+close cleanly and that delayed or reordered packets are properly discarded.
+These states SHOULD persist for at least three times the current Probe Timeout
+(PTO) interval as defined in {{QUIC-RECOVERY}}.
+
+Disposing of connection state prior to exiting the closing or draining state
+could cause could result in an endpoint generating a stateless reset
+unnecessarily when it receives a late-arriving packet.  Endpoints that have some
+alternative means to ensure that late-arriving packets do not induce a response,
+such as those that are able to close the UDP socket, MAY end these states
+earlier to allow for faster resource recovery.  Servers that retain an open
+socket for accepting new connections SHOULD NOT end the closing or draining
+states early.
+
+Once its closing or draining state ends, an endpoint SHOULD discard all
+connection state.  The endpoint MAY send a stateless reset in response to any
+further incoming packets belonging to this connection.
+
+
+### Closing Connection State {#closing}
+
+An endpoint enters the closing state after initiating an immediate close.
+
+In the closing state, an endpoint retains only enough information to generate a
+packet containing a CONNECTION_CLOSE frame and to identify packets as belonging
+to the connection. An endpoint in the closing state sends a packet containing a
+CONNECTION_CLOSE frame in response to any incoming packet that it attributes to
+the connection.
+
+An endpoint SHOULD limit the rate at which it generates packets in the closing
+state. For instance, an endpoint could wait for a progressively increasing
+number of received packets or amount of time before responding to received
+packets.
+
+An endpoint's selected connection ID and the QUIC version are sufficient
+information to identify packets for a closing connection; the endpoint MAY
+discard all other connection state. An endpoint that is closing is not required
+to process any received frame. An endpoint MAY retain packet protection keys for
+incoming packets to allow it to read and process a CONNECTION_CLOSE frame.
+
+An endpoint MAY drop packet protection keys when entering the closing state and
+send a packet containing a CONNECTION_CLOSE frame in response to any UDP
+datagram that is received. However, an endpoint that discards packet protection
+keys cannot identify and discard invalid packets. To avoid being used for an
+amplication attack, such endpoints MUST limit the cumulative size of packets it
+sends to three times the cumulative size of the packets that are received and
+attributed to the connection. To minimize the state that an endpoint maintains
+for a closing connection, endpoints MAY send the exact same packet in response
+to any received packet.
 
 Note:
 
@@ -2761,26 +2817,38 @@ Note:
   congestion control, which are not expected to be relevant for a closed
   connection. Retransmitting the final packet requires less state.
 
-New packets from unverified addresses could be used to create an amplification
-attack; see {{address-validation}}.  To avoid this, endpoints MUST either limit
-transmission of CONNECTION_CLOSE frames to validated addresses or drop packets
-without response if the response would be more than three times larger than the
-received packet.
+While in the closing state, an endpoint could receive packets from a new source
+address, possibly indicating a connection migration; see {{migration}}.  An
+endpoint in the closing state MUST either discard packets received from an
+unvalidated address or limit the cumulative size of packets it sends to an
+unvalidated address to three times the size of packets it receives from that
+address.
 
-After receiving a CONNECTION_CLOSE frame, endpoints enter the draining state.
+An endpoint is not expected to handle key updates when it is closing (Section 6
+of {{QUIC-TLS}}). A key update might prevent the endpoint from moving from the
+closing state to the draining state, as the endpoint will not be able to process
+subsequently received packets, but it otherwise has no impact.
+
+
+### Draining Connection State {#draining}
+
+The draining state is entered once an endpoint receives a CONNECTION_CLOSE
+frame, which indicates that its peer is closing or draining. While otherwise
+identical to the closing state, an endpoint in the draining state MUST NOT send
+any packets. Retaining packet protection keys is unnecessary once a connection
+is in the draining state.
+
 An endpoint that receives a CONNECTION_CLOSE frame MAY send a single packet
 containing a CONNECTION_CLOSE frame before entering the draining state, using a
-CONNECTION_CLOSE frame and a NO_ERROR code if appropriate.  An endpoint MUST NOT
-send further packets, which could result in a constant exchange of
-CONNECTION_CLOSE frames until the closing period on either peer ended.
+NO_ERROR code if appropriate.  An endpoint MUST NOT send further packets. Doing
+so could result in a constant exchange of CONNECTION_CLOSE frames until one of
+the endpoints exits the closing state.
 
-An immediate close can be used after an application protocol has arranged to
-close a connection.  This might be after the application protocols negotiates a
-graceful shutdown.  The application protocol exchanges whatever messages that
-are needed to cause both endpoints to agree to close the connection, after which
-the application requests that the connection be closed.  When the application
-closes the connection, a CONNECTION_CLOSE frame with an appropriate error code
-will be used to signal closure.
+An endpoint MAY enter the draining state from the closing state if it receives a
+CONNECTION_CLOSE frame, which indicates that the peer is also closing or
+draining. In this case, the draining state SHOULD end when the closing state
+would have ended. In other words, the endpoint uses the same end time, but
+ceases transmission of any packets on this connection.
 
 
 ### Immediate Close During the Handshake {#immediate-close-hs}
@@ -2821,8 +2889,8 @@ when converting to a CONNECTION_CLOSE of type 0x1c.
 CONNECTION_CLOSE frames sent in multiple packet types can be coalesced into a
 single UDP datagram; see {{packet-coalesce}}.
 
-An endpoint might send a CONNECTION_CLOSE frame in an Initial packet or in
-response to unauthenticated information received in Initial or Handshake
+An endpoint can send a CONNECTION_CLOSE frame in an Initial packet.  This might
+be in response to unauthenticated information received in Initial or Handshake
 packets.  Such an immediate close might expose legitimate connections to a
 denial of service.  QUIC does not include defensive measures for on-path attacks
 during the handshake; see {{handshake-dos}}.  However, at the cost of reducing
@@ -2855,7 +2923,7 @@ To support this process, a token is sent by endpoints.  The token is carried in
 the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
 specify a stateless_reset_token transport parameter during the handshake that
 applies to the connection ID that it selected during the handshake; clients
-cannot use this transport parameter because their transport parameters don't
+cannot use this transport parameter because their transport parameters do not
 have confidentiality protection.  These tokens are protected by encryption, so
 only client and server know their value.  Tokens are invalidated when their
 associated connection ID is retired via a RETIRE_CONNECTION_ID frame
@@ -2886,14 +2954,15 @@ be a packet with a short header.  For the stateless reset to appear as a valid
 QUIC packet, the Unpredictable Bits field needs to include at least 38 bits of
 data (or 5 bytes, less the two fixed bits).
 
-A minimum size of 21 bytes does not guarantee that a stateless reset is
-difficult to distinguish from other packets if the recipient requires the use of
-a connection ID.  To prevent a resulting stateless reset from being trivially
-distinguishable from a valid packet, all packets sent by an endpoint SHOULD be
-padded to at least 22 bytes longer than the minimum connection ID that the
-endpoint might use.  An endpoint that sends a stateless reset in response to a
-packet that is 43 bytes or less in length SHOULD send a stateless reset that is
-one byte shorter than the packet it responds to.
+The resulting minimum size of 21 bytes does not guarantee that a stateless reset
+is difficult to distinguish from other packets if the recipient requires the use
+of a connection ID. To achieve that end, the endpoint SHOULD pad all packets it
+sends to at least 22 bytes longer than the minimum connection ID that it might
+request the peer to include in packets that the peer sends.  This ensures that
+any stateless reset sent by the peer is indistinguishable from a valid packet
+sent to the endpoint.  An endpoint that sends a stateless reset in response to a
+packet that is 43 bytes or shorter SHOULD send a stateless reset that is one
+byte shorter than the packet it responds to.
 
 These values assume that the Stateless Reset Token is the same length as the
 minimum expansion of the packet protection AEAD.  Additional unpredictable bytes
@@ -3060,63 +3129,6 @@ useful in detecting cases of broken connections where only very small packets
 are sent; such failures might only be detected by other means, such as timers.
 
 
-## Closing and Draining Connection States {#draining}
-
-The closing and draining connection states exist to ensure that connections
-close cleanly and that delayed or reordered packets are properly discarded.
-These states SHOULD persist for at least three times the current Probe Timeout
-(PTO) interval as defined in {{QUIC-RECOVERY}}.
-
-An endpoint enters a closing period after initiating an immediate close;
-{{immediate-close}}.  While closing, an endpoint MUST NOT send packets unless
-they contain a CONNECTION_CLOSE frame; see {{immediate-close}} for details.  An
-endpoint retains only enough information to generate a packet containing a
-CONNECTION_CLOSE frame and to identify packets as belonging to the connection.
-The endpoint's selected connection ID and the QUIC version are sufficient
-information to identify packets for a closing connection; an endpoint can
-discard all other connection state. An endpoint MAY retain packet protection
-keys for incoming packets to allow it to read and process a CONNECTION_CLOSE
-frame.
-
-The draining state is entered once an endpoint receives a signal that its peer
-is closing or draining.  While otherwise identical to the closing state, an
-endpoint in the draining state MUST NOT send any packets.  Retaining packet
-protection keys is unnecessary once a connection is in the draining state.
-
-An endpoint MAY transition from the closing period to the draining period if it
-receives a CONNECTION_CLOSE frame or stateless reset, both of which indicate
-that the peer is also closing or draining.  The draining period SHOULD end when
-the closing period would have ended.  In other words, the endpoint can use the
-same end time, but cease retransmission of the closing packet.
-
-Disposing of connection state prior to the end of the closing or draining period
-could cause delayed or reordered packets to generate an unnecessary stateless
-reset. Endpoints that have some alternative means to ensure that late-arriving
-packets on the connection do not induce a response, such as those that are able
-to close the UDP socket, MAY use an abbreviated draining period to allow
-for faster resource recovery.  Servers that retain an open socket for accepting
-new connections SHOULD NOT exit the closing or draining period early.
-
-Once the closing or draining period has ended, an endpoint SHOULD discard all
-connection state.  This results in new packets on the connection being handled
-generically.  For instance, an endpoint MAY send a stateless reset in response
-to any further incoming packets.
-
-The draining and closing periods do not apply when a stateless reset
-({{stateless-reset}}) is sent.
-
-An endpoint is not expected to handle key updates when it is closing or
-draining.  A key update might prevent the endpoint from moving from the closing
-state to draining, but it otherwise has no impact.
-
-While in the closing period, an endpoint could receive packets from a new source
-address, indicating a connection migration; {{migration}}. An endpoint in the
-closing state MUST strictly limit the number of packets it sends to this new
-address until the address is validated; see {{migrate-validate}}. A server in
-the closing state MAY instead choose to discard packets received from a new
-source address.
-
-
 # Error Handling {#error-handling}
 
 An endpoint that detects an error SHOULD signal the existence of that error to
@@ -3204,30 +3216,35 @@ after a connection is established and 1-RTT keys are available; see
 
 ## Protected Packets {#packet-protected}
 
-All QUIC packets except Version Negotiation packets use authenticated encryption
-with associated data (AEAD) {{!RFC5116}} to provide confidentiality and
-integrity protection.  Retry packets use AEAD to provide integrity protection.
-Details of packet protection are found in {{QUIC-TLS}}; this section includes an
-overview of the process.
+QUIC packets have different levels of cryptographic protection based on the
+type of packet. Details of packet protection are found in {{QUIC-TLS}}; this
+section includes an overview of the protections that are provided.
 
-Initial packets are protected using keys that are statically derived. This
-packet protection is not effective confidentiality protection.  Initial
-protection only exists to ensure that the sender of the packet is on the network
-path. Any entity that receives the Initial packet from a client can recover the
-keys necessary to remove packet protection or to generate packets that will be
-successfully authenticated.
+Version Negotiation packets have no cryptographic protection; see
+{{QUIC-INVARIANTS}}.
+
+Retry packets use an authenticated encryption with associated data function
+(AEAD; {{?AEAD=RFC5116}}) to protect against accidental modification.
+
+Initial packets use an AEAD, the keys for which are derived using a value that
+is visible on the wire. Initial packets therefore do not have effective
+confidentiality protection. Initial protection exists to ensure that the sender
+of the packet is on the network path. Any entity that receives an Initial packet
+from a client can recover the keys that will allow them to both read the
+contents of the packet and generate Initial packets that will be successfully
+authenticated at either endpoint.
 
 All other packets are protected with keys derived from the cryptographic
-handshake. The type of the packet from the long header or key phase from the
-short header are used to identify which encryption keys are used. Packets
-protected with 0-RTT and 1-RTT keys are expected to have confidentiality and
-data origin authentication; the cryptographic handshake ensures that only the
-communicating endpoints receive the corresponding keys.
+handshake.  The cryptographic handshake ensures that only the communicating
+endpoints receive the corresponding keys for Handshake, 0-RTT, and 1-RTT
+packets.  Packets protected with 0-RTT and 1-RTT keys have strong
+confidentiality and integrity protection.
 
-The packet number field contains a packet number, which has additional
-confidentiality protection that is applied after packet protection is applied;
-see {{QUIC-TLS}} for details.  The underlying packet number increases with each
-packet sent in a given packet number space; see {{packet-numbers}} for details.
+The Packet Number field that appears in some packet types has alternative
+confidentiality protection that is applied as part of header protection; see
+Section 5.4 of {{QUIC-TLS}} for details. The underlying packet number increases
+with each packet sent in a given packet number space; see {{packet-numbers}} for
+details.
 
 
 ## Coalescing Packets {#packet-coalesce}
@@ -3417,7 +3434,9 @@ ih:
   packets.
 
 Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
-that all frames can appear in 1-RTT packets.
+that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
+a frame in a packet type that is not permitted as a connection error of type
+PROTOCOL_VIOLATION.
 
 The "Spec" column in  {{frame-types}} summarizes any special rules governing the
 processing or generation of the frame type, as indicated by the following
@@ -3577,6 +3596,9 @@ non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
 ack-eliciting packet has been received to include an ACK frame with outgoing
 frames.
 
+A receiver MUST NOT send an ack-eliciting frame in all packets that would
+otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
+acknowledgements.
 
 ### Acknowledgement Frequency
 
@@ -3620,35 +3642,12 @@ spuriously retransmitting the frames it contains.  An ACK frame is expected
 to fit within a single QUIC packet.  If it does not, then older ranges
 (those with the smallest packet numbers) are omitted.
 
-{{ack-tracking}} and {{ack-limiting}} describe an exemplary approach for
-determining what packets to acknowledge in each ACK frame.  Though the goal of
-these algorithms is to generate an acknowledgment for every packet that is
-processed, it is still possible for acknowledgments to be lost.  A sender cannot
-expect to receive an acknowledgment for every packet that the receiver
-processes.
-
-
-### Receiver Tracking of ACK Frames {#ack-tracking}
-
-When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
-receiver can stop acknowledging packets less than or equal to the largest
-acknowledged in the sent ACK frame.
-
-In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
-reordering. In cases with ACK frame loss and reordering, this approach does not
-guarantee that every acknowledgement is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and all
-subsequent ACK frames containing them could be lost. In this case, the loss
-recovery algorithm could cause spurious retransmissions, but the sender will
-continue making forward progress.
-
-### Limiting ACK Ranges {#ack-limiting}
-
 A receiver limits the number of ACK Ranges ({{ack-ranges}}) it remembers and
 sends in ACK frames, both to limit the size of ACK frames and to avoid resource
 exhaustion. After receiving acknowledgments for an ACK frame, the receiver
-SHOULD stop tracking those acknowledged ACK Ranges.
+SHOULD stop tracking those acknowledged ACK Ranges.  Senders can expect
+acknowledgements for most packets, but QUIC does not guarantee receipt of an
+acknowledgment for every packet that the receiver processes.
 
 It is possible that retaining many ACK Ranges could cause an ACK frame to become
 too large. A receiver can discard unacknowledged ACK Ranges to limit ACK frame
@@ -3672,6 +3671,18 @@ validation at a sender and including a lower value than what was included in a
 previous ACK frame could cause ECN to be unnecessarily disabled; see
 {{ecn-validation}}.
 
+{{ack-tracking}} describes an exemplary approach for determining what packets
+to acknowledge in each ACK frame.  Though the goal of this algorithm is to
+generate an acknowledgment for every packet that is processed, it is still
+possible for acknowledgments to be lost.
+
+### Limiting Ranges by Tracking ACK Frames {#ack-tracking}
+
+When a packet containing an ACK frame is sent, the largest acknowledged in that
+frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+receiver can stop acknowledging packets less than or equal to the largest
+acknowledged in the sent ACK frame.
+
 A receiver that sends only non-ack-eliciting packets, such as ACK frames, might
 not receive an acknowledgement for a long period of time.  This could cause the
 receiver to maintain state for a large number of ACK frames for a long period of
@@ -3679,10 +3690,13 @@ time, and ACK frames it sends could be unnecessarily large.  In such a case, a
 receiver could send a PING or other small ack-eliciting frame occasionally,
 such as once per round trip, to elicit an ACK from the peer.
 
-A receiver MUST NOT send an ack-eliciting frame in all packets that would
-otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
-acknowledgements.
-
+In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
+reordering. In cases with ACK frame loss and reordering, this approach does not
+guarantee that every acknowledgement is seen by the sender before it is no
+longer included in the ACK frame. Packets could be received out of order and all
+subsequent ACK frames containing them could be lost. In this case, the loss
+recovery algorithm could cause spurious retransmissions, but the sender will
+continue making forward progress.
 
 ### Measuring and Reporting Host Delay {#host-delay}
 
@@ -3846,6 +3860,10 @@ congestion in the network by setting a codepoint in the IP header of a packet
 instead of dropping it.  Endpoints react to congestion by reducing their sending
 rate in response, as described in {{QUIC-RECOVERY}}.
 
+Note that supporting ECN requires being able to set and read the ECN codepoints
+in the IP headers of datagrams carrying QUIC packets. On platforms where
+ this is not possible, QUIC cannot support ECN.
+
 To use ECN, QUIC endpoints first determine whether a path supports ECN marking
 and the peer is able to access the ECN codepoint in the IP header.  A network
 path does not support ECN if ECN marked packets get dropped or ECN markings are
@@ -3859,9 +3877,7 @@ during connection establishment and when migrating to a new path
 On receiving a QUIC packet with an ECT or CE codepoint, an ECN-enabled endpoint
 that can access the ECN codepoints from the enclosing IP packet increases the
 corresponding ECT(0), ECT(1), or CE count, and includes these counts in
-subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.  Note that
-this requires being able to read the ECN codepoints from the enclosing IP
-packet, which is not possible on all platforms.
+subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
 
 An IP packet that results in no QUIC packets being processed does not increase
 ECN counts.  A QUIC packet detected by a receiver as a duplicate does not
@@ -3891,7 +3907,7 @@ application data packet number space will be increased by two.
 It is possible for faulty network devices to corrupt or erroneously drop packets
 with ECN markings.  To provide robust connectivity in the presence of such
 devices, each endpoint independently validates ECN counts and disables ECN if
-errors are detected.
+the path is not showing consistent support for ECN.
 
 Endpoints validate ECN for packets sent on each network path independently.  An
 endpoint thus validates ECN on new connection establishment, when switching to a
@@ -4362,10 +4378,9 @@ Destination Connection ID Length:
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
   unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
-  Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  Endpoints that receive a version 1 long header with a value larger than 20
+  MUST drop the packet.  In order to properly form a Version Negotiation packet,
+  servers SHOULD be able to read longer connection IDs from other QUIC versions.
 
 Destination Connection ID:
 
@@ -4378,10 +4393,10 @@ Source Connection ID Length:
 : The byte following the Destination Connection ID contains the length in bytes
   of the Source Connection ID field that follows it.  This length is encoded as
   a 8-bit unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20
-  bytes. Endpoints that receive a version 1 long header with a value larger than
-  20 MUST drop the packet. Servers SHOULD be able to read longer connection IDs
-  from other QUIC versions in order to properly form a version negotiation
-  packet.
+  bytes.  Endpoints that receive a version 1 long header with a value larger
+  than 20 MUST drop the packet.  In order to properly form a Version Negotiation
+  packet, servers SHOULD be able to read longer connection IDs from other QUIC
+  versions.
 
 Source Connection ID:
 
@@ -4787,13 +4802,18 @@ acknowledged by a client.
 
 #### Continuing a Handshake After Retry {#retry-continue}
 
-The next Initial packet from the client uses the connection ID and token values
-from the Retry packet; see {{negotiating-connection-ids}}.  Aside from this,
-the Initial packet sent by the client is subject to the same restrictions as the
-first Initial packet.  A client MUST use the same cryptographic handshake
-message it included in this packet.  A server MAY treat a packet that
-contains a different cryptographic handshake message as a connection error or
-discard it.
+Subsequent Initial packets from the client include the connection ID and token
+values from the Retry packet. The client copies the Source Connection ID field
+from the Retry packet to the Destination Connection ID field and uses this
+value until an Initial packet with an updated value is received; see
+{{negotiating-connection-ids}}. The value of the Token field is copied to all
+subsequent Initial packets; see {{validate-retry}}.
+
+Other than updating the Destination Connection ID and Token fields, the Initial
+packet sent by the client is subject to the same restrictions as the first
+Initial packet.  A client MUST use the same cryptographic handshake message it
+included in this packet.  A server MAY treat a packet that contains a different
+cryptographic handshake message as a connection error or discard it.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client MUST NOT change
@@ -4905,6 +4925,7 @@ version-independent.  The remaining fields are specific to the selected QUIC
 version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
+
 ### Latency Spin Bit {#spin-bit}
 
 The latency spin bit enables passive latency monitoring from observation points
@@ -4933,28 +4954,28 @@ bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
-value and sets the spin bit in the short header to the currently stored
-value when a packet with a short header is sent out. The spin value is
-initialized to 0 in the endpoint at connection start.  Each endpoint also
-remembers the highest packet number seen from its peer on the connection.
+value for each network path and sets the spin bit in the short header to the
+currently stored value when a packet with a short header is sent on that path.
+The spin value is initialized to 0 in the endpoint for each network path. Each
+endpoint also remembers the highest packet number seen from its peer on each
+path.
 
-When a server receives a short header packet that increments the highest
-packet number seen by the server from the client, it sets the spin value to be
-equal to the spin bit in the received packet.
+When a server receives a short header packet that increases the highest packet
+number seen by the server from the client on a given network path, it sets the
+spin value for that path to be equal to the spin bit in the received packet.
 
-When a client receives a short header packet that increments the highest
-packet number seen by the client from the server, it sets the spin value to the
-inverse of the spin bit in the received packet.
+When a client receives a short header packet that increases the highest packet
+number seen by the client from the server on a given network path, it sets the
+spin value for that path to the inverse of the spin bit in the received packet.
 
-An endpoint resets its spin value to zero when sending the first packet of a
-given connection with a new connection ID. This reduces the risk that transient
-spin bit state can be used to link flows across connection migration or ID
-change.
+An endpoint resets the spin value for a network path to zero when changing the
+connection ID being used on that network path.
 
 With this mechanism, the server reflects the spin value received, while the
 client 'spins' it after one RTT. On-path observers can measure the time
 between two spin bit toggle events to estimate the end-to-end RTT of a
 connection.
+
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
@@ -5031,7 +5052,7 @@ stateless_reset_token (0x02):
 max_udp_payload_size (0x03):
 
 : The maximum UDP payload size parameter is an integer value that limits the
-  size of UDP payloads that the endpoint is willing to receive.  UDP packets
+  size of UDP payloads that the endpoint is willing to receive.  UDP datagrams
   with payloads larger than this limit are not likely to be processed by the
   receiver.
 
@@ -5216,16 +5237,16 @@ As described in {{frames}}, packets contain one or more frames. This section
 describes the format and semantics of the core QUIC frame types.
 
 
-## PADDING Frame {#frame-padding}
+## PADDING Frames {#frame-padding}
 
-The PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
+A PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
 client packet to the minimum required size, or to provide protection against
 traffic analysis for protected packets.
 
-As shown in {{padding-format}}, a PADDING frame has no content.  That is, a
-PADDING frame consists of the single byte that identifies the frame as a PADDING
-frame.
+PADDING frames are formatted as shown in {{padding-format}}, which shows that
+PADDING frames have no content. That is, a PADDING frame consists of the single
+byte that identifies the frame as a PADDING frame.
 
 ~~~
 PADDING Frame {
@@ -5235,11 +5256,13 @@ PADDING Frame {
 {: #padding-format title="PADDING Frame Format"}
 
 
-## PING Frame {#frame-ping}
+## PING Frames {#frame-ping}
 
 Endpoints can use PING frames (type=0x01) to verify that their peers are still
-alive or to check reachability to the peer. As shown in {{ping-format}}, a PING
-frame has no content.
+alive or to check reachability to the peer.
+
+PING frames are formatted as shown in {{ping-format}}, which shows that PING
+frames have no content.
 
 ~~~
 PING Frame {
@@ -5280,7 +5303,7 @@ Version Negotiation and Retry packets cannot be acknowledged because they do not
 contain a packet number.  Rather than relying on ACK frames, these packets are
 implicitly acknowledged by the next Initial packet sent by the client.
 
-An ACK frame is shown in {{ack-format}}.
+ACK frames are formatted as shown in {{ack-format}}.
 
 ~~~
 ACK Frame {
@@ -5441,7 +5464,7 @@ CE Count:
 ECN counts are maintained separately for each packet number space.
 
 
-## RESET_STREAM Frame {#frame-reset-stream}
+## RESET_STREAM Frames {#frame-reset-stream}
 
 An endpoint uses a RESET_STREAM frame (type=0x04) to abruptly terminate the
 sending part of a stream.
@@ -5453,7 +5476,7 @@ discard any data that it already received on that stream.
 An endpoint that receives a RESET_STREAM frame for a send-only stream MUST
 terminate the connection with error STREAM_STATE_ERROR.
 
-The RESET_STREAM frame is shown in {{fig-reset-stream}}.
+RESET_STREAM frames are formatted as shown in {{fig-reset-stream}}.
 
 ~~~
 RESET_STREAM Frame {
@@ -5484,7 +5507,7 @@ Final Size:
   RESET_STREAM sender, in unit of bytes; see {{final-size}}.
 
 
-## STOP_SENDING Frame {#frame-stop-sending}
+## STOP_SENDING Frames {#frame-stop-sending}
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
 data is being discarded on receipt at application request.  STOP_SENDING
@@ -5497,7 +5520,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 STOP_SENDING frame for a receive-only stream MUST terminate the connection with
 error STREAM_STATE_ERROR.
 
-The STOP_SENDING frame is shown in {{fig-stop-sending}}.
+STOP_SENDING frames are formatted as shown in {{fig-stop-sending}}.
 
 ~~~
 STOP_SENDING Frame {
@@ -5520,16 +5543,16 @@ Application Protocol Error Code:
   sender is ignoring the stream; see {{app-error-codes}}.
 
 
-## CRYPTO Frame {#frame-crypto}
+## CRYPTO Frames {#frame-crypto}
 
-The CRYPTO frame (type=0x06) is used to transmit cryptographic handshake
-messages. It can be sent in all packet types except 0-RTT. The CRYPTO frame
-offers the cryptographic protocol an in-order stream of bytes.  CRYPTO frames
-are functionally identical to STREAM frames, except that they do not bear a
-stream identifier; they are not flow controlled; and they do not carry markers
-for optional offset, optional length, and the end of the stream.
+A CRYPTO frame (type=0x06) is used to transmit cryptographic handshake messages.
+It can be sent in all packet types except 0-RTT. The CRYPTO frame offers the
+cryptographic protocol an in-order stream of bytes.  CRYPTO frames are
+functionally identical to STREAM frames, except that they do not bear a stream
+identifier; they are not flow controlled; and they do not carry markers for
+optional offset, optional length, and the end of the stream.
 
-The CRYPTO frame is shown in {{fig-crypto}}.
+CRYPTO frames are formatted as shown in {{fig-crypto}}.
 
 ~~~
 CRYPTO Frame {
@@ -5572,12 +5595,12 @@ level. The stream does not have an explicit end, so CRYPTO frames do not have a
 FIN bit.
 
 
-## NEW_TOKEN Frame {#frame-new-token}
+## NEW_TOKEN Frames {#frame-new-token}
 
 A server sends a NEW_TOKEN frame (type=0x07) to provide the client with a token
 to send in the header of an Initial packet for a future connection.
 
-The NEW_TOKEN frame is shown in {{fig-new-token}}.
+NEW_TOKEN frames are formatted as shown in {{fig-new-token}}.
 
 ~~~
 NEW_TOKEN Frame {
@@ -5635,7 +5658,7 @@ An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
 receives a STREAM frame for a locally-initiated stream that has not yet been
 created, or for a send-only stream.
 
-The STREAM frames are shown in {{fig-stream}}.
+STREAM frames are formatted as shown in {{fig-stream}}.
 
 ~~~
 STREAM Frame {
@@ -5682,12 +5705,12 @@ frame that exceeds this limit MUST be treated as a connection error of type
 FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
-## MAX_DATA Frame {#frame-max-data}
+## MAX_DATA Frames {#frame-max-data}
 
-The MAX_DATA frame (type=0x10) is used in flow control to inform the peer of
-the maximum amount of data that can be sent on the connection as a whole.
+A MAX_DATA frame (type=0x10) is used in flow control to inform the peer of the
+maximum amount of data that can be sent on the connection as a whole.
 
-The MAX_DATA frame is shown in {{fig-max-data}}.
+MAX_DATA frames are formatted as shown in {{fig-max-data}}.
 
 ~~~
 MAX_DATA Frame {
@@ -5712,9 +5735,9 @@ maximum data value that it has sent.  This includes violations of remembered
 limits in Early Data; see {{zerortt-parameters}}.
 
 
-## MAX_STREAM_DATA Frame {#frame-max-stream-data}
+## MAX_STREAM_DATA Frames {#frame-max-stream-data}
 
-The MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
+A MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 A MAX_STREAM_DATA frame can be sent for streams in the Recv state; see
@@ -5724,7 +5747,7 @@ connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
 with error STREAM_STATE_ERROR.
 
-The MAX_STREAM_DATA frame is shown in {{fig-max-stream-data}}.
+MAX_STREAM_DATA frames are formatted as shown in {{fig-max-stream-data}}.
 
 ~~~
 MAX_STREAM_DATA Frame {
@@ -5762,12 +5785,12 @@ of remembered limits in Early Data; see {{zerortt-parameters}}.
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-The MAX_STREAMS frames (type=0x12 and 0x13) inform the peer of the cumulative
+A MAX_STREAMS frame (type=0x12 or 0x13) inform the peer of the cumulative
 number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
 with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
 with a type of 0x13 applies to unidirectional streams.
 
-The MAX_STREAMS frames are shown in {{fig-max-streams}};
+MAX_STREAMS frames are formatted as shown in {{fig-max-streams}};
 
 ~~~
 MAX_STREAMS Frame {
@@ -5803,14 +5826,14 @@ describe the number of streams that can be opened concurrently.  The limit
 includes streams that have been closed as well as those that are open.
 
 
-## DATA_BLOCKED Frame {#frame-data-blocked}
+## DATA_BLOCKED Frames {#frame-data-blocked}
 
 A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
 data, but is unable to do so due to connection-level flow control; see
 {{flow-control}}.  DATA_BLOCKED frames can be used as input to tuning of flow
 control algorithms; see {{fc-credit}}.
 
-The DATA_BLOCKED frame is shown in {{fig-data-blocked}}.
+DATA_BLOCKED frames are formatted as shown in {{fig-data-blocked}}.
 
 ~~~
 DATA_BLOCKED Frame {
@@ -5828,7 +5851,7 @@ Maximum Data:
   blocking occurred.
 
 
-## STREAM_DATA_BLOCKED Frame {#frame-stream-data-blocked}
+## STREAM_DATA_BLOCKED Frames {#frame-stream-data-blocked}
 
 A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x15) when it wishes to
 send data, but is unable to do so due to stream-level flow control.  This frame
@@ -5837,7 +5860,8 @@ is analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
 MUST terminate the connection with error STREAM_STATE_ERROR.
 
-The STREAM_DATA_BLOCKED frame is shown in {{fig-stream-data-blocked}}.
+STREAM_DATA_BLOCKED frames are formatted as shown in
+{{fig-stream-data-blocked}}.
 
 ~~~
 STREAM_DATA_BLOCKED Frame {
@@ -5872,7 +5896,7 @@ of type 0x17 is used to indicate reaching the unidirectional stream limit.
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
 
-The STREAMS_BLOCKED frames are shown in {{fig-streams-blocked}}.
+STREAMS_BLOCKED frames are formatted as shown in {{fig-streams-blocked}}.
 
 ~~~
 STREAMS_BLOCKED Frame {
@@ -5893,13 +5917,13 @@ Maximum Streams:
   FRAME_ENCODING_ERROR.
 
 
-## NEW_CONNECTION_ID Frame {#frame-new-connection-id}
+## NEW_CONNECTION_ID Frames {#frame-new-connection-id}
 
 An endpoint sends a NEW_CONNECTION_ID frame (type=0x18) to provide its peer with
 alternative connection IDs that can be used to break linkability when migrating
 connections; see {{migration-linkability}}.
 
-The NEW_CONNECTION_ID frame is shown in {{fig-new-connection-id}}.
+NEW_CONNECTION_ID frames are formatted as shown in {{fig-new-connection-id}}.
 
 ~~~
 NEW_CONNECTION_ID Frame {
@@ -5977,7 +6001,7 @@ that retires the newly received connection ID, unless it has already done so
 for that sequence number.
 
 
-## RETIRE_CONNECTION_ID Frame {#frame-retire-connection-id}
+## RETIRE_CONNECTION_ID Frames {#frame-retire-connection-id}
 
 An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
 will no longer use a connection ID that was issued by its peer. This may include
@@ -5989,7 +6013,8 @@ peer using the NEW_CONNECTION_ID frame ({{frame-new-connection-id}}).
 Retiring a connection ID invalidates the stateless reset token associated with
 that connection ID.
 
-The RETIRE_CONNECTION_ID frame is shown in {{fig-retire-connection-id}}.
+RETIRE_CONNECTION_ID frames are formatted as shown in
+{{fig-retire-connection-id}}.
 
 ~~~
 RETIRE_CONNECTION_ID Frame {
@@ -6020,12 +6045,12 @@ ID MUST treat receipt of a RETIRE_CONNECTION_ID frame as a connection error of
 type PROTOCOL_VIOLATION.
 
 
-## PATH_CHALLENGE Frame {#frame-path-challenge}
+## PATH_CHALLENGE Frames {#frame-path-challenge}
 
 Endpoints can use PATH_CHALLENGE frames (type=0x1a) to check reachability to the
 peer and for path validation during connection migration.
 
-The PATH_CHALLENGE frame is shown in {{fig-path-challenge}}.
+PATH_CHALLENGE frames are formatted as shown in {{fig-path-challenge}}.
 
 ~~~
 PATH_CHALLENGE Frame {
@@ -6048,11 +6073,12 @@ The recipient of this frame MUST generate a PATH_RESPONSE frame
 ({{frame-path-response}}) containing the same Data.
 
 
-## PATH_RESPONSE Frame {#frame-path-response}
+## PATH_RESPONSE Frames {#frame-path-response}
 
-The PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE
-frame.  Its format, shown in {{fig-path-response}} is identical to the
-PATH_CHALLENGE frame ({{frame-path-challenge}}).
+A PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE frame.
+
+PATH_RESPONSE frames are formatted as shown in {{fig-path-response}}, which is
+identical to the PATH_CHALLENGE frame ({{frame-path-challenge}}).
 
 ~~~
 PATH_RESPONSE Frame {
@@ -6075,10 +6101,10 @@ type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
 is used to signal an error with the application that uses QUIC.
 
-If there are open streams that haven't been explicitly closed, they are
+If there are open streams that have not been explicitly closed, they are
 implicitly closed when the connection is closed.
 
-The CONNECTION_CLOSE frames are shown in {{fig-connection-close}}.
+CONNECTION_CLOSE frames are formatted as shown in {{fig-connection-close}}.
 
 ~~~
 CONNECTION_CLOSE Frame {
@@ -6127,11 +6153,13 @@ can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
 APPLICATION_ERROR in an Initial or a Handshake packet.
 
 
-## HANDSHAKE_DONE Frame {#frame-handshake-done}
+## HANDSHAKE_DONE Frames {#frame-handshake-done}
 
-The server uses the HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
-the handshake to the client.  As shown in {{handshake-done-format}}, a
-HANDSHAKE_DONE frame has no content.
+The server uses a HANDSHAKE_DONE frame (type=0x1e) to signal confirmation of
+the handshake to the client.
+
+HANDSHAKE_DONE frames are formatted as shown in {{handshake-done-format}}, which
+shows that HANDSHAKE_DONE frames have no content.
 
 ~~~
 HANDSHAKE_DONE Frame {
@@ -6375,13 +6403,13 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial sender might intentionally send fragments of stream data in
-order to cause disproportionate receive buffer memory commitment and/or
+An adversarial sender might intentionally send fragments of stream data in an
+attempt to cause disproportionate receive buffer memory commitment and/or
 creation of a large and inefficient data structure.
 
-An adversarial receiver might intentionally not acknowledge packets
-containing stream data in order to force the sender to store the
-unacknowledged stream data for retransmission.
+An adversarial receiver might intentionally not acknowledge packets containing
+stream data in an attempt to force the sender to store the unacknowledged stream
+data for retransmission.
 
 The attack on receivers is mitigated if flow control windows correspond to
 available memory.  However, some receivers will over-commit memory and
@@ -7081,7 +7109,7 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    // expected_pn - pn_hwin and less than or equal to
    // expected_pn + pn_hwin
    //
-   // This means we can't just strip the trailing bits from
+   // This means we cannot just strip the trailing bits from
    // expected_pn and add the truncated_pn because that might
    // yield a value outside the window.
    //

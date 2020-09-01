@@ -87,7 +87,7 @@ new versions are developed and deployed.  All of these invariants are
 IP-version-independent.
 
 The primary goal of this document is to ensure that it is possible to deploy new
-versions of QUIC.  By documenting the properties that can't change, this
+versions of QUIC.  By documenting the properties that cannot change, this
 document aims to preserve the ability for QUIC endpoints to negotiate changes to
 any other aspect of the protocol.  As a consequence, this also guarantees a
 minimal amount of information that is made available to entities other than
@@ -244,7 +244,7 @@ The remainder of the packet has version-specific semantics.
 A connection ID is an opaque field of arbitrary length.
 
 The primary function of a connection ID is to ensure that changes in addressing
-at lower protocol layers (UDP, IP, and below) don't cause packets for a QUIC
+at lower protocol layers (UDP, IP, and below) do not cause packets for a QUIC
 connection to be delivered to the wrong QUIC endpoint.  The connection ID
 is used by endpoints and the intermediaries that support them to ensure that
 each QUIC packet can be delivered to the correct instance of an endpoint.  At
