@@ -785,6 +785,11 @@ twice the maximum datagram size. This follows the analysis and recommendations
 in {{?RFC6928}}, increasing the byte limit to account for the smaller 8 byte
 overhead of UDP compared to the 20 byte overhead for TCP.
 
+If the maximum datagram size changes during the connection, the initial
+congestion window SHOULD be recalculated with the new size.  If the maximum
+datagram size is decreased in order to complete the handshake, the
+congestion window SHOULD be set to the new initial congestion window.
+
 Prior to validating the client's address, the server can be further limited by
 the anti-amplification limit as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
 Though the anti-amplification limit can prevent the congestion window from
