@@ -855,8 +855,8 @@ While a sender is in slow start, the congestion window increases by the number
 of bytes acknowledged when each acknowledgment is processed. This results in
 exponential growth of the congestion window.
 
-The sender MUST exit slow start and enter a recovery period when a packet is lost
-or when the ECN-CE count reported by its peer increases.
+The sender MUST exit slow start and enter a recovery period when a packet is
+lost or when the ECN-CE count reported by its peer increases.
 
 A sender re-enters slow start any time the congestion window is less than the
 slow start threshold, which only occurs after persistent congestion is
@@ -864,31 +864,30 @@ declared.
 
 ### Recovery {#recovery-period}
 
-A NewReno sender enters a recovery period when it detects the loss of a
-packet or the ECN-CE count reported by its peer increases. A sender that is
-already in a recovery period stays in it and does not re-enter it.
+A NewReno sender enters a recovery period when it detects the loss of a packet
+or the ECN-CE count reported by its peer increases. A sender that is already in
+a recovery period stays in it and does not re-enter it.
 
 On entering a recovery period, a sender MUST set the slow start threshold to
-half the value of the congestion window when loss is
-detected. The congestion window MUST be set to the reduced value of the slow
-start threshold before exiting the recovery period. Implementations MAY set the
-congestion window immediately on entering a recovery period or use other
-mechanisms, such as Proportional Rate Reduction ({{?PRR=RFC6937}}), to reduce
-it more gradually.
+half the value of the congestion window when loss is detected. The congestion
+window MUST be set to the reduced value of the slow start threshold before
+exiting the recovery period.
 
-If the congestion window is reduced immediately, a single packet can be sent
-prior to reduction. This speeds up loss recovery if the data in the lost packet
-is retransmitted and is similar to TCP as described in Section 5 of
-{{?RFC6675}}.
+Implementations MAY set the congestion window immediately upon entering a
+recovery period or use other mechanisms, such as Proportional Rate Reduction
+({{?PRR=RFC6937}}), to reduce the congestion window more gradually. If the
+congestion window is reduced immediately, a single packet can be sent prior to
+reduction. This speeds up loss recovery if the data in the lost packet is
+retransmitted and is similar to TCP as described in Section 5 of {{?RFC6675}}.
 
 The recovery period aims to limit congestion window reduction to once per round
-trip. Therefore during a recovery period, the congestion window does
-not change in response to new losses or increases in the ECN-CE count.
+trip. Therefore during a recovery period, the congestion window does not change
+in response to new losses or increases in the ECN-CE count.
 
 A recovery period ends and the sender enters congestion avoidance when a packet
 sent during the recovery period is acknowledged. This is slightly different
-from TCP's definition of recovery, which ends when the lost segment that started
-recovery is acknowledged ({{?RFC5681}}).
+from TCP's definition of recovery, which ends when the lost segment that
+started recovery is acknowledged ({{?RFC5681}}).
 
 ### Congestion Avoidance
 
