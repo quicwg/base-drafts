@@ -4239,7 +4239,7 @@ reserved for the version of the protocol that is published as an RFC.
 
 Version numbers used to identify IETF drafts are created by adding the draft
 number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
-identified as 0xff00000D.
+identified as 0xff00000d.
 
 Implementors are encouraged to register version numbers of QUIC that they are
 using for private experimentation on the GitHub wiki at
