@@ -822,7 +822,7 @@ The congestion controller has three distinct states, as shown in
 {{fig-cc-fsm}}.
 
 ~~~
-                 Start or         +------------+
+                 New Path or         +------------+
             persistent congestion |   Slow     |
         (O)---------------------->|   Start    |
                                   +------------+
@@ -855,21 +855,21 @@ While a sender is in slow start, the congestion window increases by the number
 of bytes acknowledged when each acknowledgment is processed. This results in
 exponential growth of the congestion window.
 
-The sender exits slow start and enters a recovery period when a packet is lost
+The sender MUST exit slow start and enter a recovery period when a packet is lost
 or when the ECN-CE count reported by its peer increases.
 
 A sender re-enters slow start any time the congestion window is less than the
 slow start threshold, which only occurs after persistent congestion is
 declared.
 
-### Recovery Period {#recovery-period}
+### Recovery {#recovery-period}
 
 A NewReno sender enters a recovery period when it detects the loss of a
 packet or the ECN-CE count reported by its peer increases. A sender that is
 already in a recovery period stays in it and does not re-enter it.
 
 On entering a recovery period, a sender MUST set the slow start threshold to
-half the value of the congestion window at the moment that loss is
+half the value of the congestion window when loss is
 detected. The congestion window MUST be set to the reduced value of the slow
 start threshold before exiting the recovery period. Implementations MAY set the
 congestion window immediately on entering a recovery period or use other
@@ -1697,7 +1697,7 @@ OnPacketAcked(acked_packet):
 ## On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. If not in a recovery period, this starts a recovery period and
+detected. If not already in recovery, this starts a recovery period and
 reduces the slow start threshold and congestion window immediately.
 
 ~~~
