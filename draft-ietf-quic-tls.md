@@ -1697,7 +1697,7 @@ to varying usage conditions.
 
 ## Key Update Error Code {#key-update-error}
 
-The KEY_UPDATE_ERROR error code (0xE) is used to signal errors related to key
+The KEY_UPDATE_ERROR error code (0xe) is used to signal errors related to key
 updates.
 
 
@@ -1998,7 +1998,7 @@ values in the following registries:
   CH and EE.
 
 * QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
-  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
+  the KEY_UPDATE_ERROR (0xe), as described in {{key-update-error}}.
 
 
 --- back
