@@ -1690,27 +1690,17 @@ ProcessECN(ack, pn_space):
 Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
-InPersistentCongestion(largest_lost):
-  // Persistent congestion cannot be declared on the
-  // first RTT sample.
-  if (is first RTT sample):
-    return false
-  pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
-    max_ack_delay
-  congestion_period = pto * kPersistentCongestionThreshold
-  // Determine if all packets in the time period before the
-  // largest newly lost packet, including the edges and
-  // across all packet number spaces, are marked lost.
-  return AreAllPacketsLost(largest_lost, congestion_period)
-
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
     bytes_in_flight -= lost_packet.sent_bytes
   OnCongestionEvent(lost_packets.largest().time_sent)
-  // Collapse congestion window if persistent congestion
-  if (InPersistentCongestion(lost_packets.largest())):
+  // Reset the congestion window if the loss of these
+  // packets indicates persistent congestion.
+  if (InPersistentCongestion(lost_packets)):
     congestion_window = kMinimumWindow
+    ssthresh = infinite
+    congestion_recovery_start_time = 0
 ~~~
 
 ## Upon dropping Initial or Handshake keys
