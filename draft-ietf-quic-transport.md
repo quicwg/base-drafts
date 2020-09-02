@@ -2134,12 +2134,12 @@ In path validation, endpoints test reachability between a specific local address
 and a specific peer address, where an address is the two-tuple of IP address and
 port.
 
-Path validation tests that packets that are sent to a peer on a path are
-received by the peer. Path validation is used to ensure that packets received
+Path validation tests that packets sent on a path to a peer are
+received by that peer. Path validation is used to ensure that packets received
 from a migrating peer do not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
-Peers perform independent validation of a path.
+The peer performs independent validation of the return path.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
