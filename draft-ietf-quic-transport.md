@@ -2134,10 +2134,12 @@ In path validation, endpoints test reachability between a specific local address
 and a specific peer address, where an address is the two-tuple of IP address and
 port.
 
-Path validation tests that packets can be both sent to (PATH_CHALLENGE) and
-received from (PATH_RESPONSE) a peer on the path.  Importantly, it validates
-that the packets received from the migrating endpoint do not carry a spoofed
-source address.
+Path validation tests that packets that are sent to a peer on a path are
+received by the peer. Path validation is used to ensure that packets received
+from a migrating peer do not carry a spoofed source address.
+
+Path validation does not validate that a peer can send in the return direction.
+Peers perform independent validation of a path.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -2165,8 +2167,8 @@ response.
 
 ## Initiating Path Validation
 
-To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
-a random payload on the path to be validated.
+To initiate path validation, an endpoint sends a PATH_CHALLENGE frame
+containing an unpredictable payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
 loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
@@ -2181,8 +2183,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 ## Path Validation Responses
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
-data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
-endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame. A
+PATH_RESPONSE frame does not need to be sent on the network path where the
+PATH_CHALLENGE was received; a PATH_RESPONSE can be sent on any network path.
+An endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
@@ -2193,10 +2197,13 @@ PATH_RESPONSE frames.
 
 ## Successful Path Validation
 
-A new address is considered valid when a PATH_RESPONSE frame is received that
-contains the data that was sent in a previous PATH_CHALLENGE frame. Receipt of
-an acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-validation, since the acknowledgment can be spoofed by a malicious peer.
+Path validation succeeds when a PATH_RESPONSE frame is received that contains
+the data that was sent in a previous PATH_CHALLENGE frame. This validates the
+path on which the PATH_CHALLENGE was sent.
+
+Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
+not adequate validation, since the acknowledgment can be spoofed by a malicious
+peer.
 
 
 ## Failed Path Validation
