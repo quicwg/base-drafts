@@ -502,18 +502,17 @@ As keys at a given encryption level become available to TLS, TLS indicates to
 QUIC that reading or writing keys at that encryption level are available.
 
 The events that cause new keys to be available are not asynchronous; they
-always occur immediately after TLS is provided with inputs. Inputs are either
-new handshake bytes or new instructions. The two instructions that this
-document relies upon are the initial signal to start the handshake and - if the
-TLS implementation depends on certificate validation being performed externally
-- an indication that the certificate chain of a peer has been accepted or
-rejected.
+always occur after TLS is provided with inputs. TLS only provides new keys
+after being initialized (by a client) or after being provided with new
+handshake data.
 
-While waiting for TLS processing, including certificate validation, to
-complete, an endpoint SHOULD buffer received packets if they might be processed
-using keys that aren't yet available. These packets can be processed once keys
-are provided by TLS. An endpoint MAY continue to respond to packets that could
-be processed.
+However, a TLS implementation could perform some of its processing
+asynchronously. In particular, the process of validating a certificate can take
+some time. While waiting for TLS processing to complete, an endpoint SHOULD
+buffer received packets if they might be processed using keys that aren't yet
+available. These packets can be processed once keys are provided by TLS. An
+endpoint MAY continue to respond to packets that can be processed during this
+time.
 
 After processing inputs, TLS might produce handshake bytes, keys for new
 encryption levels, or both.
