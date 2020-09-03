@@ -2221,6 +2221,11 @@ defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
    validation_timeout = max(3*PTO, 6*kInitialRtt)
 ~~~
 
+The PTO includes the peer's maximum expected acknowledgement delay. This is not
+strictly necessary for the purposes of path validation, but defining
+validation_timeout as a function of the PTO is convenient, since implementations
+need to maintain a PTO value anyway.
+
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
 validation to succeed.
@@ -2703,6 +2708,10 @@ ensures that connections are not closed after new activity is initiated.
 
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
+As defined in {{QUIC-RECOVERY}}, the PTO includes the peer's maximum expected
+acknowledgement delay. This is not strictly necessary for the purposes of the
+idle timeout, but defining it in this way is convenient, since implementations
+need to maintain a PTO value anyway.
 
 
 ### Liveness Testing
@@ -2770,7 +2779,10 @@ application-supplied error code will be used to signal closure to the peer.
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
 These states SHOULD persist for at least three times the current Probe Timeout
-(PTO) interval as defined in {{QUIC-RECOVERY}}.
+(PTO) interval as defined in {{QUIC-RECOVERY}}. Note that the PTO includes the
+peer's maximum expected acknowledgement delay. While not strictly necessary for
+this purpose, it is convenient, since implementations need to maintain a PTO
+value anyway.
 
 Disposing of connection state prior to exiting the closing or draining state
 could cause could result in an endpoint generating a stateless reset
