@@ -818,8 +818,8 @@ The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Congestion Control States
 
-The congestion controller has three distinct states, as shown in
-{{fig-cc-fsm}}.
+The NewReno congestion controller described in this document has three
+distinct states, as shown in {{fig-cc-fsm}}.
 
 ~~~
                  New Path or         +------------+
