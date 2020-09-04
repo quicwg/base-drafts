@@ -146,8 +146,8 @@ network path.
 
 Frames are used in QUIC to communicate between endpoints.  One or more frames
 are assembled into packets.  QUIC authenticates all packets and encrypts as much
-as is practical.  QUIC packets are carried in UDP datagrams to better facilitate
-deployment in existing systems and networks.
+as is practical.  QUIC packets are carried in UDP datagrams {{!UDP=RFC0768}} to
+better facilitate deployment in existing systems and networks.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
