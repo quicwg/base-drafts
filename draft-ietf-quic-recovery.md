@@ -873,7 +873,7 @@ half the value of the congestion window when loss is detected. The congestion
 window MUST be set to the reduced value of the slow start threshold before
 exiting the recovery period.
 
-Implementations MAY set the congestion window immediately upon entering a
+Implementations MAY reduce the congestion window immediately upon entering a
 recovery period or use other mechanisms, such as Proportional Rate Reduction
 ({{?PRR=RFC6937}}), to reduce the congestion window more gradually. If the
 congestion window is reduced immediately, a single packet can be sent prior to
