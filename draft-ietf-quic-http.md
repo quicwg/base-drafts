@@ -2127,7 +2127,7 @@ The entries in {{iana-error-table}} are registered by this document.
 | H3_MISSING_SETTINGS               | 0x010a     | No SETTINGS frame received               | {{http-error-codes}}   |
 | H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
-| H3_REQUEST_INCOMPLETE             | 0x010e     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
