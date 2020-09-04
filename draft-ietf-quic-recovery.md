@@ -818,24 +818,38 @@ The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Slow Start
 
-While in slow start, a NewReno sender increases the congestion window by the
-number of bytes acknowledged when each acknowledgment is processed, resulting in
+A NewReno sender is in slow start any time the congestion window is below the
+slow start threshold. A sender begins in slow start because the slow start
+threshold is initialized to an infinite value.
+
+While a sender is in slow start, the congestion window increases by the number
+of bytes acknowledged when each acknowledgment is processed. This results in
 exponential growth of the congestion window.
 
-A sender MUST exit slow start and enter recovery when a loss is detected or when
-the ECN-CE counter reported by the peer increases.
+A sender exits slow start and enters congestion avoidance when a packet is lost
+or when the ECN-CE count increases.
 
 A sender re-enters slow start any time the congestion window is less than the
-slow start threshold, which only occurs after persistent congestion is declared.
+slow start threshold, which only occurs after persistent congestion is
+declared.
 
 ## Congestion Avoidance
 
-A NewReno sender in congestion avoidance uses an Additive Increase
-Multiplicative Decrease (AIMD) approach that MUST increase the congestion window
-by no more than one maximum datagram size per congestion window acknowledged.
+A NewReno sender in congestion avoidance any time the congestion window is at or
+above the slow start threshold.
 
-A sender MUST exit congestion avoidance and enter recovery when a loss is
-detected or when the ECN-CE counter reported by the peer increases.
+Congestion avoidance uses an Additive Increase Multiplicative Decrease (AIMD)
+approach that increases the congestion window by one maximum datagram size per
+congestion window acknowledged. A sender MUST NOT increase the congestion
+window by more than this amount.
+
+A NewReno sender, when not in the recovery period ({{recovery-period}}), MUST
+take the following steps when first entering congestion avoidance, when a
+packet is declared lost, or when the ECN-CE count is increased:
+
+* halve the congestion window,
+* set the slow start threshold to the size of the reduced congestion window, and
+* enter the recovery period.
 
 ## Recovery Period {#recovery-period}
 
