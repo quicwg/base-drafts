@@ -956,7 +956,7 @@ commitment.
 
 An endpoint limits the cumulative number of incoming streams a peer can open.
 Only streams with a stream ID less than (max_stream * 4 +
-initial_stream_id_for_type) can be opened; see {{long-packet-types}}.  Initial
+initial_stream_id_for_type) can be opened; see {{stream-id-types}}.  Initial
 limits are set in the transport parameters; see
 {{transport-parameter-definitions}}. Subsequent limits are advertised using
 MAX_STREAMS frames; see {{frame-max-streams}}. Separate limits apply to
