@@ -2221,10 +2221,14 @@ defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
    validation_timeout = max(3*PTO, 6*kInitialRtt)
 ~~~
 
-The PTO includes the peer's maximum expected acknowledgement delay. This is not
-strictly necessary for the purposes of path validation, but defining
-validation_timeout as a function of the PTO is convenient, since implementations
-need to maintain a PTO value anyway.
+Note:
+
+: Using the PTO value here implicitly includes the peer's maximum expected
+acknowledgement delay in the validation timeout period; see Section 6.2.1
+of {{QUIC-RECOVERY}}. This is not necessary for the purposes of path validation,
+since the peer is expected to respond to a PATH_CHALLENGE without delay;
+see {{path-response}}. However, defining the timeout period as a function of PTO
+is convenient, since implementations will maintain a PTO value anyway.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
