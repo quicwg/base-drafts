@@ -2267,9 +2267,10 @@ given time without modifying it.
 ### Flow Control Differences
 
 HTTP/2 specifies a stream flow control mechanism. Although all HTTP/2 frames are
-delivered on streams, only the DATA frame type is subject to flow control. QUIC
-provides flow control for stream data and all HTTP/3 frame types defined in this document are
-sent on streams, meaning they are all subject to flow control.
+delivered on streams, only the DATA frame payload is subject to flow control.
+QUIC provides flow control for stream data and all HTTP/3 frame types defined in
+this document are sent on streams. Therefore, all frame headers and payload are
+subject to flow control.
 
 ### Guidance for New Frame Type Definitions
 
