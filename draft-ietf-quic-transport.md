@@ -2712,10 +2712,13 @@ ensures that connections are not closed after new activity is initiated.
 
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
-As defined in {{QUIC-RECOVERY}}, the PTO includes the peer's maximum expected
-acknowledgement delay. This is not strictly necessary for the purposes of the
-idle timeout, but defining it in this way is convenient, since implementations
-need to maintain a PTO value anyway.
+
+Note:
+
+: Using the PTO value here implicitly includes the peer's maximum expected
+acknowledgement delay in the idle timeout period; see Section 6.2.1
+of {{QUIC-RECOVERY}}. This ensures that the endpoint accounts for this
+known peer delay before declaring the connection as idle and closing it.
 
 
 ### Liveness Testing
