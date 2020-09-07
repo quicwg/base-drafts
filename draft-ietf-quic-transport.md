@@ -2786,10 +2786,14 @@ application-supplied error code will be used to signal closure to the peer.
 The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
 These states SHOULD persist for at least three times the current Probe Timeout
-(PTO) interval as defined in {{QUIC-RECOVERY}}. Note that the PTO includes the
-peer's maximum expected acknowledgement delay. While not strictly necessary for
-this purpose, it is convenient, since implementations need to maintain a PTO
-value anyway.
+(PTO) interval as defined in {{QUIC-RECOVERY}}.
+
+Note:
+
+: Using the PTO value here implicitly includes the peer's maximum expected
+acknowledgement delay in the closing and draining periods; see Section 6.2.1
+of {{QUIC-RECOVERY}}. This ensures that the endpoint takes this peer delay
+into account when waiting to discard subsequent packets sent by the peer.
 
 Disposing of connection state prior to exiting the closing or draining state
 could cause could result in an endpoint generating a stateless reset
