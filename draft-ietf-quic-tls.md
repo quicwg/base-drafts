@@ -942,10 +942,10 @@ cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
-KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
-{{aead}}.  The header protection key uses the "quic hp" label; see
-{{header-protect}}.  Using these labels provides key separation between QUIC
-and TLS; see {{key-diversity}}.
+KDF to produce the AEAD key; the label "quic iv" is used to derive the
+Initialization Vector (IV); see {{aead}}.  The header protection key uses the
+"quic hp" label; see {{header-protect}}.  Using these labels provides key
+separation between QUIC and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
 TLS 1.3; see {{initial-secrets}}.
