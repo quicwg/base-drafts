@@ -1579,13 +1579,15 @@ for line in field_lines:
 
   if dynamicIndex is None:
     # Could not index it, literal
-    if nameIndex is None or isStaticName:
-      # Encodes a literal with a static name or literal name
-      encodeLiteral(streamBuffer, nameIndex, line)
-    else:
+    if dynamicNameIndex is not None:
       # encode literal with dynamic name, possibly above base
-      encodeDynamicLiteral(streamBuffer, nameIndex, base, line)
-      requiredInsertCount = max(requiredInsertCount, nameIndex)
+      encodeDynamicLiteral(streamBuffer, dynamicNameIndex,
+                           base, line)
+      requiredInsertCount = max(requiredInsertCount,
+                                dynamicNameIndex)
+    else:
+      # Encodes a literal with a static name or literal name
+      encodeLiteral(streamBuffer, staticNameIndex, line)
   else:
     # Dynamic index reference
     assert(dynamicIndex is not None)
