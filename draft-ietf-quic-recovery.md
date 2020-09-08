@@ -1632,6 +1632,9 @@ ssthresh:
   the mode is slow start and the window grows by the number of bytes
   acknowledged.
 
+first_rtt_sample:
+: The time that the first RTT sample was obtained.
+
 
 ## Initialization
 
@@ -1643,6 +1646,7 @@ congestion_window = kInitialWindow
 bytes_in_flight = 0
 congestion_recovery_start_time = 0
 ssthresh = infinite
+first_rtt_sample = 0
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   ecn_ce_counters[pn_space] = 0
 ~~~
@@ -1669,6 +1673,9 @@ InCongestionRecovery(sent_time):
   return sent_time <= congestion_recovery_start_time
 
 OnPacketsAcked(acked_packets):
+  if (first_rtt_sample == 0):
+    first_rtt_sample = now()
+
   for acked_packet in acked_packets:
     OnPacketAcked(acked_packet)
 
@@ -1734,27 +1741,23 @@ ProcessECN(ack, pn_space):
 Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
-InPersistentCongestion(largest_lost):
-  // Persistent congestion cannot be declared on the
-  // first RTT sample.
-  if (is first RTT sample):
-    return false
-  pto = smoothed_rtt + max(4 * rttvar, kGranularity) +
-    max_ack_delay
-  congestion_period = pto * kPersistentCongestionThreshold
-  // Determine if all packets in the time period before the
-  // largest newly lost packet, including the edges and
-  // across all packet number spaces, are marked lost.
-  return AreAllPacketsLost(largest_lost, congestion_period)
-
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
     bytes_in_flight -= lost_packet.sent_bytes
   OnCongestionEvent(lost_packets.largest().time_sent)
-  // Collapse congestion window if persistent congestion
-  if (InPersistentCongestion(lost_packets.largest())):
+
+  // Reset the congestion window if the loss of these
+  // packets indicates persistent congestion.
+  // Only consider packets sent after getting an RTT sample.
+  assert(first_rtt_sample != 0)
+  pc_lost = {}
+  for lost in lost_packets:
+    if lost.time_sent > first_rtt_sample:
+      pc_lost.insert(lost)
+  if (InPersistentCongestion(pc_lost)):
     congestion_window = kMinimumWindow
+    congestion_recovery_start_time = 0
 ~~~
 
 ## Upon dropping Initial or Handshake keys
