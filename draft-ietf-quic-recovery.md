@@ -1749,7 +1749,7 @@ OnPacketsLost(lost_packets):
 
   // Reset the congestion window if the loss of these
   // packets indicates persistent congestion.
-  // Disregard packets sent prior to getting an RTT sample.
+  // Only consider packets sent after getting an RTT sample.
   assert(first_rtt_sample != 0)
   pc_lost = {}
   for lost in lost_packets:
