@@ -3867,9 +3867,9 @@ increases the corresponding ECT(0), ECT(1), or CE count, These ECN counts are
 included in subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
 
 Each packet number space maintains separate acknowledgement state and separate
-ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP header.
-The ECN counts for the ECN codepoint
-received in the associated IP header are incremented once for each QUIC packet.
+ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
+header.  The ECN counts for the ECN codepoint received in the associated IP
+header are incremented once for each QUIC packet.
 
 For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT QUIC packet
 are coalesced, the corresponding counts for the Initial and Handshake packet
