@@ -1589,6 +1589,9 @@ ssthresh:
   the mode is slow start and the window grows by the number of bytes
   acknowledged.
 
+first_rtt_sample:
+: The time that the first RTT sample was obtained.
+
 
 ## Initialization
 
@@ -1600,6 +1603,7 @@ congestion_window = kInitialWindow
 bytes_in_flight = 0
 congestion_recovery_start_time = 0
 ssthresh = infinite
+first_rtt_sample = 0
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   ecn_ce_counters[pn_space] = 0
 ~~~
@@ -1626,6 +1630,9 @@ InCongestionRecovery(sent_time):
   return sent_time <= congestion_recovery_start_time
 
 OnPacketsAcked(acked_packets):
+  if (first_rtt_sample == 0):
+    first_rtt_sample = now()
+
   for acked_packet in acked_packets:
     OnPacketAcked(acked_packet)
 
@@ -1695,8 +1702,14 @@ OnPacketsLost(lost_packets):
   for lost_packet in lost_packets:
     bytes_in_flight -= lost_packet.sent_bytes
   OnCongestionEvent(lost_packets.largest().time_sent)
+
   // Reset the congestion window if the loss of these
   // packets indicates persistent congestion.
+  // Disregard packets sent prior to getting an RTT sample.
+  assert(first_rtt_sample != 0)
+  for lost in lost_packets:
+    if lost.time_sent <= first_rtt_sample:
+      lost_packets.remove(lost)
   if (InPersistentCongestion(lost_packets)):
     congestion_window = kMinimumWindow
     congestion_recovery_start_time = 0
