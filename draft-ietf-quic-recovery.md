@@ -822,7 +822,7 @@ The NewReno congestion controller described in this document has three
 distinct states, as shown in {{fig-cc-fsm}}.
 
 ~~~
-                 New Path or         +------------+
+                 New Path or      +------------+
             persistent congestion |   Slow     |
         (O)---------------------->|   Start    |
                                   +------------+
