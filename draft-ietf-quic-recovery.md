@@ -1707,10 +1707,11 @@ OnPacketsLost(lost_packets):
   // packets indicates persistent congestion.
   // Disregard packets sent prior to getting an RTT sample.
   assert(first_rtt_sample != 0)
-  for lost in lost_packets:
+  pc_lost = lost_packets
+  for lost in pc_lost:
     if lost.time_sent <= first_rtt_sample:
-      lost_packets.remove(lost)
-  if (InPersistentCongestion(lost_packets)):
+      pc_lost.remove(lost)
+  if (InPersistentCongestion(pc_lost)):
     congestion_window = kMinimumWindow
     congestion_recovery_start_time = 0
 ~~~
