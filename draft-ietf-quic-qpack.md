@@ -1580,7 +1580,7 @@ for line in field_lines:
   if dynamicIndex is None:
     # Could not index it, literal
     if dynamicNameIndex is not None:
-      # encode literal with dynamic name, possibly above base
+      # Encode literal with dynamic name, possibly above base
       encodeDynamicLiteral(streamBuffer, dynamicNameIndex,
                            base, line)
       requiredInsertCount = max(requiredInsertCount,
