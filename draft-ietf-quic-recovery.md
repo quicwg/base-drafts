@@ -1665,7 +1665,7 @@ Invoked from loss detection's OnAckReceived and is supplied with the
 newly acked_packets from sent_packets.
 
 In congestion avoidance, implementers that use an integer representation
-for congestion_window should be careful with the division, and can use
+for congestion_window should be careful with division, and can use
 the alternative approach suggested in Section 2.1 of {{?RFC3465}}.
 
 ~~~
