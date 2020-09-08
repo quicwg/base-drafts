@@ -499,12 +499,22 @@ handshake, new data is requested from TLS after providing received data.
 ### Encryption Level Changes
 
 As keys at a given encryption level become available to TLS, TLS indicates to
-QUIC that reading or writing keys at that encryption level are available.  While
-generating these keys, an endpoint SHOULD buffer received packets marked as
-protected by the keys being generated, and process them once those keys become
-available.  If the keys are generated asynchronously, an endpoint MAY continue
-responding to the received packets that were processable while waiting for TLS
-to provide these keys.
+QUIC that reading or writing keys at that encryption level are available.
+
+The availability of new keys is always a result of providing inputs to TLS.  TLS
+only provides new keys after being initialized (by a client) or when provided
+with new handshake data.
+
+However, a TLS implementation could perform some of its processing
+asynchronously. In particular, the process of validating a certificate can take
+some time. While waiting for TLS processing to complete, an endpoint SHOULD
+buffer received packets if they might be processed using keys that aren't yet
+available. These packets can be processed once keys are provided by TLS. An
+endpoint SHOULD continue to respond to packets that can be processed during this
+time.
+
+After processing inputs, TLS might produce handshake bytes, keys for new
+encryption levels, or both.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -515,8 +525,8 @@ TLS provides QUIC with three items as a new encryption level becomes available:
 * A Key Derivation Function (KDF)
 
 These values are based on the values that TLS negotiates and are used by QUIC to
-generate packet and header protection keys (see {{packet-protection}} and
-{{header-protect}}).
+generate packet and header protection keys; see {{packet-protection}} and
+{{header-protect}}.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
