@@ -816,48 +816,91 @@ The minimum congestion window is the smallest value the congestion window can
 decrease to as a response to loss, ECN-CE, or persistent congestion.
 The RECOMMENDED value is 2 * max_datagram_size.
 
-## Slow Start
+## Congestion Control States
 
-While in slow start, a NewReno sender increases the congestion window by the
-number of bytes acknowledged when each acknowledgment is processed, resulting in
+The NewReno congestion controller described in this document has three
+distinct states, as shown in {{fig-cc-fsm}}.
+
+~~~
+                 New Path or      +------------+
+            persistent congestion |   Slow     |
+        (O)---------------------->|   Start    |
+                                  +------------+
+                                        |
+                                Loss or |
+                        ECN-CE increase |
+                                        v
+ +------------+     Loss or       +------------+
+ | Congestion |  ECN-CE increase  |  Recovery  |
+ | Avoidance  |------------------>|   Period   |
+ +------------+                   +------------+
+           ^                            |
+           |                            |
+           +----------------------------+
+              Acknowledgment of packet
+                sent during recovery
+~~~
+{: #fig-cc-fsm title="Congestion Control States and Transitions"}
+
+These states and the transitions between them are described in subsequent
+sections.
+
+### Slow Start
+
+A NewReno sender is in slow start any time the congestion window is below the
+slow start threshold. A sender begins in slow start because the slow start
+threshold is initialized to an infinite value.
+
+While a sender is in slow start, the congestion window increases by the number
+of bytes acknowledged when each acknowledgment is processed. This results in
 exponential growth of the congestion window.
 
-A sender MUST exit slow start and enter recovery when a loss is detected or when
-the ECN-CE counter reported by the peer increases.
+The sender MUST exit slow start and enter a recovery period when a packet is
+lost or when the ECN-CE count reported by its peer increases.
 
 A sender re-enters slow start any time the congestion window is less than the
-slow start threshold, which only occurs after persistent congestion is declared.
+slow start threshold, which only occurs after persistent congestion is
+declared.
 
-## Congestion Avoidance
+### Recovery {#recovery-period}
 
-A NewReno sender in congestion avoidance uses an Additive Increase
-Multiplicative Decrease (AIMD) approach that MUST increase the congestion window
-by no more than one maximum datagram size per congestion window acknowledged.
-
-A sender MUST exit congestion avoidance and enter recovery when a loss is
-detected or when the ECN-CE counter reported by the peer increases.
-
-## Recovery Period {#recovery-period}
-
-A NewReno sender enters the recovery period when it detects loss or an ECN-CE
-mark is received. A recovery period ends when a packet sent during the recovery
-period is acknowledged.
+A NewReno sender enters a recovery period when it detects the loss of a packet
+or the ECN-CE count reported by its peer increases. A sender that is already in
+a recovery period stays in it and does not re-enter it.
 
 On entering a recovery period, a sender MUST set the slow start threshold to
-half the value of the congestion window at the moment that loss is detected. The
-congestion window MUST be set to the reduced value of the slow start threshold
-before exiting the recovery period.
+half the value of the congestion window when loss is detected. The congestion
+window MUST be set to the reduced value of the slow start threshold before
+exiting the recovery period.
 
-Implementations MAY set the congestion window immediately on entering a recovery
-period or use other mechanisms, such as Proportional Rate Reduction
-({{?PRR=RFC6937}}), to reduce it more gradually. If the congestion window is
-reduced immediately, a single packet can be sent prior to reduction. This speeds
-up loss recovery if the data in the lost packet is retransmitted and is similar
-to TCP as described in Section 5 of {{?RFC6675}}.
+Implementations MAY reduce the congestion window immediately upon entering a
+recovery period or use other mechanisms, such as Proportional Rate Reduction
+({{?PRR=RFC6937}}), to reduce the congestion window more gradually. If the
+congestion window is reduced immediately, a single packet can be sent prior to
+reduction. This speeds up loss recovery if the data in the lost packet is
+retransmitted and is similar to TCP as described in Section 5 of {{?RFC6675}}.
 
 The recovery period aims to limit congestion window reduction to once per round
-trip. Therefore during recovery, the congestion window remains unchanged
-irrespective of new losses or increases in the ECN-CE counter.
+trip. Therefore during a recovery period, the congestion window does not change
+in response to new losses or increases in the ECN-CE count.
+
+A recovery period ends and the sender enters congestion avoidance when a packet
+sent during the recovery period is acknowledged. This is slightly different
+from TCP's definition of recovery, which ends when the lost segment that
+started recovery is acknowledged ({{?RFC5681}}).
+
+### Congestion Avoidance
+
+A NewReno sender is in congestion avoidance any time the congestion window is
+at or above the slow start threshold and not in a recovery period.
+
+A sender in congestion avoidance uses an Additive Increase Multiplicative
+Decrease (AIMD) approach that MUST limit the increase to the congestion window
+to at most one maximum datagram size for each congestion window that is
+acknowledged.
+
+The sender exits congestion avoidance and enters a recovery period when a
+packet is lost or when the ECN-CE count reported by its peer increases.
 
 ## Ignoring Loss of Undecryptable Packets
 
@@ -1660,20 +1703,21 @@ OnPacketAcked(acked_packet):
 ## On New Congestion Event
 
 Invoked from ProcessECN and OnPacketsLost when a new congestion event is
-detected. May start a new recovery period and reduces the congestion
-window.
+detected. If not already in recovery, this starts a recovery period and
+reduces the slow start threshold and congestion window immediately.
 
 ~~~
 OnCongestionEvent(sent_time):
-  // Start a new congestion event if packet was sent after the
-  // start of the previous congestion recovery period.
-  if (!InCongestionRecovery(sent_time)):
-    congestion_recovery_start_time = now()
-    congestion_window *= kLossReductionFactor
-    congestion_window = max(congestion_window, kMinimumWindow)
-    ssthresh = congestion_window
-    // A packet can be sent to speed up loss recovery.
-    MaybeSendOnePacket()
+  // No reaction if already in a recovery period.
+  if (InCongestionRecovery(sent_time)):
+    return
+
+  // Enter recovery period.
+  congestion_recovery_start_time = now()
+  ssthresh = congestion_window * kLossReductionFactor
+  congestion_window = max(ssthresh, kMinimumWindow)
+  // A packet can be sent to speed up loss recovery.
+  MaybeSendOnePacket()
 ~~~
 
 

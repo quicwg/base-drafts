@@ -146,8 +146,8 @@ network path.
 
 Frames are used in QUIC to communicate between endpoints.  One or more frames
 are assembled into packets.  QUIC authenticates all packets and encrypts as much
-as is practical.  QUIC packets are carried in UDP datagrams to better facilitate
-deployment in existing systems and networks.
+as is practical.  QUIC packets are carried in UDP datagrams ({{!UDP=RFC0768}})
+to better facilitate deployment in existing systems and networks.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
@@ -956,7 +956,7 @@ commitment.
 
 An endpoint limits the cumulative number of incoming streams a peer can open.
 Only streams with a stream ID less than (max_stream * 4 +
-initial_stream_id_for_type) can be opened; see {{long-packet-types}}.  Initial
+initial_stream_id_for_type) can be opened; see {{stream-id-types}}.  Initial
 limits are set in the transport parameters; see
 {{transport-parameter-definitions}}. Subsequent limits are advertised using
 MAX_STREAMS frames; see {{frame-max-streams}}. Separate limits apply to
@@ -2134,10 +2134,12 @@ In path validation, endpoints test reachability between a specific local address
 and a specific peer address, where an address is the two-tuple of IP address and
 port.
 
-Path validation tests that packets can be both sent to (PATH_CHALLENGE) and
-received from (PATH_RESPONSE) a peer on the path.  Importantly, it validates
-that the packets received from the migrating endpoint do not carry a spoofed
-source address.
+Path validation tests that packets sent on a path to a peer are
+received by that peer. Path validation is used to ensure that packets received
+from a migrating peer do not carry a spoofed source address.
+
+Path validation does not validate that a peer can send in the return direction.
+The peer performs independent validation of the return path.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -2165,8 +2167,8 @@ response.
 
 ## Initiating Path Validation
 
-To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
-a random payload on the path to be validated.
+To initiate path validation, an endpoint sends a PATH_CHALLENGE frame
+containing an unpredictable payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
 loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
@@ -2181,8 +2183,10 @@ it can associate the peer's response with the corresponding PATH_CHALLENGE.
 ## Path Validation Responses
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
-data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
-endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame. A
+PATH_RESPONSE frame does not need to be sent on the network path where the
+PATH_CHALLENGE was received; a PATH_RESPONSE can be sent on any network path.
+An endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
@@ -2193,10 +2197,13 @@ PATH_RESPONSE frames.
 
 ## Successful Path Validation
 
-A new address is considered valid when a PATH_RESPONSE frame is received that
-contains the data that was sent in a previous PATH_CHALLENGE frame. Receipt of
-an acknowledgment for a packet containing a PATH_CHALLENGE frame is not adequate
-validation, since the acknowledgment can be spoofed by a malicious peer.
+Path validation succeeds when a PATH_RESPONSE frame is received that contains
+the data that was sent in a previous PATH_CHALLENGE frame. This validates the
+path on which the PATH_CHALLENGE was sent.
+
+Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
+not adequate validation, since the acknowledgment can be spoofed by a malicious
+peer.
 
 
 ## Failed Path Validation
@@ -2586,7 +2593,10 @@ discontinue use of the old server address.  If path validation fails, the client
 MUST continue sending all future packets to the server's original IP address.
 
 
-### Responding to Connection Migration
+### Migration to a Preferred Address
+
+A client that migrates to a preferred address MUST validate the address it
+chooses before migrating; see {{forgery-spa}}.
 
 A server might receive a packet addressed to its preferred IP address at any
 time after it accepts a connection.  If this packet contains a PATH_CHALLENGE
@@ -4239,7 +4249,7 @@ reserved for the version of the protocol that is published as an RFC.
 
 Version numbers used to identify IETF drafts are created by adding the draft
 number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
-identified as 0xff00000D.
+identified as 0xff00000d.
 
 Implementors are encouraged to register version numbers of QUIC that they are
 using for private experimentation on the GitHub wiki at
@@ -4836,6 +4846,8 @@ responding to a Retry packet. However, the data sent in these packets could be
 different than what was sent earlier. Sending these new packets with the same
 packet number is likely to compromise the packet protection for those packets
 because the same key and nonce could be used to protect different content.
+A server MAY abort the connection if it detects that the client reset the
+packet number.
 
 A server acknowledges the use of a Retry packet for a connection using the
 retry_source_connection_id transport parameter; see
@@ -6292,7 +6304,7 @@ CRYPTO_BUFFER_EXCEEDED (0xd):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
-AEAD_LIMIT_REACHED (0xE):
+AEAD_LIMIT_REACHED (0xe):
 
 : An endpoint has reached the confidentiality or integrity limit for the AEAD
   algorithm used by the given connection.
@@ -6396,6 +6408,217 @@ congestion controller to permit sending at rates beyond what the network
 supports.  An endpoint MAY skip packet numbers when sending packets to detect
 this behavior.  An endpoint can then immediately close the connection with a
 connection error of type PROTOCOL_VIOLATION; see {{immediate-close}}.
+
+
+## Request Forgery Attacks
+
+A request forgery attack occurs where an endpoint causes its peer to issue a
+request towards a victim, with the request controlled by the endpoint. Request
+forgery attacks aim to provide an attacker with access to capabilities of its
+peer that might otherwise be unavailable to the attacker. For a networking
+protocol, a request forgery attack is often used to exploit any implicit
+authorization conferred on the peer by the victim due to the peer's location in
+the network.
+
+For request forgery to be effective, an attacker needs to be able to influence
+what packets the peer sends and where these packets are sent. If an attacker
+can target a vulnerable service with a controlled payload, that service might
+perform actions that are attributed to the attacker's peer, but decided by the
+attacker.
+
+For example, cross-site request forgery {{?CSRF=DOI.10.1145/1455770.1455782}}
+exploits on the Web cause a client to issue requests that include authorization
+cookies {{?COOKIE=RFC6265}}, allowing one site access to information and
+actions that are intended to be restricted to a different site.
+
+As QUIC runs over UDP, the primary attack modality of concern is one where an
+attacker can select the address to which its peer sends UDP datagrams and can
+control some of the unprotected content of those packets. As much of the data
+sent by QUIC endpoints is protected, this includes control over ciphertext. An
+attack is successful if an attacker can cause a peer to send a UDP datagram to
+a host that will perform some action based on content in the datagram.
+
+This section discusses ways in which QUIC might be used for request forgery
+attacks.
+
+This section also describes limited countermeasures that can be implemented by
+QUIC endpoints. These mitigations can be employed unilaterally by a QUIC
+implementation or deployment, without potential targets for request forgery
+attacks taking action. However these countermeasures could be insufficient if
+UDP-based services do not properly authorize requests.
+
+
+### Control Options for Endpoints
+
+QUIC offers some opportunities for an attacker to influence or control where
+its peer sends UDP datagrams:
+
+* initial connection establishment ({{handshake}}), where a server is able to
+  choose where a client sends datagrams, for example by populating DNS records;
+
+* preferred addresses ({{preferred-address}}), where a server is able to choose
+  where a client sends datagrams; and
+
+* spoofed connection migrations ({{address-spoofing}}), where a client is able
+  to use source address spoofing to select where a server sends subsequent
+  datagrams.
+
+In all three cases, the attacker can cause its peer to send datagrams to a
+victim that might not understand QUIC. That is, these packets are sent by
+the peer prior to address validation; see {{address-validation}}.
+
+Outside of the encrypted portion of packets, QUIC offers an endpoint several
+options for controlling the content of UDP datagrams that its peer sends. The
+Destination Connection ID field offers direct control over bytes that appear
+early in packets sent by the peer; see {{connection-id}}. The Token field in
+Initial packets offers a server control over other bytes of Initial packets;
+see {{packet-initial}}.
+
+There are no measures in this version of QUIC to prevent indirect control over
+the encrypted portions of packets. It is necessary to assume that endpoints are
+able to control the contents of frames that a peer sends, especially those
+frames that convey application data, such as STREAM frames. Though this depends
+to some degree on details of the application protocol, some control is possible
+in many protocol usage contexts. As the attacker has access to packet
+protection keys, they are likely to be capable of predicting how a peer will
+encrypt future packets. Successful control over datagram content then only
+requires that the attacker be able to predict the packet number and placement
+of frames in packets with some amount of reliability.
+
+This section assumes that limiting control over datagram content is not
+feasible. The focus of the mitigations in subsequent sections is on limiting
+the ways in which datagrams that are sent prior to address validation can be
+used for request forgery.
+
+
+### Request Forgery with Client Initial Packets
+
+An attacker acting as a server can choose the IP address and port on which it
+advertises its availability, so Initial packets from clients are assumed to be
+available for use in this sort of attack. The address validation implicit in
+the handshake ensures that - for a new connection - a client will not send
+other types of packet to a destination that does not understand QUIC or is not
+willing to accept a QUIC connection.
+
+Initial packet protection (Section 5.2 of {{QUIC-TLS}}) makes it difficult for
+servers to control the content of Initial packets sent by clients. A client
+choosing an unpredictable Destination Connection ID ensures that servers are
+unable to control any of the encrypted portion of Initial packets from clients.
+
+However, the Token field is open to server control and does allow a server to
+use clients to mount request forgery attacks. Use of tokens provided with the
+NEW_TOKEN frame ({{validate-future}}) offers the only option for request
+forgery during connection establishment.
+
+Clients however are not obligated to use the NEW_TOKEN frame. Request forgery
+attacks that rely on the Token field can be avoided if clients send an empty
+Token field when the server address has changed from when the NEW_TOKEN frame
+was received.
+
+Therefore, clients SHOULD NOT send a token received in a NEW_TOKEN frame from
+one server address in an Initial packet that is sent to a different server
+address. As strict equality might reduce the utility of this mechanism, clients
+MAY employ heuristics that result in different server addresses being treated
+as equivalent, such as treating addresses with a shared prefix of sufficient
+length as being functionally equivalent (for instance, /24 in IPv4 or /56 in
+IPv6). In addition, clients SHOULD treat a preferred address that is
+successfully validated as equivalent to the address on which the connection was
+made; see {{preferred-address}}.
+
+Sending a Retry packet ({{packet-retry}}) offers a server the option to change
+the Token field. After sending a Retry, the server can also control the
+Destination Connection ID field of subsequent Initial packets from the client.
+This also might allow indirect control over the encrypted content of Initial
+packets. However, the exchange of a Retry packet validates the server's
+address, thereby preventing the use of subsequent Initial packets for request
+forgery.
+
+
+### Request Forgery with Preferred Addresses {#forgery-spa}
+
+Servers can specify a preferred address, which clients then migrate to after
+confirming the handshake; see {{preferred-address}}. The Destination Connection
+ID field of packets that the client sends to a preferred address can be used
+for request forgery.
+
+A client MUST NOT send non-probing frames to a preferred address prior to
+validating that address; see {{address-validation}}. This greatly reduces the
+options that a server has to control the encrypted portion of datagrams.
+
+This document does not offer any additional countermeasures that are specific
+to use of preferred addresses and can be implemented by endpoints. The generic
+measures described in {{forgery-generic}} could be used as further mitigation.
+
+
+### Request Forgery with Spoofed Migration
+
+Clients are able to present a spoofed source address as part of an apparent
+connection migration to cause a server to send datagrams to that address.
+
+The Destination Connection ID field in any packets that a server subsequently
+sends to this spoofed address can be used for request forgery. A client might
+also be able to influence the ciphertext.
+
+A server that only sends probing packets ({{probing}}) to an address prior to
+address validation provides an attacker with only limited control over the
+encrypted portion of datagrams. However, particularly for NAT rebinding, this
+can adversely affect performance. If the server sends frames carrying
+application data, an attacker might be able to control most of the content of
+datagrams.
+
+This document does not offer specific countermeasures that can be implemented
+by endpoints aside from the generic measures described in {{forgery-generic}}.
+However, countermeasures for address spoofing at the network level, in
+particular ingress filtering {{?BCP38=RFC2267}}, are especially effective
+against attacks that use spoofing and originate from an external network.
+
+
+### Generic Request Forgery Countermeasures {#forgery-generic}
+
+The most effective defense against request forgery attacks is to modify
+vulnerable services to use strong authentication. However, this is not always
+something that is within the control of a QUIC deployment. This section
+outlines some others steps that QUIC endpoints could take unilaterally. These
+additional steps are all discretionary as, depending on circumstances, they
+could interfere with or prevent legitimate uses.
+
+Services offered over loopback interfaces (that is, the IPv6 address ::1 or the
+IPv4 address 127.0.0.1) often lack proper authentication. Endpoints MAY prevent
+connection attempts or migration to a loopback address. Endpoints SHOULD NOT
+allow connections or migration to a loopback address if the same service was
+previously available at a different interface or if the address was provided by
+a service at a non-loopback address. Endpoints that depend on these
+capabilities could offer an option to disable these protections.
+
+Similarly, endpoints could regard a change in address to link-local address
+{{?RFC4291}} or an address in a private use range {{?RFC1918}} from a global,
+unique-local {{?RFC4193}}, or non-private address as a potential attempt at
+request forgery. Endpoints could refuse to use these addresses entirely, but
+that carries a significant risk of interfering with legitimate uses. Endpoints
+SHOULD NOT refuse to use an address unless they have specific knowledge about
+the network indicating that sending datagrams to unvalidated addresses in a
+given range is not safe.
+
+Endpoints MAY choose to reduce the risk of request forgery by not including
+values from NEW_TOKEN frames in Initial packets or by only sending probing
+frames in packets prior to completing address validation. Note that this does
+not prevent an attacker from using the Destination Connection ID field for an
+attack.
+
+Endpoints are not expected to have specific information about the location of
+servers that could be vulnerable targets of a request forgery attack. However,
+it might be possible over time to identify specific UDP ports that are common
+targets of attacks or particular patterns in datagrams that are used for
+attacks. Endpoints MAY choose to avoid sending datagrams to these ports or not
+send datagrams that match these patterns prior to validating the destination
+address. Endpoints MAY retire connection IDs containing patterns known to be
+problematic without using them.
+
+Note:
+
+: Modifying endpoints to apply these protections is more efficient than
+  deploying network-based protections, as endpoints do not need to perform
+  any additional processing when sending to an address that has been validated.
 
 
 ## Slowloris Attacks

@@ -651,7 +651,7 @@ To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
 before compression. If a decompressed field section contains multiple cookie
 field lines, these MUST be concatenated into a single octet string using the
-two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
+two-octet delimiter of 0x3b, 0x20 (the ASCII string "; ") before being passed
 into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
 
@@ -1568,7 +1568,7 @@ See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 ### MAX_PUSH_ID {#frame-max-push-id}
 
-The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
+The MAX_PUSH_ID frame (type=0xd) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in PUSH_PROMISE and CANCEL_PUSH frames.
 Consequently, this also limits the number of push streams that the server can
@@ -1588,7 +1588,7 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
 MAX_PUSH_ID Frame {
-  Type (i) = 0xD,
+  Type (i) = 0xd,
   Length (i),
   Push ID (i),
 }
@@ -1682,19 +1682,19 @@ H3_ID_ERROR (0x108):
 H3_SETTINGS_ERROR (0x109):
 : An endpoint detected an error in the payload of a SETTINGS frame.
 
-H3_MISSING_SETTINGS (0x10A):
+H3_MISSING_SETTINGS (0x10a):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-H3_REQUEST_REJECTED (0x10B):
+H3_REQUEST_REJECTED (0x10b):
 : A server rejected a request without performing any application processing.
 
-H3_REQUEST_CANCELLED (0x10C):
+H3_REQUEST_CANCELLED (0x10c):
 : The request or its response (including pushed response) is cancelled.
 
-H3_REQUEST_INCOMPLETE (0x10D):
+H3_REQUEST_INCOMPLETE (0x10d):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_CONNECT_ERROR (0x10F):
+H3_CONNECT_ERROR (0x10f):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
@@ -2034,7 +2034,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 | GOAWAY           |  0x7   | {{frame-goaway}}           |
 | Reserved         |  0x8   | N/A                        |
 | Reserved         |  0x9   | N/A                        |
-| MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
+| MAX_PUSH_ID      |  0xd   | {{frame-max-push-id}}      |
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
@@ -2081,8 +2081,8 @@ The entries in {{iana-setting-table}} are registered by this document.
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 ### Error Codes {#iana-error-codes}
 
@@ -2124,18 +2124,18 @@ The entries in {{iana-error-table}} are registered by this document.
 | H3_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
 | H3_ID_ERROR                       | 0x0108     | An identifier was used incorrectly       | {{http-error-codes}}   |
 | H3_SETTINGS_ERROR                 | 0x0109     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| H3_MISSING_SETTINGS               | 0x010A     | No SETTINGS frame received               | {{http-error-codes}}   |
-| H3_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
-| H3_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
-| H3_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
-| H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| H3_MISSING_SETTINGS               | 0x010a     | No SETTINGS frame received               | {{http-error-codes}}   |
+| H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
+| H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
+| H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
 
@@ -2170,8 +2170,8 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 --- back
 
