@@ -3845,8 +3845,8 @@ packet {{?RFC8087}}.  Endpoints react to reported congestion by reducing their
 sending rate in response, as described in {{QUIC-RECOVERY}}.
 
 To enable ECN, a sending QUIC endpoint first determines whether a path supports
-ECN marking and whether the peer reports the ECN values in received IP headers; see
-{{ecn-validation}}.
+ECN marking and whether the peer reports the ECN values in received IP headers;
+see {{ecn-validation}}.
 
 
 ### ECN Counts
@@ -3873,35 +3873,36 @@ received in the associated IP header are incremented once for each QUIC packet.
 
 For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT QUIC packet
 are coalesced, the corresponding counts for the Initial and Handshake packet
-number spaces will be incremented by one each and the counts for the application data
-packet number space will be increased by two.
+number spaces will be incremented by one each and the counts for the
+application data packet number space will be increased by two.
 
 An ECN count is not incremented when no QUIC packets from the received IP
-packet are processed.  A QUIC packet detected by a receiver as a
-duplicate also does not increase an ECN count; see {{security-ecn}} for relevant
-security concerns.
+packet are processed. A QUIC packet detected by a receiver as a duplicate also
+does not increase an ECN count; see {{security-ecn}} for relevant security
+concerns.
 
 
 ### ECN Validation {#ecn-validation}
 
-It is possible for faulty network devices to corrupt or erroneously drop packets
-that carry a non-zero ECN codepoint.  To provide robust connectivity in the presence of
-such devices, an endpoint validates the ECN counts for each network path  and
-disables use of ECN on that path if errors are detected.
+It is possible for faulty network devices to corrupt or erroneously drop
+packets that carry a non-zero ECN codepoint. To ensure connectivity in the
+presence of such devices, an endpoint validates the ECN counts for each network
+path and disables use of ECN on that path if errors are detected.
 
 To perform ECN validation for a new path:
 
-* The endpoint sets an ECT(0) or ECT(1) codepoint in the IP header of early
-  outgoing packets sent on a new path to the peer ({{!RFC8311}}).
+* The endpoint sets an ECT(0) codepoint in the IP header of early outgoing
+  packets sent on a new path to the peer ({{!RFC8311}}).
 
 * The endpoint monitors whether all packets sent with an ECT codepoint are
   eventually deemed lost (Section 6 of {{QUIC-RECOVERY}}), indicating
   that ECN validation has failed.
 
-To reduce the chances of misinterpreting loss of packets dropped by a faulty
-network element, an endpoint could set an ECT codepoint for only the first ten
-outgoing packets on a path, or for a period of three RTTs, whichever occurs
-first.
+If an endpoint has cause to expect that IP packets with an ECT codepoint might
+be dropped by faulty network element, the endpoint could set an ECT codepoint
+for only the first ten outgoing packets on a path, or for a period of three
+RTTs. If all packets marked with non-zero ECN codepoints are subsequently lost,
+it can disable marking on the assumption that the marking causes in loss.
 
 An endpoint thus attempts to use ECN and validates this for each new connection,
 when switching to a server's preferred address, and on active connection
@@ -3924,9 +3925,10 @@ ECN markings that were applied to packets that are newly acknowledged in the ACK
 frame.
 
 If an ACK frame newly acknowledges a packet that the endpoint sent setting
-either the ECT(0) or ECT(1) codepoint, ECN validation fails if the corresponding ECN counts
-are not present in the ACK frame. This check detects a network element that
-zeroes the ECN field or a peer that is unable to access ECN the markings.
+either the ECT(0) or ECT(1) codepoint, ECN validation fails if the
+corresponding ECN counts are not present in the ACK frame. This check detects a
+network element that zeroes the ECN field or a peer that is unable to access
+ECN the markings.
 
 ECN validation also fails if the sum of the increase in ECT(0) and ECN-CE counts
 is less than the number of newly acknowledged packets that were originally sent
