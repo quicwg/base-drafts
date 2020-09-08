@@ -1751,7 +1751,7 @@ OnPacketsLost(lost_packets):
   // packets indicates persistent congestion.
   // Disregard packets sent prior to getting an RTT sample.
   assert(first_rtt_sample != 0)
-  pc_lost = []
+  pc_lost = {}
   for lost in lost_packets:
     if lost.time_sent > first_rtt_sample:
       pc_lost.insert(lost)
