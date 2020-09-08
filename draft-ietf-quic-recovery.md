@@ -1699,7 +1699,6 @@ OnPacketsLost(lost_packets):
   // packets indicates persistent congestion.
   if (InPersistentCongestion(lost_packets)):
     congestion_window = kMinimumWindow
-    ssthresh = infinite
     congestion_recovery_start_time = 0
 ~~~
 
