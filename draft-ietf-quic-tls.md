@@ -1620,7 +1620,7 @@ received.  Failing to allow sufficient time could lead to packets being
 discarded.
 
 An endpoint SHOULD retain old read keys for no more than three times the PTO
-afer having received a packet protected using the new keys. After this period,
+after having received a packet protected using the new keys. After this period,
 old read keys and their corresponding secrets SHOULD be discarded.
 
 
