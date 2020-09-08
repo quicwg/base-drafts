@@ -3938,14 +3938,14 @@ acknowledged packets sent with an ECT(1) marking.  These checks can detect
 remarking of ECN-CE markings by the network.
 
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
-It is therefore possible for the total increase in the ECT(0), ECT(1), and
-ECN-CE counts to be greater than the number of packets acknowledged in an ACK
-frame.  This is why ECN counts are permitted to be larger than the value
+It is therefore possible for the total increase in ECT(0), ECT(1), and ECN-CE
+counts to be greater than the number of packets that are newly acknowledged by
+an ACK frame. This is why ECN counts are permitted to be larger than the value
 corresponding to the largest acknowledged packet number.
 
-Out of order processing of the ECN counts can result in a validation failure.
-An endpoint SHOULD skip ECN validation for an ACK frame that does not increase
-the largest acknowledged packet number.
+Validating ECN counts from reordered ACK frames can result in failure. An
+endpoint MUST NOT fail ECN validation as a result of processing an ACK frame
+that does not increase the largest acknowledged packet number.
 
 ECN validation can fail if the received total count for either ECT(0) or ECT(1)
 exceeds the total number of packets sent with each corresponding ECT codepoint.
