@@ -7414,6 +7414,27 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-29
+
+- Require the same connection ID on coalesced packets (#3800, #3930)
+- Allow caching of packets that can't be decrypted, by allowing the reported
+  acknowledgment delay to exceed max_ack_delay prior to confirming the
+  handshake (#3821, #3980, #4035, #3874)
+- Allow connection ID to be used for address validation (#3834, #3924)
+- Required protocol operations are no longer directed at implementations, but
+  are features provided to application protocols (#3838, #3935)
+- Narrow requirements for reset of congestion state on path change (#3842,
+  #3945)
+- Add a three times amplification limit for sending of CONNECTION_CLOSE with
+  reduced state (#3845, #3864)
+- Change error code for invalid RETIRE_CONNECTION_ID frames (#3860, #3861)
+- Recommend retention of state for lost packets to allow for late arrival and
+  avoid unnecessary retransmission (#3956, #3957)
+- Allow a server to reject connections if a client reuses packet numbers after
+  Retry (#3989, #3990)
+- Limit recommendation for immediate acknowledgment to when ack-eliciting
+  packets are reordered (#4001, #4000)
+
 ## Since draft-ietf-quic-transport-28
 
 - Made SERVER_BUSY error (0x2) more generic, now CONNECTION_REFUSED (#3709,

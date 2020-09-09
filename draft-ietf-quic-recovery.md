@@ -1793,6 +1793,20 @@ OnPacketNumberSpaceDiscarded(pn_space):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-29
+
+- Allow caching of packets that can't be decrypted, by allowing the reported
+  acknowledgment delay to exceed max_ack_delay prior to confirming the
+  handshake (#3821, #3980, #4035, #3874)
+- Persistent congestion cannot include packets sent before the first RTT
+  sample for the path (#3875, #3889)
+- Recommend reset of min_rtt in persistent congestion (#3927, #3975)
+- Persistent congestion is independent of packet number space (#3939, #3961)
+- Only limit bursts to the initial window without information about the path
+  (#3892, #3936)
+- Add normative requirements for increasing and reducing the congestion
+  window (#3944, #3978, #3997, #3998)
+
 ## Since draft-ietf-quic-recovery-28
 
 - Refactored pseudocode to correct PTO calculation (#3564, #3674, #3681)
