@@ -2222,8 +2222,7 @@ defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
 ~~~
 
 This timeout allows for multiple PTOs to expire prior to failing path
-validation, allowing for at least one path validation to be lost before
-declaring failure.
+validation, ensuring one packet loss does not cause path validation failure.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
@@ -2708,7 +2707,7 @@ ensures that connections are not closed after new activity is initiated.
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
 This allows for multiple PTOs to expire prior to idle timeout, allowing for at
-least one path packet to be lost timing out the connection.
+least one packet to be lost prior to idle timeout.
 
 
 ### Liveness Testing
