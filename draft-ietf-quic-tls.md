@@ -1497,7 +1497,7 @@ receiving packets.  These keys will be needed to process packets the peer sends
 after updating.
 
 An endpoint MUST retain old keys until it has successfully unprotected a packet
-sent using the new keys.  An endpoint SHOULD NOT discard old keys immediately
+sent using the new keys.  An endpoint SHOULD retain old keys for some time
 after unprotecting a packet sent using the new keys.  Discarding old keys too
 early can cause delayed packets to be discarded.  Discarding packets will be
 interpreted as packet loss by the peer and could adversely affect performance.
