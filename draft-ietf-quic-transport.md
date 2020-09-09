@@ -2222,7 +2222,8 @@ defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
 ~~~
 
 This timeout allows for multiple PTOs to expire prior to failing path
-validation, ensuring one packet loss does not cause path validation failure.
+validation, so that loss of a single PATH_CHALLENGE or PATH_RESPONSE frame
+does not cause path validation failure.
 
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
