@@ -651,7 +651,7 @@ To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
 before compression. If a decompressed field section contains multiple cookie
 field lines, these MUST be concatenated into a single octet string using the
-two-octet delimiter of 0x3B, 0x20 (the ASCII string "; ") before being passed
+two-octet delimiter of 0x3b, 0x20 (the ASCII string "; ") before being passed
 into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
 
@@ -803,9 +803,9 @@ with the RST bit set.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism (Section 9.9 of {{?HTTP11}})
-or 101 (Switching Protocols) informational status code (Section 10.2.2 of
-{{!SEMANTICS}}).
+HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of
+{{!SEMANTICS}) or 101 (Switching Protocols) informational status code (Section
+10.2.2 of {{!SEMANTICS}}).
 
 ## Server Push
 
@@ -824,8 +824,9 @@ MAX_PUSH_ID frame; see {{frame-max-push-id}}.  In particular, a server is not
 able to push until after the client sends a MAX_PUSH_ID frame.  A client sends
 MAX_PUSH_ID frames to control the number of pushes that a server can promise.  A
 server SHOULD use Push IDs sequentially, beginning from zero.  A client MUST
-treat receipt of a push stream with a Push ID that is greater than the maximum
-Push ID as a connection error of type H3_ID_ERROR.
+treat receipt of a push stream as a connection error of type H3_ID_ERROR when no
+MAX_PUSH_ID frame has been sent or when the stream references a Push ID that is
+greater than the maximum Push ID.
 
 The Push ID is used in one or more PUSH_PROMISE frames ({{frame-push-promise}})
 that carry the header section of the request message.  These frames are sent on
@@ -1414,6 +1415,11 @@ settings to have any meaning upon receipt.
 Because the setting has no defined meaning, the value of the setting can be any
 value the implementation selects.
 
+Setting identifiers which were used in HTTP/2 where there is no corresponding
+HTTP/3 setting have also been reserved ({{iana-settings}}). These settings MUST
+NOT be sent, and their receipt MUST be treated as a connection error of type
+H3_SETTINGS_ERROR.
+
 Additional settings can be defined by extensions to HTTP/3; see {{extensions}}
 for more details.
 
@@ -1562,7 +1568,7 @@ See {{connection-shutdown}} for more information on the use of the GOAWAY frame.
 
 ### MAX_PUSH_ID {#frame-max-push-id}
 
-The MAX_PUSH_ID frame (type=0xD) is used by clients to control the number of
+The MAX_PUSH_ID frame (type=0xd) is used by clients to control the number of
 server pushes that the server can initiate.  This sets the maximum value for a
 Push ID that the server can use in PUSH_PROMISE and CANCEL_PUSH frames.
 Consequently, this also limits the number of push streams that the server can
@@ -1582,12 +1588,12 @@ sending MAX_PUSH_ID frames as the server fulfills or cancels server pushes.
 
 ~~~~~~~~~~  drawing
 MAX_PUSH_ID Frame {
-  Type (i) = 0x1,
+  Type (i) = 0xd,
   Length (i),
   Push ID (i),
 }
 ~~~~~~~~~~
-{: #fig-max-push title="MAX_PUSH_ID Frame Payload"}
+{: #fig-max-push title="MAX_PUSH_ID Frame"}
 
 The MAX_PUSH_ID frame carries a single variable-length integer that identifies
 the maximum value for a Push ID that the server can use; see {{server-push}}.  A
@@ -1609,7 +1615,8 @@ implementation chooses.
 
 Frame types that were used in HTTP/2 where there is no corresponding HTTP/3
 frame have also been reserved ({{iana-frames}}).  These frame types MUST NOT be
-sent, and receipt MAY be treated as an error of type H3_FRAME_UNEXPECTED.
+sent, and their receipt MUST be treated as a connection error of type
+H3_FRAME_UNEXPECTED.
 
 
 # Error Handling {#errors}
@@ -1675,19 +1682,19 @@ H3_ID_ERROR (0x108):
 H3_SETTINGS_ERROR (0x109):
 : An endpoint detected an error in the payload of a SETTINGS frame.
 
-H3_MISSING_SETTINGS (0x10A):
+H3_MISSING_SETTINGS (0x10a):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-H3_REQUEST_REJECTED (0x10B):
+H3_REQUEST_REJECTED (0x10b):
 : A server rejected a request without performing any application processing.
 
-H3_REQUEST_CANCELLED (0x10C):
+H3_REQUEST_CANCELLED (0x10c):
 : The request or its response (including pushed response) is cancelled.
 
-H3_REQUEST_INCOMPLETE (0x10D):
+H3_REQUEST_INCOMPLETE (0x10d):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_CONNECT_ERROR (0x10F):
+H3_CONNECT_ERROR (0x10f):
 : The connection established in response to a CONNECT request was reset or
   abnormally closed.
 
@@ -2027,7 +2034,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 | GOAWAY           |  0x7   | {{frame-goaway}}           |
 | Reserved         |  0x8   | N/A                        |
 | Reserved         |  0x9   | N/A                        |
-| MAX_PUSH_ID      |  0xD   | {{frame-max-push-id}}      |
+| MAX_PUSH_ID      |  0xd   | {{frame-max-push-id}}      |
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
@@ -2074,8 +2081,8 @@ The entries in {{iana-setting-table}} are registered by this document.
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 ### Error Codes {#iana-error-codes}
 
@@ -2117,18 +2124,18 @@ The entries in {{iana-error-table}} are registered by this document.
 | H3_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
 | H3_ID_ERROR                       | 0x0108     | An identifier was used incorrectly       | {{http-error-codes}}   |
 | H3_SETTINGS_ERROR                 | 0x0109     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| H3_MISSING_SETTINGS               | 0x010A     | No SETTINGS frame received               | {{http-error-codes}}   |
-| H3_REQUEST_REJECTED               | 0x010B     | Request not processed                    | {{http-error-codes}}   |
-| H3_REQUEST_CANCELLED              | 0x010C     | Data no longer needed                    | {{http-error-codes}}   |
-| H3_REQUEST_INCOMPLETE             | 0x010D     | Stream terminated early                  | {{http-error-codes}}   |
-| H3_CONNECT_ERROR                  | 0x010F     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| H3_MISSING_SETTINGS               | 0x010a     | No SETTINGS frame received               | {{http-error-codes}}   |
+| H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
+| H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
+| H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 ### Stream Types {#iana-stream-types}
 
@@ -2163,8 +2170,8 @@ The entries in the following table are registered by this document.
 | ---------------- | ------ | -------------------------- | ------ |
 
 Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
+assigned by IANA.
 
 --- back
 
@@ -2257,6 +2264,14 @@ given time without modifying it.
 
 [QPACK] provides additional details.
 
+### Flow Control Differences
+
+HTTP/2 specifies a stream flow control mechanism. Although all HTTP/2 frames are
+delivered on streams, only the DATA frame payload is subject to flow control.
+QUIC provides flow control for stream data and all HTTP/3 frame types defined in
+this document are sent on streams. Therefore, all frame headers and payload are
+subject to flow control.
+
 ### Guidance for New Frame Type Definitions
 
 Frame type definitions in HTTP/3 often use the QUIC variable-length integer
@@ -2331,8 +2346,10 @@ frame of the control stream, and thereafter cannot change.  This eliminates many
 corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/3. The HTTP-level options that
-are retained in HTTP/3 have the same value as in HTTP/2.
+superseded by QUIC transport parameters in HTTP/3.  The HTTP-level options that
+are retained in HTTP/3 have the same value as in HTTP/2.  The superseded
+settings are reserved, and their receipt is an error.  See
+{{settings-parameters}} for discussion of both the retained and reserved values.
 
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
@@ -2341,25 +2358,29 @@ SETTINGS_HEADER_TABLE_SIZE:
 
 SETTINGS_ENABLE_PUSH:
 : This is removed in favor of the MAX_PUSH_ID frame, which provides a more
-  granular control over server push.
+  granular control over server push.  Specifying a setting with the identifier
+  0x2 (corresponding to the SETTINGS_ENABLE_PUSH parameter) in the HTTP/3
+  SETTINGS frame is an error.
 
 SETTINGS_MAX_CONCURRENT_STREAMS:
 : QUIC controls the largest open Stream ID as part of its flow control logic.
-  Specifying the SETTINGS_MAX_CONCURRENT_STREAMS parameter in the SETTINGS frame
-  is an error.
+  Specifying a setting with the identifier 0x3 (corresponding to the
+  SETTINGS_MAX_CONCURRENT_STREAMS parameter) in the HTTP/3 SETTINGS frame is an
+  error.
 
 SETTINGS_INITIAL_WINDOW_SIZE:
 : QUIC requires both stream and connection flow control window sizes to be
-  specified in the initial transport handshake.  Specifying the
-  SETTINGS_INITIAL_WINDOW_SIZE parameter in the SETTINGS frame is an error.
+  specified in the initial transport handshake.  Specifying a setting with the
+  identifier 0x4 (corresponding to the SETTINGS_INITIAL_WINDOW_SIZE parameter)
+  in the HTTP/3 SETTINGS frame is an error.
 
 SETTINGS_MAX_FRAME_SIZE:
-: This setting has no equivalent in HTTP/3.  Specifying it in the SETTINGS frame
-  is an error.
+: This setting has no equivalent in HTTP/3.  Specifying a setting with the
+  identifier 0x5 (corresponding to the SETTINGS_MAX_FRAME_SIZE parameter) in the
+  HTTP/3 SETTINGS frame is an error.
 
 SETTINGS_MAX_HEADER_LIST_SIZE:
-: This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.  See
-  {{settings-parameters}}.
+: This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.
 
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
 long) rather than fixed-length 32-bit fields as in HTTP/2.  This will often
