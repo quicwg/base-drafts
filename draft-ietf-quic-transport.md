@@ -2713,13 +2713,6 @@ ensures that connections are not closed after new activity is initiated.
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
 
-Note:
-
-: Using the PTO value here implicitly includes the peer's maximum expected
-acknowledgement delay in the idle timeout period; see Section 6.2.1
-of {{QUIC-RECOVERY}}. This ensures that the endpoint accounts for this
-known peer delay before declaring the connection as idle and closing it.
-
 
 ### Liveness Testing
 
@@ -2787,13 +2780,6 @@ The closing and draining connection states exist to ensure that connections
 close cleanly and that delayed or reordered packets are properly discarded.
 These states SHOULD persist for at least three times the current Probe Timeout
 (PTO) interval as defined in {{QUIC-RECOVERY}}.
-
-Note:
-
-: Using the PTO value here implicitly includes the peer's maximum expected
-acknowledgement delay in the closing and draining periods; see Section 6.2.1
-of {{QUIC-RECOVERY}}. This ensures that the endpoint takes this peer delay
-into account when waiting to discard subsequent packets sent by the peer.
 
 Disposing of connection state prior to exiting the closing or draining state
 could cause could result in an endpoint generating a stateless reset
