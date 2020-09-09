@@ -2180,7 +2180,7 @@ The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 
-## Path Validation Responses
+## Path Validation Responses {#path-response}
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
 data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame. A
