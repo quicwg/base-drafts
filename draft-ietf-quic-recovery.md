@@ -646,7 +646,8 @@ probe timer if the client has not received an acknowledgement for one of its
 Handshake packets and the handshake is not confirmed (see Section 4.1.2 of
 {{QUIC-TLS}}), even if there are no packets in flight.  When the PTO fires,
 the client MUST send a Handshake packet if it has Handshake keys, otherwise it
-MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+MUST send an Initial packet in a UDP datagram with a payload of at least 1200
+bytes.
 
 ### Speeding Up Handshake Completion
 
