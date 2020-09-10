@@ -481,10 +481,10 @@ implementations SHOULD NOT use a packet threshold less than 3; see {{?RFC5681}}.
 Some networks may exhibit higher degrees of packet reordering, causing a sender
 to detect spurious losses. Additionally, packet reordering could be more common
 with QUIC than TCP, because network elements that could observe and reorder
-out-of-order TCP packets cannot do that for QUIC, because packet numbers
-are encrypted. Algorithms that increase the reordering threshold after
-spuriously detecting losses, such as RACK {{?RACK}}, have proven to be useful
-in TCP and are expected to be at least as useful in QUIC.
+TCP packets cannot do that for QUIC, because QUIC packet numbers are encrypted.
+Algorithms that increase the reordering threshold after spuriously detecting
+losses, such as RACK {{?RACK}}, have proven to be useful in TCP and are
+expected to be at least as useful in QUIC.
 
 ### Time Threshold {#time-threshold}
 
@@ -601,8 +601,8 @@ occurs across all spaces to prevent excess load on the network.  For example,
 a timeout in the Initial packet number space doubles the length of the timeout
 in the Handshake packet number space.
 
-The time length of a connection that is experiencing consecutive PTOs is
-limited by the endpoint's idle timeout.
+The total length of time over which consecutive PTOs expire is limited by the
+idle timeout.
 
 The probe timer MUST NOT be set if the time threshold ({{time-threshold}}) loss
 detection timer is set.  The time threshold loss detection timer is expected
@@ -646,7 +646,8 @@ probe timer if the client has not received an acknowledgement for one of its
 Handshake packets and the handshake is not confirmed (see Section 4.1.2 of
 {{QUIC-TLS}}), even if there are no packets in flight.  When the PTO fires,
 the client MUST send a Handshake packet if it has Handshake keys, otherwise it
-MUST send an Initial packet in a UDP datagram of at least 1200 bytes.
+MUST send an Initial packet in a UDP datagram with a payload of at least 1200
+bytes.
 
 ### Speeding Up Handshake Completion
 
@@ -660,8 +661,9 @@ To speed up handshake completion under these conditions, an endpoint MAY send
 a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
 subject to the address validation limits in Section 8.1 of {{QUIC-TRANSPORT}}.
 
-Endpoints can also use coalesced packets to ensure that each datagram elicits at
-least one acknowledgement.  For example, a client can coalesce an Initial packet
+Endpoints can also use coalesced packets (see Section 12.2 of
+{{QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
+acknowledgement. For example, a client can coalesce an Initial packet
 containing PING and PADDING frames with a 0-RTT data packet and a server can
 coalesce an Initial packet containing a PING frame with one or more packets in
 its first flight.
@@ -796,10 +798,10 @@ receives packets with the ECN-CE codepoint.
 
 QUIC begins every connection in slow start with the congestion window set to
 an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
-the maximum datagram size (max_datagram_size), limited to the larger of 14720 or
-twice the maximum datagram size. This follows the analysis and recommendations
-in {{?RFC6928}}, increasing the byte limit to account for the smaller 8 byte
-overhead of UDP compared to the 20 byte overhead for TCP.
+the maximum datagram size (max_datagram_size), limited to the larger of 14720
+bytes or twice the maximum datagram size. This follows the analysis and
+recommendations in {{?RFC6928}}, increasing the byte limit to account for the
+smaller 8 byte overhead of UDP compared to the 20 byte overhead for TCP.
 
 If the maximum datagram size changes during the connection, the initial
 congestion window SHOULD be recalculated with the new size.  If the maximum
