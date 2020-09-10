@@ -480,11 +480,11 @@ implementations SHOULD NOT use a packet threshold less than 3; see {{?RFC5681}}.
 
 Some networks may exhibit higher degrees of packet reordering, causing a sender
 to detect spurious losses. Additionally, packet reordering could be more common
-with QUIC than TCP, because network elements that could observe and fix the
-order of reordered TCP packets cannot do that for QUIC. Algorithms that increase
-the reordering threshold after spuriously detecting losses, such as RACK
-{{?RACK}}, have proven to be useful in TCP and are expected to at least as
-useful in QUIC.
+with QUIC than TCP, because network elements that could observe and reorder
+out-of-order TCP packets cannot do that for QUIC, because packet numbers
+are encrypted. Algorithms that increase the reordering threshold after
+spuriously detecting losses, such as RACK {{?RACK}}, have proven to be useful
+in TCP and are expected to be at least as useful in QUIC.
 
 ### Time Threshold {#time-threshold}
 
@@ -601,8 +601,8 @@ occurs across all spaces to prevent excess load on the network.  For example,
 a timeout in the Initial packet number space doubles the length of the timeout
 in the Handshake packet number space.
 
-The life of a connection that is experiencing consecutive PTOs is limited by
-the endpoint's idle timeout.
+The time length of a connection that is experiencing consecutive PTOs is
+limited by the endpoint's idle timeout.
 
 The probe timer MUST NOT be set if the time threshold ({{time-threshold}}) loss
 detection timer is set.  The time threshold loss detection timer is expected
