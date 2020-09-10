@@ -3899,7 +3899,7 @@ use of ECN for packets to this receiver.
 
 On receiving an IP packet with an ECT(0), ECT(1) or CE codepoint, an
 ECN-enabled endpoint accesses the ECN codepoint and
-increases the corresponding ECT(0), ECT(1), or CE count, These ECN counts are
+increases the corresponding ECT(0), ECT(1), or CE count. These ECN counts are
 included in subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
 
 Each packet number space maintains separate acknowledgement state and separate
