@@ -3887,20 +3887,20 @@ see {{ecn-validation}}.
 
 ### ECN Counts
 
-Use of ECN requires the receiving endpoint to read the ECN codepoint from an IP
+Use of ECN requires the receiving endpoint to read the ECN field from an IP
 packet, which is not possible on all platforms. If an endpoint does not
-implement ECN support or does not have access to received ECN codepoints, it
+implement ECN support or does not have access to received ECN field, it
 does not report ECN counts for packets it receives.
 
-Even if an endpoint does not set an ECT codepoint on packets it sends, the
-endpoint MUST provide feedback about ECN codepoints it receives, if these are
-accessible.  Failing to report the ECN counts will cause the sender to disable
-use of ECN for packets to this receiver.
+Even if an endpoint does not set an ECT field on packets it sends, the endpoint
+MUST provide feedback about ECN markings it receives, if these are accessible.
+Failing to report the ECN counts will cause the sender to disable use of ECN
+for packets to this receiver.
 
 On receiving an IP packet with an ECT(0), ECT(1) or CE codepoint, an
-ECN-enabled endpoint accesses the ECN codepoint and
-increases the corresponding ECT(0), ECT(1), or CE count. These ECN counts are
-included in subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
+ECN-enabled endpoint accesses the ECN field and increases the corresponding
+ECT(0), ECT(1), or CE count. These ECN counts are included in subsequent ACK
+frames; see {{generating-acks}} and {{frame-ack}}.
 
 Each packet number space maintains separate acknowledgement state and separate
 ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
@@ -6695,16 +6695,16 @@ this condition with a connection error, or by dropping packets.
 
 ## Explicit Congestion Notification Attacks {#security-ecn}
 
-An on-path attacker could manipulate the value of ECN codepoints in the IP
-header to influence the sender's rate. {{!RFC3168}} discusses manipulations and
-their effects in more detail.
+An on-path attacker could manipulate the value of ECN fields in the IP header
+to influence the sender's rate. {{!RFC3168}} discusses manipulations and their
+effects in more detail.
 
-An on-the-side attacker can duplicate and send packets with modified ECN
-codepoints to affect the sender's rate.  If duplicate packets are discarded by a
-receiver, an off-path attacker will need to race the duplicate packet against
-the original to be successful in this attack.  Therefore, QUIC endpoints ignore
-the ECN codepoint field on an IP packet unless at least one QUIC packet in that
-IP packet is successfully processed; see {{ecn}}.
+An on-the-side attacker can duplicate and send packets with modified ECN fields
+to affect the sender's rate. If duplicate packets are discarded by a receiver,
+an off-path attacker will need to race the duplicate packet against the
+original to be successful in this attack. Therefore, QUIC endpoints ignore the
+ECN field on an IP packet unless at least one QUIC packet in that IP packet is
+successfully processed; see {{ecn}}.
 
 
 ## Stateless Reset Oracle {#reset-oracle}
