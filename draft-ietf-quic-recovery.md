@@ -481,7 +481,7 @@ implementations SHOULD NOT use a packet threshold less than 3; see {{?RFC5681}}.
 Some networks may exhibit higher degrees of packet reordering, causing a sender
 to detect spurious losses. Additionally, packet reordering could be more common
 with QUIC than TCP, because network elements that could observe and reorder
-out-of-order TCP packets cannot do that for QUIC, because packet numbers
+TCP packets cannot do that for QUIC, because packet numbers
 are encrypted. Algorithms that increase the reordering threshold after
 spuriously detecting losses, such as RACK {{?RACK}}, have proven to be useful
 in TCP and are expected to be at least as useful in QUIC.
