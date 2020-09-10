@@ -601,7 +601,8 @@ occurs across all spaces to prevent excess load on the network.  For example,
 a timeout in the Initial packet number space doubles the length of the timeout
 in the Handshake packet number space.
 
-The total length of time over which consecutive probes are sent is limited by the idle timeout.
+The total length of time over which consecutive PTOs expire are limited by the
+idle timeout.
 
 The probe timer MUST NOT be set if the time threshold ({{time-threshold}}) loss
 detection timer is set.  The time threshold loss detection timer is expected
