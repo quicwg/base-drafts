@@ -2469,6 +2469,12 @@ larger advantage in forging packets than the target of 2^-57.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-29
+
+- Updated limits on packet protection (#3788, #3789)
+- Allow for packet processing to continue while waiting for TLS to provide
+  keys (#3821, #3874)
+
 ## Since draft-ietf-quic-tls-28
 
 - Defined limits on the number of packets that can be protected with a single
