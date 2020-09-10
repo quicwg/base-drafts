@@ -3906,10 +3906,9 @@ Each packet number space maintains separate acknowledgement state and separate
 ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
 header so the ECN counts are incremented once for each QUIC packet.
 
-For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT QUIC packet
-are coalesced, the corresponding counts for the Initial and Handshake packet
-number spaces will be incremented by one each and the counts for the
-application data packet number space will be increased by two.
+For example, if one each of an Initial, Handshake, and 1-RTT QUIC packet are
+coalesced into a single UDP datagram, the ECN counts for all three packet
+number spaces will be incremented by one each.
 
 ECN counts are only incremented when QUIC packets from the received IP
 packet are processed. As such, duplicate QUIC packets are not processed and
