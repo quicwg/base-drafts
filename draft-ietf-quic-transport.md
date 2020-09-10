@@ -3974,8 +3974,8 @@ remarking of ECN-CE markings by the network.
 An endpoint could miss acknowledgements for a packet when ACK frames are lost.
 It is therefore possible for the total increase in ECT(0), ECT(1), and ECN-CE
 counts to be greater than the number of packets that are newly acknowledged by
-an ACK frame. This is why ECN counts are permitted to be larger than the value
-corresponding to the largest acknowledged packet number.
+an ACK frame. This is why ECN counts are permitted to be larger than the total
+number of packets that are acknowledged.
 
 Validating ECN counts from reordered ACK frames can result in failure. An
 endpoint MUST NOT fail ECN validation as a result of processing an ACK frame
