@@ -2493,6 +2493,13 @@ what might be a temporary or intermittent error.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-29
+
+- Require a connection error if a reserved frame type that corresponds to a
+  frame in HTTP/2 is received (#3991, #3993)
+- Require a connection error if a reserved setting that corresponds to a
+  setting in HTTP/2 is received (#3954, #3955)
+
 ## Since draft-ietf-quic-http-28
 
 - CANCEL_PUSH is recommended even when the stream is reset (#3698, #3700)

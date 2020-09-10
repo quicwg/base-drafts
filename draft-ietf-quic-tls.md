@@ -1506,10 +1506,11 @@ The endpoint that initiates a key update also updates the keys that it uses for
 receiving packets.  These keys will be needed to process packets the peer sends
 after updating.
 
-An endpoint SHOULD retain old keys so that packets sent by its peer prior to
-receiving the key update can be processed.  Discarding old keys too early can
-cause delayed packets to be discarded.  Discarding packets will be interpreted
-as packet loss by the peer and could adversely affect performance.
+An endpoint MUST retain old keys until it has successfully unprotected a packet
+sent using the new keys.  An endpoint SHOULD retain old keys for some time
+after unprotecting a packet sent using the new keys.  Discarding old keys too
+early can cause delayed packets to be discarded.  Discarding packets will be
+interpreted as packet loss by the peer and could adversely affect performance.
 
 
 ## Responding to a Key Update
@@ -1613,12 +1614,13 @@ in the network.  In this case, the Key Phase bit alone can be used to select
 keys.
 
 An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
-{{QUIC-RECOVERY}}) after a key update before it creates the next set of packet
-protection keys.  These updated keys MAY replace the previous keys at that time.
-With the caveat that PTO is a subjective measure - that is, a peer could have a
-different view of the RTT - this time is expected to be long enough that any
-reordered packets would be declared lost by a peer even if they were
-acknowledged and short enough to allow for subsequent key updates.
+{{QUIC-RECOVERY}}) after receiving a packet that uses the new key generation
+before it creates the next set of packet protection keys.  These updated keys
+MAY replace the previous keys at that time.  With the caveat that PTO is a
+subjective measure - that is, a peer could have a different view of the RTT -
+this time is expected to be long enough that any reordered packets would be
+declared lost by a peer even if they were acknowledged and short enough to
+allow for subsequent key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
 decrypt packets that initiate a key update during the period when it retains old
@@ -1627,9 +1629,9 @@ after receiving an acknowledgment that confirms that the previous key update was
 received.  Failing to allow sufficient time could lead to packets being
 discarded.
 
-An endpoint SHOULD retain old read keys for no more than three times the PTO.
-After this period, old read keys and their corresponding secrets SHOULD be
-discarded.
+An endpoint SHOULD retain old read keys for no more than three times the PTO
+after having received a packet protected using the new keys. After this period,
+old read keys and their corresponding secrets SHOULD be discarded.
 
 
 ## Limits on AEAD Usage {#aead-limits}
@@ -2466,6 +2468,12 @@ larger advantage in forging packets than the target of 2^-57.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-29
+
+- Updated limits on packet protection (#3788, #3789)
+- Allow for packet processing to continue while waiting for TLS to provide
+  keys (#3821, #3874)
 
 ## Since draft-ietf-quic-tls-28
 

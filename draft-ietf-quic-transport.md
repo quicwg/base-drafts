@@ -2221,6 +2221,10 @@ defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
    validation_timeout = max(3*PTO, 6*kInitialRtt)
 ~~~
 
+This timeout allows for multiple PTOs to expire prior to failing path
+validation, so that loss of a single PATH_CHALLENGE or PATH_RESPONSE frame
+does not cause path validation failure.
+
 Note that the endpoint might receive packets containing other frames on the new
 path, but a PATH_RESPONSE frame with appropriate data is required for path
 validation to succeed.
@@ -2703,6 +2707,8 @@ ensures that connections are not closed after new activity is initiated.
 
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
+This allows for multiple PTOs to expire prior to idle timeout, ensuring the idle
+timeout does not expire as a result of a single packet loss.
 
 
 ### Liveness Testing
@@ -7413,6 +7419,27 @@ incurred.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-transport-29
+
+- Require the same connection ID on coalesced packets (#3800, #3930)
+- Allow caching of packets that can't be decrypted, by allowing the reported
+  acknowledgment delay to exceed max_ack_delay prior to confirming the
+  handshake (#3821, #3980, #4035, #3874)
+- Allow connection ID to be used for address validation (#3834, #3924)
+- Required protocol operations are no longer directed at implementations, but
+  are features provided to application protocols (#3838, #3935)
+- Narrow requirements for reset of congestion state on path change (#3842,
+  #3945)
+- Add a three times amplification limit for sending of CONNECTION_CLOSE with
+  reduced state (#3845, #3864)
+- Change error code for invalid RETIRE_CONNECTION_ID frames (#3860, #3861)
+- Recommend retention of state for lost packets to allow for late arrival and
+  avoid unnecessary retransmission (#3956, #3957)
+- Allow a server to reject connections if a client reuses packet numbers after
+  Retry (#3989, #3990)
+- Limit recommendation for immediate acknowledgment to when ack-eliciting
+  packets are reordered (#4001, #4000)
 
 ## Since draft-ietf-quic-transport-28
 
