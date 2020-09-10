@@ -3897,24 +3897,23 @@ endpoint MUST provide feedback about ECN codepoints it receives, if these are
 accessible.  Failing to report the ECN counts will cause the sender to disable
 use of ECN for packets to this receiver.
 
-On receiving a QUIC packet with an ECT(0), ECT(1) or CE codepoint, an
-ECN-enabled endpoint accesses the ECN codepoint from the enclosing IP packet and
+On receiving an IP packet with an ECT(0), ECT(1) or CE codepoint, an
+ECN-enabled endpoint accesses the ECN codepoint and
 increases the corresponding ECT(0), ECT(1), or CE count, These ECN counts are
 included in subsequent ACK frames; see {{generating-acks}} and {{frame-ack}}.
 
 Each packet number space maintains separate acknowledgement state and separate
 ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
-header.  The ECN counts for the ECN codepoint received in the associated IP
-header are incremented once for each QUIC packet.
+header so the ECN counts are incremented once for each QUIC packet.
 
 For example, if one each of an Initial, 0-RTT, Handshake, and 1-RTT QUIC packet
 are coalesced, the corresponding counts for the Initial and Handshake packet
 number spaces will be incremented by one each and the counts for the
 application data packet number space will be increased by two.
 
-An ECN count is not incremented when no QUIC packets from the received IP
-packet are processed. A QUIC packet detected by a receiver as a duplicate also
-does not increase an ECN count; see {{security-ecn}} for relevant security
+ECN counts are only incremented when QUIC packets from the received IP
+packet are processed. As such, duplicate QUIC packets are not processed and
+do not increase ECN counts; see {{security-ecn}} for relevant security
 concerns.
 
 
