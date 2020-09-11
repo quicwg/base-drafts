@@ -6521,15 +6521,11 @@ attacks that rely on the Token field can be avoided if clients send an empty
 Token field when the server address has changed from when the NEW_TOKEN frame
 was received.
 
-Therefore, clients SHOULD NOT send a token received in a NEW_TOKEN frame from
-one server address in an Initial packet that is sent to a different server
-address. As strict equality might reduce the utility of this mechanism, clients
-MAY employ heuristics that result in different server addresses being treated
-as equivalent, such as treating addresses with a shared prefix of sufficient
-length as being functionally equivalent (for instance, /24 in IPv4 or /56 in
-IPv6). In addition, clients SHOULD treat a preferred address that is
-successfully validated as equivalent to the address on which the connection was
-made; see {{preferred-address}}.
+Clients could avoid using NEW_TOKEN if the server address changes. However, not
+including a Token field could adversely affect performance. Servers could rely
+on NEW_TOKEN to enable sending of data in excess of the three times limit on
+sending data; see {{validate-handshake}}. In particular, this affects cases
+where clients use 0-RTT to request data from servers.
 
 Sending a Retry packet ({{packet-retry}}) offers a server the option to change
 the Token field. After sending a Retry, the server can also control the
