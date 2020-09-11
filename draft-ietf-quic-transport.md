@@ -6525,7 +6525,7 @@ Clients could avoid using NEW_TOKEN if the server address changes. However, not
 including a Token field could adversely affect performance. Servers could rely
 on NEW_TOKEN to enable sending of data in excess of the three times limit on
 sending data; see {{validate-handshake}}. In particular, this affects cases
-where clients use 0-RTT in order to request data from servers.
+where clients use 0-RTT to request data from servers.
 
 Sending a Retry packet ({{packet-retry}}) offers a server the option to change
 the Token field. After sending a Retry, the server can also control the
