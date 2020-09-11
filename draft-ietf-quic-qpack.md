@@ -1551,6 +1551,128 @@ the smallest number of bytes.
 | 97    | x-frame-options                  | deny                                                        |
 | 98    | x-frame-options                  | sameorigin                                                  |
 
+
+# Encoding and Decoding Examples
+
+The following examples represent a series of exchanges between an encoder and a
+decoder.  The state of the encoder's dyanmic table is shown, along with its
+current size.  Each entry is shown with the Absolute Index of the entry (Abs),
+the current number of outstanding encoded field sections with references to that
+entry (Ref), along with the name and value.  Entries above the 'acknowledged'
+line have been acknowledged by the decoder.
+
+## Literal Field Line With Name Reference
+
+~~~
+Data                | Interpretation
+                              | Encoder's Dynamic Table
+
+Stream: 0
+0000                | Required Insert Count = 0, Base = 0
+510b 2f69 6e64 6578 | :path=/index.html
+2e68 746d 6c
+
+                                Abs Ref Name        Value
+                                ^-- acknowledged --^
+                                Size=0
+~~~
+
+## Dynamic Table
+
+~~~
+Stream: Encoder
+3f8b                | Set Table Capacity=170
+01c0 0c77 7777 2e69 | Insert with static name  reference
+6574 662e 6f72 67   |  (:authortiy=www.ietf.org)
+
+                                Abs Ref Name        Value
+                                ^-- acknowledged --^
+                                 1   0  :authority  www.ietf.org
+                                Size=54
+
+Stream: 4
+0280                | Required Insert Count = 1, Base = 0
+10                  | Indexed field line with post-base index
+
+                                Abs Ref Name        Value
+                                ^-- acknowledged --^
+                                 1   1  :authority  www.ietf.org
+                                Size=54
+
+Stream: Decoder
+84                  | Section Acknowledgement (stream=4)
+
+                                Abs Ref Name        Value
+                                 1   0  :authority  www.ietf.org
+                                ^-- acknowledged --^
+                                Size=54
+~~~
+
+## Speculative Insert
+
+~~~
+Stream: Encoder
+4a63 7573 746f 6d2d | Insert without name reference
+6b65 790c 6375 7374 |   (custom-key=custom-value)
+6f6d 2d76 616c 7565 |
+
+                                Abs Ref Name        Value
+                                 1   0  :authority  www.ietf.org
+                                ^-- acknowledged --^
+                                 2   0  custom-key  custom-value
+                                Size=108
+
+Stream: Decoder
+01                  | Insert count increment (1)
+
+                                Abs Ref Name        Value
+                                 1   0  :authority  www.ietf.org
+                                 2   0  custom-key  custom-value
+                                ^-- acknowledged --^
+                                Size=108
+
+~~~
+
+## Duplicate Instruction
+
+~~~
+Stream: Encoder
+01                 | Duplicate (relative index=1)
+
+                                Abs Ref Name        Value
+                                 1   0  :authority  www.ietf.org
+                                 2   0  custom-key  custom-value
+                                ^-- acknowledged --^
+                                 3   0  :authority  www.ietf.org
+                                Size=162
+
+Stream: 8
+0400               | Required Insert Count = 3, Base = 3
+80                 | Indexed field line
+
+                                Abs Ref Name        Value
+                                 1   0  :authority  www.ietf.org
+                                 2   0  custom-key  custom-value
+                                ^-- acknowledged --^
+                                 3   1  :authority  www.ietf.org
+                                Size=162
+~~~
+
+## Dyanmic Table Insert causes eviction
+
+~~~
+Stream: Encoder
+810d 6375 7374 6f6d  | Insert with dynamic table name reference
+2d76 616c 7565 32    |  (custom-key=custom-value2)
+
+                                Abs Ref Name        Value
+                                 2   0  custom-key  custom-value
+                                ^-- acknowledged --^
+                                 3   1  :authority  www.ietf.org
+                                 4   0  custom-key  custom-value2
+                                Size=163
+~~~
+
 # Sample One Pass Encoding Algorithm
 
 Pseudo-code for single pass encoding, excluding handling of duplicates,
