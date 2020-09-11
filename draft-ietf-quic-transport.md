@@ -2708,7 +2708,7 @@ ensures that connections are not closed after new activity is initiated.
 To avoid excessively small idle timeout periods, endpoints MUST increase the
 idle timeout period to be at least three times the current Probe Timeout (PTO).
 This allows for multiple PTOs to expire, and therefore multiple probes to be
-sent in the event of loss, prior to idle timeout.
+sent and lost, prior to idle timeout.
 
 
 ### Liveness Testing
