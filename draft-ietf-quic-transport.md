@@ -3885,7 +3885,7 @@ ECN marking and whether the peer reports the ECN values in received IP headers;
 see {{ecn-validation}}.
 
 
-### ECN Counts
+### Reporting ECN Counts
 
 Use of ECN requires the receiving endpoint to read the ECN field from an IP
 packet, which is not possible on all platforms. If an endpoint does not
