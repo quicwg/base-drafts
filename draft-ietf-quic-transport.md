@@ -3889,13 +3889,13 @@ see {{ecn-validation}}.
 
 Use of ECN requires the receiving endpoint to read the ECN field from an IP
 packet, which is not possible on all platforms. If an endpoint does not
-implement ECN support or does not have access to received ECN field, it
+implement ECN support or does not have access to received ECN fields, it
 does not report ECN counts for packets it receives.
 
 Even if an endpoint does not set an ECT field on packets it sends, the endpoint
 MUST provide feedback about ECN markings it receives, if these are accessible.
 Failing to report the ECN counts will cause the sender to disable use of ECN
-for packets to this receiver.
+for this connection.
 
 On receiving an IP packet with an ECT(0), ECT(1) or CE codepoint, an
 ECN-enabled endpoint accesses the ECN field and increases the corresponding
@@ -3904,11 +3904,11 @@ frames; see {{generating-acks}} and {{frame-ack}}.
 
 Each packet number space maintains separate acknowledgement state and separate
 ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
-header so the ECN counts are incremented once for each QUIC packet.
+header so the ECN counts are incremented once for each coalesced QUIC packet.
 
 For example, if one each of an Initial, Handshake, and 1-RTT QUIC packet are
 coalesced into a single UDP datagram, the ECN counts for all three packet
-number spaces will be incremented by one each.
+number spaces will be incremented by one each, based on the ECN field of the single IP header.
 
 ECN counts are only incremented when QUIC packets from the received IP
 packet are processed. As such, duplicate QUIC packets are not processed and
@@ -3933,7 +3933,7 @@ To perform ECN validation for a new path:
   that ECN validation has failed.
 
 If an endpoint has cause to expect that IP packets with an ECT codepoint might
-be dropped by faulty network element, the endpoint could set an ECT codepoint
+be dropped by a faulty network element, the endpoint could set an ECT codepoint
 for only the first ten outgoing packets on a path, or for a period of three
 RTTs. If all packets marked with non-zero ECN codepoints are subsequently lost,
 it can disable marking on the assumption that the marking causes in loss.
@@ -3950,7 +3950,7 @@ perform ECN validation using the reported ECT(1) counts.
 
 #### Receiving ACK Frames with ECN Counts {#ecn-ack}
 
-Erroneous application of ECN-CE markings by the network can result in degraded
+Erroneous application of CE markings by the network can result in degraded
 connection performance.  An endpoint that receives an ACK frame with ECN counts
 therefore validates the counts before using them. It performs this validation by
 comparing newly received counts against those from the last successfully
@@ -3958,11 +3958,11 @@ processed ACK frame. Any increase in the ECN counts is validated based on the
 ECN markings that were applied to packets that are newly acknowledged in the ACK
 frame.
 
-If an ACK frame newly acknowledges a packet that the endpoint sent setting
-either the ECT(0) or ECT(1) codepoint, ECN validation fails if the
+If an ACK frame newly acknowledges a packet that the endpoint sent with
+either the ECT(0) or ECT(1) codepoint set, ECN validation fails if the
 corresponding ECN counts are not present in the ACK frame. This check detects a
-network element that zeroes the ECN field or a peer that is unable to access
-ECN the markings.
+network element that zeroes the ECN field or a peer that does not report 
+ECN markings.
 
 ECN validation also fails if the sum of the increase in ECT(0) and ECN-CE counts
 is less than the number of newly acknowledged packets that were originally sent
