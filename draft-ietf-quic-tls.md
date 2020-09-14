@@ -1398,6 +1398,7 @@ Retry Pseudo-Packet {
   DCID Len (8),
   Destination Connection ID (0..160),
   SCID Len (8),
+  Source Connection ID (0..160),
   Retry Token (..),
 }
 ~~~
