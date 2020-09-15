@@ -3907,8 +3907,9 @@ ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
 header so the ECN counts are incremented once for each coalesced QUIC packet.
 
 For example, if one each of an Initial, Handshake, and 1-RTT QUIC packet are
-coalesced into a single UDP datagram, the ECN counts for all three packet
-number spaces will be incremented by one each, based on the ECN field of the single IP header.
+coalesced into a single UDP datagram, the ECN counts for all three packet number
+spaces will be incremented by one each, based on the ECN field of the single IP
+header.
 
 ECN counts are only incremented when QUIC packets from the received IP
 packet are processed. As such, duplicate QUIC packets are not processed and
@@ -3958,11 +3959,10 @@ processed ACK frame. Any increase in the ECN counts is validated based on the
 ECN markings that were applied to packets that are newly acknowledged in the ACK
 frame.
 
-If an ACK frame newly acknowledges a packet that the endpoint sent with
-either the ECT(0) or ECT(1) codepoint set, ECN validation fails if the
-corresponding ECN counts are not present in the ACK frame. This check detects a
-network element that zeroes the ECN field or a peer that does not report 
-ECN markings.
+If an ACK frame newly acknowledges a packet that the endpoint sent with either
+the ECT(0) or ECT(1) codepoint set, ECN validation fails if the corresponding
+ECN counts are not present in the ACK frame. This check detects a network
+element that zeroes the ECN field or a peer that does not report ECN markings.
 
 ECN validation also fails if the sum of the increase in ECT(0) and ECN-CE counts
 is less than the number of newly acknowledged packets that were originally sent
