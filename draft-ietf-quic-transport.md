@@ -4314,7 +4314,7 @@ The encoded packet number is protected as described in Section 5.4 of
 {{QUIC-TLS}}.
 
 Prior to receiving an acknowledgement for a packet number space, the full packet
-number MUST be included.
+number MUST be included; it is not to be truncated as described below.
 
 After an acknowledgement is received for a packet number space, the sender MUST
 use a packet number size able to represent more than twice as large a range than
