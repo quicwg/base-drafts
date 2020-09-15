@@ -966,8 +966,8 @@ If a max_streams transport parameter or a MAX_STREAMS frame is received with a
 value greater than 2^60, this would allow a maximum stream ID that cannot be
 expressed as a variable-length integer; see {{integer-encoding}}.  If either is
 received, the connection MUST be closed immediately. The connection error to be
-used is TRANSPORT_PARAMETER_ERROR if the offending value was in a transport
-parameter or FRAME_ENCODING_ERROR if the offending value was in a frame; see
+used is TRANSPORT_PARAMETER_ERROR if the offending value was received in a
+transport parameter or FRAME_ENCODING_ERROR if in a frame; see
 {{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
