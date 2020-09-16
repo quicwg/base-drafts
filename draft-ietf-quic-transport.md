@@ -2312,14 +2312,14 @@ Therefore, a migrating endpoint can send to its peer knowing that the peer is
 willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
-When migrating, the new path might not support the endpoint's current sending
-rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
-as described in {{migration-cc}}.
-
 To establish reachability on the new path, an endpoint initiates path	
 validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path	
 validation until after a peer sends the next non-probing frame to its new	
 address.
+
+When migrating, the new path might not support the endpoint's current sending
+rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
+as described in {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
