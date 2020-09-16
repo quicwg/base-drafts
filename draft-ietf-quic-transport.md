@@ -2166,6 +2166,9 @@ NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
 that an unused connection ID will be available to the peer when sending a
 response.
 
+The number of new paths an endpoint can probe is limited by the number of
+extra Connection IDs the peer has previously supplied.
+
 
 ### Initiating Path Validation
 
