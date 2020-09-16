@@ -2316,6 +2316,11 @@ When migrating, the new path might not support the endpoint's current sending
 rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
 as described in {{migration-cc}}.
 
+To establish reachability on the new path, an endpoint initiates path	
+validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path	
+validation until after a peer sends the next non-probing frame to its new	
+address.
+
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
 
