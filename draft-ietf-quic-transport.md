@@ -2129,9 +2129,9 @@ clients to further narrow applicability or reuse.
 ## Path Validation {#migrate-validate}
 
 Path validation is used by both peers during connection migration
-(see {{migration}}) to verify reachability of the peer after a change of
-address.  In path validation, endpoints test reachability between a specific
-local address and a specific peer address, where an address is the two-tuple of
+(see {{migration}}) to verify reachability after a change of address.
+In path validation, endpoints test reachability between a specific local
+address and a specific peer address, where an address is the two-tuple of
 IP address and port.
 
 Path validation tests that packets sent on a path to a peer are received by that
