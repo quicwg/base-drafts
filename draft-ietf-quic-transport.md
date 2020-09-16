@@ -6440,8 +6440,19 @@ This section also describes limited countermeasures that can be implemented by
 QUIC endpoints. These mitigations can be employed unilaterally by a QUIC
 implementation or deployment, without potential targets for request forgery
 attacks taking action. However these countermeasures could be insufficient if
-UDP-based services do not properly authorize requests.
+UDP-based services do not properly authorize requests. 
 
+Because the migration attack described in
+{{request-forgery-with-spoofed-migration}} is quite powerful and does
+not have adequate countermeasures, QUIC server implementations should
+assume that attackers can cause them to generate arbitrary UDP
+payloads to arbitrary destinations. QUIC servers SHOULD NOT be
+deployed in networks that also have inadequately secured UDP
+endpoints.  Although it is not generally possible to ensure that
+clients are not co-located with vulnerable endpoints, this version of
+QUIC does not allow servers to migrate, thus preventing spoofed
+migration attacks on clients.  Any future extension which allows
+server migration MUST also define countermeasures for forgery attacks.
 
 ### Control Options for Endpoints
 
