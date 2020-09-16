@@ -2140,7 +2140,7 @@ not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
 Acknowledgments cannot be used for path validation as they contain insufficient
-entropy and might be spoofed.  No method is provided to establish	return
+entropy and might be spoofed. No method is provided to establish return
 reachability, as endpoints independently determine reachability on each
 direction of a path.
 
