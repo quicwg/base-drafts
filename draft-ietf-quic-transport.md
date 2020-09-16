@@ -2139,7 +2139,10 @@ peer. Path validation ensures that packets received from a migrating peer do
 not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
-The peer performs independent validation of the return path.
+Acknowledgments cannot be used for path validation as they contain insufficient
+entropy and might be spoofed.  No method is provided to establish	return
+reachability, as endpoints independently determine reachability on each	
+direction of a path.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
