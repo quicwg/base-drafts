@@ -2128,15 +2128,15 @@ clients to further narrow applicability or reuse.
 
 ## Path Validation {#migrate-validate}
 
-Path validation can be used during connection migration (see {{migration}}) by
-the migrating endpoint to verify reachability of a peer from a new local address
-and by the receiving peer to validate the new peer address.  In path validation,
-endpoints test reachability between a specific local address and a specific peer
-address, where an address is the two-tuple of IP address and port.
+Path validation is used by both peers during connection migration
+(see {{migration}}) to verify reachability of the peer after a change of
+address.  In path validation, endpoints test reachability between a specific
+local address and a specific peer address, where an address is the two-tuple of
+IP address and port.
 
 Path validation tests that packets sent on a path to a peer are received by that
-peer. Path validation is used to ensure that packets received from a migrating
-peer do not carry a spoofed source address.
+peer. Path validation ensures that packets received from a migrating peer do
+not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
 The peer performs independent validation of the return path.
@@ -2153,10 +2153,9 @@ traversal needs additional synchronization mechanisms that are not provided
 here.
 
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
-frames used for path validation.  In particular, an endpoint can pad a packet
-carrying a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
-(see {{pmtud}}), or an endpoint can include a PATH_RESPONSE with its own
-PATH_CHALLENGE.
+frames used for path validation.  In particular, an endpoint can include
+PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
+(see {{pmtud}}), and/or include a PATH_RESPONSE with its own PATH_CHALLENGE.
 
 When probing a new path, an endpoint might want to ensure that its peer has an
 unused connection ID available for responses. The endpoint can send
