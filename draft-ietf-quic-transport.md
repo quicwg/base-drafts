@@ -2173,7 +2173,7 @@ An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
 loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
 single packet.
 
-An endpoint SHOULD NOT probe a new path with packets containing a 
+An endpoint SHOULD NOT probe a new path with packets containing a
 PATH_CHALLENGE more frequently than it would send an Initial packet. This
 ensures connection migration is no more load on a new path than establishing a
 new connection.
