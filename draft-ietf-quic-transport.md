@@ -2296,17 +2296,6 @@ a new local address needs to ensure that at least one new connection ID is
 available at the peer. That can be achieved by including a NEW_CONNECTION_ID
 frame in the probe.
 
-Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
-for reachability on a path. An endpoint sends a PATH_RESPONSE frame in response,
-as per {{migrate-validate}}.  The receiving endpoint MAY defer validating the
-reverse path until after a peer sends a non-probing frame from its new address.
-
-Path validation is necessary to verify reachability of a peer on a new network
-path.  Acknowledgments cannot be used for path validation as they contain
-insufficient entropy and might be spoofed.  No method is provided to establish
-return reachability, as endpoints independently determine reachability on each
-direction of a path.
-
 PATH_CHALLENGE, PATH_RESPONSE, NEW_CONNECTION_ID, and PADDING frames are
 "probing frames", and all other frames are "non-probing frames".  A packet
 containing only probing frames is a "probing packet", and a packet containing
