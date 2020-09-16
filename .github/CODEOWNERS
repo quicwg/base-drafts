@@ -1,0 +1,13 @@
+*                               @quicwg/chairs
+
+draft-ietf-quic-http.md         @MikeBishop
+
+draft-ietf-quic-invariants.md   @martinthomson @janaiyengar
+
+draft-ietf-quic-qpack.md        @MikeBishop @afrind
+
+draft-ietf-quic-recovery.md     @janaiyengar @ianswett
+
+draft-ietf-quic-tls.md          @martinthomson @seanturner
+
+draft-ietf-quic-transport.md    @janaiyengar @martinthomson
