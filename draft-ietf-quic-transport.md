@@ -2173,9 +2173,10 @@ An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
 loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
 single packet.
 
-An endpoint SHOULD NOT send packets containing a PATH_CHALLENGE more
-frequently than it would an Initial packet, ensuring that connection migration
-is no more load on a new path than establishing a new connection.
+An endpoint SHOULD NOT probe a new path with packets containing a 
+PATH_CHALLENGE more frequently than it would send an Initial packet. This
+ensures connection migration is no more load on a new path than establishing a
+new connection.
 
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
