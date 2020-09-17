@@ -2167,7 +2167,8 @@ that an unused connection ID will be available to the peer when sending a
 response.
 
 The number of new paths an endpoint can probe is limited by the number of
-extra Connection IDs the peer has previously supplied.
+extra Connection IDs the peer has previously supplied. Supplying a peer with enough
+Connection IDs allows it to simultaneously probe multiple paths.
 
 
 ### Initiating Path Validation
