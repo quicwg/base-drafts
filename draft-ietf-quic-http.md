@@ -1801,9 +1801,8 @@ have authority over.  Failure to enforce this would allow a tenant to provide a
 representation that would be served out of cache, overriding the actual
 representation that the authoritative tenant provides.
 
-Pushed responses for which an origin server is not authoritative (see
-{{connection-reuse}}) are prohibited; clients are required to reject them (see
-{{server-push}}).
+Clients are required to reject pushed responses for which an origin server is
+not authoritative; see {{server-push}}.
 
 ## Denial-of-Service Considerations
 
