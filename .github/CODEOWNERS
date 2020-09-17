@@ -2,7 +2,7 @@
 
 draft-ietf-quic-http.md         @MikeBishop
 
-draft-ietf-quic-invariants.md   @martinthomson @janaiyengar
+draft-ietf-quic-invariants.md   @martinthomson 
 
 draft-ietf-quic-qpack.md        @MikeBishop @afrind
 
