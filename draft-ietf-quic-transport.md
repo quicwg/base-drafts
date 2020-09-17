@@ -2158,7 +2158,7 @@ here.
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include
 PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
-(see {{pmtud}}), and/or include a PATH_RESPONSE with its own PATH_CHALLENGE.
+(see {{pmtud}}), and/or include a PATH_CHALLENGE with its own PATH_RESPONSE.
 
 When probing a new path, an endpoint might want to ensure that its peer has an
 unused connection ID available for responses. The endpoint can send
