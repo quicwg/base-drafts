@@ -6448,7 +6448,9 @@ not have adequate countermeasures, QUIC server implementations should
 assume that attackers can cause them to generate arbitrary UDP
 payloads to arbitrary destinations. QUIC servers SHOULD NOT be
 deployed in networks that also have inadequately secured UDP
-endpoints.  Although it is not generally possible to ensure that
+endpoints.
+
+Although it is not generally possible to ensure that
 clients are not co-located with vulnerable endpoints, this version of
 QUIC does not allow servers to migrate, thus preventing spoofed
 migration attacks on clients.  Any future extension which allows
