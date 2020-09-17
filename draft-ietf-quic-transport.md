@@ -2135,8 +2135,8 @@ address and a specific peer address, where an address is the two-tuple of
 IP address and port.
 
 Path validation tests that packets sent on a path to a peer are received by that
-peer. Path validation ensures that packets received from a migrating peer do
-not carry a spoofed source address.
+peer. Path validation is used to ensure that packets received
+from a migrating peer do not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
 Acknowledgments cannot be used for path validation as they contain insufficient
