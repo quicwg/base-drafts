@@ -1316,7 +1316,7 @@ Note:
   receives all server handshake messages.
 
 
-## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
+## Receiving Out-of-Order Protected Packets {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
