@@ -859,7 +859,7 @@ which the server is authoritative; see {{connection-reuse}}.
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
 carrying a request that is not cacheable, is not known to be safe, that
 indicates the presence of a request body, or for which it does not consider the
-server authoritative.
+server authoritative.  Any corresponding responses MUST NOT be used or cached.
 
 Each pushed response is associated with one or more client requests.  The push
 is associated with the request stream on which the PUSH_PROMISE frame was
@@ -1801,8 +1801,8 @@ have authority over.  Failure to enforce this would allow a tenant to provide a
 representation that would be served out of cache, overriding the actual
 representation that the authoritative tenant provides.
 
-Pushed responses for which an origin server is not authoritative (see
-{{connection-reuse}}) MUST NOT be used or cached.
+Clients are required to reject pushed responses for which an origin server is
+not authoritative; see {{server-push}}.
 
 ## Denial-of-Service Considerations
 
