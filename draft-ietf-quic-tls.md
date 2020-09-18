@@ -1331,7 +1331,7 @@ handshake messages from a client, it is missing assurances on the client state:
   pre-shared key and validated the client's pre-shared key binder; see Section
   4.2.11 of {{!TLS13}}.
 
-- The client has not demonstrated liveness, unless a RETRY packet was used.
+- The client has not demonstrated liveness, unless a Retry packet was used.
 
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
