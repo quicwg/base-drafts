@@ -1316,7 +1316,7 @@ Note:
   receives all server handshake messages.
 
 
-## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
+## Receiving Out-of-Order Protected Packets {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
@@ -1331,7 +1331,9 @@ handshake messages from a client, it is missing assurances on the client state:
   pre-shared key and validated the client's pre-shared key binder; see Section
   4.2.11 of {{!TLS13}}.
 
-- The client has not demonstrated liveness, unless a RETRY packet was used.
+- The client has not demonstrated liveness, unless the server has validated the
+  client's address with a Retry packet or other means; see Section 8.1 of
+  [QUIC-TRANSPORT].
 
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
