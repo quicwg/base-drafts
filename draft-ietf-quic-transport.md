@@ -1324,7 +1324,7 @@ When implementing the server role, an application protocol can:
 - if Early Data is supported, embed application-controlled data in the TLS
   resumption ticket sent to the client; and
 - if Early Data is supported, retrieve application-controlled data from the
-  client's resumption ticket and enable rejecting Early Data based on that
+  client's resumption ticket and accept or reject Early Data based on that
   information.
 
 In either role, an application protocol can:
