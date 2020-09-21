@@ -888,8 +888,8 @@ A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.  As an optimization, an endpoint could send frames related to
-flow control only when there are other frames to send or when a peer is blocked,
-ensuring that flow control does not cause extra packets to be sent.
+flow control only when there are other frames to send, ensuring that flow
+control does not cause extra packets to be sent.
 
 A blocked sender is not required to send STREAM_DATA_BLOCKED or DATA_BLOCKED
 frames. Therefore, a receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
