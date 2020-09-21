@@ -1814,8 +1814,8 @@ connection. Specifically, lowering the max_udp_payload_size could result in
 dropped packets leading to worse performance compared to rejecting 0-RTT data
 outright.
 
-A server MUST either reject 0-RTT data or abort a handshake if the implied
-values for transport parameters cannot be supported.
+A server MUST either reject 0-RTT data if the restored values for transport
+parameters cannot be supported.
 
 When sending frames in 0-RTT packets, a client MUST only use remembered
 transport parameters; importantly, it MUST NOT use updated values that it learns
