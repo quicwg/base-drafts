@@ -1220,8 +1220,7 @@ expected keys are available.
 Invalid packets that lack strong integrity protection, such as Initial, Retry,
 or Version Negotiation, MAY be discarded. An endpoint MUST generate a
 connection error if processing the contents of these packets prior to
-discovering an error resulted in changes to connection state that
-cannot be reverted.
+discovering an error, unless it fully reverts these changes.
 
 
 ### Client Packet Handling {#client-pkt-handling}
