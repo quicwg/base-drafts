@@ -1780,10 +1780,11 @@ server's new values in the handshake instead; if the server does not provide new
 values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
-parameters used by the server. The server can remember these transport
-parameters, or store an integrity-protected copy of the values in the ticket
-and recover the information when accepting 0-RTT data. A server uses the
-transport parameters in determining whether to accept 0-RTT data.
+parameters used by the server which it is able to process. The server can
+remember these transport parameters, or store an integrity-protected copy of
+the values in the ticket and recover the information when accepting 0-RTT data.
+A server uses the transport parameters in determining whether to accept 0-RTT
+data.
 
 If 0-RTT data is accepted by the server, the server MUST NOT reduce any
 limits or alter any values that might be violated by the client with its
