@@ -985,8 +985,8 @@ An endpoint that is unable to open a new stream due to the peer's limits SHOULD
 send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
 considered useful for debugging. An endpoint MUST NOT wait to receive this
 signal before advertising additional credit, since doing so will mean that the
-peer will be blocked for at least an entire round trip, and potentially for
-longer if the peer chooses not to send STREAMS_BLOCKED frames.
+peer will be blocked for at least an entire round trip, and potentially
+indefinitely if the peer chooses not to send STREAMS_BLOCKED frames.
 
 
 ## Flow Control Performance
