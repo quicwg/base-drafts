@@ -916,8 +916,7 @@ matching stream and ignore further data arriving on that stream.
 RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
 stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
 endpoints MUST maintain flow control state for the stream in the unterminated
-direction until that direction enters a terminal state, or until one of the
-endpoints sends CONNECTION_CLOSE.
+direction until that direction enters a terminal state.
 
 
 ## Stream Final Size {#final-size}
