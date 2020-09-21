@@ -1331,8 +1331,8 @@ In either role, an application protocol can:
 
 - configure minimum values for the initial number of permitted streams of each
   type, as communicated in the transport parameters ({{transport-parameters}});
-- control resource allocation of various types, including flow control and the
-  number of permitted streams of each type;
+- control resource allocation for receive buffers by setting flow control limits
+  both for streams and for the connection
 - identify whether the handshake has completed successfully or is still ongoing;
 - keep a connection from silently closing, either by generating PING frames
   ({{frame-ping}}) or by requesting that the transport send additional frames
