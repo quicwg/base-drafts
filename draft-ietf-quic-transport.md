@@ -904,6 +904,19 @@ Section 6.9 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
 congestion.
 
 
+## Flow Control Performance
+
+An endpoint that is unable to ensure that a peer has flow control credit on the
+order of the current BDP will have receive throughput limited by flow control.
+Lost packets can cause gaps in the receive buffer, delaying the application
+from consuming data and freeing up flow control window.
+
+Sending timely updates of flow control limits can improve performance.
+Sending packets only to provide flow control updates can increase network
+load and adversely affect performance. Sending flow control updates along with
+other frames, such as ACK frames, reduces the cost of those updates.
+
+
 ## Handling Stream Cancellation {#stream-cancellation}
 
 Endpoints need to eventually agree on the amount of flow control credit that has
@@ -987,19 +1000,6 @@ considered useful for debugging. An endpoint MUST NOT wait to receive this
 signal before advertising additional credit, since doing so will mean that the
 peer will be blocked for at least an entire round trip, and potentially
 indefinitely if the peer chooses not to send STREAMS_BLOCKED frames.
-
-
-## Flow Control Performance
-
-An endpoint that is unable to ensure that a peer has flow control credit on the
-order of the current BDP will have receive throughput limited by flow control.
-Lost packets can cause gaps in the receive buffer, delaying the application
-from consuming data and freeing up flow control window.
-
-Sending timely updates of flow control limits can improve performance.
-Sending packets only to provide flow control updates can increase network
-load and adversely affect performance. Sending flow control updates along with
-other frames, such as ACK frames, reduces the cost of those updates.
 
 
 # Connections {#connections}
