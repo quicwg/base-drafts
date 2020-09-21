@@ -907,7 +907,8 @@ congestion.
 ## Handling Stream Cancellation {#stream-cancellation}
 
 Endpoints need to eventually agree on the amount of flow control credit that has
-been consumed, to avoid either exceeding flow control limits or deadlocking.
+been consumed on every stream, to be able to account for all bytes for
+connection-level flow control.
 
 On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.
