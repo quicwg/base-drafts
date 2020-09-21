@@ -1710,10 +1710,6 @@ When the handshake includes a Retry ({{fig-auth-cid-retry}}), the server sets
 original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
 and initial_source_connection_id to `S3`.
 
-Each endpoint validates transport parameters set by the peer. The client
-confirms that the retry_source_connection_id transport parameter is absent if it
-did not process a Retry packet.
-
 
 ## Transport Parameters {#transport-parameters}
 
