@@ -82,7 +82,7 @@ major contributions to a given document.
 ### Personnel:
 <!-- Who is the Document Shepherd? Who is the Responsible Area Director? -->
 
-The document shepherds for the individual documents are:
+The document shepherds for the individual I-Ds are:
 
 * **Lucas Pardue**:
   * draft-ietf-quic-http-31
@@ -126,7 +126,7 @@ perspective, e.g., security, operational complexity, AAA, DNS, DHCP, XML, or
 internationalization? If so, describe the review that took place.
 -->
 
-Parts of the document set benefited from specialize reviews from the TLS, HTTP
+Parts of the document set benefited from specialized reviews from the TLS, HTTP
 and transport IETF communities.
 
 
@@ -140,7 +140,7 @@ if the WG has discussed those issues and has indicated that it still wishes to
 advance the document, detail those concerns here.
 -->
 
-The document shepherds have no such concerns about these documents.
+The document shepherds have no general concerns about these documents.
 
 
 # 7. IPR Disclosure Obligation
@@ -150,7 +150,7 @@ required for full conformance with the provisions of BCP 78 and BCP 79 have
 already been filed. If not, explain why?
 -->
 
-The editors of the I-Ds have declared that they have filed any and all
+The editors of the I-Ds have all declared that they have filed any and all
 appropriate IPR disclosures required for full conformance with the provisions of
 BCP 78 and BCP 79.
 
@@ -176,7 +176,7 @@ The consensus behind the document set is very strong, also as evidenced by the
 substantial number of existing implementations.
 
 The WG last calls were forwarded to the TLS and HTTP WGs, due to the topical
-overlap.
+relationships.
 
 
 ## 10. Discontent
@@ -206,7 +206,7 @@ The document shepherds have identified no nits.
 as the MIB Doctor, YANG Doctor, media type, and URI type reviews.
 -->
 
-No such formal reviews were applicable to this document set.
+No formal review requirements are applicable to this document set.
 
 
 ## 13. Split References
@@ -232,7 +232,7 @@ The document set contains the following normative references to I-Ds:
 * draft-ietf-httpbis-cache
 * draft-ietf-httpbis-semantics
 
-All of these are on track for publication in their respective WGs.
+All of these are on track for timely publication in their respective WGs.
 
 
 ## 15. Downward References
@@ -242,7 +242,7 @@ list these downward references to support the Area Director in the Last Call
 procedure.
 -->
 
-There are no normative downward references.
+There are no normative downward references in the document set.
 
 
 ## 16. RFC Status Changes
@@ -295,7 +295,9 @@ validate sections of the document written in a formal language, such as XML
 code, BNF rules, MIB definitions, YANG modules, etc.
 -->
 
-No such formal code exists in the document set.
+No formal code exists in the document set. draft-ietf-quic-recovery contains
+python-like pseudo code, but not at a level of detail that lends itself to
+automated checking.
 
 
 ## 20. YANG
