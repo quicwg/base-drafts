@@ -2158,11 +2158,11 @@ discovery (see {{pmtud}}); it can also include its own PATH_CHALLENGE frame with
 a PATH_RESPONSE frame.
 
 An endpoint uses a new connection ID for probes sent from a new local address;
-see {{migration-linkability}}.  When probing a new path, an endpoint expecting
-responses on the new path needs to ensure that its peer has an unused connection
-ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet, if
-the peer's active_connection_id_limit permits, ensures that an unused connection
-ID will be available to the peer when sending a response.
+see {{migration-linkability}}.  When probing a new path, an endpoint needs to
+ensure that its peer has an unused connection ID available for
+responses. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same
+packet, if the peer's active_connection_id_limit permits, ensures that an unused
+connection ID will be available to the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number of
 simultaneous paths used for probes is limited by the number of extra connection
