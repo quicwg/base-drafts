@@ -511,9 +511,14 @@ Using max(smoothed_rtt, latest_rtt) protects from the two following cases:
   up.
 
 The RECOMMENDED time threshold (kTimeThreshold), expressed as a round-trip time
-multiplier, is 9/8, though RACK ({{?RACK=I-D.ietf-tcpm-rack}}) specifies a
-slightly larger threshold, equivalent to 5/4. The RECOMMENDED value of the
-timer granularity (kGranularity) is 1ms.
+multiplier, is 9/8. The RECOMMENDED value of the timer granularity
+(kGranularity) is 1ms.
+
+Note:
+
+: TCP's RACK ({{?RACK=I-D.ietf-tcpm-rack}}) specifies a slightly larger threshold,
+equivalent to 5/4, for a similar purpose. Experience with QUIC shows that 9/8
+works well.
 
 Implementations MAY experiment with absolute thresholds, thresholds from
 previous connections, adaptive thresholds, or including RTT variation.  Smaller
