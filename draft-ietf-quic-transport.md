@@ -128,8 +128,8 @@ QUIC establishes a connection, which is a stateful interaction between a client
 and server. The primary purpose of a connection is to support the structured
 exchange of data by an application protocol.
 
-Streams are the means by which an application protocol exchanges information.
-Streams are ordered sequences of bytes. Two types of stream can be created:
+Application protocols exchange information over a QUIC connection via streams,
+which are ordered sequences of bytes. Two types of stream can be created:
 bidirectional streams, which allow both endpoints to send data; and
 unidirectional streams, which allow a single endpoint to send data. A
 credit-based scheme is used to limit stream creation and to bound the amount of
