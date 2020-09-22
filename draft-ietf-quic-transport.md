@@ -2160,15 +2160,16 @@ frames used for path validation.  In particular, an endpoint can include
 PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
 (see {{pmtud}}); it can also include a PATH_CHALLENGE with its own PATH_RESPONSE.
 
-When probing a new path, an endpoint might want to ensure that its peer has an
-unused connection ID available for responses. The endpoint can send
-NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
-that an unused connection ID will be available to the peer when sending a
-response.
+An endpoint uses a new connection ID for probes sent from a new local address
+(See {{migration-linkability}}).  So when probing a new path, an endpoint
+expecting responses on the new local address needs to ensure that its peer has
+an unused connection ID. The endpoint can send NEW_CONNECTION_ID and
+PATH_CHALLENGE frames in the same packet. This ensures that an unused
+connection ID will be available to the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number
-of simultaneous paths used for probes is limited by the number of extra 
-Connection IDs its peer has previously supplied, since each new local address 
+of simultaneous paths used for probes is limited by the number of extra
+Connection IDs its peer has previously supplied, since each new local address
 used for a probe requires a previously unused Connection ID.
 
 
@@ -2297,12 +2298,6 @@ validation ({{migrate-validate}}) prior to migrating the connection to the new
 local address.  Failure of path validation simply means that the new path is not
 usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
-
-An endpoint uses a new connection ID for probes sent from a new local address;	
-see {{migration-linkability}} for further discussion. An endpoint that expects
-to receive traffic on the new local address needs to ensure that at least one
-new connection ID is available at the peer. That can be achieved by including
-a NEW_CONNECTION_ID	frame in the probe.
 
 PATH_CHALLENGE, PATH_RESPONSE, NEW_CONNECTION_ID, and PADDING frames are
 "probing frames", and all other frames are "non-probing frames".  A packet
