@@ -580,7 +580,8 @@ The following pseudo-header fields are defined for requests:
 
   ":scheme":
 
-  : Contains the scheme portion of the target URI (Section 3.1 of {{!RFC3986}})
+  : Contains the scheme portion of the target URI (Section 3.1 of
+  {{!URI=RFC3986}})
 
   : ":scheme" is not restricted to "http" and "https" schemed URIs.  A proxy or
     gateway can translate requests for non-HTTP schemes, enabling the use of
@@ -589,7 +590,7 @@ The following pseudo-header fields are defined for requests:
   ":authority":
 
   : Contains the authority portion of the target URI (Section 3.2 of
-    {{!RFC3986}}). The authority MUST NOT include the deprecated "userinfo"
+    {{!URI}}). The authority MUST NOT include the deprecated "userinfo"
     subcomponent for "http" or "https" schemed URIs.
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
@@ -605,7 +606,7 @@ The following pseudo-header fields are defined for requests:
 
   : Contains the path and query parts of the target URI (the "path-absolute"
     production and optionally a '?' character followed by the "query"
-    production; see Sections 3.3 and 3.4 of {{?URI=RFC3986}}.  A request in
+    production; see Sections 3.3 and 3.4 of {{?URI}}.  A request in
     asterisk form includes the value '*' for the ":path" pseudo-header field.
 
   : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
