@@ -1573,7 +1573,7 @@ of a field with a static name reference.
 
 ~~~
 Data                | Interpretation
-                              | Encoder's Dynamic Table
+                             | Encoder's Dynamic Table
 
 Stream: 0
 0000                | Required Insert Count = 0, Base = 0
@@ -1581,9 +1581,9 @@ Stream: 0
 2e68 746d 6c        |  Static Table, Index=1
                     |  (:path=/index.html)
 
-                                Abs Ref Name        Value
-                                ^-- acknowledged --^
-                                Size=0
+                              Abs Ref Name        Value
+                              ^-- acknowledged --^
+                              Size=0
 ~~~
 
 ## Dynamic Table
@@ -1596,43 +1596,43 @@ the Required Insert Count.
 
 ~~~
 Stream: Encoder
-3fb801              | Set Dynamic Table Capacity=215
-c00c 7777 772e 6965 | Insert With Name Reference
-7466 2e6f 7267      |  Static Table, Index=0
-                    |  (:authority=www.ietf.org)
-c10b 2f73 7461 6e64 | Insert With Name Reference
-617 26473 2f        |  Static Table, Index=1
-                    |  (:path=/standards/)
+3fbd01              | Set Dynamic Table Capacity=220
+c00f 7777 772e 6578 | Insert With Name Reference
+616d 706c 652e 636f | Static Table, Index=0
+6d                  |  (:authority=www.example.com)
+c10c 2f73 616d 706c | Insert With Name Reference
+652f 7061 7468      |  Static Table, Index=1
+                    |  (:path=/sample/path)
 
-                                Abs Ref Name        Value
-                                ^-- acknowledged --^
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                Size=102
+                              Abs Ref Name        Value
+                              ^-- acknowledged --^
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                              Size=106
 
 Stream: 4
 0381                | Required Insert Count = 2, Base = 0
 10                  | Indexed Field Line With Post-Base Index
                     |  Absolute Index = Base(0) + Index(0) + 1 = 1
-                    |  (:authority=www.ietf.org)
+                    |  (:authority=www.example.com)
 11                  | Indexed Field Line With Post-Base Index
                     |  Absolute Index = Base(0) + Index(1) + 1 = 2
-                    |  (:path=/standards/)
+                    |  (:path=/sample/path)
 
-                                Abs Ref Name        Value
-                                ^-- acknowledged --^
-                                 1   1  :authority  www.ietf.org
-                                 2   1  :path       /standards/
-                                Size=102
+                              Abs Ref Name        Value
+                              ^-- acknowledged --^
+                               1   1  :authority  www.example.com
+                               2   1  :path       /sample/path
+                              Size=106
 
 Stream: Decoder
 84                  | Section Acknowledgement (stream=4)
 
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                ^-- acknowledged --^
-                                Size=102
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                              ^-- acknowledged --^
+                              Size=106
 ~~~
 
 ## Speculative Insert
@@ -1647,22 +1647,22 @@ Stream: Encoder
 6b65 790c 6375 7374 |  (custom-key=custom-value)
 6f6d 2d76 616c 7565 |
 
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                ^-- acknowledged --^
-                                 3   0  custom-key  custom-value
-                                Size=156
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                              ^-- acknowledged --^
+                               3   0  custom-key  custom-value
+                              Size=160
 
 Stream: Decoder
 01                  | Insert Count Increment (1)
 
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                 3   0  custom-key  custom-value
-                                ^-- acknowledged --^
-                                Size=156
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                               3   0  custom-key  custom-value
+                              ^-- acknowledged --^
+                              Size=160
 
 ~~~
 
@@ -1677,42 +1677,43 @@ section was not processed by sending a stream cancellation.
 Stream: Encoder
 02                  | Duplicate (Relative Index=2)
 
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                 3   0  custom-key  custom-value
-                                ^-- acknowledged --^
-                                 4   0  :authority  www.ietf.org
-                                Size=210
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                               3   0  custom-key  custom-value
+                              ^-- acknowledged --^
+                               4   0  :authority  www.example.com
+                              Size=217
 
 Stream: 8
 0500                | Required Insert Count = 4, Base = 4
 80                  | Indexed Field Line, Dynamic Table
                     |  Absolute Index = Base(4) - Index(0) = 4
-                    |  (:authority=www.ietf.org)
+                    |  (:authority=www.example.com)
 c1                  | Indexed Field Line, Static Table Index = 1
                     |  (:path=/)
 81                  | Indexed Field Line, Dynamic Table
                     |  Absolute Index = Base(4) - Index(1) = 3
                     |  (custom-key=custom-value)
 
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                 3   1  custom-key  custom-value
-                                ^-- acknowledged --^
-                                 4   1  :authority  www.ietf.org
-                                Size=210
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                               3   1  custom-key  custom-value
+                              ^-- acknowledged --^
+                               4   1  :authority  www.example.com
+                              Size=217
 
 Stream: Decoder
 48                  | Stream Cancellation (Stream=8)
-                                Abs Ref Name        Value
-                                 1   0  :authority  www.ietf.org
-                                 2   0  :path       /standards/
-                                 3   0  custom-key  custom-value
-                                ^-- acknowledged --^
-                                 4   0  :authority  www.ietf.org
-                                Size=210
+
+                              Abs Ref Name        Value
+                               1   0  :authority  www.example.com
+                               2   0  :path       /sample/path
+                               3   0  custom-key  custom-value
+                              ^-- acknowledged --^
+                               4   0  :authority  www.example.com
+                              Size=215
 
 ~~~
 
@@ -1727,13 +1728,13 @@ Stream: Encoder
 2d76 616c 7565 32   |  Dynamic Table, Absolute Index=2
                     |  (custom-key=custom-value2)
 
-                                Abs Ref Name        Value
-                                 2   0  :path       /standards/
-                                 3   0  custom-key  custom-value
-                                ^-- acknowledged --^
-                                 4   0  :authority  www.ietf.org
-                                 5   0  custom-key  custom-value2
-                                Size=211
+                              Abs Ref Name        Value
+                               2   0  :path       /sample/path
+                               3   0  custom-key  custom-value
+                              ^-- acknowledged --^
+                               4   0  :authority  www.example.com
+                               5   0  custom-key  custom-value2
+                              Size=215
 ~~~
 
 # Sample One Pass Encoding Algorithm
