@@ -89,9 +89,8 @@ The document shepherds for the individual I-Ds are:
   * draft-ietf-quic-qpack-18
 * **Lars Eggert**:
   * draft-ietf-quic-transport-31
-* **Mark Nottingham**:
-* **TBD**:
   * draft-ietf-quic-recovery-31
+* **Mark Nottingham**:
   * draft-ietf-quic-tls-31
   * draft-ietf-quic-invariants-11
 
