@@ -6580,13 +6580,12 @@ outlines some others steps that QUIC endpoints could take unilaterally. These
 additional steps are all discretionary as, depending on circumstances, they
 could interfere with or prevent legitimate uses.
 
-Services offered over loopback interfaces (that is, the IPv6 address ::1 or the
-IPv4 address 127.0.0.1) often lack proper authentication. Endpoints MAY prevent
-connection attempts or migration to a loopback address. Endpoints SHOULD NOT
-allow connections or migration to a loopback address if the same service was
-previously available at a different interface or if the address was provided by
-a service at a non-loopback address. Endpoints that depend on these
-capabilities could offer an option to disable these protections.
+Services offered over loopback interfaces often lack proper authentication.
+Endpoints MAY prevent connection attempts or migration to a loopback address.
+Endpoints SHOULD NOT allow connections or migration to a loopback address if the
+same service was previously available at a different interface or if the address
+was provided by a service at a non-loopback address. Endpoints that depend on
+these capabilities could offer an option to disable these protections.
 
 Similarly, endpoints could regard a change in address to link-local address
 {{?RFC4291}} or an address in a private use range {{?RFC1918}} from a global,
