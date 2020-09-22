@@ -2013,8 +2013,8 @@ expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an observer to the connection on which it was
-issued, unless the values are encrypted.  For example, it cannot include the
-previous connection ID or addressing information.  A server MUST ensure that
+issued. For example, it cannot include the previous connection ID or addressing
+information, unless the values are encrypted.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
 of those sent to repair losses of previously sent NEW_TOKEN frames.  Information
 that allows the server to distinguish between tokens from Retry and NEW_TOKEN
