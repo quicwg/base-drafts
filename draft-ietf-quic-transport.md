@@ -4131,11 +4131,10 @@ determines that the quoted packet has actually been lost.
 
 ## Datagram Packetization Layer PMTU Discovery {#dplpmtud}
 
-Datagram Packetization Layer PMTU Discovery (DPLPMTUD;
-{{!DPLPMTUD=I-D.ietf-tsvwg-datagram-plpmtud}}) relies on tracking loss or
-acknowledgment of QUIC packets that are carried in PMTU probes.  PMTU probes for
-DPLPMTUD that use the PADDING frame implement "Probing using padding data", as
-defined in Section 4.1 of {{!DPLPMTUD}}.
+Datagram Packetization Layer PMTU Discovery (DPLPMTUD; {{!DPLPMTUD=RFC8899}})
+relies on tracking loss or acknowledgment of QUIC packets that are carried in
+PMTU probes.  PMTU probes for DPLPMTUD that use the PADDING frame implement
+"Probing using padding data", as defined in Section 4.1 of {{!DPLPMTUD}}.
 
 Endpoints SHOULD set the initial value of BASE_PMTU (see Section 5.1 of
 {{!DPLPMTUD}}) to be consistent with the minimum QUIC packet size. The
