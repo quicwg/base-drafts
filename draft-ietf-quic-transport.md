@@ -2139,7 +2139,7 @@ received by that peer. Path validation is used to ensure that packets received
 from a migrating peer do not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
-Acknowledgments cannot be used for path validation as they contain insufficient
+Acknowledgments cannot be used for return path validation as they contain insufficient
 entropy and might be spoofed. Endpoints independently determine reachability
 on each direction of a path, and therefore return reachability can only be
 established by the peer.
@@ -2157,12 +2157,12 @@ here.
 
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include
-PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
-(see {{pmtud}}); it can also include a PATH_CHALLENGE with its own
-PATH_RESPONSE.
+PADDING frames with a PATH_CHALLENGE frame for Path Maximum Transfer Unit (PMTU) discovery
+(see {{pmtud}}); it can also include a PATH_CHALLENGE frame with its own
+PATH_RESPONSE frame.
 
-An endpoint uses a new connection ID for probes sent from a new local address
-(See {{migration-linkability}}).  So when probing a new path, an endpoint
+An endpoint uses a new connection ID for probes sent from a new local address;
+see {{migration-linkability}}.  When probing a new path, an endpoint
 expecting responses on the new path needs to ensure that its peer has an
 unused connection ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in
 the same packet ensures that an unused connection ID will be available to
@@ -2170,8 +2170,8 @@ the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number
 of simultaneous paths used for probes is limited by the number of extra
-Connection IDs its peer has previously supplied, since each new local address
-used for a probe requires a previously unused Connection ID.
+connection IDs its peer has previously supplied, since each new local address
+used for a probe requires a previously unused connection ID.
 
 
 ### Initiating Path Validation
@@ -2184,8 +2184,8 @@ loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
 single packet.
 
 An endpoint SHOULD NOT probe a new path with packets containing a
-PATH_CHALLENGE more frequently than it would send an Initial packet. This
-ensures connection migration is no more load on a new path than establishing a
+PATH_CHALLENGE frame more frequently than it would send an Initial packet. This
+ensures that connection migration is no more load on a new path than establishing a
 new connection.
 
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
@@ -2340,7 +2340,7 @@ packets to an old peer address in the case that it receives reordered packets.
 
 In response to such a packet, an endpoint MUST send subsequent packets
 to the new peer address and MUST initiate path validation ({{migrate-validate}})
-to verify the peer's ownership of the address if it has not already.
+to verify the peer's ownership of the address if validation is not already underway.
 
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
 against potential attacks as described in {{address-spoofing}} and
