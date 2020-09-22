@@ -1220,8 +1220,7 @@ expected keys are available.
 Invalid packets that lack strong integrity protection, such as Initial, Retry,
 or Version Negotiation, MAY be discarded. An endpoint MUST generate a
 connection error if processing the contents of these packets prior to
-discovering an error resulted in changes to connection state that
-cannot be reverted.
+discovering an error, unless it fully reverts these changes.
 
 
 ### Client Packet Handling {#client-pkt-handling}
@@ -1238,8 +1237,8 @@ connection that are encrypted with a key it has not yet computed. The client MAY
 drop these packets, or MAY buffer them in anticipation of later packets that
 allow it to compute the key.
 
-If a client receives a packet that has an unsupported version, it MUST discard
-that packet.
+If a client receives a packet that uses a different version than it initially
+selected, it MUST discard that packet.
 
 
 ### Server Packet Handling {#server-pkt-handling}
@@ -1324,15 +1323,15 @@ When implementing the server role, an application protocol can:
 - if Early Data is supported, embed application-controlled data in the TLS
   resumption ticket sent to the client; and
 - if Early Data is supported, retrieve application-controlled data from the
-  client's resumption ticket and enable rejecting Early Data based on that
+  client's resumption ticket and accept or reject Early Data based on that
   information.
 
 In either role, an application protocol can:
 
 - configure minimum values for the initial number of permitted streams of each
   type, as communicated in the transport parameters ({{transport-parameters}});
-- control resource allocation of various types, including flow control and the
-  number of permitted streams of each type;
+- control resource allocation for receive buffers by setting flow control limits
+  both for streams and for the connection
 - identify whether the handshake has completed successfully or is still ongoing;
 - keep a connection from silently closing, either by generating PING frames
   ({{frame-ping}}) or by requesting that the transport send additional frames
