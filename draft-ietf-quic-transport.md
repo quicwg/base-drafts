@@ -1780,7 +1780,7 @@ server's new values in the handshake instead; if the server does not provide new
 values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
-parameters used by the server which it is able to process. The server can
+parameters used by the server that it is able to process. The server can
 remember these transport parameters, or store an integrity-protected copy of
 the values in the ticket and recover the information when accepting 0-RTT data.
 A server uses the transport parameters in determining whether to accept 0-RTT
@@ -1815,7 +1815,7 @@ connection. Specifically, lowering the max_udp_payload_size could result in
 dropped packets leading to worse performance compared to rejecting 0-RTT data
 outright.
 
-A server MUST either reject 0-RTT data if the restored values for transport
+A server MUST reject 0-RTT data if the restored values for transport
 parameters cannot be supported.
 
 When sending frames in 0-RTT packets, a client MUST only use remembered
