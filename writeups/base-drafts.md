@@ -228,7 +228,6 @@ exist, what is the plan for their completion?
 
 The document set contains the following normative references to I-Ds:
 
-* draft-ietf-tsvwg-datagram-plpmtud
 * draft-ietf-httpbis-cache
 * draft-ietf-httpbis-semantics
 
@@ -295,9 +294,9 @@ validate sections of the document written in a formal language, such as XML
 code, BNF rules, MIB definitions, YANG modules, etc.
 -->
 
-No formal code exists in the document set. draft-ietf-quic-recovery contains
-python-like pseudo code, but not at a level of detail that lends itself to
-automated checking.
+No formal code exists in the document set. draft-ietf-quic-transport,
+draft-ietf-quic-recovery and draft-ietf-quic-qpack contain python-like pseudo
+code, but not at a level of detail that would lend itself to automated checking.
 
 
 ## 20. YANG
