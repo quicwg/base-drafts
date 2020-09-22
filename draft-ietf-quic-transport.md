@@ -1028,7 +1028,7 @@ change in a middlebox.  {{migration}} describes mitigations for the security and
 privacy issues associated with migration.
 
 For connections that are no longer needed or desired, there are several ways for
-a client and server to terminate a connection ({{termination}}).
+a client and server to terminate a connection, as described in {{termination}}.
 
 
 ## Connection ID {#connection-id}
@@ -1493,6 +1493,10 @@ Handshake (CRYPTO)
 1-RTT (*)              <=========>                1-RTT (*)
 ~~~
 {: #fig-hs title="Simplified QUIC Handshake"}
+
+An endpoint verifies support for Explicit Congestion Notification (ECN) by
+observing whether the ACK frames acknowledging the first packets it sends carry
+ECN counts, as described in {{ecn-validation}}.
 
 Endpoints MUST explicitly negotiate an application protocol.  This avoids
 situations where there is a disagreement about the protocol that is in use.
@@ -2006,7 +2010,7 @@ The client MUST NOT use the token provided in a Retry for future connections.
 Servers MAY discard any Initial packet that does not carry the expected token.
 
 Unlike the token that is created for a Retry packet, which is used immediately,
-the token sent in the NEW_TOKEN frame might be used after some period of
+the token sent in the NEW_TOKEN frame can be used after some period of
 time has passed.  Thus, a token SHOULD have an expiration time, which could
 be either an explicit expiration time or an issued timestamp that can be
 used to dynamically calculate the expiration time.  A server can store the
@@ -2154,8 +2158,8 @@ here.
 
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include PADDING
-frames with a PATH_CHALLENGE frame for Path Maximum Transfer Unit (PMTU)
-discovery (see {{pmtud}}); it can also include its own PATH_CHALLENGE frame with
+frames with a PATH_CHALLENGE frame for  Path Maximum Transmission Unit Discovery
+(PMTUD; see {{pmtud}}); it can also include its own PATH_CHALLENGE frame with
 a PATH_RESPONSE frame.
 
 An endpoint uses a new connection ID for probes sent from a new local address;
@@ -2261,13 +2265,14 @@ before the handshake is confirmed, as defined in section 4.1.2 of {{QUIC-TLS}}.
 
 If the peer sent the disable_active_migration transport parameter, an endpoint
 also MUST NOT send packets (including probing packets; see {{probing}}) from a
-different local address to the address the peer used during the handshake. An
-endpoint that has sent this transport parameter, but detects that a peer has
-nonetheless migrated to a different remote address MUST either drop the incoming
-packets on that path without generating a stateless reset or proceed with path
-validation and allow the peer to migrate. Generating a stateless reset or
-closing the connection would allow third parties in the network to cause
-connections to close by spoofing or otherwise manipulating observed traffic.
+different local address to the address the peer used during the handshake,
+unless the endpoint has acted on a preferred_address transport parameter from
+the peer. If the peer violates this requirement, the endpoint MUST either drop
+the incoming packets on that path without generating a stateless reset or
+proceed with path validation and allow the peer to migrate. Generating a
+stateless reset or closing the connection would allow third parties in the
+network to cause connections to close by spoofing or otherwise manipulating
+observed traffic.
 
 Not all changes of peer address are intentional, or active, migrations. The peer
 could experience NAT rebinding: a change of address due to a middlebox, usually
@@ -2348,9 +2353,9 @@ skipping address validation and restoring loss detection and congestion state
 can reduce the performance impact of the attack.
 
 After changing the address to which it sends non-probing packets, an endpoint
-could abandon any path validation for other addresses.
+can abandon any path validation for other addresses.
 
-Receiving a packet from a new peer address might be the result of a NAT
+Receiving a packet from a new peer address could be the result of a NAT
 rebinding at the peer.
 
 After verifying a new client address, the server SHOULD send new address
