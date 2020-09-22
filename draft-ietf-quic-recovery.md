@@ -2035,17 +2035,19 @@ No significant changes.
 The IETF QUIC Working Group received an enormous amount of support from many
 people. The following people provided substantive contributions to this
 document:
-Alessandro Ghedini,
-Benjamin Saunders,
-Gorry Fairhurst, <contact
- asciiFullname="Kazuho Oku" fullname="奥 一穂"/>,
-Lars Eggert,
-Magnus Westerlund,
-Marten Seemann,
-Martin Duke,
-Martin Thomson,
-Nick Banks,
-Praveen Balasubramanian.
+
+- Alessandro Ghedini
+- Benjamin Saunders
+- Gorry Fairhurst
+- <t><t><contact asciiFullname="Kazu Yamamoto" fullname="?"/></t></t>
+- <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lars Eggert
+- Magnus Westerlund
+- Marten Seemann
+- Martin Duke
+- Martin Thomson
+- Nick Banks
+- Praveen Balasubramanian
 
 # Acknowledgments
 {:numbered="false"}
