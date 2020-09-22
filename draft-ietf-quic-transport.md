@@ -425,7 +425,7 @@ by the application to determine how to allocate resources to active streams.
 
 This document does not define an API for QUIC, but instead defines a set of
 functions on streams that application protocols can rely upon.  An application
-protocol can assume that an QUIC implementation provides an interface that
+protocol can assume that a QUIC implementation provides an interface that
 includes the operations described in this section.  An implementation designed
 for use with a specific application protocol might provide only those operations
 that are used by that protocol.
@@ -810,8 +810,7 @@ Data sent in CRYPTO frames is not flow controlled in the same way as stream
 data.  QUIC relies on the cryptographic protocol implementation to avoid
 excessive buffering of data; see {{QUIC-TLS}}. To avoid excessive buffering at
 multiple layers, QUIC implementations SHOULD provide an interface for the
-cryptographic protocol implementation to communicate its buffering limits to the
-QUIC implementation.
+cryptographic protocol implementation to communicate its buffering limits.
 
 
 ## Data Flow Control {#data-flow-control}
@@ -991,8 +990,8 @@ Once a receiver advertises a stream limit using the MAX_STREAMS frame,
 advertising a smaller limit has no effect.  A receiver MUST ignore any
 MAX_STREAMS frame that does not increase the stream limit.
 
-As with stream and connection flow control, this document leaves to
-implementations the decisions of when and how many streams should be advertised
+As with stream and connection flow control, this document leaves implementations
+to decide when and how many streams should be advertised
 to a peer via MAX_STREAMS.  Implementations might choose to increase limits as
 streams are closed, to keep the number of streams available to peers roughly
 consistent.
