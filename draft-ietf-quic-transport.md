@@ -4278,8 +4278,9 @@ decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
 7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
 single byte 25 decodes to 37 (as does the two byte sequence 40 25).
 
-Versions ({{versions}}) and error codes ({{error-codes}}) are described using
-integers, but do not use this encoding.
+Versions ({{versions}}) and packet numbers sent in the header
+({{packet-encoding}}) are described using integers, but do not use this
+encoding.
 
 
 
