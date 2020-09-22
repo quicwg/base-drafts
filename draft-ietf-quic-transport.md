@@ -2127,18 +2127,21 @@ clients to further narrow applicability or reuse.
 
 ## Path Validation {#migrate-validate}
 
-Path validation is used during connection migration (see {{migration}}) by the
-migrating endpoint to verify reachability of a peer from a new local address.
-In path validation, endpoints test reachability between a specific local address
-and a specific peer address, where an address is the two-tuple of IP address and
-port.
+Path validation is used by both peers during connection migration
+(see {{migration}}) to verify reachability after a change of address.
+In path validation, endpoints test reachability between a specific local
+address and a specific peer address, where an address is the two-tuple of
+IP address and port.
 
 Path validation tests that packets sent on a path to a peer are
 received by that peer. Path validation is used to ensure that packets received
 from a migrating peer do not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
-The peer performs independent validation of the return path.
+Acknowledgments cannot be used for return path validation as they contain
+insufficient entropy and might be spoofed. Endpoints independently determine
+reachability on each direction of a path, and therefore return reachability can
+only be established by the peer.
 
 Path validation can be used at any time by either endpoint.  For instance, an
 endpoint might check that a peer is still in possession of its address after a
@@ -2151,35 +2154,44 @@ receive packets without first having sent a packet on that path. Effective NAT
 traversal needs additional synchronization mechanisms that are not provided
 here.
 
-An endpoint MAY include PATH_CHALLENGE and PATH_RESPONSE frames that are used
-for path validation with other frames.  In particular, an endpoint can pad a
-packet carrying a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU)
-discovery (see {{pmtud}}), or an endpoint can include a PATH_RESPONSE with its
-own PATH_CHALLENGE.
+An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
+frames used for path validation.  In particular, an endpoint can include PADDING
+frames with a PATH_CHALLENGE frame for Path Maximum Transfer Unit (PMTU)
+discovery (see {{pmtud}}); it can also include a PATH_CHALLENGE frame with its
+own PATH_RESPONSE frame.
 
-When probing a new path, an endpoint might want to ensure that its peer has an
-unused connection ID available for responses. The endpoint can send
-NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
-that an unused connection ID will be available to the peer when sending a
-response.
+An endpoint uses a new connection ID for probes sent from a new local address;
+see {{migration-linkability}}.  When probing a new path, an endpoint expecting
+responses on the new path needs to ensure that its peer has an unused connection
+ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet
+ensures that an unused connection ID will be available to the peer when sending
+a response.
+
+An endpoint can choose to simultaneously probe multiple paths. The number of
+simultaneous paths used for probes is limited by the number of extra connection
+IDs its peer has previously supplied, since each new local address used for a
+probe requires a previously unused connection ID.
 
 
-## Initiating Path Validation
+### Initiating Path Validation
 
-To initiate path validation, an endpoint sends a PATH_CHALLENGE frame
-containing an unpredictable payload on the path to be validated.
+To initiate path validation, an endpoint sends a PATH_CHALLENGE frame containing
+an unpredictable payload on the path to be validated.
 
 An endpoint MAY send multiple PATH_CHALLENGE frames to guard against packet
 loss. However, an endpoint SHOULD NOT send multiple PATH_CHALLENGE frames in a
-single packet.  An endpoint SHOULD NOT send a PATH_CHALLENGE more frequently
-than it would an Initial packet, ensuring that connection migration is no more
-load on a new path than establishing a new connection.
+single packet.
+
+An endpoint SHOULD NOT probe a new path with packets containing a PATH_CHALLENGE
+frame more frequently than it would send an Initial packet. This ensures that
+connection migration is no more load on a new path than establishing a new
+connection.
 
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
 
-## Path Validation Responses
+### Path Validation Responses
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
 data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame. A
@@ -2194,7 +2206,7 @@ expected to send more PATH_CHALLENGE frames as necessary to evoke additional
 PATH_RESPONSE frames.
 
 
-## Successful Path Validation
+### Successful Path Validation
 
 Path validation succeeds when a PATH_RESPONSE frame is received that contains
 the data that was sent in a previous PATH_CHALLENGE frame. This validates the
@@ -2205,7 +2217,7 @@ not adequate validation, since the acknowledgment can be spoofed by a malicious
 peer.
 
 
-## Failed Path Validation
+### Failed Path Validation
 
 Path validation only fails when the endpoint attempting to validate the path
 abandons its attempt to validate the path.
@@ -2287,16 +2299,6 @@ local address.  Failure of path validation simply means that the new path is not
 usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
 
-An endpoint uses a new connection ID for probes sent from a new local address;
-see {{migration-linkability}} for further discussion. An endpoint that uses
-a new local address needs to ensure that at least one new connection ID is
-available at the peer. That can be achieved by including a NEW_CONNECTION_ID
-frame in the probe.
-
-Receiving a PATH_CHALLENGE frame from a peer indicates that the peer is probing
-for reachability on a path. An endpoint sends a PATH_RESPONSE frame in response,
-as per {{migrate-validate}}.
-
 PATH_CHALLENGE, PATH_RESPONSE, NEW_CONNECTION_ID, and PADDING frames are
 "probing frames", and all other frames are "non-probing frames".  A packet
 containing only probing frames is a "probing packet", and a packet containing
@@ -2313,6 +2315,11 @@ Therefore, a migrating endpoint can send to its peer knowing that the peer is
 willing to receive at the peer's current address. Thus an endpoint can migrate
 to a new local address without first validating the peer's address.
 
+To establish reachability on the new path, an endpoint initiates path
+validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
+validation until after a peer sends the next non-probing frame to its new
+address.
+
 When migrating, the new path might not support the endpoint's current sending
 rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
 as described in {{migration-cc}}.
@@ -2320,26 +2327,20 @@ as described in {{migration-cc}}.
 The new path might not have the same ECN capability. Therefore, the endpoint
 verifies ECN capability as described in {{ecn}}.
 
-To establish reachability on the new path, an endpoint initiates path
-validation ({{migrate-validate}}) on the new path.  An endpoint MAY defer path
-validation until after a peer sends the next non-probing frame to its new
-address.
-
-Path validation is necessary to verify reachability of a peer on a new network
-path.  Acknowledgments cannot be used for path validation as they contain
-insufficient entropy and might be spoofed.  No method is provided to establish
-return reachability, as endpoints independently determine reachability on each
-direction of a path.
-
 
 ## Responding to Connection Migration {#migration-response}
 
 Receiving a packet from a new peer address containing a non-probing frame
 indicates that the peer has migrated to that address.
 
-In response to such a packet, an endpoint MUST start sending subsequent packets
-to the new peer address and MUST initiate path validation ({{migrate-validate}})
-to verify the peer's ownership of the unvalidated address.
+An endpoint only changes the address that it sends packets to in response to the
+highest-numbered non-probing packet. This ensures that an endpoint does not send
+packets to an old peer address in the case that it receives reordered packets.
+
+In response to such a packet, an endpoint MUST send subsequent packets to the
+new peer address and MUST initiate path validation ({{migrate-validate}}) to
+verify the peer's ownership of the address if validation is not already
+underway.
 
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
 against potential attacks as described in {{address-spoofing}} and
@@ -2348,10 +2349,6 @@ address has been seen recently.  In particular, if an endpoint returns to a
 previously-validated path after detecting some form of spurious migration,
 skipping address validation and restoring loss detection and congestion state
 can reduce the performance impact of the attack.
-
-An endpoint only changes the address that it sends packets to in response to the
-highest-numbered non-probing packet. This ensures that an endpoint does not send
-packets to an old peer address in the case that it receives reordered packets.
 
 After changing the address to which it sends non-probing packets, an endpoint
 could abandon any path validation for other addresses.
