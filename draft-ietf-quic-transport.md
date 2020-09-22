@@ -2166,9 +2166,10 @@ NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet. This ensures
 that an unused connection ID will be available to the peer when sending a
 response.
 
-The number of new paths an endpoint can probe is limited by the number of
-extra Connection IDs the peer has previously supplied. Supplying a peer with
-multiple Connection IDs allows it to simultaneously probe multiple paths.
+An endpoint can choose to simultaneously probe multiple paths. The number
+of simultaneous paths used for probes is limited by the number of extra 
+Connection IDs its peer has previously supplied, since each new local address 
+used for a probe requires a previously unused Connection ID.
 
 
 ### Initiating Path Validation
