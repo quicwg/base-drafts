@@ -888,8 +888,8 @@ A receiver can use an autotuning mechanism to tune the frequency and amount of
 advertised additional credit based on a round-trip time estimate and the rate at
 which the receiving application consumes data, similar to common TCP
 implementations.  As an optimization, an endpoint could send frames related to
-flow control only when there are other frames to send or when a peer is blocked,
-ensuring that flow control does not cause extra packets to be sent.
+flow control only when there are other frames to send, ensuring that flow
+control does not cause extra packets to be sent.
 
 A blocked sender is not required to send STREAM_DATA_BLOCKED or DATA_BLOCKED
 frames. Therefore, a receiver MUST NOT wait for a STREAM_DATA_BLOCKED or
@@ -904,10 +904,24 @@ Section 6.9 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
 congestion.
 
 
+## Flow Control Performance
+
+An endpoint that is unable to ensure that a peer has flow control credit on the
+order of the current BDP will have receive throughput limited by flow control.
+Lost packets can cause gaps in the receive buffer, delaying the application
+from consuming data and freeing up flow control window.
+
+Sending timely updates of flow control limits can improve performance.
+Sending packets only to provide flow control updates can increase network
+load and adversely affect performance. Sending flow control updates along with
+other frames, such as ACK frames, reduces the cost of those updates.
+
+
 ## Handling Stream Cancellation {#stream-cancellation}
 
 Endpoints need to eventually agree on the amount of flow control credit that has
-been consumed, to avoid either exceeding flow control limits or deadlocking.
+been consumed on every stream, to be able to account for all bytes for
+connection-level flow control.
 
 On receipt of a RESET_STREAM frame, an endpoint will tear down state for the
 matching stream and ignore further data arriving on that stream.
@@ -915,8 +929,7 @@ matching stream and ignore further data arriving on that stream.
 RESET_STREAM terminates one direction of a stream abruptly.  For a bidirectional
 stream, RESET_STREAM has no effect on data flow in the opposite direction.  Both
 endpoints MUST maintain flow control state for the stream in the unterminated
-direction until that direction enters a terminal state, or until one of the
-endpoints sends CONNECTION_CLOSE.
+direction until that direction enters a terminal state.
 
 
 ## Stream Final Size {#final-size}
@@ -985,21 +998,8 @@ An endpoint that is unable to open a new stream due to the peer's limits SHOULD
 send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
 considered useful for debugging. An endpoint MUST NOT wait to receive this
 signal before advertising additional credit, since doing so will mean that the
-peer will be blocked for at least an entire round trip, and potentially for
-longer if the peer chooses not to send STREAMS_BLOCKED frames.
-
-
-## Flow Control Performance
-
-An endpoint that is unable to ensure that a peer has flow control credit on the
-order of the current BDP will have receive throughput limited by flow control.
-Lost packets can cause gaps in the receive buffer, delaying the application
-from consuming data and freeing up flow control window.
-
-Sending timely updates of flow control limits can improve performance.
-Sending packets only to provide flow control updates can increase network
-load and adversely affect performance. Sending flow control updates along with
-other frames, such as ACK frames, reduces the cost of those updates.
+peer will be blocked for at least an entire round trip, and potentially
+indefinitely if the peer chooses not to send STREAMS_BLOCKED frames.
 
 
 # Connections {#connections}
