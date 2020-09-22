@@ -2298,6 +2298,12 @@ local address.  Failure of path validation simply means that the new path is not
 usable for this connection.  Failure to validate a path does not cause the
 connection to end unless there are no valid alternative paths available.
 
+An endpoint uses a new connection ID for probes sent from a new local address;	
+see {{migration-linkability}} for further discussion. An endpoint that expects
+to receive traffic on the new local address needs to ensure that at least one
+new connection ID is available at the peer. That can be achieved by including
+a NEW_CONNECTION_ID	frame in the probe.
+
 PATH_CHALLENGE, PATH_RESPONSE, NEW_CONNECTION_ID, and PADDING frames are
 "probing frames", and all other frames are "non-probing frames".  A packet
 containing only probing frames is a "probing packet", and a packet containing
