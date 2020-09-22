@@ -1709,10 +1709,6 @@ When the handshake includes a Retry ({{fig-auth-cid-retry}}), the server sets
 original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
 and initial_source_connection_id to `S3`.
 
-Each endpoint validates transport parameters set by the peer. The client
-confirms that the retry_source_connection_id transport parameter is absent if it
-did not process a Retry packet.
-
 
 ## Transport Parameters {#transport-parameters}
 
@@ -1783,10 +1779,11 @@ server's new values in the handshake instead; if the server does not provide new
 values, the default value is used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
-parameters used by the server. The server can remember these transport
-parameters, or store an integrity-protected copy of the values in the ticket
-and recover the information when accepting 0-RTT data. A server uses the
-transport parameters in determining whether to accept 0-RTT data.
+parameters used by the server that it is able to process. The server can
+remember these transport parameters, or store an integrity-protected copy of
+the values in the ticket and recover the information when accepting 0-RTT data.
+A server uses the transport parameters in determining whether to accept 0-RTT
+data.
 
 If 0-RTT data is accepted by the server, the server MUST NOT reduce any
 limits or alter any values that might be violated by the client with its
@@ -1817,8 +1814,8 @@ connection. Specifically, lowering the max_udp_payload_size could result in
 dropped packets leading to worse performance compared to rejecting 0-RTT data
 outright.
 
-A server MUST either reject 0-RTT data or abort a handshake if the implied
-values for transport parameters cannot be supported.
+A server MUST reject 0-RTT data if the restored values for transport
+parameters cannot be supported.
 
 When sending frames in 0-RTT packets, a client MUST only use remembered
 transport parameters; importantly, it MUST NOT use updated values that it learns
