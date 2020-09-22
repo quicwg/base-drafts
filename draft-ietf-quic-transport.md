@@ -2013,8 +2013,8 @@ expiration time or include it in an encrypted form in the token.
 
 A token issued with NEW_TOKEN MUST NOT include information that would allow
 values to be linked by an observer to the connection on which it was
-issued, unless the values are encrypted.  For example, it cannot include the
-previous connection ID or addressing information.  A server MUST ensure that
+issued. For example, it cannot include the previous connection ID or addressing
+information, unless the values are encrypted.  A server MUST ensure that
 every NEW_TOKEN frame it sends is unique across all clients, with the exception
 of those sent to repair losses of previously sent NEW_TOKEN frames.  Information
 that allows the server to distinguish between tokens from Retry and NEW_TOKEN
@@ -2154,21 +2154,20 @@ here.
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include PADDING
 frames with a PATH_CHALLENGE frame for Path Maximum Transfer Unit (PMTU)
-discovery (see {{pmtud}}); it can also include a PATH_CHALLENGE frame with its
-own PATH_RESPONSE frame.
+discovery (see {{pmtud}}); it can also include its own PATH_CHALLENGE frame with
+a PATH_RESPONSE frame.
 
 An endpoint uses a new connection ID for probes sent from a new local address;
-see {{migration-linkability}}.  When probing a new path, an endpoint expecting
-responses on the new path needs to ensure that its peer has an unused connection
-ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet
-ensures that an unused connection ID will be available to the peer when sending
-a response.
+see {{migration-linkability}}.  When probing a new path, an endpoint can
+ensure that its peer has an unused connection ID available for
+responses. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same
+packet, if the peer's active_connection_id_limit permits, ensures that an unused
+connection ID will be available to the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number of
 simultaneous paths used for probes is limited by the number of extra connection
 IDs its peer has previously supplied, since each new local address used for a
 probe requires a previously unused connection ID.
-
 
 ### Initiating Path Validation
 
