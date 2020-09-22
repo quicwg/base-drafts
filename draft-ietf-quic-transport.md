@@ -2158,13 +2158,14 @@ here.
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include
 PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
-(see {{pmtud}}); it can also include a PATH_CHALLENGE with its own PATH_RESPONSE.
+(see {{pmtud}}); it can also include a PATH_CHALLENGE with its own
+PATH_RESPONSE.
 
 An endpoint uses a new connection ID for probes sent from a new local address
 (See {{migration-linkability}}).  So when probing a new path, an endpoint
-expecting responses on the new local address needs to ensure that its peer has
-an unused connection ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames
-in the same packet ensures that an unused connection ID will be available to
+expecting responses on the new path needs to ensure that its peer has an
+unused connection ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in
+the same packet ensures that an unused connection ID will be available to
 the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number
