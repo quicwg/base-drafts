@@ -2758,6 +2758,8 @@ After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
 closing state; see {{closing}}. After receiving a CONNECTION_CLOSE frame,
 endpoints enter the draining state; see {{draining}}.
 
+Violations of the protocol lead to an immediate close.
+
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocol negotiates a
 graceful shutdown.  The application protocol can exchange messages that are
@@ -2772,13 +2774,12 @@ These states SHOULD persist for at least three times the current Probe Timeout
 (PTO) interval as defined in {{QUIC-RECOVERY}}.
 
 Disposing of connection state prior to exiting the closing or draining state
-could cause could result in an endpoint generating a stateless reset
-unnecessarily when it receives a late-arriving packet.  Endpoints that have some
-alternative means to ensure that late-arriving packets do not induce a response,
-such as those that are able to close the UDP socket, MAY end these states
-earlier to allow for faster resource recovery.  Servers that retain an open
-socket for accepting new connections SHOULD NOT end the closing or draining
-states early.
+could result in an endpoint generating a stateless reset unnecessarily when it
+receives a late-arriving packet.  Endpoints that have some alternative means
+to ensure that late-arriving packets do not induce a response, such as those
+that are able to close the UDP socket, MAY end these states earlier to allow
+for faster resource recovery.  Servers that retain an open socket for accepting
+new connections SHOULD NOT end the closing or draining states early.
 
 Once its closing or draining state ends, an endpoint SHOULD discard all
 connection state.  The endpoint MAY send a stateless reset in response to any
