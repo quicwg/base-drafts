@@ -2163,9 +2163,9 @@ PADDING with a PATH_CHALLENGE for Path Maximum Transfer Unit (PMTU) discovery
 An endpoint uses a new connection ID for probes sent from a new local address
 (See {{migration-linkability}}).  So when probing a new path, an endpoint
 expecting responses on the new local address needs to ensure that its peer has
-an unused connection ID. The endpoint can send NEW_CONNECTION_ID and
-PATH_CHALLENGE frames in the same packet. This ensures that an unused
-connection ID will be available to the peer when sending a response.
+an unused connection ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames
+in the same packet ensures that an unused connection ID will be available to
+the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number
 of simultaneous paths used for probes is limited by the number of extra
