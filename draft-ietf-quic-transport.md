@@ -2160,15 +2160,14 @@ a PATH_RESPONSE frame.
 An endpoint uses a new connection ID for probes sent from a new local address;
 see {{migration-linkability}}.  When probing a new path, an endpoint expecting
 responses on the new path needs to ensure that its peer has an unused connection
-ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet
-ensures that an unused connection ID will be available to the peer when sending
-a response.
+ID. Sending NEW_CONNECTION_ID and PATH_CHALLENGE frames in the same packet, if
+the peer's active_connection_id_limit permits, ensures that an unused connection
+ID will be available to the peer when sending a response.
 
 An endpoint can choose to simultaneously probe multiple paths. The number of
 simultaneous paths used for probes is limited by the number of extra connection
 IDs its peer has previously supplied, since each new local address used for a
 probe requires a previously unused connection ID.
-
 
 ### Initiating Path Validation
 
