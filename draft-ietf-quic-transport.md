@@ -1462,7 +1462,7 @@ properties:
   {{transport-parameters}})
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
-  {{?RFC7301}} for this purpose)
+  {{?ALPN}} for this purpose)
 
 An endpoint verifies support for Explicit Congestion Notification (ECN) by
 observing whether the ACK frames acknowledging the first packets it sends carry
