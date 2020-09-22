@@ -2765,6 +2765,9 @@ After sending a CONNECTION_CLOSE frame, an endpoint immediately enters the
 closing state; see {{closing}}. After receiving a CONNECTION_CLOSE frame,
 endpoints enter the draining state; see {{draining}}.
 
+Violations of the protocol lead to an immediate close, and a transport-level
+error being sent in a CONNECTION_CLOSE frame.
+
 An immediate close can be used after an application protocol has arranged to
 close a connection.  This might be after the application protocol negotiates a
 graceful shutdown.  The application protocol can exchange messages that are
