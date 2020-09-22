@@ -2154,8 +2154,8 @@ here.
 An endpoint MAY include other frames with the PATH_CHALLENGE and PATH_RESPONSE
 frames used for path validation.  In particular, an endpoint can include PADDING
 frames with a PATH_CHALLENGE frame for Path Maximum Transfer Unit (PMTU)
-discovery (see {{pmtud}}); it can also include a PATH_CHALLENGE frame with its
-own PATH_RESPONSE frame.
+discovery (see {{pmtud}}); it can also include its own PATH_CHALLENGE frame with
+a PATH_RESPONSE frame.
 
 An endpoint uses a new connection ID for probes sent from a new local address;
 see {{migration-linkability}}.  When probing a new path, an endpoint expecting
