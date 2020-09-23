@@ -606,7 +606,7 @@ The following pseudo-header fields are defined for requests:
 
   : Contains the path and query parts of the target URI (the "path-absolute"
     production and optionally a '?' character followed by the "query"
-    production; see Sections 3.3 and 3.4 of {{?URI}}.  A request in
+    production; see Sections 3.3 and 3.4 of {{!URI}}.  A request in
     asterisk form includes the value '*' for the ":path" pseudo-header field.
 
   : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
