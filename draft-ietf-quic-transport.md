@@ -2334,9 +2334,10 @@ to the new peer address and MUST initiate path validation ({{migrate-validate}})
 to verify the peer's ownership of the address if validation is not already
 underway.
 
-An endpoint only changes the address that it sends packets to in response to the
-highest-numbered non-probing packet. This ensures that an endpoint does not send
-packets to an old peer address in the case that it receives reordered packets.
+An endpoint only changes the address to which it sends packets in response to
+the highest-numbered non-probing packet. This ensures that an endpoint does not
+send packets to an old peer address in the case that it receives reordered
+packets.
 
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
 against potential attacks as described in {{address-spoofing}} and
