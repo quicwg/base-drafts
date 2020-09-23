@@ -4028,7 +4028,7 @@ smallest allowed maximum packet size of 1200 bytes.
 
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 ({{!IPv4=RFC0791}}), the DF bit MUST be set to prevent fragmentation on the
-path.
+path, unless the underlying network stack does not offer an API for doing so.
 
 
 ## Initial Packet Size {#initial-size}
