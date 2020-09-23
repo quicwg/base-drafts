@@ -3487,7 +3487,7 @@ This rule applies to all current and future QUIC frame types.  An endpoint
 MAY treat the receipt of a frame type that uses a longer encoding than
 necessary as a connection error of type PROTOCOL_VIOLATION.
 
-## Frames and Number Spaces {#frames_and_spaces}
+## Frames and Number Spaces {#frames-and-spaces}
 
 Some frames are prohibited in different packet number spaces. The rules here
 generalize those of TLS, in that frames associated with establishing the
