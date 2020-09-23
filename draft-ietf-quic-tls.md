@@ -325,32 +325,8 @@ One important difference between TLS records (used with TCP) and QUIC CRYPTO
 frames is that in QUIC multiple frames may appear in the same QUIC packet as
 long as they are associated with the same packet number space. For instance,
 an endpoint can bundle a Handshake message and an ACK for some Handshake data
-into the same packet.
-
-Some frames are prohibited in different packet number spaces. The rules here
-generalize those of TLS, in that frames associated with establishing the
-connection can usually appear in packets in any packet number space, whereas
-those associated with transferring data can only appear in the application
-data packet number space:
-
-- PADDING, PING, and CRYPTO frames MAY appear in any packet number space.
-
-- CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
-  appear in any packet number space. CONNECTION_CLOSE frames signaling
-  application errors (type 0x1d) MUST only appear in the application data packet
-  number space.
-
-- ACK frames MAY appear in any packet number space, but can only acknowledge
-  packets that appeared in that packet number space.  However, as noted below,
-  0-RTT packets cannot contain ACK frames.
-
-- All other frame types MUST only be sent in the application data packet number
-  space.
-
-Note that it is not possible to send the following frames in 0-RTT packets for
-various reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
-RETIRE_CONNECTION_ID.  A server MAY treat receipt of these frames in 0-RTT
-packets as a connection error of type PROTOCOL_VIOLATION.
+into the same packet. Some frames are prohibited in different packet number
+spaces; see Section 12.5 of {{QUIC-TRANSPORT}}.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in

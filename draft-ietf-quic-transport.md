@@ -3441,7 +3441,7 @@ ih:
 : Only a CONNECTION_CLOSE frame of type 0x1c can appear in Initial or Handshake
   packets.
 
-Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
+For more detail about these restrictions, see {{frames-and-spaces}}.  Note
 that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
 a frame in a packet type that is not permitted as a connection error of type
 PROTOCOL_VIOLATION.
@@ -3487,6 +3487,33 @@ of 1, PING frames are always encoded as a single byte with the value 0x01.
 This rule applies to all current and future QUIC frame types.  An endpoint
 MAY treat the receipt of a frame type that uses a longer encoding than
 necessary as a connection error of type PROTOCOL_VIOLATION.
+
+## Frames and Number Spaces {#frames-and-spaces}
+
+Some frames are prohibited in different packet number spaces. The rules here
+generalize those of TLS, in that frames associated with establishing the
+connection can usually appear in packets in any packet number space, whereas
+those associated with transferring data can only appear in the application
+data packet number space:
+
+- PADDING, PING, and CRYPTO frames MAY appear in any packet number space.
+
+- CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
+  appear in any packet number space. CONNECTION_CLOSE frames signaling
+  application errors (type 0x1d) MUST only appear in the application data packet
+  number space.
+
+- ACK frames MAY appear in any packet number space, but can only acknowledge
+  packets that appeared in that packet number space.  However, as noted below,
+  0-RTT packets cannot contain ACK frames.
+
+- All other frame types MUST only be sent in the application data packet number
+  space.
+
+Note that it is not possible to send the following frames in 0-RTT packets for
+various reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.  A server MAY treat receipt of these frames in 0-RTT
+packets as a connection error of type PROTOCOL_VIOLATION.
 
 # Packetization and Reliability {#packetization}
 
@@ -6157,7 +6184,7 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using 0-RTT or 1-RTT packets; see Section 4 of {{QUIC-TLS}}.  When an
+sent using 0-RTT or 1-RTT packets; see {{frames-and-spaces}}.  When an
 application wishes to abandon a connection during the handshake, an endpoint
 can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
 APPLICATION_ERROR in an Initial or a Handshake packet.
