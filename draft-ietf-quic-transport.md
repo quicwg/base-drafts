@@ -4062,8 +4062,8 @@ endpoints risk datagrams being lost if they send packets larger than the
 smallest allowed maximum packet size of 1200 bytes.
 
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
-({{!IPv4=RFC0791}}), the DF bit MUST be set to prevent fragmentation on the
-path.
+({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
+fragmentation on the path.
 
 
 ## Initial Packet Size {#initial-size}
