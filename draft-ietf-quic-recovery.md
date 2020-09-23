@@ -2039,7 +2039,7 @@ document:
 - Alessandro Ghedini
 - Benjamin Saunders
 - Gorry Fairhurst
-- <t><t><contact asciiFullname="Kazu Yamamoto" fullname="?"/></t></t>
+- <t><t><contact asciiFullname="Kazu Yamamoto" fullname="山本和彦"/></t></t>
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
 - Lars Eggert
 - Magnus Westerlund
