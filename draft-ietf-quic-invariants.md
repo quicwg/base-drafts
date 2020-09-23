@@ -363,7 +363,8 @@ on knowledge of QUIC version 1.  Some of these statements are not even true for
 QUIC version 1.  This is not an exhaustive list; it is intended to be
 illustrative only.
 
-The following statements are NOT guaranteed to be true for every QUIC version:
+**Any and all of the following statements can be false for a given QUIC
+version:**
 
 * QUIC uses TLS {{QUIC-TLS}} and some TLS messages are visible on the wire
 
