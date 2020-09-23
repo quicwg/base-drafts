@@ -128,12 +128,12 @@ QUIC establishes a connection, which is a stateful interaction between a client
 and server. The primary purpose of a connection is to support the structured
 exchange of data by an application protocol.
 
-Streams are means by which an application protocol exchanges information.
-Streams are ordered sequences of bytes. Two types of stream can be created:
+Application protocols exchange information over a QUIC connection via streams,
+which are ordered sequences of bytes. Two types of stream can be created:
 bidirectional streams, which allow both endpoints to send data; and
-unidirectional streams, which allow a single endpoint to send. A credit-based
-scheme is used to limit stream creation and to bound the amount of data that
-can be sent.
+unidirectional streams, which allow a single endpoint to send data. A
+credit-based scheme is used to limit stream creation and to bound the amount of
+data that can be sent.
 
 The QUIC handshake combines negotiation of cryptographic and transport
 parameters.  The handshake is structured to permit the exchange of application
@@ -169,12 +169,13 @@ This document describes the core QUIC protocol and is structured as follows:
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
-  - {{address-validation}} specifies critical denial of service mitigation
-    mechanisms,
+  - {{address-validation}} describes address validation and critical denial of
+    service mitigations,
   - {{migration}} describes how endpoints migrate a connection to a new
     network path,
   - {{termination}} lists the options for terminating an open connection, and
-  - {{error-handling}} provides general guidance for error handling.
+  - {{error-handling}} provides guidance for stream and connection error
+    handling.
 
 * Packets and frames are the basic unit used by QUIC to communicate.
   - {{packets-frames}} describes concepts related to packets and frames,
@@ -414,8 +415,7 @@ Stream multiplexing can have a significant effect on application performance if
 resources allocated to streams are correctly prioritized.
 
 QUIC does not provide a mechanism for exchanging prioritization information.
-Instead, it relies on receiving priority information from the application that
-uses QUIC.
+Instead, it relies on receiving priority information from the application.
 
 A QUIC implementation SHOULD provide ways in which an application can indicate
 the relative priority of streams.  An implementation uses information provided
@@ -425,7 +425,7 @@ by the application to determine how to allocate resources to active streams.
 
 This document does not define an API for QUIC, but instead defines a set of
 functions on streams that application protocols can rely upon.  An application
-protocol can assume that an implementation of QUIC provides an interface that
+protocol can assume that a QUIC implementation provides an interface that
 includes the operations described in this section.  An implementation designed
 for use with a specific application protocol might provide only those operations
 that are used by that protocol.
@@ -466,7 +466,7 @@ conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either the send or receive side causes the stream
 to open in both directions.
 
-These state machines shown in this section are largely informative.  This
+The state machines shown in this section are largely informative.  This
 document uses stream states to describe rules for when and how different types
 of frames can be sent and the reactions that are expected when different types
 of frames are received.  Though these state machines are intended to be useful
@@ -765,15 +765,15 @@ discarded upon receipt.
 A STOP_SENDING frame requests that the receiving endpoint send a RESET_STREAM
 frame.  An endpoint that receives a STOP_SENDING frame MUST send a RESET_STREAM
 frame if the stream is in the Ready or Send state.  If the stream is in the
-"Data Sent" state, an endpoint MAY defer sending the RESET_STREAM frame until
+"Data Sent" state, the endpoint MAY defer sending the RESET_STREAM frame until
 the packets containing outstanding data are acknowledged or declared lost.  If
 any outstanding data is declared lost, the endpoint SHOULD send a RESET_STREAM
 frame instead of retransmitting the data.
 
 An endpoint SHOULD copy the error code from the STOP_SENDING frame to the
-RESET_STREAM frame it sends, but MAY use any application error code.  The
-endpoint that sends a STOP_SENDING frame MAY ignore the error code carried in
-any RESET_STREAM frame it receives.
+RESET_STREAM frame it sends, but MAY use any application error code.  An
+endpoint that sends a STOP_SENDING frame MAY ignore the error code in
+any RESET_STREAM frames subsequently received for that stream.
 
 STOP_SENDING SHOULD only be sent for a stream that has not been reset by the
 peer. STOP_SENDING is most useful for streams in the "Recv" or "Size Known"
@@ -800,7 +800,7 @@ enable a receiver to limit memory commitment to a connection and to apply back
 pressure on the sender, streams are flow controlled both individually and as an
 aggregate.  A QUIC receiver controls the maximum amount of data the sender can
 send on a stream at any time, as described in {{data-flow-control}} and
-{{fc-credit}}
+{{fc-credit}}.
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
 the maximum cumulative number of streams that its peer can initiate, as
@@ -808,9 +808,9 @@ described in {{controlling-concurrency}}.
 
 Data sent in CRYPTO frames is not flow controlled in the same way as stream
 data.  QUIC relies on the cryptographic protocol implementation to avoid
-excessive buffering of data; see {{QUIC-TLS}}.  The implementation SHOULD
-provide an interface to QUIC to tell it about its buffering limits so that there
-is not excessive buffering at multiple layers.
+excessive buffering of data; see {{QUIC-TLS}}. To avoid excessive buffering at
+multiple layers, QUIC implementations SHOULD provide an interface for the
+cryptographic protocol implementation to communicate its buffering limits.
 
 
 ## Data Flow Control {#data-flow-control}
@@ -829,23 +829,23 @@ entire connection.  This leads to two levels of data flow control in QUIC:
 
 Senders MUST NOT send data in excess of either limit.
 
-A receiver sets initial limits for all streams by sending transport parameters
-during the handshake ({{transport-parameters}}).  A receiver sends
+A receiver sets initial limits for all streams through transport parameters
+during the handshake ({{transport-parameters}}).  Subsequently, a receiver sends
 MAX_STREAM_DATA ({{frame-max-stream-data}}) or MAX_DATA ({{frame-max-data}})
 frames to the sender to advertise larger limits.
 
 A receiver can advertise a larger limit for a stream by sending a
-MAX_STREAM_DATA frame with the corresponding stream ID. A
-MAX_STREAM_DATA frame indicates the maximum absolute byte offset of a stream. A
-receiver could use the current offset of data consumed to determine the flow
-control offset to be advertised.
+MAX_STREAM_DATA frame with the corresponding stream ID. A MAX_STREAM_DATA frame
+indicates the maximum absolute byte offset of a stream. A receiver could
+determine the flow control offset to be advertised based on the current offset
+of data consumed on that stream.
 
 A receiver can advertise a larger limit for a connection by sending a MAX_DATA
 frame, which indicates the maximum of the sum of the absolute byte offsets of
 all streams.  A receiver maintains a cumulative sum of bytes received on all
 streams, which is used to check for violations of the advertised connection or
-stream data limits. A receiver might use a sum of bytes consumed on all streams
-to determine the maximum data limit to be advertised.
+stream data limits. A receiver could determine the maximum data limit to be
+advertised based on the sum of bytes consumed on all streams.
 
 Once a receiver advertises a limit for the connection or a stream, it MAY
 advertise a smaller limit, but this has no effect.
@@ -859,13 +859,13 @@ flow control limits.
 
 If a sender has sent data up to the limit, it will be unable to send new data
 and is considered blocked.  A sender SHOULD send a STREAM_DATA_BLOCKED or
-DATA_BLOCKED frame to indicate it has data to write but is blocked by flow
-control limits.  If a sender is blocked for a period longer than the idle
-timeout ({{idle-timeout}}), the receiver might close the connection even when
-the sender has data that is available for transmission.  To keep the connection
-from closing, a sender that is flow control limited SHOULD periodically send a
-STREAM_DATA_BLOCKED or DATA_BLOCKED frame when it has no ack-eliciting packets
-in flight.
+DATA_BLOCKED frame to indicate to the receiver that it has data to write but is
+blocked by flow control limits.  If a sender is blocked for a period longer than
+the idle timeout ({{idle-timeout}}), the receiver might close the connection
+even when the sender has data that is available for transmission.  To keep the
+connection from closing, a sender that is flow control limited SHOULD
+periodically send a STREAM_DATA_BLOCKED or DATA_BLOCKED frame when it has no
+ack-eliciting packets in flight.
 
 
 ## Increasing Flow Control Limits {#fc-credit}
@@ -874,8 +874,8 @@ Implementations decide when and how much credit to advertise in MAX_STREAM_DATA
 and MAX_DATA frames, but this section offers a few considerations.
 
 To avoid blocking a sender, a receiver MAY send a MAX_STREAM_DATA or MAX_DATA
-frame multiple times within a round trip or send it early enough to allow for
-recovery from loss of the frame.
+frame multiple times within a round trip or send it early enough to allow time
+for loss of the frame and subsequent recovery.
 
 Control frames contribute to connection overhead. Therefore, frequently sending
 MAX_STREAM_DATA and MAX_DATA frames with small changes is undesirable.  On the
@@ -906,10 +906,12 @@ congestion.
 
 ## Flow Control Performance
 
-An endpoint that is unable to ensure that a peer has flow control credit on the
-order of the current BDP will have receive throughput limited by flow control.
-Lost packets can cause gaps in the receive buffer, delaying the application
-from consuming data and freeing up flow control window.
+If an endpoint cannot ensure that its peer always has available flow control
+credit that is greater than the peer's bandwidth-delay product on this
+connection, its receive throughput will be limited by flow control.
+
+Packet loss can cause gaps in the receive buffer, preventing the application
+from consuming data and freeing up receive buffer space.
 
 Sending timely updates of flow control limits can improve performance.
 Sending packets only to provide flow control updates can increase network
@@ -940,13 +942,12 @@ final size is the number of bytes sent.  More generally, this is one higher
 than the offset of the byte with the largest offset sent on the stream, or zero
 if no bytes were sent.
 
-The final size of a stream is always signaled to the recipient.  The final size
-is the sum of the Offset and Length fields of a STREAM frame with a FIN flag,
-noting that these fields might be implicit.  Alternatively, the Final Size field
-of a RESET_STREAM frame carries this value.  This ensures that all ways that a
-stream can be closed result in the number of bytes on the stream being reliably
-transmitted.  This guarantees that both endpoints agree on how much flow control
-credit was consumed by the stream.
+A sender always communicates the final size of a stream to the receiver
+reliably, no matter how the stream is terminated. The final size is the sum of
+the Offset and Length fields of a STREAM frame with a FIN flag, noting that
+these fields might be implicit.  Alternatively, the Final Size field of a
+RESET_STREAM frame carries this value. This guarantees that both endpoints agree
+on how much flow control credit was consumed by the sender on that stream.
 
 An endpoint will know the final size for a stream when the receiving part of the
 stream enters the "Size Known" or "Reset Recvd" state ({{stream-states}}).  The
@@ -960,7 +961,7 @@ STREAM frame is received indicating a change in the final size for the stream,
 an endpoint SHOULD respond with a FINAL_SIZE_ERROR error; see
 {{error-handling}}.  A receiver SHOULD treat receipt of data at or beyond the
 final size as a FINAL_SIZE_ERROR error, even after a stream is closed.
-Generating these errors is not mandatory, but only because requiring that an
+Generating these errors is not mandatory, because requiring that an
 endpoint generate these errors also means that the endpoint needs to maintain
 the final size state for closed streams, which could mean a significant state
 commitment.
@@ -989,10 +990,11 @@ Once a receiver advertises a stream limit using the MAX_STREAMS frame,
 advertising a smaller limit has no effect.  A receiver MUST ignore any
 MAX_STREAMS frame that does not increase the stream limit.
 
-As with stream and connection flow control, this document leaves when and how
-many streams to advertise to a peer via MAX_STREAMS to implementations.
-Implementations might choose to increase limits as streams close to keep the
-number of streams available to peers roughly consistent.
+As with stream and connection flow control, this document leaves implementations
+to decide when and how many streams should be advertised
+to a peer via MAX_STREAMS.  Implementations might choose to increase limits as
+streams are closed, to keep the number of streams available to peers roughly
+consistent.
 
 An endpoint that is unable to open a new stream due to the peer's limits SHOULD
 send a STREAMS_BLOCKED frame ({{frame-streams-blocked}}).  This signal is
