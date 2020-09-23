@@ -3440,7 +3440,7 @@ ih:
 : Only a CONNECTION_CLOSE frame of type 0x1c can appear in Initial or Handshake
   packets.
 
-Section 4 of {{QUIC-TLS}} provides more detail about these restrictions.  Note
+For more detail about these restrictions, see {{frames-and-spaces}}.  Note
 that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
 a frame in a packet type that is not permitted as a connection error of type
 PROTOCOL_VIOLATION.
@@ -6183,7 +6183,7 @@ Reason Phrase:
   This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
-sent using 0-RTT or 1-RTT packets; see Section 4 of {{QUIC-TLS}}.  When an
+sent using 0-RTT or 1-RTT packets; see {{frames-and-spaces}}.  When an
 application wishes to abandon a connection during the handshake, an endpoint
 can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
 APPLICATION_ERROR in an Initial or a Handshake packet.
