@@ -1349,7 +1349,7 @@ response to each packet that might initiate a new connection; see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD add PADDING frames to pad the first UDP datagram they send to the largest of the minimum
+SHOULD add PADDING frames ({{frame-padding}}) to pad the first UDP datagram they send to the largest of the minimum
 datagram sizes from all versions they support. This ensures that the server
 responds if there is a mutually supported version. A server might not send a
 Version Negotiation packet if the datagram it receives is smaller than the
