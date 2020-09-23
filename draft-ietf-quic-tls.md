@@ -326,7 +326,7 @@ frames is that in QUIC multiple frames may appear in the same QUIC packet as
 long as they are associated with the same packet number space. For instance,
 an endpoint can bundle a Handshake message and an ACK for some Handshake data
 into the same packet. Some frames are prohibited in different packet number
-spaces, as specified in section 12.4 of {{QUIC-TRANSPORT}}.
+spaces, as specified in section 12.5 of {{QUIC-TRANSPORT}}.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in

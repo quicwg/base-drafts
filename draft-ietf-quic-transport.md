@@ -3487,6 +3487,33 @@ This rule applies to all current and future QUIC frame types.  An endpoint
 MAY treat the receipt of a frame type that uses a longer encoding than
 necessary as a connection error of type PROTOCOL_VIOLATION.
 
+## Frames and Number Spaces {#frames_and_spaces}
+
+Some frames are prohibited in different packet number spaces. The rules here
+generalize those of TLS, in that frames associated with establishing the
+connection can usually appear in packets in any packet number space, whereas
+those associated with transferring data can only appear in the application
+data packet number space:
+
+- PADDING, PING, and CRYPTO frames MAY appear in any packet number space.
+
+- CONNECTION_CLOSE frames signaling errors at the QUIC layer (type 0x1c) MAY
+  appear in any packet number space. CONNECTION_CLOSE frames signaling
+  application errors (type 0x1d) MUST only appear in the application data packet
+  number space.
+
+- ACK frames MAY appear in any packet number space, but can only acknowledge
+  packets that appeared in that packet number space.  However, as noted below,
+  0-RTT packets cannot contain ACK frames.
+
+- All other frame types MUST only be sent in the application data packet number
+  space.
+
+Note that it is not possible to send the following frames in 0-RTT packets for
+various reasons: ACK, CRYPTO, HANDSHAKE_DONE, NEW_TOKEN, PATH_RESPONSE, and
+RETIRE_CONNECTION_ID.  A server MAY treat receipt of these frames in 0-RTT
+packets as a connection error of type PROTOCOL_VIOLATION.
+
 # Packetization and Reliability {#packetization}
 
 A sender sends one or more frames in a QUIC packet; see {{frames}}.
