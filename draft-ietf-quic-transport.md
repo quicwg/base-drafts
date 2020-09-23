@@ -35,7 +35,8 @@ normative:
     author:
       -
         ins: J. Iyengar
-        name: Jana Iyengar
+        name:
+        Jana Iyengar
         org: Fastly
         role: editor
       -
@@ -1348,7 +1349,7 @@ response to each packet that might initiate a new connection; see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD pad the first UDP datagram they send to the largest of the minimum
+SHOULD add PADDING frames to pad the first UDP datagram they send to the largest of the minimum
 datagram sizes from all versions they support. This ensures that the server
 responds if there is a mutually supported version. A server might not send a
 Version Negotiation packet if the datagram it receives is smaller than the
@@ -1903,7 +1904,7 @@ that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding padding to packets in the datagram as
+payloads of at least 1200 bytes, adding PADDING frames to QUIC packets in the datagram as
 necessary. A client that sends padded datagrams allows the server to send more
 data prior to completing address validation.
 
@@ -2963,7 +2964,8 @@ data (or 5 bytes, less the two fixed bits).
 
 The resulting minimum size of 21 bytes does not guarantee that a stateless reset
 is difficult to distinguish from other packets if the recipient requires the use
-of a connection ID. To achieve that end, the endpoint SHOULD pad all packets it
+of a connection ID. To achieve that end, the endpoint SHOULD add PADDING 
+frames to pad all packets it
 sends to at least 22 bytes longer than the minimum connection ID that it might
 request the peer to include in packets that the peer sends.  This ensures that
 any stateless reset sent by the peer is indistinguishable from a valid packet
