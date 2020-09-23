@@ -280,8 +280,8 @@ allocations. Provide any public guidance that the IESG would find useful in
 selecting the IANA Experts for these new registries.
 -->
 
-The document set defines several IANA registries that offer “Provisional
-Registrations” and "Permanent Registration, which both require Expert review.
+The document set defines several IANA registries that allow for "Provisional
+Registrations" and "Permanent Registrations", which both require Expert review.
 The IESG should select subject matter experts for these registration types;
 candidates include the document editors and the individuals named as
 contributors in the acknowledgment sections.
