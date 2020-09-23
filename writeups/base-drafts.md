@@ -281,9 +281,10 @@ selecting the IANA Experts for these new registries.
 -->
 
 The document set defines several IANA registries that offer “Provisional
-Registrations” and require Expert review. The IESG should select subject matter
-experts for these registration types; candidates include the document editors
-and the individuals named as contributors in the acknowledgment sections.
+Registrations” and "Permanent Registration, which both require Expert review.
+The IESG should select subject matter experts for these registration types;
+candidates include the document editors and the individuals named as
+contributors in the acknowledgment sections.
 
 
 ## 19. Validation of Formal Language Parts
