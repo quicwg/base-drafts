@@ -167,7 +167,7 @@ Layer     |                      Records                      |
 Each Handshake layer message (e.g., Handshake, Alerts, and Application Data) is
 carried as a series of typed TLS records by the Record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
-transport (typically TCP) which provides sequencing and guaranteed delivery.
+transport (typically TCP), which provides sequencing and guaranteed delivery.
 
 The TLS authenticated key exchange occurs between two endpoints: client and
 server.  The client initiates the exchange and the server responds.  If the key
@@ -187,11 +187,11 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake in which the client is able to send Application Data
+ * A full 1-RTT handshake, in which the client is able to send Application Data
    after one round trip and the server immediately responds after receiving the
    first handshake message from the client.
 
- * A 0-RTT handshake in which the client uses information it has previously
+ * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
    Application Data can be replayed by an attacker so it MUST NOT carry a
    self-contained trigger for any non-idempotent action.
@@ -306,9 +306,9 @@ protection being called out specially.
 ~~~
 {: #schematic title="QUIC and TLS Interactions"}
 
-Unlike TLS over TCP, QUIC applications which want to send data do not send it
+Unlike TLS over TCP, QUIC applications that want to send data do not send it
 through TLS "application_data" records. Rather, they send it as QUIC STREAM
-frames or other frame types which are then carried in QUIC packets.
+frames or other frame types, which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
 
@@ -435,7 +435,7 @@ network, it proceeds as follows:
   process is that new data is available, then it is delivered to TLS in order.
 
 - If the packet is from a previously installed encryption level, it MUST NOT
-  contain data which extends past the end of previously received data in that
+  contain data that extends past the end of previously received data in that
   flow. Implementations MUST treat any violations of this requirement as a
   connection error of type PROTOCOL_VIOLATION.
 
@@ -475,9 +475,22 @@ handshake, new data is requested from TLS after providing received data.
 ### Encryption Level Changes
 
 As keys at a given encryption level become available to TLS, TLS indicates to
-QUIC that reading or writing keys at that encryption level are available.  These
-events are not asynchronous; they always occur immediately after TLS is provided
-with new handshake bytes, or after TLS produces handshake bytes.
+QUIC that reading or writing keys at that encryption level are available.
+
+The availability of new keys is always a result of providing inputs to TLS.  TLS
+only provides new keys after being initialized (by a client) or when provided
+with new handshake data.
+
+However, a TLS implementation could perform some of its processing
+asynchronously. In particular, the process of validating a certificate can take
+some time. While waiting for TLS processing to complete, an endpoint SHOULD
+buffer received packets if they might be processed using keys that aren't yet
+available. These packets can be processed once keys are provided by TLS. An
+endpoint SHOULD continue to respond to packets that can be processed during this
+time.
+
+After processing inputs, TLS might produce handshake bytes, keys for new
+encryption levels, or both.
 
 TLS provides QUIC with three items as a new encryption level becomes available:
 
@@ -488,8 +501,8 @@ TLS provides QUIC with three items as a new encryption level becomes available:
 * A Key Derivation Function (KDF)
 
 These values are based on the values that TLS negotiates and are used by QUIC to
-generate packet and header protection keys (see {{packet-protection}} and
-{{header-protect}}).
+generate packet and header protection keys; see {{packet-protection}} and
+{{header-protect}}.
 
 If 0-RTT is possible, it is ready after the client sends a TLS ClientHello
 message or the server receives that message.  After providing a QUIC client with
@@ -871,7 +884,29 @@ keeping track of missing packet numbers.
 # Packet Protection {#packet-protection}
 
 As with TLS over TCP, QUIC protects packets with keys derived from the TLS
-handshake, using the AEAD algorithm negotiated by TLS.
+handshake, using the AEAD algorithm {{!AEAD}} negotiated by TLS.
+
+QUIC packets have varying protections depending on their type:
+
+* Version Negotiation packets have no cryptographic protection.
+
+* Retry packets use AEAD_AES_128_GCM to provide protection against accidental
+  modification or insertion by off-path adversaries; see
+  {{retry-integrity}}.
+
+* Initial packets use AEAD_AES_128_GCM with keys derived from the Destination
+  Connection ID field of the first Initial packet sent by the client; see
+  {{initial-secrets}}.
+
+* All other packets have strong cryptographic protections for confidentiality
+  and integrity, using keys and algorithms negotiated by TLS.
+
+This section describes how packet protection is applied to Handshake packets,
+0-RTT packets, and 1-RTT packets. The same packet protection process is applied
+to Initial packets. However, as it is trivial to determine the keys used for
+Initial packets, these packets are not considered to have confidentiality or
+integrity protection. Retry packets use a fixed key and so similarly lack
+confidentiality and integrity protection.
 
 
 ## Packet Protection Keys {#protection-keys}
@@ -893,19 +928,34 @@ cipher suite.  Other versions of TLS MUST provide a similar function in order to
 be used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
-KDF to produce the AEAD key; the label "quic iv" is used to derive the IV; see
-{{aead}}.  The header protection key uses the "quic hp" label; see
-{{header-protect}}.  Using these labels provides key separation between QUIC
-and TLS; see {{key-diversity}}.
+KDF to produce the AEAD key; the label "quic iv" is used to derive the
+Initialization Vector (IV); see {{aead}}.  The header protection key uses the
+"quic hp" label; see {{header-protect}}.  Using these labels provides key
+separation between QUIC and TLS; see {{key-diversity}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
-TLS 1.3 (see {{initial-secrets}}).
+TLS 1.3; see {{initial-secrets}}.
 
 
 ## Initial Secrets {#initial-secrets}
 
-Initial packets are protected with a secret derived from the Destination
-Connection ID field from the client's Initial packet. Specifically:
+Initial packets apply the packet protection process, but use a secret derived
+from the Destination Connection ID field from the client's first Initial
+packet.
+
+This secret is determined by using HKDF-Extract (see Section 2.2 of
+{{!HKDF=RFC5869}}) with a salt of 0xafbfec289993d24c9e9786f19c6111e04390a899
+and a IKM of the Destination Connection ID field. This produces an intermediate
+pseudorandom key (PRK) that is used to derive two separate secrets for sending
+and receiving.
+
+The secret used by clients to construct Initial packets uses the PRK and the
+label "client in" as input to the HKDF-Expand-Label function to produce a 32
+byte secret; packets constructed by the server use the same process with the
+label "server in".  The hash function for HKDF when deriving initial secrets
+and keys is SHA-256 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+
+This process in pseudocode is:
 
 ~~~
 initial_salt = 0xafbfec289993d24c9e9786f19c6111e04390a899
@@ -920,24 +970,20 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
                                           Hash.length)
 ~~~
 
-The hash function for HKDF when deriving initial secrets and keys is SHA-256
-{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
-
 The connection ID used with HKDF-Expand-Label is the Destination Connection ID
 in the Initial packet sent by the client.  This will be a randomly-selected
 value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
-The value of initial_salt is a 20-byte sequence shown in the figure in
-hexadecimal notation. Future versions of QUIC SHOULD generate a new salt value,
-thus ensuring that the keys are different for each version of QUIC. This
-prevents a middlebox that only recognizes one version of QUIC from seeing or
-modifying the contents of packets from future versions.
+Future versions of QUIC SHOULD generate a new salt value, thus ensuring that
+the keys are different for each version of QUIC.  This prevents a middlebox that
+recognizes only one version of QUIC from seeing or modifying the contents of
+packets from future versions.
 
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for protecting Initial packets change when a server sends a
+The secrets used for constructing Initial packets change when a server sends a
 Retry packet to use the connection ID value selected by the server.  The secrets
 do not change when a client changes the Destination Connection ID it uses in
 response to an Initial packet from the server.
@@ -950,7 +996,7 @@ Note:
   that the server received its packet; the client has to rely on the exchange
   that included the Retry packet for that property.
 
-{{test-vectors}} contains test vectors for packet encryption.
+{{test-vectors}} contains sample Initial packets.
 
 
 ## AEAD Usage {#aead}
@@ -959,19 +1005,6 @@ The Authenticated Encryption with Associated Data (AEAD; see {{!AEAD}}) function
 used for QUIC packet protection is the AEAD that is negotiated for use with the
 TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256 cipher
 suite, the AEAD_AES_128_GCM function is used.
-
-Packets are protected prior to applying header protection ({{header-protect}}).
-The unprotected packet header is part of the associated data (A).  When removing
-packet protection, an endpoint first removes the header protection.
-
-All QUIC packets other than Version Negotiation are protected with an AEAD
-algorithm ({{!AEAD}}). Prior to establishing a shared secret, packets are
-protected with AEAD_AES_128_GCM.  Retry packets use the AEAD for integrity
-protection only, as described in {{retry-integrity}}.  Initial packets use a key
-derived from the Destination Connection ID in the client's first Initial packet;
-see {{initial-secrets}}. This provides protection against off-path attackers
-and robustness against QUIC-version-unaware middleboxes, but not against on-path
-attackers.
 
 QUIC can use any of the cipher suites defined in {{!TLS13}} with the exception
 of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
@@ -985,6 +1018,11 @@ Note:
 : An endpoint MUST NOT reject a ClientHello that offers a cipher suite that it
   does not support, or it would be impossible to deploy a new cipher suite.
   This also applies to TLS_AES_128_CCM_8_SHA256.
+
+When constructing packets, the AEAD function is applied prior to applying
+header protection; see {{header-protect}}. The unprotected packet header is part
+of the associated data (A). When processing packets, an endpoint first
+removes the header protection.
 
 The key and IV for the packet are computed as described in {{protection-keys}}.
 The nonce, N, is formed by combining the packet protection IV with the packet
@@ -1002,9 +1040,9 @@ described in {{QUIC-TRANSPORT}}.
 The output ciphertext, C, of the AEAD is transmitted in place of P.
 
 Some AEAD functions have limits for how many packets can be encrypted under the
-same key and IV (see for example {{AEBounds}}).  This might be lower than the
-packet number limit.  An endpoint MUST initiate a key update ({{key-update}})
-prior to exceeding any limit set for the AEAD that is in use.
+same key and IV; see {{aead-limits}}.  This might be lower than the packet
+number limit.  An endpoint MUST initiate a key update ({{key-update}}) prior to
+exceeding any limit set for the AEAD that is in use.
 
 
 ## Header Protection {#header-protect}
@@ -1037,7 +1075,7 @@ Header protection is applied after packet protection is applied (see {{aead}}).
 The ciphertext of the packet is sampled and used as input to an encryption
 algorithm.  The algorithm used depends on the negotiated AEAD.
 
-The output of this algorithm is a 5-byte mask which is applied to the protected
+The output of this algorithm is a 5-byte mask that is applied to the protected
 header fields using exclusive OR.  The least significant bits of the first byte
 of the packet are masked by the least significant bits of the first mask byte,
 and the packet number is masked with the remaining bytes.  Any unused bytes of
@@ -1254,7 +1292,7 @@ Note:
   receives all server handshake messages.
 
 
-## Receiving Out-of-Order Protected Frames {#pre-hs-protected}
+## Receiving Out-of-Order Protected Packets {#pre-hs-protected}
 
 Due to reordering and loss, protected packets might be received by an endpoint
 before the final TLS handshake messages are received.  A client will be unable
@@ -1269,13 +1307,15 @@ handshake messages from a client, it is missing assurances on the client state:
   pre-shared key and validated the client's pre-shared key binder; see Section
   4.2.11 of {{!TLS13}}.
 
-- The client has not demonstrated liveness, unless a RETRY packet was used.
+- The client has not demonstrated liveness, unless the server has validated the
+  client's address with a Retry packet or other means; see Section 8.1 of
+  [QUIC-TRANSPORT].
 
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
 
-Therefore, the server's use of 1-RTT keys MUST be limited to sending data before
-the handshake is complete.  A server MUST NOT process incoming 1-RTT protected
+Therefore, the server's use of 1-RTT keys before the handshake is complete is
+limited to sending data.  A server MUST NOT process incoming 1-RTT protected
 packets before the TLS handshake is complete.  Because sending acknowledgments
 indicates that all frames in a packet have been processed, a server cannot send
 acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
@@ -1298,6 +1338,10 @@ acknowledged.  This enables immediate server processing for those packets.
 A server could receive packets protected with 0-RTT keys prior to receiving a
 TLS ClientHello.  The server MAY retain these packets for later decryption in
 anticipation of receiving a ClientHello.
+
+A client generally receives 1-RTT keys at the same time as the handshake
+completes.  Even if it has 1-RTT secrets, a client MUST NOT process
+incoming 1-RTT protected packets before the TLS handshake is complete.
 
 
 ## Retry Packet Integrity {#retry-integrity}
@@ -1332,6 +1376,7 @@ Retry Pseudo-Packet {
   DCID Len (8),
   Destination Connection ID (0..160),
   SCID Len (8),
+  Source Connection ID (0..160),
   Retry Token (..),
 }
 ~~~
@@ -1440,10 +1485,11 @@ The endpoint that initiates a key update also updates the keys that it uses for
 receiving packets.  These keys will be needed to process packets the peer sends
 after updating.
 
-An endpoint SHOULD retain old keys so that packets sent by its peer prior to
-receiving the key update can be processed.  Discarding old keys too early can
-cause delayed packets to be discarded.  Discarding packets will be interpreted
-as packet loss by the peer and could adversely affect performance.
+An endpoint MUST retain old keys until it has successfully unprotected a packet
+sent using the new keys.  An endpoint SHOULD retain old keys for some time
+after unprotecting a packet sent using the new keys.  Discarding old keys too
+early can cause delayed packets to be discarded.  Discarding packets will be
+interpreted as packet loss by the peer and could adversely affect performance.
 
 
 ## Responding to a Key Update
@@ -1547,12 +1593,13 @@ in the network.  In this case, the Key Phase bit alone can be used to select
 keys.
 
 An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
-{{QUIC-RECOVERY}}) after a key update before it creates the next set of packet
-protection keys.  These updated keys MAY replace the previous keys at that time.
-With the caveat that PTO is a subjective measure - that is, a peer could have a
-different view of the RTT - this time is expected to be long enough that any
-reordered packets would be declared lost by a peer even if they were
-acknowledged and short enough to allow for subsequent key updates.
+{{QUIC-RECOVERY}}) after receiving a packet that uses the new key generation
+before it creates the next set of packet protection keys.  These updated keys
+MAY replace the previous keys at that time.  With the caveat that PTO is a
+subjective measure - that is, a peer could have a different view of the RTT -
+this time is expected to be long enough that any reordered packets would be
+declared lost by a peer even if they were acknowledged and short enough to
+allow for subsequent key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
 decrypt packets that initiate a key update during the period when it retains old
@@ -1561,19 +1608,16 @@ after receiving an acknowledgment that confirms that the previous key update was
 received.  Failing to allow sufficient time could lead to packets being
 discarded.
 
-An endpoint SHOULD retain old read keys for no more than three times the PTO.
-After this period, old read keys and their corresponding secrets SHOULD be
-discarded.
+An endpoint SHOULD retain old read keys for no more than three times the PTO
+after having received a packet protected using the new keys. After this period,
+old read keys and their corresponding secrets SHOULD be discarded.
 
 
-## Minimum Key Update Frequency
+## Limits on AEAD Usage {#aead-limits}
 
-Key updates MUST be initiated before usage limits on packet protection keys are
-exceeded. For the cipher suites mentioned in this document, the limits in
-Section 5.5 of {{!TLS13}} apply. {{!TLS13}} does not specify a limit for
-AEAD_AES_128_CCM, but the analysis in {{ccm-bounds}} shows that a limit of 2^23
-packets can be used to obtain the same confidentiality protection as the limits
-specified in TLS.
+This document sets usage limits for AEAD algorithms to ensure that overuse does
+not give an adversary a disproportionate advantage in attacking the
+confidentiality and integrity of communications when using QUIC.
 
 The usage limits defined in TLS 1.3 exist for protection against attacks
 on confidentiality and apply to successful applications of AEAD protection. The
@@ -1582,30 +1626,47 @@ number of attempts to forge packets. TLS achieves this by closing connections
 after any record fails an authentication check. In comparison, QUIC ignores any
 packet that cannot be authenticated, allowing multiple forgery attempts.
 
-Endpoints MUST count the number of received packets that fail authentication for
-each set of keys.  If the number of packets that fail authentication with the
-same key exceeds a limit that is specific to the AEAD in use, the endpoint MUST
-stop using those keys.  Endpoints MUST initiate a key update before reaching
-this limit.  If a key update is not possible, the endpoint MUST immediately
-close the connection.  Applying a limit reduces the probability that an attacker
-is able to successfully forge a packet; see {{AEBounds}} and {{ROBUST}}.
+QUIC accounts for AEAD confidentiality and integrity limits separately. The
+confidentiality limit applies to the number of packets encrypted with a given
+key. The integrity limit applies to the number of packets decrypted within a
+given connection. Details on enforcing these limits for each AEAD algorithm
+follow below.
 
-Note:
+Endpoints MUST count the number of encrypted packets for each set of keys. If
+the total number of encrypted packets with the same key exceeds the
+confidentiality limit for the selected AEAD, the endpoint MUST stop using those
+keys. Endpoints MUST initiate a key update before sending more protected packets
+than the confidentiality limit for the selected AEAD permits. If a key update
+is not possible or integrity limits are reached, the endpoint MUST stop using
+the connection and only send stateless resets in response to receiving packets.
+It is RECOMMENDED that endpoints immediately close the connection with a
+connection error of type AEAD_LIMIT_REACHED before reaching a state where key
+updates are not possible.
 
-: Due to the way that header protection protects the Key Phase, packets that are
-  discarded are likely to have an even distribution of both Key Phase values.
-  This means that packets that fail authentication will often use the packet
-  protection keys from the next key phase.  It is therefore necessary to also
-  track the number of packets that fail authentication with the next set of
-  packet protection keys.  To avoid exhaustion of both sets of keys, it might be
-  necessary to initiate two key updates in succession.
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25
+encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
+confidentiality limit is greater than the number of possible packets (2^62) and
+so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
+encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
+that an attacker can distinguish the AEAD in use from a random permutation; see
+{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
 
-For AEAD_AES_128_GCM, AEAD_AES_256_GCM, and AEAD_CHACHA20_POLY1305, the limit on
-the number of packets that fail authentication is 2^36.  Note that the analysis
-in {{AEBounds}} supports a higher limit for the AEAD_AES_128_GCM and
-AEAD_AES_256_GCM, but this specification recommends a lower limit.  For
-AEAD_AES_128_CCM, the limit on the number of packets that fail authentication
-is 2^23.5; see {{ccm-bounds}}.
+In addition to counting packets sent, endpoints MUST count the number of
+received packets that fail authentication during the lifetime of a connection.
+If the total number of received packets that fail authentication within the
+connection, across all keys, exceeds the integrity limit for the selected AEAD,
+the endpoint MUST immediately close the connection with a connection error of
+type AEAD_LIMIT_REACHED and not process any more packets.
+
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 invalid
+packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
+2^36 invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity
+limit is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
+the probability that an attacker can successfully forge a packet; see
+{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
+
+Future analyses and specifications MAY relax confidentiality or integrity limits
+for an AEAD.
 
 Note:
 
@@ -1627,7 +1688,7 @@ to varying usage conditions.
 
 ## Key Update Error Code {#key-update-error}
 
-The KEY_UPDATE_ERROR error code (0xE) is used to signal errors related to key
+The KEY_UPDATE_ERROR error code (0xe) is used to signal errors related to key
 updates.
 
 
@@ -1644,7 +1705,7 @@ For example, an attacker could inject a packet containing an ACK frame that
 makes it appear that a packet had not been received or to create a false
 impression of the state of the connection (e.g., by modifying the ACK Delay).
 Note that such a packet could cause a legitimate packet to be dropped as a
-duplicate.  Implementations SHOULD use caution in relying on any data which is
+duplicate.  Implementations SHOULD use caution in relying on any data that is
 contained in Initial packets that is not otherwise authenticated.
 
 It is also possible for the attacker to tamper with data that is carried in
@@ -1670,7 +1731,7 @@ is used for agreeing on an application protocol, endpoints MUST use ALPN for
 this purpose.
 
 When using ALPN, endpoints MUST immediately close a connection (see Section
-10.3 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+10.2 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
 code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
 While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
 use error 0x178 to terminate a connection when ALPN negotiation fails.
@@ -1829,7 +1890,7 @@ limit the level of amplification.
 ## Header Protection Analysis {#header-protect-analysis}
 
 {{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
-algorithms which provide nonce privacy, referred to as "Hide Nonce" (HN)
+algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection uses the output of the packet
 protection AEAD to derive `sample`, and then encrypts the header field using
@@ -1866,7 +1927,7 @@ can only be detected once the packet protection is removed.
 
 An attacker could guess values for packet numbers or Key Phase and have an
 endpoint confirm guesses through timing side channels.  Similarly, guesses for
-the packet number length can be trialed and exposed.  If the recipient of a
+the packet number length can be tried and exposed.  If the recipient of a
 packet discards packets with duplicate packet numbers without attempting to
 remove packet protection they could reveal through timing side-channels that the
 packet number matches a received packet.  For authentication to be free from
@@ -1928,7 +1989,7 @@ values in the following registries:
   CH and EE.
 
 * QUIC Transport Error Codes Registry {{QUIC-TRANSPORT}} - IANA is to register
-  the KEY_UPDATE_ERROR (0xE), as described in {{key-update-error}}.
+  the KEY_UPDATE_ERROR (0xe), as described in {{key-update-error}}.
 
 
 --- back
@@ -2050,7 +2111,7 @@ header = cdff00001d088394c8f03e5157080000449e9cdb990b
 The resulting protected packet is:
 
 ~~~
-cdff00001d088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
+cdff00001f088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
 73972d149421874d3849e3708d71354e a33bcdc356f3ea6e2a1a1bd7c3d14003
 8d3e784d04c30a2cdb40c32523aba2da fe1c1bf3d27a6be38fe38ae033fbb071
 3c1c73661bb6639795b42b97f77068ea d51f11fbf9489af2501d09481e6c64d4
@@ -2087,7 +2148,7 @@ edb42d2af89a9c9122b07acbc29e5e72 2df8615c343702491098478a389c9872
 a10b0c9875125e257c7bfdf27eef4060 bd3d00f4c14fd3e3496c38d3c5d1a566
 8c39350effbc2d16ca17be4ce29f02ed 969504dda2a8c6b9ff919e693ee79e09
 089316e7d1d89ec099db3b2b268725d8 88536a4b8bf9aee8fb43e82a4d919d48
-1802771a449b30f3fa2289852607b660
+395781bc0a3e8125b4dd506ca025eb37
 ~~~
 
 
@@ -2122,11 +2183,11 @@ header = caff00001d0008f067a5502a4262b5004074aaf2
 The final protected packet is then:
 
 ~~~
-c7ff00001d0008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
+c7ff00001f0008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
 6782a2167e3479c0f7f6395dc2c91676 302fe6d70bb7cbeb117b4ddb7d173498
 44fd61dae200b8338e1b932976b61d91 e64a02e9e0ee72e3a6f63aba4ceeeec5
-be2f24f2d86027572943533846caa13e 6f163fb257473dcca25396e88724f1e5
-d964dedee9b633
+be2f24f2d86027572943533846caa13e 6f163fb257473d76f0e78487aca6427b
+da2e7e70a7ee48
 ~~~
 
 
@@ -2138,8 +2199,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff00001d0008f067a5502a4262b574 6f6b656ed16926d81f6f9ca2953a8aa4
-575e1e49
+ffff00001f0008f067a5502a4262b574 6f6b656ec70ce5de430b4bdb7df1a383
+3a75f986
 ~~~
 
 
@@ -2204,20 +2265,14 @@ The protected packet is the smallest possible packet size of 21 bytes.
 packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
-# Analysis of Limits on AEAD_AES_128_CCM Usage {#ccm-bounds}
 
-{{!TLS13}} and {{AEBounds}} do not specify limits on usage for
-AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits on
-use that ensure that both confidentiality and integrity are preserved. This
-section documents that analysis.
+# AEAD Algorithm Analysis
 
-{{?CCM-ANALYSIS=DOI.10.1007/3-540-36492-7_7}} is used as the basis of this
-analysis. The results of that analysis are used to derive usage limits that are
-based on those chosen in {{!TLS13}}.
-
-This analysis uses symbols for multiplication (*), division (/), and
-exponentiation (^), plus parentheses for establishing precedence. The following
-symbols are also used:
+This section documents analyses used in deriving AEAD algorithm limits for
+AEAD_AES_128_GCM, AEAD_AES_128_CCM, and AEAD_AES_256_GCM. The analyses that
+follow use symbols for multiplication (*), division (/), and exponentiation (^),
+plus parentheses for establishing precedence. The following symbols are also
+used:
 
 t:
 
@@ -2243,10 +2298,14 @@ v:
   bound on the number of forged packets that an endpoint can reject before
   updating keys.
 
-The analysis of AEAD_AES_128_CCM relies on a count of the number of block
-operations involved in producing each message. For simplicity, and to match the
-analysis of other AEAD functions in {{AEBounds}}, this analysis assumes a
-packet length of 2^10 blocks and a packet size limit of 2^14.
+o:
+
+: The amount of offline ideal cipher queries made by an adversary.
+
+The analyses that follow rely on a count of the number of block operations
+involved in producing each message. For simplicity, and to match the analysis of
+other AEAD functions in {{AEBounds}}, this analysis assumes a packet length of
+2^10 blocks; that is, a packet size limit of 2^14 bytes.
 
 For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
 of: the length of the associated data in blocks, the length of the ciphertext
@@ -2257,7 +2316,89 @@ the associated data and ciphertext. This results in a negligible 1 to 3 block
 overestimation of the number of operations.
 
 
-## Confidentiality Limits
+## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
+
+{{?GCM-MU}} specify concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM as
+used in TLS 1.3 and QUIC. This section documents this analysis using several
+simplifying assumptions:
+
+- The number of ciphertext blocks an attacker uses in forgery attempts is
+bounded by v * l, the number of forgery attempts and the size of each packet (in
+blocks).
+
+- The amount of offline work done by an attacker does not dominate other factors
+in the analysis.
+
+The bounds in {{?GCM-MU}} are tighter and more complete than those used in
+{{AEBounds}}, which allows for larger limits than those described in {{?TLS13}}.
+
+
+### Confidentiality Limit
+
+For confidentiality, Theorum (4.3) in {{?GCM-MU}} establishes that - for a
+single user that does not repeat nonces - the dominant term in determining the
+distinguishing advantage between a real and random AEAD algorithm gained by an
+attacker is:
+
+~~~
+2 * (q * l)^2 / 2^128
+~~~
+
+For a target advantage of 2^-57, this results in the relation:
+
+~~~
+q <= 2^25
+~~~
+
+Thus, endpoints cannot protect more than 2^25 packets in a single connection
+without causing an attacker to gain an larger advantage than the target of
+2^-57.
+
+
+### Integrity Limit
+
+For integrity, Theorem (4.3) in {{?GCM-MU}} establishes that an attacker gains
+an advantage in successfully forging a packet of no more than:
+
+~~~
+(1 / 2^(8 * n)) + ((2 * v) / 2^(2 * n))
+        + ((2 * o * v) / 2^(k + n)) + (n * (v + (v * l)) / 2^k)
+~~~
+
+The goal is to limit this advantage to 2^-57.  For AEAD_AES_128_GCM, the fourth
+term in this inequality dominates the rest, so the others can be removed without
+significant effect on the result. This produces the following approximation:
+
+~~~
+v <= 2^54
+~~~
+
+For AEAD_AES_256_GCM, the second and fourth terms dominate the rest, so the
+others can be removed without affecting the result. This produces the following
+approximation:
+
+~~~
+v <= 2^182
+~~~
+
+This is substantially larger than the limit for AEAD_AES_128_GCM.  However, this
+document recommends that the same limit be applied to both functions as either
+limit is acceptably large.
+
+
+## Analysis of AEAD_AES_128_CCM Usage Limits {#ccm-bounds}
+
+TLS {{?TLS13}} and {{AEBounds}} do not specify limits on usage
+for AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits
+on use that ensure that both confidentiality and integrity are preserved. This
+section documents that analysis.
+
+{{?CCM-ANALYSIS=DOI.10.1007/3-540-36492-7_7}} is used as the basis of this
+analysis. The results of that analysis are used to derive usage limits that are
+based on those chosen in {{?TLS13}}.
+
+
+### Confidentiality Limits
 
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
@@ -2267,19 +2408,18 @@ no more than:
 (2l * q)^2 / 2^n
 ~~~
 
-For a target advantage of 2^-60, which matches that used by {{!TLS13}}, this
-results in the relation:
+For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-q <= 2^23
+q <= 2^24.5
 ~~~
 
 That is, endpoints cannot protect more than 2^23 packets with the same set of
 keys without causing an attacker to gain a larger advantage than the target of
-2^-60.
+2^-57.  Note however that the integrity limits further constrain this value.
 
 
-## Integrity Limits
+### Integrity Limits
 
 For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains an advantage over an ideal PRP of no more than:
@@ -2288,19 +2428,17 @@ gains an advantage over an ideal PRP of no more than:
 v / 2^t + (2l * (v + q))^2 / 2^n
 ~~~
 
-The goal is to limit this advantage to 2^-57, to match the target in {{!TLS13}}.
-As `t` and `n` are both 128, the first term is negligible relative to the
-second, so that term can be removed without a significant effect on the result.
-This produces the relation:
+The goal is to limit this advantage to 2^-57.  As `t` and `n` are both 128, the
+first term is negligible relative to the second, so that term can be removed
+without a significant effect on the result. This produces the relation:
 
 ~~~
 v + q <= 2^24.5
 ~~~
 
-Using the previously-established value of 2^23 for `q` and rounding, this leads
-to an upper limit on `v` of 2^23.5. That is, endpoints cannot attempt to
-authenticate more than 2^23.5 packets with the same set of keys without causing
-an attacker to gain a larger advantage than the target of 2^-57.
+Assuming `q = v`, endpoints cannot attempt to protect or authenticate more than
+2^23.5 packets with the same set of keys without causing an attacker to gain a
+larger advantage in forging packets than the target of 2^-57.
 
 
 # Change Log
@@ -2309,6 +2447,12 @@ an attacker to gain a larger advantage than the target of 2^-57.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-29
+
+- Updated limits on packet protection (#3788, #3789)
+- Allow for packet processing to continue while waiting for TLS to provide
+  keys (#3821, #3874)
 
 ## Since draft-ietf-quic-tls-28
 
