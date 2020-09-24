@@ -6031,11 +6031,11 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field counts connection IDs established during connection
-setup and the preferred_address transport parameter; see {{retire-cid}}. The
-Retire Prior To field MUST be less than or equal to the Sequence Number field.
-Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type FRAME_ENCODING_ERROR.
+The Retire Prior To field applies to connection IDs established during
+connection setup and the preferred_address transport parameter; see
+{{retire-cid}}. The Retire Prior To field MUST be less than or equal to the
+Sequence Number field. Receiving a value greater than the Sequence Number MUST
+be treated as a connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
