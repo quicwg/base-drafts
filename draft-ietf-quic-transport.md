@@ -2337,14 +2337,15 @@ verifies ECN capability as described in {{ecn}}.
 Receiving a packet from a new peer address containing a non-probing frame
 indicates that the peer has migrated to that address.
 
-An endpoint only changes the address that it sends packets to in response to the
-highest-numbered non-probing packet. This ensures that an endpoint does not send
-packets to an old peer address in the case that it receives reordered packets.
-
-In response to such a packet, an endpoint MUST send subsequent packets to the
-new peer address and MUST initiate path validation ({{migrate-validate}}) to
-verify the peer's ownership of the address if validation is not already
+If the recipient permits the migration, it MUST send subsequent packets
+to the new peer address and MUST initiate path validation ({{migrate-validate}})
+to verify the peer's ownership of the address if validation is not already
 underway.
+
+An endpoint only changes the address to which it sends packets in response to
+the highest-numbered non-probing packet. This ensures that an endpoint does not
+send packets to an old peer address in the case that it receives reordered
+packets.
 
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
 against potential attacks as described in {{address-spoofing}} and
