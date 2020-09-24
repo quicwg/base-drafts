@@ -6325,7 +6325,12 @@ CRYPTO_BUFFER_EXCEEDED (0xd):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
-AEAD_LIMIT_REACHED (0xe):
+KEY_UPDATE_ERROR (0xe):
+
+: An endpoint detected errors in performing key updates; see Section 6 of
+  {{QUIC-TLS}}.
+
+AEAD_LIMIT_REACHED (0xf):
 
 : An endpoint has reached the confidentiality or integrity limit for the AEAD
   algorithm used by the given connection.
@@ -7355,6 +7360,8 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
 | 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
 | 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
+| 0xf   | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
