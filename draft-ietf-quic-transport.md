@@ -1496,7 +1496,7 @@ Handshake (CRYPTO)
 ~~~
 {: #fig-hs title="Simplified QUIC Handshake"}
 
-An endpoint verifies support for Explicit Congestion Notification (ECN) by
+An endpoint validates support for Explicit Congestion Notification (ECN) by
 observing whether the ACK frames acknowledging the first packets it sends carry
 ECN counts, as described in {{ecn-validation}}.
 
@@ -2329,7 +2329,7 @@ rate. Therefore, the endpoint resets its congestion controller and RTT estimate,
 as described in {{migration-cc}}.
 
 The new path might not have the same ECN capability. Therefore, the endpoint
-verifies ECN capability as described in {{ecn}}.
+validates ECN capability as described in {{ecn}}.
 
 
 ## Responding to Connection Migration {#migration-response}

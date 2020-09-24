@@ -795,7 +795,7 @@ is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If a path has been verified to support ECN ({{?RFC3168}}, {{?RFC8311}}), QUIC
+If a path has been validated to support ECN ({{?RFC3168}}, {{?RFC8311}}), QUIC
 treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when its peer
 receives packets with the ECN-CE codepoint.
