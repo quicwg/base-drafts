@@ -441,10 +441,9 @@ network, it proceeds as follows:
 
 - If the packet is from a new encryption level, it is saved for later processing
   by TLS.  Once TLS moves to receiving from this encryption level, saved data
-  can be provided to TLS.  When providing data from any new encryption level to
-  TLS, if there is data from a previous encryption level that TLS has not
-  consumed, this MUST be treated as a connection error of type
-  PROTOCOL_VIOLATION.
+  can be provided to TLS.  When TLS provides keys for a higher encryption level,
+  if there is data from a previous encryption level that TLS has not consumed,
+  this MUST be treated as a connection error of type PROTOCOL_VIOLATION.
 
 Each time that TLS is provided with new data, new handshake bytes are requested
 from TLS.  TLS might not provide any bytes if the handshake messages it has
