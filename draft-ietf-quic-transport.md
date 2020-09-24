@@ -144,10 +144,11 @@ QUIC connections are not strictly bound to a single network path.  Connection
 migration uses connection identifiers to allow connections to transfer to a new
 network path.
 
-Frames are used in QUIC to communicate between endpoints.  One or more frames
-are assembled into packets.  QUIC authenticates all packets and encrypts as much
-as is practical.  QUIC packets are carried in UDP datagrams ({{!UDP=RFC0768}})
-to better facilitate deployment in existing systems and networks.
+Frames are used in QUIC to communicate between endpoints. One or more frames
+are assembled into a QUIC packet. QUIC authenticates all packets and encrypts
+as much as is practical. QUIC packets are carried in UDP datagrams
+({{!UDP=RFC0768}}) to better facilitate deployment in existing systems and
+networks.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
@@ -2142,7 +2143,7 @@ received by that peer. Path validation is used to ensure that packets received
 from a migrating peer do not carry a spoofed source address.
 
 Path validation does not validate that a peer can send in the return direction.
-Acknowledgments cannot be used for return path validation as they contain
+Acknowledgments cannot be used for return path validation because they contain
 insufficient entropy and might be spoofed. Endpoints independently determine
 reachability on each direction of a path, and therefore return reachability can
 only be established by the peer.
@@ -2931,9 +2932,9 @@ properly continue the connection.  An endpoint MAY send a stateless reset in
 response to receiving a packet that it cannot associate with an active
 connection.
 
-A stateless reset is not appropriate for signaling error conditions.  An
-endpoint that wishes to communicate a fatal connection error MUST use a
-CONNECTION_CLOSE frame if it has sufficient state to do so.
+A stateless reset is not appropriate for indicating errors in active
+connections. An endpoint that wishes to communicate a fatal connection error
+MUST use a CONNECTION_CLOSE frame if it is able.
 
 To support this process, a token is sent by endpoints.  The token is carried in
 the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
