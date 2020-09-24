@@ -3184,8 +3184,7 @@ the connection.
 Errors that result in the connection being unusable, such as an obvious
 violation of protocol semantics or corruption of state that affects an entire
 connection, MUST be signaled using a CONNECTION_CLOSE frame
-({{frame-connection-close}}). An endpoint MAY close the connection in this
-manner even if the error only affects a single stream.
+({{frame-connection-close}}).
 
 Application-specific protocol errors are signaled using the CONNECTION_CLOSE
 frame with a frame type of 0x1d.  Errors that are specific to the transport,
