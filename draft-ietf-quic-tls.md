@@ -843,7 +843,7 @@ MAY also include PADDING frames.
 Packets protected with Initial secrets ({{initial-secrets}}) are not
 authenticated, meaning that an attacker could spoof packets with the intent to
 disrupt a connection.  To limit these attacks, Initial packet protection keys
-can be discarded more aggressively than other keys.
+are discarded more aggressively than other keys.
 
 The successful use of Handshake packets indicates that no more Initial packets
 need to be exchanged, as these keys can only be produced after receiving all
