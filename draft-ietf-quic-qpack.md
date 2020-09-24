@@ -757,7 +757,7 @@ literal; see {{string-literals}}.
 {: title="Insert Field Line -- Indexed Name"}
 
 
-### Insert Without Name Reference
+### Insert With Literal Name
 
 An encoder adds an entry to the dynamic table where both the field name and the
 field value are represented as string literals using an instruction that starts
@@ -1122,7 +1122,7 @@ Only the field name is taken from the dynamic table entry; the field value is
 encoded as an 8-bit prefix string literal; see {{string-literals}}.
 
 
-### Literal Field Line Without Name Reference
+### Literal Field Line With Literal Name
 
 The literal field line without name reference representation encodes a
 field name and a field value as string literals.
@@ -1139,7 +1139,7 @@ field name and a field value as string literals.
    |  Value String (Length bytes)  |
    +-------------------------------+
 ~~~~~~~~~~
-{: title="Literal Field Line Without Name Reference"}
+{: title="Literal Field Line With Literal Name"}
 
 This representation begins with the '001' three-bit pattern.  The fourth bit is
 the 'N' bit as described in {{literal-name-reference}}.  The name follows,
@@ -1643,7 +1643,7 @@ any encoded field sections.
 
 ~~~
 Stream: Encoder
-4a63 7573 746f 6d2d | Insert Without Name Reference
+4a63 7573 746f 6d2d | Insert With Literal Name
 6b65 790c 6375 7374 |  (custom-key=custom-value)
 6f6d 2d76 616c 7565 |
 
