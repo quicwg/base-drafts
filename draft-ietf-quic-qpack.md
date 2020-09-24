@@ -1201,7 +1201,7 @@ the dynamic table state. If a guess is compressed into a shorter length, the
 attacker can observe the encoded length and infer that the guess was correct.
 
 This is possible even over the Transport Layer Security Protocol (TLS, see
-{{?RFC5246}}), because while TLS provides confidentiality protection for
+{{?TLS=RFC8446}}), because while TLS provides confidentiality protection for
 content, it only provides a limited amount of protection for the length of that
 content.
 
