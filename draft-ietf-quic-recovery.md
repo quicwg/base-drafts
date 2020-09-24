@@ -1801,6 +1801,10 @@ OnPacketNumberSpaceDiscarded(pn_space):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-30
+
+Editorial changes only.
+
 ## Since draft-ietf-quic-recovery-29
 
 - Allow caching of packets that can't be decrypted, by allowing the reported

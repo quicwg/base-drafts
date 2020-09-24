@@ -7450,6 +7450,15 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-30
+
+- Use TRANSPORT_PARAMETER_ERROR for an invalid transport parameter (#4099,
+  #4100)
+- Add a new error code for AEAD_LIMIT_REACHED code to avoid conflict (#4087,
+  #4088)
+- Allow use of address validation token when server address changes (#4076,
+  #4089)
+
 ## Since draft-ietf-quic-transport-29
 
 - Require the same connection ID on coalesced packets (#3800, #3930)

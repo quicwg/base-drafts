@@ -2444,6 +2444,11 @@ larger advantage in forging packets than the target of 2^-57.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-30
+
+- Add a new error code for AEAD_LIMIT_REACHED code to avoid conflict (#4087,
+  #4088)
+
 ## Since draft-ietf-quic-tls-29
 
 - Updated limits on packet protection (#3788, #3789)
