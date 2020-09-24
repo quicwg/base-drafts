@@ -8046,6 +8046,7 @@ document:
 - Ian Swett
 - Igor Lubashev
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
+- Lars Eggert
 - Lucas Pardue
 - Magnus Westerlund
 - Marten Seemann
