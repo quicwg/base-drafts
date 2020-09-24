@@ -2329,7 +2329,7 @@ verifies ECN capability as described in {{ecn}}.
 Receiving a packet from a new peer address containing a non-probing frame
 indicates that the peer has migrated to that address.
 
-If the recipient permits the migration, an endpoint MUST send subsequent packets
+If the recipient permits the migration, it MUST send subsequent packets
 to the new peer address and MUST initiate path validation ({{migrate-validate}})
 to verify the peer's ownership of the address if validation is not already
 underway.
