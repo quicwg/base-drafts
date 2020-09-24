@@ -6605,7 +6605,7 @@ datagrams.
 This document does not offer specific countermeasures that can be implemented
 by endpoints aside from the generic measures described in {{forgery-generic}}.
 However, countermeasures for address spoofing at the network level, in
-particular ingress filtering {{?BCP38=RFC2267}}, are especially effective
+particular ingress filtering {{?BCP38=RFC2827}}, are especially effective
 against attacks that use spoofing and originate from an external network.
 
 
