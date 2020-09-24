@@ -5698,9 +5698,9 @@ are present in the frame:
   Stream Data field extends to the end of the packet.  If this bit is set to 1,
   the Length field is present.
 
-* The FIN bit (0x01) of the frame type is set only on frames that contain the
-  final size of the stream.  Setting this bit indicates that the frame
-  marks the end of the stream.
+* The FIN bit (0x01) indicates that the frame marks the end of the stream. The
+  final size of the stream is the sum of the offset and the length of this
+  frame.
 
 An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
 receives a STREAM frame for a locally-initiated stream that has not yet been
