@@ -4876,17 +4876,9 @@ because the same key and nonce could be used to protect different content.
 A server MAY abort the connection if it detects that the client reset the
 packet number.
 
-A server acknowledges the use of a Retry packet for a connection using the
-retry_source_connection_id transport parameter; see
-{{transport-parameter-definitions}}.  If the server sends a Retry packet, it
-also subsequently includes the value of the Source Connection ID field from
-the Retry packet in its retry_source_connection_id transport parameter.
-
-If the client received and processed a Retry packet, it MUST validate that the
-retry_source_connection_id transport parameter is present and correct;
-otherwise, it MUST validate that the transport parameter is absent. A client
-MUST treat a failed validation as a connection error of type
-PROTOCOL_VIOLATION.
+The connection IDs used on Initial and Retry packets exchanged between client
+and server are copied to the transport parameters and validated as described
+in {{cid-auth}}.
 
 
 ## Short Header Packets {#short-header}
