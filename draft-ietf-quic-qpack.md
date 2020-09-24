@@ -1124,7 +1124,7 @@ encoded as an 8-bit prefix string literal; see {{string-literals}}.
 
 ### Literal Field Line With Literal Name
 
-The literal field line without name reference representation encodes a
+The literal field line with literal name representation encodes a
 field name and a field value as string literals.
 
 ~~~~~~~~~~ drawing
