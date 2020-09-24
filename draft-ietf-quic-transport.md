@@ -6636,8 +6636,10 @@ restricting the length of time an endpoint is allowed to stay connected.
 
 ## Stream Fragmentation and Reassembly Attacks
 
-An adversarial sender might intentionally omit to send portions of the stream data, causing the
-receiver to commit resources for the omitted data, this could cause a disproportionate receive buffer memory commitment and/or creation of a large and inefficient data structure. 
+An adversarial sender might intentionally omit to send portions of the stream
+data, causing the receiver to commit resources for the omitted data. This could
+cause a disproportionate receive buffer memory commitment and/or the creation of
+a large and inefficient data structure at the receiver.
 
 An adversarial receiver might intentionally not acknowledge packets containing
 stream data in an attempt to force the sender to store the unacknowledged stream
