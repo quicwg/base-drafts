@@ -1848,9 +1848,9 @@ some identifiers are reserved in order to exercise this requirement.
 
 A client that does not understand a transport parameter can discard it and
 attempt 0-RTT on subsequent connections. However, if the client adds support
-for a discarded transport parameter, it risks violating the constraints that the
-transport parameter establishes. Definitions for new transport parameters can
-avoid this problem by setting a default of the most conservative value.
+for a discarded transport parameter, it risks violating the constraints that
+the transport parameter establishes. New transport parameters can avoid this
+problem by setting a default of the most conservative value.
 
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
