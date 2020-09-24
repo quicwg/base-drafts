@@ -1904,8 +1904,8 @@ that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding PADDING frames to QUIC packets in the
-datagram as necessary. A client that sends padded datagrams allows the server to
+payloads of at least 1200 bytes, adding PADDING frames as necessary.
+A client that sends padded datagrams allows the server to
 send more data prior to completing address validation.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
@@ -2964,10 +2964,10 @@ data (or 5 bytes, less the two fixed bits).
 
 The resulting minimum size of 21 bytes does not guarantee that a stateless reset
 is difficult to distinguish from other packets if the recipient requires the use
-of a connection ID. To achieve that end, the endpoint SHOULD, adding PADDING
-frames as necessary, ensure that all packets it sends are at least 22 bytes
-longer than the minimum connection ID length that it requests the peer to
-include in its packets.  This ensures that any stateless reset sent by the peer
+of a connection ID. To achieve that end, the endpoint SHOULD ensure that all
+packets it sends are at least 22 bytes longer than the minimum connection ID
+length that it requests the peer to include in its packets, adding PADDING
+frames as necessary.  This ensures that any stateless reset sent by the peer
 is indistinguishable from a valid packet sent to the endpoint.  An endpoint that
 sends a stateless reset in response to a packet that is 43 bytes or shorter
 SHOULD send a stateless reset that is one byte shorter than the packet it
