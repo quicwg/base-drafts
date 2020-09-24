@@ -1637,7 +1637,7 @@ Stream: Decoder
 
 ## Speculative Insert
 
-The encoder inserts a header into the dynamic table without a name reference.
+The encoder inserts a header into the dynamic table with a literal name.
 The decoder acknowledges receipt of the entry.  The encoder does not send
 any encoded field sections.
 
