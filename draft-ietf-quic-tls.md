@@ -610,9 +610,10 @@ use the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
 partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
-message.  That overhead increases if the client chooses a connection ID without
-zero length.  Overheads also do not include the token or a connection ID longer
-than 8 bytes, both of which might be required if a server sends a Retry packet.
+message.  That overhead increases if the client chooses a source connection ID
+longer than zero bytes.  Overheads also do not include the token or a
+destination connection ID longer than 8 bytes, both of which might be required
+if a server sends a Retry packet.
 
 A typical TLS ClientHello can easily fit into a 1200-byte packet.  However, in
 addition to the overheads added by QUIC, there are several variables that could
