@@ -1846,6 +1846,12 @@ a transport parameter therefore disables any optional protocol feature that is
 negotiated using the parameter.  As described in {{transport-parameter-grease}},
 some identifiers are reserved in order to exercise this requirement.
 
+A client that discards a transport parameter risks violating constraints set by
+that transport parameter when it attempts 0-RTT, especially when clients are
+updated to support new transport parameters. Definitions for new transport
+parameters can avoid this problem by setting a default of the most conservative
+value.
+
 New transport parameters can be registered according to the rules in
 {{iana-transport-parameters}}.
 
