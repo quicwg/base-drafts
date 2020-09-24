@@ -329,8 +329,8 @@ supports QUIC version 1 generates and consumes a Version Negotiation packet.
 
 It is possible that middleboxes could use traits of a specific version of QUIC
 and assume that when other versions of QUIC exhibit similar traits the same
-underlying semantic is being expressed.  There are potentially many such traits
-(see {{bad-assumptions}}).  Some effort has been made to either eliminate or
+underlying semantic is being expressed.  There are potentially many such traits;
+see {{bad-assumptions}}.  Some effort has been made to either eliminate or
 obscure some observable traits in QUIC version 1, but many of these remain.
 Other QUIC versions might make different design decisions and so exhibit
 different traits.
