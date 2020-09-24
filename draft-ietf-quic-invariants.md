@@ -75,12 +75,20 @@ code and issues list for this draft can be found at
 
 --- middle
 
-# Introduction
+# An Extremely Abstract Description of QUIC
+
+QUIC is a connection-oriented protocol between two endpoints.  Those endpoints
+exchange UDP datagrams.  These UDP datagrams contain QUIC packets.  QUIC
+endpoints use QUIC packets to establish a QUIC connection, which is shared
+protocol state between those endpoints.
+
+
+# Fixed Properties of All QUIC Versions
 
 In addition to providing secure, multiplexed transport, QUIC {{QUIC-TRANSPORT}}
-includes the ability to negotiate a version.  This allows the protocol to change
-over time in response to new requirements.  Many characteristics of the protocol
-will change between versions.
+allows for the option to negotiate a version.  This allows the protocol to
+change over time in response to new requirements.  Many characteristics of the
+protocol could change between versions.
 
 This document describes the subset of QUIC that is intended to remain stable as
 new versions are developed and deployed.  All of these invariants are
@@ -104,14 +112,6 @@ version of QUIC.
 {::boilerplate bcp14}
 
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
-
-
-# An Extremely Abstract Description of QUIC
-
-QUIC is a connection-oriented protocol between two endpoints.  Those endpoints
-exchange UDP datagrams.  These UDP datagrams contain QUIC packets.  QUIC
-endpoints use QUIC packets to establish a QUIC connection, which is shared
-protocol state between those endpoints.
 
 
 # Notational Conventions
