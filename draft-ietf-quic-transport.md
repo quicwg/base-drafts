@@ -977,11 +977,13 @@ limits are set in the transport parameters; see
 MAX_STREAMS frames; see {{frame-max-streams}}. Separate limits apply to
 unidirectional and bidirectional streams.
 
-If a max_streams transport parameter or MAX_STREAMS frame is received with a
+If a max_streams transport parameter or a MAX_STREAMS frame is received with a
 value greater than 2^60, this would allow a maximum stream ID that cannot be
-expressed as a variable-length integer; see {{integer-encoding}}.
-If either is received, the connection MUST be closed immediately with a
-connection error of type FRAME_ENCODING_ERROR; see {{immediate-close}}.
+expressed as a variable-length integer; see {{integer-encoding}}.  If either is
+received, the connection MUST be closed immediately with a connection error of
+type TRANSPORT_PARAMETER_ERROR if the offending value was received in a
+transport parameter or of type FRAME_ENCODING_ERROR if it was received in a
+frame; see {{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a frame with a stream ID exceeding the limit it has sent MUST treat
@@ -3974,8 +3976,9 @@ To perform ECN validation for a new path:
 If an endpoint has cause to expect that IP packets with an ECT codepoint might
 be dropped by a faulty network element, the endpoint could set an ECT codepoint
 for only the first ten outgoing packets on a path, or for a period of three
-RTTs. If all packets marked with non-zero ECN codepoints are subsequently lost,
-it can disable marking on the assumption that the marking causes in loss.
+PTOs (see Section 6.2 of {{QUIC-RECOVERY}}). If all packets marked with non-zero
+ECN codepoints are subsequently lost, it can disable marking on the assumption
+that the marking causes in loss.
 
 An endpoint thus attempts to use ECN and validates this for each new connection,
 when switching to a server's preferred address, and on active connection
@@ -6323,7 +6326,12 @@ CRYPTO_BUFFER_EXCEEDED (0xd):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
-AEAD_LIMIT_REACHED (0xe):
+KEY_UPDATE_ERROR (0xe):
+
+: An endpoint detected errors in performing key updates; see Section 6 of
+  {{QUIC-TLS}}.
+
+AEAD_LIMIT_REACHED (0xf):
 
 : An endpoint has reached the confidentiality or integrity limit for the AEAD
   algorithm used by the given connection.
@@ -6597,7 +6605,7 @@ datagrams.
 This document does not offer specific countermeasures that can be implemented
 by endpoints aside from the generic measures described in {{forgery-generic}}.
 However, countermeasures for address spoofing at the network level, in
-particular ingress filtering {{?BCP38=RFC2267}}, are especially effective
+particular ingress filtering {{?BCP38=RFC2827}}, are especially effective
 against attacks that use spoofing and originate from an external network.
 
 
@@ -7353,6 +7361,8 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
 | 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
 | 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
+| 0xf   | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
@@ -7411,11 +7421,12 @@ unmarked packets.
 To start testing a path, the ECN state is set to "testing" and existing ECN
 counts are remembered as a baseline.
 
-The testing period runs for a number of packets or round-trip times, as
+The testing period runs for a number of packets or a limited time, as
 determined by the endpoint.  The goal is not to limit the duration of the
 testing period, but to ensure that enough marked packets are sent for received
 ECN counts to provide a clear indication of how the path treats marked packets.
-{{ecn-ack}} suggests limiting this to 10 packets or 3 round-trip times.
+{{ecn-validation}} suggests limiting this to 10 packets or 3 times the probe
+timeout.
 
 After the testing period ends, the ECN state for the path becomes "unknown".
 From the "unknown" state, successful validation of the ECN counts an ACK frame
