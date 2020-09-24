@@ -5690,9 +5690,9 @@ are present in the frame:
   Stream Data field extends to the end of the packet.  If this bit is set to 1,
   the Length field is present.
 
-* The FIN bit (0x01) of the frame type is set only on frames that contain the
-  final size of the stream.  Setting this bit indicates that the frame
-  marks the end of the stream.
+* The FIN bit (0x01) indicates that the frame marks the end of the stream. The
+  final size of the stream is the sum of the offset and the length of this
+  frame.
 
 An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
 receives a STREAM frame for a locally-initiated stream that has not yet been
@@ -5767,12 +5767,12 @@ Maximum Data:
 : A variable-length integer indicating the maximum amount of data that can be
   sent on the entire connection, in units of bytes.
 
-All data sent in STREAM frames counts toward this limit.  The sum of the largest
-received offsets on all streams - including streams in terminal states - MUST
-NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
-connection with a FLOW_CONTROL_ERROR error if it receives more data than the
-maximum data value that it has sent.  This includes violations of remembered
-limits in Early Data; see {{zerortt-parameters}}.
+All data sent in STREAM frames counts toward this limit.  The sum of the final
+sizes on all streams - including streams in terminal states - MUST NOT exceed
+the value advertised by a receiver.  An endpoint MUST terminate a connection
+with a FLOW_CONTROL_ERROR error if it receives more data than the maximum data
+value that it has sent.  This includes violations of remembered limits in Early
+Data; see {{zerortt-parameters}}.
 
 
 ## MAX_STREAM_DATA Frames {#frame-max-stream-data}
@@ -6023,11 +6023,11 @@ sequence number, or if a sequence number is used for different connection
 IDs, the endpoint MAY treat that receipt as a connection error of type
 PROTOCOL_VIOLATION.
 
-The Retire Prior To field counts connection IDs established during connection
-setup and the preferred_address transport parameter; see {{retire-cid}}. The
-Retire Prior To field MUST be less than or equal to the Sequence Number field.
-Receiving a value greater than the Sequence Number MUST be treated as a
-connection error of type FRAME_ENCODING_ERROR.
+The Retire Prior To field applies to connection IDs established during
+connection setup and the preferred_address transport parameter; see
+{{retire-cid}}. The Retire Prior To field MUST be less than or equal to the
+Sequence Number field. Receiving a value greater than the Sequence Number MUST
+be treated as a connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
