@@ -3974,8 +3974,9 @@ To perform ECN validation for a new path:
 If an endpoint has cause to expect that IP packets with an ECT codepoint might
 be dropped by a faulty network element, the endpoint could set an ECT codepoint
 for only the first ten outgoing packets on a path, or for a period of three
-RTTs. If all packets marked with non-zero ECN codepoints are subsequently lost,
-it can disable marking on the assumption that the marking causes in loss.
+PTOs (see Section 6.2 of {{QUIC-RECOVERY}}). If all packets marked with non-zero
+ECN codepoints are subsequently lost, it can disable marking on the assumption
+that the marking causes in loss.
 
 An endpoint thus attempts to use ECN and validates this for each new connection,
 when switching to a server's preferred address, and on active connection
@@ -7411,11 +7412,12 @@ unmarked packets.
 To start testing a path, the ECN state is set to "testing" and existing ECN
 counts are remembered as a baseline.
 
-The testing period runs for a number of packets or round-trip times, as
+The testing period runs for a number of packets or a limited time, as
 determined by the endpoint.  The goal is not to limit the duration of the
 testing period, but to ensure that enough marked packets are sent for received
 ECN counts to provide a clear indication of how the path treats marked packets.
-{{ecn-ack}} suggests limiting this to 10 packets or 3 round-trip times.
+{{ecn-validation}} suggests limiting this to 10 packets or 3 times the probe
+timeout.
 
 After the testing period ends, the ECN state for the path becomes "unknown".
 From the "unknown" state, successful validation of the ECN counts an ACK frame
