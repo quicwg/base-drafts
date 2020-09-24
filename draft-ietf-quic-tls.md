@@ -609,9 +609,10 @@ use the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
 partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
-message.  That overhead increases if the client chooses a connection ID without
-zero length.  Overheads also do not include the token or a connection ID longer
-than 8 bytes, both of which might be required if a server sends a Retry packet.
+message.  That overhead increases if the client chooses a source connection ID
+longer than zero bytes.  Overheads also do not include the token or a
+destination connection ID longer than 8 bytes, both of which might be required
+if a server sends a Retry packet.
 
 A typical TLS ClientHello can easily fit into a 1200-byte packet.  However, in
 addition to the overheads added by QUIC, there are several variables that could
@@ -688,7 +689,7 @@ ticket. Servers can use the session ticket to help carry state.
 Session resumption allows servers to link activity on the original connection
 with the resumed connection, which might be a privacy issue for clients.
 Clients can choose not to enable resumption to avoid creating this correlation.
-Client SHOULD NOT reuse tickets as that allows entities other than the server
+Clients SHOULD NOT reuse tickets as that allows entities other than the server
 to correlate connections; see Section C.4 of {{!TLS13}}.
 
 
@@ -842,7 +843,7 @@ MAY also include PADDING frames.
 Packets protected with Initial secrets ({{initial-secrets}}) are not
 authenticated, meaning that an attacker could spoof packets with the intent to
 disrupt a connection.  To limit these attacks, Initial packet protection keys
-can be discarded more aggressively than other keys.
+are discarded more aggressively than other keys.
 
 The successful use of Handshake packets indicates that no more Initial packets
 need to be exchanged, as these keys can only be produced after receiving all
