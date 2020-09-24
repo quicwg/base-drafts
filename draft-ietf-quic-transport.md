@@ -5775,12 +5775,12 @@ Maximum Data:
 : A variable-length integer indicating the maximum amount of data that can be
   sent on the entire connection, in units of bytes.
 
-All data sent in STREAM frames counts toward this limit.  The sum of the largest
-received offsets on all streams - including streams in terminal states - MUST
-NOT exceed the value advertised by a receiver.  An endpoint MUST terminate a
-connection with a FLOW_CONTROL_ERROR error if it receives more data than the
-maximum data value that it has sent.  This includes violations of remembered
-limits in Early Data; see {{zerortt-parameters}}.
+All data sent in STREAM frames counts toward this limit.  The sum of the final
+sizes on all streams - including streams in terminal states - MUST NOT exceed
+the value advertised by a receiver.  An endpoint MUST terminate a connection
+with a FLOW_CONTROL_ERROR error if it receives more data than the maximum data
+value that it has sent.  This includes violations of remembered limits in Early
+Data; see {{zerortt-parameters}}.
 
 
 ## MAX_STREAM_DATA Frames {#frame-max-stream-data}
