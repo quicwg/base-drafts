@@ -327,8 +327,8 @@ supports QUIC version 1 generates and consumes a Version Negotiation packet.
 
 # Security and Privacy Considerations
 
-It is possible that middleboxes could use traits of a specific version of QUIC
-and assume that when other versions of QUIC exhibit similar traits the same
+It is possible that middleboxes could observe traits of a specific version of
+QUIC and assume that when other versions of QUIC exhibit similar traits the same
 underlying semantic is being expressed.  There are potentially many such traits;
 see {{bad-assumptions}}.  Some effort has been made to either eliminate or
 obscure some observable traits in QUIC version 1, but many of these remain.
