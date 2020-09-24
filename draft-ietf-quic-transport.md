@@ -35,8 +35,7 @@ normative:
     author:
       -
         ins: J. Iyengar
-        name:
-        Jana Iyengar
+        name: Jana Iyengar
         org: Fastly
         role: editor
       -
@@ -1349,11 +1348,12 @@ response to each packet that might initiate a new connection; see
 
 The size of the first packet sent by a client will determine whether a server
 sends a Version Negotiation packet. Clients that support multiple QUIC versions
-SHOULD add PADDING frames ({{frame-padding}}) to pad the first UDP datagram they send to the largest of the minimum
-datagram sizes from all versions they support. This ensures that the server
-responds if there is a mutually supported version. A server might not send a
-Version Negotiation packet if the datagram it receives is smaller than the
-minimum size specified in a different version; see {{initial-size}}.
+SHOULD ensure that the first UDP datagram they send is sized to the largest of
+the minimum datagram sizes from all versions they support, using PADDING frames
+({{frame-padding}}) as necessary. This ensures that the server responds if there
+is a mutually supported version. A server might not send a Version Negotiation
+packet if the datagram it receives is smaller than the minimum size specified in
+a different version; see {{initial-size}}.
 
 
 ## Sending Version Negotiation Packets {#send-vn}
@@ -1904,9 +1904,9 @@ that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding PADDING frames to QUIC packets in the datagram as
-necessary. A client that sends padded datagrams allows the server to send more
-data prior to completing address validation.
+payloads of at least 1200 bytes, adding PADDING frames to QUIC packets in the
+datagram as necessary. A client that sends padded datagrams allows the server to
+send more data prior to completing address validation.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
@@ -2964,14 +2964,14 @@ data (or 5 bytes, less the two fixed bits).
 
 The resulting minimum size of 21 bytes does not guarantee that a stateless reset
 is difficult to distinguish from other packets if the recipient requires the use
-of a connection ID. To achieve that end, the endpoint SHOULD add PADDING 
-frames to pad all packets it
-sends to at least 22 bytes longer than the minimum connection ID that it might
-request the peer to include in packets that the peer sends.  This ensures that
-any stateless reset sent by the peer is indistinguishable from a valid packet
-sent to the endpoint.  An endpoint that sends a stateless reset in response to a
-packet that is 43 bytes or shorter SHOULD send a stateless reset that is one
-byte shorter than the packet it responds to.
+of a connection ID. To achieve that end, the endpoint SHOULD, adding PADDING
+frames as necessary, ensure that all packets it sends are at least 22 bytes
+longer than the minimum connection ID length that it requests the peer to
+include in its packets.  This ensures that any stateless reset sent by the peer
+is indistinguishable from a valid packet sent to the endpoint.  An endpoint that
+sends a stateless reset in response to a packet that is 43 bytes or shorter
+SHOULD send a stateless reset that is one byte shorter than the packet it
+responds to.
 
 These values assume that the Stateless Reset Token is the same length as the
 minimum expansion of the packet protection AEAD.  Additional unpredictable bytes
