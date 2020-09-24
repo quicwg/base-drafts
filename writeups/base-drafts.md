@@ -42,11 +42,12 @@ QUIC is a standards-track, UDP-based, stream-multiplexing, encrypted transport
 protocol. Its main features are minimizing connection establishment and overall
 transport latency for applications such as HTTP/3, providing multiplexing
 without head-of-line blocking, requiring only changes to path endpoints to
-enable deployment, providing always-secure transport using TLS 1.3. This
-document set specifies the QUIC transport protocol and it version-independent
+enable deployment, providing always-secure transport using TLS 1.3. 
+
+This document set specifies the QUIC transport protocol and it version-independent
 invariants, its loss detection and recovery approach, its use of TLS1.3 for
-providing security, as well as an HTTP binding on top of QUIC (called HTTP/3)
-that uses QPACK for header compression.
+providing security, and a new version of HTTP that uses QUIC (HTTP/3),
+along with QPACK for header compression in that protocol.
 
 
 ### Working Group Summary:
@@ -57,7 +58,7 @@ was particularly rough?
 -->
 
 As can be expected, discussion on many aspects of QUIC was quite intense. The
-resulting consensus, however, was very strong.
+resulting consensus, however, was judged by the chairs to be both strong and broad.
 
 
 ### Document Quality:
@@ -196,7 +197,7 @@ http://www.ietf.org/tools/idnits/ and the Internet-Drafts Checklist).
 Boilerplate checks are not enough; this check needs to be thorough.
 -->
 
-The document shepherds have identified no nits.
+The IDNits tool does not appear to be functioning correctly, both locally and using the Web service, so it's difficult to ascertain whether its results are accurate (there are many "Failure fetching the file, proceeding without it." errors).
 
 
 ## 12. Formal Review Criteria
@@ -240,7 +241,9 @@ list these downward references to support the Area Director in the Last Call
 procedure.
 -->
 
-There are no normative downward references in the document set.
+The TLS document has the following downrefs:
+* RFC8439 (CHACHA)
+* AES
 
 
 ## 16. RFC Status Changes
