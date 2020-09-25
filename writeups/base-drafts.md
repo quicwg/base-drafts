@@ -241,10 +241,9 @@ list these downward references to support the Area Director in the Last Call
 procedure.
 -->
 
-The TLS document has the following downrefs:
-* RFC8439 (CHACHA)
-* AES
-
+draft-ietf-quic-tls-31 document has a downref to RFC8439 (CHACHA). RFC7539,
+which RFC8439 obsoletes, is already listed in the IETF Downref registry.
+(draft-ietf-quic-tls-31 also cites a number of NIST standards.)
 
 ## 16. RFC Status Changes
 <!--
