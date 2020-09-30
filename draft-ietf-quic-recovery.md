@@ -1574,6 +1574,29 @@ DetectAndRemoveLostPackets(pn_space):
 ~~~
 
 
+## Upon Dropping Initial or Handshake Keys
+
+When Initial or Handshake keys are discarded, packets from the space
+are discarded and loss detection state is updated.
+
+Pseudocode for OnPacketNumberSpaceDiscarded follows:
+
+~~~
+OnPacketNumberSpaceDiscarded(pn_space):
+  assert(pn_space != ApplicationData)
+  // Remove any unacknowledged packets from flight.
+  foreach packet in sent_packets[pn_space]:
+    if packet.in_flight
+      bytes_in_flight -= size
+  sent_packets[pn_space].clear()
+  // Reset the loss detection and PTO timer
+  time_of_last_ack_eliciting_packet[pn_space] = 0
+  loss_time[pn_space] = 0
+  pto_count = 0
+  SetLossDetectionTimer()
+~~~
+
+
 # Congestion Control Pseudocode
 
 We now describe an example implementation of the congestion controller described
@@ -1767,28 +1790,6 @@ OnPacketsLost(lost_packets):
   if (InPersistentCongestion(pc_lost)):
     congestion_window = kMinimumWindow
     congestion_recovery_start_time = 0
-~~~
-
-## Upon dropping Initial or Handshake keys
-
-When Initial or Handshake keys are discarded, packets from the space
-are discarded and loss detection state is updated.
-
-Pseudocode for OnPacketNumberSpaceDiscarded follows:
-
-~~~
-OnPacketNumberSpaceDiscarded(pn_space):
-  assert(pn_space != ApplicationData)
-  // Remove any unacknowledged packets from flight.
-  foreach packet in sent_packets[pn_space]:
-    if packet.in_flight
-      bytes_in_flight -= size
-  sent_packets[pn_space].clear()
-  // Reset the loss detection and PTO timer
-  time_of_last_ack_eliciting_packet[pn_space] = 0
-  loss_time[pn_space] = 0
-  pto_count = 0
-  SetLossDetectionTimer()
 ~~~
 
 # Change Log
