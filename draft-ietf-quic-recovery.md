@@ -1584,10 +1584,7 @@ Pseudocode for OnPacketNumberSpaceDiscarded follows:
 ~~~
 OnPacketNumberSpaceDiscarded(pn_space):
   assert(pn_space != ApplicationData)
-  // Remove any unacknowledged packets from flight.
-  foreach packet in sent_packets[pn_space]:
-    if packet.in_flight
-      bytes_in_flight -= size
+  RemoveFromBytesInFlight(sent_packets[pn_space])
   sent_packets[pn_space].clear()
   // Reset the loss detection and PTO timer
   time_of_last_ack_eliciting_packet[pn_space] = 0
@@ -1791,6 +1788,24 @@ OnPacketsLost(lost_packets):
     congestion_window = kMinimumWindow
     congestion_recovery_start_time = 0
 ~~~
+
+
+## Removing Discarded Packets From Bytes In Flight
+
+When Initial or Handshake keys are discarded, packets sent in that space no
+longer count toward bytes in flight.
+
+Pseudocode for RemoveFromBytesInFlight follows:
+
+~~~
+RemoveFromBytesInFlight(discarded):
+  // Remove any unacknowledged packets from flight.
+  foreach packet in discarded:
+    if packet.in_flight
+      bytes_in_flight -= size
+~~~
+
+
 
 # Change Log
 
