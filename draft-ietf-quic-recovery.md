@@ -1269,6 +1269,9 @@ sent_packets\[kPacketNumberSpace]:
 : An association of packet numbers in a packet number space to information
   about them.  Described in detail above in {{tracking-sent-packets}}.
 
+first_rtt_sample:
+: The time that the first RTT sample was obtained.
+
 
 ## Initialization
 
@@ -1282,6 +1285,7 @@ latest_rtt = 0
 smoothed_rtt = kInitialRtt
 rttvar = kInitialRtt / 2
 min_rtt = 0
+first_rtt_sample = 0
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   largest_acked_packet[pn_space] = infinite
   time_of_last_ack_eliciting_packet[pn_space] = 0
@@ -1385,10 +1389,11 @@ OnAckReceived(ack, pn_space):
 
 
 UpdateRtt(ack_delay):
-  if (is first RTT sample):
+  if (first_rtt_sample == 0):
     min_rtt = latest_rtt
     smoothed_rtt = latest_rtt
     rttvar = latest_rtt / 2
+    first_rtt_sample = now()
     return
 
   // min_rtt ignores acknowledgment delay.
@@ -1637,9 +1642,8 @@ ssthresh:
   the mode is slow start and the window grows by the number of bytes
   acknowledged.
 
-first_rtt_sample:
-: The time that the first RTT sample was obtained.
-
+The congestion control pseudocode also accesses some of the variables from the
+loss recovery pseudocode.
 
 ## Initialization
 
@@ -1651,7 +1655,6 @@ congestion_window = kInitialWindow
 bytes_in_flight = 0
 congestion_recovery_start_time = 0
 ssthresh = infinite
-first_rtt_sample = 0
 for pn_space in [ Initial, Handshake, ApplicationData ]:
   ecn_ce_counters[pn_space] = 0
 ~~~
@@ -1682,9 +1685,6 @@ InCongestionRecovery(sent_time):
   return sent_time <= congestion_recovery_start_time
 
 OnPacketsAcked(acked_packets):
-  if (first_rtt_sample == 0):
-    first_rtt_sample = now()
-
   for acked_packet in acked_packets:
     OnPacketAcked(acked_packet)
 
@@ -1759,7 +1759,8 @@ OnPacketsLost(lost_packets):
   // Reset the congestion window if the loss of these
   // packets indicates persistent congestion.
   // Only consider packets sent after getting an RTT sample.
-  assert(first_rtt_sample != 0)
+  if (first_rtt_sample == 0):
+    return
   pc_lost = {}
   for lost in lost_packets:
     if lost.time_sent > first_rtt_sample:
