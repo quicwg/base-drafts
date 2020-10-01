@@ -1798,9 +1798,9 @@ longer count toward bytes in flight.
 Pseudocode for RemoveFromBytesInFlight follows:
 
 ~~~
-RemoveFromBytesInFlight(discarded):
+RemoveFromBytesInFlight(discarded_packets):
   // Remove any unacknowledged packets from flight.
-  foreach packet in discarded:
+  foreach packet in discarded_packets:
     if packet.in_flight
       bytes_in_flight -= size
 ~~~
