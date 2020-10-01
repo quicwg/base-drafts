@@ -1242,6 +1242,9 @@ min_rtt:
 : The minimum RTT seen in the connection, ignoring acknowledgment delay, as
   described in {{min-rtt}}.
 
+first_rtt_sample:
+: The time that the first RTT sample was obtained.
+
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
   acknowledgments for packets in the Application Data packet number
@@ -1268,9 +1271,6 @@ loss_time\[kPacketNumberSpace]:
 sent_packets\[kPacketNumberSpace]:
 : An association of packet numbers in a packet number space to information
   about them.  Described in detail above in {{tracking-sent-packets}}.
-
-first_rtt_sample:
-: The time that the first RTT sample was obtained.
 
 
 ## Initialization
