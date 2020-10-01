@@ -3984,7 +3984,7 @@ be dropped by a faulty network element, the endpoint could set an ECT codepoint
 for only the first ten outgoing packets on a path, or for a period of three
 PTOs (see Section 6.2 of {{QUIC-RECOVERY}}). If all packets marked with non-zero
 ECN codepoints are subsequently lost, it can disable marking on the assumption
-that the marking causes in loss.
+that the marking caused the loss.
 
 An endpoint thus attempts to use ECN and validates this for each new connection,
 when switching to a server's preferred address, and on active connection
