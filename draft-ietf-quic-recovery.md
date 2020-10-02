@@ -585,7 +585,7 @@ therefore read these 1-RTT packets.
 
 A sender SHOULD restart its PTO timer every time an ack-eliciting packet is sent
 or acknowledged, when the handshake is confirmed (Section 4.1.2 of
-{{QUIC-TLS}}), or when Initial or Handshake keys are discarded (Section 9 of
+{{QUIC-TLS}}), or when Initial or Handshake keys are discarded (Section 4.9 of
 {{QUIC-TLS}}). This ensures the PTO is always set based on the latest estimate
 of the round-trip time and for the correct packet across packet number spaces.
 
@@ -744,7 +744,7 @@ initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
-When packet protection keys are discarded (see Section 4.8 of {{QUIC-TLS}}),
+When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}),
 all packets that were sent with those keys can no longer be acknowledged because
 their acknowledgements cannot be processed anymore. The sender MUST discard
 all recovery state associated with those packets and MUST remove them from
@@ -1632,9 +1632,9 @@ are described in this section.
 max_datagram_size:
 : The sender's current maximum payload size. Does not include UDP or IP
   overhead.  The max datagram size is used for congestion window
-  computations. An endpoint sets the value of this variable based on its
-  PMTU (see Section 14.1 of {{QUIC-TRANSPORT}}), with a minimum value of
-  1200 bytes.
+  computations. An endpoint sets the value of this variable based on its Path
+  Maximum Transmission Unit (PMTU; see Section 14.2 of {{QUIC-TRANSPORT}}), with
+  a minimum value of 1200 bytes.
 
 ecn_ce_counters\[kPacketNumberSpace]:
 : The highest value reported for the ECN-CE counter in the packet number space
