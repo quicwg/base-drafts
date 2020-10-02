@@ -883,7 +883,7 @@ exiting the recovery period.
 
 Implementations MAY reduce the congestion window immediately upon entering a
 recovery period or use other mechanisms, such as Proportional Rate Reduction
-({{?PRR=RFC6937}}), to reduce the congestion window more gradually. If the
+({{!PRR=RFC6937}}), to reduce the congestion window more gradually. If the
 congestion window is reduced immediately, a single packet can be sent prior to
 reduction. This speeds up loss recovery if the data in the lost packet is
 retransmitted and is similar to TCP as described in Section 5 of {{?RFC6675}}.
@@ -1086,7 +1086,7 @@ the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
 or flow control limits.
 
-A sender MAY use the pipeACK method described in Section 4.3 of {{?RFC7661}}
+A sender MAY use the pipeACK method described in Section 4.3 of {{!RFC7661}}
 to determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
@@ -1133,8 +1133,8 @@ limits and so no advantage is gained by doing so.
 
 Endpoints choose the congestion controller that they use. Congestion controllers
 respond to reports of ECN-CE by reducing their rate, but the response may vary.
-Markings can be treated as equivalent to loss ({{?RFC3168}}), but other
-responses can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}).
+Markings can be treated as equivalent to loss ({{!RFC3168}}), but other
+responses can be specified, such as ({{!RFC8511}}) or ({{!RFC8311}}).
 
 
 # IANA Considerations
