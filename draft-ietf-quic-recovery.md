@@ -1125,7 +1125,8 @@ increase their send rate.  This increase could result in congestion and loss.
 A sender can detect suppression of reports by marking occasional packets that it
 sends with an ECN-CE marking. If a packet sent with an ECN-CE marking is not
 reported as having been CE marked when the packet is acknowledged, then the
-sender can disable ECN for that path.
+sender can disable ECN for that path by not setting ECT codepoints in subsequent
+packets sent on that path {{?RFC3168}}.
 
 Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
