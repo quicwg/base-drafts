@@ -798,7 +798,7 @@ is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
 If a path has been validated to support ECN ({{?RFC3168}}, {{?RFC8311}}), QUIC
 treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when the
-peer-reported ECN-CE count increases (Section 13.4.2 of {{QUIC-TRANSPORT}}).
+peer-reported ECN-CE count increases; see Section 13.4.2 of {{QUIC-TRANSPORT}}.
 
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
