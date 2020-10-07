@@ -797,8 +797,8 @@ is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
 
 If a path has been validated to support ECN ({{?RFC3168}}, {{?RFC8311}}), QUIC
 treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
-congestion. This document specifies an endpoint's response when its peer
-receives packets with the ECN-CE codepoint.
+congestion. This document specifies an endpoint's response when the
+peer-reported ECN-CE count increases (Section 13.4.2 of {{QUIC-TRANSPORT}}).
 
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
@@ -821,8 +821,8 @@ being fully utilized and therefore slow down the increase in congestion window,
 it does not directly affect the congestion window.
 
 The minimum congestion window is the smallest value the congestion window can
-decrease to as a response to loss, ECN-CE, or persistent congestion.
-The RECOMMENDED value is 2 * max_datagram_size.
+decrease to as a response to loss, increase in the peer-reported ECN-CE count,
+or persistent congestion.  The RECOMMENDED value is 2 * max_datagram_size.
 
 ## Congestion Control States
 
@@ -1122,10 +1122,10 @@ A receiver can misreport ECN markings to alter the congestion response of a
 sender.  Suppressing reports of ECN-CE markings could cause a sender to
 increase their send rate.  This increase could result in congestion and loss.
 
-A sender MAY attempt to detect suppression of reports by marking occasional
-packets that they send with ECN-CE.  If a packet sent with ECN-CE is not
+A sender can detect suppression of reports by marking occasional packets that it
+sends with an ECN-CE marking. If a packet sent with an ECN-CE marking is not
 reported as having been CE marked when the packet is acknowledged, then the
-sender SHOULD disable ECN for that path.
+sender can disable ECN for that path.
 
 Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
