@@ -1086,8 +1086,8 @@ the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
 or flow control limits.
 
-A sender MAY use the pipeACK method described in Section 4.3 of {{?RFC7661}}
-to determine if the congestion window is sufficiently utilized.
+A sender can use the pipeACK method described in Section 4.3 of {{?RFC7661}} to
+determine if the congestion window is sufficiently utilized.
 
 A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
