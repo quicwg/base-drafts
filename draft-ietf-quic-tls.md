@@ -2422,9 +2422,9 @@ no more than:
 ~~~
 
 The integrity limit in Theorem 1 in {{?CCM-ANALYSIS}} provides an attacker a
-strictly higher advantage for the same number of messages. As the targets
-advantage for confidentiality and integrity are the same, only Theorem 1 needs
-to be considered.
+strictly higher advantage for the same number of messages. As the targets for
+the confidentiality advantage and the integrity advantage are the same, only
+Theorem 1 needs to be considered.
 
 Theorem 1 establishes that an attacker gains an advantage over an
 ideal PRP of no more than:
