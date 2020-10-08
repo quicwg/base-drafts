@@ -1943,10 +1943,10 @@ the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
 
-Until the client address is validated, a server SHOULD ensure that all
-packets it sends, with the exception of Retry packets, have a UDP payload
-size of at least 1200 bytes. Doing so ensures that the handshake progresses
-only if the path is capable of handling QUIC traffic; see {{packet-size}}.
+Until the client address is validated, a server SHOULD ensure that all packets
+it sends, with the exception of Retry packets, have a UDP payload size of at
+least 1200 bytes. Doing so ensures that the handshake progresses only if the
+path is capable of handling QUIC traffic; see {{packet-size}}.
 
 In addition to sending limits imposed prior to address validation, servers are
 also constrained in what they can send by the limits set by the congestion
