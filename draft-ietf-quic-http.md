@@ -2779,7 +2779,7 @@ this document:
 - Subodh Iyengar
 - Robin Marx
 - Patrick McManus
-- Luca Nicco
+- Luca Niccolini
 - <t><t><contact asciiFullname="Kazuho Oku" fullname="奥 一穂"/></t></t>
 - Lucas Pardue
 - Roberto Peon
