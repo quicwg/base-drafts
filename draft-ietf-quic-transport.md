@@ -1943,8 +1943,8 @@ the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
 
-Until the path is validated, a server SHOULD pad the Initial, Handshake, 1-RTT
-packets it sends so that their UDP payload size will be at least 1200 bytes.
+Until the path is validated, a server SHOULD pad all packets it sends, other
+than Retry, so that their UDP payload size will be at least 1200 bytes.
 Doing so guarantees that the handshake would make progress only when the path is
 capable of handling QUIC traffic; see {{packet-size}}.
 
