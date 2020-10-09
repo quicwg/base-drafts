@@ -1150,7 +1150,7 @@ This document has no IANA actions.
 We now describe an example implementation of the loss detection mechanisms
 described in {{loss-detection}}.
 
-The pseudocode in this section is licensed as Code Components; see the
+The pseudocode in this section is licensed as a Code Component; see the
 copyright notice.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
