@@ -1150,8 +1150,8 @@ This document has no IANA actions.
 We now describe an example implementation of the loss detection mechanisms
 described in {{loss-detection}}.
 
-The pseudocode snippets in this section are licensed as Code Components; see the
-copyright notice above.
+The pseudocode in this section is licensed as Code Components; see the
+copyright notice.
 
 ## Tracking Sent Packets {#tracking-sent-packets}
 
@@ -1608,8 +1608,8 @@ OnPacketNumberSpaceDiscarded(pn_space):
 We now describe an example implementation of the congestion controller described
 in {{congestion-control}}.
 
-The pseudocode snippets in this section are licensed as Code Components; see the
-copyright notice above.
+The pseudocode in this section is licensed as Code Components; see the
+copyright notice.
 
 ## Constants of interest {#cc-consts-of-interest}
 
