@@ -663,9 +663,10 @@ in Initial packets, or the client's estimated RTT is too small. When a
 client receives Handshake or 1-RTT packets prior to obtaining Handshake keys,
 it may assume some or all of the server's Initial packets were lost.
 
-To speed up handshake completion under these conditions, an endpoint MAY send
-a packet containing unacknowledged CRYPTO data earlier than the PTO expiry,
-subject to the address validation limits in Section 8.1 of {{QUIC-TRANSPORT}}.
+To speed up handshake completion under these conditions, an endpoint MAY, for a
+limited number of occasions per each connection, send a packet containing
+unacknowledged CRYPTO data earlier than the PTO expiry, subject to the address
+validation limits in Section 8.1 of {{QUIC-TRANSPORT}}.
 
 Endpoints can also use coalesced packets (see Section 12.2 of
 {{QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
