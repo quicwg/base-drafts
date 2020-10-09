@@ -1920,10 +1920,12 @@ that are uniquely attributed to a single connection. This includes datagrams
 that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
-Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding PADDING frames as necessary.
-A client that sends padded datagrams allows the server to
-send more data prior to completing address validation.
+Clients MUST and servers SHOULD ensure that UDP datagrams containing Initial
+packets have UDP payloads of at least 1200 bytes, adding PADDING frames as
+necessary.  A client that sends padded datagrams allows the server to send more
+data prior to completing address validation.  Endpoints using UDP datagrams of
+at least 1200 bytes ensures that the handshake progresses only if the path is
+capable of handling QUIC traffic; see {{packet-size}}.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
@@ -1942,11 +1944,6 @@ address validation prior to completing the handshake. This token is delivered to
 the client during connection establishment with a Retry packet (see
 {{validate-retry}}) or in a previous connection using the NEW_TOKEN frame (see
 {{validate-future}}).
-
-Until the client address is validated, servers SHOULD ensure that UDP datagrams
-containing Initial packets have UDP payloads of at least 1200 bytes.  Doing so
-ensures that the handshake progresses only if the path is capable of handling
-QUIC traffic; see {{packet-size}}.
 
 In addition to sending limits imposed prior to address validation, servers are
 also constrained in what they can send by the limits set by the congestion
