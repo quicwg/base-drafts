@@ -795,7 +795,7 @@ is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
 
 ## Explicit Congestion Notification {#congestion-ecn}
 
-If a path has been validated to support ECN ({{?RFC3168}}, {{?RFC8311}}), QUIC
+If a path has been validated to support ECN ({{!RFC3168}}, {{?RFC8311}}), QUIC
 treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when the
 peer-reported ECN-CE count increases; see Section 13.4.2 of {{QUIC-TRANSPORT}}.
@@ -1086,9 +1086,6 @@ the congestion window SHOULD NOT be increased in either slow start or
 congestion avoidance. This can happen due to insufficient application data
 or flow control limits.
 
-A sender can use the pipeACK method described in Section 4.3 of {{?RFC7661}} to
-determine if the congestion window is sufficiently utilized.
-
 A sender that paces packets (see {{pacing}}) might delay sending packets
 and not fully utilize the congestion window due to this delay. A sender
 SHOULD NOT consider itself application limited if it would have fully
@@ -1126,7 +1123,7 @@ A sender can detect suppression of reports by marking occasional packets that it
 sends with an ECN-CE marking. If a packet sent with an ECN-CE marking is not
 reported as having been CE marked when the packet is acknowledged, then the
 sender can disable ECN for that path by not setting ECT codepoints in subsequent
-packets sent on that path {{?RFC3168}}.
+packets sent on that path {{!RFC3168}}.
 
 Reporting additional ECN-CE markings will cause a sender to reduce their sending
 rate, which is similar in effect to advertising reduced connection flow control
@@ -1134,7 +1131,7 @@ limits and so no advantage is gained by doing so.
 
 Endpoints choose the congestion controller that they use. Congestion controllers
 respond to reports of ECN-CE by reducing their rate, but the response may vary.
-Markings can be treated as equivalent to loss ({{?RFC3168}}), but other
+Markings can be treated as equivalent to loss ({{!RFC3168}}), but other
 responses can be specified, such as ({{?RFC8511}}) or ({{?RFC8311}}).
 
 
