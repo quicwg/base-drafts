@@ -924,8 +924,10 @@ based on the client's initial Destination Connection ID, as described in
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
 Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
-cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used with QUIC.
+cipher suite.  Note that labels, which are described using strings, are encoded
+as bytes using ASCII {{?ASCII=RFC0020}} without quotes or any trailing NUL
+byte.  Other versions of TLS MUST provide a similar function in order to be
+used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the
@@ -950,10 +952,11 @@ pseudorandom key (PRK) that is used to derive two separate secrets for sending
 and receiving.
 
 The secret used by clients to construct Initial packets uses the PRK and the
-label "client in" as input to the HKDF-Expand-Label function to produce a 32
-byte secret; packets constructed by the server use the same process with the
-label "server in".  The hash function for HKDF when deriving initial secrets
-and keys is SHA-256 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+label "client in" as input to the HKDF-Expand-Label function from TLS
+{{!TLS13}} to produce a 32 byte secret.  Packets constructed by the server use
+the same process with the label "server in".  The hash function for HKDF when
+deriving initial secrets and keys is SHA-256
+{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
 
 This process in pseudocode is:
 
