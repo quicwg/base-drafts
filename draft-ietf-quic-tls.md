@@ -144,9 +144,10 @@ could be used; see {{tls-version}}.
 
 ## TLS Overview
 
-TLS provides two endpoints with a way to establish a means of communication over
-an untrusted medium (that is, the Internet) that ensures that messages they
-exchange cannot be observed, modified, or forged.
+TLS provides two endpoints with a way to establish a means of communication
+over an untrusted medium (that is, the Internet). TLS enables authentication of
+peers and provides confidentiality and integrity protection for messages that
+endpoints exchange.
 
 Internally, TLS is a layered protocol, with the structure shown in
 {{tls-layers}}.
