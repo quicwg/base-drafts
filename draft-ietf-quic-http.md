@@ -319,7 +319,9 @@ connection to that server as being authoritative for all origins with the
 A client MAY attempt access to a resource with an "https" URI by resolving the
 host identifier to an IP address, establishing a QUIC connection to that address
 on the indicated port, and sending an HTTP/3 request message targeting the URI
-to the server over that secured connection.
+to the server over that secured connection.  Unless some other mechanism is used
+to select HTTP/3, the token "h3" is used in the Application Layer Protocol
+Negotiation (ALPN; see {{!RFC7301}}) extension during the TLS handshake.
 
 Connectivity problems (e.g., blocking UDP) can result in QUIC connection
 establishment failure; clients SHOULD attempt to use TCP-based versions of HTTP
@@ -333,8 +335,7 @@ default port associated with the scheme.
 
 An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
 the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
-using the Application Layer Protocol Negotiation (ALPN; see {{!RFC7301}}) token
-defined in {{connection-establishment}}.
+using the "h3" ALPN token.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
