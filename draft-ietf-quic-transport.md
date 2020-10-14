@@ -1922,11 +1922,11 @@ packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
 payloads of at least 1200 bytes, adding PADDING frames as necessary.  Servers
-MUST ensure that UDP datagrams containing Initial packets carrying CRYPTO frames
-have UDP payloads of at least 1200 bytes.  A client that sends padded datagrams
-allows the server to send more data prior to completing address validation.
-Endpoints sending UDP datagrams of at least 1200 bytes ensures that the
-handshake progresses only if the path is capable of handling QUIC traffic; see
+MUST ensure that UDP datagrams containing ack-eliciting Initial packets have UDP
+payloads of at least 1200 bytes.  A client that sends padded datagrams allows
+the server to send more data prior to completing address validation.  Endpoints
+sending UDP datagrams of at least 1200 bytes ensures that the handshake
+progresses only if the path is capable of handling QUIC traffic; see
 {{packet-size}}.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
@@ -4089,11 +4089,11 @@ A client MUST expand the payload of all UDP datagrams carrying Initial packets
 to at least the smallest allowed maximum packet size (1200 bytes) by adding
 PADDING frames to the Initial packet or by coalescing the Initial packet; see
 {{packet-coalesce}}.  Similarly, a server MUST expand the payload of all UDP
-datagrams carrying Initial packets that contain CRYPTO frames.  Sending UDP
-datagrams of this size ensures that the network path supports a reasonable Path
-Maximum Transmission Unit (PMTU), in both directions.  Additionally, a client
-padding Initial packets helps reduce the amplitude of amplification attacks
-caused by server responses toward an unverified client address; see
+datagrams carrying ack-eliciting Initial packets.  Sending UDP datagrams of this
+size ensures that the network path supports a reasonable Path Maximum
+Transmission Unit (PMTU), in both directions.  Additionally, a client padding
+Initial packets helps reduce the amplitude of amplification attacks caused by
+server responses toward an unverified client address; see
 {{address-validation}}.
 
 Datagrams containing Initial packets MAY exceed 1200 bytes if the endpoint
@@ -4103,14 +4103,13 @@ A server MUST discard an Initial packet that is carried in a UDP datagram with a
 payload that is less than the smallest allowed maximum packet size of 1200
 bytes.  A server MAY also immediately close the connection by sending a
 CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
-{{immediate-close-hs}}.  When a client receives an Initial packet containing a
-CRYPTO frame that is carried in a UDP datagram with a payload that is less than
-1200 bytes, that client MAY close the connection by sending a CONNECTION_CLOSE
-frame.
+{{immediate-close-hs}}.  When a client receives an ack-eliciting Initial packet
+that is carried in a UDP datagram with a payload that is less than 1200 bytes,
+that client MAY close the connection by sending a CONNECTION_CLOSE frame.
 
 The server MUST also limit the number of bytes it sends before validating the
-address of the client, and MUST pad the Initial packets carrying CRYPTO frames
-that it sends; see {{address-validation}}.
+address of the client, and MUST pad ack-eliciting Initial packets that it sends;
+see {{address-validation}}.
 
 
 ## Path Maximum Transmission Unit
