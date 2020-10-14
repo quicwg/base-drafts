@@ -991,11 +991,12 @@ response to an Initial packet from the server.
 
 Note:
 
-: The Destination Connection ID is of arbitrary length, and it could be zero
-  length if the server sends a Retry packet with a zero-length Source Connection
-  ID field.  In this case, the Initial keys provide no assurance to the client
-  that the server received its packet; the client has to rely on the exchange
-  that included the Retry packet for that property.
+: The Destination Connection ID field could be any length up to 20 bytes,
+  including zero length if the server sends a Retry packet with a zero-length
+  Source Connection ID field. After a Retry, the Initial keys provide the client
+  no assurance that the server received its packet; the client has to rely on
+  the exchange that included the Retry packet to validate the server address;
+  see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 {{test-vectors}} contains sample Initial packets.
 
