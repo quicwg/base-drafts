@@ -1923,7 +1923,7 @@ packets that are all discarded.
 Clients MUST and servers SHOULD ensure that UDP datagrams containing Initial
 packets have UDP payloads of at least 1200 bytes, adding PADDING frames as
 necessary.  A client that sends padded datagrams allows the server to send more
-data prior to completing address validation.  Endpoints using UDP datagrams of
+data prior to completing address validation.  Endpoints sending UDP datagrams of
 at least 1200 bytes ensures that the handshake progresses only if the path is
 capable of handling QUIC traffic; see {{packet-size}}.
 
