@@ -353,8 +353,8 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
-acknowledgement delays. These delays are decoded from the ACK Delay field of ACK
-frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+acknowledgement delays. These delays are decoded from the ACK Delay field of
+ACK frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
 The peer might report acknowledgement delays that are larger than the peer's
 max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
