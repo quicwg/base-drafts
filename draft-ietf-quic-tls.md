@@ -194,8 +194,8 @@ TLS provides two basic handshake modes of interest to QUIC:
 
  * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
-   Application Data can be replayed by an attacker so it MUST NOT carry a
-   self-contained trigger for any non-idempotent action.
+   Application Data can be replayed by an attacker so 0-RTT is not suitable for
+   carrying instructions that might initiate any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
 
