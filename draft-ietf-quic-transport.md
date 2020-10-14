@@ -4101,9 +4101,9 @@ bytes.  A server MAY also immediately close the connection by sending a
 CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
 {{immediate-close-hs}}.
 
-Until the server validates the client address, it MUST limit the
-the number of bytes it sends and SHOULD pad Initial packets; see
-{{address-validation}}.
+The server MUST also limit the number of bytes it sends before validating the
+address of the client, and additionally SHOULD pad the Initial packets that it
+sends; see {{address-validation}}.
 
 
 ## Path Maximum Transmission Unit
