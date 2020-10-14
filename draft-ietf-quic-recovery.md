@@ -353,8 +353,8 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
-acknowledgement delays. These delays are computed using the ACK Delay field of
-the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+acknowledgement delays. These delays are decoded from the ACK Delay field of ACK
+frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
 The peer might report acknowledgement delays that are larger than the peer's
 max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
@@ -403,18 +403,25 @@ until the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
-When there are no samples for a network path, and on the first RTT sample for
-the network path:
+An endpoint needs to bootstrap the RTT estimator during connection establishment
+and when the estimator is reset during connection migration (Section 9.4 of
+{{QUIC-TRANSPORT}}).
+
+When there are no RTT samples for a new network path, and on the first
+subsequent RTT sample for the new network path, smoothed_rtt and rttvar are set
+as follows:
 
 ~~~
 smoothed_rtt = rtt_sample
 rttvar = rtt_sample / 2
 ~~~
 
-Before any RTT samples are available, the initial RTT is used as rtt_sample.  On
-the first RTT sample for the network path, that sample is used as rtt_sample.
-This ensures that the first measurement erases the history of any persisted or
-default values.
+Before any RTT samples are available for a new path or when the estimator is
+reset, the estimator is bootstrapped using the initial RTT value for
+rtt_sample.
+
+On the first subsequent RTT sample for the network path, that sample is used as
+rtt_sample. This ensures that the estimator retains no history of past samples.
 
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
@@ -456,8 +463,8 @@ A packet is declared lost if it meets all the following conditions:
 * The packet is unacknowledged, in-flight, and was sent prior to an
   acknowledged packet.
 
-* Either its packet number is kPacketThreshold smaller than an acknowledged
-  packet ({{packet-threshold}}), or it was sent long enough in the past
+* The packet was sent kPacketThreshold packets before an acknowledged packet
+  ({{packet-threshold}}), or it was sent long enough in the past
   ({{time-threshold}}).
 
 The acknowledgement indicates that a packet sent later was delivered, and the
@@ -768,14 +775,14 @@ see Section 4.9.1 of {{QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
 
-This document specifies a congestion controller for QUIC similar to
+This document specifies a sender-side congestion controller for QUIC similar to
 TCP NewReno ({{?RFC6582}}).
 
 The signals QUIC provides for congestion control are generic and are designed to
-support different algorithms. Endpoints can unilaterally choose a different
-algorithm to use, such as Cubic ({{?RFC8312}}).
+support different sender-side algorithms. A sender can unilaterally choose a
+different algorithm to use, such as Cubic ({{?RFC8312}}).
 
-If an endpoint uses a different controller than that specified in this document,
+If a sender uses a different controller than that specified in this document,
 the chosen controller MUST conform to the congestion control guidelines
 specified in Section 3.1 of {{!RFC8085}}.
 
@@ -1564,6 +1571,8 @@ DetectAndRemoveLostPackets(pn_space):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
+    // Note: The use of kPacketThreshold here assumes that there were no
+    // sender-induced gaps in the packet number space.
     if (unacked.time_sent <= lost_send_time ||
         largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
