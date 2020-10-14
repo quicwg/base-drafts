@@ -241,6 +241,9 @@ frame:
   frames."  References without this preface refer to frames defined in
   {{frames}}.
 
+HTTP/3 connection:
+: A QUIC connection where the negotiated application protocol is HTTP/3.
+
 peer:
 : An endpoint.  When discussing a particular endpoint, "peer" refers to the
   endpoint that is remote to the primary subject of discussion.
