@@ -334,7 +334,7 @@ indicate which keys were used to protect a given packet, as shown in
 endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 
 | Packet Type         | Encryption Keys | PN Space         |
-|:--------------------|:----------------|:-----------------|
+| :------------------ | :-------------- | :--------------- |
 | Initial             | Initial secrets | Initial          |
 | 0-RTT Protected     | 0-RTT           | Application data |
 | Handshake           | Handshake       | Handshake        |
@@ -1101,6 +1101,9 @@ packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
 ~~~
 {: #pseudo-hp title="Header Protection Pseudocode"}
 
+Specific header protection functions are defined based on the selected cipher
+suite; see {{hp-aes}} and {{hp-chacha}}.
+
 {{fig-sample}} shows an example long header packet (Initial) and a short header
 packet. {{fig-sample}} shows the fields in each header that are covered by
 header protection and the portion of the protected packet payload that is
@@ -1212,10 +1215,12 @@ use 128-bit AES in electronic code-book (ECB) mode. AEAD_AES_256_GCM uses
 256-bit AES in ECB mode.  AES is defined in {{!AES=DOI.10.6028/NIST.FIPS.197}}.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode, the header protection function is
+defined as:
 
 ~~~
-mask = AES-ECB(hp_key, sample)
+header_protection(hp_key, sample):
+  mask = AES-ECB(hp_key, sample)
 ~~~
 
 
@@ -1235,14 +1240,14 @@ case the nonce bytes are interpreted as a sequence of 32-bit little-endian
 integers.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
-pseudocode:
+pseudocode, the header protection function is defined as:
 
 ~~~
-counter = sample[0..3]
-nonce = sample[4..15]
-mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
+header_protection(hp_key, sample):
+  counter = sample[0..3]
+  nonce = sample[4..15]
+  mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
-
 
 
 ## Receiving Protected Packets
