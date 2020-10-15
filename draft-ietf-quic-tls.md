@@ -953,7 +953,7 @@ and receiving.
 
 The secret used by clients to construct Initial packets uses the PRK and the
 label "client in" as input to the HKDF-Expand-Label function from TLS
-{{!TLS13}} to produce a 32 byte secret.  Packets constructed by the server use
+{{!TLS13}} to produce a 32-byte secret.  Packets constructed by the server use
 the same process with the label "server in".  The hash function for HKDF when
 deriving initial secrets and keys is SHA-256
 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
