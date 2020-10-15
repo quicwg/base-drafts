@@ -4055,12 +4055,13 @@ MUST disable ECN if validation later fails.
 # Datagram Size {#datagram-size}
 
 A UDP datagram can include one or more QUIC packets. The datagram size refers to
-the total UDP payload size of a single UDP datagram carrying QUIC packets. That
-is, the datagram size includes includes the QUIC headers and protected payload,
-but not the UDP or IP headers.
+the total UDP payload size of a single UDP datagram carrying QUIC packets. The
+datagram size includes includes the QUIC headers and protected payload, but not
+the UDP or IP headers.
 
 The maximum datagram size is defined as the largest size of UDP payload that can
-be sent across a network path using a single UDP datagram.
+be sent across a network path using a single UDP datagram.  The maximum datagram
+size MUST be at least 1200 bytes.
 
 QUIC depends upon a minimum IP packet size of at least 1280 bytes.  This is the
 IPv6 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
@@ -4188,7 +4189,7 @@ size. The MIN_PLPMTU is the same as the BASE_PLPMTU.
 
 QUIC endpoints implementing DPLPMTUD maintain a DPLPMTUD Maximum Packet Size
 (MPS, Section 4.4 of {{!DPLPMTUD}}) for each combination of local and remote IP
-addresses.
+addresses.  This corresponds to the maximum datagram size.
 
 
 ### DPLPMTUD and Initial Connectivity
