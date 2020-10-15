@@ -669,7 +669,7 @@ unacknowledged CRYPTO data earlier than the PTO expiry, subject to the address
 validation limits in Section 8.1 of {{QUIC-TRANSPORT}}. Doing so at most once
 for each connection is adequate to quickly recover from a single packet loss.
 Endpoints that do not back off from retransmitting packets in response to
-unauthenticated data risks creating an infinite exchange of packets.
+unauthenticated data risk creating an infinite exchange of packets.
 
 Endpoints can also use coalesced packets (see Section 12.2 of
 {{QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
