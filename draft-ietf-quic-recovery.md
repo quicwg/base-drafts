@@ -610,8 +610,7 @@ might take longer to respond to packets during the handshake than otherwise.  To
 protect such a server from repeated client probes, the PTO backoff is not reset
 at a client that is not yet certain that the server has finished validating the
 client's address. That is, a client does not reset the PTO backoff factor on
-receiving acknowledgements until the handshake is confirmed; see Section 4.1.2
-of {{QUIC-TLS}}.
+receiving acknowledgements in Initial packets.
 
 This exponential reduction in the sender's rate is important because
 consecutive PTOs might be caused by loss of packets or acknowledgements due to
