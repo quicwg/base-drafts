@@ -403,7 +403,7 @@ until the handshake is confirmed.
 
 smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
 
-An endpoint needs to bootstrap the RTT estimator during connection establishment
+An endpoint needs to initialize the RTT estimator during connection establishment
 and when the estimator is reset during connection migration (Section 9.4 of
 {{QUIC-TRANSPORT}}).
 
