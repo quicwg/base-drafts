@@ -362,11 +362,10 @@ to identify other services that are also authoritative and that might be
 reachable over HTTP/3.
 
 Prior to making requests for an origin whose scheme is not "https", the client
-MUST ensure the server is willing to serve that scheme.  If the client intends
-to make requests for an origin whose scheme is "http", this means that it MUST
-obtain a valid `http-opportunistic` response for the origin as described in
-{{!RFC8164}} prior to making any such requests.  Other schemes might define
-other mechanisms.
+MUST ensure the server is willing to serve that scheme. For origins whose scheme
+is "http", an experimental method to accomplish this is described in
+{{?RFC8164}}. Other mechanisms might be defined for various schemes in the
+future.
 
 
 ## Connection Establishment {#connection-establishment}
