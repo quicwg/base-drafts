@@ -374,9 +374,9 @@ min_rtt.
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than the peer's max_ack_delay are attributed to
 unintentional but potentially repeating delays, such as scheduler latency at the
-peer or loss of previous acknowledgements. Therefore, these extra delays are
-considered effectively part of path delay and incorporated into the RTT
-estimate.
+peer or loss of previous acknowledgements.  Excess delays could also be due to
+a non-compliant receiver.  Therefore, these extra delays are considered
+effectively part of path delay and incorporated into the RTT estimate.
 
 Therefore, when adjusting an RTT sample using peer-reported acknowledgement
 delays, an endpoint:
