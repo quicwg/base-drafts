@@ -401,28 +401,34 @@ decrypt because 1-RTT packet protection keys are not yet available to it. In
 such cases, an endpoint SHOULD subtract such local delays from its RTT sample
 until the handshake is confirmed.
 
-smoothed_rtt and rttvar are computed as follows, similar to {{?RFC6298}}.
+Similar to {{?RFC6298}}, smoothed_rtt and rttvar are computed as follows.
 
-An endpoint needs to initialize the RTT estimator during connection establishment
-and when the estimator is reset during connection migration (Section 9.4 of
-{{QUIC-TRANSPORT}}).
+An endpoint needs to initialize the RTT estimator during connection
+establishment and when the estimator is reset during connection migration
+(Section 9.4 of {{QUIC-TRANSPORT}}). Before any RTT samples are available for a
+new path or when the estimator is reset, the estimator is initialized using an
+initial RTT value of 333ms; see {{pto-handshake}}.
 
-Before any RTT samples are available for a new path or when the estimator is
-reset, the estimator is initialized using an initial RTT value of 333ms; see
-{{pto-handshake}}. On the first subsequent RTT sample for the network path, the
-estimator is reset using that sample. This ensures that the estimator retains no
-history of past samples.
-
-In both of these cases, smoothed_rtt and rttvar are set as follows:
+smoothed_rtt and rttvar are initialized as follows, where kInitialRtt contains
+the initial RTT value:
 
 ~~~
-smoothed_rtt = rtt_sample
-rttvar = rtt_sample / 2
+smoothed_rtt = kInitialRtt
+rttvar = kInitialRtt / 2
 ~~~
 
-In the computation above, rtt_sample is initialized to the initial RTT value,
-and it is then set to the first subsequent RTT sample when one becomes
-available.
+RTT samples for the network path are recorded in latest_rtt; see
+{{latest-rtt}}. On the first RTT sample after initialization, the estimator is
+reset using that sample. This ensures that the estimator retains no history of
+past samples.
+
+On the first RTT sample after initialization, smoothed_rtt and rttvar are set as
+follows:
+
+~~~
+smoothed_rtt = latest_rtt
+rttvar = latest_rtt / 2
+~~~
 
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
