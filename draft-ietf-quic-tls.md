@@ -994,7 +994,7 @@ Note:
 : The Destination Connection ID field could be any length up to 20 bytes,
   including zero length if the server sends a Retry packet with a zero-length
   Source Connection ID field. After a Retry, the Initial keys provide the client
-  no assurance that the server received its packet; the client has to rely on
+  no assurance that the server received its packet, so the client has to rely on
   the exchange that included the Retry packet to validate the server address;
   see Section 8.1 of {{QUIC-TRANSPORT}}.
 
