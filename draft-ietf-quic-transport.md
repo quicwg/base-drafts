@@ -4565,9 +4565,9 @@ attacker.
 
 Future versions of QUIC may have different requirements for the lengths of
 connection IDs. In particular, connection IDs might have a smaller minimum
-length or a greater maximum length.  Version-specific rules for QUIC packets
-therefore MUST NOT influence a server decision about whether to send a Version
-Negotiation packet.
+length or a greater maximum length.  Version-specific rules for the connection
+ID therefore MUST NOT influence a server decision about whether to send a
+Version Negotiation packet.
 
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 that the server supports.
