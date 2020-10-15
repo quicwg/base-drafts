@@ -4056,8 +4056,8 @@ MUST disable ECN if validation later fails.
 
 A UDP datagram can include one or more QUIC packets. The datagram size refers to
 the total UDP payload size of a single UDP datagram carrying QUIC packets. The
-datagram size includes includes one or more QUIC packet headers and the
-protected payloads, but not the UDP or IP headers.
+datagram size includes one or more QUIC packet headers and protected payloads,
+but not the UDP or IP headers.
 
 The maximum datagram size is defined as the largest size of UDP payload that can
 be sent across a network path using a single UDP datagram.  The maximum datagram
@@ -4065,8 +4065,9 @@ size MUST be at least 1200 bytes.
 
 QUIC depends upon a minimum IP packet size of at least 1280 bytes.  This is the
 IPv6 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
-networks.  Assuming the minimum IP header size, this results in a maximum
-datagram size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
+networks.  Assuming the minimum IP header size of 40 bytes for IPv6 and 20 bytes
+for IPv4 and a UDP header size of 8 bytes, this results in a maximum datagram
+size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
 
 Any maximum datagram size larger than 1200 bytes can be discovered using Path
 Maximum Transmission Unit Discovery (PMTUD; see {{pmtud}}) or Datagram
@@ -4111,11 +4112,11 @@ address of the client; see {{address-validation}}.
 ## Path Maximum Transmission Unit
 
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-packet including the IP header, UDP header, and UDP payload.  The UDP payload
-includes one or more QUIC packet headers, the protected payloads, and any
-authentication fields.  The PMTU can depend on path characteristics, and can
-therefore change over time.  The largest UDP payload an endpoint sends at any
-given time is referred to as the endpoint's maximum datagram size.
+packet including the IP header, UDP header, and UDP payload. The UDP payload
+includes one or more QUIC packet headers and protected payloads. The PMTU can
+depend on path characteristics, and can therefore change over time. The largest
+UDP payload an endpoint sends at any given time is referred to as the endpoint's
+maximum datagram size.
 
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
 whether the path to a destination will support a desired maximum datagram size
