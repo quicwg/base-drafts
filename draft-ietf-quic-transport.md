@@ -4108,8 +4108,7 @@ that is carried in a UDP datagram with a payload that is less than 1200 bytes,
 that client MAY close the connection by sending a CONNECTION_CLOSE frame.
 
 The server MUST also limit the number of bytes it sends before validating the
-address of the client, and MUST pad ack-eliciting Initial packets that it sends;
-see {{address-validation}}.
+address of the client; see {{address-validation}}.
 
 
 ## Path Maximum Transmission Unit
