@@ -353,7 +353,7 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
-acknowledgement delays. Excess delays are computed using the ACK Delay field of
+acknowledgement delays. These delays are computed using the ACK Delay field of
 the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
 The peer might report acknowledgement delays that are larger than the peer's
@@ -374,7 +374,7 @@ min_rtt.
 After the handshake is confirmed, any acknowledgement delays reported by the
 peer that are greater than the peer's max_ack_delay are attributed to
 unintentional but potentially repeating delays, such as scheduler latency at the
-peer or loss of previous acknowledgements.  These delays could also be due to
+peer or loss of previous acknowledgements.  Excess delays could also be due to
 a non-compliant implementaton.  Therefore, these extra delays are
 considered effectively part of path delay and incorporated into the RTT
 estimate.
