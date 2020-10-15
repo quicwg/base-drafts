@@ -1643,10 +1643,10 @@ It is RECOMMENDED that endpoints immediately close the connection with a
 connection error of type AEAD_LIMIT_REACHED before reaching a state where key
 updates are not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^23
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
 confidentiality limit is greater than the number of possible packets (2^62) and
-so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
+so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^21.5
 encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
 that an attacker can distinguish the AEAD in use from a random permutation; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
@@ -1658,12 +1658,15 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection with a connection error of
 type AEAD_LIMIT_REACHED and not process any more packets.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 invalid
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^52 invalid
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
 2^36 invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity
-limit is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
+limit is 2^21.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
 the probability that an attacker can successfully forge a packet; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
+
+Endpoints that limit the size of packets MAY use higher confidentiality and
+integrity limits; see {{aead-analysis}} for details.
 
 Future analyses and specifications MAY relax confidentiality or integrity limits
 for an AEAD.
@@ -2262,7 +2265,7 @@ packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
 
-# AEAD Algorithm Analysis
+# AEAD Algorithm Analysis {#aead-analysis}
 
 This section documents analyses used in deriving AEAD algorithm limits for
 AEAD_AES_128_GCM, AEAD_AES_128_CCM, and AEAD_AES_256_GCM. The analyses that
@@ -2272,11 +2275,16 @@ used:
 
 t:
 
-: The size of the authentication tag in bits. For this cipher, t is 128.
+: The size of the authentication tag in bits. For these ciphers, t is 128.
 
 n:
 
-: The size of the block function in bits. For this cipher, n is 128.
+: The size of the block function in bits. For these ciphers, n is 128.
+
+k:
+
+: The size of the key in bits. This is 128 for AEAD_AES_128_GCM and
+  AEAD_AES_128_CCM; 256 for AEAD_AES_256_GCM.
 
 l:
 
@@ -2299,17 +2307,24 @@ o:
 : The amount of offline ideal cipher queries made by an adversary.
 
 The analyses that follow rely on a count of the number of block operations
-involved in producing each message. For simplicity, and to match the analysis of
-other AEAD functions in {{AEBounds}}, this analysis assumes a packet length of
-2^10 blocks; that is, a packet size limit of 2^14 bytes.
+involved in producing each message. This analysis is performed for packets of
+size up to 2^11 (l = 2^7) and 2^16 (l = 2^12). A size of 2^11 is expected to be
+a limit that matches common deployment patterns, whereas the 2^16 is the maximum
+possible size of a QUIC packet. Only endpoints that strictly limit packet size
+can use the larger confidentiality and integrity limits that are derived using
+the smaller packet size.
+
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the message length (l) is the length
+of the associated data in blocks plus the length of the plaintext in blocks.
 
 For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
 of: the length of the associated data in blocks, the length of the ciphertext
 in blocks, the length of the plaintext in blocks, plus 1. In this analysis,
 this is simplified to a value of twice the length of the packet in blocks (that
-is, `2l = 2^11`). This simplification is based on the packet containing all of
-the associated data and ciphertext. This results in a negligible 1 to 3 block
-overestimation of the number of operations.
+is, `2l = 2^8` for packets that are limited to 2^11 bytes, or `2l = 2^13`
+otherwise). This simplification is based on the packet containing all of the
+associated data and ciphertext. This results in a 1 to 3 block overestimation
+of the number of operations per packet.
 
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
@@ -2326,7 +2341,8 @@ blocks).
 in the analysis.
 
 The bounds in {{?GCM-MU}} are tighter and more complete than those used in
-{{AEBounds}}, which allows for larger limits than those described in {{?TLS13}}.
+{{AEBounds}}, which allows for larger limits than those described in
+{{?TLS13}}.
 
 
 ### Confidentiality Limit
@@ -2337,18 +2353,19 @@ distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
 
 ~~~
-2 * (q * l)^2 / 2^128
+2 * (q * l)^2 / 2^n
 ~~~
 
 For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-q <= 2^25
+q <= 2^35 / l
 ~~~
 
-Thus, endpoints cannot protect more than 2^25 packets in a single connection
-without causing an attacker to gain an larger advantage than the target of
-2^-57.
+Thus, endpoints that do not send packets larger than 2^11 bytes cannot protect
+more than 2^28 packets in a single connection without causing an attacker to
+gain an larger advantage than the target of 2^-57. The limit for endpoints that
+allow for the packet size to be as large as 2^16 is instead 2^23.
 
 
 ### Integrity Limit
@@ -2366,15 +2383,19 @@ term in this inequality dominates the rest, so the others can be removed without
 significant effect on the result. This produces the following approximation:
 
 ~~~
-v <= 2^54
+v <= 2^64 / l
 ~~~
 
-For AEAD_AES_256_GCM, the second and fourth terms dominate the rest, so the
-others can be removed without affecting the result. This produces the following
-approximation:
+Endpoints that do not attempt to remove protection from packets larger than 2^11
+bytes can attempt to remove protection from at most 2^57 packets. Endpoints that
+do not restrict the size of processed packets can attempt to remove protection
+from at most 2^52 packets.
+
+For AEAD_AES_256_GCM, the same term dominates, but the larger value of k
+produces the following approximation:
 
 ~~~
-v <= 2^182
+v <= 2^192 / l
 ~~~
 
 This is substantially larger than the limit for AEAD_AES_128_GCM.  However, this
@@ -2393,9 +2414,6 @@ section documents that analysis.
 analysis. The results of that analysis are used to derive usage limits that are
 based on those chosen in {{?TLS13}}.
 
-
-### Confidentiality Limits
-
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
 no more than:
@@ -2404,37 +2422,33 @@ no more than:
 (2l * q)^2 / 2^n
 ~~~
 
-For a target advantage of 2^-57, this results in the relation:
+The integrity limit in Theorem 1 in {{?CCM-ANALYSIS}} provides an attacker a
+strictly higher advantage for the same number of messages. As the targets for
+the confidentiality advantage and the integrity advantage are the same, only
+Theorem 1 needs to be considered.
 
-~~~
-q <= 2^24.5
-~~~
-
-That is, endpoints cannot protect more than 2^23 packets with the same set of
-keys without causing an attacker to gain a larger advantage than the target of
-2^-57.  Note however that the integrity limits further constrain this value.
-
-
-### Integrity Limits
-
-For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
-gains an advantage over an ideal PRP of no more than:
+Theorem 1 establishes that an attacker gains an advantage over an
+ideal PRP of no more than:
 
 ~~~
 v / 2^t + (2l * (v + q))^2 / 2^n
 ~~~
 
-The goal is to limit this advantage to 2^-57.  As `t` and `n` are both 128, the
-first term is negligible relative to the second, so that term can be removed
-without a significant effect on the result. This produces the relation:
+As `t` and `n` are both 128, the first term is negligible relative to the
+second, so that term can be removed without a significant effect on the result.
+
+This produces a relation that combines both encryption and decryption attempts
+with the same limit as that produced by the theorem for confidentiality alone.
+For a target advantage of 2^-57, this results in:
 
 ~~~
-v + q <= 2^24.5
+v + q <= 2^34.5 / l
 ~~~
 
-Assuming `q = v`, endpoints cannot attempt to protect or authenticate more than
-2^23.5 packets with the same set of keys without causing an attacker to gain a
-larger advantage in forging packets than the target of 2^-57.
+By setting `q = v`, values for both confidentiality and integrity limits can be
+produced. Endpoints that limit packets to 2^11 bytes therefore have both
+confidentiality and integrity limits of 2^26.5 packets. Endpoints that do not
+restrict packet size have a limit of 2^21.5.
 
 
 # Change Log
