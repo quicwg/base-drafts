@@ -3433,7 +3433,7 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x19        | RETIRE_CONNECTION_ID | {{frame-retire-connection-id}} | __01 |      |
 | 0x1a        | PATH_CHALLENGE       | {{frame-path-challenge}}       | __01 | P    |
 | 0x1b        | PATH_RESPONSE        | {{frame-path-response}}        | __01 | P    |
-| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01 |      |
+| 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01 | N    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1 |      |
 {: #frame-types title="Frame Types"}
 
