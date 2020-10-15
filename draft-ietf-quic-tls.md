@@ -1557,8 +1557,9 @@ keys in addition to these might improve performance, but this is not essential.
 
 ## Sending with Updated Keys {#old-keys-send}
 
-An endpoint never sends packets that are protected with old keys. Keys used for
-protecting packets can be discarded immediately after switching to newer keys.
+An endpoint never sends packets that are protected with old keys.  Only the
+current keys are used.  Keys used for protecting packets can be discarded
+immediately after switching to newer keys.
 
 Packets with higher packet numbers MUST be protected with either the same or
 newer packet protection keys than packets with lower packet numbers.  An
