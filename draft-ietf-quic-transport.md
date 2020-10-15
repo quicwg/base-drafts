@@ -1921,13 +1921,9 @@ that contain packets that are successfully processed and datagrams that contain
 packets that are all discarded.
 
 Clients MUST ensure that UDP datagrams containing Initial packets have UDP
-payloads of at least 1200 bytes, adding PADDING frames as necessary.  Servers
-MUST ensure that UDP datagrams containing ack-eliciting Initial packets have UDP
-payloads of at least 1200 bytes.  A client that sends padded datagrams allows
-the server to send more data prior to completing address validation.  Endpoints
-sending UDP datagrams of at least 1200 bytes ensures that the handshake
-progresses only if the path is capable of handling QUIC traffic; see
-{{packet-size}}.
+payloads of at least 1200 bytes, adding PADDING frames as necessary.
+A client that sends padded datagrams allows the server to
+send more data prior to completing address validation.
 
 Loss of an Initial or Handshake packet from the server can cause a deadlock if
 the client does not send additional Initial or Handshake packets. A deadlock
