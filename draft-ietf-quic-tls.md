@@ -144,9 +144,10 @@ could be used; see {{tls-version}}.
 
 ## TLS Overview
 
-TLS provides two endpoints with a way to establish a means of communication over
-an untrusted medium (that is, the Internet) that ensures that messages they
-exchange cannot be observed, modified, or forged.
+TLS provides two endpoints with a way to establish a means of communication
+over an untrusted medium (that is, the Internet). TLS enables authentication of
+peers and provides confidentiality and integrity protection for messages that
+endpoints exchange.
 
 Internally, TLS is a layered protocol, with the structure shown in
 {{tls-layers}}.
@@ -193,8 +194,8 @@ TLS provides two basic handshake modes of interest to QUIC:
 
  * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
-   Application Data can be replayed by an attacker so it MUST NOT carry a
-   self-contained trigger for any non-idempotent action.
+   Application Data can be replayed by an attacker so 0-RTT is not suitable for
+   carrying instructions that might initiate any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
 
@@ -993,11 +994,12 @@ response to an Initial packet from the server.
 
 Note:
 
-: The Destination Connection ID is of arbitrary length, and it could be zero
-  length if the server sends a Retry packet with a zero-length Source Connection
-  ID field.  In this case, the Initial keys provide no assurance to the client
-  that the server received its packet; the client has to rely on the exchange
-  that included the Retry packet for that property.
+: The Destination Connection ID field could be any length up to 20 bytes,
+  including zero length if the server sends a Retry packet with a zero-length
+  Source Connection ID field. After a Retry, the Initial keys provide the client
+  no assurance that the server received its packet, so the client has to rely on
+  the exchange that included the Retry packet to validate the server address;
+  see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 {{test-vectors}} contains sample Initial packets.
 
