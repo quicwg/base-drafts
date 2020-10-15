@@ -951,11 +951,11 @@ This duration allows a sender to send as many packets before establishing
 persistent congestion, including some in response to PTO expiration, as TCP does
 with Tail Loss Probes ({{RACK}}) and a Retransmission Timeout ({{?RFC5681}}).
 
-Larger values of kPersistentCongestionThreshold cause the sender to
-become less responsive to persistent congestion in the network, which can
-result in aggressive sending into a congested network. Too small a value can
-result in a sender declaring persistent congestion unnecessarily, resulting in
-reduced throughput for the sender.
+Larger values of kPersistentCongestionThreshold cause the sender to become less
+responsive to persistent congestion in the network, which can result in
+aggressive sending into a congested network. Too small a value can result in a
+sender declaring persistent congestion unnecessarily, resulting in reduced
+throughput for the sender.
 
 The RECOMMENDED value for kPersistentCongestionThreshold is 3, which results in
 behavior that is approximately equivalent to a TCP sender declaring an RTO after
