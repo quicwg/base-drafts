@@ -1572,8 +1572,8 @@ DetectAndRemoveLostPackets(pn_space):
       continue
 
     // Mark packet as lost, or set time when it should be marked.
-    // Note: The use of kPacketThreshold here assumes that there were no
-    // sender-induced gaps in the packet number space.
+    // Note: The use of kPacketThreshold here assumes that there
+    // were no sender-induced gaps in the packet number space.
     if (unacked.time_sent <= lost_send_time ||
         largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
