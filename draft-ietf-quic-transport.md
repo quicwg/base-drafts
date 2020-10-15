@@ -4056,8 +4056,8 @@ MUST disable ECN if validation later fails.
 
 A UDP datagram can include one or more QUIC packets. The datagram size refers to
 the total UDP payload size of a single UDP datagram carrying QUIC packets. The
-datagram size includes includes the QUIC headers and protected payload, but not
-the UDP or IP headers.
+datagram size includes includes one or more QUIC packet headers and the
+protected payloads, but not the UDP or IP headers.
 
 The maximum datagram size is defined as the largest size of UDP payload that can
 be sent across a network path using a single UDP datagram.  The maximum datagram
@@ -4112,10 +4112,10 @@ address of the client; see {{address-validation}}.
 
 The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
 packet including the IP header, UDP header, and UDP payload.  The UDP payload
-includes QUIC packet headers, protected payload, and any authentication fields.
-The PMTU can depend on path characteristics, and can therefore change over time.
-The largest UDP payload an endpoint sends at any given time is referred to as
-the endpoint's maximum datagram size.
+includes one or more QUIC packet headers, the protected payloads, and any
+authentication fields.  The PMTU can depend on path characteristics, and can
+therefore change over time.  The largest UDP payload an endpoint sends at any
+given time is referred to as the endpoint's maximum datagram size.
 
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
 whether the path to a destination will support a desired maximum datagram size
@@ -4201,9 +4201,9 @@ From the perspective of DPLPMTUD, QUIC is an acknowledged Packetization Layer
 
 ### Validating the Network Path with DPLPMTUD
 
-QUIC provides an acknowledged PL, therefore a sender does not implement a
-DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section
-5.2 of {{!DPLPMTUD}}.
+QUIC is an acknowledged PL, therefore a QUIC sender does not implement a
+DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section 5.2
+of {{!DPLPMTUD}}.
 
 
 ### Handling of ICMP Messages by DPLPMTUD
