@@ -2308,10 +2308,10 @@ o:
 
 The analyses that follow rely on a count of the number of block operations
 involved in producing each message. This analysis is performed for packets of
-up to 2^11 (l = 2^7) and 2^16 (l = 2^12). A size of 2^11 is expected to be a
+size up to 2^11 (l = 2^7) and 2^16 (l = 2^12). A size of 2^11 is expected to be a
 limit that matches common deployment patterns, whereas the 2^16 is the maximum
 possible size of a QUIC packet. Only endpoints that strictly limit packet size
-can use the larger limits that are derived using the smaller packet size.
+can use the larger confidentiality and integrity limits that are derived using the smaller packet size.
 
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the message length (l) is the length
 of the associated data in blocks plus the length of the plaintext in blocks.
@@ -2364,7 +2364,7 @@ q <= 2^35 / l
 Thus, endpoints that do not send packets larger than 2^11 bytes cannot protect
 more than 2^28 packets in a single connection without causing an attacker to
 gain an larger advantage than the target of 2^-57. The limit for endpoints that
-do not limit packet size is instead 2^23.
+allow for the packet size to be as large as 2^16 is instead 2^23.
 
 
 ### Integrity Limit
@@ -2386,8 +2386,8 @@ v <= 2^64 / l
 ~~~
 
 Endpoints that do not attempt to remove protection from packets larger than
-2^11 bytes can attempt to remove protection from at most 2^57 packets. Packets
-attempt to remove protection from any packet can attempt to remove protection
+2^11 bytes can attempt to remove protection from at most 2^57 packets. Endpoints
+that do not restrict the size of processed packets can attempt to remove protection
 from at most 2^52 packets.
 
 For AEAD_AES_256_GCM, the same term dominates, but the larger value of k
@@ -2447,7 +2447,7 @@ v + q <= 2^34.5 / l
 By setting `q = v`, values for both confidentiality and integrity limits can be
 produced. Endpoints that limit packets to 2^11 bytes therefore have both
 confidentiality and integrity limits of 2^26.5 packets. Endpoints that do not
-limit packet size have a limit of 2^21.5.
+restrict packet size have a limit of 2^21.5.
 
 
 # Change Log
