@@ -4096,7 +4096,7 @@ Initial packets helps reduce the amplitude of amplification attacks caused by
 server responses toward an unverified client address; see
 {{address-validation}}.
 
-Datagrams containing Initial packets MAY exceed 1200 bytes if the endpoint
+Datagrams containing Initial packets MAY exceed 1200 bytes if the sender
 believes that the network path and peer both support the size that it chooses.
 
 A server MUST discard an Initial packet that is carried in a UDP datagram with a
