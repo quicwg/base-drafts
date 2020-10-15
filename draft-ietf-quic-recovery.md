@@ -611,9 +611,9 @@ The total length of time over which consecutive PTOs expire is limited by the
 idle timeout.
 
 The PTO timer MUST NOT be set if a timer is set for time threshold
-({{time-threshold}}) loss detection.  Time threshold loss detection
-is expected to both expire earlier than the PTO and be less likely to
-spuriously retransmit data.
+loss detection ({{time-threshold}}).  A timer that is set for time
+threshold loss detection is expected to both expire earlier than
+the PTO timer and be less likely to spuriously retransmit data.
 
 ### Handshakes and New Paths {#pto-handshake}
 
