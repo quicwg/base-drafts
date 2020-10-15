@@ -407,21 +407,22 @@ An endpoint needs to initialize the RTT estimator during connection establishmen
 and when the estimator is reset during connection migration (Section 9.4 of
 {{QUIC-TRANSPORT}}).
 
-When there are no RTT samples for a new network path, and on the first
-subsequent RTT sample for the new network path, smoothed_rtt and rttvar are set
-as follows:
+Before any RTT samples are available for a new path or when the estimator is
+reset, the estimator is initialized using an initial RTT value of 333ms; see
+{{pto-handshake}}. On the first subsequent RTT sample for the network path, the
+estimator is reset using that sample. This ensures that the estimator retains no
+history of past samples.
+
+In both of these cases, smoothed_rtt and rttvar are set as follows:
 
 ~~~
 smoothed_rtt = rtt_sample
 rttvar = rtt_sample / 2
 ~~~
 
-Before any RTT samples are available for a new path or when the estimator is
-reset, the estimator is bootstrapped using the initial RTT value for
-rtt_sample.
-
-On the first subsequent RTT sample for the network path, that sample is used as
-rtt_sample. This ensures that the estimator retains no history of past samples.
+In the computation above, rtt_sample is initialized to the initial RTT value,
+and it is then set to the first subsequent RTT sample when one becomes
+available.
 
 On subsequent RTT samples, smoothed_rtt and rttvar evolve as follows:
 
