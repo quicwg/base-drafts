@@ -403,11 +403,11 @@ until the handshake is confirmed.
 
 Similar to {{?RFC6298}}, smoothed_rtt and rttvar are computed as follows.
 
-An endpoint needs to initialize the RTT estimator during connection
+An endpoint initializes the RTT estimator during connection
 establishment and when the estimator is reset during connection migration
 (Section 9.4 of {{QUIC-TRANSPORT}}). Before any RTT samples are available for a
-new path or when the estimator is reset, the estimator is initialized using an
-initial RTT value of 333ms; see {{pto-handshake}}.
+new path or when the estimator is reset, the estimator is initialized using the
+initial RTT; see {{pto-handshake}}.
 
 smoothed_rtt and rttvar are initialized as follows, where kInitialRtt contains
 the initial RTT value:
