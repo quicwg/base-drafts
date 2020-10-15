@@ -667,7 +667,7 @@ To speed up handshake completion under these conditions, an endpoint MAY, for a
 limited number of occasions per each connection, send a packet containing
 unacknowledged CRYPTO data earlier than the PTO expiry, subject to the address
 validation limits in Section 8.1 of {{QUIC-TRANSPORT}}. Doing so at most once
-for each connection will be adequate to accommodate common loss scenarios.
+for each connection is adequate to quickly recover from a single packet loss.
 
 Endpoints can also use coalesced packets (see Section 12.2 of
 {{QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
