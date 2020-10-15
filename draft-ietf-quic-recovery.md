@@ -353,7 +353,7 @@ samples, and rttvar is the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
-acknowledgement delays. These delays are computed using the ACK Delay field of
+acknowledgement delays. Excess delays are computed using the ACK Delay field of
 the ACK frame as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 
 The peer might report acknowledgement delays that are larger than the peer's
