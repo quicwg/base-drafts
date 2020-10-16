@@ -368,7 +368,7 @@ The two least significant bits from a stream ID therefore identify a stream as
 one of four types, as summarized in {{stream-id-types}}.
 
 | Bits | Stream Type                      |
-| :--- | :------------------------------- |
+|:-----|:---------------------------------|
 | 0x0  | Client-Initiated, Bidirectional  |
 | 0x1  | Server-Initiated, Bidirectional  |
 | 0x2  | Client-Initiated, Unidirectional |
@@ -729,7 +729,7 @@ one possibility for such a mapping; this mapping requires that data is
 acknowledged before the transition to a "closed" or "half-closed" state.
 
 | Sending Part           | Receiving Part         | Composite State      |
-| :--------------------- | :--------------------- | :------------------- |
+|:-----------------------|:-----------------------|:---------------------|
 | No Stream/Ready        | No Stream/Recv *1      | idle                 |
 | Ready/Send/Data Sent   | Recv/Size Known        | open                 |
 | Ready/Send/Data Sent   | Data Recvd/Data Read   | half-closed (remote) |
@@ -2214,8 +2214,8 @@ Note:
 
 : Probing with datagrams of 1200 bytes does not guarantee that the return path
   also supports the same datagram size. Migration to a path that can carry a
-  1200-byte UDP payload in only one direction will result in the peer being unable to
-  validate the return path back to the endpoint.
+  1200-byte UDP payload in only one direction will result in the peer being
+  unable to validate the return path back to the endpoint.
 
 
 ### Path Validation Responses
@@ -3426,7 +3426,7 @@ other frames, the Frame Type field simply identifies the frame.  These
 frames are explained in more detail in {{frame-formats}}.
 
 | Type Value  | Frame Type Name      | Definition                     | Pkts | Spec |
-| :---------- | :------------------- | :----------------------------- | ---- | ---- |
+|:------------|:---------------------|:-------------------------------|------|------|
 | 0x00        | PADDING              | {{frame-padding}}              | IH01 | NP   |
 | 0x01        | PING                 | {{frame-ping}}                 | IH01 |      |
 | 0x02 - 0x03 | ACK                  | {{frame-ack}}                  | IH_1 | NC   |
@@ -4333,7 +4333,7 @@ This means that integers are encoded on 1, 2, 4, or 8 bytes and can encode 6,
 encoding properties.
 
 | 2Bit | Length | Usable Bits | Range                 |
-| :--- | :----- | :---------- | :-------------------- |
+|:-----|:-------|:------------|:----------------------|
 | 00   | 1      | 6           | 0-63                  |
 | 01   | 2      | 14          | 0-16383               |
 | 10   | 4      | 30          | 0-1073741823          |
@@ -4487,12 +4487,12 @@ Source Connection ID:
 In this version of QUIC, the following packet types with the long header are
 defined:
 
-| Type | Name      | Section              |
-| ---: | :-------- | :------------------- |
-|  0x0 | Initial   | {{packet-initial}}   |
-|  0x1 | 0-RTT     | {{packet-0rtt}}      |
-|  0x2 | Handshake | {{packet-handshake}} |
-|  0x3 | Retry     | {{packet-retry}}     |
+| Type | Name                          | Section                     |
+|-----:|:------------------------------|:----------------------------|
+|  0x0 | Initial                       | {{packet-initial}}          |
+|  0x1 | 0-RTT                         | {{packet-0rtt}}             |
+|  0x2 | Handshake                     | {{packet-handshake}}        |
+|  0x3 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form bit, Destination and Source Connection ID lengths, Destination
@@ -7297,25 +7297,25 @@ Parameter Name:
 
 The initial contents of this registry are shown in {{iana-tp-table}}.
 
-| Value | Parameter Name                      | Specification                       |
-| :---- | :---------------------------------- | :---------------------------------- |
-| 0x00  | original_destination_connection_id  | {{transport-parameter-definitions}} |
-| 0x01  | max_idle_timeout                    | {{transport-parameter-definitions}} |
-| 0x02  | stateless_reset_token               | {{transport-parameter-definitions}} |
-| 0x03  | max_udp_payload_size                | {{transport-parameter-definitions}} |
-| 0x04  | initial_max_data                    | {{transport-parameter-definitions}} |
-| 0x05  | initial_max_stream_data_bidi_local  | {{transport-parameter-definitions}} |
-| 0x06  | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
-| 0x07  | initial_max_stream_data_uni         | {{transport-parameter-definitions}} |
-| 0x08  | initial_max_streams_bidi            | {{transport-parameter-definitions}} |
-| 0x09  | initial_max_streams_uni             | {{transport-parameter-definitions}} |
-| 0x0a  | ack_delay_exponent                  | {{transport-parameter-definitions}} |
-| 0x0b  | max_ack_delay                       | {{transport-parameter-definitions}} |
-| 0x0c  | disable_active_migration            | {{transport-parameter-definitions}} |
-| 0x0d  | preferred_address                   | {{transport-parameter-definitions}} |
-| 0x0e  | active_connection_id_limit          | {{transport-parameter-definitions}} |
-| 0x0f  | initial_source_connection_id        | {{transport-parameter-definitions}} |
-| 0x10  | retry_source_connection_id          | {{transport-parameter-definitions}} |
+| Value| Parameter Name              | Specification                       |
+|:-----|:----------------------------|:------------------------------------|
+| 0x00 | original_destination_connection_id | {{transport-parameter-definitions}} |
+| 0x01 | max_idle_timeout            | {{transport-parameter-definitions}} |
+| 0x02 | stateless_reset_token       | {{transport-parameter-definitions}} |
+| 0x03 | max_udp_payload_size        | {{transport-parameter-definitions}} |
+| 0x04 | initial_max_data            | {{transport-parameter-definitions}} |
+| 0x05 | initial_max_stream_data_bidi_local | {{transport-parameter-definitions}} |
+| 0x06 | initial_max_stream_data_bidi_remote | {{transport-parameter-definitions}} |
+| 0x07 | initial_max_stream_data_uni | {{transport-parameter-definitions}} |
+| 0x08 | initial_max_streams_bidi    | {{transport-parameter-definitions}} |
+| 0x09 | initial_max_streams_uni     | {{transport-parameter-definitions}} |
+| 0x0a | ack_delay_exponent          | {{transport-parameter-definitions}} |
+| 0x0b | max_ack_delay               | {{transport-parameter-definitions}} |
+| 0x0c | disable_active_migration    | {{transport-parameter-definitions}} |
+| 0x0d | preferred_address           | {{transport-parameter-definitions}} |
+| 0x0e | active_connection_id_limit  | {{transport-parameter-definitions}} |
+| 0x0f | initial_source_connection_id | {{transport-parameter-definitions}} |
+| 0x10 | retry_source_connection_id  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
 Additionally, each value of the format `31 * N + 27` for integer values of N
@@ -7379,23 +7379,23 @@ Description:
 
 The initial contents of this registry are shown in {{iana-error-table}}.
 
-| Value | Error                     | Description                             | Specification   |
-| :---- | :------------------------ | :-------------------------------------- | :-------------- |
-| 0x0   | NO_ERROR                  | No error                                | {{error-codes}} |
-| 0x1   | INTERNAL_ERROR            | Implementation error                    | {{error-codes}} |
-| 0x2   | CONNECTION_REFUSED        | Server refuses a connection             | {{error-codes}} |
-| 0x3   | FLOW_CONTROL_ERROR        | Flow control error                      | {{error-codes}} |
-| 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened                 | {{error-codes}} |
-| 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state  | {{error-codes}} |
-| 0x6   | FINAL_SIZE_ERROR          | Change to final size                    | {{error-codes}} |
-| 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error                    | {{error-codes}} |
-| 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters           | {{error-codes}} |
-| 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received        | {{error-codes}} |
-| 0xa   | PROTOCOL_VIOLATION        | Generic protocol violation              | {{error-codes}} |
-| 0xb   | INVALID_TOKEN             | Invalid Token Received                  | {{error-codes}} |
-| 0xc   | APPLICATION_ERROR         | Application error                       | {{error-codes}} |
-| 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed           | {{error-codes}} |
-| 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update        | {{error-codes}} |
+| Value | Error                     | Description                   | Specification   |
+|:------|:--------------------------|:------------------------------|:----------------|
+| 0x0   | NO_ERROR                  | No error                      | {{error-codes}} |
+| 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x2   | CONNECTION_REFUSED        | Server refuses a connection   | {{error-codes}} |
+| 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
+| 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
+| 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
+| 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
+| 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
+| 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
+| 0xa   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
+| 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
 | 0xf   | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
