@@ -1314,10 +1314,13 @@ one.  If the push stream is open, the server SHOULD abruptly terminate that
 stream.  If the push stream has already ended, the server MAY still abruptly
 terminate the stream or MAY take no action.
 
-When a server sends CANCEL_PUSH, it is indicating that it will not be fulfilling
-a promise.  The client cannot expect the corresponding promise to be fulfilled,
-unless it has already received and processed the promised response. A server
-SHOULD send a CANCEL_PUSH frame even if it has opened the corresponding stream.
+A server sends CANCEL_PUSH to indicate that it will not be fulfilling a promise
+which was previously sent.  The client cannot expect the corresponding promise
+to be fulfilled, unless it has already received and processed the promised
+response. Regardless of whether a corresponding stream has been opened, a server
+SHOULD send a CANCEL_PUSH frame when it determines that promise will not be
+fulfilled.  If a corresponding stream has already been opened, the server can
+abort sending on the stream with an error code of H3_REQUEST_CANCELLED.
 
 Sending a CANCEL_PUSH frame has no direct effect on the state of existing push
 streams. A client SHOULD NOT send a CANCEL_PUSH frame when it has already
