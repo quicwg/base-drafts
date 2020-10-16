@@ -1774,10 +1774,10 @@ attack on a plaintext protocol.
 ## Intermediary Encapsulation Attacks
 
 The HTTP/3 field encoding allows the expression of names that are not valid
-field names in the syntax used by HTTP (Section 5.4.3 of {{!SEMANTICS}}). Requests
-or responses containing invalid field names MUST be treated as malformed
-({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
-or response containing an invalid field name into an HTTP/1.1 message.
+field names in the syntax used by HTTP (Section 5.4.3 of {{!SEMANTICS}}).
+Requests or responses containing invalid field names MUST be treated as
+malformed ({{malformed}}).  An intermediary therefore cannot translate an HTTP/3
+request or response containing an invalid field name into an HTTP/1.1 message.
 
 Similarly, HTTP/3 can transport field values that are not valid. While most
 values that can be encoded will not alter field parsing, carriage return (CR,
