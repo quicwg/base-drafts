@@ -1057,7 +1057,7 @@ the server.  For more detail on QUIC streams, see Section 2 of
 When HTTP fields and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
 using QUIC - data sent over a QUIC stream always maps to a particular HTTP
-transaction or to the HTTP/3 connection context as a whole.
+transaction or to the entire HTTP/3 connection context.
 
 ## Bidirectional Streams
 
@@ -1567,7 +1567,7 @@ type H3_ID_ERROR.
 In the client to server direction, the GOAWAY frame carries a Push ID encoded as
 a variable-length integer.
 
-The GOAWAY frame applies to the connection as a whole, not a specific stream.  A
+The GOAWAY frame applies to the entire connection, not a specific stream.  A
 client MUST treat a GOAWAY frame on a stream other than the control stream as a
 connection error ({{errors}}) of type H3_FRAME_UNEXPECTED.
 
