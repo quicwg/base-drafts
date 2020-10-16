@@ -261,10 +261,10 @@ stream:
 stream error:
 : An error on the individual HTTP/3 stream.
 
-The term "payload body" is defined in Section 7.3.3 of {{!SEMANTICS}}.
+The term "payload body" is defined in Section 5.5.4 of {{!SEMANTICS}}.
 
 Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
-in Section 2.2 of {{!SEMANTICS}}.  Intermediaries act as both client and server
+in Section 3.7 of {{!SEMANTICS}}.  Intermediaries act as both client and server
 at different times.
 
 Packet diagrams in this document use the format defined in Section 1.3 of
@@ -297,7 +297,7 @@ the string "-" and an experiment name to the identifier. For example, an
 experimental implementation based on draft-ietf-quic-http-09 that reserves an
 extra stream for unsolicited transmission of 1980s pop music might identify
 itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 5.4.1.1 of {{!SEMANTICS}}. Experimenters are
+syntax defined in Section 5.7.2 of {{!SEMANTICS}}. Experimenters are
 encouraged to coordinate their experiments on the quic@ietf.org mailing list.
 
 ## Discovering an HTTP/3 Endpoint {#discovery}
@@ -306,7 +306,7 @@ HTTP relies on the notion of an authoritative response: a response that has been
 determined to be the most appropriate response for that request given the state
 of the target resource at the time of response message origination by (or at the
 direction of) the origin server identified within the target URI.  Locating an
-authoritative server for an HTTP URL is discussed in Section 6.4 of
+authoritative server for an HTTP URL is discussed in Section 4.3 of
 {{!SEMANTICS}}.
 
 The "https" scheme associates authority with possession of a certificate that
@@ -407,7 +407,7 @@ subjectAltName field of the certificate; see {{!RFC6125}}.  For a host that is
 an IP address, the client MUST verify that the address appears as an iPAddress
 in the subjectAltName field of the certificate.  If the hostname or address is
 not present in the certificate, the client MUST NOT consider the server
-authoritative for origins containing that hostname or address.  See Section 6.4
+authoritative for origins containing that hostname or address.  See Section 4.3
 of {{!SEMANTICS}} for more detail on authoritative access.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
@@ -436,7 +436,7 @@ of {{?HTTP2}}.
 A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
 A client MUST send only a single request on a given stream. A server sends zero
 or more interim HTTP responses on the same stream as the request, followed by a
-single final HTTP response, as detailed below.  See Section 10 of {{!SEMANTICS}}
+single final HTTP response, as detailed below.  See Section 14 of {{!SEMANTICS}}
 for a description of interim and final HTTP responses.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
@@ -459,8 +459,9 @@ An HTTP message (request or response) consists of:
 3. optionally, the trailer field section, if present, sent as a single HEADERS
    frame.
 
-Header and trailer field sections are described in Section 5 of {{!SEMANTICS}};
-the payload body is described in Section 7.3.3 of {{!SEMANTICS}}.
+Header and trailer field sections are described in Sections 5.4 and 5.6 of
+{{!SEMANTICS}}; the payload body is described in Section 5.5.4 of
+{{!SEMANTICS}}.
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
@@ -487,7 +488,7 @@ The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
 be used.
 
 A response MAY consist of multiple messages when and only when one or more
-interim responses (1xx; see Section 10.2 of {{!SEMANTICS}}) precede a final
+interim responses (1xx; see Section 14.2 of {{!SEMANTICS}}) precede a final
 response to the same request.  Interim responses do not contain a payload body
 or trailers.
 
@@ -527,7 +528,7 @@ For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
 
 As in previous versions of HTTP, field names are strings containing a subset of
 ASCII characters that are compared in a case-insensitive fashion.  Properties of
-HTTP field names and values are discussed in more detail in Section 5.3 of
+HTTP field names and values are discussed in more detail in Section 5.4.3 of
 {{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
 lowercase prior to their encoding.  A request or response containing uppercase
 characters in field names MUST be treated as malformed ({{malformed}}).
@@ -635,7 +636,7 @@ HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
 For responses, a single ":status" pseudo-header field is defined that carries
-the HTTP status code; see Section 10 of {{!SEMANTICS}}.  This pseudo-header
+the HTTP status code; see Section 14 of {{!SEMANTICS}}.  This pseudo-header
 field MUST be included in all responses; otherwise, the response is malformed
 ({{malformed}}).
 
@@ -729,7 +730,7 @@ A request or response that includes a payload body can include a
 Content-Length header field.  A request or response is also malformed if the
 value of a content-length header field does not equal the sum of the DATA frame
 payload lengths that form the body.  A response that is defined to have no
-payload, as described in Section 7.3.3 of {{!SEMANTICS}} can have a non-zero
+payload, as described in Section 5.5.4 of {{!SEMANTICS}}, can have a non-zero
 content-length field, even though no content is included in DATA frames.
 
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
@@ -771,7 +772,7 @@ is malformed; see {{malformed}}.
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field.  Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in Section 10.3 of {{!SEMANTICS}}.
+series status code to the client, as defined in Section 14.3 of {{!SEMANTICS}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
 connection. The payload of any DATA frame sent by the client is transmitted by
@@ -804,9 +805,9 @@ with the RST bit set.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.7 of
-{{!SEMANTICS}) or 101 (Switching Protocols) informational status code (Section
-10.2.2 of {{!SEMANTICS}}).
+HTTP/3 does not support the HTTP Upgrade mechanism (Section 6.6 of
+{{!SEMANTICS}}) or 101 (Switching Protocols) informational status code (Section
+14.2.2 of {{!SEMANTICS}}).
 
 ## Server Push
 
@@ -1760,7 +1761,7 @@ apply to [QUIC-TRANSPORT] and are discussed in that document.
 ## Server Authority
 
 HTTP/3 relies on the HTTP definition of authority. The security considerations
-of establishing authority are discussed in Section 12.1 of {{!SEMANTICS}}.
+of establishing authority are discussed in Section 16.1 of {{!SEMANTICS}}.
 
 ## Cross-Protocol Attacks
 
@@ -1773,10 +1774,10 @@ attack on a plaintext protocol.
 ## Intermediary Encapsulation Attacks
 
 The HTTP/3 field encoding allows the expression of names that are not valid
-field names in the syntax used by HTTP (Section 5.3 of {{!SEMANTICS}}). Requests
-or responses containing invalid field names MUST be treated as malformed
-({{malformed}}).  An intermediary therefore cannot translate an HTTP/3 request
-or response containing an invalid field name into an HTTP/1.1 message.
+field names in the syntax used by HTTP (Section 5.4.3 of {{!SEMANTICS}}).
+Requests or responses containing invalid field names MUST be treated as
+malformed ({{malformed}}).  An intermediary therefore cannot translate an HTTP/3
+request or response containing an invalid field name into an HTTP/1.1 message.
 
 Similarly, HTTP/3 can transport field values that are not valid. While most
 values that can be encoded will not alter field parsing, carriage return (CR,
@@ -1784,7 +1785,7 @@ ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL, ASCII 0x0)
 might be exploited by an attacker if they are translated verbatim. Any request
 or response that contains a character not permitted in a field value MUST be
 treated as malformed ({{malformed}}).  Valid characters are defined by the
-"field-content" ABNF rule in Section 5.4 of {{!SEMANTICS}}.
+"field-content" ABNF rule in Section 5.4.4 of {{!SEMANTICS}}.
 
 ## Cacheability of Pushed Responses
 
@@ -1878,7 +1879,7 @@ resources consumed by CONNECT requests.
 Compression can allow an attacker to recover secret data when it is compressed
 in the same context as data under attacker control. HTTP/3 enables compression
 of fields ({{header-formatting}}); the following concerns also apply to the use
-of HTTP compressed content-codings; see Section 7.1.2 of {{!SEMANTICS}}.
+of HTTP compressed content-codings; see Section 7.5.1 of {{!SEMANTICS}}.
 
 There are demonstrable attacks on compression that exploit the characteristics
 of the web (e.g., {{BREACH}}).  The attacker induces multiple requests
