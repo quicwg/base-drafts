@@ -613,7 +613,7 @@ idle timeout.
 The PTO timer MUST NOT be set if a timer is set for time threshold
 loss detection; see {{time-threshold}}.  A timer that is set for time
 threshold loss detection will expire earlier than the PTO timer
-in many cases and is less likely to spuriously retransmit data.
+in most cases and is less likely to spuriously retransmit data.
 
 ### Handshakes and New Paths {#pto-handshake}
 
