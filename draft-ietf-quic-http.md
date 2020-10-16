@@ -470,7 +470,8 @@ Header and trailer field sections are described in Sections 5.4 and 5.6 of
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
 any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
-is considered invalid.
+is considered invalid.  (Other frame types, especially unknown frame types,
+might be permitted subject to their own rules; see {{extensions}}.)
 
 A server MAY send one or more PUSH_PROMISE frames ({{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
@@ -1614,10 +1615,10 @@ a connection error of type H3_ID_ERROR.
 
 Frame types of the format `0x1f * N + 0x21` for non-negative integer values of N
 are reserved to exercise the requirement that unknown types be ignored
-({{extensions}}).  These frames have no semantics, and can be sent on any open
-stream when application-layer padding is desired. They MAY also be sent on open
-streams in connections where no data is currently being transferred. Endpoints
-MUST NOT consider these frames to have any meaning upon receipt.
+({{extensions}}).  These frames have no semantics, and MAY be sent on any stream
+where frames are allowed to be sent. This enables their use for
+application-layer padding.  Endpoints MUST NOT consider these frames to have any
+meaning upon receipt.
 
 The payload and length of the frames are selected in any manner the
 implementation chooses.
