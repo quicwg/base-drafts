@@ -2205,17 +2205,17 @@ connection.
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
-An endpoint MUST expand the payload of datagrams that contain a PATH_CHALLENGE
-frame to at least the smallest allowed maximum packet size of 1200 bytes.
-Sending UDP datagrams of this size ensures that the network path supports a
-Path Maximum Transmission Unit (PMTU); see {{datagram-size}}.
+An endpoint MUST expand datagrams that contain a PATH_CHALLENGE
+frame to at least the smallest allowed maximum datagram size of 1200 bytes.
+Sending UDP datagrams of this size ensures that the network path from the
+endpoint to the peer can be used for QUIC; see {{datagram-size}}.
 
 Note:
 
 : Probing with datagrams of 1200 bytes does not guarantee that the return path
-  also supports the same MTU. Migration to a path that can only carry a 1200
-  byte UDP payload in one direction will result in the peer being unable to
-  validate the path.
+  also supports the same datagram size. Migration to a path that can carry a
+  1200-byte UDP payload in only one direction will result in the peer being unable to
+  validate the return path back to the endpoint.
 
 
 ### Path Validation Responses
