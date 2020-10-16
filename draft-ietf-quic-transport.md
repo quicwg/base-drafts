@@ -2210,6 +2210,13 @@ frame to at least the smallest allowed maximum packet size of 1200 bytes.
 Sending UDP datagrams of this size ensures that the network path supports a
 Path Maximum Transmission Unit (PMTU); see {{datagram-size}}.
 
+Note:
+
+: Probing with datagrams of 1200 bytes does not guarantee that the return path
+  also supports the same MTU. Migration to a path that can only carry a 1200
+  byte UDP payload in one direction will result in the peer being unable to
+  validate the path.
+
 
 ### Path Validation Responses
 
