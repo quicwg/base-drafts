@@ -306,7 +306,7 @@ HTTP relies on the notion of an authoritative response: a response that has been
 determined to be the most appropriate response for that request given the state
 of the target resource at the time of response message origination by (or at the
 direction of) the origin server identified within the target URI.  Locating an
-authoritative server for an HTTP URL is discussed in Section 6.1.3 of
+authoritative server for an HTTP URL is discussed in Section 4.3 of
 {{!SEMANTICS}}.
 
 The "https" scheme associates authority with possession of a certificate that
@@ -407,7 +407,7 @@ subjectAltName field of the certificate; see {{!RFC6125}}.  For a host that is
 an IP address, the client MUST verify that the address appears as an iPAddress
 in the subjectAltName field of the certificate.  If the hostname or address is
 not present in the certificate, the client MUST NOT consider the server
-authoritative for origins containing that hostname or address.  See Section 6.1.3
+authoritative for origins containing that hostname or address.  See Section 4.3
 of {{!SEMANTICS}} for more detail on authoritative access.
 
 Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
@@ -459,8 +459,9 @@ An HTTP message (request or response) consists of:
 3. optionally, the trailer field section, if present, sent as a single HEADERS
    frame.
 
-Header and trailer field sections are described in Section 5.4 of {{!SEMANTICS}};
-the payload body is described in Section 5.5.4 of {{!SEMANTICS}}.
+Header and trailer field sections are described in Sections 5.4 and 5.6 of
+{{!SEMANTICS}}; the payload body is described in Section 5.5.4 of
+{{!SEMANTICS}}.
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
@@ -729,7 +730,7 @@ A request or response that includes a payload body can include a
 Content-Length header field.  A request or response is also malformed if the
 value of a content-length header field does not equal the sum of the DATA frame
 payload lengths that form the body.  A response that is defined to have no
-payload, as described in Section 5.5.4 of {{!SEMANTICS}} can have a non-zero
+payload, as described in Section 5.5.4 of {{!SEMANTICS}}, can have a non-zero
 content-length field, even though no content is included in DATA frames.
 
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
