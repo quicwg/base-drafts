@@ -475,9 +475,9 @@ is considered invalid.
 A server MAY send one or more PUSH_PROMISE frames ({{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.  These frames are not permitted in pushed responses; a pushed response
-that includes PUSH_PROMISE frames MUST be treated as a connection error of type
-H3_FRAME_UNEXPECTED.
+details.  Additional promises are not permitted on push streams; a pushed
+response that includes PUSH_PROMISE frames MUST be treated as a connection error
+of type H3_FRAME_UNEXPECTED.
 
 Frames of unknown types ({{extensions}}), including reserved frames
 ({{frame-reserved}}) MAY be sent on a request or push stream before, after, or
@@ -529,6 +529,9 @@ HTTP messages carry metadata as a series of key-value pairs, called HTTP fields.
 For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
 (HTTP) Field Name Registry" maintained at
 [](https://www.iana.org/assignments/http-fields/).
+
+> **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
+> **RFC Editor**, please remove this note prior to publication.
 
 As in previous versions of HTTP, field names are strings containing a subset of
 ASCII characters that are compared in a case-insensitive fashion.  Properties of
@@ -1412,7 +1415,7 @@ not understand.
 The following settings are defined in HTTP/3:
 
   SETTINGS_MAX_FIELD_SECTION_SIZE (0x6):
-  : The default value is unlimited.  See {{header-formatting}} for usage.
+  : The default value is unlimited.  See {{header-size-constraints}} for usage.
 
 Setting identifiers of the format `0x1f * N + 0x21` for non-negative integer
 values of N are reserved to exercise the requirement that unknown identifiers be
