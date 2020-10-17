@@ -7178,6 +7178,9 @@ Specification:
 Date:
 : The date of last update to the registration.
 
+Change Controller:
+: The entity that is responsible for the definition of the registration.
+
 Contact:
 : Contact details for the registrant.
 
@@ -7262,8 +7265,9 @@ for a frame type ({{iana-frames}}) of 61 could be requested.
 
 All registrations made by Standards Track publications MUST be permanent.
 
-All registrations in this document are assigned a permanent status and list as
-contact the IETF (quic@ietf.org).
+All registrations in this document are assigned a permanent status and list a
+change controller of the IETF and a contact of the QUIC working group
+(quic@ietf.org).
 
 
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
