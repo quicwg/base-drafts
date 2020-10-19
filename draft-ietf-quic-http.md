@@ -475,7 +475,7 @@ is considered invalid.
 A server MAY send one or more PUSH_PROMISE frames ({{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
 PUSH_PROMISE frames are not part of the response; see {{server-push}} for more
-details.  Additional promises are not permitted on push streams; a pushed
+details.  PUSH_PROMISE frames are not permitted on push streams; a pushed
 response that includes PUSH_PROMISE frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED.
 
