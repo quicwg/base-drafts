@@ -658,7 +658,7 @@ table from Appendix B of [RFC7541] is used without modification and Length
 indicates the size of the string after encoding.
 
 This document expands the definition of string literals by permitting them to
-begin other than on a byte boundary.  An "N-bit prefix string literal" begins in
+begin other than on a byte boundary.  An "N-bit prefix string literal" begins
 mid-byte, with the first (8-N) bits allocated to a previous field. The string
 uses one bit for the Huffman flag, followed by the Length encoded as an
 (N-1)-bit prefix integer.  The prefix size, N, can have a value between 2 and 8
