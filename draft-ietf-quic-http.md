@@ -1317,9 +1317,9 @@ terminate the stream or MAY take no action.
 A server sends CANCEL_PUSH to indicate that it will not be fulfilling a promise
 which was previously sent.  The client cannot expect the corresponding promise
 to be fulfilled, unless it has already received and processed the promised
-response. Regardless of whether a corresponding stream has been opened, a server
+response. Regardless of whether a push stream has been opened, a server
 SHOULD send a CANCEL_PUSH frame when it determines that promise will not be
-fulfilled.  If a corresponding stream has already been opened, the server can
+fulfilled.  If a stream has already been opened, the server can
 abort sending on the stream with an error code of H3_REQUEST_CANCELLED.
 
 Sending a CANCEL_PUSH frame has no direct effect on the state of existing push
