@@ -180,7 +180,7 @@ QPACK is a name, not an acronym.
 
 ## Notational Conventions
 
-Diagrams use the format described in Section 3.1 of {{?RFC2360}}, with the
+Diagrams use the format described in Section 3.1 of {{!RFC2360}}, with the
 following additional conventions:
 
 x (A)
