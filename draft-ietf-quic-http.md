@@ -470,8 +470,8 @@ Header and trailer field sections are described in Sections 5.4 and 5.6 of
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED ({{errors}}).  In particular, a DATA frame before
 any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
-is considered invalid.  (Other frame types, especially unknown frame types,
-might be permitted subject to their own rules; see {{extensions}}.)
+is considered invalid.  Other frame types, especially unknown frame types,
+might be permitted subject to their own rules; see {{extensions}}.
 
 A server MAY send one or more PUSH_PROMISE frames ({{frame-push-promise}})
 before, after, or interleaved with the frames of a response message. These
