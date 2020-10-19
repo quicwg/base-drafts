@@ -4097,12 +4097,10 @@ toward an unverified client address; see {{address-validation}}.
 
 Similarly, a server MUST expand the payload of all UDP datagrams carrying
 ack-eliciting Initial packets to at least the smallest allowed maximum datagram
-size of 1200 bytes.  Unexpanded Initial packets extend the peer's idle timeout,
-even if the path is not capable of carrying the full MTU, so servers can choose
-to expand ACK-only packets to at least 1200 bytes and clients can choose not to
-extend the idle timeout upon receipt of a non-ack-eliciting packet less than
-1200 bytes. Sending UDP datagrams of this size ensures that the network path
-supports a reasonable Path Maximum Transmission Unit (PMTU), in both directions.
+size of 1200 bytes.  Note that unexpanded Initial packets extend the peer's
+idle timeout, even if the path is not capable of carrying the full MTU.
+Sending UDP datagrams of this size ensures that the network path supports a
+reasonable Path Maximum Transmission Unit (PMTU), in both directions.
 
 Datagrams containing Initial packets MAY exceed 1200 bytes if the sender
 believes that the network path and peer both support the size that it chooses.
