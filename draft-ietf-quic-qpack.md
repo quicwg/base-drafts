@@ -134,8 +134,8 @@ HTTP fields:
 
 HTTP field line:
 
-: A name-value pair sent as part of an HTTP field section.  See Section 5 of
-  {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
+: A name-value pair sent as part of an HTTP field section.  See Section 5.4
+  and Section 5.6 of {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
 
 HTTP field value:
 
