@@ -2205,27 +2205,29 @@ connection.
 The endpoint MUST use unpredictable data in every PATH_CHALLENGE frame so that
 it can associate the peer's response with the corresponding PATH_CHALLENGE.
 
-An endpoint MUST expand datagrams that contain a PATH_CHALLENGE
-frame to at least the smallest allowed maximum datagram size of 1200 bytes.
-Sending UDP datagrams of this size ensures that the network path from the
-endpoint to the peer can be used for QUIC; see {{datagram-size}}.
-
-Note:
-
-: Probing with datagrams of 1200 bytes does not guarantee that the return path
-  also supports the same datagram size. Migration to a path that can carry a
-  1200-byte UDP payload in only one direction will result in the peer being
-  unable to validate the return path back to the endpoint.
+An endpoint MUST expand datagrams that contain a PATH_CHALLENGE frame to at
+least the smallest allowed maximum datagram size of 1200 bytes.  Sending UDP
+datagrams of this size ensures that the network path from the endpoint to the
+peer can be used for QUIC; see {{datagram-size}}.
 
 
 ### Path Validation Responses
 
 On receiving a PATH_CHALLENGE frame, an endpoint MUST respond by echoing the
-data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame. A
-PATH_RESPONSE frame does not need to be sent on the network path where the
-PATH_CHALLENGE was received; a PATH_RESPONSE can be sent on any network path.
-An endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
+data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
+endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
+
+A PATH_RESPONSE frame MUST be sent on the network path where the PATH_CHALLENGE
+was received.  This requirement MUST NOT be enforced by the endpoint that
+initiates path validation as that would enable an attack on migration; see
+{{off-path-forward}}.
+
+An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
+least the smallest allowed maximum datagram size of 1200 bytes. This in
+combination with sending on the same path allows the endpoint that initiated
+path validation to verify that the path is able to carry datagrams of this size
+in both directions.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
@@ -2236,8 +2238,9 @@ PATH_RESPONSE frames.
 ### Successful Path Validation
 
 Path validation succeeds when a PATH_RESPONSE frame is received that contains
-the data that was sent in a previous PATH_CHALLENGE frame. This validates the
-path on which the PATH_CHALLENGE was sent.
+the data that was sent in a previous PATH_CHALLENGE frame.  This PATH_RESPONSE
+frame can be received on any network path.  This validates the path on which
+the PATH_CHALLENGE was sent.
 
 Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
 not adequate validation, since the acknowledgment can be spoofed by a malicious
