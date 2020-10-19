@@ -2006,8 +2006,8 @@ policy documented in Section 22.1 of {{QUIC-TRANSPORT}}.  These registries all
 include the common set of fields listed in Section 22.1.1 of {{QUIC-TRANSPORT}}.
 
 The initial allocations in these registries created in this document are all
-assigned permanent status and list as contact both the IETF and the HTTP working
-group (ietf-http-wg@w3.org).
+assigned permanent status and list a change controller of the IETF and a contact
+of the HTTP working group (ietf-http-wg@w3.org).
 
 ### Frame Types {#iana-frames}
 
