@@ -565,8 +565,8 @@ convey the target URI, the method of the request, and the status code for the
 response.
 
 Pseudo-header fields are not HTTP fields.  Endpoints MUST NOT generate
-pseudo-header fields other than those defined in this document, except as
-negotiated via an extension; see {{extensions}}.
+pseudo-header fields other than those defined in this document; however, an
+extension could negotiate a modification of this restriction; see {{extensions}}.
 
 Pseudo-header fields are only valid in the context in which they are defined.
 Pseudo-header fields defined for requests MUST NOT appear in responses;
