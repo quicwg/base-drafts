@@ -1672,8 +1672,9 @@ Stream: Decoder
 
 The encoder duplicates an existing entry in the dynamic table, then sends an
 encoded field section referencing the dynamic table entries including the
-duplicated entry.  The decoder notifies the encoder that the encoded field
-section was not processed by sending a stream cancellation.
+duplicated entry.  The packet containing the encoder stream data is delayed.
+Before the packet arrives, the decoder cancels the stream and notifies the
+encoder that the encoded field section was not processed.
 
 ~~~
 Stream: Encoder
