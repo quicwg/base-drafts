@@ -2128,7 +2128,7 @@ Description:
 : A brief description of the error code semantics.
 
 The entries in {{iana-error-table}} are registered by this document. These
-Error codes were selected from the range that operates on a Specification
+error codes were selected from the range that operates on a Specification
 Required policy to avoid collisions with HTTP/2 error codes.
 
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
