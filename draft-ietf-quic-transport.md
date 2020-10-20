@@ -4087,9 +4087,10 @@ fragmentation on the path.
 
 Even though datagrams with certain properties are required to be padded, the
 size of the datagram is not authenticated, and endpoints might send coalesced
-packets after the handshake is confirmed.  Therefore, an endpoint MUST NOT close
-a connection when it receives a datagram that does not meet the padding
-requirements, though the endpoint MAY discard such datagrams.
+packets after the handshake is confirmed (see {{packet-coalesce}}).  Therefore,
+an endpoint MUST NOT close a connection when it receives a datagram that does
+not meet the padding requirements, though the endpoint MAY discard such
+datagrams.
 
 
 ## Initial Datagram Size {#initial-size}
