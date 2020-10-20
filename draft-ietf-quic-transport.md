@@ -7495,6 +7495,25 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-31
+
+- Require expansion of datagrams to ensure that a path supports at least 1200
+  bytes in both directions:
+
+  - During the handshake ack-eliciting Initial packets from the server need to
+    be expanded (#4183, #4188)
+
+  - Path validation now requires packets containing PATH_CHALLENGE and
+    PATH_RESPONSE to be expanded and PATH_RESPONSE is sent on the same network
+    path (#4216, #4226)
+
+- Though senders need to expand datagrams in some cases, receivers cannot
+  enforce this requirement (#4253, #4254)
+
+- Split contact into contact and change controller for IANA registrations
+  (#4230, #4239)
+
+
 ## Since draft-ietf-quic-transport-30
 
 - Use TRANSPORT_PARAMETER_ERROR for an invalid transport parameter (#4099,
