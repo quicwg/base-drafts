@@ -4085,7 +4085,7 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 ({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
 fragmentation on the path.
 
-Even though datagrams with certain properties are required to be padded, the
+Datagrams are required to be padded under some conditions.  However, the
 size of the datagram is not authenticated, and endpoints might send coalesced
 packets after the handshake is confirmed; see {{packet-coalesce}}.  Therefore,
 an endpoint MUST NOT close a connection when it receives a datagram that does
