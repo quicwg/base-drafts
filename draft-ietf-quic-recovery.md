@@ -1847,7 +1847,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-recovery-31
 
-Editorial changes only.
+- Limit the number of Initial packets sent in response to unauthenticated
+  packets (#4183, #4188)
 
 ## Since draft-ietf-quic-recovery-30
 
