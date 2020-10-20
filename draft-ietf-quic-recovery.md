@@ -1845,6 +1845,10 @@ RemoveFromBytesInFlight(discarded_packets):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-31
+
+Editorial changes only.
+
 ## Since draft-ietf-quic-recovery-30
 
 Editorial changes only.

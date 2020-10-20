@@ -2468,6 +2468,11 @@ restrict packet size have a limit of 2^21.5.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-31
+
+- Packet protection limits are based on maximum-sized packets; improved
+  analysis (#3701, #4175)
+
 ## Since draft-ietf-quic-tls-30
 
 - Add a new error code for AEAD_LIMIT_REACHED code to avoid conflict (#4087,

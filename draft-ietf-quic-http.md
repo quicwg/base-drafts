@@ -2522,6 +2522,10 @@ for what might be a temporary or intermittent error.
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-http-31
+
+Editorial changes only.
+
 ## Since draft-ietf-quic-http-30
 
 Editorial changes only.
