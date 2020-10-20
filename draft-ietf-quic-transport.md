@@ -2218,13 +2218,13 @@ data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
 endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
 
-A PATH_RESPONSE frame SHOULD be sent on the network path where the
+A PATH_RESPONSE frame MUST be sent on the network path where the
 PATH_CHALLENGE was received.  This ensures that path validation by a peer only
 succeeds if the path is functional in both directions.  This requirement MUST
 NOT be enforced by the endpoint that initiates path validation as that would
 enable an attack on migration; see {{off-path-forward}}.
 
-An endpoint SHOULD expand datagrams that contain a PATH_RESPONSE frame to at
+An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
 least the smallest allowed maximum datagram size of 1200 bytes. This verifies
 that the path is able to carry datagrams of this size in both directions.
 
