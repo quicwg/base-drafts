@@ -4086,11 +4086,9 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 fragmentation on the path.
 
 Datagrams are required to be padded under some conditions.  However, the
-size of the datagram is not authenticated, and endpoints might send coalesced
-packets after the handshake is confirmed; see {{packet-coalesce}}.  Therefore,
-an endpoint MUST NOT close a connection when it receives a datagram that does
-not meet size constraints, though the endpoint MAY discard such
-datagrams.
+size of the datagram is not authenticated.  Therefore, an endpoint MUST NOT
+close a connection when it receives a datagram that does not meet size
+constraints, though the endpoint MAY discard such datagrams.
 
 
 ## Initial Datagram Size {#initial-size}
