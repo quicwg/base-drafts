@@ -2120,10 +2120,11 @@ values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
 using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
-Registrations for error codes are required to include a description
-of the error code.  An expert reviewer is advised to examine new
-registrations for possible duplication with existing error codes.
-Use of existing registrations is to be encouraged, but not mandated.
+Registrations for error codes are required to include a description of the
+error code.  An expert reviewer is advised to examine new registrations for
+possible duplication with existing error codes.  Use of existing
+registrations is to be encouraged, but not mandated.  Use of values that
+are registered in the "HTTP/2 Error Code" registry is discouraged.
 
 In addition to common fields as described in {{iana-policy}}, this registry
 includes two additional fields.  Permanent registrations in this registry MUST
@@ -2135,7 +2136,9 @@ Name:
 Description:
 : A brief description of the error code semantics.
 
-The entries in {{iana-error-table}} are registered by this document.
+The entries in {{iana-error-table}} are registered by this document. These
+error codes were selected from the range that operates on a Specification
+Required policy to avoid collisions with HTTP/2 error codes.
 
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                              | Value      | Description                              | Specification          |
