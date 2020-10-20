@@ -623,10 +623,10 @@ in the Handshake packet number space.
 The total length of time over which consecutive PTOs expire is limited by the
 idle timeout.
 
-The probe timer MUST NOT be set if the time threshold ({{time-threshold}}) loss
-detection timer is set.  The time threshold loss detection timer is expected
-to both expire earlier than the PTO and be less likely to spuriously retransmit
-data.
+The PTO timer MUST NOT be set if a timer is set for time threshold
+loss detection; see {{time-threshold}}.  A timer that is set for time
+threshold loss detection will expire earlier than the PTO timer
+in most cases and is less likely to spuriously retransmit data.
 
 ### Handshakes and New Paths {#pto-handshake}
 
