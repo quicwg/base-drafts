@@ -1924,19 +1924,28 @@ in {{frame-reserved}} and {{stream-grease}}.  These methods of padding produce
 different results in terms of the granularity of padding, how padding is
 arranged in relation to the information that is being protected, whether padding
 is applied in the case of packet loss, and how an implementation might control
-padding.  Redundant padding could even be counterproductive.
+padding.
+
+Reserved stream types can be used to give the appearance of sending traffic even
+when the connection is idle.  Because HTTP traffic often occurs in bursts,
+apparent traffic can be used to obscure the timing or duration of such bursts,
+even to the point of appearing to send a constant stream of data.  However, as
+such traffic is still flow controlled by the receiver, a failure to promptly
+drain such streams and provide additional flow control credit can limit the
+sender's ability to send real traffic.
 
 To mitigate attacks that rely on compression, disabling or limiting compression
 might be preferable to padding as a countermeasure.
 
 Use of padding can result in less protection than might seem immediately
-obvious.  At best, padding only makes it more difficult for an attacker to infer
-length information by increasing the number of frames an attacker has to
-observe.  Incorrectly implemented padding schemes can be easily defeated.  In
-particular, randomized padding with a predictable distribution provides very
-little protection; similarly, padding payloads to a fixed size exposes
-information as payload sizes cross the fixed-sized boundary, which could be
-possible if an attacker can control plaintext.
+obvious.  Redundant padding could even be counterproductive.  At best, padding
+only makes it more difficult for an attacker to infer length information by
+increasing the number of frames an attacker has to observe.  Incorrectly
+implemented padding schemes can be easily defeated.  In particular, randomized
+padding with a predictable distribution provides very little protection;
+similarly, padding payloads to a fixed size exposes information as payload sizes
+cross the fixed-sized boundary, which could be possible if an attacker can
+control plaintext.
 
 ## Frame Parsing
 
