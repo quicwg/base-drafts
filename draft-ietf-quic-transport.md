@@ -4089,7 +4089,7 @@ Datagrams are required to be padded under some conditions.  However, the
 size of the datagram is not authenticated, and endpoints might send coalesced
 packets after the handshake is confirmed; see {{packet-coalesce}}.  Therefore,
 an endpoint MUST NOT close a connection when it receives a datagram that does
-not meet the padding requirements, though the endpoint MAY discard such
+not meet size constraints, though the endpoint MAY discard such
 datagrams.
 
 
