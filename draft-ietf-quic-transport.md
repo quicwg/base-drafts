@@ -4085,6 +4085,11 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 ({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
 fragmentation on the path.
 
+Datagrams are required to be of a minimum size under some conditions.  However,
+the size of the datagram is not authenticated.  Therefore, an endpoint MUST NOT
+close a connection when it receives a datagram that does not meet size
+constraints, though the endpoint MAY discard such datagrams.
+
 
 ## Initial Datagram Size {#initial-size}
 
@@ -4106,9 +4111,7 @@ A server MUST discard an Initial packet that is carried in a UDP datagram with a
 payload that is smaller than the smallest allowed maximum datagram size of 1200
 bytes.  A server MAY also immediately close the connection by sending a
 CONNECTION_CLOSE frame with an error code of PROTOCOL_VIOLATION; see
-{{immediate-close-hs}}.  When a client receives an ack-eliciting Initial packet
-that is carried in a UDP datagram with a payload that is less than 1200 bytes,
-that client MAY close the connection by sending a CONNECTION_CLOSE frame.
+{{immediate-close-hs}}.
 
 The server MUST also limit the number of bytes it sends before validating the
 address of the client; see {{address-validation}}.
