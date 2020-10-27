@@ -632,8 +632,9 @@ in most cases and is less likely to spuriously retransmit data.
 
 Resumed connections over the same network MAY use the previous connection's
 final smoothed RTT value as the resumed connection's initial RTT.  When no
-previous RTT is available, the initial RTT SHOULD be set to 333ms, resulting in
-a 1 second initial timeout, as recommended in {{?RFC6298}}.
+previous RTT is available, the initial RTT SHOULD be set to 333ms.  This
+results in handshakes starting with a PTO of 1 second, as recommended in
+{{?RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
 PATH_RESPONSE to set the initial RTT (see kInitialRtt in
