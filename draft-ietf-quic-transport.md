@@ -2132,7 +2132,7 @@ Tokens sent in NEW_TOKEN frames MUST include information that allows the server
 to verify that the client IP address has not changed from when the token was
 issued. Servers can use tokens from NEW_TOKEN in deciding not to send a Retry
 packet, even if the client address has changed. If the client IP address has
-changed, the server MUST adhere to the anti-amplification limits; see
+changed, the server MUST adhere to the anti-amplification limit; see
 {{address-validation}}.  Note that in the presence of NAT, this requirement
 might be insufficient to protect other hosts that share the NAT from
 amplification attack.
@@ -2243,7 +2243,7 @@ least the smallest allowed maximum datagram size of 1200 bytes. This verifies
 that the path is able to carry datagrams of this size in both directions.
 However, an endpoint MUST NOT expand the PATH_RESPONSE if it is constrained
 by an anti-amplification limit.  This will only occur if the PATH_CHALLENGE
-is not send in an expanded packet.
+was not sent in an expanded packet.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
