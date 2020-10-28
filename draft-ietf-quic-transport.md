@@ -1894,12 +1894,12 @@ use the server to send more data toward the victim than it would be able to send
 on its own.
 
 The primary defense against amplification attack is verifying that an endpoint
-is able to receive packets at the transport address that it claims. An endpoint
-that responds to packets received on a new path limits the data is sends on
-that path until the peer address is validated. Prior to validating the peer's
-address, endpoints MUST NOT send data toward that address that exceeds three
-times the amount of data received from that address.  This three times limit on
-the size of responses is known as the anti-amplification limit.
+is able to receive packets at the transport address that it claims.  An endpoint
+that responds to packets received from a new address limits the data it sends
+to that address until the peer address is validated.  Prior to validating the
+peer's address, endpoints MUST NOT send data toward that address that exceeds
+three times the amount of data received from that address.  This three times
+limit on the size of responses is known as the anti-amplification limit.
 
 Address validation is performed both during connection establishment (see
 {{validate-handshake}}) and during connection migration (see
@@ -6919,6 +6919,13 @@ attacker can observe packets.
 Prior to address validation, endpoints are limited in what they are able to
 send.  Endpoints cannot send data toward an unvalidated address in excesss of
 three times the data received from that address.
+
+Note:
+
+: The three times anti-amplification limit only applies when sending in
+  response to packets received from an unvalidated address. The
+  anti-amplification limit does not apply to clients that establish a new
+  connection or when path migration is initiated.
 
 
 #### Server-Side DoS
