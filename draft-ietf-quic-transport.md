@@ -2261,7 +2261,7 @@ PATH_CHALLENGE was sent.
 If the PATH_CHALLENGE frame was sent in a datagram that was not expanded to at
 least 1200 bytes, an endpoint can regard the address as valid for the purposes
 of sending more than three times the amount of data that has been received.
-However, the path MTU is not validated so the endpoint SHOULD initiate another
+However, the path MTU is not validated so the endpoint MUST initiate another
 path validation to verify that the path MTU is sufficient.
 
 Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
