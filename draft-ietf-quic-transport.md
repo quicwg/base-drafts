@@ -2219,10 +2219,12 @@ from the endpoint to the peer can be used for QUIC; see {{datagram-size}}.
 
 If an endpoint is unable to expand the datagram payload to 1200 bytes, no
 padding is necessary.  However, this means that the path MTU will not be
-validated.  The endpoint MUST perform a second path validation with a datagram
-of at least 1200 bytes once a PATH_RESPONSE is successfully received or when
-enough bytes have been received on the path that sending the larger datagram
-will not result in exceeding the anti-amplification limit.
+validated.  To ensure that the path MTU is large enough, the endpoint MUST
+perform a second path validation by sending a PATH_CHALLENGE frame in a
+datagram of at least 1200 bytes.  This additional validation can be
+performed after a PATH_RESPONSE is successfully received or when enough
+bytes have been received on the path that sending the larger datagram will
+not result in exceeding the anti-amplification limit.
 
 
 ### Path Validation Responses
