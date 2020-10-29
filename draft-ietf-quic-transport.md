@@ -7413,8 +7413,15 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
-The pseudo-code in {{alg-decode-pn}} shows how an implementation can decode
+The pseudo-code in {{alg-decode-pn}} includes an example algorithm for decoding
 packet numbers after header protection has been removed.
+
+The DecodePacketNumber function takes three arguments:
+
+* largest_pn is the largest packet number that has been successfully
+  processed in the current packet number space.
+* truncated_pn is the value of the Packet Number field.
+* pn_nbits is the number of bits in the Packet Number field (8, 16, 24, or 32).
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
