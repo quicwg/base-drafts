@@ -1895,12 +1895,11 @@ on its own.
 
 The primary defense against amplification attack is verifying that an endpoint
 is able to receive packets at the transport address that it claims.  An endpoint
-that responds to packets received from a new address limits the data it sends
-to that address until the peer address is validated.  Prior to validating the
-peer's address, endpoints MUST NOT send datagrams toward that address
-whose total payload exceeds three times the amount of data received from
-that address.  This
-limit on the size of responses is known as the anti-amplification limit.
+that responds to packets received from a new address limits the data it sends to
+that address until the peer address is validated.  Prior to validating the
+peer's address, endpoints MUST NOT send datagrams toward that address whose
+total payload exceeds three times the amount of data received from that address.
+This limit on the size of responses is known as the anti-amplification limit.
 
 Address validation is performed both during connection establishment (see
 {{validate-handshake}}) and during connection migration (see
@@ -1915,9 +1914,9 @@ confirms that the client received the Initial packet from the server.  Once the
 server has successfully processed a Handshake packet from the client, it can
 consider the client address to have been validated.
 
-Additionally, a server MAY consider the client address validated if the
-client uses a connection ID chosen by the server and the connection ID contains
-at least 64 bits of entropy.
+Additionally, a server MAY consider the client address validated if the client
+uses a connection ID chosen by the server and the connection ID contains at
+least 64 bits of entropy.
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
@@ -2221,11 +2220,11 @@ from the endpoint to the peer can be used for QUIC; see {{datagram-size}}.
 If an endpoint is unable to expand the datagram payload to 1200 bytes, no
 padding is necessary.  However, this means that the path MTU will not be
 validated.  To ensure that the path MTU is large enough, the endpoint MUST
-perform a second path validation by sending a PATH_CHALLENGE frame in a
-datagram of at least 1200 bytes.  This additional validation can be
-performed after a PATH_RESPONSE is successfully received or when enough
-bytes have been received on the path that sending the larger datagram will
-not result in exceeding the anti-amplification limit.
+perform a second path validation by sending a PATH_CHALLENGE frame in a datagram
+of at least 1200 bytes.  This additional validation can be performed after a
+PATH_RESPONSE is successfully received or when enough bytes have been received
+on the path that sending the larger datagram will not result in exceeding the
+anti-amplification limit.
 
 
 ### Path Validation Responses
@@ -2244,10 +2243,9 @@ enable an attack on migration; see {{off-path-forward}}.
 An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
 least the smallest allowed maximum datagram size of 1200 bytes. This verifies
 that the path is able to carry datagrams of this size in both directions.
-However, an endpoint MUST NOT expand the datagram containing the
-PATH_RESPONSE if it is constrained by an anti-amplification limit.  This
-will only occur if the PATH_CHALLENGE was not sent in an expanded
-datagram.
+However, an endpoint MUST NOT expand the datagram containing the PATH_RESPONSE
+if it is constrained by an anti-amplification limit.  This will only occur if
+the PATH_CHALLENGE was not sent in an expanded datagram.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
