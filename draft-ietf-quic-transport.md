@@ -4082,7 +4082,8 @@ QUIC assumes a minimum IP packet size of at least 1280 bytes.  This is the IPv6
 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
 networks.  Assuming the minimum IP header size of 40 bytes for IPv6 and 20 bytes
 for IPv4 and a UDP header size of 8 bytes, this results in a maximum datagram
-size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
+size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Thus, modern IPv4
+and all IPv6 network paths will be able to support QUIC.
 
 Any maximum datagram size larger than 1200 bytes can be discovered using Path
 Maximum Transmission Unit Discovery (PMTUD; see {{pmtud}}) or Datagram
