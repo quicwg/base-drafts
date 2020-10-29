@@ -6842,6 +6842,18 @@ decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
 
 
+## Traffic Analysis
+
+The length of QUIC packets can reveal information about the length of the
+content of those packets.  The PADDING frame is provided so that endpoints have
+some ability to obscure the length of packet content; see {{frame-padding}}.
+
+Note however that defeating traffic analysis is challenging and the subject of
+active research.  Length is not the only way that information might leak.
+Endpoints might also reveal sensitive information through other side channels,
+such as the timing of packets.
+
+
 ## Overview of Security Properties {#security-properties}
 
 A complete security analysis of QUIC is outside the scope of this document.
