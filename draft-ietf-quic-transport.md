@@ -5085,7 +5085,7 @@ Transport Parameter {
 {: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
 
 The Transport Parameter Length field contains the length of the Transport
-Parameter Value field.
+Parameter Value field in bytes.
 
 QUIC encodes transport parameters into a sequence of bytes, which is then
 included in the cryptographic handshake.
