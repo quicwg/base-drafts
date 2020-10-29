@@ -2961,13 +2961,18 @@ A stateless reset is not appropriate for indicating errors in active
 connections. An endpoint that wishes to communicate a fatal connection error
 MUST use a CONNECTION_CLOSE frame if it is able.
 
-To support this process, a token is sent by endpoints.  The token is carried in
-the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
-specify a stateless_reset_token transport parameter during the handshake that
-applies to the connection ID that it selected during the handshake; clients
-cannot use this transport parameter because their transport parameters do not
-have confidentiality protection.  These tokens are protected by encryption, so
-only client and server know their value.  Tokens are invalidated when their
+To support this process, an endpoint can issue a stateless reset token, which
+is a 16 byte value that is hard to guess.  If that endpoint sends a stateless
+reset, a UDP datagram that ends in the stateless reset token, the recipient
+will immediately end the connection.
+
+A stateless reset token is issued by including the value in the Stateless Reset
+Token field of a NEW_CONNECTION_ID frame.  Servers can also issue a
+stateless_reset_token transport parameter during the handshake that applies to
+the connection ID that it selected during the handshake; clients cannot use
+this transport parameter because their transport parameters do not have
+confidentiality protection.  These tokens are protected by encryption, so only
+client and server know their value.  Tokens are invalidated when their
 associated connection ID is retired via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
