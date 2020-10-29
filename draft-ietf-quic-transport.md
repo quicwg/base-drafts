@@ -3422,10 +3422,7 @@ Frame {
 {: #frame-layout title="Generic Frame Layout"}
 
 The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
-CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
-other frames, the Frame Type field simply identifies the frame.  These
-frames are explained in more detail in {{frame-formats}}.
+{{frame-types}} includes some summary information that is explained below.
 
 | Type Value  | Frame Type Name      | Definition                     | Pkts | Spec |
 |:------------|:---------------------|:-------------------------------|------|------|
@@ -3450,6 +3447,14 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01 | N    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1 |      |
 {: #frame-types title="Frame Types"}
+
+The format and semantics of each frame type is explained in more detail in
+{{frame-formats}}.  The remainder of this section provides a summary of
+important and general information.
+
+The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
+CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
+other frames, the Frame Type field simply identifies the frame.
 
 The "Pkts" column in {{frame-types}} lists the types of packets that each frame
 type could appear in, indicated by the following characters:
@@ -3506,9 +3511,8 @@ registry; see {{iana-frames}}.
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
 error of type FRAME_ENCODING_ERROR.
 
-All QUIC frames are idempotent in this version of QUIC.  That is, a valid
-frame does not cause undesirable side effects or errors when received more
-than once.
+All frames are idempotent in this version of QUIC.  That is, a valid frame does
+not cause undesirable side effects or errors when received more than once.
 
 The Frame Type field uses a variable-length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
