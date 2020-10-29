@@ -260,7 +260,7 @@ Application:
 : An entity that uses QUIC to send and receive data.
 
 
-## Notational Conventions
+## Notational Conventions {#notation}
 
 Packet and frame diagrams in this document use a custom format. The purpose of
 this format is to summarize, not define, protocol elements. Prose defines the
@@ -2972,7 +2972,7 @@ associated connection ID is retired via a RETIRE_CONNECTION_ID frame
 ({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
-following layout:
+following layout (see {{notation}}):
 
 ~~~
 Stateless Reset {
