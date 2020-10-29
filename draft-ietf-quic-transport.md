@@ -231,8 +231,8 @@ Server:
 QUIC packet:
 
 : A complete processable unit of QUIC that can be encapsulated in a UDP
-  datagram.  QUIC packets carry one or more frames.  Multiple QUIC packets can
-  be encapsulated in a single UDP datagram.
+  datagram.  One or more QUIC packets can be encapsulated in a single UDP
+  datagram.
 
 Ack-eliciting Packet:
 
@@ -243,7 +243,8 @@ Ack-eliciting Packet:
 Frame:
 
 : A unit of structured protocol information.  There are multiple frame types,
-  each of which carries different information.
+  each of which carries different information.  Frames are conveyed in QUIC
+  packets.
 
 Address:
 
