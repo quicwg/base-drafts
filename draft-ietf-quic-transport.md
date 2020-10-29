@@ -322,6 +322,10 @@ Example Structure {
 ~~~
 {: #fig-ex-format title="Example Format"}
 
+When a single-bit field is referenced in prose, the value of the byte that
+carries that field with the value set can be used to clarify. For example, the
+value 0x80 could be used to refer to the One-bit Field in {{fig-ex-format}}.
+
 
 # Streams {#streams}
 
