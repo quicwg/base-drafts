@@ -214,17 +214,6 @@ QUIC:
 : The transport protocol described by this document. QUIC is a name, not an
   acronym.
 
-QUIC packet:
-
-: A complete processable unit of QUIC that can be encapsulated in a UDP
-  datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
-
-Ack-eliciting Packet:
-
-: A QUIC packet that contains frames other than ACK, PADDING, and
-  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
-  {{sending-acknowledgements}}.
-
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating, receiving,
@@ -238,6 +227,23 @@ Client:
 Server:
 
 : The endpoint that accepts a QUIC connection.
+
+QUIC packet:
+
+: A complete processable unit of QUIC that can be encapsulated in a UDP
+  datagram.  QUIC packets carry one or more frames.  Multiple QUIC packets can
+  be encapsulated in a single UDP datagram.
+
+Ack-eliciting Packet:
+
+: A QUIC packet that contains frames other than ACK, PADDING, and
+  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
+  {{sending-acknowledgements}}.
+
+Frame:
+
+: A unit of structured protocol information.  There are multiple frame types,
+  each of which carries different information.
 
 Address:
 
