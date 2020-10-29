@@ -3448,7 +3448,7 @@ The frame types defined in this specification are listed in {{frame-types}}.
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1 |      |
 {: #frame-types title="Frame Types"}
 
-The format and semantics of each frame type is explained in more detail in
+The format and semantics of each frame type are explained in more detail in
 {{frame-formats}}.  The remainder of this section provides a summary of
 important and general information.
 
