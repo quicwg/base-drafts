@@ -4345,10 +4345,7 @@ encoding properties.
 | 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
-For example, the eight byte sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
-decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
-7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
-single byte 25 decodes to 37 (as does the two byte sequence 40 25).
+Examples and a sample decoding algorithm are shown in {{sample-varint}}.
 
 Versions ({{versions}}) and packet numbers sent in the header
 ({{packet-encoding}}) are described using integers, but do not use this
@@ -7485,6 +7482,28 @@ properly support ECN.  Any path that incorrectly modifies markings will cause
 ECN to be disabled.  For those rare cases where marked packets are discarded by
 the path, the short duration of the testing period limits the number of losses
 incurred.
+
+# Sample Variable-Length Integer Decoding {#sample-varint}
+
+The pseudo-code in {{alg-varint}} shows how a variable-length integer can be
+read from a stream of bytes.  The function ReadVarint takes a single argument, a
+sequence of bytes to read from.
+
+~~~
+ReadVarint(data):
+  first_byte = data.peek()
+  prefix = first_byte >> 6
+  num_bytes = 1 << prefix
+  mask = (1 << (num_bytes * 8 - 2)) - 1
+
+  return data.read(num_bytes) & mask
+~~~
+{: #alg-varint title="Sample Variable-Length Integer Decoding Algorithm"}
+
+For example, the eight-byte sequence 0xc2197c5eff14e88c decodes to the decimal
+value 151,288,809,941,952,652; the four-byte sequence 0x9d7f3e7d decodes to
+494,878,333; the two-byte sequence 0x7bbd decodes to 15,293; and the single byte
+0x25 decodes to 37 (as does the two-byte sequence 0x4025).
 
 
 
