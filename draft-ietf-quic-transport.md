@@ -1897,8 +1897,9 @@ The primary defense against amplification attack is verifying that an endpoint
 is able to receive packets at the transport address that it claims.  An endpoint
 that responds to packets received from a new address limits the data it sends
 to that address until the peer address is validated.  Prior to validating the
-peer's address, endpoints MUST NOT send data toward that address that exceeds
-three times the amount of data received from that address.  This three times
+peer's address, endpoints MUST NOT send datagrams toward that address
+whose total payload exceeds three times the amount of data received from
+that address.  This
 limit on the size of responses is known as the anti-amplification limit.
 
 Address validation is performed both during connection establishment (see
@@ -2243,9 +2244,10 @@ enable an attack on migration; see {{off-path-forward}}.
 An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
 least the smallest allowed maximum datagram size of 1200 bytes. This verifies
 that the path is able to carry datagrams of this size in both directions.
-However, an endpoint MUST NOT expand the PATH_RESPONSE if it is constrained
-by an anti-amplification limit.  This will only occur if the PATH_CHALLENGE
-was not sent in an expanded packet.
+However, an endpoint MUST NOT expand the datagram containing the
+PATH_RESPONSE if it is constrained by an anti-amplification limit.  This
+will only occur if the PATH_CHALLENGE was not sent in an expanded
+datagram.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
