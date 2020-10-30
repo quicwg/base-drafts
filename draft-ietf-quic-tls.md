@@ -1998,7 +1998,7 @@ TLS relies on a cryptographically secure pseudorandom number generator
 to the uses in TLS, a source of unpredictable values is used in QUIC for a
 variety of protocol elements, including stateless reset messages, stateless
 reset tokens, and PATH_CHALLENGE frames. An endpoint that employs a weak
-CS-PRNG forfeits many of the security properties that QUIC provides.
+CSPRNG forfeits many of the security properties that QUIC provides.
 
 
 # IANA Considerations
