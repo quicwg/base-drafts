@@ -7491,12 +7491,12 @@ sequence of bytes to read from.
 
 ~~~
 ReadVarint(data):
-  first_byte = data.peek()
-  prefix = first_byte >> 6
-  num_bytes = 1 << prefix
-  mask = (1 << (num_bytes * 8 - 2)) - 1
-
-  return data.read(num_bytes) & mask
+  v = data.next_byte()
+  length = (1 << (v >> 6))
+  v = v & 0x3f
+  repeat length-1 times:
+    v = (v << 8) + data.next_byte()
+  return v
 ~~~
 {: #alg-varint title="Sample Variable-Length Integer Decoding Algorithm"}
 
