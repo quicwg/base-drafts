@@ -7487,7 +7487,7 @@ incurred.
 
 The pseudo-code in {{alg-varint}} shows how a variable-length integer can be
 read from a stream of bytes.  The function ReadVarint takes a single argument, a
-sequence of bytes to read from.
+sequence of bytes which can be read in network byte order.
 
 ~~~
 ReadVarint(data):
