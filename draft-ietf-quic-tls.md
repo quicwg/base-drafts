@@ -1991,6 +1991,16 @@ New QUIC versions SHOULD define a new salt value used in calculating initial
 secrets.
 
 
+## Randomness
+
+TLS relies on a cryptographically secure pseudorandom number generator
+(CS-PRNG) {{!RFC4086}} to produce random or unpredictable values. In addition
+to the uses in TLS, a source of unpredictable values is used in QUIC for a
+variety of protocol elements, including stateless reset messages, stateless
+reset tokens, and PATH_CHALLENGE frames. An endpoint that employs a weak
+CS-PRNG forfeits many of the security properties that QUIC provides.
+
+
 # IANA Considerations
 
 This document registers the quic_transport_parameters extension found in
