@@ -3421,8 +3421,9 @@ Frame {
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
 
-The frame types defined in this specification are listed in {{frame-types}}.
-{{frame-types}} includes some summary information that is explained below.
+{{frame-types}} lists and summarizes information about each frame type that is
+defined in this specification.  A description of this summary is included after
+the table.
 
 | Type Value  | Frame Type Name      | Definition                     | Pkts | Spec |
 |:------------|:---------------------|:-------------------------------|------|------|
