@@ -7494,7 +7494,8 @@ ReadVarint(data):
   // The length of variable-length integers is encoded in the
   // first two bits of the first byte.
   v = data.next_byte()
-  length = (1 << (v >> 6))
+  prefix = v >> 6
+  length = 1 << prefix
 
   // Once the length is known, remove these bits and read any
   // remaining bytes.
