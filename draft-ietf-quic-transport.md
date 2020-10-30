@@ -7491,8 +7491,13 @@ sequence of bytes to read from.
 
 ~~~
 ReadVarint(data):
+  // The length of variable-length integers is encoded in the
+  // first two bits of the first byte.
   v = data.next_byte()
   length = (1 << (v >> 6))
+
+  // Once the length is known, remove these bits and read any
+  // remaining bytes.
   v = v & 0x3f
   repeat length-1 times:
     v = (v << 8) + data.next_byte()
