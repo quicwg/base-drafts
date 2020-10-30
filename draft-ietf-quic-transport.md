@@ -7415,18 +7415,21 @@ The EncodePacketNumber function takes two arguments:
 
 ~~~
 EncodePacketNumber(full_pn, largest_acked):
-  // If no packets in the current space have been
-  // acknowledged, the full packet number is used.
-  if largest_acked is None:
-    return full_pn
 
   // The number of bits must be at least one more
   // than the base-2 logarithm of the number of contiguous
   // unacknowledged packet numbers, including the new packet.
-  num_unacked = full_pn - largest_acked
+  if largest_acked is None:
+    num_unacked = full_pn + 1
+  else:
+    num_unacked = full_pn - largest_acked
+
   min_bits = log(num_unacked, 2) + 1
   num_bytes = ceil(min_bits / 8)
-  return full_pn[-num_bytes:]
+
+  // Return the value after truncating the full packet number
+  // to num_bytes least-significant bytes
+  return truncate(full_pn, num_bytes)
 ~~~
 {: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
 
