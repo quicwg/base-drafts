@@ -7411,7 +7411,7 @@ The EncodePacketNumber function takes two arguments:
 
 * full_pn is the full packet number of the packet being sent.
 * largest_acked is the largest packet number which has been acknowledged by the
-  recipient in the current packet number space, if any
+  peer in the current packet number space, if any
 
 ~~~
 EncodePacketNumber(full_pn, largest_acked):
@@ -7433,7 +7433,7 @@ EncodePacketNumber(full_pn, largest_acked):
 For example, if an endpoint has received an acknowledgment for packet 0xabe8bc
 and is sending a packet with a number of 0xac5c02, there are 29,519 (0x734f)
 outstanding packets.  In order to represent at least twice this range (59,038
-packets, or 0xe69e), 16 bits will be required.
+packets, or 0xe69e), 16 bits are required.
 
 In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
