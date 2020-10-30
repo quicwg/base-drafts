@@ -6421,6 +6421,12 @@ the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 # Security Considerations
 
+The goal of QUIC is to provide a secure transport connection.  However,
+third-parties and malicious peers are able to disrupt the connection in
+various ways.  {{security-properties}} presents an in-depth overview
+of the security properties QUIC attempts to provide; subsequent sections
+discuss the mitigations QUIC employs against various types of attacks.
+
 ## Overview of Security Properties {#security-properties}
 
 A complete security analysis of QUIC is outside the scope of this document.
