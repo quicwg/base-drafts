@@ -7411,7 +7411,7 @@ The EncodePacketNumber function takes two arguments:
 
 * full_pn is the full packet number of the packet being sent.
 * largest_acked is the largest packet number which has been acknowledged by the
-  peer in the current packet number space, if any
+  peer in the current packet number space, if any.
 
 ~~~
 EncodePacketNumber(full_pn, largest_acked):
