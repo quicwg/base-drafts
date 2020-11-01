@@ -3287,7 +3287,8 @@ confidentiality protection. Initial protection exists to ensure that the sender
 of the packet is on the network path. Any entity that receives an Initial packet
 from a client can recover the keys that will allow them to both read the
 contents of the packet and generate Initial packets that will be successfully
-authenticated at either endpoint.
+authenticated at either endpoint.  The AEAD also protects Initial packets
+against accidental modification.
 
 All other packets are protected with keys derived from the cryptographic
 handshake.  The cryptographic handshake ensures that only the communicating
