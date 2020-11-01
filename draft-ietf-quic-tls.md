@@ -1993,12 +1993,9 @@ secrets.
 
 ## Randomness
 
-TLS relies on a cryptographically secure pseudorandom number generator
-(CSPRNG) {{!RFC4086}} to produce random or unpredictable values. In addition
-to the uses in TLS, a source of unpredictable values is used in QUIC for a
-variety of protocol elements, including stateless reset messages, stateless
-reset tokens, and PATH_CHALLENGE frames. An endpoint that employs a weak
-CSPRNG forfeits many of the security properties that QUIC provides.
+QUIC depends on the ability to generate secure random numbers, both directly for
+protocol values such as the connection ID, and transitively via TLS. See
+{{!RFC4086}} for guidance on secure random number generation.
 
 
 # IANA Considerations
