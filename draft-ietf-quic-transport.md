@@ -4411,7 +4411,7 @@ the packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
-numbers, including the new packet.  Pseudo-code and examples for packet number
+numbers, including the new packet.  Pseudocode and examples for packet number
 encoding can be found in {{sample-packet-number-encoding}}.
 
 At a receiver, protection of the packet number is removed prior to recovering
@@ -4422,7 +4422,7 @@ full packet number is necessary to successfully remove packet protection.
 
 Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
-expected packet is the highest received packet number plus one.  Pseudo-code and
+expected packet is the highest received packet number plus one.  Pseudocode and
 an example for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
@@ -7441,9 +7441,17 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 --- back
 
-# Sample Packet Number Encoding Algorithm {#sample-packet-number-encoding}
+# Pseudocode
 
-The pseudo-code in {{alg-encode-pn}} shows how an implementation can select
+The pseudocode in this section describe sample algorithms.  These algorithms are
+intended to be correct and clear, rather than being optimally performant.
+
+The pseudocode segments in this section are licensed as Code Components; see the
+copyright notice.
+
+## Sample Packet Number Encoding Algorithm {#sample-packet-number-encoding}
+
+The pseudocode in {{alg-encode-pn}} shows how an implementation can select
 an appropriate size for packet number encodings.
 
 The EncodePacketNumber function takes two arguments:
@@ -7481,9 +7489,9 @@ In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
 (131,182 packets, or 0x2006e).
 
-# Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
+## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
-The pseudo-code in {{alg-decode-pn}} includes an example algorithm for decoding
+The pseudocode in {{alg-decode-pn}} includes an example algorithm for decoding
 packet numbers after header protection has been removed.
 
 The DecodePacketNumber function takes three arguments:
@@ -7525,7 +7533,8 @@ For example, if the highest successfully authenticated packet had a packet
 number of 0xa82f30ea, then a packet containing a 16-bit value of 0x9b32 will be
 decoded as 0xa82f9b32.
 
-# Sample ECN Validation Algorithm {#ecn-alg}
+
+## Sample ECN Validation Algorithm {#ecn-alg}
 
 Each time an endpoint commences sending on a new network path, it determines
 whether the path supports ECN; see {{ecn}}.  If the path supports ECN, the goal
@@ -7566,9 +7575,9 @@ ECN to be disabled.  For those rare cases where marked packets are discarded by
 the path, the short duration of the testing period limits the number of losses
 incurred.
 
-# Sample Variable-Length Integer Decoding {#sample-varint}
+## Sample Variable-Length Integer Decoding {#sample-varint}
 
-The pseudo-code in {{alg-varint}} shows how a variable-length integer can be
+The pseudocode in {{alg-varint}} shows how a variable-length integer can be
 read from a stream of bytes.  The function ReadVarint takes a single argument, a
 sequence of bytes which can be read in network byte order.
 
@@ -7593,7 +7602,6 @@ For example, the eight-byte sequence 0xc2197c5eff14e88c decodes to the decimal
 value 151,288,809,941,952,652; the four-byte sequence 0x9d7f3e7d decodes to
 494,878,333; the two-byte sequence 0x7bbd decodes to 15,293; and the single byte
 0x25 decodes to 37 (as does the two-byte sequence 0x4025).
-
 
 
 # Change Log
