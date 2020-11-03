@@ -7427,9 +7427,9 @@ EncodePacketNumber(full_pn, largest_acked):
   min_bits = log(num_unacked, 2) + 1
   num_bytes = ceil(min_bits / 8)
 
-  // Return the value after truncating the full packet number
-  // to num_bytes least-significant bytes
-  return truncate(full_pn, num_bytes)
+  // Encode the integer value and truncate to the 
+  // num_bytes least-significant bytes.
+  return encode(full_pn, num_bytes)
 ~~~
 {: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
 
