@@ -266,6 +266,11 @@ Application:
 
 : An entity that uses QUIC to send and receive data.
 
+This document uses the terms "QUIC packets", "UDP datagrams", and "IP packets"
+to refer to the units of the respective protocols. That is, one or more QUIC
+packets can be encapsulated in a UDP datagram, which is in turn encapsulated in
+an IP packet.
+
 
 ## Notational Conventions {#notation}
 
