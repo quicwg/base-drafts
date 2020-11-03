@@ -5028,11 +5028,15 @@ versions of QUIC are interpreted.
 ### Latency Spin Bit {#spin-bit}
 
 The latency spin bit enables passive latency monitoring from observation points
-on the network path throughout the duration of a connection. The spin bit is
-only present in the short packet header, since it is possible to measure the
-initial RTT of a connection by observing the handshake. Therefore, the spin bit
-is available after version negotiation and connection establishment are
-completed. On-path measurement and use of the latency spin bit is further
+on the network path throughout the duration of a connection. The server reflects
+the spin value received, while the client 'spins' it after one RTT. On-path
+observers can measure the time between two spin bit toggle events to estimate
+the end-to-end RTT of a connection.
+
+The spin bit is only present in the short packet header, since it is possible to
+measure the initial RTT of a connection by observing the handshake. Therefore,
+the spin bit is available after version negotiation and connection establishment
+are completed. On-path measurement and use of the latency spin bit is further
 discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
 The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
@@ -5069,11 +5073,6 @@ spin value for that path to the inverse of the spin bit in the received packet.
 
 An endpoint resets the spin value for a network path to zero when changing the
 connection ID being used on that network path.
-
-With this mechanism, the server reflects the spin value received, while the
-client 'spins' it after one RTT. On-path observers can measure the time
-between two spin bit toggle events to estimate the end-to-end RTT of a
-connection.
 
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
