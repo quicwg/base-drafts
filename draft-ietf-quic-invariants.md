@@ -111,6 +111,9 @@ version of QUIC.
 
 {::boilerplate bcp14}
 
+This document defines requirements on future QUIC versions, even where normative
+language is not used.
+
 This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
 
