@@ -4409,17 +4409,13 @@ the difference between the largest acknowledged packet and packet number being
 sent.  A peer receiving the packet will then correctly decode the packet number,
 unless the packet is delayed in transit such that it arrives after many
 higher-numbered packets have been received.  An endpoint SHOULD use a large
-enough packet number encoding to allow the packet number to be recovered even
-if the packet arrives after packets that are sent afterwards.
+enough packet number encoding to allow the packet number to be recovered even if
+the packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
-numbers, including the new packet.
-
-For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
-sending a packet with a number of 0xac5c02 requires a packet number encoding
-with 16 bits or more; whereas the 24-bit packet number encoding is needed to
-send a packet with a number of 0xace8fe.
+numbers, including the new packet.  Pseudo-code and examples for packet number
+encoding can be found in {{sample-packet-number-encoding}}.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -4429,10 +4425,8 @@ full packet number is necessary to successfully remove packet protection.
 
 Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
-expected packet is the highest received packet number plus one.  For example, if
-the highest successfully authenticated packet had a packet number of 0xa82f30ea,
-then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
-Example pseudo-code for packet number decoding can be found in
+expected packet is the highest received packet number plus one.  Pseudo-code and
+an example for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -7450,6 +7444,46 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 --- back
 
+# Sample Packet Number Encoding Algorithm {#sample-packet-number-encoding}
+
+The pseudo-code in {{alg-encode-pn}} shows how an implementation can select
+an appropriate size for packet number encodings.
+
+The EncodePacketNumber function takes two arguments:
+
+* full_pn is the full packet number of the packet being sent.
+* largest_acked is the largest packet number which has been acknowledged by the
+  peer in the current packet number space, if any.
+
+~~~
+EncodePacketNumber(full_pn, largest_acked):
+
+  // The number of bits must be at least one more
+  // than the base-2 logarithm of the number of contiguous
+  // unacknowledged packet numbers, including the new packet.
+  if largest_acked is None:
+    num_unacked = full_pn + 1
+  else:
+    num_unacked = full_pn - largest_acked
+
+  min_bits = log(num_unacked, 2) + 1
+  num_bytes = ceil(min_bits / 8)
+
+  // Encode the integer value and truncate to
+  // the num_bytes least-significant bytes.
+  return encode(full_pn, num_bytes)
+~~~
+{: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
+
+For example, if an endpoint has received an acknowledgment for packet 0xabe8bc
+and is sending a packet with a number of 0xac5c02, there are 29,519 (0x734f)
+outstanding packets.  In order to represent at least twice this range (59,038
+packets, or 0xe69e), 16 bits are required.
+
+In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
+encoding, because at least 18 bits are required to represent twice the range
+(131,182 packets, or 0x2006e).
+
 # Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
 The pseudo-code in {{alg-decode-pn}} includes an example algorithm for decoding
@@ -7490,6 +7524,9 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 ~~~
 {: #alg-decode-pn title="Sample Packet Number Decoding Algorithm"}
 
+For example, if the highest successfully authenticated packet had a packet
+number of 0xa82f30ea, then a packet containing a 16-bit value of 0x9b32 will be
+decoded as 0xa82f9b32.
 
 # Sample ECN Validation Algorithm {#ecn-alg}
 
