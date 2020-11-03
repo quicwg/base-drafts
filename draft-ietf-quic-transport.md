@@ -4383,9 +4383,12 @@ sent.  A peer receiving the packet will then correctly decode the packet number,
 unless the packet is delayed in transit such that it arrives after many
 higher-numbered packets have been received.  An endpoint SHOULD use a large
 enough packet number encoding to allow the packet number to be recovered even if
-the packet arrives after packets that are sent afterwards.  Pseudo-code and
-examples for packet number encoding can be found in
-{{sample-packet-number-encoding}}.
+the packet arrives after packets that are sent afterwards.
+
+As a result, the size of the packet number encoding is at least one bit more
+than the base-2 logarithm of the number of contiguous unacknowledged packet
+numbers, including the new packet.  Pseudo-code and examples for packet number
+encoding can be found in {{sample-packet-number-encoding}}.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -7427,8 +7430,8 @@ EncodePacketNumber(full_pn, largest_acked):
   min_bits = log(num_unacked, 2) + 1
   num_bytes = ceil(min_bits / 8)
 
-  // Encode the integer value and truncate to the 
-  // num_bytes least-significant bytes.
+  // Encode the integer value and truncate to
+  // the num_bytes least-significant bytes.
   return encode(full_pn, num_bytes)
 ~~~
 {: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
