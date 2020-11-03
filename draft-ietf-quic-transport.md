@@ -329,6 +329,73 @@ single-bit field in the most significant bit of the byte, such as One-bit Field
 in {{fig-ex-format}}.
 
 
+# Overview of QUIC Version 1
+
+QUIC is a connection-oriented transport protocol which uses UDP ({{!UDP}})
+datagrams to carry its packets.  The version-independent properties of
+QUIC are described in [QUIC-INVARIANTS]; this document describes a particular
+version of QUIC, version 1.
+
+When a QUIC connection begins, a version of QUIC needs to be negotiated.
+Clients optimistically begin the handshake with a version of QUIC that they
+support; servers respond with a Version Negotiation packet if that version of
+QUIC is not acceptable.  Once a version is mutually acceptable, the server
+processes the client's handshake packets.
+
+In this version of QUIC, the handshake is performed using TLS.  TLS is not used
+over QUIC as it is over TCP, nor is DTLS used over UDP.  Instead, QUIC replaces
+the TLS record layer with its own interface, described in detail in [QUIC-TLS].
+The QUIC connection is configured using transport parameters, which are
+transported by TLS and confirmed during the handshake.  The TLS handshake
+provides keys which are used to encrypt the packets QUIC generates.
+
+Most packets sent by QUIC contain a collection of frames.  Frames are the
+individual unit of information in QUIC, and each frame type serves a different
+purpose.  Frames are used to carry control information and to transport
+application data.
+
+Once a connection is established, the abstraction provided to the application
+layer is a collection of ordered reliable bytestreams.  Streams can be
+bidirectional, permitting data to flow from client to server and vice versa, or
+unidirectional, carrying data only from client to server or server to client.
+Stream of either type can be initiated by either endpoint.  Different
+applications might choose to use one, some, or all of these possible
+combinations.  Streams can be opened, written to, read from.  When the
+application is done with a stream, it can be closed cleanly or terminated
+abruptly with an error code.
+
+QUIC includes loss detection mechanisms to detect lost packets, enabling a
+sender to repair a loss by resending the information conveyed by frames
+contained in the lost packets.  This document describes the feedback mechanisms
+provided by the transport; one set of possible algorithms for loss recovery and
+congestion control are described in [QUIC-RECOVERY], but an endpoint can instead
+implement other algorithms using the loss detection tools provided by the
+transport.
+
+In addition to congestion control, data sent on streams is flow-controlled to
+avoid exceeding memory limits on the peer.  Both individual streams and the
+connection as a whole (data sent on any stream) are subject to flow control.
+Control frames are not subject to flow control, but are still subject to
+congestion control.
+
+QUIC does not identify connections based solely on the source and destination IP
+address and port number tuple.  Instead, each endpoint assigns a QUIC connection
+a "connection ID" which can be used to assign incoming packets to the
+appropriate connection upon receipt.  This connection ID permits a QUIC
+connection to survive a change in NAT port mappings or in connection network. In
+this version of QUIC, only clients are allowed to migrate.  In order to reduce
+the impact of falsified source addresses, each peer validates that the new
+network endpoint is able to receive packets and respond.
+
+A connection can be terminated by either the application or the transport stack,
+and by either the client or the server.  Connections can close in various ways.
+They can close silently, by remaining idle beyond a negotiated time-out.  They
+can close abruptly, with an authenticated packet carrying an error code which
+describes the reason for the closure.  If an endpoint has lost the necessary
+state to continue a connection, a Stateless Reset packet provides a hint to the
+peer that the connection has failed.
+
+
 # Streams {#streams}
 
 Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
