@@ -243,7 +243,7 @@ Ack-eliciting Packet:
 Frame:
 
 : A unit of structured protocol information.  There are multiple frame types,
-  each of which carries different information.  Frames are conveyed in QUIC
+  each of which carries different information.  Frames are contained in QUIC
   packets.
 
 Address:
