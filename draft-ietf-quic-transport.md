@@ -2260,12 +2260,8 @@ abandons its attempt to validate the path.
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
 round-trip time than the original.  A value of three times the larger of the
-current Probe Timeout (PTO) or the initial timeout (that is, 2*kInitialRtt) as
-defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
-
-~~~
-   validation_timeout = max(3*PTO, 6*kInitialRtt)
-~~~
+current Probe Timeout (PTO) or the PTO for the new path (that is, using
+kInitialRtt as defined in {{QUIC-RECOVERY}}) is RECOMMENDED.
 
 This timeout allows for multiple PTOs to expire prior to failing path
 validation, so that loss of a single PATH_CHALLENGE or PATH_RESPONSE frame
