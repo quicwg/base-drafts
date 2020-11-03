@@ -7449,6 +7449,36 @@ intended to be correct and clear, rather than being optimally performant.
 The pseudocode segments in this section are licensed as Code Components; see the
 copyright notice.
 
+
+## Sample Variable-Length Integer Decoding {#sample-varint}
+
+The pseudocode in {{alg-varint}} shows how a variable-length integer can be
+read from a stream of bytes.  The function ReadVarint takes a single argument, a
+sequence of bytes which can be read in network byte order.
+
+~~~
+ReadVarint(data):
+  // The length of variable-length integers is encoded in the
+  // first two bits of the first byte.
+  v = data.next_byte()
+  prefix = v >> 6
+  length = 1 << prefix
+
+  // Once the length is known, remove these bits and read any
+  // remaining bytes.
+  v = v & 0x3f
+  repeat length-1 times:
+    v = (v << 8) + data.next_byte()
+  return v
+~~~
+{: #alg-varint title="Sample Variable-Length Integer Decoding Algorithm"}
+
+For example, the eight-byte sequence 0xc2197c5eff14e88c decodes to the decimal
+value 151,288,809,941,952,652; the four-byte sequence 0x9d7f3e7d decodes to
+494,878,333; the two-byte sequence 0x7bbd decodes to 15,293; and the single byte
+0x25 decodes to 37 (as does the two-byte sequence 0x4025).
+
+
 ## Sample Packet Number Encoding Algorithm {#sample-packet-number-encoding}
 
 The pseudocode in {{alg-encode-pn}} shows how an implementation can select
@@ -7488,6 +7518,7 @@ packets, or 0xe69e), 16 bits are required.
 In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
 (131,182 packets, or 0x2006e).
+
 
 ## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
 
@@ -7574,34 +7605,6 @@ properly support ECN.  Any path that incorrectly modifies markings will cause
 ECN to be disabled.  For those rare cases where marked packets are discarded by
 the path, the short duration of the testing period limits the number of losses
 incurred.
-
-## Sample Variable-Length Integer Decoding {#sample-varint}
-
-The pseudocode in {{alg-varint}} shows how a variable-length integer can be
-read from a stream of bytes.  The function ReadVarint takes a single argument, a
-sequence of bytes which can be read in network byte order.
-
-~~~
-ReadVarint(data):
-  // The length of variable-length integers is encoded in the
-  // first two bits of the first byte.
-  v = data.next_byte()
-  prefix = v >> 6
-  length = 1 << prefix
-
-  // Once the length is known, remove these bits and read any
-  // remaining bytes.
-  v = v & 0x3f
-  repeat length-1 times:
-    v = (v << 8) + data.next_byte()
-  return v
-~~~
-{: #alg-varint title="Sample Variable-Length Integer Decoding Algorithm"}
-
-For example, the eight-byte sequence 0xc2197c5eff14e88c decodes to the decimal
-value 151,288,809,941,952,652; the four-byte sequence 0x9d7f3e7d decodes to
-494,878,333; the two-byte sequence 0x7bbd decodes to 15,293; and the single byte
-0x25 decodes to 37 (as does the two-byte sequence 0x4025).
 
 
 # Change Log
