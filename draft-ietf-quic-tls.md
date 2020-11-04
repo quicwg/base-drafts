@@ -1991,6 +1991,13 @@ New QUIC versions SHOULD define a new salt value used in calculating initial
 secrets.
 
 
+## Randomness
+
+QUIC depends on endpoints being able to generate secure random numbers, both
+directly for protocol values such as the connection ID, and transitively via
+TLS. See {{!RFC4086}} for guidance on secure random number generation.
+
+
 # IANA Considerations
 
 This document registers the quic_transport_parameters extension found in
