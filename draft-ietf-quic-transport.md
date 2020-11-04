@@ -92,7 +92,10 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  Accompanying
+This document defines the core of the QUIC transport protocol. QUIC provides
+multiplexed streams for delivering ordered application data, flow control,
+low-latency connection establishment, migration, resilience to path changes,
+and uses authenticated encryption for most protocol data. Accompanying
 documents describe QUIC's loss detection and congestion control and the use of
 TLS for key negotiation.
 
@@ -111,22 +114,26 @@ code and issues list for this draft can be found at
 
 # Overview
 
-QUIC is a multiplexed and secure general-purpose transport protocol that
-provides:
+QUIC is a multiplexed and secure general-purpose transport protocol. This
+document defines version 1 of QUIC, which conforms to the version-independent
+properties of QUIC defined in {{QUIC-INVARIANTS}}.
 
-* Stream multiplexing
+QUIC is a connection-oriented protocol that creates a stateful interaction
+between a client and server.
 
-* Stream- and connection-level flow control
+The QUIC handshake combines negotiation of cryptographic and transport
+parameters. QUIC integrates the TLS {{?TLS13}} handshake, though provides a
+customized scheme for protecting packets. The integration of TLS and QUIC is
+described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
+the exchange of application data as soon as possible. This includes an option
+for clients to send data immediately (0-RTT), which might require prior
+communication to enable.
 
-* Low-latency connection establishment
-
-* Connection migration and resilience to NAT rebinding
-
-* Authenticated and encrypted header and payload
-
-QUIC establishes a connection, which is a stateful interaction between a client
-and server. The primary purpose of a connection is to support the structured
-exchange of data by an application protocol.
+Endpoints communicate in QUIC by exchanging QUIC packets. Most packets contain
+frames, which carry both control information and application data between
+endpoints. QUIC authenticates all packets and encrypts as much as is practical.
+QUIC packets are carried in UDP datagrams ({{!UDP=RFC0768}}) to better
+facilitate deployment in existing systems and networks.
 
 Application protocols exchange information over a QUIC connection via streams,
 which are ordered sequences of bytes. Two types of stream can be created:
@@ -135,20 +142,17 @@ unidirectional streams, which allow a single endpoint to send data. A
 credit-based scheme is used to limit stream creation and to bound the amount of
 data that can be sent.
 
-The QUIC handshake combines negotiation of cryptographic and transport
-parameters.  The handshake is structured to permit the exchange of application
-data as soon as possible.  This includes an option for clients to send data
-immediately (0-RTT), which might require prior communication to enable.
+Application data can be reliably delivered by QUIC. An acknowledgment-based
+algorithm for detecting and recovering from loss of data is described in
+{{QUIC-RECOVERY}}. QUIC depends on congestion control to avoid network
+congestion. An exemplary congestion control algorithm is also described in
+{{QUIC-RECOVERY}}.
 
-QUIC connections are not strictly bound to a single network path.  Connection
+QUIC connections are not strictly bound to a single network path. Connection
 migration uses connection identifiers to allow connections to transfer to a new
-network path.
-
-Frames are used in QUIC to communicate between endpoints. One or more frames
-are assembled into a QUIC packet. QUIC authenticates all packets and encrypts
-as much as is practical. QUIC packets are carried in UDP datagrams
-({{!UDP=RFC0768}}) to better facilitate deployment in existing systems and
-networks.
+network path. Only clients are able to migrate in this version of QUIC. This
+design also allows connections to continue after changes in network topology or
+address mappings, such as might be caused by NAT rebinding.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
