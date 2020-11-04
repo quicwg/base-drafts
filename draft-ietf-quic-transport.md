@@ -7447,8 +7447,8 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 # Pseudocode
 
-The pseudocode in this section describes sample algorithms.  These algorithms are
-intended to be correct and clear, rather than being optimally performant.
+The pseudocode in this section describes sample algorithms.  These algorithms
+are intended to be correct and clear, rather than being optimally performant.
 
 The pseudocode segments in this section are licensed as Code Components; see the
 copyright notice.
