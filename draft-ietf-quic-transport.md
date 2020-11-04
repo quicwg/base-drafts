@@ -1893,13 +1893,12 @@ generates more or larger packets in response to that packet, the attacker can
 use the server to send more data toward the victim than it would be able to send
 on its own.
 
-The primary defense against amplification attack is verifying that an endpoint
-is able to receive packets at the transport address that it claims.  An endpoint
-that responds to packets received from a new address limits the data it sends to
-that address until the peer address is validated.  Prior to validating the
-peer's address, endpoints MUST NOT send datagrams toward that address whose
-total payload exceeds three times the amount of data received from that address.
-This limit on the size of responses is known as the anti-amplification limit.
+The primary defense against amplification attack is verifying that a peer is
+able to receive packets at the transport address that it claims.  Therefore,
+after receiving packets from an address that is not yet validated, an endpoint
+MUST limit the amount of data it sends to the unvalidated address to three times
+the amount of data received from that address.  This limit on the size of
+responses is known as the anti-amplification limit.
 
 Address validation is performed both during connection establishment (see
 {{validate-handshake}}) and during connection migration (see
@@ -2217,14 +2216,13 @@ anti-amplification limit for the path does not permit sending a datagram of
 this size.  Sending UDP datagrams of this size ensures that the network path
 from the endpoint to the peer can be used for QUIC; see {{datagram-size}}.
 
-If an endpoint is unable to expand the datagram payload to 1200 bytes, no
-padding is necessary.  However, this means that the path MTU will not be
-validated.  To ensure that the path MTU is large enough, the endpoint MUST
-perform a second path validation by sending a PATH_CHALLENGE frame in a datagram
-of at least 1200 bytes.  This additional validation can be performed after a
-PATH_RESPONSE is successfully received or when enough bytes have been received
-on the path that sending the larger datagram will not result in exceeding the
-anti-amplification limit.
+When an endpoint is unable to expand the datagram size to 1200 bytes due to the
+anti-amplification limit, the path MTU will not be validated.  To ensure that
+the path MTU is large enough, the endpoint MUST perform a second path validation
+by sending a PATH_CHALLENGE frame in a datagram of at least 1200 bytes.  This
+additional validation can be performed after a PATH_RESPONSE is successfully
+received or when enough bytes have been received on the path that sending the
+larger datagram will not result in exceeding the anti-amplification limit.
 
 
 ### Path Validation Responses
@@ -2244,8 +2242,8 @@ An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
 least the smallest allowed maximum datagram size of 1200 bytes. This verifies
 that the path is able to carry datagrams of this size in both directions.
 However, an endpoint MUST NOT expand the datagram containing the PATH_RESPONSE
-if it is constrained by an anti-amplification limit.  This will only occur if
-the PATH_CHALLENGE was not sent in an expanded datagram.
+if the resulting data exceeds the anti-amplification limit. This is expected to
+only occur if the received PATH_CHALLENGE was not sent in an expanded datagram.
 
 An endpoint MUST NOT send more than one PATH_RESPONSE frame in response to one
 PATH_CHALLENGE frame; see {{retransmission-of-information}}.  The peer is
@@ -2260,11 +2258,12 @@ the data that was sent in a previous PATH_CHALLENGE frame.  A PATH_RESPONSE
 frame received on any network path validates the path on which the
 PATH_CHALLENGE was sent.
 
-If the PATH_CHALLENGE frame was sent in a datagram that was not expanded to at
-least 1200 bytes, an endpoint can regard the address as valid for the purposes
-of sending more than three times the amount of data that has been received.
-However, the path MTU is not validated so the endpoint MUST initiate another
-path validation to verify that the path MTU is sufficient.
+If the PATH_CHALLENGE frame that resulted in successful path validation was sent
+in a datagram that was not expanded to at least 1200 bytes, the endpoint can
+regard the address as valid. The endpoint is then able to send more than three
+times the amount of data that has been received. However, the endpoint MUST
+initiate another path validation with an expanded datagram to verify that the
+path supports required MTU.
 
 Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
 not adequate validation, since the acknowledgment can be spoofed by a malicious
@@ -6924,10 +6923,10 @@ three times the data received from that address.
 
 Note:
 
-: The three times anti-amplification limit only applies when sending in
-  response to packets received from an unvalidated address. The
-  anti-amplification limit does not apply to clients that establish a new
-  connection or when path migration is initiated.
+: The anti-amplification limit only applies when an endpoint responds to packets
+  received from an unvalidated address. The anti-amplification limit does not
+  apply to clients when establishing a new connection or when initiating path
+  migration.
 
 
 #### Server-Side DoS
