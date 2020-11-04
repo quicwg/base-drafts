@@ -214,17 +214,6 @@ QUIC:
 : The transport protocol described by this document. QUIC is a name, not an
   acronym.
 
-QUIC packet:
-
-: A complete processable unit of QUIC that can be encapsulated in a UDP
-  datagram.  Multiple QUIC packets can be encapsulated in a single UDP datagram.
-
-Ack-eliciting Packet:
-
-: A QUIC packet that contains frames other than ACK, PADDING, and
-  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
-  {{sending-acknowledgements}}.
-
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating, receiving,
@@ -238,6 +227,24 @@ Client:
 Server:
 
 : The endpoint that accepts a QUIC connection.
+
+QUIC packet:
+
+: A complete processable unit of QUIC that can be encapsulated in a UDP
+  datagram.  One or more QUIC packets can be encapsulated in a single UDP
+  datagram.
+
+Ack-eliciting Packet:
+
+: A QUIC packet that contains frames other than ACK, PADDING, and
+  CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
+  {{sending-acknowledgements}}.
+
+Frame:
+
+: A unit of structured protocol information.  There are multiple frame types,
+  each of which carries different information.  Frames are contained in QUIC
+  packets.
 
 Address:
 
@@ -259,8 +266,13 @@ Application:
 
 : An entity that uses QUIC to send and receive data.
 
+This document uses the terms "QUIC packets", "UDP datagrams", and "IP packets"
+to refer to the units of the respective protocols. That is, one or more QUIC
+packets can be encapsulated in a UDP datagram, which is in turn encapsulated in
+an IP packet.
 
-## Notational Conventions
+
+## Notational Conventions {#notation}
 
 Packet and frame diagrams in this document use a custom format. The purpose of
 this format is to summarize, not define, protocol elements. Prose defines the
@@ -321,6 +333,12 @@ Example Structure {
 }
 ~~~
 {: #fig-ex-format title="Example Format"}
+
+When a single-bit field is referenced in prose, the position of that field can
+be clarified by using the value of the byte that carries the field with the
+field's value set. For example, the value 0x80 could be used to refer to the
+single-bit field in the most significant bit of the byte, such as One-bit Field
+in {{fig-ex-format}}.
 
 
 # Streams {#streams}
@@ -2278,12 +2296,8 @@ abandons its attempt to validate the path.
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
 round-trip time than the original.  A value of three times the larger of the
-current Probe Timeout (PTO) or the initial timeout (that is, 2*kInitialRtt) as
-defined in {{QUIC-RECOVERY}} is RECOMMENDED.  That is:
-
-~~~
-   validation_timeout = max(3*PTO, 6*kInitialRtt)
-~~~
+current Probe Timeout (PTO) or the PTO for the new path (that is, using
+kInitialRtt as defined in {{QUIC-RECOVERY}}) is RECOMMENDED.
 
 This timeout allows for multiple PTOs to expire prior to failing path
 validation, so that loss of a single PATH_CHALLENGE or PATH_RESPONSE frame
@@ -2981,18 +2995,25 @@ A stateless reset is not appropriate for indicating errors in active
 connections. An endpoint that wishes to communicate a fatal connection error
 MUST use a CONNECTION_CLOSE frame if it is able.
 
-To support this process, a token is sent by endpoints.  The token is carried in
-the Stateless Reset Token field of a NEW_CONNECTION_ID frame.  Servers can also
-specify a stateless_reset_token transport parameter during the handshake that
-applies to the connection ID that it selected during the handshake; clients
-cannot use this transport parameter because their transport parameters do not
-have confidentiality protection.  These tokens are protected by encryption, so
-only client and server know their value.  Tokens are invalidated when their
-associated connection ID is retired via a RETIRE_CONNECTION_ID frame
-({{frame-retire-connection-id}}).
+To support this process, an endpoint issues a stateless reset token, which is a
+16-byte value that is hard to guess.  If the peer subsequently receives a
+stateless reset, which is a UDP datagram that ends in that stateless reset
+token, the peer will immediately end the connection.
+
+A stateless reset token is specific to a connection ID. An endpoint issues a
+stateless reset token by including the value in the Stateless Reset Token field
+of a NEW_CONNECTION_ID frame. Servers can also issue a stateless_reset_token
+transport parameter during the handshake that applies to the connection ID that
+it selected during the handshake. These exchanges are protected by encryption,
+so only client and server know their value. Note that clients cannot use the
+stateless_reset_token transport parameter because their transport parameters do
+not have confidentiality protection.
+
+Tokens are invalidated when their associated connection ID is retired via a
+RETIRE_CONNECTION_ID frame ({{frame-retire-connection-id}}).
 
 An endpoint that receives packets that it cannot process sends a packet in the
-following layout:
+following layout (see {{notation}}):
 
 ~~~
 Stateless Reset {
@@ -3441,11 +3462,9 @@ Frame {
 ~~~
 {: #frame-layout title="Generic Frame Layout"}
 
-The frame types defined in this specification are listed in {{frame-types}}.
-The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
-CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
-other frames, the Frame Type field simply identifies the frame.  These
-frames are explained in more detail in {{frame-formats}}.
+{{frame-types}} lists and summarizes information about each frame type that is
+defined in this specification.  A description of this summary is included after
+the table.
 
 | Type Value  | Frame Type Name      | Definition                     | Pkts | Spec |
 |:------------|:---------------------|:-------------------------------|------|------|
@@ -3470,6 +3489,14 @@ frames are explained in more detail in {{frame-formats}}.
 | 0x1c - 0x1d | CONNECTION_CLOSE     | {{frame-connection-close}}     | ih01 | N    |
 | 0x1e        | HANDSHAKE_DONE       | {{frame-handshake-done}}       | ___1 |      |
 {: #frame-types title="Frame Types"}
+
+The format and semantics of each frame type are explained in more detail in
+{{frame-formats}}.  The remainder of this section provides a summary of
+important and general information.
+
+The Frame Type in ACK, STREAM, MAX_STREAMS, STREAMS_BLOCKED, and
+CONNECTION_CLOSE frames is used to carry other frame-specific flags. For all
+other frames, the Frame Type field simply identifies the frame.
 
 The "Pkts" column in {{frame-types}} lists the types of packets that each frame
 type could appear in, indicated by the following characters:
@@ -3526,9 +3553,8 @@ registry; see {{iana-frames}}.
 An endpoint MUST treat the receipt of a frame of unknown type as a connection
 error of type FRAME_ENCODING_ERROR.
 
-All QUIC frames are idempotent in this version of QUIC.  That is, a valid
-frame does not cause undesirable side effects or errors when received more
-than once.
+All frames are idempotent in this version of QUIC.  That is, a valid frame does
+not cause undesirable side effects or errors when received more than once.
 
 The Frame Type field uses a variable-length integer encoding (see
 {{integer-encoding}}) with one exception.  To ensure simple and efficient
@@ -4094,15 +4120,16 @@ datagram size includes one or more QUIC packet headers and protected payloads,
 but not the UDP or IP headers.
 
 The maximum datagram size is defined as the largest size of UDP payload that can
-be sent across a network path using a single UDP datagram.
+be sent across a network path using a single UDP datagram.  QUIC MUST NOT be
+used if the network path cannot support a maximum datagram size of at least 1200
+bytes.
 
-QUIC depends upon a minimum IP packet size of at least 1280 bytes.  This is the
-IPv6 minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
+QUIC assumes a minimum IP packet size of at least 1280 bytes.  This is the IPv6
+minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
 networks.  Assuming the minimum IP header size of 40 bytes for IPv6 and 20 bytes
 for IPv4 and a UDP header size of 8 bytes, this results in a maximum datagram
-size of 1232 bytes for IPv6 and 1252 bytes for IPv4.
-
-The maximum datagram size MUST be at least 1200 bytes.
+size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Thus, modern IPv4
+and all IPv6 network paths will be able to support QUIC.
 
 Any maximum datagram size larger than 1200 bytes can be discovered using Path
 Maximum Transmission Unit Discovery (PMTUD; see {{pmtud}}) or Datagram
@@ -4365,10 +4392,7 @@ encoding properties.
 | 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
-For example, the eight byte sequence c2 19 7c 5e ff 14 e8 8c (in hexadecimal)
-decodes to the decimal value 151288809941952652; the four byte sequence 9d 7f 3e
-7d decodes to 494878333; the two byte sequence 7b bd decodes to 15293; and the
-single byte 25 decodes to 37 (as does the two byte sequence 40 25).
+Examples and a sample decoding algorithm are shown in {{sample-varint}}.
 
 Versions ({{versions}}) and packet numbers sent in the header
 ({{packet-encoding}}) are described using integers, but do not use this
@@ -4402,17 +4426,13 @@ the difference between the largest acknowledged packet and packet number being
 sent.  A peer receiving the packet will then correctly decode the packet number,
 unless the packet is delayed in transit such that it arrives after many
 higher-numbered packets have been received.  An endpoint SHOULD use a large
-enough packet number encoding to allow the packet number to be recovered even
-if the packet arrives after packets that are sent afterwards.
+enough packet number encoding to allow the packet number to be recovered even if
+the packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
-numbers, including the new packet.
-
-For example, if an endpoint has received an acknowledgment for packet 0xabe8bc,
-sending a packet with a number of 0xac5c02 requires a packet number encoding
-with 16 bits or more; whereas the 24-bit packet number encoding is needed to
-send a packet with a number of 0xace8fe.
+numbers, including the new packet.  Pseudocode and examples for packet number
+encoding can be found in {{sample-packet-number-encoding}}.
 
 At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
@@ -4422,10 +4442,8 @@ full packet number is necessary to successfully remove packet protection.
 
 Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
-expected packet is the highest received packet number plus one.  For example, if
-the highest successfully authenticated packet had a packet number of 0xa82f30ea,
-then a packet containing a 16-bit value of 0x9b32 will be decoded as 0xa82f9b32.
-Example pseudo-code for packet number decoding can be found in
+expected packet is the highest received packet number plus one.  Pseudocode and
+an example for packet number decoding can be found in
 {{sample-packet-number-decoding}}.
 
 
@@ -5030,11 +5048,15 @@ versions of QUIC are interpreted.
 ### Latency Spin Bit {#spin-bit}
 
 The latency spin bit enables passive latency monitoring from observation points
-on the network path throughout the duration of a connection. The spin bit is
-only present in the short packet header, since it is possible to measure the
-initial RTT of a connection by observing the handshake. Therefore, the spin bit
-is available after version negotiation and connection establishment are
-completed. On-path measurement and use of the latency spin bit is further
+on the network path throughout the duration of a connection. The server reflects
+the spin value received, while the client 'spins' it after one RTT. On-path
+observers can measure the time between two spin bit toggle events to estimate
+the end-to-end RTT of a connection.
+
+The spin bit is only present in the short packet header, since it is possible to
+measure the initial RTT of a connection by observing the handshake. Therefore,
+the spin bit is available after version negotiation and connection establishment
+are completed. On-path measurement and use of the latency spin bit is further
 discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
 The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
@@ -5072,11 +5094,6 @@ spin value for that path to the inverse of the spin bit in the received packet.
 An endpoint resets the spin value for a network path to zero when changing the
 connection ID being used on that network path.
 
-With this mechanism, the server reflects the spin value received, while the
-client 'spins' it after one RTT. On-path observers can measure the time
-between two spin bit toggle events to estimate the end-to-end RTT of a
-connection.
-
 
 # Transport Parameter Encoding {#transport-parameter-encoding}
 
@@ -5104,7 +5121,7 @@ Transport Parameter {
 {: #transport-parameter-encoding-fig title="Transport Parameter Encoding"}
 
 The Transport Parameter Length field contains the length of the Transport
-Parameter Value field.
+Parameter Value field in bytes.
 
 QUIC encodes transport parameters into a sequence of bytes, which is then
 included in the cryptographic handshake.
@@ -6422,6 +6439,325 @@ the CONNECTION_CLOSE frame with a type of 0x1d ({{frame-connection-close}}).
 
 # Security Considerations
 
+The goal of QUIC is to provide a secure transport connection.
+{{security-properties}} provides an overview of those properties; subsequent
+sections discuss constraints and caveats regarding these properties, including
+descriptions of known attacks and countermeasures.
+
+## Overview of Security Properties {#security-properties}
+
+A complete security analysis of QUIC is outside the scope of this document.
+This section provides an informal description of the desired security properties
+as an aid to implementors and to help guide protocol analysis.
+
+QUIC assumes the threat model described in {{?SEC-CONS=RFC3552}} and provides
+protections against many of the attacks that arise from that model.
+
+For this purpose, attacks are divided into passive and active attacks.  Passive
+attackers have the capability to read packets from the network, while active
+attackers also have the capability to write packets into the network.  However,
+a passive attack may involve an attacker with the ability to cause a routing
+change or other modification in the path taken by packets that comprise a
+connection.
+
+Attackers are additionally categorized as either on-path attackers or off-path
+attackers; see Section 3.5 of {{?SEC-CONS}}.  An on-path attacker can read,
+modify, or remove any packet it observes such that it no longer reaches its
+destination, while an off-path attacker observes the packets, but cannot prevent
+the original packet from reaching its intended destination.  Both types of
+attackers can also transmit arbitrary packets.
+
+Properties of the handshake, protected packets, and connection migration are
+considered separately.
+
+
+### Handshake {#handshake-properties}
+
+The QUIC handshake incorporates the TLS 1.3 handshake and inherits the
+cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
+of the security properties of QUIC depend on the TLS handshake providing these
+properties. Any attack on the TLS handshake could affect QUIC.
+
+Any attack on the TLS handshake that compromises the secrecy or uniqueness
+of session keys affects other security guarantees provided by QUIC that depends
+on these keys. For instance, migration ({{migration}}) depends on the efficacy
+of confidentiality protections, both for the negotiation of keys using the TLS
+handshake and for QUIC packet protection, to avoid linkability across network
+paths.
+
+An attack on the integrity of the TLS handshake might allow an attacker to
+affect the selection of application protocol or QUIC version.
+
+In addition to the properties provided by TLS, the QUIC handshake provides some
+defense against DoS attacks on the handshake.
+
+
+#### Anti-Amplification
+
+Address validation ({{address-validation}}) is used to verify that an entity
+that claims a given address is able to receive packets at that address. Address
+validation limits amplification attack targets to addresses for which an
+attacker can observe packets.
+
+Prior to address validation, endpoints are limited in what they are able to
+send.  Endpoints cannot send data toward an unvalidated address in excess of
+three times the data received from that address.
+
+Note:
+
+: The anti-amplification limit only applies when an endpoint responds to packets
+  received from an unvalidated address. The anti-amplification limit does not
+  apply to clients when establishing a new connection or when initiating path
+  migration.
+
+
+#### Server-Side DoS
+
+Computing the server's first flight for a full handshake is potentially
+expensive, requiring both a signature and a key exchange computation. In order
+to prevent computational DoS attacks, the Retry packet provides a cheap token
+exchange mechanism that allows servers to validate a client's IP address prior
+to doing any expensive computations at the cost of a single round trip. After a
+successful handshake, servers can issue new tokens to a client, which will allow
+new connection establishment without incurring this cost.
+
+
+#### On-Path Handshake Termination
+
+An on-path or off-path attacker can force a handshake to fail by replacing or
+racing Initial packets. Once valid Initial packets have been exchanged,
+subsequent Handshake packets are protected with the handshake keys and an
+on-path attacker cannot force handshake failure other than by dropping packets
+to cause endpoints to abandon the attempt.
+
+An on-path attacker can also replace the addresses of packets on either side and
+therefore cause the client or server to have an incorrect view of the remote
+addresses. Such an attack is indistinguishable from the functions performed by a
+NAT.
+
+
+#### Parameter Negotiation
+
+The entire handshake is cryptographically protected, with the Initial packets
+being encrypted with per-version keys and the Handshake and later packets being
+encrypted with keys derived from the TLS key exchange.  Further, parameter
+negotiation is folded into the TLS transcript and thus provides the same
+integrity guarantees as ordinary TLS negotiation.  An attacker can observe
+the client's transport parameters (as long as it knows the version-specific
+salt) but cannot observe the server's transport parameters and cannot influence
+parameter negotiation.
+
+Connection IDs are unencrypted but integrity protected in all packets.
+
+This version of QUIC does not incorporate a version negotiation mechanism;
+implementations of incompatible versions will simply fail to establish a
+connection.
+
+
+### Protected Packets {#protected-packet-properties}
+
+Packet protection ({{packet-protected}}) provides authentication and encryption
+of all packets except Version Negotiation packets, though Initial and Retry
+packets have limited encryption and authentication based on version-specific
+inputs; see {{QUIC-TLS}} for more details. This section considers passive and
+active attacks against protected packets.
+
+Both on-path and off-path attackers can mount a passive attack in which they
+save observed packets for an offline attack against packet protection at a
+future time; this is true for any observer of any packet on any network.
+
+A blind attacker, one who injects packets without being able to observe valid
+packets for a connection, is unlikely to be successful, since packet protection
+ensures that valid packets are only generated by endpoints that possess the
+key material established during the handshake; see {{handshake}} and
+{{handshake-properties}}. Similarly, any active attacker that observes packets
+and attempts to insert new data or modify existing data in those packets should
+not be able to generate packets deemed valid by the receiving endpoint.
+
+A spoofing attack, in which an active attacker rewrites unprotected parts of a
+packet that it forwards or injects, such as the source or destination
+address, is only effective if the attacker can forward packets to the original
+endpoint.  Packet protection ensures that the packet payloads can only be
+processed by the endpoints that completed the handshake, and invalid
+packets are ignored by those endpoints.
+
+An attacker can also modify the boundaries between packets and UDP datagrams,
+causing multiple packets to be coalesced into a single datagram, or splitting
+coalesced packets into multiple datagrams. Aside from datagrams containing
+Initial packets, which require padding, modification of how packets are
+arranged in datagrams has no functional effect on a connection, although it
+might change some performance characteristics.
+
+
+### Connection Migration {#migration-properties}
+
+Connection Migration ({{migration}}) provides endpoints with the ability to
+transition between IP addresses and ports on multiple paths, using one path at a
+time for transmission and receipt of non-probing frames.  Path validation
+({{migrate-validate}}) establishes that a peer is both willing and able
+to receive packets sent on a particular path.  This helps reduce the effects of
+address spoofing by limiting the number of packets sent to a spoofed address.
+
+This section describes the intended security properties of connection migration
+when under various types of DoS attacks.
+
+
+#### On-Path Active Attacks
+
+An attacker that can cause a packet it observes to no longer reach its intended
+destination is considered an on-path attacker. When an attacker is present
+between a client and server, endpoints are required to send packets through the
+attacker to establish connectivity on a given path.
+
+An on-path attacker can:
+
+- Inspect packets
+- Modify IP and UDP packet headers
+- Inject new packets
+- Delay packets
+- Reorder packets
+- Drop packets
+- Split and merge datagrams along packet boundaries
+
+An on-path attacker cannot:
+
+- Modify an authenticated portion of a packet and cause the recipient to accept
+  that packet
+
+An on-path attacker has the opportunity to modify the packets that it observes,
+however any modifications to an authenticated portion of a packet will cause it
+to be dropped by the receiving endpoint as invalid, as packet payloads are both
+authenticated and encrypted.
+
+In the presence of an on-path attacker, QUIC aims to provide the following
+properties:
+
+1. An on-path attacker can prevent use of a path for a connection, causing
+   it to fail if it cannot use a different path that does not contain the
+   attacker. This can be achieved by dropping all packets, modifying them so
+   that they fail to decrypt, or other methods.
+
+2. An on-path attacker can prevent migration to a new path for which the
+   attacker is also on-path by causing path validation to fail on the new path.
+
+3. An on-path attacker cannot prevent a client from migrating to a path for
+   which the attacker is not on-path.
+
+4. An on-path attacker can reduce the throughput of a connection by delaying
+   packets or dropping them.
+
+5. An on-path attacker cannot cause an endpoint to accept a packet for which it
+   has modified an authenticated portion of that packet.
+
+
+#### Off-Path Active Attacks
+
+An off-path attacker is not directly on the path between a client and server,
+but could be able to obtain copies of some or all packets sent between the
+client and the server. It is also able to send copies of those packets to
+either endpoint.
+
+An off-path attacker can:
+
+- Inspect packets
+- Inject new packets
+- Reorder injected packets
+
+An off-path attacker cannot:
+
+- Modify any part of a packet
+- Delay packets
+- Drop packets
+- Reorder original packets
+
+An off-path attacker can modify packets that it has observed and inject them
+back into the network, potentially with spoofed source and destination
+addresses.
+
+For the purposes of this discussion, it is assumed that an off-path attacker
+has the ability to observe, modify, and re-inject a packet into the network
+that will reach the destination endpoint prior to the arrival of the original
+packet observed by the attacker. In other words, an attacker has the ability to
+consistently "win" a race with the legitimate packets between the endpoints,
+potentially causing the original packet to be ignored by the recipient.
+
+It is also assumed that an attacker has the resources necessary to affect NAT
+state, potentially both causing an endpoint to lose its NAT binding, and an
+attacker to obtain the same port for use with its traffic.
+
+In the presence of an off-path attacker, QUIC aims to provide the following
+properties:
+
+1. An off-path attacker can race packets and attempt to become a "limited"
+   on-path attacker.
+
+2. An off-path attacker can cause path validation to succeed for forwarded
+   packets with the source address listed as the off-path attacker as long as
+   it can provide improved connectivity between the client and the server.
+
+3. An off-path attacker cannot cause a connection to close once the handshake
+   has completed.
+
+4. An off-path attacker cannot cause migration to a new path to fail if it
+   cannot observe the new path.
+
+5. An off-path attacker can become a limited on-path attacker during migration
+   to a new path for which it is also an off-path attacker.
+
+6. An off-path attacker can become a limited on-path attacker by affecting
+   shared NAT state such that it sends packets to the server from the same IP
+   address and port that the client originally used.
+
+
+#### Limited On-Path Active Attacks
+
+A limited on-path attacker is an off-path attacker that has offered improved
+routing of packets by duplicating and forwarding original packets between the
+server and the client, causing those packets to arrive before the original
+copies such that the original packets are dropped by the destination endpoint.
+
+A limited on-path attacker differs from an on-path attacker in that it is not on
+the original path between endpoints, and therefore the original packets sent by
+an endpoint are still reaching their destination.  This means that a future
+failure to route copied packets to the destination faster than their original
+path will not prevent the original packets from reaching the destination.
+
+A limited on-path attacker can:
+
+- Inspect packets
+- Inject new packets
+- Modify unencrypted packet headers
+- Reorder packets
+
+A limited on-path attacker cannot:
+
+- Delay packets so that they arrive later than packets sent on the original path
+- Drop packets
+- Modify the authenticated and encrypted portion of a packet and cause the
+ recipient to accept that packet
+
+A limited on-path attacker can only delay packets up to the point that the
+original packets arrive before the duplicate packets, meaning that it cannot
+offer routing with worse latency than the original path.  If a limited on-path
+attacker drops packets, the original copy will still arrive at the destination
+endpoint.
+
+In the presence of a limited on-path attacker, QUIC aims to provide the
+following properties:
+
+1. A limited on-path attacker cannot cause a connection to close once the
+   handshake has completed.
+
+2. A limited on-path attacker cannot cause an idle connection to close if the
+   client is first to resume activity.
+
+3. A limited on-path attacker can cause an idle connection to be deemed lost if
+   the server is the first to resume activity.
+
+Note that these guarantees are the same guarantees provided for any NAT, for the
+same reasons.
+
+
 ## Handshake Denial of Service {#handshake-dos}
 
 As an encrypted and authenticated transport QUIC provides a range of protections
@@ -6862,318 +7198,16 @@ decisions are made independently of client-selected values; a Source Connection
 ID can be selected to route later packets to the same server.
 
 
-## Overview of Security Properties {#security-properties}
-
-A complete security analysis of QUIC is outside the scope of this document.
-This section provides an informal description of the desired security properties
-as an aid to implementors and to help guide protocol analysis.
-
-QUIC assumes the threat model described in {{?SEC-CONS=RFC3552}} and provides
-protections against many of the attacks that arise from that model.
-
-For this purpose, attacks are divided into passive and active attacks.  Passive
-attackers have the capability to read packets from the network, while active
-attackers also have the capability to write packets into the network.  However,
-a passive attack may involve an attacker with the ability to cause a routing
-change or other modification in the path taken by packets that comprise a
-connection.
-
-Attackers are additionally categorized as either on-path attackers or off-path
-attackers; see Section 3.5 of {{?SEC-CONS}}.  An on-path attacker can read,
-modify, or remove any packet it observes such that it no longer reaches its
-destination, while an off-path attacker observes the packets, but cannot prevent
-the original packet from reaching its intended destination.  Both types of
-attackers can also transmit arbitrary packets.
-
-Properties of the handshake, protected packets, and connection migration are
-considered separately.
-
-
-### Handshake {#handshake-properties}
-
-The QUIC handshake incorporates the TLS 1.3 handshake and inherits the
-cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
-of the security properties of QUIC depend on the TLS handshake providing these
-properties. Any attack on the TLS handshake could affect QUIC.
-
-Any attack on the TLS handshake that compromises the secrecy or uniqueness
-of session keys affects other security guarantees provided by QUIC that depends
-on these keys. For instance, migration ({{migration}}) depends on the efficacy
-of confidentiality protections, both for the negotiation of keys using the TLS
-handshake and for QUIC packet protection, to avoid linkability across network
-paths.
-
-An attack on the integrity of the TLS handshake might allow an attacker to
-affect the selection of application protocol or QUIC version.
-
-In addition to the properties provided by TLS, the QUIC handshake provides some
-defense against DoS attacks on the handshake.
-
-
-#### Anti-Amplification
-
-Address validation ({{address-validation}}) is used to verify that an entity
-that claims a given address is able to receive packets at that address. Address
-validation limits amplification attack targets to addresses for which an
-attacker can observe packets.
-
-Prior to address validation, endpoints are limited in what they are able to
-send.  Endpoints cannot send data toward an unvalidated address in excesss of
-three times the data received from that address.
-
-Note:
-
-: The anti-amplification limit only applies when an endpoint responds to packets
-  received from an unvalidated address. The anti-amplification limit does not
-  apply to clients when establishing a new connection or when initiating path
-  migration.
-
-
-#### Server-Side DoS
-
-Computing the server's first flight for a full handshake is potentially
-expensive, requiring both a signature and a key exchange computation. In order
-to prevent computational DoS attacks, the Retry packet provides a cheap token
-exchange mechanism that allows servers to validate a client's IP address prior
-to doing any expensive computations at the cost of a single round trip. After a
-successful handshake, servers can issue new tokens to a client, which will allow
-new connection establishment without incurring this cost.
-
-
-#### On-Path Handshake Termination
-
-An on-path or off-path attacker can force a handshake to fail by replacing or
-racing Initial packets. Once valid Initial packets have been exchanged,
-subsequent Handshake packets are protected with the handshake keys and an
-on-path attacker cannot force handshake failure other than by dropping packets
-to cause endpoints to abandon the attempt.
-
-An on-path attacker can also replace the addresses of packets on either side and
-therefore cause the client or server to have an incorrect view of the remote
-addresses. Such an attack is indistinguishable from the functions performed by a
-NAT.
-
-
-#### Parameter Negotiation
-
-The entire handshake is cryptographically protected, with the Initial packets
-being encrypted with per-version keys and the Handshake and later packets being
-encrypted with keys derived from the TLS key exchange.  Further, parameter
-negotiation is folded into the TLS transcript and thus provides the same
-integrity guarantees as ordinary TLS negotiation.  An attacker can observe
-the client's transport parameters (as long as it knows the version-specific
-salt) but cannot observe the server's transport parameters and cannot influence
-parameter negotiation.
-
-Connection IDs are unencrypted but integrity protected in all packets.
-
-This version of QUIC does not incorporate a version negotiation mechanism;
-implementations of incompatible versions will simply fail to establish a
-connection.
-
-
-### Protected Packets {#protected-packet-properties}
-
-Packet protection ({{packet-protected}}) provides authentication and encryption
-of all packets except Version Negotiation packets, though Initial and Retry
-packets have limited encryption and authentication based on version-specific
-inputs; see {{QUIC-TLS}} for more details. This section considers passive and
-active attacks against protected packets.
-
-Both on-path and off-path attackers can mount a passive attack in which they
-save observed packets for an offline attack against packet protection at a
-future time; this is true for any observer of any packet on any network.
-
-A blind attacker, one who injects packets without being able to observe valid
-packets for a connection, is unlikely to be successful, since packet protection
-ensures that valid packets are only generated by endpoints that possess the
-key material established during the handshake; see {{handshake}} and
-{{handshake-properties}}. Similarly, any active attacker that observes packets
-and attempts to insert new data or modify existing data in those packets should
-not be able to generate packets deemed valid by the receiving endpoint.
-
-A spoofing attack, in which an active attacker rewrites unprotected parts of a
-packet that it forwards or injects, such as the source or destination
-address, is only effective if the attacker can forward packets to the original
-endpoint.  Packet protection ensures that the packet payloads can only be
-processed by the endpoints that completed the handshake, and invalid
-packets are ignored by those endpoints.
-
-An attacker can also modify the boundaries between packets and UDP datagrams,
-causing multiple packets to be coalesced into a single datagram, or splitting
-coalesced packets into multiple datagrams. Aside from datagrams containing
-Initial packets, which require padding, modification of how packets are
-arranged in datagrams has no functional effect on a connection, although it
-might change some performance characteristics.
-
-
-### Connection Migration {#migration-properties}
-
-Connection Migration ({{migration}}) provides endpoints with the ability to
-transition between IP addresses and ports on multiple paths, using one path at a
-time for transmission and receipt of non-probing frames.  Path validation
-({{migrate-validate}}) establishes that a peer is both willing and able
-to receive packets sent on a particular path.  This helps reduce the effects of
-address spoofing by limiting the number of packets sent to a spoofed address.
-
-This section describes the intended security properties of connection migration
-when under various types of DoS attacks.
-
-
-#### On-Path Active Attacks
-
-An attacker that can cause a packet it observes to no longer reach its intended
-destination is considered an on-path attacker. When an attacker is present
-between a client and server, endpoints are required to send packets through the
-attacker to establish connectivity on a given path.
-
-An on-path attacker can:
-
-- Inspect packets
-- Modify IP and UDP packet headers
-- Inject new packets
-- Delay packets
-- Reorder packets
-- Drop packets
-- Split and merge datagrams along packet boundaries
-
-An on-path attacker cannot:
-
-- Modify an authenticated portion of a packet and cause the recipient to accept
-  that packet
-
-An on-path attacker has the opportunity to modify the packets that it observes,
-however any modifications to an authenticated portion of a packet will cause it
-to be dropped by the receiving endpoint as invalid, as packet payloads are both
-authenticated and encrypted.
-
-In the presence of an on-path attacker, QUIC aims to provide the following
-properties:
-
-1. An on-path attacker can prevent use of a path for a connection, causing
-   it to fail if it cannot use a different path that does not contain the
-   attacker. This can be achieved by dropping all packets, modifying them so
-   that they fail to decrypt, or other methods.
-
-2. An on-path attacker can prevent migration to a new path for which the
-   attacker is also on-path by causing path validation to fail on the new path.
-
-3. An on-path attacker cannot prevent a client from migrating to a path for
-   which the attacker is not on-path.
-
-4. An on-path attacker can reduce the throughput of a connection by delaying
-   packets or dropping them.
-
-5. An on-path attacker cannot cause an endpoint to accept a packet for which it
-   has modified an authenticated portion of that packet.
-
-
-#### Off-Path Active Attacks
-
-An off-path attacker is not directly on the path between a client and server,
-but could be able to obtain copies of some or all packets sent between the
-client and the server. It is also able to send copies of those packets to
-either endpoint.
-
-An off-path attacker can:
-
-- Inspect packets
-- Inject new packets
-- Reorder injected packets
-
-An off-path attacker cannot:
-
-- Modify any part of a packet
-- Delay packets
-- Drop packets
-- Reorder original packets
-
-An off-path attacker can modify packets that it has observed and inject them
-back into the network, potentially with spoofed source and destination
-addresses.
-
-For the purposes of this discussion, it is assumed that an off-path attacker
-has the ability to observe, modify, and re-inject a packet into the network
-that will reach the destination endpoint prior to the arrival of the original
-packet observed by the attacker. In other words, an attacker has the ability to
-consistently "win" a race with the legitimate packets between the endpoints,
-potentially causing the original packet to be ignored by the recipient.
-
-It is also assumed that an attacker has the resources necessary to affect NAT
-state, potentially both causing an endpoint to lose its NAT binding, and an
-attacker to obtain the same port for use with its traffic.
-
-In the presence of an off-path attacker, QUIC aims to provide the following
-properties:
-
-1. An off-path attacker can race packets and attempt to become a "limited"
-   on-path attacker.
-
-2. An off-path attacker can cause path validation to succeed for forwarded
-   packets with the source address listed as the off-path attacker as long as
-   it can provide improved connectivity between the client and the server.
-
-3. An off-path attacker cannot cause a connection to close once the handshake
-   has completed.
-
-4. An off-path attacker cannot cause migration to a new path to fail if it
-   cannot observe the new path.
-
-5. An off-path attacker can become a limited on-path attacker during migration
-   to a new path for which it is also an off-path attacker.
-
-6. An off-path attacker can become a limited on-path attacker by affecting
-   shared NAT state such that it sends packets to the server from the same IP
-   address and port that the client originally used.
-
-
-#### Limited On-Path Active Attacks
-
-A limited on-path attacker is an off-path attacker that has offered improved
-routing of packets by duplicating and forwarding original packets between the
-server and the client, causing those packets to arrive before the original
-copies such that the original packets are dropped by the destination endpoint.
-
-A limited on-path attacker differs from an on-path attacker in that it is not on
-the original path between endpoints, and therefore the original packets sent by
-an endpoint are still reaching their destination.  This means that a future
-failure to route copied packets to the destination faster than their original
-path will not prevent the original packets from reaching the destination.
-
-A limited on-path attacker can:
-
-- Inspect packets
-- Inject new packets
-- Modify unencrypted packet headers
-- Reorder packets
-
-A limited on-path attacker cannot:
-
-- Delay packets so that they arrive later than packets sent on the original path
-- Drop packets
-- Modify the authenticated and encrypted portion of a packet and cause the
- recipient to accept that packet
-
-A limited on-path attacker can only delay packets up to the point that the
-original packets arrive before the duplicate packets, meaning that it cannot
-offer routing with worse latency than the original path.  If a limited on-path
-attacker drops packets, the original copy will still arrive at the destination
-endpoint.
-
-In the presence of a limited on-path attacker, QUIC aims to provide the
-following properties:
-
-1. A limited on-path attacker cannot cause a connection to close once the
-   handshake has completed.
-
-2. A limited on-path attacker cannot cause an idle connection to close if the
-   client is first to resume activity.
-
-3. A limited on-path attacker can cause an idle connection to be deemed lost if
-   the server is the first to resume activity.
-
-Note that these guarantees are the same guarantees provided for any NAT, for the
-same reasons.
+## Traffic Analysis
+
+The length of QUIC packets can reveal information about the length of the
+content of those packets.  The PADDING frame is provided so that endpoints have
+some ability to obscure the length of packet content; see {{frame-padding}}.
+
+Note however that defeating traffic analysis is challenging and the subject of
+active research.  Length is not the only way that information might leak.
+Endpoints might also reveal sensitive information through other side channels,
+such as the timing of packets.
 
 
 # IANA Considerations {#iana}
@@ -7437,10 +7471,96 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 --- back
 
-# Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
+# Pseudocode
 
-The pseudo-code in {{alg-decode-pn}} shows how an implementation can decode
+The pseudocode in this section describes sample algorithms.  These algorithms
+are intended to be correct and clear, rather than being optimally performant.
+
+The pseudocode segments in this section are licensed as Code Components; see the
+copyright notice.
+
+
+## Sample Variable-Length Integer Decoding {#sample-varint}
+
+The pseudocode in {{alg-varint}} shows how a variable-length integer can be
+read from a stream of bytes.  The function ReadVarint takes a single argument, a
+sequence of bytes which can be read in network byte order.
+
+~~~
+ReadVarint(data):
+  // The length of variable-length integers is encoded in the
+  // first two bits of the first byte.
+  v = data.next_byte()
+  prefix = v >> 6
+  length = 1 << prefix
+
+  // Once the length is known, remove these bits and read any
+  // remaining bytes.
+  v = v & 0x3f
+  repeat length-1 times:
+    v = (v << 8) + data.next_byte()
+  return v
+~~~
+{: #alg-varint title="Sample Variable-Length Integer Decoding Algorithm"}
+
+For example, the eight-byte sequence 0xc2197c5eff14e88c decodes to the decimal
+value 151,288,809,941,952,652; the four-byte sequence 0x9d7f3e7d decodes to
+494,878,333; the two-byte sequence 0x7bbd decodes to 15,293; and the single byte
+0x25 decodes to 37 (as does the two-byte sequence 0x4025).
+
+
+## Sample Packet Number Encoding Algorithm {#sample-packet-number-encoding}
+
+The pseudocode in {{alg-encode-pn}} shows how an implementation can select
+an appropriate size for packet number encodings.
+
+The EncodePacketNumber function takes two arguments:
+
+* full_pn is the full packet number of the packet being sent.
+* largest_acked is the largest packet number which has been acknowledged by the
+  peer in the current packet number space, if any.
+
+~~~
+EncodePacketNumber(full_pn, largest_acked):
+
+  // The number of bits must be at least one more
+  // than the base-2 logarithm of the number of contiguous
+  // unacknowledged packet numbers, including the new packet.
+  if largest_acked is None:
+    num_unacked = full_pn + 1
+  else:
+    num_unacked = full_pn - largest_acked
+
+  min_bits = log(num_unacked, 2) + 1
+  num_bytes = ceil(min_bits / 8)
+
+  // Encode the integer value and truncate to
+  // the num_bytes least-significant bytes.
+  return encode(full_pn, num_bytes)
+~~~
+{: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
+
+For example, if an endpoint has received an acknowledgment for packet 0xabe8bc
+and is sending a packet with a number of 0xac5c02, there are 29,519 (0x734f)
+outstanding packets.  In order to represent at least twice this range (59,038
+packets, or 0xe69e), 16 bits are required.
+
+In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
+encoding, because at least 18 bits are required to represent twice the range
+(131,182 packets, or 0x2006e).
+
+
+## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
+
+The pseudocode in {{alg-decode-pn}} includes an example algorithm for decoding
 packet numbers after header protection has been removed.
+
+The DecodePacketNumber function takes three arguments:
+
+* largest_pn is the largest packet number that has been successfully
+  processed in the current packet number space.
+* truncated_pn is the value of the Packet Number field.
+* pn_nbits is the number of bits in the Packet Number field (8, 16, 24, or 32).
 
 ~~~
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
@@ -7470,8 +7590,12 @@ DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
 ~~~
 {: #alg-decode-pn title="Sample Packet Number Decoding Algorithm"}
 
+For example, if the highest successfully authenticated packet had a packet
+number of 0xa82f30ea, then a packet containing a 16-bit value of 0x9b32 will be
+decoded as 0xa82f9b32.
 
-# Sample ECN Validation Algorithm {#ecn-alg}
+
+## Sample ECN Validation Algorithm {#ecn-alg}
 
 Each time an endpoint commences sending on a new network path, it determines
 whether the path supports ECN; see {{ecn}}.  If the path supports ECN, the goal
@@ -7511,7 +7635,6 @@ properly support ECN.  Any path that incorrectly modifies markings will cause
 ECN to be disabled.  For those rare cases where marked packets are discarded by
 the path, the short duration of the testing period limits the number of losses
 incurred.
-
 
 
 # Change Log
