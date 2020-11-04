@@ -1993,9 +1993,9 @@ secrets.
 
 ## Randomness
 
-QUIC depends on the ability to generate secure random numbers, both directly for
-protocol values such as the connection ID, and transitively via TLS. See
-{{!RFC4086}} for guidance on secure random number generation.
+QUIC depends on endpoint being able to generate secure random numbers, both
+directly for protocol values such as the connection ID, and transitively via
+TLS. See {{!RFC4086}} for guidance on secure random number generation.
 
 
 # IANA Considerations
