@@ -94,10 +94,10 @@ informative:
 
 This document defines the core of the QUIC transport protocol. QUIC provides
 multiplexed streams for delivering ordered application data, flow control,
-low-latency connection establishment, migration, resilience to path changes,
-and uses authenticated encryption for most protocol data. Accompanying
-documents describe QUIC's loss detection and congestion control and the use of
-TLS for key negotiation.
+low-latency connection establishment, network path migration, and uses
+authenticated encryption for most protocol data. Accompanying documents describe
+the integration of TLS for key negotiation, loss detection and an exemplary
+congestion control algorithm.
 
 
 --- note_Note_to_Readers
