@@ -6865,11 +6865,14 @@ its peer sends UDP datagrams:
   choose where a client sends datagrams, for example by populating DNS records;
 
 * preferred addresses ({{preferred-address}}), where a server is able to choose
-  where a client sends datagrams; and
+  where a client sends datagrams;
 
 * spoofed connection migrations ({{address-spoofing}}), where a client is able
   to use source address spoofing to select where a server sends subsequent
-  datagrams.
+  datagrams; and
+
+* spoofed packets that cause a server to send a Version Negotiation packet
+  {{vn-spoofing}}.
 
 In all three cases, the attacker can cause its peer to send datagrams to a
 victim that might not understand QUIC. That is, these packets are sent by
@@ -6975,6 +6978,23 @@ by endpoints aside from the generic measures described in {{forgery-generic}}.
 However, countermeasures for address spoofing at the network level, in
 particular ingress filtering {{?BCP38=RFC2827}}, are especially effective
 against attacks that use spoofing and originate from an external network.
+
+
+### Request Forgery with Version Negotiation {#vn-spoofing}
+
+Clients that are able to present a spoofed source address on a packet can cause
+a server to send a Version Negotiation packet {{packet-version}} to that
+address.
+
+The absence of size restrictions on the connection ID fields for packets of an
+unknown version increases the amount of data that the client controls from the
+resulting datagram.  The first byte of this packet is not under client control
+and the next four bytes are zero, but the client is able to control up to 512
+bytes starting from the fifth byte.
+
+No specific countermeasures are provided for this attack, though generic
+protections {{forgery-generic}} could apply.  In this case, ingress filtering
+{{?BCP38}} is also effective.
 
 
 ### Generic Request Forgery Countermeasures {#forgery-generic}
