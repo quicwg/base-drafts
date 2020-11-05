@@ -1163,6 +1163,11 @@ SHOULD ensure that the pool of connection IDs available to its peer allows the
 peer to use a new connection ID on migration, as the peer will be unable to
 respond if the pool is exhausted.
 
+An endpoint that selects a zero-length connection ID during the handshake
+cannot send a NEW_CONNECTION_ID frame.  A zero-length Destination Connection ID
+field is used for all packets sent toward such an endpoint and for all network
+paths.
+
 
 ### Consuming and Retiring Connection IDs {#retire-cid}
 
