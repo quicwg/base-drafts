@@ -6418,7 +6418,7 @@ NO_VIABLE_PATH (0x10):
 
 : An endpoint has determined that the network path is incapable of supporting
   QUIC.  An endpoint is unlikely to receive CONNECTION_CLOSE carrying this code
-  unless the reason is to do the path not supporting a large enough MTU.
+  except when the path does not support a large enough MTU.
 
 CRYPTO_ERROR (0x1XX):
 
