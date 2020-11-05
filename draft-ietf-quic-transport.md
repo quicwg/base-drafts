@@ -1922,9 +1922,9 @@ validation is performed both during connection establishment (see
 
 Connection establishment implicitly provides address validation for both
 endpoints.  In particular, receipt of a packet protected with Handshake keys
-confirms that the peer received an endpoint's Initial packet.  Once an endpoint
-has successfully processed a Handshake packet from the peer, it can consider the
-peer's address to have been validated.
+confirms that the peer successfully processed an Initial packet.  Once an
+endpoint has successfully processed a Handshake packet from the peer, it can
+consider the peer address to have been validated.
 
 Additionally, an endpoint MAY consider the peer address validated if the peer
 uses a connection ID chosen by the endpoint and the connection ID contains at
