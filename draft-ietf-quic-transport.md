@@ -2311,7 +2311,10 @@ When an endpoint abandons path validation, it determines that the path is
 unusable.  This does not necessarily imply a failure of the connection -
 endpoints can continue sending packets over other paths as appropriate.  If no
 paths are available, an endpoint can wait for a new path to become available or
-close the connection.
+close the connection.  An endpoint that has no valid network path to its peer
+MAY signal this using the NO_VIABLE_PATH connection error, noting that this is
+only possible if the network path exists but does not support the required
+MTU {{datagram-size}}.
 
 A path validation might be abandoned for other reasons besides
 failure. Primarily, this happens if a connection migration to a new path is
@@ -6411,6 +6414,12 @@ AEAD_LIMIT_REACHED (0xf):
 : An endpoint has reached the confidentiality or integrity limit for the AEAD
   algorithm used by the given connection.
 
+NO_VIABLE_PATH (0x10):
+
+: An endpoint has determined that the network path is incapable of supporting
+  QUIC.  An endpoint is unlikely to receive CONNECTION_CLOSE carrying this code
+  except when the path does not support a large enough MTU.
+
 CRYPTO_ERROR (0x1XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
@@ -7466,6 +7475,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 | 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
 | 0xf   | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
+| 0x10  | NO_VIABLE_PATH            | No viable network path exists | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
 
