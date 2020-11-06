@@ -144,9 +144,10 @@ could be used; see {{tls-version}}.
 
 ## TLS Overview
 
-TLS provides two endpoints with a way to establish a means of communication over
-an untrusted medium (that is, the Internet) that ensures that messages they
-exchange cannot be observed, modified, or forged.
+TLS provides two endpoints with a way to establish a means of communication
+over an untrusted medium (that is, the Internet). TLS enables authentication of
+peers and provides confidentiality and integrity protection for messages that
+endpoints exchange.
 
 Internally, TLS is a layered protocol, with the structure shown in
 {{tls-layers}}.
@@ -193,8 +194,8 @@ TLS provides two basic handshake modes of interest to QUIC:
 
  * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
-   Application Data can be replayed by an attacker so it MUST NOT carry a
-   self-contained trigger for any non-idempotent action.
+   Application Data can be replayed by an attacker so 0-RTT is not suitable for
+   carrying instructions that might initiate any non-idempotent action.
 
 A simplified TLS handshake with 0-RTT application data is shown in {{tls-full}}.
 
@@ -334,7 +335,7 @@ indicate which keys were used to protect a given packet, as shown in
 endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 
 | Packet Type         | Encryption Keys | PN Space         |
-|:--------------------|:----------------|:-----------------|
+| :------------------ | :-------------- | :--------------- |
 | Initial             | Initial secrets | Initial          |
 | 0-RTT Protected     | 0-RTT           | Application data |
 | Handshake           | Handshake       | Handshake        |
@@ -924,8 +925,10 @@ based on the client's initial Destination Connection ID, as described in
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
 Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
-cipher suite.  Other versions of TLS MUST provide a similar function in order to
-be used with QUIC.
+cipher suite.  Note that labels, which are described using strings, are encoded
+as bytes using ASCII {{?ASCII=RFC0020}} without quotes or any trailing NUL
+byte.  Other versions of TLS MUST provide a similar function in order to be
+used with QUIC.
 
 The current encryption level secret and the label "quic key" are input to the
 KDF to produce the AEAD key; the label "quic iv" is used to derive the
@@ -950,10 +953,11 @@ pseudorandom key (PRK) that is used to derive two separate secrets for sending
 and receiving.
 
 The secret used by clients to construct Initial packets uses the PRK and the
-label "client in" as input to the HKDF-Expand-Label function to produce a 32
-byte secret; packets constructed by the server use the same process with the
-label "server in".  The hash function for HKDF when deriving initial secrets
-and keys is SHA-256 {{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
+label "client in" as input to the HKDF-Expand-Label function from TLS
+{{!TLS13}} to produce a 32-byte secret.  Packets constructed by the server use
+the same process with the label "server in".  The hash function for HKDF when
+deriving initial secrets and keys is SHA-256
+{{!SHA=DOI.10.6028/NIST.FIPS.180-4}}.
 
 This process in pseudocode is:
 
@@ -990,11 +994,12 @@ response to an Initial packet from the server.
 
 Note:
 
-: The Destination Connection ID is of arbitrary length, and it could be zero
-  length if the server sends a Retry packet with a zero-length Source Connection
-  ID field.  In this case, the Initial keys provide no assurance to the client
-  that the server received its packet; the client has to rely on the exchange
-  that included the Retry packet for that property.
+: The Destination Connection ID field could be any length up to 20 bytes,
+  including zero length if the server sends a Retry packet with a zero-length
+  Source Connection ID field. After a Retry, the Initial keys provide the client
+  no assurance that the server received its packet, so the client has to rely on
+  the exchange that included the Retry packet to validate the server address;
+  see Section 8.1 of {{QUIC-TRANSPORT}}.
 
 {{test-vectors}} contains sample Initial packets.
 
@@ -1100,6 +1105,9 @@ else:
 packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
 ~~~
 {: #pseudo-hp title="Header Protection Pseudocode"}
+
+Specific header protection functions are defined based on the selected cipher
+suite; see {{hp-aes}} and {{hp-chacha}}.
 
 {{fig-sample}} shows an example long header packet (Initial) and a short header
 packet. {{fig-sample}} shows the fields in each header that are covered by
@@ -1212,10 +1220,12 @@ use 128-bit AES in electronic code-book (ECB) mode. AEAD_AES_256_GCM uses
 256-bit AES in ECB mode.  AES is defined in {{!AES=DOI.10.6028/NIST.FIPS.197}}.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
-as the input to AES-ECB.  In pseudocode:
+as the input to AES-ECB.  In pseudocode, the header protection function is
+defined as:
 
 ~~~
-mask = AES-ECB(hp_key, sample)
+header_protection(hp_key, sample):
+  mask = AES-ECB(hp_key, sample)
 ~~~
 
 
@@ -1235,14 +1245,14 @@ case the nonce bytes are interpreted as a sequence of 32-bit little-endian
 integers.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
-pseudocode:
+pseudocode, the header protection function is defined as:
 
 ~~~
-counter = sample[0..3]
-nonce = sample[4..15]
-mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
+header_protection(hp_key, sample):
+  counter = sample[0..3]
+  nonce = sample[4..15]
+  mask = ChaCha20(hp_key, counter, nonce, {0,0,0,0,0})
 ~~~
-
 
 
 ## Receiving Protected Packets
@@ -1557,9 +1567,9 @@ keys in addition to these might improve performance, but this is not essential.
 
 ## Sending with Updated Keys {#old-keys-send}
 
-An endpoint always sends packets that are protected with the newest keys.  Keys
-used for packet protection can be discarded immediately after switching to newer
-keys.
+An endpoint never sends packets that are protected with old keys.  Only the
+current keys are used.  Keys used for protecting packets can be discarded
+immediately after switching to newer keys.
 
 Packets with higher packet numbers MUST be protected with either the same or
 newer packet protection keys than packets with lower packet numbers.  An
@@ -1643,10 +1653,10 @@ It is RECOMMENDED that endpoints immediately close the connection with a
 connection error of type AEAD_LIMIT_REACHED before reaching a state where key
 updates are not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^25
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^23
 encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
 confidentiality limit is greater than the number of possible packets (2^62) and
-so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^23.5
+so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^21.5
 encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
 that an attacker can distinguish the AEAD in use from a random permutation; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
@@ -1658,12 +1668,15 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection with a connection error of
 type AEAD_LIMIT_REACHED and not process any more packets.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^54 invalid
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^52 invalid
 packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
 2^36 invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity
-limit is 2^23.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
+limit is 2^21.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
 the probability that an attacker can successfully forge a packet; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
+
+Endpoints that limit the size of packets MAY use higher confidentiality and
+integrity limits; see {{aead-analysis}} for details.
 
 Future analyses and specifications MAY relax confidentiality or integrity limits
 for an AEAD.
@@ -1978,6 +1991,13 @@ New QUIC versions SHOULD define a new salt value used in calculating initial
 secrets.
 
 
+## Randomness
+
+QUIC depends on endpoints being able to generate secure random numbers, both
+directly for protocol values such as the connection ID, and transitively via
+TLS. See {{!RFC4086}} for guidance on secure random number generation.
+
+
 # IANA Considerations
 
 This document registers the quic_transport_parameters extension found in
@@ -2084,7 +2104,7 @@ The unprotected header includes the connection ID and a 4-byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff00001d088394c8f03e5157080000449e00000002
+c3ff000020088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -2101,13 +2121,13 @@ header[0] ^= mask[0] & 0x0f
      = cd
 header[18..21] ^= mask[1..4]
      = 9cdb990b
-header = cdff00001d088394c8f03e5157080000449e9cdb990b
+header = cdff000020088394c8f03e5157080000449e9cdb990b
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-cdff00001f088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
+cdff000020088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
 73972d149421874d3849e3708d71354e a33bcdc356f3ea6e2a1a1bd7c3d14003
 8d3e784d04c30a2cdb40c32523aba2da fe1c1bf3d27a6be38fe38ae033fbb071
 3c1c73661bb6639795b42b97f77068ea d51f11fbf9489af2501d09481e6c64d4
@@ -2144,7 +2164,7 @@ edb42d2af89a9c9122b07acbc29e5e72 2df8615c343702491098478a389c9872
 a10b0c9875125e257c7bfdf27eef4060 bd3d00f4c14fd3e3496c38d3c5d1a566
 8c39350effbc2d16ca17be4ce29f02ed 969504dda2a8c6b9ff919e693ee79e09
 089316e7d1d89ec099db3b2b268725d8 88536a4b8bf9aee8fb43e82a4d919d48
-395781bc0a3e8125b4dd506ca025eb37
+b5a464ca5b62df3be35ee0d0a2ec68f3
 ~~~
 
 
@@ -2164,26 +2184,26 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff00001d0008f067a5502a4262b50040740001
+c1ff0000200008f067a5502a4262b50040750001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
 from the third protected octet:
 
 ~~~
-sample = 823a5d3a1207c86ee49132824f046524
+sample = 823a5d24534d906ce4c76782a2167e34
 mask   = abaaf34fdc
-header = caff00001d0008f067a5502a4262b5004074aaf2
+header = c7ff0000200008f067a5502a4262b5004075fb12
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c7ff00001f0008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
+c7ff0000200008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
 6782a2167e3479c0f7f6395dc2c91676 302fe6d70bb7cbeb117b4ddb7d173498
 44fd61dae200b8338e1b932976b61d91 e64a02e9e0ee72e3a6f63aba4ceeeec5
-be2f24f2d86027572943533846caa13e 6f163fb257473d76f0e78487aca6427b
-da2e7e70a7ee48
+be2f24f2d86027572943533846caa13e 6f163fb257473d0eda5047360fd4a47e
+fd8142fafc0f76
 ~~~
 
 
@@ -2195,8 +2215,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff00001f0008f067a5502a4262b574 6f6b656ec70ce5de430b4bdb7df1a383
-3a75f986
+ffff0000200008f067a5502a4262b574 6f6b656e59756519dd6cc85bd90e33a9
+34d2ff85
 ~~~
 
 
@@ -2262,7 +2282,7 @@ packet = 4cfe4189655e5cd55c41f69080575d7999c25a5bfb
 ~~~
 
 
-# AEAD Algorithm Analysis
+# AEAD Algorithm Analysis {#aead-analysis}
 
 This section documents analyses used in deriving AEAD algorithm limits for
 AEAD_AES_128_GCM, AEAD_AES_128_CCM, and AEAD_AES_256_GCM. The analyses that
@@ -2272,11 +2292,16 @@ used:
 
 t:
 
-: The size of the authentication tag in bits. For this cipher, t is 128.
+: The size of the authentication tag in bits. For these ciphers, t is 128.
 
 n:
 
-: The size of the block function in bits. For this cipher, n is 128.
+: The size of the block function in bits. For these ciphers, n is 128.
+
+k:
+
+: The size of the key in bits. This is 128 for AEAD_AES_128_GCM and
+  AEAD_AES_128_CCM; 256 for AEAD_AES_256_GCM.
 
 l:
 
@@ -2299,17 +2324,24 @@ o:
 : The amount of offline ideal cipher queries made by an adversary.
 
 The analyses that follow rely on a count of the number of block operations
-involved in producing each message. For simplicity, and to match the analysis of
-other AEAD functions in {{AEBounds}}, this analysis assumes a packet length of
-2^10 blocks; that is, a packet size limit of 2^14 bytes.
+involved in producing each message. This analysis is performed for packets of
+size up to 2^11 (l = 2^7) and 2^16 (l = 2^12). A size of 2^11 is expected to be
+a limit that matches common deployment patterns, whereas the 2^16 is the maximum
+possible size of a QUIC packet. Only endpoints that strictly limit packet size
+can use the larger confidentiality and integrity limits that are derived using
+the smaller packet size.
+
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the message length (l) is the length
+of the associated data in blocks plus the length of the plaintext in blocks.
 
 For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
 of: the length of the associated data in blocks, the length of the ciphertext
 in blocks, the length of the plaintext in blocks, plus 1. In this analysis,
 this is simplified to a value of twice the length of the packet in blocks (that
-is, `2l = 2^11`). This simplification is based on the packet containing all of
-the associated data and ciphertext. This results in a negligible 1 to 3 block
-overestimation of the number of operations.
+is, `2l = 2^8` for packets that are limited to 2^11 bytes, or `2l = 2^13`
+otherwise). This simplification is based on the packet containing all of the
+associated data and ciphertext. This results in a 1 to 3 block overestimation
+of the number of operations per packet.
 
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
@@ -2326,7 +2358,8 @@ blocks).
 in the analysis.
 
 The bounds in {{?GCM-MU}} are tighter and more complete than those used in
-{{AEBounds}}, which allows for larger limits than those described in {{?TLS13}}.
+{{AEBounds}}, which allows for larger limits than those described in
+{{?TLS13}}.
 
 
 ### Confidentiality Limit
@@ -2337,18 +2370,19 @@ distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
 
 ~~~
-2 * (q * l)^2 / 2^128
+2 * (q * l)^2 / 2^n
 ~~~
 
 For a target advantage of 2^-57, this results in the relation:
 
 ~~~
-q <= 2^25
+q <= 2^35 / l
 ~~~
 
-Thus, endpoints cannot protect more than 2^25 packets in a single connection
-without causing an attacker to gain an larger advantage than the target of
-2^-57.
+Thus, endpoints that do not send packets larger than 2^11 bytes cannot protect
+more than 2^28 packets in a single connection without causing an attacker to
+gain an larger advantage than the target of 2^-57. The limit for endpoints that
+allow for the packet size to be as large as 2^16 is instead 2^23.
 
 
 ### Integrity Limit
@@ -2366,15 +2400,19 @@ term in this inequality dominates the rest, so the others can be removed without
 significant effect on the result. This produces the following approximation:
 
 ~~~
-v <= 2^54
+v <= 2^64 / l
 ~~~
 
-For AEAD_AES_256_GCM, the second and fourth terms dominate the rest, so the
-others can be removed without affecting the result. This produces the following
-approximation:
+Endpoints that do not attempt to remove protection from packets larger than 2^11
+bytes can attempt to remove protection from at most 2^57 packets. Endpoints that
+do not restrict the size of processed packets can attempt to remove protection
+from at most 2^52 packets.
+
+For AEAD_AES_256_GCM, the same term dominates, but the larger value of k
+produces the following approximation:
 
 ~~~
-v <= 2^182
+v <= 2^192 / l
 ~~~
 
 This is substantially larger than the limit for AEAD_AES_128_GCM.  However, this
@@ -2393,9 +2431,6 @@ section documents that analysis.
 analysis. The results of that analysis are used to derive usage limits that are
 based on those chosen in {{?TLS13}}.
 
-
-### Confidentiality Limits
-
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
 no more than:
@@ -2404,37 +2439,33 @@ no more than:
 (2l * q)^2 / 2^n
 ~~~
 
-For a target advantage of 2^-57, this results in the relation:
+The integrity limit in Theorem 1 in {{?CCM-ANALYSIS}} provides an attacker a
+strictly higher advantage for the same number of messages. As the targets for
+the confidentiality advantage and the integrity advantage are the same, only
+Theorem 1 needs to be considered.
 
-~~~
-q <= 2^24.5
-~~~
-
-That is, endpoints cannot protect more than 2^23 packets with the same set of
-keys without causing an attacker to gain a larger advantage than the target of
-2^-57.  Note however that the integrity limits further constrain this value.
-
-
-### Integrity Limits
-
-For integrity, Theorem 1 in {{?CCM-ANALYSIS}} establishes that an attacker
-gains an advantage over an ideal PRP of no more than:
+Theorem 1 establishes that an attacker gains an advantage over an
+ideal PRP of no more than:
 
 ~~~
 v / 2^t + (2l * (v + q))^2 / 2^n
 ~~~
 
-The goal is to limit this advantage to 2^-57.  As `t` and `n` are both 128, the
-first term is negligible relative to the second, so that term can be removed
-without a significant effect on the result. This produces the relation:
+As `t` and `n` are both 128, the first term is negligible relative to the
+second, so that term can be removed without a significant effect on the result.
+
+This produces a relation that combines both encryption and decryption attempts
+with the same limit as that produced by the theorem for confidentiality alone.
+For a target advantage of 2^-57, this results in:
 
 ~~~
-v + q <= 2^24.5
+v + q <= 2^34.5 / l
 ~~~
 
-Assuming `q = v`, endpoints cannot attempt to protect or authenticate more than
-2^23.5 packets with the same set of keys without causing an attacker to gain a
-larger advantage in forging packets than the target of 2^-57.
+By setting `q = v`, values for both confidentiality and integrity limits can be
+produced. Endpoints that limit packets to 2^11 bytes therefore have both
+confidentiality and integrity limits of 2^26.5 packets. Endpoints that do not
+restrict packet size have a limit of 2^21.5.
 
 
 # Change Log
@@ -2443,6 +2474,11 @@ larger advantage in forging packets than the target of 2^-57.
 > final version of this document.
 
 Issue and pull request numbers are listed with a leading octothorp.
+
+## Since draft-ietf-quic-tls-31
+
+- Packet protection limits are based on maximum-sized packets; improved
+  analysis (#3701, #4175)
 
 ## Since draft-ietf-quic-tls-30
 

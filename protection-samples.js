@@ -17,7 +17,7 @@ const SHA256 = 'sha256';
 const AES_GCM = 'aes-128-gcm';
 const AES_ECB = 'aes-128-ecb';
 
-const draft_version = 31;
+const draft_version = 32;
 const version = 'ff0000' + draft_version.toString(16);
 
 function chunk(s, n) {

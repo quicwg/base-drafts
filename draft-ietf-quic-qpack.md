@@ -134,8 +134,8 @@ HTTP fields:
 
 HTTP field line:
 
-: A name-value pair sent as part of an HTTP field section.  See Section 5 of
-  {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
+: A name-value pair sent as part of an HTTP field section.  See Section 5.4
+  and Section 5.6 of {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
 
 HTTP field value:
 
@@ -180,7 +180,7 @@ QPACK is a name, not an acronym.
 
 ## Notational Conventions
 
-Diagrams use the format described in Section 3.1 of {{?RFC2360}}, with the
+Diagrams use the format described in Section 3.1 of {{!RFC2360}}, with the
 following additional conventions:
 
 x (A)
@@ -652,15 +652,17 @@ This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single bit flag, denoted as 'H' in this document (indicating whether the string
-is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer,
-and finally Length bytes of data. When Huffman encoding is enabled, the Huffman
-table from Appendix B of [RFC7541] is used without modification.
+is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer, and
+finally Length bytes of data. When Huffman encoding is enabled, the Huffman
+table from Appendix B of [RFC7541] is used without modification and Length
+indicates the size of the string after encoding.
 
 This document expands the definition of string literals by permitting them to
 begin other than on a byte boundary.  An "N-bit prefix string literal" begins
-with the same Huffman flag, followed by the length encoded as an (N-1)-bit
-prefix integer.  The prefix size, N, can have a value between 2 and 8 inclusive.
-The remainder of the string literal is unmodified.
+mid-byte, with the first (8-N) bits allocated to a previous field. The string
+uses one bit for the Huffman flag, followed by the Length encoded as an
+(N-1)-bit prefix integer.  The prefix size, N, can have a value between 2 and 8
+inclusive. The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
 and follows the definitions in [RFC7541] without modification.
@@ -1670,8 +1672,9 @@ Stream: Decoder
 
 The encoder duplicates an existing entry in the dynamic table, then sends an
 encoded field section referencing the dynamic table entries including the
-duplicated entry.  The decoder notifies the encoder that the encoded field
-section was not processed by sending a stream cancellation.
+duplicated entry.  The packet containing the encoder stream data is delayed.
+Before the packet arrives, the decoder cancels the stream and notifies the
+encoder that the encoded field section was not processed.
 
 ~~~
 Stream: Encoder
@@ -1804,6 +1807,10 @@ return encoderBuffer, prefixBuffer + streamBuffer
 
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-qpack-18
+
+Editorial changes only
 
 ## Since draft-ietf-quic-qpack-17
 
