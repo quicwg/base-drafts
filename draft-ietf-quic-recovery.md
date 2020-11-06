@@ -1575,7 +1575,7 @@ Pseudocode for DetectAndRemoveLostPackets follows:
 DetectAndRemoveLostPackets(pn_space):
   assert(largest_acked_packet[pn_space] != infinite)
   loss_time[pn_space] = 0
-  lost_packets = {}
+  lost_packets = []
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
   // Minimum time of kGranularity before packets are deemed lost.
@@ -1812,7 +1812,7 @@ OnPacketsLost(lost_packets):
   // Only consider packets sent after getting an RTT sample.
   if (first_rtt_sample == 0):
     return
-  pc_lost = {}
+  pc_lost = []
   for lost in lost_packets:
     if lost.time_sent > first_rtt_sample:
       pc_lost.insert(lost)
