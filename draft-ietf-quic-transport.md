@@ -6874,7 +6874,7 @@ its peer sends UDP datagrams:
 * spoofed packets that cause a server to send a Version Negotiation packet
   {{vn-spoofing}}.
 
-In all three cases, the attacker can cause its peer to send datagrams to a
+In all cases, the attacker can cause its peer to send datagrams to a
 victim that might not understand QUIC. That is, these packets are sent by
 the peer prior to address validation; see {{address-validation}}.
 
