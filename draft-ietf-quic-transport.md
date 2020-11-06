@@ -2314,7 +2314,7 @@ paths are available, an endpoint can wait for a new path to become available or
 close the connection.  An endpoint that has no valid network path to its peer
 MAY signal this using the NO_VIABLE_PATH connection error, noting that this is
 only possible if the network path exists but does not support the required
-MTU {{datagram-size}}.
+MTU ({{datagram-size}}).
 
 A path validation might be abandoned for other reasons besides
 failure. Primarily, this happens if a connection migration to a new path is
