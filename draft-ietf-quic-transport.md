@@ -4327,9 +4327,7 @@ reserved for use in future IETF consensus documents.
 Versions that follow the pattern 0x?a?a?a?a are reserved for use in forcing
 version negotiation to be exercised.  That is, any version number where the low
 four bits of all bytes is 1010 (in binary).  A client or server MAY advertise
-support for any of these reserved versions. These values were allocated sparsely
-across the entire version space to discourage endpoint implementations from
-conditioning on them.
+support for any of these reserved versions.
 
 Reserved version numbers will never represent a real protocol; a client MAY use
 one of these version numbers with the expectation that the server will initiate
@@ -5115,9 +5113,8 @@ included in the cryptographic handshake.
 Transport parameters with an identifier of the form `31 * N + 27` for integer
 values of N are reserved to exercise the requirement that unknown transport
 parameters be ignored.  These transport parameters have no semantics, and may
-carry arbitrary values. These values were allocated sparsely across the entire
-identifier space to discourage endpoint implementations from conditioning on
-them.
+carry arbitrary values.
+
 
 ## Transport Parameter Definitions {#transport-parameter-definitions}
 
