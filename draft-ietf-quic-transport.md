@@ -3401,7 +3401,7 @@ response to further packets that it receives.
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
+protection for the reasons described in Section 9.5 of {{QUIC-TLS}}.
 
 Endpoints that track all individual packets for the purposes of detecting
 duplicates are at risk of accumulating excessive state.  The data required for
@@ -4537,7 +4537,7 @@ Reserved Bits:
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits after removing both packet and header protection as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.3 of
+  header protection can expose the endpoint to attacks; see Section 9.5 of
   {{QUIC-TLS}}.
 
 Packet Number Length:
@@ -4985,7 +4985,7 @@ Reserved Bits:
   endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits, after removing both packet and header protection, as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.3 of
+  header protection can expose the endpoint to attacks; see Section 9.5 of
   {{QUIC-TLS}}.
 
 Key Phase:
