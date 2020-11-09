@@ -4127,7 +4127,7 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 ({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
 fragmentation on the path.
 
-QUIC sometimes requires datagrams to be larger than a minimum size; see
+QUIC sometimes requires datagrams to be no smaller than a certain size; see
 {{version-negotiation}} as an example. However, the size of a datagram is not
 authenticated. That is, if an endpoint receives a datagram of a certain size, it
 cannot know that the sender sent the datagram at the same size. Therefore, an
