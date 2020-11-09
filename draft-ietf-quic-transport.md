@@ -4128,7 +4128,7 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 fragmentation on the path.
 
 QUIC sometimes requires datagrams to be no smaller than a certain size; see
-{{version-negotiation}} as an example. However, the size of a datagram is not
+{{validate-handshake}} as an example. However, the size of a datagram is not
 authenticated. That is, if an endpoint receives a datagram of a certain size, it
 cannot know that the sender sent the datagram at the same size. Therefore, an
 endpoint MUST NOT close a connection when it receives a datagram that does not
