@@ -93,7 +93,7 @@ informative:
 --- abstract
 
 This document defines the core of the QUIC transport protocol. QUIC provides
-multiplexed streams for delivering ordered application data, flow control,
+streams for structuring application data, flow control,
 low-latency connection establishment, network path migration, and uses
 authenticated encryption for most protocol data. Accompanying documents describe
 the integration of TLS for key negotiation, loss detection, and an exemplary
@@ -114,7 +114,7 @@ code and issues list for this draft can be found at
 
 # Overview
 
-QUIC is a multiplexed and secure general-purpose transport protocol. This
+QUIC is a secure general-purpose transport protocol. This
 document defines version 1 of QUIC, which conforms to the version-independent
 properties of QUIC defined in {{QUIC-INVARIANTS}}.
 
@@ -122,8 +122,8 @@ QUIC is a connection-oriented protocol that creates a stateful interaction
 between a client and server.
 
 The QUIC handshake combines negotiation of cryptographic and transport
-parameters. QUIC integrates the TLS {{?TLS13}} handshake, though provides a
-customized scheme for protecting packets. The integration of TLS and QUIC is
+parameters. QUIC integrates the TLS ({{?TLS13}}) handshake, although using a
+customized framing for protecting packets. The integration of TLS and QUIC is
 described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
 the exchange of application data as soon as possible. This includes an option
 for clients to send data immediately (0-RTT), which might require prior
