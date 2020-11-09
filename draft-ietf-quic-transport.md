@@ -1928,8 +1928,9 @@ consider the peer address to have been validated.
 
 Additionally, an endpoint MAY consider the peer address validated if the peer
 uses a connection ID chosen by the endpoint and the connection ID contains at
-least 64 bits of entropy.  This means that any valid packet received by the
-client validates the server address.
+least 64 bits of entropy.  For the client, the value of the Destination
+Connection ID field in its first Initial packet also fulfills this requirement,
+such that successfully processing any packet validates the server address.
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
