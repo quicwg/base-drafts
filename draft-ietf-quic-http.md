@@ -745,7 +745,7 @@ content-length field, even though no content is included in DATA frames.
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
 not acting as a tunnel) MUST NOT forward a malformed request or response.
 Malformed requests or responses that are detected MUST be treated as a stream
-error ({{errors}}) of type H3_GENERAL_PROTOCOL_ERROR.
+error ({{errors}}) of type H3_MESSAGE_ERROR.
 
 For malformed requests, a server MAY send an HTTP response indicating the error
 prior to closing or resetting the stream.  Clients MUST NOT accept a malformed
@@ -1711,6 +1711,9 @@ H3_REQUEST_CANCELLED (0x10c):
 H3_REQUEST_INCOMPLETE (0x10d):
 : The client's stream terminated without containing a fully-formed request.
 
+H3_MESSAGE_ERROR (0x10e):
+: An HTTP message was malformed and cannot be processed.
+
 H3_CONNECT_ERROR (0x10f):
 : The TCP connection established in response to a CONNECT request was reset or
   abnormally closed.
@@ -2157,6 +2160,7 @@ Required policy to avoid collisions with HTTP/2 error codes.
 | H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
 | H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_MESSAGE_ERROR                  | 0x010e     | Malformed message                        | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
