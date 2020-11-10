@@ -1934,8 +1934,9 @@ For the client, the value of the Destination Connection ID field in its first
 Initial packet allows it to validate the server address as a part of
 successfully processing any packet.  Initial packets from the server are
 protected with keys that are derived from this value (see Section 5.2 of
-{{QUIC-TLS}}).  Alternatively, the value is echoed by the server in Retry and
-Version Negotiation packets.
+{{QUIC-TLS}}). Alternatively, the value is echoed by the server in Version
+Negotiation packets ({{version-negotiation}}) or included in the Integrity Tag
+in Retry packets (Section 5.8 of {{QUIC-TLS}}).
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
