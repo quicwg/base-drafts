@@ -733,7 +733,7 @@ frames but is invalid due to:
 - pseudo-header fields after fields,
 - an invalid sequence of HTTP messages,
 - the inclusion of uppercase field names, or
-- the inclusion of invalid characters in field names or values
+- the inclusion of invalid characters in field names or values.
 
 A request or response that includes a payload body can include a
 Content-Length header field.  A request or response is also malformed if the
