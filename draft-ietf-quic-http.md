@@ -2447,8 +2447,9 @@ NO_ERROR (0x0):
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to H3_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. Such cases include H3_FRAME_UNEXPECTED
-  and H3_CLOSED_CRITICAL_STREAM defined in {{http-error-codes}}.
+  specific error codes have been defined. Such cases include
+  H3_FRAME_UNEXPECTED, H3_MESSAGE_ERROR, and H3_CLOSED_CRITICAL_STREAM defined
+  in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : H3_INTERNAL_ERROR in {{http-error-codes}}.
