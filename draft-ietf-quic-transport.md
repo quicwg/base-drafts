@@ -1932,13 +1932,21 @@ validation is performed both during connection establishment (see
 
 Connection establishment implicitly provides address validation for both
 endpoints.  In particular, receipt of a packet protected with Handshake keys
-confirms that the client received the Initial packet from the server.  Once the
-server has successfully processed a Handshake packet from the client, it can
-consider the client address to have been validated.
+confirms that the peer successfully processed an Initial packet.  Once an
+endpoint has successfully processed a Handshake packet from the peer, it can
+consider the peer address to have been validated.
 
-Additionally, a server MAY consider the client address validated if the
-client uses a connection ID chosen by the server and the connection ID contains
-at least 64 bits of entropy.
+Additionally, an endpoint MAY consider the peer address validated if the peer
+uses a connection ID chosen by the endpoint and the connection ID contains at
+least 64 bits of entropy.
+
+For the client, the value of the Destination Connection ID field in its first
+Initial packet allows it to validate the server address as a part of
+successfully processing any packet.  Initial packets from the server are
+protected with keys that are derived from this value (see Section 5.2 of
+{{QUIC-TLS}}). Alternatively, the value is echoed by the server in Version
+Negotiation packets ({{version-negotiation}}) or included in the Integrity Tag
+in Retry packets (Section 5.8 of {{QUIC-TLS}}).
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
