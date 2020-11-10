@@ -7350,8 +7350,10 @@ this registry.
 The codepoint of 0x00000001 to the protocol is assigned with permanent status
 to the protocol defined in this document. The codepoint of 0x00000000 is
 permanently reserved; the note for this codepoint \[shall] indicate\[s] that
-this version is reserved for Version Negotiation. All codepoints that follow
-the pattern 0x?a?a?a?a are permanently reserved.
+this version is reserved for Version Negotiation.
+
+All codepoints that follow the pattern 0x?a?a?a?a are reserved and MUST NOT be
+assigned by IANA.
 
 \[\[RFC editor: please remove the following note before publication.]]
 
