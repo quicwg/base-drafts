@@ -7344,9 +7344,6 @@ registry follows the registration policy from {{iana-policy}}. Permanent
 registrations in this registry are assigned using the Specification Required
 policy ({{!RFC8126}}).
 
-All fields in {{iana-provisional}} MUST be included in all registrations for
-this registry.
-
 The codepoint of 0x00000001 to the protocol is assigned with permanent status
 to the protocol defined in this document. The codepoint of 0x00000000 is
 permanently reserved; the note for this codepoint \[shall] indicate\[s] that
