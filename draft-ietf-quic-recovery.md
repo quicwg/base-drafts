@@ -194,13 +194,13 @@ not available.
 
 ## Clearer Loss Epoch
 
-QUIC starts a loss epoch when a packet is lost and ends one when any packet
-sent after the epoch starts is acknowledged.  TCP waits for the gap in the
-sequence number space to be filled, and so if a segment is lost multiple times
-in a row, the loss epoch may not end for several round trips. Because both
-should reduce their congestion windows only once per epoch, QUIC will do it
-once for every round trip that experiences loss, while TCP may only do it
-once across multiple round trips.
+QUIC starts a loss epoch when a packet is lost. The loss epoch ends when any
+packet sent after the start of the epoch is acknowledged.  TCP waits for the gap
+in the sequence number space to be filled, and so if a segment is lost multiple
+times in a row, the loss epoch may not end for several round trips. Because both
+should reduce their congestion windows only once per epoch, QUIC will do it once
+for every round trip that experiences loss, while TCP may only do it once across
+multiple round trips.
 
 ## No Reneging
 
@@ -1575,7 +1575,7 @@ Pseudocode for DetectAndRemoveLostPackets follows:
 DetectAndRemoveLostPackets(pn_space):
   assert(largest_acked_packet[pn_space] != infinite)
   loss_time[pn_space] = 0
-  lost_packets = {}
+  lost_packets = []
   loss_delay = kTimeThreshold * max(latest_rtt, smoothed_rtt)
 
   // Minimum time of kGranularity before packets are deemed lost.
@@ -1812,7 +1812,7 @@ OnPacketsLost(lost_packets):
   // Only consider packets sent after getting an RTT sample.
   if (first_rtt_sample == 0):
     return
-  pc_lost = {}
+  pc_lost = []
   for lost in lost_packets:
     if lost.time_sent > first_rtt_sample:
       pc_lost.insert(lost)

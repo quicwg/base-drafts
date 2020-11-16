@@ -92,9 +92,13 @@ informative:
 
 --- abstract
 
-This document defines the core of the QUIC transport protocol.  Accompanying
-documents describe QUIC's loss detection and congestion control and the use of
-TLS for key negotiation.
+This document defines the core of the QUIC transport protocol.  QUIC provides
+applications with flow-controlled streams for structured communication,
+low-latency connection establishment, and network path migration. QUIC includes
+security measures that ensure confidentiality, integrity, and availability in a
+range of deployment circumstances.  Accompanying documents describe the
+integration of TLS for key negotiation, loss detection, and an exemplary
+congestion control algorithm.
 
 
 --- note_Note_to_Readers
@@ -111,22 +115,26 @@ code and issues list for this draft can be found at
 
 # Overview
 
-QUIC is a multiplexed and secure general-purpose transport protocol that
-provides:
+QUIC is a secure general-purpose transport protocol. This
+document defines version 1 of QUIC, which conforms to the version-independent
+properties of QUIC defined in {{QUIC-INVARIANTS}}.
 
-* Stream multiplexing
+QUIC is a connection-oriented protocol that creates a stateful interaction
+between a client and server.
 
-* Stream- and connection-level flow control
+The QUIC handshake combines negotiation of cryptographic and transport
+parameters. QUIC integrates the TLS ({{?TLS13}}) handshake, although using a
+customized framing for protecting packets. The integration of TLS and QUIC is
+described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
+the exchange of application data as soon as possible. This includes an option
+for clients to send data immediately (0-RTT), which might require prior
+communication to enable.
 
-* Low-latency connection establishment
-
-* Connection migration and resilience to NAT rebinding
-
-* Authenticated and encrypted header and payload
-
-QUIC establishes a connection, which is a stateful interaction between a client
-and server. The primary purpose of a connection is to support the structured
-exchange of data by an application protocol.
+Endpoints communicate in QUIC by exchanging QUIC packets. Most packets contain
+frames, which carry control information and application data between
+endpoints. QUIC authenticates all packets and encrypts as much as is practical.
+QUIC packets are carried in UDP datagrams ({{!UDP=RFC0768}}) to better
+facilitate deployment in existing systems and networks.
 
 Application protocols exchange information over a QUIC connection via streams,
 which are ordered sequences of bytes. Two types of stream can be created:
@@ -135,20 +143,17 @@ unidirectional streams, which allow a single endpoint to send data. A
 credit-based scheme is used to limit stream creation and to bound the amount of
 data that can be sent.
 
-The QUIC handshake combines negotiation of cryptographic and transport
-parameters.  The handshake is structured to permit the exchange of application
-data as soon as possible.  This includes an option for clients to send data
-immediately (0-RTT), which might require prior communication to enable.
+QUIC provides the necessary feedback to implement reliable delivery and
+congestion control. An algorithm for detecting and recovering from loss of
+data is described in {{QUIC-RECOVERY}}. QUIC depends on congestion control
+to avoid network congestion. An exemplary congestion control algorithm is
+also described in {{QUIC-RECOVERY}}.
 
-QUIC connections are not strictly bound to a single network path.  Connection
+QUIC connections are not strictly bound to a single network path. Connection
 migration uses connection identifiers to allow connections to transfer to a new
-network path.
-
-Frames are used in QUIC to communicate between endpoints. One or more frames
-are assembled into a QUIC packet. QUIC authenticates all packets and encrypts
-as much as is practical. QUIC packets are carried in UDP datagrams
-({{!UDP=RFC0768}}) to better facilitate deployment in existing systems and
-networks.
+network path. Only clients are able to migrate in this version of QUIC. This
+design also allows connections to continue after changes in network topology or
+address mappings, such as might be caused by NAT rebinding.
 
 Once established, multiple options are provided for connection termination.
 Applications can manage a graceful shutdown, endpoints can negotiate a timeout
@@ -1163,6 +1168,11 @@ SHOULD ensure that the pool of connection IDs available to its peer allows the
 peer to use a new connection ID on migration, as the peer will be unable to
 respond if the pool is exhausted.
 
+An endpoint that selects a zero-length connection ID during the handshake
+cannot issue a new connection ID.  A zero-length Destination Connection ID
+field is used in all packets sent toward such an endpoint over any network
+path.
+
 
 ### Consuming and Retiring Connection IDs {#retire-cid}
 
@@ -1927,13 +1937,21 @@ Address validation is performed both during connection establishment (see
 
 Connection establishment implicitly provides address validation for both
 endpoints.  In particular, receipt of a packet protected with Handshake keys
-confirms that the client received the Initial packet from the server.  Once the
-server has successfully processed a Handshake packet from the client, it can
-consider the client address to have been validated.
+confirms that the peer successfully processed an Initial packet.  Once an
+endpoint has successfully processed a Handshake packet from the peer, it can
+consider the peer address to have been validated.
 
-Additionally, a server MAY consider the client address validated if the client
-uses a connection ID chosen by the server and the connection ID contains at
+Additionally, an endpoint MAY consider the peer address validated if the peer
+uses a connection ID chosen by the endpoint and the connection ID contains at
 least 64 bits of entropy.
+
+For the client, the value of the Destination Connection ID field in its first
+Initial packet allows it to validate the server address as a part of
+successfully processing any packet.  Initial packets from the server are
+protected with keys that are derived from this value (see Section 5.2 of
+{{QUIC-TLS}}). Alternatively, the value is echoed by the server in Version
+Negotiation packets ({{version-negotiation}}) or included in the Integrity Tag
+in Retry packets (Section 5.8 of {{QUIC-TLS}}).
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
@@ -3316,7 +3334,8 @@ confidentiality protection. Initial protection exists to ensure that the sender
 of the packet is on the network path. Any entity that receives an Initial packet
 from a client can recover the keys that will allow them to both read the
 contents of the packet and generate Initial packets that will be successfully
-authenticated at either endpoint.
+authenticated at either endpoint.  The AEAD also protects Initial packets
+against accidental modification.
 
 All other packets are protected with keys derived from the cryptographic
 handshake.  The cryptographic handshake ensures that only the communicating
@@ -3422,7 +3441,7 @@ response to further packets that it receives.
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.3 of {{QUIC-TLS}}.
+protection for the reasons described in Section 9.5 of {{QUIC-TLS}}.
 
 Endpoints that track all individual packets for the purposes of detecting
 duplicates are at risk of accumulating excessive state.  The data required for
@@ -4147,10 +4166,12 @@ UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
 ({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
 fragmentation on the path.
 
-Datagrams are required to be of a minimum size under some conditions.  However,
-the size of the datagram is not authenticated.  Therefore, an endpoint MUST NOT
-close a connection when it receives a datagram that does not meet size
-constraints, though the endpoint MAY discard such datagrams.
+QUIC sometimes requires datagrams to be no smaller than a certain size; see
+{{validate-handshake}} as an example. However, the size of a datagram is not
+authenticated. That is, if an endpoint receives a datagram of a certain size, it
+cannot know that the sender sent the datagram at the same size. Therefore, an
+endpoint MUST NOT close a connection when it receives a datagram that does not
+meet size constraints; the endpoint MAY however discard such datagrams.
 
 
 ## Initial Datagram Size {#initial-size}
@@ -4558,7 +4579,7 @@ Reserved Bits:
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits after removing both packet and header protection as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.3 of
+  header protection can expose the endpoint to attacks; see Section 9.5 of
   {{QUIC-TLS}}.
 
 Packet Number Length:
@@ -5006,7 +5027,7 @@ Reserved Bits:
   endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits, after removing both packet and header protection, as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.3 of
+  header protection can expose the endpoint to attacks; see Section 9.5 of
   {{QUIC-TLS}}.
 
 Key Phase:
