@@ -2709,9 +2709,7 @@ might also occur because the client's access network used a different NAT
 binding for the server's preferred address.
 
 Servers SHOULD initiate path validation to the client's new address upon
-receiving a probe packet from a different address.  Before the client address
-is validated, servers MUST NOT send to the address more than three times the
-number of bytes that have been received; see {{address-validation}}.
+receiving a probe packet from a different address; see {{address-validation}}.
 
 A client that migrates to a new address SHOULD use a preferred address from the
 same address family for the server.
