@@ -260,15 +260,17 @@ server:
 
 stream:
 : A bidirectional or unidirectional bytestream provided by the QUIC transport.
+  All streams within an HTTP/3 connection can be considered "HTTP/3 streams,"
+  but multiple stream types are defined within HTTP/3.
 
 stream error:
-: An error on the individual HTTP/3 stream.
+: An application-level error on the individual stream.
 
 The term "payload body" is defined in Section 5.5.4 of {{!SEMANTICS}}.
 
-Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
-in Section 3.7 of {{!SEMANTICS}}.  Intermediaries act as both client and server
-at different times.
+Finally, the terms "resource", "message", "user agent", "origin server",
+"gateway", "intermediary", "proxy", and "tunnel" are defined in Section 3 of
+{{!SEMANTICS}}.
 
 Packet diagrams in this document use the format defined in Section 1.3 of
 {{QUIC-TRANSPORT}} to illustrate the order and size of fields.
