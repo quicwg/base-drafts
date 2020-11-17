@@ -764,8 +764,8 @@ permissive can expose implementations to these vulnerabilities.
 ## The CONNECT Method {#connect}
 
 The CONNECT method requests that the recipient establish a tunnel to the
-destination origin server identified by the request-target (Section 3.2 of
-{{?HTTP11}}).  It is primarily used with HTTP proxies to establish a TLS
+destination origin server identified by the request-target; see Section 8.3.6 of
+{{!SEMANTICS}}.  It is primarily used with HTTP proxies to establish a TLS
 session with an origin server for the purposes of interacting with "https"
 resources.
 
