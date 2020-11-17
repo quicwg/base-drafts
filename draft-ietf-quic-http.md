@@ -528,10 +528,10 @@ continue sending the body of the request and close the stream normally.
 
 ### Field Formatting and Compression {#header-formatting}
 
-HTTP messages carry metadata as a series of key-value pairs, called HTTP fields.
-For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
-(HTTP) Field Name Registry" maintained at
-[](https://www.iana.org/assignments/http-fields/).
+HTTP messages carry metadata as a series of key-value pairs called HTTP fields;
+see Sections 5.4 and 5.6 of {{!SEMANTICS}}. For a listing of registered HTTP
+fields, see the "Hypertext Transfer Protocol (HTTP) Field Name Registry"
+maintained at [](https://www.iana.org/assignments/http-fields/).
 
 > **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
 > **RFC Editor**, please remove this note prior to publication.
