@@ -722,9 +722,12 @@ closure of the request stream with this error code.
 
 If a stream is canceled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).
+after receiving a partial response, the response SHOULD NOT be used. Only
+idempotent actions (such as GET, PUT, or DELETE) can be safely retried; a client
+SHOULD NOT automatically retry a request with a non-idempotent method unless it
+has some means to know that the request semantics are actually idempotent,
+regardless of the method, or some means to detect that the original request was
+never applied.  See Section 8.2.2 of {{!SEMANTICS}} for more details.
 
 ### Malformed Requests and Responses {#malformed}
 
