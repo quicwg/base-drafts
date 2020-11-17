@@ -926,8 +926,9 @@ Each QUIC endpoint declares an idle timeout during the handshake.  If the QUIC
 connection remains idle (no packets received) for longer than this duration, the
 peer will assume that the connection has been closed.  HTTP/3 implementations
 will need to open a new HTTP/3 connection for new requests if the existing
-connection has been idle for longer than the server's advertised idle timeout,
-and SHOULD do so if approaching the idle timeout.
+connection has been idle for longer than the idle timeout negotiated during the
+QUIC handshake, and SHOULD do so if approaching the idle timeout; see Section
+10.1 of {{QUIC-TRANSPORT}}.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
