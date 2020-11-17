@@ -682,8 +682,10 @@ If an implementation wishes to advise its peer of this limit, it can be conveyed
 as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation that has received this parameter SHOULD NOT send an HTTP message
 header that exceeds the indicated size, as the peer will likely refuse to
-process it.  However, because this limit is applied at each hop, messages below
-this limit are not guaranteed to be accepted.
+process it.  However, an HTTP message can traverse one or more intermediaries
+(see Section 3.7 of {{!SEMANTICS}}) before reaching the origin server.  Because
+this limit is applied separately by each implementation which processes the
+message, messages below this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
