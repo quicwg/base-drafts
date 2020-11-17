@@ -439,11 +439,12 @@ of {{?HTTP2}}.
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
-A client MUST send only a single request on a given stream. A server sends zero
-or more interim HTTP responses on the same stream as the request, followed by a
-single final HTTP response, as detailed below.  See Section 14 of {{!SEMANTICS}}
-for a description of interim and final HTTP responses.
+A client sends an HTTP request on a request stream, which is a client-initiated
+bidirectional QUIC stream; see {{request-streams}}.  A client MUST send only a
+single request on a given stream.  A server sends zero or more interim HTTP
+responses on the same stream as the request, followed by a single final HTTP
+response, as detailed below. See Section 14 of {{!SEMANTICS}} for a description
+of interim and final HTTP responses.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
 {{push-streams}}.  A server sends zero or more interim HTTP responses, followed
@@ -1073,16 +1074,18 @@ the stream management.  HTTP does not need to do any separate multiplexing when
 using QUIC - data sent over a QUIC stream always maps to a particular HTTP
 transaction or to the entire HTTP/3 connection context.
 
-## Bidirectional Streams
+## Bidirectional Streams {#request-streams}
 
 All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
-correlated with the request. This means that the client's first request occurs
-on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, an HTTP/3 server SHOULD configure non-zero
-minimum values for the number of permitted streams and the initial stream flow
-control window.  So as to not unnecessarily limit parallelism, at least 100
-requests SHOULD be permitted at a time.
+correlated with the request.  These streams are referred to as request streams.
+
+This means that the client's first request occurs on QUIC stream 0, with
+subsequent requests on stream 4, 8, and so on. In order to permit these streams
+to open, an HTTP/3 server SHOULD configure non-zero minimum values for the
+number of permitted streams and the initial stream flow control window.  So as
+to not unnecessarily limit parallelism, at least 100 requests SHOULD be
+permitted at a time.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a
