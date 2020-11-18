@@ -2026,6 +2026,8 @@ The "h3" string identifies HTTP/3:
 New registries created in this document operate under the QUIC registration
 policy documented in Section 22.1 of {{QUIC-TRANSPORT}}.  These registries all
 include the common set of fields listed in Section 22.1.1 of {{QUIC-TRANSPORT}}.
+These registries \[SHALL be/are] collected under a "Hypertext Transfer Protocol
+version 3 (HTTP/3) Parameters" heading.
 
 The initial allocations in these registries created in this document are all
 assigned permanent status and list a change controller of the IETF and a contact
