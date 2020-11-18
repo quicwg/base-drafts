@@ -3317,9 +3317,11 @@ authenticated at either endpoint.  The AEAD also protects Initial packets
 against accidental modification.
 
 As the AEAD on Initial packets does not provide strong authentication, an
-endpoint MAY discard an invalid Initial packet.  This is only possible if the
-endpoint does not process the frames in the packet or reverts the effects of any
-processing.  This might be used to reduce exposure to denial of service; see
+endpoint MAY discard an invalid Initial packet.  Discarding an Initial packet is
+permitted even where this specification otherwise mandates a connection error.
+An endpoint can only discard a packet if it does not process the frames in the
+packet or reverts the effects of any processing.  Discarding invalid Initial
+packets might be used to reduce exposure to denial of service; see
 {{handshake-dos}}.
 
 All other packets are protected with keys derived from the cryptographic
