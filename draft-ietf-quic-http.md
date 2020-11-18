@@ -509,7 +509,7 @@ Because some messages are large or unbounded, endpoints SHOULD begin processing
 partial HTTP messages once enough of the message has been received to make
 progress.  If a client-initiated stream terminates without enough of the HTTP
 message to provide a complete response, the server SHOULD abort its response
-with the error code H3_REQUEST_INCOMPLETE.
+with the error code H3_REQUEST_INCOMPLETE; see {{errors}}.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
@@ -1647,20 +1647,24 @@ H3_FRAME_UNEXPECTED.
 
 When a stream cannot be completed successfully, QUIC allows the application to
 abruptly terminate (reset) that stream and communicate a reason; see Section 2.4
-of {{QUIC-TRANSPORT}}. This is referred to as a "stream error."  Stream errors
-are distinct from HTTP status codes which indicate error conditions.  Stream
-errors indicate that the sender did not transfer the full request or response,
-while HTTP status codes indicate the result of a request that was successfully
-received.
+of {{QUIC-TRANSPORT}}.  This is referred to as a "stream error."  An HTTP/3
+implementation can decide to close a QUIC stream and communicate the type of
+error.  Wire encodings of error codes are defined in {{http-error-codes}}.
+Stream errors are distinct from HTTP status codes which indicate error
+conditions.  Stream errors indicate that the sender did not transfer or consume
+the full request or response, while HTTP status codes indicate the result of a
+request that was successfully received.
 
 If an entire connection needs to be terminated, QUIC similarly provides
 mechanisms to communicate a reason; see Section 5.3 of {{QUIC-TRANSPORT}}.  This
-is referred to as a "connection error."
+is referred to as a "connection error."  Similar to stream errors, an HTTP/3
+implementation can terminate a QUIC connection and communicate the reason using
+an error code from {{http-error-codes}}.
 
-Both stream errors and connection errors have associated error codes; see
-Section 11 of {{QUIC-TRANSPORT}}.  However, they do not necessarily indicate a
-problem with the connection or either implementation.  For example, a stream can
-be reset if the requested resource is no longer needed.
+Although the reasons for closing streams and connections are called "errors,"
+these actions do not necessarily indicate a problem with the connection or
+either implementation. For example, a stream can be reset if the requested
+resource is no longer needed.
 
 An endpoint MAY choose to treat a stream error as a connection error under
 certain circumstances, closing the entire connection in response to a condition
@@ -1672,9 +1676,6 @@ use of an error code in an unexpected context or receipt of an unknown error
 code MUST be treated as equivalent to H3_NO_ERROR.  However, closing a stream
 can have other effects regardless of the error code; for example, see
 {{request-response}}.
-
-This section describes HTTP/3-specific error codes that can be used to express
-the cause of a connection or stream error.
 
 ## HTTP/3 Error Codes {#http-error-codes}
 
