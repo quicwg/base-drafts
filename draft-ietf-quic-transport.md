@@ -4836,7 +4836,7 @@ Handshake packet sent by a server contains a packet number of 0.
 The payload of this packet contains CRYPTO frames and could contain PING,
 PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames
 of type 0x1c. Endpoints MUST treat receipt of Handshake packets with other
-frames as a connection error.
+frames as a connection error of type PROTOCOL_VIOLATION.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
 Handshake packets is discarded - and no longer retransmitted - when Handshake
