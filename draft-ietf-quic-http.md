@@ -684,7 +684,7 @@ as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation that has received this parameter SHOULD NOT send an HTTP message
 header that exceeds the indicated size, as the peer will likely refuse to
 process it.  However, an HTTP message can traverse one or more intermediaries
-(see Section 3.7 of {{!SEMANTICS}}) before reaching the origin server.  Because
+before reaching the origin server; see Section 3.7 of {{!SEMANTICS}}.  Because
 this limit is applied separately by each implementation which processes the
 message, messages below this limit are not guaranteed to be accepted.
 
@@ -724,10 +724,10 @@ closure of the request stream with this error code.
 If a stream is canceled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
 after receiving a partial response, the response SHOULD NOT be used. Only
-idempotent actions (such as GET, PUT, or DELETE) can be safely retried; a client
+idempotent actions such as GET, PUT, or DELETE can be safely retried; a client
 SHOULD NOT automatically retry a request with a non-idempotent method unless it
-has some means to know that the request semantics are actually idempotent,
-regardless of the method, or some means to detect that the original request was
+has some means to know that the request semantics are idempotent
+independent of the method or some means to detect that the original request was
 never applied.  See Section 8.2.2 of {{!SEMANTICS}} for more details.
 
 ### Malformed Requests and Responses {#malformed}
