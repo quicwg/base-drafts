@@ -4667,7 +4667,7 @@ Initial Packet {
   Token (..),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #initial-format title="Initial Packet"}
@@ -4766,7 +4766,7 @@ limitations.
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #0rtt-format title="0-RTT Packet"}
@@ -4816,7 +4816,7 @@ Handshake Packet {
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #handshake-format title="Handshake Protected Packet"}
@@ -4976,7 +4976,7 @@ Short Header Packet {
   Packet Number Length (2),
   Destination Connection ID (0..160),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~~~
 {: #fig-short-header title="Short Header Packet Format"}
