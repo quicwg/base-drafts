@@ -3256,6 +3256,14 @@ frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 use the stateless reset process ({{stateless-reset}}).
 
+As the AEAD on Initial packets does not provide strong authentication, an
+endpoint MAY discard an invalid Initial packet.  Discarding an Initial packet is
+permitted even where this specification otherwise mandates a connection error.
+An endpoint can only discard a packet if it does not process the frames in the
+packet or reverts the effects of any processing.  Discarding invalid Initial
+packets might be used to reduce exposure to denial of service; see
+{{handshake-dos}}.
+
 
 ## Stream Errors
 
@@ -3315,14 +3323,6 @@ from a client can recover the keys that will allow them to both read the
 contents of the packet and generate Initial packets that will be successfully
 authenticated at either endpoint.  The AEAD also protects Initial packets
 against accidental modification.
-
-As the AEAD on Initial packets does not provide strong authentication, an
-endpoint MAY discard an invalid Initial packet.  Discarding an Initial packet is
-permitted even where this specification otherwise mandates a connection error.
-An endpoint can only discard a packet if it does not process the frames in the
-packet or reverts the effects of any processing.  Discarding invalid Initial
-packets might be used to reduce exposure to denial of service; see
-{{handshake-dos}}.
 
 All other packets are protected with keys derived from the cryptographic
 handshake.  The cryptographic handshake ensures that only the communicating
