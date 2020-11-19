@@ -1871,7 +1871,7 @@ they are used unnecessarily or to excess.
 An endpoint that does not monitor this behavior exposes itself to a risk of
 denial-of-service attack.  Implementations SHOULD track the use of these
 features and set limits on their use.  An endpoint MAY treat activity that is
-suspicious as a connection error of type H3_EXCESSIVE_LOAD (see {{errors}}), but
+suspicious as a connection error of type H3_EXCESSIVE_LOAD ({{errors}}), but
 false positives will result in disrupting valid connections and requests.
 
 ### Limits on Field Section Size
