@@ -1277,7 +1277,7 @@ means that restrictions on their use are necessary to avoid replay attacks on
 the protocol.
 
 Of the frames defined in {{QUIC-TRANSPORT}}, the STREAM, RESET_STREAM, and
-CONNECTION_CLOSE frames are potentially unsafe for use with 0-RTT as they can
+CONNECTION_CLOSE frames are potentially unsafe for use with 0-RTT as they
 carry application data.  Application data that is received in 0-RTT could cause
 an application at the server to process the data multiple times rather than
 just once. Additional actions taken by a server as a result of processing
