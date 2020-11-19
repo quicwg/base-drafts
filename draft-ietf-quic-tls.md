@@ -1276,13 +1276,14 @@ If 0-RTT keys are available (see {{enable-0rtt}}), the lack of replay protection
 means that restrictions on their use are necessary to avoid replay attacks on
 the protocol.
 
-Of the frames defined in {{QUIC-TRANSPORT}}, only the STREAM frame is
-potentially unsafe for use with 0-RTT as it carries application data.
-Application data that is received in 0-RTT could cause an application at the
-server to process the data multiple times rather than just once. Additional
-actions taken by a server as a result of processing replayed application data
-could have unwanted consequences. A client therefore MUST only use 0-RTT for
-application data that is permitted by the application that is in use.
+Of the frames defined in {{QUIC-TRANSPORT}}, the STREAM, RESET_STREAM, and
+CONNECTION_CLOSE frames are potentially unsafe for use with 0-RTT as they can
+carry application data.  Application data that is received in 0-RTT could cause
+an application at the server to process the data multiple times rather than
+just once. Additional actions taken by a server as a result of processing
+replayed application data could have unwanted consequences. A client therefore
+MUST only use 0-RTT for application data that is permitted by the application
+that is in use.
 
 An application protocol that uses QUIC MUST include a profile that defines
 acceptable use of 0-RTT; otherwise, 0-RTT can only be used to carry QUIC frames
