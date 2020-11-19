@@ -741,7 +741,7 @@ the server has sent a NEW_TOKEN frame; see Section 8.1 of {{QUIC-TRANSPORT}}.
 ### Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
-EncryptedExtensions (see Section 4.2.10 of {{!TLS13}}).  The server then
+EncryptedExtensions; see Section 4.2.10 of {{!TLS13}}.  The server then
 processes and acknowledges the 0-RTT packets that it receives.
 
 A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
