@@ -3056,9 +3056,9 @@ An endpoint MUST NOT send a stateless reset that is three times or more larger
 than the packet it receives to avoid being used for amplification.
 {{reset-looping}} describes additional limits on stateless reset size.
 
-Endpoints MUST discard packets that are too small to be valid QUIC packets.
-With the set of AEAD functions defined in {{QUIC-TLS}}, packets that are smaller
-than 21 bytes are never valid.
+Endpoints MUST discard packets that are too small to be valid QUIC packets.  To
+give an example, with the set of AEAD functions defined in {{QUIC-TLS}}, short
+header packets that are smaller than 21 bytes are never valid.
 
 Endpoints MUST send stateless reset packets formatted as a packet with a short
 header.  However, endpoints MUST treat any packet ending in a valid stateless
