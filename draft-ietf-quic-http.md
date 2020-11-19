@@ -260,15 +260,17 @@ server:
 
 stream:
 : A bidirectional or unidirectional bytestream provided by the QUIC transport.
+  All streams within an HTTP/3 connection can be considered "HTTP/3 streams,"
+  but multiple stream types are defined within HTTP/3.
 
 stream error:
-: An error on the individual HTTP/3 stream.
+: An application-level error on the individual stream.
 
 The term "payload body" is defined in Section 5.5.4 of {{!SEMANTICS}}.
 
-Finally, the terms "gateway", "intermediary", "proxy", and "tunnel" are defined
-in Section 3.7 of {{!SEMANTICS}}.  Intermediaries act as both client and server
-at different times.
+Finally, the terms "resource", "message", "user agent", "origin server",
+"gateway", "intermediary", "proxy", and "tunnel" are defined in Section 3 of
+{{!SEMANTICS}}.
 
 Packet diagrams in this document use the format defined in Section 1.3 of
 {{QUIC-TRANSPORT}} to illustrate the order and size of fields.
@@ -437,11 +439,12 @@ of {{?HTTP2}}.
 
 ## HTTP Message Exchanges {#request-response}
 
-A client sends an HTTP request on a client-initiated bidirectional QUIC stream.
-A client MUST send only a single request on a given stream. A server sends zero
-or more interim HTTP responses on the same stream as the request, followed by a
-single final HTTP response, as detailed below.  See Section 14 of {{!SEMANTICS}}
-for a description of interim and final HTTP responses.
+A client sends an HTTP request on a request stream, which is a client-initiated
+bidirectional QUIC stream; see {{request-streams}}.  A client MUST send only a
+single request on a given stream.  A server sends zero or more interim HTTP
+responses on the same stream as the request, followed by a single final HTTP
+response, as detailed below. See Section 14 of {{!SEMANTICS}} for a description
+of interim and final HTTP responses.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
 {{push-streams}}.  A server sends zero or more interim HTTP responses, followed
@@ -526,10 +529,10 @@ continue sending the body of the request and close the stream normally.
 
 ### Field Formatting and Compression {#header-formatting}
 
-HTTP messages carry metadata as a series of key-value pairs, called HTTP fields.
-For a listing of registered HTTP fields, see the "Hypertext Transfer Protocol
-(HTTP) Field Name Registry" maintained at
-[](https://www.iana.org/assignments/http-fields/).
+HTTP messages carry metadata as a series of key-value pairs called HTTP fields;
+see Sections 5.4 and 5.6 of {{!SEMANTICS}}. For a listing of registered HTTP
+fields, see the "Hypertext Transfer Protocol (HTTP) Field Name Registry"
+maintained at [](https://www.iana.org/assignments/http-fields/).
 
 > **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
 > **RFC Editor**, please remove this note prior to publication.
@@ -680,8 +683,10 @@ If an implementation wishes to advise its peer of this limit, it can be conveyed
 as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation that has received this parameter SHOULD NOT send an HTTP message
 header that exceeds the indicated size, as the peer will likely refuse to
-process it.  However, because this limit is applied at each hop, messages below
-this limit are not guaranteed to be accepted.
+process it.  However, an HTTP message can traverse one or more intermediaries
+before reaching the origin server; see Section 3.7 of {{!SEMANTICS}}.  Because
+this limit is applied separately by each implementation which processes the
+message, messages below this limit are not guaranteed to be accepted.
 
 ### Request Cancellation and Rejection {#request-cancellation}
 
@@ -718,9 +723,12 @@ closure of the request stream with this error code.
 
 If a stream is canceled after receiving a complete response, the client MAY
 ignore the cancellation and use the response.  However, if a stream is cancelled
-after receiving a partial response, the response SHOULD NOT be used.
-Automatically retrying such requests is not possible, unless this is otherwise
-permitted (e.g., idempotent actions like GET, PUT, or DELETE).
+after receiving a partial response, the response SHOULD NOT be used. Only
+idempotent actions such as GET, PUT, or DELETE can be safely retried; a client
+SHOULD NOT automatically retry a request with a non-idempotent method unless it
+has some means to know that the request semantics are idempotent
+independent of the method or some means to detect that the original request was
+never applied.  See Section 8.2.2 of {{!SEMANTICS}} for more details.
 
 ### Malformed Requests and Responses {#malformed}
 
@@ -757,8 +765,8 @@ permissive can expose implementations to these vulnerabilities.
 ## The CONNECT Method {#connect}
 
 The CONNECT method requests that the recipient establish a tunnel to the
-destination origin server identified by the request-target (Section 3.2 of
-{{?HTTP11}}).  It is primarily used with HTTP proxies to establish a TLS
+destination origin server identified by the request-target; see Section 8.3.6 of
+{{!SEMANTICS}}.  It is primarily used with HTTP proxies to establish a TLS
 session with an origin server for the purposes of interacting with "https"
 resources.
 
@@ -919,8 +927,9 @@ Each QUIC endpoint declares an idle timeout during the handshake.  If the QUIC
 connection remains idle (no packets received) for longer than this duration, the
 peer will assume that the connection has been closed.  HTTP/3 implementations
 will need to open a new HTTP/3 connection for new requests if the existing
-connection has been idle for longer than the server's advertised idle timeout,
-and SHOULD do so if approaching the idle timeout.
+connection has been idle for longer than the idle timeout negotiated during the
+QUIC handshake, and SHOULD do so if approaching the idle timeout; see Section
+10.1 of {{QUIC-TRANSPORT}}.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
@@ -1065,16 +1074,18 @@ the stream management.  HTTP does not need to do any separate multiplexing when
 using QUIC - data sent over a QUIC stream always maps to a particular HTTP
 transaction or to the entire HTTP/3 connection context.
 
-## Bidirectional Streams
+## Bidirectional Streams {#request-streams}
 
 All client-initiated bidirectional streams are used for HTTP requests and
 responses.  A bidirectional stream ensures that the response can be readily
-correlated with the request. This means that the client's first request occurs
-on QUIC stream 0, with subsequent requests on stream 4, 8, and so on. In order
-to permit these streams to open, an HTTP/3 server SHOULD configure non-zero
-minimum values for the number of permitted streams and the initial stream flow
-control window.  So as to not unnecessarily limit parallelism, at least 100
-requests SHOULD be permitted at a time.
+correlated with the request.  These streams are referred to as request streams.
+
+This means that the client's first request occurs on QUIC stream 0, with
+subsequent requests on stream 4, 8, and so on. In order to permit these streams
+to open, an HTTP/3 server SHOULD configure non-zero minimum values for the
+number of permitted streams and the initial stream flow control window.  So as
+to not unnecessarily limit parallelism, at least 100 requests SHOULD be
+permitted at a time.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
 could define a use for these streams.  Clients MUST treat receipt of a

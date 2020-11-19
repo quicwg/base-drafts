@@ -739,7 +739,7 @@ frames in any state as a result of delayed delivery of packets.
 ## Bidirectional Stream States {#stream-bidi-states}
 
 A bidirectional stream is composed of sending and receiving parts.
-Implementations may represent states of the bidirectional stream as composites
+Implementations can represent states of the bidirectional stream as composites
 of sending and receiving stream states.  The simplest model presents the stream
 as "open" when either sending or receiving parts are in a non-terminal state and
 "closed" when both sending and receiving streams are in terminal states.
@@ -1555,11 +1555,12 @@ the first packet is of type Initial, with packet number 0, and contains a CRYPTO
 frame carrying the ClientHello.
 
 Multiple QUIC packets -- even of different packet types -- can be coalesced into
-a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake may
-consist of as few as 4 UDP datagrams, or any number more (subject to limits
-inherent to the protocol, such as congestion control or anti-amplification).
-For instance, the server's first flight contains Initial packets, Handshake
-packets, and "0.5-RTT data" in 1-RTT packets with a short header.
+a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake
+could consist of as few as 4 UDP datagrams, or any number more (subject to
+limits inherent to the protocol, such as congestion control and
+anti-amplification).  For instance, the server's first flight contains Initial
+packets, Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short
+header.
 
 ~~~~
 Client                                                  Server
@@ -2531,18 +2532,18 @@ activity, the endpoint MAY instead retain its congestion control state and
 round-trip estimate in those cases instead of reverting to initial values.
 In cases where congestion control state
 retained from an old path is used on a new path with substantially different
-characteristics, a sender may transmit too aggressively until the congestion
+characteristics, a sender could transmit too aggressively until the congestion
 controller and the RTT estimator have adapted. Generally, implementations are
 advised to be cautious when using previous values on a new path.
 
-There may be apparent reordering at the receiver when an endpoint sends data and
-probes from/to multiple addresses during the migration period, since the two
-resulting paths may have different round-trip times.  A receiver of packets on
+There could be apparent reordering at the receiver when an endpoint sends data
+and probes from/to multiple addresses during the migration period, since the two
+resulting paths could have different round-trip times.  A receiver of packets on
 multiple paths will still send ACK frames covering all received packets.
 
 While multiple paths might be used during connection migration, a single
 congestion control context and a single loss recovery context (as described in
-{{QUIC-RECOVERY}}) may be adequate.  For instance, an endpoint might delay
+{{QUIC-RECOVERY}}) could be adequate.  For instance, an endpoint might delay
 switching to a new congestion control context until it is confirmed that an old
 path is no longer needed (such as the case in {{off-path-forward}}).
 
@@ -3256,6 +3257,14 @@ frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 use the stateless reset process ({{stateless-reset}}).
 
+As the AEAD on Initial packets does not provide strong authentication, an
+endpoint MAY discard an invalid Initial packet.  Discarding an Initial packet is
+permitted even where this specification otherwise mandates a connection error.
+An endpoint can only discard a packet if it does not process the frames in the
+packet or reverts the effects of any processing.  Discarding invalid Initial
+packets might be used to reduce exposure to denial of service; see
+{{handshake-dos}}.
+
 
 ## Stream Errors
 
@@ -3447,8 +3456,10 @@ Packet Payload {
 {: #packet-frames title="QUIC Payload"}
 
 The payload of a packet that contains frames MUST contain at least one frame,
-and MAY contain multiple frames and multiple frame types.  Frames always fit
-within a single QUIC packet and cannot span multiple packets.
+and MAY contain multiple frames and multiple frame types.  An endpoint MUST
+treat receipt of a packet containing no frames as a connection error of type
+PROTOCOL_VIOLATION.  Frames always fit within a single QUIC packet and cannot
+span multiple packets.
 
 Each frame begins with a Frame Type, indicating its type, followed by
 additional type-dependent fields:
@@ -3796,7 +3807,7 @@ possible for acknowledgments to be lost.
 ### Limiting Ranges by Tracking ACK Frames {#ack-tracking}
 
 When a packet containing an ACK frame is sent, the largest acknowledged in that
-frame may be saved.  When a packet containing an ACK frame is acknowledged, the
+frame can be saved.  When a packet containing an ACK frame is acknowledged, the
 receiver can stop acknowledging packets less than or equal to the largest
 acknowledged in the sent ACK frame.
 
@@ -4623,7 +4634,7 @@ connection IDs gives clients some assurance that the server received the packet
 and that the Version Negotiation packet was not generated by an off-path
 attacker.
 
-Future versions of QUIC may have different requirements for the lengths of
+Future versions of QUIC could have different requirements for the lengths of
 connection IDs. In particular, connection IDs might have a smaller minimum
 length or a greater maximum length.  Version-specific rules for the connection
 ID therefore MUST NOT influence a server decision about whether to send a
@@ -4667,7 +4678,7 @@ Initial Packet {
   Token (..),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #initial-format title="Initial Packet"}
@@ -4707,7 +4718,7 @@ packet containing the initial cryptographic message needs to be created, such as
 the packets sent after receiving a Retry packet ({{packet-retry}}).
 
 A server sends its first Initial packet in response to a client Initial.  A
-server may send multiple Initial packets.  The cryptographic key exchange could
+server MAY send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
@@ -4766,7 +4777,7 @@ limitations.
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #0rtt-format title="0-RTT Packet"}
@@ -4816,7 +4827,7 @@ Handshake Packet {
   Source Connection ID (0..160),
   Length (i),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~
 {: #handshake-format title="Handshake Protected Packet"}
@@ -4836,7 +4847,7 @@ Handshake packet sent by a server contains a packet number of 0.
 The payload of this packet contains CRYPTO frames and could contain PING,
 PADDING, or ACK frames. Handshake packets MAY contain CONNECTION_CLOSE frames
 of type 0x1c. Endpoints MUST treat receipt of Handshake packets with other
-frames as a connection error.
+frames as a connection error of type PROTOCOL_VIOLATION.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
 Handshake packets is discarded - and no longer retransmitted - when Handshake
@@ -4976,7 +4987,7 @@ Short Header Packet {
   Packet Number Length (2),
   Destination Connection ID (0..160),
   Packet Number (8..32),
-  Packet Payload (..),
+  Packet Payload (8..),
 }
 ~~~~~
 {: #fig-short-header title="Short Header Packet Format"}
@@ -5132,7 +5143,7 @@ included in the cryptographic handshake.
 
 Transport parameters with an identifier of the form `31 * N + 27` for integer
 values of N are reserved to exercise the requirement that unknown transport
-parameters be ignored.  These transport parameters have no semantics, and may
+parameters be ignored.  These transport parameters have no semantics, and can
 carry arbitrary values.
 
 
@@ -5223,18 +5234,18 @@ initial_max_stream_data_uni (0x07):
 initial_max_streams_bidi (0x08):
 
 : The initial maximum bidirectional streams parameter is an integer value that
-  contains the initial maximum number of bidirectional streams the peer may
-  initiate.  If this parameter is absent or zero, the peer cannot open
-  bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  contains the initial maximum number of bidirectional streams the peer is
+  permitted to initiate.  If this parameter is absent or zero, the peer cannot
+  open bidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
 initial_max_streams_uni (0x09):
 
 : The initial maximum unidirectional streams parameter is an integer value that
-  contains the initial maximum number of unidirectional streams the peer may
-  initiate.  If this parameter is absent or zero, the peer cannot open
-  unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
+  contains the initial maximum number of unidirectional streams the peer is
+  permitted to initiate.  If this parameter is absent or zero, the peer cannot
+  open unidirectional streams until a MAX_STREAMS frame is sent.  Setting this
   parameter is equivalent to sending a MAX_STREAMS ({{frame-max-streams}}) of
   the corresponding type with the same value.
 
@@ -5738,9 +5749,8 @@ Token Length:
 
 Token:
 
-: An opaque blob that the client may use with a future Initial packet. The token
+: An opaque blob that the client can use with a future Initial packet. The token
   MUST NOT be empty.  A client MUST treat receipt of a NEW_TOKEN frame with
-  an empty Token field as a connection error of type FRAME_ENCODING_ERROR.
 
 A client might receive multiple NEW_TOKEN frames that contain the same token
 value if packets containing the frame are incorrectly determined to be lost.
@@ -6123,7 +6133,7 @@ for that sequence number.
 ## RETIRE_CONNECTION_ID Frames {#frame-retire-connection-id}
 
 An endpoint sends a RETIRE_CONNECTION_ID frame (type=0x19) to indicate that it
-will no longer use a connection ID that was issued by its peer. This may include
+will no longer use a connection ID that was issued by its peer. This includes
 the connection ID provided during the handshake.  Sending a RETIRE_CONNECTION_ID
 frame also serves as a request to the peer to send additional connection IDs for
 future use; see {{connection-id}}.  New connection IDs can be delivered to a
@@ -6327,7 +6337,7 @@ integers.
 
 ## Transport Error Codes {#transport-error-codes}
 
-This section lists the defined QUIC transport error codes that may be used in a
+This section lists the defined QUIC transport error codes that can be used in a
 CONNECTION_CLOSE frame with a type of 0x1c.  These errors apply to the entire
 connection.
 
@@ -6457,7 +6467,7 @@ protections against many of the attacks that arise from that model.
 For this purpose, attacks are divided into passive and active attacks.  Passive
 attackers have the capability to read packets from the network, while active
 attackers also have the capability to write packets into the network.  However,
-a passive attack may involve an attacker with the ability to cause a routing
+a passive attack could involve an attacker with the ability to cause a routing
 change or other modification in the path taken by packets that comprise a
 connection.
 
@@ -6799,7 +6809,7 @@ most part, the cryptographic handshake protocol {{QUIC-TLS}} is responsible for
 detecting tampering during the handshake.
 
 Endpoints are permitted to use other methods to detect and attempt to recover
-from interference with the handshake.  Invalid packets may be identified and
+from interference with the handshake.  Invalid packets can be identified and
 discarded using other methods, but no specific method is mandated in this
 document.
 
@@ -6808,7 +6818,7 @@ document.
 
 An attacker might be able to receive an address validation token
 ({{address-validation}}) from a server and then release the IP address it used
-to acquire that token.  At a later time, the attacker may initiate a 0-RTT
+to acquire that token.  At a later time, the attacker can initiate a 0-RTT
 connection with a server by spoofing this same address, which might now address
 a different (victim) endpoint.  The attacker can thus potentially cause the
 server to send an initial congestion window's worth of data towards the victim.
@@ -7095,7 +7105,7 @@ number of connections, in a manner similar to SYN flooding attacks in TCP.
 
 Normally, clients will open streams sequentially, as explained in {{stream-id}}.
 However, when several streams are initiated at short intervals, loss or
-reordering may cause STREAM frames that open streams to be received out of
+reordering can cause STREAM frames that open streams to be received out of
 sequence.  On receiving a higher-numbered stream ID, a receiver is required to
 open all intervening streams of the same type; see {{stream-recv-states}}.
 Thus, on a new connection, opening stream 4000000 opens 1 million and 1
