@@ -1276,10 +1276,30 @@ If 0-RTT keys are available (see {{enable-0rtt}}), the lack of replay protection
 means that restrictions on their use are necessary to avoid replay attacks on
 the protocol.
 
-A client MUST only use 0-RTT keys to protect data that is idempotent.  A client
-MAY wish to apply additional restrictions on what data it sends prior to the
-completion of the TLS handshake.  A client otherwise treats 0-RTT keys as
-equivalent to 1-RTT keys, except that it MUST NOT send ACKs with 0-RTT keys.
+Of the frames defined in {{QUIC-TRANSPORT}}, only the STREAM frame is
+potentially unsafe for use with 0-RTT as it carries application data.
+Application data that is received in 0-RTT could cause an application at the
+server to process the data multiple times rather than just once. Additional
+actions taken by a server as a result of processing replayed application data
+could have unwanted consequences. A client therefore MUST only use 0-RTT for
+application data that is permitted by the application that is in use.
+
+An application protocol that uses QUIC MUST include a profile that defines
+acceptable use of 0-RTT; otherwise, 0-RTT can only be used to carry QUIC frames
+that do not carry application data. For example, a profile for HTTP is
+described in {{?HTTP-REPLAY=RFC8740}}.
+
+Though replaying packets might result in additional connection attempts, the
+effect of processing replayed frames that do not carry application data is
+limited to changing the state of the affected connection. A TLS handshake
+cannot be successfully completed using replayed packets.
+
+A client MAY wish to apply additional restrictions on what data it sends prior
+to the completion of the TLS handshake.
+
+A client otherwise treats 0-RTT keys as equivalent to 1-RTT keys, except that
+it cannot send certain frames with 0-RTT keys; see Section 12.5 of
+{{QUIC-TRANSPORT}}.
 
 A client that receives an indication that its 0-RTT data has been accepted by a
 server can send 0-RTT data until it receives all of the server's handshake
