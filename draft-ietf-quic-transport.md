@@ -5750,15 +5750,14 @@ Token Length:
 Token:
 
 : An opaque blob that the client can use with a future Initial packet. The token
-  MUST NOT be empty.  An endpoint MUST treat receipt of a NEW_TOKEN frame with
-  an empty Token field as a connection error of type FRAME_ENCODING_ERROR.
+  MUST NOT be empty.  A client MUST treat receipt of a NEW_TOKEN frame with
 
-An endpoint might receive multiple NEW_TOKEN frames that contain the same token
+A client might receive multiple NEW_TOKEN frames that contain the same token
 value if packets containing the frame are incorrectly determined to be lost.
-Endpoints are responsible for discarding duplicate values, which might be used
+Clients are responsible for discarding duplicate values, which might be used
 to link connection attempts; see {{validate-future}}.
 
-Clients MUST NOT send NEW_TOKEN frames.  Servers MUST treat receipt of a
+Clients MUST NOT send NEW_TOKEN frames.  A server MUST treat receipt of a
 NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
 
 
