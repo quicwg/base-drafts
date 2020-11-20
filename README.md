@@ -55,4 +55,4 @@ instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.
 ## Contributing
 
 See our
-[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md).
+[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md).
