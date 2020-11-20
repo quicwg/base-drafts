@@ -4841,7 +4841,7 @@ ID that is chosen by the recipient of the packet; the Source Connection ID
 includes the connection ID that the sender of the packet wishes to use; see
 {{negotiating-connection-ids}}.
 
-Handshake packets are their own packet number space, and thus the first
+Handshake packets have their own packet number space, and thus the first
 Handshake packet sent by a server contains a packet number of 0.
 
 The payload of this packet contains CRYPTO frames and could contain PING,
