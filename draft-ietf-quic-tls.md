@@ -1289,7 +1289,8 @@ that is in use.
 An application protocol that uses QUIC MUST include a profile that defines
 acceptable use of 0-RTT; otherwise, 0-RTT can only be used to carry QUIC frames
 that do not carry application data. For example, a profile for HTTP is
-described in {{?HTTP-REPLAY=RFC8740}}.
+described in {{?HTTP-REPLAY=RFC8470}} and used for HTTP/3; see Section 10.9 of
+{{QUIC-HTTP}}.
 
 Though replaying packets might result in additional connection attempts, the
 effect of processing replayed frames that do not carry application data is
