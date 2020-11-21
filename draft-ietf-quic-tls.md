@@ -1216,6 +1216,20 @@ packet's bytes, with unprotected header fields as its header and the encrypted
 payload, output of the {{!AEAD}} encryption process (see {{aead}}), as its
 payload.
 
+Note that the header protection sampling actually operates on the ciphertext
+only, so the process can be expressed relative to the beginning of the
+encrypted payload as well. The following pseudocode shows how this can be
+achieved, for both short-header and long-header packets:
+
+~~~
+sample_offset = 4 - len(packet_number)
+
+sample = ciphertext[sample_offset..sample_offset+sample_length]
+~~~
+
+where `ciphertext` is the encrypted payload, result of the {{!AEAD}} function
+for the original packet payload, as described in {{aead}}.
+
 
 ### AES-Based Header Protection {#hp-aes}
 
