@@ -1211,6 +1211,11 @@ if packet_type == Initial:
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
 
+In both above pseudocodes, `packet` designates the entire partially protected
+packet's bytes, with unprotected header fields as its header and the encrypted
+payload, output of the {{!AEAD}} encryption process (see {{aead}}), as its
+payload.
+
 
 ### AES-Based Header Protection {#hp-aes}
 
