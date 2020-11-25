@@ -1805,6 +1805,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
+    assert(lost_packet.in_flight)
     bytes_in_flight -= lost_packet.sent_bytes
   OnCongestionEvent(lost_packets.largest().time_sent)
 
