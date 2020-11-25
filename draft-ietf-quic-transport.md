@@ -4978,7 +4978,8 @@ header.
 
 ### 1-RTT Packet {#packet-1-rtt}
 
-1-RTT packets in this version of QUIC use a short packet header.
+A 1-RTT packet uses a short packet header.  It is used after the version
+and 1-RTT keys are negotiated.
 
 ~~~
 1-RTT Packet {
