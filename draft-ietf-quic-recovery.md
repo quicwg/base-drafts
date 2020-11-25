@@ -1739,7 +1739,7 @@ OnPacketsAcked(acked_packets):
     OnPacketAcked(acked_packet)
 
 OnPacketAcked(acked_packet):
-  if (!ack_packet.in_flight):
+  if (!acked_packet.in_flight):
     return;
   // Remove from bytes_in_flight.
   bytes_in_flight -= acked_packet.sent_bytes
