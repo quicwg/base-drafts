@@ -4472,6 +4472,7 @@ Long Header Packet {
   Destination Connection ID (0..160),
   Source Connection ID Length (8),
   Source Connection ID (0..160),
+  Type-Specific Payload (..),
 }
 ~~~~~
 {: #fig-long-header title="Long Header Packet Format"}
@@ -4538,6 +4539,10 @@ Source Connection ID:
 : The Source Connection ID field follows the Source Connection ID Length field,
   which indicates the length of this field. {{negotiating-connection-ids}}
   describes the use of this field in more detail.
+
+Type-Specific Payload:
+
+: The remainder of the packet, if any, is type-specific.
 
 In this version of QUIC, the following packet types with the long header are
 defined:
