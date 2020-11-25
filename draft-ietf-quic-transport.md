@@ -3401,7 +3401,7 @@ Packet numbers are divided into 3 spaces in QUIC:
 - Handshake space: All Handshake packets ({{packet-handshake}}) are in this
   space.
 - Application data space: All 0-RTT ({{packet-0rtt}}) and 1-RTT
-  ({{short-header}}) encrypted packets are in this space.
+  ({{packet-1rtt}}) encrypted packets are in this space.
 
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
@@ -3524,7 +3524,7 @@ H:
 
 1:
 
-: 1-RTT ({{short-header}})
+: 1-RTT ({{packet-1rtt}})
 
 ih:
 
@@ -4976,10 +4976,10 @@ in {{cid-auth}}.
 This version of QUIC defines a single packet type that uses the short packet
 header.
 
-### 1-RTT Packet {#packet-1-rtt}
+### 1-RTT Packet {#packet-1rtt}
 
-A 1-RTT packet uses a short packet header.  It is used after the version
-and 1-RTT keys are negotiated.
+A 1-RTT packet uses a short packet header. It is used after the version and
+1-RTT keys are negotiated.
 
 ~~~
 1-RTT Packet {
@@ -4994,7 +4994,7 @@ and 1-RTT keys are negotiated.
   Packet Payload (8..),
 }
 ~~~~~
-{: #1-rtt-format title="1-RTT Packet"}
+{: #1rtt-format title="1-RTT Packet"}
 
 1-RTT packets contain the following fields:
 
@@ -5062,8 +5062,8 @@ versions of QUIC are interpreted.
 
 ## Latency Spin Bit {#spin-bit}
 
-The latency spin bit, defined for 1-RTT packets ({{packet-1-rtt}}), enables
-passive latency monitoring from observation points on the network path
+The latency spin bit, which is defined for 1-RTT packets ({{packet-1rtt}}),
+enables passive latency monitoring from observation points on the network path
 throughout the duration of a connection. The server reflects the spin value
 received, while the client 'spins' it after one RTT. On-path observers can
 measure the time between two spin bit toggle events to estimate the end-to-end
@@ -5093,8 +5093,8 @@ bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
-value for each network path and sets the spin bit in 1-RTT packets to the
-currently stored value when a 1-RTT packet is sent on that path.  The spin value
+value for each network path and sets the spin bit in the packet header to the
+currently stored value when a 1-RTT packet is sent on that path. The spin value
 is initialized to 0 in the endpoint for each network path. Each endpoint also
 remembers the highest packet number seen from its peer on each path.
 
