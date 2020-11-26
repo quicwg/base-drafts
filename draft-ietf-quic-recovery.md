@@ -1335,12 +1335,11 @@ OnPacketSent(packet_number, pn_space, ack_eliciting,
   sent_packets[pn_space][packet_number].ack_eliciting =
                                            ack_eliciting
   sent_packets[pn_space][packet_number].in_flight = in_flight
+  sent_packets[pn_space][packet_number].sent_bytes = sent_bytes
   if (in_flight):
     if (ack_eliciting):
       time_of_last_ack_eliciting_packet[pn_space] = now()
     OnPacketSentCC(sent_bytes)
-    sent_packets[pn_space][packet_number].sent_bytes =
-      sent_bytes
     SetLossDetectionTimer()
 ~~~
 
@@ -1717,8 +1716,8 @@ Whenever a packet is sent, and it contains non-ACK frames, the packet
 increases bytes_in_flight.
 
 ~~~
-OnPacketSentCC(bytes_sent):
-  bytes_in_flight += bytes_sent
+OnPacketSentCC(sent_bytes):
+  bytes_in_flight += sent_bytes
 ~~~
 
 
@@ -1740,6 +1739,8 @@ OnPacketsAcked(acked_packets):
     OnPacketAcked(acked_packet)
 
 OnPacketAcked(acked_packet):
+  if (!acked_packet.in_flight):
+    return;
   // Remove from bytes_in_flight.
   bytes_in_flight -= acked_packet.sent_bytes
   // Do not increase congestion_window if application
@@ -1804,6 +1805,7 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 OnPacketsLost(lost_packets):
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
+    assert(lost_packet.in_flight)
     bytes_in_flight -= lost_packet.sent_bytes
   OnCongestionEvent(lost_packets.largest().time_sent)
 
