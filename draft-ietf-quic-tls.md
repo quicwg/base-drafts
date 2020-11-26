@@ -1110,8 +1110,8 @@ Specific header protection functions are defined based on the selected cipher
 suite; see {{hp-aes}} and {{hp-chacha}}.
 
 {{fig-sample}} shows an example long header packet (Initial) and a short header
-packet. {{fig-sample}} shows the fields in each header that are covered by
-header protection and the portion of the protected packet payload that is
+packet (1-RTT). {{fig-sample}} shows the fields in each header that are covered
+by header protection and the portion of the protected packet payload that is
 sampled.
 
 ~~~
@@ -1135,7 +1135,7 @@ Initial Packet {
   Protected Payload (..)     # Remainder
 }
 
-Short Header Packet {
+1-RTT Packet {
   Header Form (1) = 0,
   Fixed Bit (1) = 1,
   Spin Bit (1),
