@@ -5756,6 +5756,7 @@ Token:
 
 : An opaque blob that the client can use with a future Initial packet. The token
   MUST NOT be empty.  A client MUST treat receipt of a NEW_TOKEN frame with
+  an empty Token field as a connection error of type FRAME_ENCODING_ERROR.
 
 A client might receive multiple NEW_TOKEN frames that contain the same token
 value if packets containing the frame are incorrectly determined to be lost.
