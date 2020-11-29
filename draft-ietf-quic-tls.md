@@ -1424,7 +1424,8 @@ without needing to receive the first packet that triggered the change.  An
 endpoint that notices a changed Key Phase bit updates keys and decrypts the
 packet that contains the changed value.
 
-This mechanism replaces the TLS KeyUpdate message.  Endpoints MUST NOT send a
+This mechanism replaces the key update mechanism of TLS, which relies on
+KeyUpdate messages sent using 1-RTT encryption keys.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message in a 1-RTT packet as a connection error of type 0x10a, equivalent to a
 fatal TLS alert of unexpected_message (see {{tls-errors}}).
