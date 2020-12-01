@@ -1220,7 +1220,7 @@ attacker capabilities. The specific attack exploited the fact that DEFLATE
 attacker to confirm guesses a character at a time, reducing an exponential-time
 attack into a linear-time attack.
 
-## Applicability to QPACK and HTTP
+### Applicability to QPACK and HTTP
 
 QPACK mitigates but does not completely prevent attacks modeled on CRIME
 ([CRIME]) by forcing a guess to match an entire field line, rather than
@@ -1250,7 +1250,7 @@ intermediary either:
 Web browsers also need to assume that requests made on the same connection by
 different web origins ({{?RFC6454}}) are made by mutually distrustful entities.
 
-## Mitigation
+### Mitigation
 
 Users of HTTP that require confidentiality for header or trailer fields can use
 values with entropy sufficient to make guessing infeasible. However, this is
@@ -1290,7 +1290,7 @@ field value. Disabling access to the dynamic table for a given field name might
 occur for shorter values more quickly or with higher probability than for longer
 values.
 
-## Never-Indexed Literals
+### Never-Indexed Literals
 
 Implementations can also choose to protect sensitive fields by not compressing
 them and instead encoding their value as literals.
