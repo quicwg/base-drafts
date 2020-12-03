@@ -950,9 +950,8 @@ packets.
 
 ## Persistent Congestion {#persistent-congestion}
 
-When a sender establishes loss of all ack-eliciting packets sent over a long
-enough duration, the network is considered to be experiencing persistent
-congestion.
+When a sender establishes loss of all packets sent over a long enough duration,
+the network is considered to be experiencing persistent congestion.
 
 ### Duration {#pc-duration}
 
@@ -990,16 +989,19 @@ congestion without depending on PTO expiration.
 
 ### Establishing Persistent Congestion
 
-A sender establishes persistent congestion on receiving an acknowledgement if at
-least two ack-eliciting packets are declared lost, and:
+A sender establishes persistent congestion after the receipt of an
+acknowledgement if at least two ack-eliciting packets are declared lost, and:
 
-* all packets, across all packet number spaces, sent between these two send
-  times are declared lost;
+* all packets, across all packet number spaces, sent between the send times of
+  these two packets are declared lost;
 
 * the duration between the send times of these two packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
 
 * a prior RTT sample existed when both packets were sent.
+
+The two packets to consider need to be ack-eliciting, because otherwise a sender
+cannot expect to receive an acknowledgement after a specific time.
 
 The persistent congestion period SHOULD NOT start until there is at least one
 RTT sample. Before the first RTT sample, a sender arms its PTO timer based on
