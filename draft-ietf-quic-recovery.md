@@ -950,9 +950,8 @@ packets.
 
 ## Persistent Congestion {#persistent-congestion}
 
-When a sender establishes loss of all ack-eliciting packets sent over a long
-enough duration, the network is considered to be experiencing persistent
-congestion.
+When a sender establishes a long enough period of complete packet loss, the
+network is considered to be experiencing persistent congestion.
 
 ### Duration {#pc-duration}
 
