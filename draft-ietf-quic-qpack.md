@@ -1181,7 +1181,6 @@ QPACK_DECODER_STREAM_ERROR (0x202):
 
 # Security Considerations
 
-<!-- lifted from HPACK with minimal modifications for QPACK -->
 This section describes potential areas of security concern with QPACK:
 
  * Use of compression as a length-based oracle for verifying guesses about
@@ -1235,8 +1234,9 @@ recovered successfully. However, values with low entropy remain vulnerable.
 Attacks of this nature are possible any time that two mutually distrustful
 entities control requests or responses that are placed onto a single HTTP/3
 connection. If the shared QPACK compressor permits one entity to add entries to
-the dynamic table, and the other to access those entries, then the state of the
-table can be learned.
+the dynamic table, and the other to access those entries to encode chosen field
+lines, then the attacker can learn the state of the table by observing the
+length of the encoded output.
 
 Having requests or responses from mutually distrustful entities occurs when an
 intermediary either:
