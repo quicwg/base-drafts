@@ -549,17 +549,17 @@ encoder stream.
 ### Absolute Indexing {#indexing}
 
 Each entry possesses an absolute index that is fixed for the lifetime of that
-entry. The first entry inserted has an absolute index of "0"; indices increase
+entry. The first entry inserted has an absolute index of 0; indices increase
 by one with each insertion.
 
 
 ### Relative Indexing
 
 Relative indices begin at zero and increase in the opposite direction from the
-absolute index.  Determining which entry has a relative index of "0" depends on
+absolute index.  Determining which entry has a relative index of 0 depends on
 the context of the reference.
 
-In encoder instructions ({{encoder-instructions}}), a relative index of "0"
+In encoder instructions ({{encoder-instructions}}), a relative index of 0
 refers to the most recently inserted value in the dynamic table.  Note that this
 means the entry referenced by a given relative index will change while
 interpreting instructions on the encoder stream.
@@ -584,7 +584,7 @@ are relative to the Base at the beginning of the encoded field section; see
 {{header-prefix}}. This ensures that references are stable even if encoded field
 sections and dynamic table updates are processed out of order.
 
-In a field line representation, a relative index of "0" refers to the entry with
+In a field line representation, a relative index of 0 refers to the entry with
 absolute index equal to Base - 1.
 
 ~~~~~ drawing
@@ -682,9 +682,10 @@ QPACK defines two unidirectional stream types:
 HTTP/3 endpoints contain a QPACK encoder and decoder. Each endpoint MUST
 initiate at most one encoder stream and at most one decoder stream. Receipt of a
 second instance of either stream type MUST be treated as a connection error of
-type H3_STREAM_CREATION_ERROR. These streams MUST NOT be closed. Closure of
-either unidirectional stream type MUST be treated as a connection error of type
-H3_CLOSED_CRITICAL_STREAM.
+type H3_STREAM_CREATION_ERROR.
+
+These streams MUST NOT be closed. Closure of either unidirectional stream type
+MUST be treated as a connection error of type H3_CLOSED_CRITICAL_STREAM.
 
 An endpoint MAY avoid creating an encoder stream if it will not be used (for
 example if its encoder does not wish to use the dynamic table, or if the maximum
@@ -709,7 +710,7 @@ duplicate entry.
 ### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
 An encoder informs the decoder of a change to the dynamic table capacity using
-an instruction that begins with the '001' three-bit pattern.  This is followed
+an instruction that starts with the '001' three-bit pattern.  This is followed
 by the new dynamic table capacity represented as an integer with a 5-bit prefix;
 see {{prefixed-integers}}.
 
@@ -787,7 +788,7 @@ the value represented as an 8-bit prefix string literal; see
 ### Duplicate {#duplicate}
 
 An encoder duplicates an existing entry in the dynamic table using an
-instruction that begins with the '000' three-bit pattern.  This is followed by
+instruction that starts with the '000' three-bit pattern.  This is followed by
 the relative index of the existing entry represented as an integer with a 5-bit
 prefix; see {{prefixed-integers}}.
 
@@ -814,7 +815,7 @@ of the dynamic table.
 
 After processing an encoded field section whose declared Required Insert Count
 is not zero, the decoder emits a Section Acknowledgement instruction.  The
-instruction begins with the '1' one-bit pattern, followed by the field
+instruction starts with the '1' one-bit pattern, followed by the field
 section's associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
 
@@ -841,7 +842,7 @@ see {{known-received-count}}.
 ### Stream Cancellation
 
 When a stream is reset or reading is abandoned, the decoder emits a Stream
-Cancellation instruction. The instruction begins with the '01' two-bit
+Cancellation instruction. The instruction starts with the '01' two-bit
 pattern, followed by the stream ID of the affected stream encoded as a
 6-bit prefix integer.
 
@@ -857,7 +858,7 @@ This instruction is used as described in {{state-synchronization}}.
 
 ### Insert Count Increment
 
-The Insert Count Increment instruction begins with the '00' two-bit pattern,
+The Insert Count Increment instruction starts with the '00' two-bit pattern,
 followed by the Increment encoded as a 6-bit prefix integer.  This instruction
 increases the Known Received Count ({{known-received-count}}) by the value of
 the Increment parameter.  The decoder should send an Increment value that
@@ -1032,7 +1033,7 @@ the Base.
 ~~~~~~~~~~
 {: title="Indexed Field Line"}
 
-This representation starts with the '1' 1-bit pattern, followed by the 'T' bit
+This representation starts with the '1' one-bit pattern, followed by the 'T' bit
 indicating whether the reference is into the static or dynamic table.  The 6-bit
 prefix integer ({{prefixed-integers}}) that follows is used to locate the
 table entry for the field line.  When T=1, the number represents the static
@@ -1054,9 +1055,9 @@ of the Base.
 ~~~~~~~~~~
 {: title="Indexed Field Line with Post-Base Index"}
 
-This representation starts with the '0001' 4-bit pattern.  This is followed by
-the post-base index ({{post-base}}) of the matching field line, represented as
-an integer with a 4-bit prefix; see {{prefixed-integers}}.
+This representation starts with the '0001' four-bit pattern.  This is followed
+by the post-base index ({{post-base}}) of the matching field line, represented
+as an integer with a 4-bit prefix; see {{prefixed-integers}}.
 
 
 ### Literal Field Line With Name Reference {#literal-name-reference}
@@ -1143,7 +1144,7 @@ field name and a field value as string literals.
 ~~~~~~~~~~
 {: title="Literal Field Line With Literal Name"}
 
-This representation begins with the '001' three-bit pattern.  The fourth bit is
+This representation starts with the '001' three-bit pattern.  The fourth bit is
 the 'N' bit as described in {{literal-name-reference}}.  The name follows,
 represented as a 4-bit prefix string literal, then the value, represented as an
 8-bit prefix string literal; see {{string-literals}}.
