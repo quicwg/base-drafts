@@ -1283,8 +1283,8 @@ carry application data.  Application data that is received in 0-RTT could cause
 an application at the server to process the data multiple times rather than
 just once. Additional actions taken by a server as a result of processing
 replayed application data could have unwanted consequences. A client therefore
-MUST only use 0-RTT for application data that is permitted by the application
-that is in use.
+MUST NOT use 0-RTT for application data unless specifically
+requested by the application that is in use.
 
 An application protocol that uses QUIC MUST include a profile that defines
 acceptable use of 0-RTT; otherwise, 0-RTT can only be used to carry QUIC frames
