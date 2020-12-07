@@ -1559,8 +1559,7 @@ a single UDP datagram; see {{packet-coalesce}}. As a result, this handshake
 could consist of as few as 4 UDP datagrams, or any number more (subject to
 limits inherent to the protocol, such as congestion control and
 anti-amplification).  For instance, the server's first flight contains Initial
-packets, Handshake packets, and "0.5-RTT data" in 1-RTT packets with a short
-header.
+packets, Handshake packets, and "0.5-RTT data" in 1-RTT packets.
 
 ~~~~
 Client                                                  Server
@@ -3402,7 +3401,7 @@ Packet numbers are divided into 3 spaces in QUIC:
 - Handshake space: All Handshake packets ({{packet-handshake}}) are in this
   space.
 - Application data space: All 0-RTT ({{packet-0rtt}}) and 1-RTT
-  ({{short-header}}) encrypted packets are in this space.
+  ({{packet-1rtt}}) encrypted packets are in this space.
 
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
@@ -3525,7 +3524,7 @@ H:
 
 1:
 
-: 1-RTT ({{short-header}})
+: 1-RTT ({{packet-1rtt}})
 
 ih:
 
@@ -4979,11 +4978,16 @@ in {{cid-auth}}.
 
 ## Short Header Packets {#short-header}
 
-This version of QUIC defines a single packet type that uses the
-short packet header.
+This version of QUIC defines a single packet type that uses the short packet
+header.
+
+### 1-RTT Packet {#packet-1rtt}
+
+A 1-RTT packet uses a short packet header. It is used after the version and
+1-RTT keys are negotiated.
 
 ~~~
-Short Header Packet {
+1-RTT Packet {
   Header Form (1) = 0,
   Fixed Bit (1) = 1,
   Spin Bit (1),
@@ -4995,10 +4999,9 @@ Short Header Packet {
   Packet Payload (8..),
 }
 ~~~~~
-{: #fig-short-header title="Short Header Packet Format"}
+{: #1rtt-format title="1-RTT Packet"}
 
-The short header can be used after the version and 1-RTT keys are negotiated.
-Packets that use the short header contain the following fields:
+1-RTT packets contain the following fields:
 
 Header Form:
 
@@ -5012,7 +5015,7 @@ Fixed Bit:
 Spin Bit:
 
 : The third most significant bit (0x20) of byte 0 is the latency spin bit, set
-as described in {{spin-bit}}.
+  as described in {{spin-bit}}.
 
 Reserved Bits:
 
@@ -5054,7 +5057,7 @@ Packet Number:
 
 Packet Payload:
 
-: Packets with a short header always include a 1-RTT protected payload.
+: 1-RTT packets always include a 1-RTT protected payload.
 
 The header form bit and the connection ID field of a short header packet are
 version-independent.  The remaining fields are specific to the selected QUIC
@@ -5062,22 +5065,23 @@ version.  See {{QUIC-INVARIANTS}} for details on how packets from different
 versions of QUIC are interpreted.
 
 
-### Latency Spin Bit {#spin-bit}
+## Latency Spin Bit {#spin-bit}
 
-The latency spin bit enables passive latency monitoring from observation points
-on the network path throughout the duration of a connection. The server reflects
-the spin value received, while the client 'spins' it after one RTT. On-path
-observers can measure the time between two spin bit toggle events to estimate
-the end-to-end RTT of a connection.
+The latency spin bit, which is defined for 1-RTT packets ({{packet-1rtt}}),
+enables passive latency monitoring from observation points on the network path
+throughout the duration of a connection. The server reflects the spin value
+received, while the client 'spins' it after one RTT. On-path observers can
+measure the time between two spin bit toggle events to estimate the end-to-end
+RTT of a connection.
 
-The spin bit is only present in the short packet header, since it is possible to
-measure the initial RTT of a connection by observing the handshake. Therefore,
-the spin bit is available after version negotiation and connection establishment
-are completed. On-path measurement and use of the latency spin bit is further
+The spin bit is only present in 1-RTT packets, since it is possible to measure
+the initial RTT of a connection by observing the handshake. Therefore, the spin
+bit is available after version negotiation and connection establishment are
+completed. On-path measurement and use of the latency spin bit is further
 discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
-The spin bit is an OPTIONAL feature of QUIC. A QUIC stack that chooses to
-support the spin bit MUST implement it as specified in this section.
+The spin bit is an OPTIONAL feature of this version of QUIC. A QUIC stack that
+chooses to support the spin bit MUST implement it as specified in this section.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
@@ -5094,19 +5098,18 @@ bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
-value for each network path and sets the spin bit in the short header to the
-currently stored value when a packet with a short header is sent on that path.
-The spin value is initialized to 0 in the endpoint for each network path. Each
-endpoint also remembers the highest packet number seen from its peer on each
-path.
+value for each network path and sets the spin bit in the packet header to the
+currently stored value when a 1-RTT packet is sent on that path. The spin value
+is initialized to 0 in the endpoint for each network path. Each endpoint also
+remembers the highest packet number seen from its peer on each path.
 
-When a server receives a short header packet that increases the highest packet
-number seen by the server from the client on a given network path, it sets the
-spin value for that path to be equal to the spin bit in the received packet.
+When a server receives a 1-RTT packet that increases the highest packet number
+seen by the server from the client on a given network path, it sets the spin
+value for that path to be equal to the spin bit in the received packet.
 
-When a client receives a short header packet that increases the highest packet
-number seen by the client from the server on a given network path, it sets the
-spin value for that path to the inverse of the spin bit in the received packet.
+When a client receives a 1-RTT packet that increases the highest packet number
+seen by the client from the server on a given network path, it sets the spin
+value for that path to the inverse of the spin bit in the received packet.
 
 An endpoint resets the spin value for a network path to zero when changing the
 connection ID being used on that network path.
