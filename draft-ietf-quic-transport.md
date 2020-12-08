@@ -7348,12 +7348,12 @@ permanent registrations.
 
 The creation of a registry MAY identify a range of codepoints where
 registrations are governed by a different registration policy.  For instance,
-the registries for 62-bit codepoints in this document have stricter policies for
-codepoints in the range from 0 to 63.
+the frame type registry in {{iana-frames}} has a stricter policy for codepoints
+in the range from 0 to 63.
 
 Any stricter requirements for permanent registrations do not prevent provisional
 registrations for affected codepoints.  For instance, a provisional registration
-for a frame type ({{iana-frames}}) of 61 could be requested.
+for a frame type of 61 could be requested.
 
 All registrations made by Standards Track publications MUST be permanent.
 
