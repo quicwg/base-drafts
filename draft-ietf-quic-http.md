@@ -1811,10 +1811,13 @@ of establishing authority are discussed in Section 16.1 of {{!SEMANTICS}}.
 ## Cross-Protocol Attacks
 
 The use of ALPN in the TLS and QUIC handshakes establishes the target
-application protocol before application-layer bytes are processed.  Because all
-QUIC packets are encrypted, it is difficult for an attacker to control the
-plaintext bytes of an HTTP/3 connection, which could be used in a cross-protocol
-attack on a plaintext protocol.
+application protocol before application-layer bytes are processed.  This ensures
+that endpoints have strong assurances that peers are using the same protocol.
+
+This does not guarantee protection from all cross-protocol attacks.  Section
+21.5 of {{QUIC-TRANSPORT}} describes some ways in which the plaintext of QUIC
+packets can be used to perform request forgery against endpoints that don't use
+authenticated transports.
 
 ## Intermediary Encapsulation Attacks
 
