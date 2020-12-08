@@ -2096,9 +2096,11 @@ The entries in {{iana-frame-table}} are registered by this document.
 | ---------------- | ------ | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST
-NOT be assigned by IANA.
+Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
+(that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST NOT be assigned by
+IANA and MUST NOT appear in the listing of assigned values.
+
+The previous paragraph will be included as a note on the IANA registry page.
 
 ### Settings Parameters {#iana-settings}
 
@@ -2138,9 +2140,11 @@ The entries in {{iana-setting-table}} are registered by this document.
 | ---------------------------- | ------ | ------------------------- | --------- |
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
-assigned by IANA.
+Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
+(that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
+IANA and MUST NOT appear in the listing of assigned values.
+
+The previous paragraph will be included as a note on the IANA registry page.
 
 ### Error Codes {#iana-error-codes}
 
@@ -2194,9 +2198,11 @@ Required policy to avoid collisions with HTTP/2 error codes.
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 
-Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
-assigned by IANA.
+Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
+(that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
+IANA and MUST NOT appear in the listing of assigned values.
+
+The previous paragraph will be included as a note on the IANA registry page.
 
 ### Stream Types {#iana-stream-types}
 
@@ -2230,9 +2236,12 @@ The entries in the following table are registered by this document.
 | Push Stream      |  0x01  | {{server-push}}            | Server |
 | ---------------- | ------ | -------------------------- | ------ |
 
-Additionally, each code of the format `0x1f * N + 0x21` for non-negative integer
-values of N (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be
-assigned by IANA.
+Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
+(that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
+IANA and MUST NOT appear in the listing of assigned values.
+
+The previous paragraph will be included as a note on the IANA registry page.
+
 
 --- back
 
