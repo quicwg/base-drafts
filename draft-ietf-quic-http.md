@@ -2100,8 +2100,6 @@ Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
 (that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
 
-The previous paragraph will be included as a note on the IANA registry page.
-
 ### Settings Parameters {#iana-settings}
 
 This document establishes a registry for HTTP/3 settings.  The "HTTP/3 Settings"
@@ -2143,8 +2141,6 @@ The entries in {{iana-setting-table}} are registered by this document.
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
 (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
-
-The previous paragraph will be included as a note on the IANA registry page.
 
 ### Error Codes {#iana-error-codes}
 
@@ -2202,8 +2198,6 @@ Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
 (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
 
-The previous paragraph will be included as a note on the IANA registry page.
-
 ### Stream Types {#iana-stream-types}
 
 This document establishes a registry for HTTP/3 unidirectional stream types. The
@@ -2239,8 +2233,6 @@ The entries in the following table are registered by this document.
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
 (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
-
-The previous paragraph will be included as a note on the IANA registry page.
 
 
 --- back
