@@ -71,6 +71,14 @@ informative:
     date: 1996-08
     seriesinfo: ACM SIGCOMM
 
+  RETRANSMISSION:
+    title: "Improving Round-Trip Time Estimates in Reliable Transport Protocols"
+    author:
+      - ins: P. Karn
+      - ins: C. Partridge
+    date: 1995-01
+    seriesinfo: ACM SIGCOMM CCR
+
 --- abstract
 
 This document describes loss detection and congestion control mechanisms for
@@ -90,12 +98,10 @@ code and issues list for this draft can be found at
 
 # Introduction
 
-QUIC is a new multiplexed and secure transport protocol atop UDP, specified in
-{{QUIC-TRANSPORT}}. This document describes congestion control and loss
-recovery for QUIC. Mechanisms described in this document follow the spirit
-of existing TCP congestion control and loss recovery mechanisms, described in
-RFCs, various Internet-drafts, or academic papers, and also those prevalent in
-TCP implementations.
+
+QUIC is a secure general-purpose transport protocol, described in
+{{QUIC-TRANSPORT}}). This document describes loss detection and congestion
+control mechanisms for QUIC.
 
 # Conventions and Definitions
 
@@ -113,7 +119,7 @@ Ack-eliciting packets:
 : Packets that contain ack-eliciting frames elicit an ACK from the receiver
   within the maximum acknowledgement delay and are called ack-eliciting packets.
 
-In-flight:
+In-flight packets:
 
 : Packets are considered in-flight when they are ack-eliciting or contain a
   PADDING frame, and they have been sent but are not acknowledged, declared
@@ -170,11 +176,10 @@ measurement are unified across packet number spaces.
 ## Monotonically Increasing Packet Numbers
 
 TCP conflates transmission order at the sender with delivery order at the
-receiver, which results in retransmissions of the same data carrying the same
-sequence number, and consequently leads to "retransmission ambiguity".  QUIC
-separates the two. QUIC uses a packet number to indicate transmission order.
-Application data is sent in one or more streams and delivery order is
-determined by stream offsets encoded within STREAM frames.
+receiver, resulting in the retransmission ambiguity problem
+({{RETRANSMISSION}}).  QUIC separates transmission order from delivery order:
+packet numbers indicate transmission order, and delivery order is determined by
+the stream offsets in STREAM frames.
 
 QUIC's packet number is strictly increasing within a packet number space,
 and directly encodes transmission order.  A higher packet number signifies
