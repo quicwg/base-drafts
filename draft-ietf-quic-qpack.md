@@ -710,7 +710,7 @@ duplicate entry.
 ### Set Dynamic Table Capacity {#set-dynamic-capacity}
 
 An encoder informs the decoder of a change to the dynamic table capacity using
-an instruction that starts with the '001' three-bit pattern.  This is followed
+an instruction that starts with the '001' 3-bit pattern.  This is followed
 by the new dynamic table capacity represented as an integer with a 5-bit prefix;
 see {{prefixed-integers}}.
 
@@ -737,7 +737,7 @@ table is not acknowledged as this instruction does not insert an entry.
 
 An encoder adds an entry to the dynamic table where the field name matches the
 field name of an entry stored in the static or the dynamic table using an
-instruction that starts with the '1' one-bit pattern.  The second ('T') bit
+instruction that starts with the '1' 1-bit pattern.  The second ('T') bit
 indicates whether the reference is to the static or dynamic table. The 6-bit
 prefix integer ({{prefixed-integers}}) that follows is used to locate the table
 entry for the field name.  When T=1, the number represents the static table
@@ -764,7 +764,7 @@ literal; see {{string-literals}}.
 
 An encoder adds an entry to the dynamic table where both the field name and the
 field value are represented as string literals using an instruction that starts
-with the '01' two-bit pattern.
+with the '01' 2-bit pattern.
 
 This is followed by the name represented as a 6-bit prefix string literal, and
 the value represented as an 8-bit prefix string literal; see
@@ -788,7 +788,7 @@ the value represented as an 8-bit prefix string literal; see
 ### Duplicate {#duplicate}
 
 An encoder duplicates an existing entry in the dynamic table using an
-instruction that starts with the '000' three-bit pattern.  This is followed by
+instruction that starts with the '000' 3-bit pattern.  This is followed by
 the relative index of the existing entry represented as an integer with a 5-bit
 prefix; see {{prefixed-integers}}.
 
@@ -815,7 +815,7 @@ of the dynamic table.
 
 After processing an encoded field section whose declared Required Insert Count
 is not zero, the decoder emits a Section Acknowledgement instruction.  The
-instruction starts with the '1' one-bit pattern, followed by the field
+instruction starts with the '1' 1-bit pattern, followed by the field
 section's associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
 
@@ -842,7 +842,7 @@ see {{known-received-count}}.
 ### Stream Cancellation
 
 When a stream is reset or reading is abandoned, the decoder emits a Stream
-Cancellation instruction. The instruction starts with the '01' two-bit
+Cancellation instruction. The instruction starts with the '01' 2-bit
 pattern, followed by the stream ID of the affected stream encoded as a
 6-bit prefix integer.
 
@@ -858,7 +858,7 @@ This instruction is used as described in {{state-synchronization}}.
 
 ### Insert Count Increment
 
-The Insert Count Increment instruction starts with the '00' two-bit pattern,
+The Insert Count Increment instruction starts with the '00' 2-bit pattern,
 followed by the Increment encoded as a 6-bit prefix integer.  This instruction
 increases the Known Received Count ({{known-received-count}}) by the value of
 the Increment parameter.  The decoder should send an Increment value that
@@ -1033,7 +1033,7 @@ the Base.
 ~~~~~~~~~~
 {: title="Indexed Field Line"}
 
-This representation starts with the '1' one-bit pattern, followed by the 'T' bit
+This representation starts with the '1' 1-bit pattern, followed by the 'T' bit
 indicating whether the reference is into the static or dynamic table.  The 6-bit
 prefix integer ({{prefixed-integers}}) that follows is used to locate the
 table entry for the field line.  When T=1, the number represents the static
@@ -1055,7 +1055,7 @@ of the Base.
 ~~~~~~~~~~
 {: title="Indexed Field Line with Post-Base Index"}
 
-This representation starts with the '0001' four-bit pattern.  This is followed
+This representation starts with the '0001' 4-bit pattern.  This is followed
 by the post-base index ({{post-base}}) of the matching field line, represented
 as an integer with a 4-bit prefix; see {{prefixed-integers}}.
 
@@ -1079,7 +1079,7 @@ the value of the Base.
 ~~~~~~~~~~
 {: title="Literal Field Line With Name Reference"}
 
-This representation starts with the '01' two-bit pattern.  The following bit,
+This representation starts with the '01' 2-bit pattern.  The following bit,
 'N', indicates whether an intermediary is permitted to add this field line to
 the dynamic table on subsequent hops. When the 'N' bit is set, the encoded field
 line MUST always be encoded with a literal representation. In particular, when a
@@ -1116,7 +1116,7 @@ with an absolute index greater than or equal to the value of the Base.
 ~~~~~~~~~~
 {: title="Literal Field Line With Post-Base Name Reference"}
 
-This representation starts with the '0000' four-bit pattern.  The fifth bit is
+This representation starts with the '0000' 4-bit pattern.  The fifth bit is
 the 'N' bit as described in {{literal-name-reference}}.  This is followed by a
 post-base index of the dynamic table entry ({{post-base}}) encoded as an
 integer with a 3-bit prefix; see {{prefixed-integers}}.
@@ -1144,7 +1144,7 @@ field name and a field value as string literals.
 ~~~~~~~~~~
 {: title="Literal Field Line With Literal Name"}
 
-This representation starts with the '001' three-bit pattern.  The fourth bit is
+This representation starts with the '001' 3-bit pattern.  The fourth bit is
 the 'N' bit as described in {{literal-name-reference}}.  The name follows,
 represented as a 4-bit prefix string literal, then the value, represented as an
 8-bit prefix string literal; see {{string-literals}}.
