@@ -993,15 +993,16 @@ A sender establishes persistent congestion after the receipt of an
 acknowledgement if at least two ack-eliciting packets are declared lost, and:
 
 * all packets, across all packet number spaces, sent between the send times of
-  these two packets are declared lost;
+  two ack-eliciting packets are declared lost;
 
 * the duration between the send times of these two packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
 
 * a prior RTT sample existed when both packets were sent.
 
-The two packets to consider need to be ack-eliciting, because otherwise a sender
-cannot expect to receive an acknowledgement after a specific time.
+These two packets MUST be ack-eliciting, since a receiver is required to
+acknowledge only ack-eliciting packets within its maximum ack delay; see Section
+13.2 of {{QUIC-TRANSPORT}}.
 
 The persistent congestion period SHOULD NOT start until there is at least one
 RTT sample. Before the first RTT sample, a sender arms its PTO timer based on
