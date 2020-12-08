@@ -128,8 +128,9 @@ control, similar to that provided by the HTTP/2 framing layer. By providing
 reliability at the stream level and congestion control across the entire
 connection, QUIC has the capability to improve the performance of HTTP compared
 to a TCP mapping.  QUIC also incorporates TLS 1.3 ({{?TLS13=RFC8446}}) at the
-transport layer, offering comparable security to running TLS over TCP, with the
-improved connection setup latency of TCP Fast Open ({{?TFO=RFC7413}}).
+transport layer, offering comparable confidentiality and integrity to running
+TLS over TCP, with the improved connection setup latency of TCP Fast Open
+({{?TFO=RFC7413}}).
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
@@ -1811,10 +1812,13 @@ of establishing authority are discussed in Section 16.1 of {{!SEMANTICS}}.
 ## Cross-Protocol Attacks
 
 The use of ALPN in the TLS and QUIC handshakes establishes the target
-application protocol before application-layer bytes are processed.  Because all
-QUIC packets are encrypted, it is difficult for an attacker to control the
-plaintext bytes of an HTTP/3 connection, which could be used in a cross-protocol
-attack on a plaintext protocol.
+application protocol before application-layer bytes are processed.  This ensures
+that endpoints have strong assurances that peers are using the same protocol.
+
+This does not guarantee protection from all cross-protocol attacks.  Section
+21.5 of {{QUIC-TRANSPORT}} describes some ways in which the plaintext of QUIC
+packets can be used to perform request forgery against endpoints that don't use
+authenticated transports.
 
 ## Intermediary Encapsulation Attacks
 
