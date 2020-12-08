@@ -4364,21 +4364,6 @@ one of these version numbers with the expectation that the server will initiate
 version negotiation; a server MAY advertise support for one of these versions
 and can expect that clients ignore the value.
 
-\[\[RFC editor: please remove the remainder of this section before
-publication.]]
-
-The version number for the final version of this specification (0x00000001), is
-reserved for the version of the protocol that is published as an RFC.
-
-Version numbers used to identify IETF drafts are created by adding the draft
-number to 0xff000000.  For example, draft-ietf-quic-transport-13 would be
-identified as 0xff00000d.
-
-Implementors are encouraged to register version numbers of QUIC that they are
-using for private experimentation on the GitHub wiki at
-[](https://github.com/quicwg/base-drafts/wiki/QUIC-Versions).
-
-
 
 # Variable-Length Integer Encoding {#integer-encoding}
 
