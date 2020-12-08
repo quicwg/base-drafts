@@ -1598,8 +1598,7 @@ DetectAndRemoveLostPackets(pn_space):
         largest_acked_packet[pn_space] >=
           unacked.packet_number + kPacketThreshold):
       sent_packets[pn_space].remove(unacked.packet_number)
-      if (unacked.in_flight):
-        lost_packets.insert(unacked)
+      lost_packets.insert(unacked)
     else:
       if (loss_time[pn_space] == 0):
         loss_time[pn_space] = unacked.time_sent + loss_delay
@@ -1807,11 +1806,14 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
 OnPacketsLost(lost_packets):
+  time_of_last_in_flight_packet = 0
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
-    assert(lost_packet.in_flight)
-    bytes_in_flight -= lost_packet.sent_bytes
-  OnCongestionEvent(lost_packets.largest().time_sent)
+    if lost_packet.in_flight:
+      bytes_in_flight -= lost_packet.sent_bytes
+      time_of_last_in_flight_packet = max(time_of_last_in_flight_packet, lost_packet.time_sent)
+  if (time_of_last_in_flight_packet != 0):
+    OnCongestionEvent(time_of_last_in_flight_packet)
 
   // Reset the congestion window if the loss of these
   // packets indicates persistent congestion.
