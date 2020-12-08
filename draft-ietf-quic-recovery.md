@@ -994,11 +994,11 @@ congestion without depending on PTO expiration.
 
 ### Establishing Persistent Congestion
 
-A sender establishes persistent congestion after the receipt of an
-acknowledgement if at least two ack-eliciting packets are declared lost, and:
+A sender MUST establish persistent congestion after the receipt of an
+acknowledgement if two ack-eliciting packets are declared lost, and:
 
 * all packets, across all packet number spaces, sent between the send times of
-  two ack-eliciting packets are declared lost;
+  these two packets are declared lost;
 
 * the duration between the send times of these two packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
