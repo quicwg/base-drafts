@@ -947,7 +947,7 @@ from the Destination Connection ID field from the client's first Initial
 packet.
 
 This secret is determined by using HKDF-Extract (see Section 2.2 of
-{{!HKDF=RFC5869}}) with a salt of 0xafbfec289993d24c9e9786f19c6111e04390a899
+{{!HKDF=RFC5869}}) with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a
 and a IKM of the Destination Connection ID field. This produces an intermediate
 pseudorandom key (PRK) that is used to derive two separate secrets for sending
 and receiving.
@@ -962,7 +962,7 @@ deriving initial secrets and keys is SHA-256
 This process in pseudocode is:
 
 ~~~
-initial_salt = 0xafbfec289993d24c9e9786f19c6111e04390a899
+initial_salt = 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a
 initial_secret = HKDF-Extract(initial_salt,
                               client_dst_connection_id)
 
@@ -1364,14 +1364,14 @@ off-path attackers' ability to send valid Retry packets.
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
 AEAD_AES_128_GCM ({{!AEAD}}) used with the following inputs:
 
-- The secret key, K, is 128 bits equal to 0xccce187ed09a09d05728155a6cb96be1.
-- The nonce, N, is 96 bits equal to 0xe54930f97f2136f0530a8c1c.
+- The secret key, K, is 128 bits equal to 0xbe0c690b9f66575a1d766b54e368c84e.
+- The nonce, N, is 96 bits equal to 0x461599d35d632bf2239825bb.
 - The plaintext, P, is empty.
 - The associated data, A, is the contents of the Retry Pseudo-Packet, as
   illustrated in {{retry-pseudo}}:
 
 The secret key and the nonce are values derived by calling HKDF-Expand-Label
-using 0x8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c as the
+using 0xd9c9943e6101fd200021506bcc02814c73030f25c79d71ce876eca876e6fca8e as the
 secret, with labels being "quic key" and "quic iv" ({{protection-keys}}).
 
 ~~~
@@ -2043,8 +2043,8 @@ The initial secret is common:
 
 ~~~
 initial_secret = HKDF-Extract(initial_salt, cid)
-    = 1e7e7764529715b1e0ddc8e9753c6157
-      6769605187793ed366f8bbf8c9e986eb
+    = 7db5df06e7a69e432496adedb0085192
+      3595221596ae2ae9fb8115c1e9ed0a44
 ~~~
 
 The secrets for protecting client packets are:
@@ -2052,17 +2052,17 @@ The secrets for protecting client packets are:
 ~~~
 client_initial_secret
     = HKDF-Expand-Label(initial_secret, "client in", _, 32)
-    = 0088119288f1d866733ceeed15ff9d50
-      902cf82952eee27e9d4d4918ea371d87
+    = c00cf151ca5be075ed0ebfb5c80323c4
+      2d6b7db67881289af4008f1f6c357aea
 
 key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
-    = 175257a31eb09dea9366d8bb79ad80ba
+    = 1f369613dd76d5467730efcbe3b1a22d
 
 iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
-    = 6b26114b9cba2b63a9e8dd4f
+    = fa044b2f42a3fd3b46fb255c
 
 hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
-    = 9ddd12c994c0698b89374a9c077a3077
+    = 9f50449e04a0e810283a1e9933adedd2
 ~~~
 
 The secrets for protecting server packets are:
@@ -2070,17 +2070,17 @@ The secrets for protecting server packets are:
 ~~~
 server_initial_secret
     = HKDF-Expand-Label(initial_secret, "server in", _, 32)
-    = 006f881359244dd9ad1acf85f595bad6
-      7c13f9f5586f5e64e1acae1d9ea8f616
+    = 3c199828fd139efd216c155ad844cc81
+      fb82fa8d7446fa7d78be803acdda951b
 
 key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
-    = 149d0b1662ab871fbe63c49b5e655a5d
+    = cf3a5331653c364c88f0f379b6067e37
 
 iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
-    = bab2b12a4c76016ace47856d
+    = 0ac1493ca1905853b0bba03e
 
 hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
-    = c0c499a65a60024a18a250974ea01dfa
+    = c206b8d9b9f0f37644430b490eeaa314
 ~~~
 
 
@@ -2105,7 +2105,7 @@ The unprotected header includes the connection ID and a 4-byte packet number
 encoding for a packet number of 2:
 
 ~~~
-c3ff000020088394c8f03e5157080000449e00000002
+c300000001088394c8f03e5157080000449e00000002
 ~~~
 
 Protecting the payload produces output that is sampled for header protection.
@@ -2113,59 +2113,59 @@ Because the header uses a 4-byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = fb66bc6a93032b50dd8973972d149421
+sample = d1b1c98dd7689fb8ec11d242b123dc9b
 
 mask = AES-ECB(hp, sample)[0..4]
-     = 1e9cdb9909
+     = 437b9aec36
 
 header[0] ^= mask[0] & 0x0f
-     = cd
+     = c0
 header[18..21] ^= mask[1..4]
-     = 9cdb990b
-header = cdff000020088394c8f03e5157080000449e9cdb990b
+     = 7b9aec34
+header = c000000001088394c8f03e5157080000449e7b9aec34
 ~~~
 
 The resulting protected packet is:
 
 ~~~
-cdff000020088394c8f03e5157080000 449e9cdb990bfb66bc6a93032b50dd89
-73972d149421874d3849e3708d71354e a33bcdc356f3ea6e2a1a1bd7c3d14003
-8d3e784d04c30a2cdb40c32523aba2da fe1c1bf3d27a6be38fe38ae033fbb071
-3c1c73661bb6639795b42b97f77068ea d51f11fbf9489af2501d09481e6c64d4
-b8551cd3cea70d830ce2aeeec789ef55 1a7fbe36b3f7e1549a9f8d8e153b3fac
-3fb7b7812c9ed7c20b4be190ebd89956 26e7f0fc887925ec6f0606c5d36aa81b
-ebb7aacdc4a31bb5f23d55faef5c5190 5783384f375a43235b5c742c78ab1bae
-0a188b75efbde6b3774ed61282f9670a 9dea19e1566103ce675ab4e21081fb58
-60340a1e88e4f10e39eae25cd685b109 29636d4f02e7fad2a5a458249f5c0298
-a6d53acbe41a7fc83fa7cc01973f7a74 d1237a51974e097636b6203997f921d0
-7bc1940a6f2d0de9f5a11432946159ed 6cc21df65c4ddd1115f86427259a196c
-7148b25b6478b0dc7766e1c4d1b1f515 9f90eabc61636226244642ee148b464c
-9e619ee50a5e3ddc836227cad938987c 4ea3c1fa7c75bbf88d89e9ada642b2b8
-8fe8107b7ea375b1b64889a4e9e5c38a 1c896ce275a5658d250e2d76e1ed3a34
-ce7e3a3f383d0c996d0bed106c2899ca 6fc263ef0455e74bb6ac1640ea7bfedc
-59f03fee0e1725ea150ff4d69a7660c5 542119c71de270ae7c3ecfd1af2c4ce5
-51986949cc34a66b3e216bfe18b347e6 c05fd050f85912db303a8f054ec23e38
-f44d1c725ab641ae929fecc8e3cefa56 19df4231f5b4c009fa0c0bbc60bc75f7
-6d06ef154fc8577077d9d6a1d2bd9bf0 81dc783ece60111bea7da9e5a9748069
-d078b2bef48de04cabe3755b197d52b3 2046949ecaa310274b4aac0d008b1948
-c1082cdfe2083e386d4fd84c0ed0666d 3ee26c4515c4fee73433ac703b690a9f
-7bf278a77486ace44c489a0c7ac8dfe4 d1a58fb3a730b993ff0f0d61b4d89557
-831eb4c752ffd39c10f6b9f46d8db278 da624fd800e4af85548a294c1518893a
-8778c4f6d6d73c93df200960104e062b 388ea97dcf4016bced7f62b4f062cb6c
-04c20693d9a0e3b74ba8fe74cc012378 84f40d765ae56a51688d985cf0ceaef4
-3045ed8c3f0c33bced08537f6882613a cd3b08d665fce9dd8aa73171e2d3771a
-61dba2790e491d413d93d987e2745af2 9418e428be34941485c93447520ffe23
-1da2304d6a0fd5d07d08372202369661 59bef3cf904d722324dd852513df39ae
-030d8173908da6364786d3c1bfcb19ea 77a63b25f1e7fc661def480c5d00d444
-56269ebd84efd8e3a8b2c257eec76060 682848cbf5194bc99e49ee75e4d0d254
-bad4bfd74970c30e44b65511d4ad0e6e c7398e08e01307eeeea14e46ccd87cf3
-6b285221254d8fc6a6765c524ded0085 dca5bd688ddf722e2c0faf9d0fb2ce7a
-0c3f2cee19ca0ffba461ca8dc5d2c817 8b0762cf67135558494d2a96f1a139f0
-edb42d2af89a9c9122b07acbc29e5e72 2df8615c343702491098478a389c9872
-a10b0c9875125e257c7bfdf27eef4060 bd3d00f4c14fd3e3496c38d3c5d1a566
-8c39350effbc2d16ca17be4ce29f02ed 969504dda2a8c6b9ff919e693ee79e09
-089316e7d1d89ec099db3b2b268725d8 88536a4b8bf9aee8fb43e82a4d919d48
-b5a464ca5b62df3be35ee0d0a2ec68f3
+c000000001088394c8f03e5157080000 449e7b9aec34d1b1c98dd7689fb8ec11
+d242b123dc9bd8bab936b47d92ec356c 0bab7df5976d27cd449f63300099f399
+1c260ec4c60d17b31f8429157bb35a12 82a643a8d2262cad67500cadb8e7378c
+8eb7539ec4d4905fed1bee1fc8aafba1 7c750e2c7ace01e6005f80fcb7df6212
+30c83711b39343fa028cea7f7fb5ff89 eac2308249a02252155e2347b63d58c5
+457afd84d05dfffdb20392844ae81215 4682e9cf012f9021a6f0be17ddd0c208
+4dce25ff9b06cde535d0f920a2db1bf3 62c23e596dee38f5a6cf3948838a3aec
+4e15daf8500a6ef69ec4e3feb6b1d98e 610ac8b7ec3faf6ad760b7bad1db4ba3
+485e8a94dc250ae3fdb41ed15fb6a8e5 eba0fc3dd60bc8e30c5c4287e53805db
+059ae0648db2f64264ed5e39be2e20d8 2df566da8dd5998ccabdae053060ae6c
+7b4378e846d29f37ed7b4ea9ec5d82e7 961b7f25a9323851f681d582363aa5f8
+9937f5a67258bf63ad6f1a0b1d96dbd4 faddfcefc5266ba6611722395c906556
+be52afe3f565636ad1b17d508b73d874 3eeb524be22b3dcbc2c7468d54119c74
+68449a13d8e3b95811a198f3491de3e7 fe942b330407abf82a4ed7c1b311663a
+c69890f4157015853d91e923037c227a 33cdd5ec281ca3f79c44546b9d90ca00
+f064c99e3dd97911d39fe9c5d0b23a22 9a234cb36186c4819e8b9c5927726632
+291d6a418211cc2962e20fe47feb3edf 330f2c603a9d48c0fcb5699dbfe58964
+25c5bac4aee82e57a85aaf4e2513e4f0 5796b07ba2ee47d80506f8d2c25e50fd
+14de71e6c418559302f939b0e1abd576 f279c4b2e0feb85c1f28ff18f58891ff
+ef132eef2fa09346aee33c28eb130ff2 8f5b766953334113211996d20011a198
+e3fc433f9f2541010ae17c1bf202580f 6047472fb36857fe843b19f5984009dd
+c324044e847a4f4a0ab34f719595de37 252d6235365e9b84392b061085349d73
+203a4a13e96f5432ec0fd4a1ee65accd d5e3904df54c1da510b0ff20dcc0c77f
+cb2c0e0eb605cb0504db87632cf3d8b4 dae6e705769d1de354270123cb11450e
+fc60ac47683d7b8d0f811365565fd98c 4c8eb936bcab8d069fc33bd801b03ade
+a2e1fbc5aa463d08ca19896d2bf59a07 1b851e6c239052172f296bfb5e724047
+90a2181014f3b94a4e97d117b4381303 68cc39dbb2d198065ae3986547926cd2
+162f40a29f0c3c8745c0f50fba3852e5 66d44575c29d39a03f0cda721984b6f4
+40591f355e12d439ff150aab7613499d bd49adabc8676eef023b15b65bfc5ca0
+6948109f23f350db82123535eb8a7433 bdabcb909271a6ecbcb58b936a88cd4e
+8f2e6ff5800175f113253d8fa9ca8885 c2f552e657dc603f252e1a8e308f76f0
+be79e2fb8f5d5fbbe2e30ecadd220723 c8c0aea8078cdfcb3868263ff8f09400
+54da48781893a7e49ad5aff4af300cd8 04a6b6279ab3ff3afb64491c85194aab
+760d58a606654f9f4400e8b38591356f bf6425aca26dc85244259ff2b19c41b9
+f96f3ca9ec1dde434da7d2d392b905dd f3d1f9af93d1af5950bd493f5aa731b4
+056df31bd267b6b90a079831aaf579be 0a39013137aac6d404f518cfd4684064
+7e78bfe706ca4cf5e9c5453e9f7cfd2b 8b4c8d169a44e55c88d4a9a7f9474241
+1092abbdf8b889e5c199d096e3f24788
 ~~~
 
 
@@ -2185,26 +2185,26 @@ The header from the server includes a new connection ID and a 2-byte packet
 number encoding for a packet number of 1:
 
 ~~~
-c1ff0000200008f067a5502a4262b50040750001
+c1000000010008f067a5502a4262b50040750001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
 from the third protected octet:
 
 ~~~
-sample = 823a5d24534d906ce4c76782a2167e34
-mask   = abaaf34fdc
-header = c7ff0000200008f067a5502a4262b5004075fb12
+sample = 2cd0991cd25b0aac406a5816b6394100
+mask   = 2ec0d8356a
+header = cf000000010008f067a5502a4262b5004075c0d9
 ~~~
 
 The final protected packet is then:
 
 ~~~
-c7ff0000200008f067a5502a4262b500 4075fb12ff07823a5d24534d906ce4c7
-6782a2167e3479c0f7f6395dc2c91676 302fe6d70bb7cbeb117b4ddb7d173498
-44fd61dae200b8338e1b932976b61d91 e64a02e9e0ee72e3a6f63aba4ceeeec5
-be2f24f2d86027572943533846caa13e 6f163fb257473d0eda5047360fd4a47e
-fd8142fafc0f76
+cf000000010008f067a5502a4262b500 4075c0d95a482cd0991cd25b0aac406a
+5816b6394100f37a1c69797554780bb3 8cc5a99f5ede4cf73c3ec2493a1839b3
+dbcba3f6ea46c5b7684df3548e7ddeb9 c3bf9c73cc3f3bded74b562bfb19fb84
+022f8ef4cdd93795d77d06edbb7aaf2f 58891850abbdca3d20398c276456cbc4
+2158407dd074ee
 ~~~
 
 
@@ -2216,8 +2216,8 @@ connection ID value of 0x8394c8f03e515708, but that value is not
 included in the final Retry packet:
 
 ~~~
-ffff0000200008f067a5502a4262b574 6f6b656e59756519dd6cc85bd90e33a9
-34d2ff85
+ff000000010008f067a5502a4262b574 6f6b656e04a265ba2eff4d829058fb3f
+0f2496ba
 ~~~
 
 

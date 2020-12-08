@@ -10,15 +10,14 @@ require('buffer');
 const assert = require('assert');
 const crypto = require('crypto');
 
-const INITIAL_SALT = Buffer.from('afbfec289993d24c9e9786f19c6111e04390a899', 'hex');
-const RETRY_KEY = Buffer.from('ccce187ed09a09d05728155a6cb96be1', 'hex');
-const RETRY_NONCE = Buffer.from('e54930f97f2136f0530a8c1c', 'hex');
+const INITIAL_SALT = Buffer.from('38762cf7f55934b34d179ae6a4c80cadccbb7f0a', 'hex');
+const RETRY_KEY = Buffer.from('be0c690b9f66575a1d766b54e368c84e', 'hex');
+const RETRY_NONCE = Buffer.from('461599d35d632bf2239825bb', 'hex');
 const SHA256 = 'sha256';
 const AES_GCM = 'aes-128-gcm';
 const AES_ECB = 'aes-128-ecb';
 
-const draft_version = 32;
-const version = 'ff0000' + draft_version.toString(16);
+const version = '00000001';
 
 function chunk(s, n) {
   return (new Array(Math.ceil(s.length / n)))
@@ -273,7 +272,7 @@ function hex_cid(cid) {
 
 // Verify that the retry keys are correct.
 function derive_retry() {
-  let secret = Buffer.from('8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c', 'hex');
+  let secret = Buffer.from('d9c9943e6101fd200021506bcc02814c73030f25c79d71ce876eca876e6fca8e', 'hex');
   let qhkdf = new QHKDF(new HMAC(SHA256), secret);
   let key = qhkdf.expand_label("quic key", 16);
   log('retry key', key);
