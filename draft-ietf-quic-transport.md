@@ -7402,8 +7402,9 @@ The initial contents of this registry are shown in {{iana-tp-table}}.
 | 0x10 | retry_source_connection_id  | {{transport-parameter-definitions}} |
 {: #iana-tp-table title="Initial QUIC Transport Parameters Entries"}
 
-Additionally, each value of the format `31 * N + 27` for integer values of N
-(that is, 27, 58, 89, ...) are reserved and MUST NOT be assigned by IANA.
+Each value of the format `31 * N + 27` for integer values of N (that is, 27, 58,
+89, ...) are reserved; these values MUST NOT be assigned by IANA and MUST NOT
+appear in the listing of assigned values.
 
 
 ## QUIC Frame Types Registry {#iana-frames}
