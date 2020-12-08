@@ -1428,7 +1428,7 @@ This mechanism replaces the key update mechanism of TLS, which relies on
 KeyUpdate messages sent using 1-RTT encryption keys.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
 message in a 1-RTT packet as a connection error of type 0x10a, equivalent to a
-fatal TLS alert of unexpected_message (see {{tls-errors}}).
+fatal TLS alert of unexpected_message; see {{tls-errors}}.
 
 {{ex-key-update}} shows a key update process, where the initial set of keys used
 (identified with @M) are replaced by updated keys (identified with @N).  The
