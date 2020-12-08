@@ -176,8 +176,7 @@ measurement are unified across packet number spaces.
 ## Monotonically Increasing Packet Numbers
 
 TCP conflates transmission order at the sender with delivery order at the
-receiver. This results in retransmissions of the same data carrying the same
-sequence number, resulting in the retransmission ambiguity problem
+receiver, resulting in the retransmission ambiguity problem
 ({{RETRANSMISSION}}).  QUIC separates transmission order from delivery order:
 packet numbers indicate transmission order, and delivery order is determined by
 the stream offsets in STREAM frames.
