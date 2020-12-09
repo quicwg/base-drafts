@@ -7350,7 +7350,7 @@ permanently reserved; the note for this codepoint \[shall] indicate\[s] that
 this version is reserved for Version Negotiation.
 
 All codepoints that follow the pattern 0x?a?a?a?a are reserved and MUST NOT be
-assigned by IANA.
+assigned by IANA and MUST NOT appear in the listing of assigned values.
 
 \[\[RFC editor: please remove the following note before publication.]]
 
