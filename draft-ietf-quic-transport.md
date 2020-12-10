@@ -1921,7 +1921,7 @@ generates more or larger packets in response to that packet, the attacker can
 use the server to send more data toward the victim than it would be able to send
 on its own.
 
-The primary defense against amplification attack is verifying that a peer is
+The primary defense against amplification attacks is verifying that a peer is
 able to receive packets at the transport address that it claims.  Therefore,
 after receiving packets from an address that is not yet validated, an endpoint
 MUST limit the amount of data it sends to the unvalidated address to three times
