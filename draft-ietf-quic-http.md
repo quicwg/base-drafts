@@ -278,33 +278,6 @@ Packet diagrams in this document use the format defined in Section 1.3 of
 
 # Connection Setup and Management {#connection-setup}
 
-## Draft Version Identification
-
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
-
-HTTP/3 uses the token "h3" to identify itself in ALPN and Alt-Svc. Only
-implementations of the final, published RFC can identify themselves as "h3".
-Until such an RFC exists, implementations MUST NOT identify themselves using
-this string.
-
-Implementations of draft versions of the protocol MUST add the string "-" and
-the corresponding draft number to the identifier. For example,
-draft-ietf-quic-http-01 is identified using the string "h3-01".
-
-Draft versions MUST use the corresponding draft transport version as their
-transport. For example, the application protocol defined in
-draft-ietf-quic-http-25 uses the transport defined in
-draft-ietf-quic-transport-25.
-
-Non-compatible experiments that are based on these draft versions MUST append
-the string "-" and an experiment name to the identifier. For example, an
-experimental implementation based on draft-ietf-quic-http-09 that reserves an
-extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 5.7.2 of {{!SEMANTICS}}. Experimenters are
-encouraged to coordinate their experiments on the quic@ietf.org mailing list.
-
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
 HTTP relies on the notion of an authoritative response: a response that has been
