@@ -1813,7 +1813,7 @@ OnPacketsLost(lost_packets):
       bytes_in_flight -= lost_packet.sent_bytes
       latest_in_flight_lost =
         max(latest_in_flight_lost, lost_packet.time_sent)
-  // Congestion event if any in-flight packets were lost 
+  // Congestion event if in-flight packets were lost
   if (latest_in_flight_lost != 0):
     OnCongestionEvent(latest_in_flight_lost)
 
