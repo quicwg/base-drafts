@@ -7382,6 +7382,35 @@ change controller of the IETF and a contact of the QUIC working group
 (quic@ietf.org).
 
 
+## QUIC Versions Registry {#iana-version}
+
+IANA \[SHALL add/has added] a registry for "QUIC Versions" under a "QUIC"
+heading.
+
+The "QUIC Versions" registry governs a 32-bit space; see {{versions}}. This
+registry follows the registration policy from {{iana-policy}}. Permanent
+registrations in this registry are assigned using the Specification Required
+policy ({{!RFC8126}}).
+
+The codepoint of 0x00000001 to the protocol is assigned with permanent status
+to the protocol defined in this document. The codepoint of 0x00000000 is
+permanently reserved; the note for this codepoint \[shall] indicate\[s] that
+this version is reserved for Version Negotiation.
+
+All codepoints that follow the pattern 0x?a?a?a?a are reserved and MUST NOT be
+assigned by IANA and MUST NOT appear in the listing of assigned values.
+
+\[\[RFC editor: please remove the following note before publication.]]
+
+IANA note:
+
+: Several pre-standardization versions will likely be in use at the time of
+  publication. There is no need to document these in an RFC, but recording
+  information about these version will ensure that the information in the
+  registry is accurate.  The document editors or working group chairs can
+  facilitate getting the necessary information.
+
+
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
 
 IANA \[SHALL add/has added] a registry for "QUIC Transport Parameters" under a
