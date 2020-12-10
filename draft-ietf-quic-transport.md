@@ -6538,8 +6538,8 @@ Note:
 
 : The anti-amplification limit only applies when an endpoint responds to packets
   received from an unvalidated address. The anti-amplification limit does not
-  apply to clients when establishing a new connection or when initiating path
-  migration.
+  apply to clients when establishing a new connection or when initiating
+  connection migration.
 
 
 #### Server-Side DoS
