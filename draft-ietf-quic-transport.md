@@ -2260,6 +2260,9 @@ additional validation can be performed after a PATH_RESPONSE is successfully
 received or when enough bytes have been received on the path that sending the
 larger datagram will not result in exceeding the anti-amplification limit.
 
+Unlike other cases where datagrams are expanded, endpoints MUST NOT discard
+datagrams that appear to be too small when they contain PATH_CHALLENGE or
+PATH_RESPONSE.
 
 ### Path Validation Responses
 
