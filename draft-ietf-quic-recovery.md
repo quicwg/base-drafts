@@ -1811,16 +1811,16 @@ Invoked when DetectAndRemoveLostPackets deems packets lost.
 
 ~~~
 OnPacketsLost(lost_packets):
-  latest_in_flight_lost = 0
+  sent_time_of_last_loss = 0
   // Remove lost packets from bytes_in_flight.
   for lost_packet in lost_packets:
     if lost_packet.in_flight:
       bytes_in_flight -= lost_packet.sent_bytes
-      latest_in_flight_lost =
-        max(latest_in_flight_lost, lost_packet.time_sent)
+      sent_time_of_last_loss =
+        max(sent_time_of_last_loss, lost_packet.time_sent)
   // Congestion event if in-flight packets were lost
-  if (latest_in_flight_lost != 0):
-    OnCongestionEvent(latest_in_flight_lost)
+  if (sent_time_of_last_loss != 0):
+    OnCongestionEvent(sent_time_of_last_loss)
 
   // Reset the congestion window if the loss of these
   // packets indicates persistent congestion.
