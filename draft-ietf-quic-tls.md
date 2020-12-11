@@ -1187,7 +1187,8 @@ encoding.
 The sampled ciphertext can be determined by the following pseudocode:
 
 ~~~
-sample_offset = packet_number_offset + 4
+# pn_offset is the start of the Packet Number field.
+sample_offset = pn_offset + 4
 
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
@@ -1195,18 +1196,18 @@ sample = packet[sample_offset..sample_offset+sample_length]
 where the packet number offset of a short header packet can be calculated as:
 
 ~~~
-packet_number_offset = 1 + len(connection_id)
+pn_offset = 1 + len(connection_id)
 ~~~
 
 and the packet number offset of a long header packet can be calculated as:
 
 ~~~
-packet_number_offset = 7 + len(destination_connection_id) +
-                       len(source_connection_id) +
-                       len(payload_length)
+pn_offset = 7 + len(destination_connection_id) +
+                len(source_connection_id) +
+                len(payload_length)
 if packet_type == Initial:
-    packet_number_offset += len(token_length) +
-                            len(token)
+    pn_offset += len(token_length) +
+                 len(token)
 ~~~
 
 For example, for a packet with a short header, an 8-byte connection ID, and
