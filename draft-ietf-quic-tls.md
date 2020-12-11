@@ -1184,33 +1184,38 @@ least 3 bytes of frames in the unprotected payload if the packet number is
 encoded on a single byte, or 2 bytes of frames for a 2-byte packet number
 encoding.
 
-The sampled ciphertext for a packet with a short header can be determined by the
-following pseudocode:
+The sampled ciphertext can be determined by the following pseudocode:
 
 ~~~
-sample_offset = 1 + len(connection_id) + 4
+# pn_offset is the start of the Packet Number field.
+sample_offset = pn_offset + 4
 
 sample = packet[sample_offset..sample_offset+sample_length]
+~~~
+
+where the packet number offset of a short header packet can be calculated as:
+
+~~~
+pn_offset = 1 + len(connection_id)
+~~~
+
+and the packet number offset of a long header packet can be calculated as:
+
+~~~
+pn_offset = 7 + len(destination_connection_id) +
+                len(source_connection_id) +
+                len(payload_length)
+if packet_type == Initial:
+    pn_offset += len(token_length) +
+                 len(token)
 ~~~
 
 For example, for a packet with a short header, an 8-byte connection ID, and
 protected with AEAD_AES_128_GCM, the sample takes bytes 13 to 28 inclusive
 (using zero-based indexing).
 
-A packet with a long header is sampled in the same way, noting that multiple
-QUIC packets might be included in the same UDP datagram and that each one is
-handled separately.
-
-~~~
-sample_offset = 7 + len(destination_connection_id) +
-                    len(source_connection_id) +
-                    len(payload_length) + 4
-if packet_type == Initial:
-    sample_offset += len(token_length) +
-                     len(token)
-
-sample = packet[sample_offset..sample_offset+sample_length]
-~~~
+Multiple QUIC packets might be included in the same UDP datagram. Each packet
+is handled separately.
 
 
 ### AES-Based Header Protection {#hp-aes}
