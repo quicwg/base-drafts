@@ -1214,8 +1214,8 @@ For example, for a packet with a short header, an 8-byte connection ID, and
 protected with AEAD_AES_128_GCM, the sample takes bytes 13 to 28 inclusive
 (using zero-based indexing).
 
-Note that multiple QUIC packets might be included in the same UDP datagram and
-that each one is handled separately.
+Multiple QUIC packets might be included in the same UDP datagram. Each packet
+is handled separately.
 
 
 ### AES-Based Header Protection {#hp-aes}
