@@ -2505,6 +2505,13 @@ restrict packet size have a limit of 2^21.5.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-tls-32
+
+- Added final values for Initial key derivation and Retry authenticaiton
+  (#4431)
+
+- Corrected rules for handling of 0-RTT (#4393, #4394)
+
 ## Since draft-ietf-quic-tls-31
 
 - Packet protection limits are based on maximum-sized packets; improved
