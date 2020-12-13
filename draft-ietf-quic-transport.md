@@ -7731,6 +7731,29 @@ incurred.
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-transport-32
+
+- Endpoints are required to limit the total data they send in response to an
+  apparent connection migration to three times what was received (#4257, #4264)
+
+- Added an error code for path validation failures (#4257, #4331)
+
+- Defined DoS protections for clients during the handshake (#4259, #4330)
+
+- Prohibited connection errors when datagrams are not the required size (#4273,
+  #4342)
+
+- A number of improvements to IANA considerations:
+
+  - Added a registry for versions (#4345, #4280)
+
+  - Clarified rules for first reserved value (#4378, #4389)
+
+  - Reserved values are not added to the registry (#4372, #4428)
+
+- Added final version numbers (#4430)
+
+
 ## Since draft-ietf-quic-transport-31
 
 - Require expansion of datagrams to ensure that a path supports at least 1200
