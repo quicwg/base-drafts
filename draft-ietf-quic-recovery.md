@@ -1861,6 +1861,11 @@ RemoveFromBytesInFlight(discarded_packets):
 
 Issue and pull request numbers are listed with a leading octothorp.
 
+## Since draft-ietf-quic-recovery-32
+
+- Clarifications to definition of persistent congestion (#4413, #4414, #4421,
+  #4429, #4437)
+
 ## Since draft-ietf-quic-recovery-31
 
 - Limit the number of Initial packets sent in response to unauthenticated
