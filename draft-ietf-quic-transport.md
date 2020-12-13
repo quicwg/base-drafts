@@ -101,6 +101,11 @@ integration of TLS for key negotiation, loss detection, and an exemplary
 congestion control algorithm.
 
 
+--- note_DO_NOT_DEPLOY_THIS_VERSION_OF_QUIC
+
+DO NOT DEPLOY THIS VERSION OF QUIC UNTIL IT IS IN AN RFC. This verion is still a
+work in progress. For trial deployments, please use earlier versions.
+
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
