@@ -997,8 +997,8 @@ congestion without depending on PTO expiration.
 A sender establishes persistent congestion after the receipt of an
 acknowledgement if two packets that are ack-eliciting are declared lost, and:
 
-* all packets, across all packet number spaces, sent between the send times of
-  these two packets are declared lost;
+* across all packet number spaces, none of the packets sent between the send
+  times of these two packets are acknowledged;
 
 * the duration between the send times of these two packets exceeds the
   persistent congestion duration ({{pc-duration}}); and
