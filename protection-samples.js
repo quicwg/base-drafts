@@ -10,15 +10,14 @@ require('buffer');
 const assert = require('assert');
 const crypto = require('crypto');
 
-const INITIAL_SALT = Buffer.from('afbfec289993d24c9e9786f19c6111e04390a899', 'hex');
-const RETRY_KEY = Buffer.from('ccce187ed09a09d05728155a6cb96be1', 'hex');
-const RETRY_NONCE = Buffer.from('e54930f97f2136f0530a8c1c', 'hex');
+const INITIAL_SALT = Buffer.from('38762cf7f55934b34d179ae6a4c80cadccbb7f0a', 'hex');
+const RETRY_KEY = Buffer.from('be0c690b9f66575a1d766b54e368c84e', 'hex');
+const RETRY_NONCE = Buffer.from('461599d35d632bf2239825bb', 'hex');
 const SHA256 = 'sha256';
 const AES_GCM = 'aes-128-gcm';
 const AES_ECB = 'aes-128-ecb';
 
-const draft_version = 32;
-const version = 'ff0000' + draft_version.toString(16);
+const version = '00000001';
 
 function chunk(s, n) {
   return (new Array(Math.ceil(s.length / n)))
@@ -273,7 +272,7 @@ function hex_cid(cid) {
 
 // Verify that the retry keys are correct.
 function derive_retry() {
-  let secret = Buffer.from('8b0d37eb8535022ebc8d76a207d80df22646ec06dc809642c30a8baa2baaff4c', 'hex');
+  let secret = Buffer.from('d9c9943e6101fd200021506bcc02814c73030f25c79d71ce876eca876e6fca8e', 'hex');
   let qhkdf = new QHKDF(new HMAC(SHA256), secret);
   let key = qhkdf.expand_label("quic key", 16);
   log('retry key', key);
@@ -335,15 +334,14 @@ function chacha20(pn, payload) {
 var cid = '8394c8f03e515708';
 
 var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
-// This is a client Initial.  Unfortunately, the ClientHello currently omits
-// the transport_parameters extension.
+// This is a client Initial.
 var crypto_frame = '060040f1' +
     '010000ed0303ebf8fa56f12939b9584a3896472ec40bb863cfd3e86804fe3a47' +
     'f06a2b69484c00000413011302010000c000000010000e00000b6578616d706c' +
     '652e636f6dff01000100000a00080006001d0017001800100007000504616c70' +
     '6e000500050100000000003300260024001d00209370b2c9caa47fbabaf4559f' +
     'edba753de171fa71f50f1ce15d43e994ec74d748002b0003020304000d001000' +
-    '0e0403050306030203080408050806002d00020101001c00024001ffa5003204' +
+    '0e0403050306030203080408050806002d00020101001c000240010039003204' +
     '08ffffffffffffffff05048000ffff07048000ffff0801100104800075300901' +
     '100f088394c8f03e51570806048000ffff';
 
