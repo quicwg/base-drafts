@@ -747,7 +747,7 @@ frames but is invalid due to:
 A request or response that includes payload data can include a
 Content-Length header field.  A request or response is also malformed if the
 value of a Content-Length header field does not equal the sum of the DATA frame
-payload lengths that form the body.  A response that is defined to have no
+lengths that form the payload data.  A response that is defined to have no
 payload, as described in Section 6.4 of {{!SEMANTICS}}, can have a non-zero
 Content-Length field, even though no content is included in DATA frames.
 
