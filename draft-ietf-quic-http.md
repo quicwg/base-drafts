@@ -2101,7 +2101,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
-(that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST NOT be assigned by
+(that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
 
 ### Settings Parameters {#iana-settings}
