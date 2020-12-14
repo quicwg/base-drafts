@@ -1289,7 +1289,7 @@ frame.
 ### DATA {#frame-data}
 
 DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
-associated with an HTTP request or response payload data.
+associated with HTTP request or response payload data.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on a control stream, the recipient MUST respond with a
