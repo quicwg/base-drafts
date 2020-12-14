@@ -744,7 +744,7 @@ frames but is invalid due to:
 - the inclusion of uppercase field names, or
 - the inclusion of invalid characters in field names or values
 
-A request or response that includes a payload data can include a
+A request or response that includes payload data can include a
 Content-Length header field.  A request or response is also malformed if the
 value of a Content-Length header field does not equal the sum of the DATA frame
 payload lengths that form the body.  A response that is defined to have no
