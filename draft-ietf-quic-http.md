@@ -498,7 +498,7 @@ be used.
 
 A response MAY consist of multiple messages when and only when one or more
 interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
-response to the same request.  Interim responses do not contain a payload data
+response to the same request.  Interim responses do not contain payload data
 or trailers.
 
 An HTTP request/response exchange fully consumes a client-initiated
