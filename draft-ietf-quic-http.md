@@ -279,33 +279,6 @@ Packet diagrams in this document use the format defined in Section 1.3 of
 
 # Connection Setup and Management {#connection-setup}
 
-## Draft Version Identification
-
-> **RFC Editor's Note:**  Please remove this section prior to publication of a
-> final version of this document.
-
-HTTP/3 uses the token "h3" to identify itself in ALPN and Alt-Svc. Only
-implementations of the final, published RFC can identify themselves as "h3".
-Until such an RFC exists, implementations MUST NOT identify themselves using
-this string.
-
-Implementations of draft versions of the protocol MUST add the string "-" and
-the corresponding draft number to the identifier. For example,
-draft-ietf-quic-http-01 is identified using the string "h3-01".
-
-Draft versions MUST use the corresponding draft transport version as their
-transport. For example, the application protocol defined in
-draft-ietf-quic-http-25 uses the transport defined in
-draft-ietf-quic-transport-25.
-
-Non-compatible experiments that are based on these draft versions MUST append
-the string "-" and an experiment name to the identifier. For example, an
-experimental implementation based on draft-ietf-quic-http-09 that reserves an
-extra stream for unsolicited transmission of 1980s pop music might identify
-itself as "h3-09-rickroll". Note that any label MUST conform to the "token"
-syntax defined in Section 5.6.2 of {{!SEMANTICS}}. Experimenters are
-encouraged to coordinate their experiments on the quic@ietf.org mailing list.
-
 ## Discovering an HTTP/3 Endpoint {#discovery}
 
 HTTP relies on the notion of an authoritative response: a response that has been
@@ -742,7 +715,7 @@ frames but is invalid due to:
 - pseudo-header fields after fields,
 - an invalid sequence of HTTP messages,
 - the inclusion of uppercase field names, or
-- the inclusion of invalid characters in field names or values
+- the inclusion of invalid characters in field names or values.
 
 A request or response that includes payload data can include a
 Content-Length header field.  A request or response is also malformed if the
@@ -754,7 +727,7 @@ Content-Length field, even though no content is included in DATA frames.
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
 not acting as a tunnel) MUST NOT forward a malformed request or response.
 Malformed requests or responses that are detected MUST be treated as a stream
-error ({{errors}}) of type H3_GENERAL_PROTOCOL_ERROR.
+error ({{errors}}) of type H3_MESSAGE_ERROR.
 
 For malformed requests, a server MAY send an HTTP response indicating the error
 prior to closing or resetting the stream.  Clients MUST NOT accept a malformed
@@ -1742,6 +1715,9 @@ H3_REQUEST_CANCELLED (0x10c):
 H3_REQUEST_INCOMPLETE (0x10d):
 : The client's stream terminated without containing a fully-formed request.
 
+H3_MESSAGE_ERROR (0x10e):
+: An HTTP message was malformed and cannot be processed.
+
 H3_CONNECT_ERROR (0x10f):
 : The TCP connection established in response to a CONNECT request was reset or
   abnormally closed.
@@ -2101,7 +2077,7 @@ The entries in {{iana-frame-table}} are registered by this document.
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
-(that is, 0x21, 0x40, ..., through 0x3FFFFFFFFFFFFFFE) MUST NOT be assigned by
+(that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
 
 ### Settings Parameters {#iana-settings}
@@ -2193,6 +2169,7 @@ Required policy to avoid collisions with HTTP/2 error codes.
 | H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
 | H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
 | H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_MESSAGE_ERROR                  | 0x010e     | Malformed message                        | {{http-error-codes}}   |
 | H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
 | H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
@@ -2480,8 +2457,9 @@ NO_ERROR (0x0):
 
 PROTOCOL_ERROR (0x1):
 : This is mapped to H3_GENERAL_PROTOCOL_ERROR except in cases where more
-  specific error codes have been defined. Such cases include H3_FRAME_UNEXPECTED
-  and H3_CLOSED_CRITICAL_STREAM defined in {{http-error-codes}}.
+  specific error codes have been defined. Such cases include
+  H3_FRAME_UNEXPECTED, H3_MESSAGE_ERROR, and H3_CLOSED_CRITICAL_STREAM defined
+  in {{http-error-codes}}.
 
 INTERNAL_ERROR (0x2):
 : H3_INTERNAL_ERROR in {{http-error-codes}}.
