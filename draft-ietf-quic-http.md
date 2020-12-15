@@ -81,6 +81,13 @@ low-latency connection establishment.  This document describes a mapping of HTTP
 semantics over QUIC.  This document also identifies HTTP/2 features that are
 subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
 
+--- note_DO_NOT_DEPLOY_THIS_VERSION_OF_HTTP
+
+> RFC Editor, please remove this note.
+
+DO NOT DEPLOY THIS VERSION OF QUIC UNTIL IT IS IN AN RFC. This version is still
+a work in progress. For trial deployments, please use earlier versions.
+
 --- note_Note_to_Readers
 
 Discussion of this draft takes place on the QUIC working group mailing list
@@ -2536,6 +2543,11 @@ for what might be a temporary or intermittent error.
 
 > **RFC Editor's Note:**  Please remove this section prior to publication of a
 > final version of this document.
+
+## Since draft-ietf-quic-http-32
+
+- Removed draft version guidance; final version string
+- Added H3_MESSAGE_ERROR for malformed messages
 
 ## Since draft-ietf-quic-http-31
 
