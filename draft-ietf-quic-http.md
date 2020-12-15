@@ -83,8 +83,8 @@ subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
 
 --- note_DO_NOT_DEPLOY_THIS_VERSION_OF_HTTP
 
-DO NOT DEPLOY THIS VERSION OF HTTP/3 UNTIL IT IS IN AN RFC. This version is still
-a work in progress. For trial deployments, please use earlier versions.
+DO NOT DEPLOY THIS VERSION OF HTTP/3 UNTIL IT IS IN AN RFC. This version is
+still a work in progress. For trial deployments, please use earlier versions.
 
 --- note_Note_to_Readers
 
