@@ -2544,7 +2544,7 @@ for what might be a temporary or intermittent error.
 
 ## Since draft-ietf-quic-http-32
 
-- Removed draft version guidance; final version string
+- Removed draft version guidance; added final version string
 - Added H3_MESSAGE_ERROR for malformed messages
 
 ## Since draft-ietf-quic-http-31
