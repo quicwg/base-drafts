@@ -1809,6 +1809,10 @@ return encoderBuffer, prefixBuffer + streamBuffer
 > **RFC Editor's Note:** Please remove this section prior to publication of a
 > final version of this document.
 
+## Since draft-ietf-quic-qpack-19
+
+Editorial changes only
+
 ## Since draft-ietf-quic-qpack-18
 
 Editorial changes only
