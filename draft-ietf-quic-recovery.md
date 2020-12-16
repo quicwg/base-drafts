@@ -1049,7 +1049,7 @@ Consider the following sequence of events:
 | t=6    | Send packet #7 (app data)  |
 | t=8    | Send packet #8 (PTO 1)     |
 | t=12   | Send packet #9 (PTO 2)     |
-| t=12.2 | Recv acknowledgment of #9 |
+| t=12.2 | Recv acknowledgment of #9  |
 
 Packets 2 through 8 are declared lost when the acknowledgment for packet 9 is
 received at t = 12.2.
