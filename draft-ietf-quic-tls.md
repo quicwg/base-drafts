@@ -382,7 +382,7 @@ the handshake completes.  At the client, the handshake is considered confirmed
 when a HANDSHAKE_DONE frame is received.
 
 A client MAY consider the handshake to be confirmed when it receives an
-acknowledgement for a 1-RTT packet.  This can be implemented by recording the
+acknowledgment for a 1-RTT packet.  This can be implemented by recording the
 lowest packet number sent with 1-RTT keys, and comparing it to the Largest
 Acknowledged field in any received 1-RTT ACK frame: once the latter is greater
 than or equal to the former, the handshake is confirmed.
@@ -749,7 +749,7 @@ A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
 extension.  A server will always reject 0-RTT if it sends a TLS
 HelloRetryRequest.  When rejecting 0-RTT, a server MUST NOT process any 0-RTT
 packets, even if it could.  When 0-RTT was rejected, a client SHOULD treat
-receipt of an acknowledgement for a 0-RTT packet as a connection error of type
+receipt of an acknowledgment for a 0-RTT packet as a connection error of type
 PROTOCOL_VIOLATION, if it is able to detect the condition.
 
 When 0-RTT is rejected, all connection characteristics that the client assumed
@@ -822,7 +822,7 @@ handshake, as well as when keys are updated; see {{key-update}}.
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
 frames that retransmit that data MUST be sent at the same encryption level.
-Similarly, an endpoint generates acknowledgements for packets at the same
+Similarly, an endpoint generates acknowledgments for packets at the same
 encryption level as the packet being acknowledged.  Thus, it is possible that
 keys for a lower encryption level are needed for a short time after keys for a
 newer encryption level are available.
@@ -832,7 +832,7 @@ received and acknowledged all CRYPTO frames for that encryption level and when
 all CRYPTO frames for that encryption level have been acknowledged by its peer.
 However, this does not guarantee that no further packets will need to be
 received or sent at that encryption level because a peer might not have received
-all the acknowledgements necessary to reach the same state.
+all the acknowledgments necessary to reach the same state.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -1315,7 +1315,7 @@ messages.  A client SHOULD stop sending 0-RTT data if it receives an indication
 that 0-RTT data has been rejected.
 
 A server MUST NOT use 0-RTT keys to protect packets; it uses 1-RTT keys to
-protect acknowledgements of 0-RTT packets.  A client MUST NOT attempt to
+protect acknowledgments of 0-RTT packets.  A client MUST NOT attempt to
 decrypt 0-RTT packets it receives and instead MUST discard them.
 
 Once a client has installed 1-RTT keys, it MUST NOT send any more 0-RTT
@@ -1533,7 +1533,7 @@ interpreted as packet loss by the peer and could adversely affect performance.
 
 ## Responding to a Key Update
 
-A peer is permitted to initiate a key update after receiving an acknowledgement
+A peer is permitted to initiate a key update after receiving an acknowledgment
 of a packet in the current key phase.  An endpoint detects a key update when
 processing a packet with a key phase that differs from the value used to protect
 the last packet it sent.  To process this packet, the endpoint uses the next
@@ -1543,22 +1543,22 @@ about generating these keys.
 If a packet is successfully processed using the next key and IV, then the peer
 has initiated a key update.  The endpoint MUST update its send keys to the
 corresponding key phase in response, as described in {{key-update-initiate}}.
-Sending keys MUST be updated before sending an acknowledgement for the packet
+Sending keys MUST be updated before sending an acknowledgment for the packet
 that was received with updated keys.  By acknowledging the packet that triggered
 the key update in a packet protected with the updated keys, the endpoint signals
 that the key update is complete.
 
-An endpoint can defer sending the packet or acknowledgement according to its
+An endpoint can defer sending the packet or acknowledgment according to its
 normal packet sending behaviour; it is not necessary to immediately generate a
 packet in response to a key update.  The next packet sent by the endpoint will
-use the updated keys.  The next packet that contains an acknowledgement will
+use the updated keys.  The next packet that contains an acknowledgment will
 cause the key update to be completed.  If an endpoint detects a second update
 before it has sent any packets with updated keys containing an
-acknowledgement for the packet that initiated the key update, it indicates that
+acknowledgment for the packet that initiated the key update, it indicates that
 its peer has updated keys twice without awaiting confirmation.  An endpoint MAY
 treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
 
-An endpoint that receives an acknowledgement that is carried in a packet
+An endpoint that receives an acknowledgment that is carried in a packet
 protected with old keys where any acknowledged packet was protected with newer
 keys MAY treat that as a connection error of type KEY_UPDATE_ERROR.  This
 indicates that a peer has received and acknowledged a packet that initiates a
@@ -1924,7 +1924,7 @@ QUIC includes three defenses against this attack. First, the packet containing a
 ClientHello MUST be padded to a minimum size. Second, if responding to an
 unverified source address, the server is forbidden to send more than three times
 as many bytes as the number of bytes it has received (see Section 8.1 of
-{{QUIC-TRANSPORT}}). Finally, because acknowledgements of Handshake packets are
+{{QUIC-TRANSPORT}}). Finally, because acknowledgments of Handshake packets are
 authenticated, a blind attacker cannot forge them.  Put together, these defenses
 limit the level of amplification.
 

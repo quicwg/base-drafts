@@ -215,7 +215,7 @@ possibly the value with an index to either the static or dynamic table.
 References to the static table and literal representations do not require any
 dynamic state and never risk head-of-line blocking.  References to the dynamic
 table risk head-of-line blocking if the encoder has not received an
-acknowledgement indicating the entry is available at the decoder.
+acknowledgment indicating the entry is available at the decoder.
 
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
@@ -246,7 +246,7 @@ evictable, the encoder MUST NOT insert that entry into the dynamic table
 (including duplicates of existing entries). In order to avoid this, an encoder
 that uses the dynamic table has to keep track of each dynamic table entry
 referenced by each field section until those representations are acknowledged by
-the decoder; see {{header-acknowledgement}}.
+the decoder; see {{header-acknowledgment}}.
 
 #### Avoiding Prohibited Insertions
 
@@ -343,7 +343,7 @@ Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
 order to be able to send Insert Count Increment instructions.
 
-A Section Acknowledgement instruction ({{header-acknowledgement}}) implies that
+A Section Acknowledgement instruction ({{header-acknowledgment}}) implies that
 the decoder has received all dynamic table state necessary to decode the field
 section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
@@ -396,7 +396,7 @@ The decoder signals the following events by emitting decoder instructions
 
 After the decoder finishes decoding a field section encoded using
 representations containing dynamic table references, it MUST emit a Section
-Acknowledgement instruction ({{header-acknowledgement}}).  A stream may carry
+Acknowledgement instruction ({{header-acknowledgment}}).  A stream may carry
 multiple field sections in the case of intermediate responses, trailers, and
 pushed requests.  The encoder interprets each Section Acknowledgement
 instruction as acknowledging the earliest unacknowledged field section
@@ -428,7 +428,7 @@ dynamic table entry will provide the timeliest feedback to the encoder, but
 could be redundant with other decoder feedback. By delaying an Insert Count
 Increment instruction, the decoder might be able to coalesce multiple Insert
 Count Increment instructions, or replace them entirely with Section
-Acknowledgements; see {{header-acknowledgement}}. However, delaying too long
+Acknowledgements; see {{header-acknowledgment}}. However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
 
@@ -811,7 +811,7 @@ A decoder sends decoder instructions on the decoder stream to inform the encoder
 about the processing of field sections and table updates to ensure consistency
 of the dynamic table.
 
-### Section Acknowledgement {#header-acknowledgement}
+### Section Acknowledgement {#header-acknowledgment}
 
 After processing an encoded field section whose declared Required Insert Count
 is not zero, the decoder emits a Section Acknowledgement instruction.  The
