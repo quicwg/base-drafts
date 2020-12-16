@@ -343,7 +343,7 @@ Count in order to identify which dynamic table entries can be referenced without
 potentially blocking a stream.  The decoder tracks the Known Received Count in
 order to be able to send Insert Count Increment instructions.
 
-A Section Acknowledgement instruction ({{header-acknowledgment}}) implies that
+A Section Acknowledgment instruction ({{header-acknowledgment}}) implies that
 the decoder has received all dynamic table state necessary to decode the field
 section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
@@ -396,9 +396,9 @@ The decoder signals the following events by emitting decoder instructions
 
 After the decoder finishes decoding a field section encoded using
 representations containing dynamic table references, it MUST emit a Section
-Acknowledgement instruction ({{header-acknowledgment}}).  A stream may carry
+Acknowledgment instruction ({{header-acknowledgment}}).  A stream may carry
 multiple field sections in the case of intermediate responses, trailers, and
-pushed requests.  The encoder interprets each Section Acknowledgement
+pushed requests.  The encoder interprets each Section Acknowledgment
 instruction as acknowledging the earliest unacknowledged field section
 containing dynamic table references sent on the given stream.
 
@@ -414,7 +414,7 @@ zero MAY omit sending Stream Cancellations, because the encoder cannot have any
 dynamic table references.  An encoder cannot infer from this instruction that
 any updates to the dynamic table have been received.
 
-The Section Acknowledgement and Stream Cancellation instructions permit the
+The Section Acknowledgment and Stream Cancellation instructions permit the
 encoder to remove references to entries in the dynamic table.  When an entry
 with absolute index lower than the Known Received Count has zero references,
 then it is considered evictable; see {{blocked-insertion}}.
@@ -428,7 +428,7 @@ dynamic table entry will provide the timeliest feedback to the encoder, but
 could be redundant with other decoder feedback. By delaying an Insert Count
 Increment instruction, the decoder might be able to coalesce multiple Insert
 Count Increment instructions, or replace them entirely with Section
-Acknowledgements; see {{header-acknowledgment}}. However, delaying too long
+Acknowledgments; see {{header-acknowledgment}}. However, delaying too long
 may lead to compression inefficiencies if the encoder waits for an entry to be
 acknowledged before using it.
 
@@ -811,10 +811,10 @@ A decoder sends decoder instructions on the decoder stream to inform the encoder
 about the processing of field sections and table updates to ensure consistency
 of the dynamic table.
 
-### Section Acknowledgement {#header-acknowledgment}
+### Section Acknowledgment {#header-acknowledgment}
 
 After processing an encoded field section whose declared Required Insert Count
-is not zero, the decoder emits a Section Acknowledgement instruction.  The
+is not zero, the decoder emits a Section Acknowledgment instruction.  The
 instruction starts with the '1' 1-bit pattern, followed by the field
 section's associated stream ID encoded as a 7-bit prefix integer; see
 {{prefixed-integers}}.
@@ -828,14 +828,14 @@ in {{state-synchronization}}.
 | 1 |      Stream ID (7+)       |
 +---+---------------------------+
 ~~~~~~~~~~
-{:#fig-header-ack title="Section Acknowledgement"}
+{:#fig-header-ack title="Section Acknowledgment"}
 
-If an encoder receives a Section Acknowledgement instruction referring to a
+If an encoder receives a Section Acknowledgment instruction referring to a
 stream on which every encoded field section with a non-zero Required Insert
 Count has already been acknowledged, this MUST be treated as a connection error
 of type QPACK_DECODER_STREAM_ERROR.
 
-The Section Acknowledgement instruction might increase the Known Received Count;
+The Section Acknowledgment instruction might increase the Known Received Count;
 see {{known-received-count}}.
 
 
@@ -1629,7 +1629,7 @@ Stream: 4
                               Size=106
 
 Stream: Decoder
-84                  | Section Acknowledgement (stream=4)
+84                  | Section Acknowledgment (stream=4)
 
                               Abs Ref Name        Value
                                1   0  :authority  www.example.com
@@ -1851,7 +1851,7 @@ Editorial changes only
 
 ## Since draft-ietf-quic-qpack-09
 
-- Decoders MUST emit Header Acknowledgements (#2939)
+- Decoders MUST emit Header Acknowledgments (#2939)
 - Updated error code for multiple encoder or decoder streams (#2970)
 - Added explicit defaults for new SETTINGS (#2974)
 

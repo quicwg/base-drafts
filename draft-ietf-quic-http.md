@@ -2805,7 +2805,7 @@ None.
 - Adopted as base for draft-ietf-quic-http
 - Updated authors/editors list
 
-# Acknowledgements
+# Acknowledgments
 {:numbered="false"}
 
 The original authors of this specification were Robbie Shade and Mike Warres.

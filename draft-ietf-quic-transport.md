@@ -3677,7 +3677,7 @@ An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
 the condition.
 
-## Generating Acknowledgements {#generating-acks}
+## Generating Acknowledgments {#generating-acks}
 
 Endpoints acknowledge all packets they receive and process. However, only
 ack-eliciting packets cause an ACK frame to be sent within the maximum ack
@@ -3756,7 +3756,7 @@ A receiver MUST NOT send an ack-eliciting frame in all packets that would
 otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
 acknowledgments.
 
-### Acknowledgement Frequency
+### Acknowledgment Frequency
 
 A receiver determines how frequently to send acknowledgments in response to
 ack-eliciting packets. This determination involves a trade-off.

@@ -64,7 +64,7 @@ normative:
 informative:
 
   FACK:
-    title: "Forward Acknowledgement: Refining TCP Congestion Control"
+    title: "Forward Acknowledgment: Refining TCP Congestion Control"
     author:
       - ins: M. Mathis
       - ins: J. Mahdavi
@@ -219,7 +219,7 @@ QUIC supports many ACK ranges, opposed to TCP's 3 SACK ranges.  In high loss
 environments, this speeds recovery, reduces spurious retransmits, and ensures
 forward progress without relying on timeouts.
 
-## Explicit Correction For Delayed Acknowledgements
+## Explicit Correction For Delayed Acknowledgments
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
@@ -463,9 +463,9 @@ Loss detection is separate per packet number space, unlike RTT measurement and
 congestion control, because RTT and congestion control are properties of the
 path, whereas loss detection also relies upon key availability.
 
-## Acknowledgement-Based Detection {#ack-loss-detection}
+## Acknowledgment-Based Detection {#ack-loss-detection}
 
-Acknowledgement-based loss detection implements the spirit of TCP's Fast
+Acknowledgment-based loss detection implements the spirit of TCP's Fast
 Retransmit ({{?RFC5681}}), Early Retransmit ({{?RFC5827}}), FACK ({{FACK}}),
 SACK loss recovery ({{?RFC6675}}), and RACK ({{?RACK=I-D.ietf-tcpm-rack}}). This
 section provides an overview of how these algorithms are implemented in QUIC.
@@ -1142,7 +1142,7 @@ sending rate by dropping packets, or alter send rate by changing ECN codepoints.
 ## Traffic Analysis
 
 Packets that carry only ACK frames can be heuristically identified by observing
-packet size.  Acknowledgement patterns may expose information about link
+packet size.  Acknowledgment patterns may expose information about link
 characteristics or application behavior.  To reduce leaked information,
 endpoints can bundle acknowledgments with other frames, or they can use PADDING
 frames at a potential cost to performance.
@@ -1729,7 +1729,7 @@ OnPacketSentCC(sent_bytes):
 ~~~
 
 
-## On Packet Acknowledgement
+## On Packet Acknowledgment
 
 Invoked from loss detection's OnAckReceived and is supplied with the
 newly acked_packets from sent_packets.
