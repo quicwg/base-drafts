@@ -64,7 +64,7 @@ normative:
 informative:
 
   FACK:
-    title: "Forward Acknowledgment: Refining TCP Congestion Control"
+    title: "Forward Acknowledgement: Refining TCP Congestion Control"
     author:
       - ins: M. Mathis
       - ins: J. Mahdavi
