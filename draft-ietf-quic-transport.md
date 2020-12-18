@@ -7743,10 +7743,13 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 - Added an error code for path validation failures (#4257, #4331)
 
-- Defined DoS protections for clients during the handshake (#4259, #4330)
+- Defined DoS protections for clients during the handshake (#4259, #4330,
+  #4344)
 
 - Prohibited connection errors when datagrams are not the required size (#4273,
   #4342)
+
+- Stop using initial timeout for path validation (#4261, #4262, #4263).
 
 - A number of improvements to IANA considerations:
 
