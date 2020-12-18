@@ -2218,7 +2218,7 @@ c1000000010008f067a5502a4262b50040750001
 ~~~
 
 As a result, after protection, the header protection sample is taken starting
-from the third protected octet:
+from the third protected byte:
 
 ~~~
 sample = 2cd0991cd25b0aac406a5816b6394100
@@ -2286,7 +2286,7 @@ empty Destination Connection ID. This packet contains a single PING frame (that
 is, a payload of just 0x01) and has a packet number of 654360564. In this
 example, using a packet number of length 3 (that is, 49140 is encoded) avoids
 having to pad the payload of the packet; PADDING frames would be needed if the
-packet number is encoded on fewer octets.
+packet number is encoded on fewer bytes.
 
 ~~~
 pn                 = 654360564 (decimal)

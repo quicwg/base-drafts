@@ -643,8 +643,8 @@ blocking.  See that document for additional details.
 To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
 before compression. If a decompressed field section contains multiple cookie
-field lines, these MUST be concatenated into a single octet string using the
-two-octet delimiter of 0x3b, 0x20 (the ASCII string "; ") before being passed
+field lines, these MUST be concatenated into a single byte string using the
+two-byte delimiter of 0x3b, 0x20 (the ASCII string "; ") before being passed
 into a context other than HTTP/2 or HTTP/3, such as an HTTP/1.1 connection, or a
 generic HTTP server application.
 
