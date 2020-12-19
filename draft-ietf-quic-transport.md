@@ -2906,11 +2906,11 @@ An endpoint MAY drop packet protection keys when entering the closing state and
 send a packet containing a CONNECTION_CLOSE frame in response to any UDP
 datagram that is received. However, an endpoint that discards packet protection
 keys cannot identify and discard invalid packets. To avoid being used for an
-amplication attack, such endpoints MUST limit the cumulative size of packets it
-sends to three times the cumulative size of the packets that are received and
-attributed to the connection. To minimize the state that an endpoint maintains
-for a closing connection, endpoints MAY send the exact same packet in response
-to any received packet.
+amplification attack, such endpoints MUST limit the cumulative size of packets
+it sends to three times the cumulative size of the packets that are received
+and attributed to the connection. To minimize the state that an endpoint
+maintains for a closing connection, endpoints MAY send the exact same packet in
+response to any received packet.
 
 Note:
 
