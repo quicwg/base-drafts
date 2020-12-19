@@ -2473,7 +2473,7 @@ FLOW_CONTROL_ERROR (0x3):
 : Not applicable, since QUIC handles flow control.
 
 SETTINGS_TIMEOUT (0x4):
-: Not applicable, since no acknowledgement of SETTINGS is defined.
+: Not applicable, since no acknowledgment of SETTINGS is defined.
 
 STREAM_CLOSED (0x5):
 : Not applicable, since QUIC handles stream management.
@@ -2815,7 +2815,7 @@ None.
 - Adopted as base for draft-ietf-quic-http
 - Updated authors/editors list
 
-# Acknowledgements
+# Acknowledgments
 {:numbered="false"}
 
 The original authors of this specification were Robbie Shade and Mike Warres.
