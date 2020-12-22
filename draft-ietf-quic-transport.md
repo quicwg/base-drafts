@@ -574,8 +574,7 @@ In the "Send" state, an endpoint transmits - and retransmits as necessary -
 stream data in STREAM frames.  The endpoint respects the flow control limits set
 by its peer, and continues to accept and process MAX_STREAM_DATA frames.  An
 endpoint in the "Send" state generates STREAM_DATA_BLOCKED frames if it is
-blocked from sending by stream or connection flow control limits
-{{data-flow-control}}.
+blocked from sending by stream flow control limits {{data-flow-control}}.
 
 After the application indicates that all stream data has been sent and a STREAM
 frame containing the FIN bit is sent, the sending part of the stream enters the
