@@ -574,8 +574,7 @@ In the "Send" state, an endpoint transmits - and retransmits as necessary -
 stream data in STREAM frames.  The endpoint respects the flow control limits set
 by its peer, and continues to accept and process MAX_STREAM_DATA frames.  An
 endpoint in the "Send" state generates STREAM_DATA_BLOCKED frames if it is
-blocked from sending by stream or connection flow control limits
-{{data-flow-control}}.
+blocked from sending by stream flow control limits {{data-flow-control}}.
 
 After the application indicates that all stream data has been sent and a STREAM
 frame containing the FIN bit is sent, the sending part of the stream enters the
@@ -2027,8 +2026,8 @@ Initial packet from the client. Providing a different connection ID also grants
 a server some control over how subsequent packets are routed. This can be used
 to direct connections to a different server instance.
 
-If a server receives a client Initial that can be unprotected but contains an
-invalid Retry token, it knows the client will not accept another Retry token.
+If a server receives a client Initial that contains an invalid Retry token but
+is otherwise valid, it knows the client will not accept another Retry token.
 The server can discard such a packet and allow the client to time out to
 detect handshake failure, but that could impose a significant latency penalty on
 the client.  Instead, the server SHOULD immediately close ({{immediate-close}})
@@ -3952,7 +3951,7 @@ containing that information is acknowledged.
   recent MAX_STREAM_DATA frame for a stream is lost or when the limit is
   updated, with care taken to prevent the frame from being sent too often. An
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receiving part of
-  the stream enters a "Size Known" state.
+  the stream enters a "Size Known" or "Reset Recvd" state.
 
 * The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
   MAX_DATA, an updated value is sent when a packet containing the most recent
@@ -4419,9 +4418,9 @@ encoding properties.
 
 Examples and a sample decoding algorithm are shown in {{sample-varint}}.
 
-Versions ({{versions}}) and packet numbers sent in the header
-({{packet-encoding}}) are described using integers, but do not use this
-encoding.
+Versions ({{versions}}), packet numbers sent in the header
+({{packet-encoding}}), and the length of connection IDs in long header packets
+({{long-header}}) are described using integers, but do not use this encoding.
 
 
 
@@ -4749,11 +4748,11 @@ The first packet sent by a client always includes a CRYPTO frame that contains
 the start or all of the first cryptographic handshake message.  The first
 CRYPTO frame sent always begins at an offset of 0; see {{handshake}}.
 
-Note that if the server sends a HelloRetryRequest, the client will send another
-series of Initial packets.  These Initial packets will continue the
-cryptographic handshake and will contain CRYPTO frames starting at an offset
-matching the size of the CRYPTO frames sent in the first flight of Initial
-packets.
+Note that if the server sends a TLS HelloRetryRequest (see Section 4.7 of
+{{QUIC-TLS}}), the client will send another series of Initial packets.  These
+Initial packets will continue the cryptographic handshake and will contain
+CRYPTO frames starting at an offset matching the size of the CRYPTO frames sent
+in the first flight of Initial packets.
 
 
 #### Abandoning Initial Packets {#discard-initial}
@@ -4968,11 +4967,13 @@ Other than updating the Destination Connection ID and Token fields, the Initial
 packet sent by the client is subject to the same restrictions as the first
 Initial packet.  A client MUST use the same cryptographic handshake message it
 included in this packet.  A server MAY treat a packet that contains a different
-cryptographic handshake message as a connection error or discard it.
+cryptographic handshake message as a connection error or discard it.  Note that
+including a Token field reduces the available space for the cryptographic
+handshake message, which might result in the client needing to send multiple
+Initial packets.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
-packets to the connection ID provided by the server.  A client MUST NOT change
-the cryptographic handshake message it sends in response to receiving a Retry.
+packets to the connection ID provided by the server.
 
 A client MUST NOT reset the packet number for any packet number space after
 processing a Retry packet. In particular, 0-RTT packets contain confidential
