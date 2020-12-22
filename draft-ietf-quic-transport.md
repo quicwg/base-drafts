@@ -2026,8 +2026,8 @@ Initial packet from the client. Providing a different connection ID also grants
 a server some control over how subsequent packets are routed. This can be used
 to direct connections to a different server instance.
 
-If a server receives a client Initial that can be unprotected but contains an
-invalid Retry token, it knows the client will not accept another Retry token.
+If a server receives a client Initial that contains an invalid Retry token but
+is otherwise valid, it knows the client will not accept another Retry token.
 The server can discard such a packet and allow the client to time out to
 detect handshake failure, but that could impose a significant latency penalty on
 the client.  Instead, the server SHOULD immediately close ({{immediate-close}})
