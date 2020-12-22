@@ -3951,7 +3951,7 @@ containing that information is acknowledged.
   recent MAX_STREAM_DATA frame for a stream is lost or when the limit is
   updated, with care taken to prevent the frame from being sent too often. An
   endpoint SHOULD stop sending MAX_STREAM_DATA frames when the receiving part of
-  the stream enters a "Size Known" state.
+  the stream enters a "Size Known" or "Reset Recvd" state.
 
 * The limit on streams of a given type is sent in MAX_STREAMS frames.  Like
   MAX_DATA, an updated value is sent when a packet containing the most recent
