@@ -6502,11 +6502,13 @@ change or other modification in the path taken by packets that comprise a
 connection.
 
 Attackers are additionally categorized as either on-path attackers or off-path
-attackers; see Section 3.5 of {{?SEC-CONS}}.  An on-path attacker can read,
+attackers.  An on-path attacker can read,
 modify, or remove any packet it observes such that it no longer reaches its
 destination, while an off-path attacker observes the packets, but cannot prevent
 the original packet from reaching its intended destination.  Both types of
-attackers can also transmit arbitrary packets.
+attackers can also transmit arbitrary packets.  This definition differs from
+that of Section 3.5 of {{?SEC-CONS}} in that an off-path attacker is able to
+observe packets.
 
 Properties of the handshake, protected packets, and connection migration are
 considered separately.
@@ -6706,21 +6708,22 @@ An off-path attacker can:
 
 An off-path attacker cannot:
 
-- Modify any part of a packet
+- Modify packets sent by endpoints
 - Delay packets
 - Drop packets
 - Reorder original packets
 
-An off-path attacker can modify packets that it has observed and inject them
-back into the network, potentially with spoofed source and destination
-addresses.
+An off-path attacker can create modified copies of packets that it has observed
+and inject those copies into the network, potentially with spoofed source and
+destination addresses.
 
 For the purposes of this discussion, it is assumed that an off-path attacker
-has the ability to observe, modify, and re-inject a packet into the network
-that will reach the destination endpoint prior to the arrival of the original
-packet observed by the attacker. In other words, an attacker has the ability to
-consistently "win" a race with the legitimate packets between the endpoints,
-potentially causing the original packet to be ignored by the recipient.
+has the ability to observe and re-inject a modified copy of a packet into the
+network that will reach the destination endpoint prior to the arrival of the
+original packet observed by the attacker. In other words, an attacker has the
+ability to consistently "win" a race with the legitimate packets between the
+endpoints, potentially causing the original packet to be ignored by the
+recipient.
 
 It is also assumed that an attacker has the resources necessary to affect NAT
 state, potentially both causing an endpoint to lose its NAT binding, and an
