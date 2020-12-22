@@ -4967,7 +4967,10 @@ Other than updating the Destination Connection ID and Token fields, the Initial
 packet sent by the client is subject to the same restrictions as the first
 Initial packet.  A client MUST use the same cryptographic handshake message it
 included in this packet.  A server MAY treat a packet that contains a different
-cryptographic handshake message as a connection error or discard it.
+cryptographic handshake message as a connection error or discard it.  Note that
+including a Token field might reduce the available space for the cryptographic
+handshake message, which might result in the client needing to send multiple
+Initial packets.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
 packets to the connection ID provided by the server.  A client MUST NOT change
