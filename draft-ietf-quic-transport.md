@@ -4418,9 +4418,9 @@ encoding properties.
 
 Examples and a sample decoding algorithm are shown in {{sample-varint}}.
 
-Versions ({{versions}}) and packet numbers sent in the header
-({{packet-encoding}}) are described using integers, but do not use this
-encoding.
+Versions ({{versions}}), packet numbers sent in the header
+({{packet-encoding}}), and the length of connection IDs in long header packets
+({{long-header}}) are described using integers, but do not use this encoding.
 
 
 
