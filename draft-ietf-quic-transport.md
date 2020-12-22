@@ -4973,8 +4973,7 @@ handshake message, which might result in the client needing to send multiple
 Initial packets.
 
 A client MAY attempt 0-RTT after receiving a Retry packet by sending 0-RTT
-packets to the connection ID provided by the server.  A client MUST NOT change
-the cryptographic handshake message it sends in response to receiving a Retry.
+packets to the connection ID provided by the server.
 
 A client MUST NOT reset the packet number for any packet number space after
 processing a Retry packet. In particular, 0-RTT packets contain confidential
