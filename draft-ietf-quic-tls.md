@@ -1387,7 +1387,7 @@ incoming 1-RTT protected packets before the TLS handshake is complete.
 Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
 Retry Integrity Tag that provides two properties: it allows discarding
 packets that have accidentally been corrupted by the network; only an
-entity that receives an Initial packet can send a valid Retry packet.
+entity that observes an Initial packet can send a valid Retry packet.
 
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
 AEAD_AES_128_GCM ({{!AEAD}}) used with the following inputs:
@@ -1436,7 +1436,7 @@ Original Destination Connection ID:
   Connection ID from the Initial packet that this Retry is in response to. The
   length of this field is given in ODCID Length. The presence of this field
   ensures that a valid Retry packet can only be sent by an entity that
-  receives the Initial packet.
+  observes the Initial packet.
 
 
 # Key Update
