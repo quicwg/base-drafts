@@ -459,8 +459,9 @@ that are not yet ready.  QUIC does not provide any means of flow control for
 CRYPTO frames; see Section 7.5 of {{QUIC-TRANSPORT}}.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
-final handshake bytes that TLS needs to send.  TLS also provides QUIC with the
-transport parameters that the peer advertised during the handshake.
+final handshake bytes that TLS needs to send.  At this stage, the transport
+parameters that the peer advertised during the handshake are authenticated;
+see {{quic_parameters}}.
 
 Once the handshake is complete, TLS becomes passive.  TLS can still receive data
 from its peer and respond in kind, but it will not need to send more data unless
@@ -1811,10 +1812,12 @@ EncryptedExtensions messages without the quic_transport_parameters extension
 MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
 missing_extension alert, see {{tls-errors}}).
 
-While the transport parameters are technically available prior to the completion
-of the handshake, they cannot be fully trusted until the handshake completes,
-and reliance on them should be minimized.  However, any tampering with the
-parameters will cause the handshake to fail.
+Transport parameters become available prior to the completion of the handshake.
+Using these values earlier than handshake completion is necessary at the server
+if it wishes to send 1-RTT packets to the client. However, the value of
+transport parameters is not authenticated until the handshake completes, so any
+use of these parameters cannot depend on their authenticity. Any tampering with
+transport parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
