@@ -4727,8 +4727,8 @@ Packet Payload:
 In order to prevent tampering by version-unaware middleboxes, Initial packets
 are protected with connection- and version-specific keys (Initial keys) as
 described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
-integrity against attackers that can observe packets, but provides some level of protection
-against attackers that cannot also observes packets.
+integrity against attackers that can observe packets, but provides some level of
+protection against attackers that cannot also observes packets.
 
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
