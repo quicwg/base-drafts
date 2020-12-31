@@ -154,7 +154,7 @@ Internally, TLS is a layered protocol, with the structure shown in
 
 ~~~~
           +-------------+------------+--------------+---------+
-Handshake |             |            |  Application |         |
+Content   |             |            |  Application |         |
 Layer     |  Handshake  |   Alerts   |     Data     |   ...   |
           |             |            |              |         |
           +-------------+------------+--------------+---------+
@@ -165,7 +165,7 @@ Layer     |                      Records                      |
 ~~~~
 {: #tls-layers title="TLS Layers"}
 
-Each Handshake layer message (e.g., Handshake, Alerts, and Application Data) is
+Each Content layer message (e.g., Handshake, Alerts, and Application Data) is
 carried as a series of typed TLS records by the Record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
 transport (typically TCP), which provides sequencing and guaranteed delivery.
