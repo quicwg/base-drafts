@@ -145,7 +145,7 @@ could be used; see {{tls-version}}.
 ## TLS Overview
 
 TLS provides two endpoints with a way to establish a means of communication
-over an untrusted medium (that is, the Internet). TLS enables authentication of
+over an untrusted medium (for example, the Internet). TLS enables authentication of
 peers and provides confidentiality and integrity protection for messages that
 endpoints exchange.
 
@@ -176,12 +176,15 @@ exchange completes successfully, both client and server will agree on a secret.
 TLS supports both pre-shared key (PSK) and Diffie-Hellman over either finite
 fields or elliptic curves ((EC)DHE) key exchanges.  PSK is the basis for Early
 Data (0-RTT); the latter provides forward secrecy (FS) when the (EC)DHE
-keys are destroyed.
+keys are destroyed.  The two modes can also be combined, to provide forward
+secrecy while using the PSK for authentication.
 
 After completing the TLS handshake, the client will have learned and
 authenticated an identity for the server and the server is optionally able to
 learn and authenticate an identity for the client.  TLS supports X.509
 {{?RFC5280}} certificate-based authentication for both server and client.
+When PSK key exchange is used (as in resumption), knowledge of the PSK
+serves to authenticate the peer.
 
 The TLS key exchange is resistant to tampering by attackers and it produces
 shared secrets that cannot be controlled by either participating peer.
@@ -356,7 +359,7 @@ primary functions:
 
 - Sending and receiving handshake messages
 - Processing stored transport and application state from a resumed session
-  and determining if it is valid to accept early data
+  and determining if it is valid to generate or accept early data
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
@@ -381,7 +384,7 @@ In this document, the TLS handshake is considered confirmed at the server when
 the handshake completes.  At the client, the handshake is considered confirmed
 when a HANDSHAKE_DONE frame is received.
 
-A client MAY consider the handshake to be confirmed when it receives an
+Additionally, a client MAY consider the handshake to be confirmed when it receives an
 acknowledgment for a 1-RTT packet.  This can be implemented by recording the
 lowest packet number sent with 1-RTT keys, and comparing it to the Largest
 Acknowledged field in any received 1-RTT ACK frame: once the latter is greater
@@ -403,8 +406,8 @@ acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
 At any time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. Encryption levels determine
-the packet type and keys that are used for protecting data.
+encryption level and receiving encryption level. TLS Encryption levels determine
+the QUIC packet type and keys that are used for protecting data.
 
 Each encryption level is associated with a different sequence of bytes, which is
 reliably transmitted to the peer in CRYPTO frames. When TLS provides handshake
@@ -423,9 +426,9 @@ CRYPTO frames. TLS record protection is not used by QUIC. QUIC assembles
 CRYPTO frames into QUIC packets, which are protected using QUIC packet
 protection.
 
-QUIC is only capable of conveying TLS handshake records in CRYPTO frames.  TLS
+QUIC CRYPTO frames only carry TLS handshake messages.  TLS
 alerts are turned into QUIC CONNECTION_CLOSE error codes; see {{tls-errors}}.
-TLS application data and other message types cannot be carried by QUIC at any
+TLS application data and other content types cannot be carried by QUIC at any
 encryption level; it is an error if they are received from the TLS stack.
 
 When an endpoint receives a QUIC packet containing a CRYPTO frame from the
@@ -469,7 +472,7 @@ data is that the server might wish to provide additional or updated session
 tickets to a client.
 
 When the handshake is complete, QUIC only needs to provide TLS with any data
-that arrives in CRYPTO streams.  In the same way that is done during the
+that arrives in CRYPTO streams.  In the same manner that is used during the
 handshake, new data is requested from TLS after providing received data.
 
 
@@ -626,7 +629,7 @@ cause this message to grow.
 For servers, in addition to connection IDs and tokens, the size of TLS session
 tickets can have an effect on a client's ability to connect efficiently.
 Minimizing the size of these values increases the probability that clients can
-use them and still fit their ClientHello message in their first Initial packet.
+use them and still fit their entire ClientHello message in their first Initial packet.
 
 The TLS implementation does not need to ensure that the ClientHello is
 sufficiently large.  QUIC PADDING frames are added to increase the size of the
@@ -681,9 +684,9 @@ Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
 that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
 does not depend on any state being retained when resuming a connection, unless
-0-RTT is also used; see {{enable-0rtt}} and Section 7.4.1 of
-{{QUIC-TRANSPORT}}. Application protocols could depend on state that is
-retained between resumed connections.
+0-RTT is also used; see Section 7.4.1 of {{QUIC-TRANSPORT}} and
+{{enable-0rtt}}. Application protocols could depend on state that is retained
+between resumed connections.
 
 Clients can store any state required for resumption along with the session
 ticket. Servers can use the session ticket to help carry state.
@@ -720,10 +723,15 @@ notably those caused by the potential exposure to replay attack; see {{replay}}.
 
 ### Enabling 0-RTT {#enable-0rtt}
 
-To communicate their willingness to process 0-RTT data, servers send a
-NewSessionTicket message that contains the early_data extension with a
-max_early_data_size of 0xffffffff.  The TLS max_early_data_size parameter is not
-used in QUIC.  The amount of data that the client can send in 0-RTT is
+The TLS "early_data" extension in the NewSessionTicket message is defined
+to convey (in the "max_early_data_size" parameter) the amount of TLS 0-RTT
+data the server is willing to accept.  QUIC does not use TLS 0-RTT data;
+instead, QUIC has its own 0-RTT stream.  Accordingly, the
+"max_early_data_size" parameter is repurposed to hold a sentinel value
+0xffffffff to indicate that the server is willing to accept QUIC 0-RTT data;
+to indicate that the server does not accept 0-RTT data, the "early_data"
+extension is omitted from the NewSessionTicket.
+The amount of data that the client can send in QUIC 0-RTT is
 controlled by the initial_max_data transport parameter supplied by the server.
 
 Servers MUST NOT send the early_data extension with a max_early_data_size field
@@ -798,7 +806,8 @@ SHOULD instead use the Retry feature; see Section 8.1 of {{QUIC-TRANSPORT}}.
 If TLS experiences an error, it generates an appropriate alert as defined in
 Section 6 of {{!TLS13}}.
 
-A TLS alert is converted into a QUIC connection error. The alert description is
+A TLS alert is converted into a QUIC connection error. The AlertDescription
+value is
 added to 0x100 to produce a QUIC error code from the range reserved for
 CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
 type 0x1c.
@@ -815,7 +824,7 @@ information.
 
 ## Discarding Unused Keys
 
-After QUIC moves to a new encryption level, packet protection keys for previous
+After QUIC has completed a move to a new encryption level, packet protection keys for previous
 encryption levels can be discarded.  This occurs several times during the
 handshake, as well as when keys are updated; see {{key-update}}.
 
@@ -988,8 +997,8 @@ packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for constructing Initial packets change when a server sends a
-Retry packet to use the connection ID value selected by the server.  The secrets
+The secrets used for constructing subsequent Initial packets change when a server sends a
+Retry packet, to use the connection ID value selected by the server.  The secrets
 do not change when a client changes the Destination Connection ID it uses in
 response to an Initial packet from the server.
 
@@ -1364,7 +1373,7 @@ Note:
 
 : TLS implementations might provide all 1-RTT secrets prior to handshake
   completion.  Even where QUIC implementations have 1-RTT read keys, those keys
-  cannot be used prior to completing the handshake.
+  are not to be used prior to completing the handshake.
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1455,7 +1464,7 @@ packet that contains the changed value.
 This mechanism replaces the key update mechanism of TLS, which relies on
 KeyUpdate messages sent using 1-RTT encryption keys.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
-message in a 1-RTT packet as a connection error of type 0x10a, equivalent to a
+message as a connection error of type 0x10a, equivalent to a
 fatal TLS alert of unexpected_message; see {{tls-errors}}.
 
 {{ex-key-update}} shows a key update process, where the initial set of keys used
@@ -1556,7 +1565,7 @@ cause the key update to be completed.  If an endpoint detects a second update
 before it has sent any packets with updated keys containing an
 acknowledgment for the packet that initiated the key update, it indicates that
 its peer has updated keys twice without awaiting confirmation.  An endpoint MAY
-treat consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
+treat such consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
 
 An endpoint that receives an acknowledgment that is carried in a packet
 protected with old keys where any acknowledged packet was protected with newer
@@ -1614,8 +1623,8 @@ might arrive if they were delayed by the network.  Retaining old packet
 protection keys allows these packets to be successfully processed.
 
 As packets protected with keys from the next key phase use the same Key Phase
-value as those protected with keys from the previous key phase, it can be
-necessary to distinguish between the two.  This can be done using packet
+value as those protected with keys from the previous key phase, it is
+necessary to distinguish between the two, if packets protected with old keys are to be processed at all.  This can be done using packet
 numbers.  A recovered packet number that is lower than any packet number from
 the current key phase uses the previous packet protection keys; a recovered
 packet number that is higher than any packet number from the current key phase
@@ -1641,7 +1650,7 @@ declared lost by a peer even if they were acknowledged and short enough to
 allow for subsequent key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
-decrypt packets that initiate a key update during the period when it retains old
+decrypt packets that initiate a key update during the period when the peer retains old
 keys.  Endpoints SHOULD wait three times the PTO before initiating a key update
 after receiving an acknowledgment that confirms that the previous key update was
 received.  Failing to allow sufficient time could lead to packets being
@@ -1935,11 +1944,11 @@ limit the level of amplification.
 algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection uses the output of the packet
-protection AEAD to derive `sample`, and then encrypts the header field using
+protection AEAD to determine `sampled_bytes`, and then encrypts the header field using
 a pseudorandom function (PRF) as follows:
 
 ~~~
-protected_field = field XOR PRF(hp_key, sample)
+protected_field = field XOR PRF(hp_key, sampled_bytes)
 ~~~
 
 The header protection variants in this document use a pseudorandom permutation
@@ -2050,7 +2059,7 @@ included. All values are shown in hexadecimal.
 
 ## Keys
 
-The labels generated during the execution of the HKDF-Expand-Label function and
+The labels (Hkdf.label) generated during the execution of the HKDF-Expand-Label function and
 given to the HKDF-Expand function in order to produce its output are:
 
 client in:
@@ -2142,9 +2151,9 @@ Because the header uses a 4-byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sample = d1b1c98dd7689fb8ec11d242b123dc9b
+sampled_data = d1b1c98dd7689fb8ec11d242b123dc9b
 
-mask = AES-ECB(hp, sample)[0..4]
+mask = AES-ECB(hp, sampled_data)[0..4]
      = 437b9aec36
 
 header[0] ^= mask[0] & 0x0f
@@ -2221,7 +2230,7 @@ As a result, after protection, the header protection sample is taken starting
 from the third protected byte:
 
 ~~~
-sample = 2cd0991cd25b0aac406a5816b6394100
+sampled_data = 2cd0991cd25b0aac406a5816b6394100
 mask   = 2ec0d8356a
 header = cf000000010008f067a5502a4262b5004075c0d9
 ~~~
@@ -2300,7 +2309,7 @@ The resulting ciphertext is the minimum size possible. One byte is skipped to
 produce the sample for header protection.
 
 ~~~
-sample = 5e5cd55c41f69080575d7999c25a5bfb
+sampled_data = 5e5cd55c41f69080575d7999c25a5bfb
 mask   = aefefe7d03
 header = 4cfe4189
 ~~~
