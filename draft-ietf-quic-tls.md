@@ -175,7 +175,7 @@ server.  The client initiates the exchange and the server responds.  If the key
 exchange completes successfully, both client and server will agree on a secret.
 TLS supports both pre-shared key (PSK) and Diffie-Hellman over either finite
 fields or elliptic curves ((EC)DHE) key exchanges.  PSK is the basis for Early
-Data (0-RTT); the latter provides perfect forward secrecy (PFS) when the (EC)DHE
+Data (0-RTT); the latter provides forward secrecy (FS) when the (EC)DHE
 keys are destroyed.
 
 After completing the TLS handshake, the client will have learned and
