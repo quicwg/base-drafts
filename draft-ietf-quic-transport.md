@@ -6718,13 +6718,12 @@ An off-path attacker can create modified copies of packets that it has observed
 and inject those copies into the network, potentially with spoofed source and
 destination addresses.
 
-For the purposes of this discussion, it is assumed that an off-path attacker
-has the ability to inject a modified copy of a packet into the
-network that will reach the destination endpoint prior to the arrival of the
-original packet observed by the attacker. In other words, an attacker has the
-ability to consistently "win" a race with the legitimate packets between the
-endpoints, potentially causing the original packet to be ignored by the
-recipient.
+For the purposes of this discussion, it is assumed that an off-path attacker has
+the ability to inject a modified copy of a packet into the network that will
+reach the destination endpoint prior to the arrival of the original packet
+observed by the attacker. In other words, an attacker has the ability to
+consistently "win" a race with the legitimate packets between the endpoints,
+potentially causing the original packet to be ignored by the recipient.
 
 It is also assumed that an attacker has the resources necessary to affect NAT
 state, potentially both causing an endpoint to lose its NAT binding, and an
