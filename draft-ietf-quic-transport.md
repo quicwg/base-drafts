@@ -4728,7 +4728,7 @@ In order to prevent tampering by version-unaware middleboxes, Initial packets
 are protected with connection- and version-specific keys (Initial keys) as
 described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
 integrity against attackers that can observe packets, but provides some level of
-protection against attackers that cannot also observes packets.
+protection against attackers that cannot observe packets.
 
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
@@ -6719,7 +6719,7 @@ and inject those copies into the network, potentially with spoofed source and
 destination addresses.
 
 For the purposes of this discussion, it is assumed that an off-path attacker
-has the ability to observe and re-inject a modified copy of a packet into the
+has the ability to inject a modified copy of a packet into the
 network that will reach the destination endpoint prior to the arrival of the
 original packet observed by the attacker. In other words, an attacker has the
 ability to consistently "win" a race with the legitimate packets between the
