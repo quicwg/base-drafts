@@ -4636,10 +4636,8 @@ Version Negotiation Packet {
 ~~~
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
-The value in the Unused field is selected randomly by the server.  Clients MUST
-ignore the value of this field.  Servers SHOULD set the most significant bit of
-this field (0x40) to 1 so that Version Negotiation packets appear to have the
-Fixed Bit field.
+The value in the Unused field is set to an arbitrary value by the server.
+Clients MUST ignore the value of this field.
 
 The Version field of a Version Negotiation packet MUST be set to 0x00000000.
 
