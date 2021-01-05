@@ -4258,7 +4258,7 @@ Path Maximum Transmission Unit Discovery (PMTUD; {{!RFC1191}}, {{!RFC8201}})
 relies on reception of ICMP messages (e.g., IPv6 Packet Too Big messages) that
 indicate when an IP packet is dropped because it is larger than the local router
 MTU. DPLPMTUD can also optionally use these messages.  This use of ICMP messages
-is potentially vulnerable to attacks by elements that cannot observe packets
+is potentially vulnerable to attacks by entities that cannot observe packets
 but might successfully guess the addresses used on the path. These attacks
 could reduce the PMTU to a bandwidth-inefficient value.
 
