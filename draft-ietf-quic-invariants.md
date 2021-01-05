@@ -102,7 +102,7 @@ minimal amount of information that is made available to entities other than
 endpoints.  Unless specifically prohibited in this document, any aspect of the
 protocol can change between different versions.
 
-{{bad-assumptions}} is a non-exhaustive list of some incorrect assumptions that
+{{bad-assumptions}} contains a non-exhaustive list of some incorrect assumptions that
 might be made based on knowledge of QUIC version 1; these do not apply to every
 version of QUIC.
 
@@ -361,7 +361,7 @@ There are several traits of QUIC version 1 {{QUIC-TRANSPORT}} that are not
 protected from observation, but are nonetheless considered to be changeable when
 a new version is deployed.
 
-This section lists a sampling of incorrect assumptions that might be made based
+This section lists a sampling of incorrect assumptions that might be made about QUIC based
 on knowledge of QUIC version 1.  Some of these statements are not even true for
 QUIC version 1.  This is not an exhaustive list; it is intended to be
 illustrative only.
