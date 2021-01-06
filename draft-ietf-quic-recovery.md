@@ -229,12 +229,17 @@ more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgment
-delay instead of using a fixed minimum timeout. QUIC does not collapse the
-congestion window until persistent congestion ({{persistent-congestion}}) is
-declared, unlike TCP, which collapses the congestion window upon expiry of an
-RTO.  Instead of collapsing the congestion window and declaring everything
-in-flight lost, QUIC allows probe packets to temporarily exceed the congestion
-window whenever the timer expires.
+delay instead of using a fixed minimum timeout. 
+
+As reflected in RACK ({{?RACK=I-D.ietf-tcpm-rack}}) TLP, a single packet loss
+at the tail does not indicate persistent congestion, so QUIC does not collapse
+the congestion window when the PTO expires.
+
+Instead of collapsing the congestion window and declaring everything in-flight
+lost, QUIC specifies a time-based definition to ensure one or more packets are
+sent prior to a dramatic decrease in congestion window; see
+{{persistent-congestion}}.  QUIC allows probe packets to temporarily
+exceed the congestion window whenever the timer expires.
 
 In doing this, QUIC avoids unnecessary congestion window reductions, obviating
 the need for correcting mechanisms such as F-RTO ({{?RFC5682}}). Since QUIC does
@@ -244,11 +249,6 @@ has available congestion window. This occurs when a sender is
 application-limited and the PTO timer expires. This is more aggressive than
 TCP's RTO mechanism when application-limited, but identical when not
 application-limited.
-
-A single packet loss at the tail does not indicate persistent congestion, so
-QUIC specifies a time-based definition to ensure one or more packets are sent
-prior to a dramatic decrease in congestion window; see
-{{persistent-congestion}}.
 
 ## The Minimum Congestion Window is Two Packets
 
@@ -467,7 +467,7 @@ path, whereas loss detection also relies upon key availability.
 
 Acknowledgment-based loss detection implements the spirit of TCP's Fast
 Retransmit ({{?RFC5681}}), Early Retransmit ({{?RFC5827}}), FACK ({{FACK}}),
-SACK loss recovery ({{?RFC6675}}), and RACK ({{?RACK=I-D.ietf-tcpm-rack}}). This
+SACK loss recovery ({{?RFC6675}}), and RACK ({{?RACK}}). This
 section provides an overview of how these algorithms are implemented in QUIC.
 
 A packet is declared lost if it meets all the following conditions:
@@ -535,7 +535,7 @@ multiplier, is 9/8. The RECOMMENDED value of the timer granularity
 
 Note:
 
-: TCP's RACK ({{?RACK=I-D.ietf-tcpm-rack}}) specifies a slightly larger
+: TCP's RACK ({{?RACK}}) specifies a slightly larger
 threshold, equivalent to 5/4, for a similar purpose. Experience with QUIC shows
 that 9/8 works well.
 
