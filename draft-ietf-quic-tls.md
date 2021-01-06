@@ -316,7 +316,7 @@ frames or other frame types, which are then carried in QUIC packets.
 
 QUIC carries TLS handshake data in CRYPTO frames, each of which consists of a
 contiguous block of handshake data identified by an offset and length. Those
-frames are packaged into QUIC packets and encrypted under the current TLS
+frames are packaged into QUIC packets and encrypted under the current
 encryption level.  As with TLS over TCP, once TLS handshake data has been
 delivered to QUIC, it is QUIC's responsibility to deliver it reliably. Each
 chunk of data that is produced by TLS is associated with the set of keys that
