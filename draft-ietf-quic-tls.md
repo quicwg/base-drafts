@@ -576,10 +576,14 @@ Install 1-RTT keys
 
 {{exchange-summary}} shows the multiple packets that form a single "flight" of
 messages being processed individually, to show what incoming messages trigger
-different actions.  New handshake messages are requested after incoming packets
-have been processed.  This process varies based on the structure of endpoint
-implementations and the order in which packets arrive; this is intended to
-illustrate the steps involved in a single handshake exchange.
+different actions. This shows multiple "Get Handshake" invocations to retrieve
+handshake messages at different encryption levels. New handshake messages are
+requested after incoming packets have been processed.
+
+{{exchange-summary}} shows one possible structure for a simple handshake
+exchange. The exact process varies based on the structure of endpoint
+implementations and the order in which packets arrive. Implementations could
+use a different number of operations or execute them in other orders.
 
 
 ## TLS Version {#tls-version}
