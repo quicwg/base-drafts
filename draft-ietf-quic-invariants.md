@@ -58,8 +58,7 @@ informative:
 --- abstract
 
 This document defines the properties of the QUIC transport protocol that are
-expected to remain unchanged over time as new versions of the protocol are
-developed.
+common to all versions of the protocol.
 
 
 --- note_Note_to_Readers
