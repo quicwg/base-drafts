@@ -1710,15 +1710,6 @@ integrity limits; see {{aead-analysis}} for details.
 Future analyses and specifications MAY relax confidentiality or integrity limits
 for an AEAD.
 
-Note:
-
-: These limits were originally calculated using assumptions about the
-  limits on TLS record size. The maximum size of a TLS record is 2^14 bytes.
-  In comparison, QUIC packets can be up to 2^16 bytes.  However, it is
-  expected that QUIC packets will generally be smaller than TLS records.
-  Where packets might be larger than 2^14 bytes in length, smaller limits might
-  be needed.
-
 Any TLS cipher suite that is specified for use with QUIC MUST define limits on
 the use of the associated AEAD function that preserves margins for
 confidentiality and integrity. That is, limits MUST be specified for the number
