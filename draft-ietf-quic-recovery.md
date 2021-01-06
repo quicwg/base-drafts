@@ -233,13 +233,12 @@ delay instead of using a fixed minimum timeout.
 
 As reflected in RACK ({{?RACK=I-D.ietf-tcpm-rack}}) TLP, a single packet loss
 at the tail does not indicate persistent congestion, so QUIC does not collapse
-the congestion window when the PTO expires.
-
-Instead of collapsing the congestion window and declaring everything in-flight
-lost, QUIC specifies a time-based definition to ensure one or more packets are
-sent prior to a dramatic decrease in congestion window; see
-{{persistent-congestion}}.  QUIC allows probe packets to temporarily
-exceed the congestion window whenever the timer expires.
+the congestion window when the PTO expires.  Instead of collapsing the
+congestion window and declaring everything in-flight lost, QUIC specifies a
+time-based definition to ensure one or more packets are sent prior to a
+dramatic decrease in congestion window; see {{persistent-congestion}}.
+QUIC allows probe packets to temporarily exceed the congestion window
+whenever the timer expires.
 
 In doing this, QUIC avoids unnecessary congestion window reductions, obviating
 the need for correcting mechanisms such as F-RTO ({{?RFC5682}}). Since QUIC does
