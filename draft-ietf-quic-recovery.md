@@ -209,9 +209,9 @@ multiple round trips.
 
 ## No Reneging
 
-QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
-allow any acknowledged packet to be reneged, greatly simplifying implementations
-on both sides and reducing memory pressure on the sender.
+QUIC ACKs contain information that is similar to TCP SACK ({{?RFC6675}}), but
+QUIC does not allow any acknowledged packet to be reneged, greatly simplifying
+implementations on both sides and reducing memory pressure on the sender.
 
 ## More ACK Ranges
 
