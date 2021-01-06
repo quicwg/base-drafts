@@ -1576,12 +1576,16 @@ remove packet protection, and results in all packets with an invalid Key Phase
 bit being rejected.
 
 The process of creating new packet protection keys for receiving packets could
-reveal that a key update has occurred.  An endpoint MAY perform this process as
-part of packet processing, but this creates a timing signal that can be used by
-an attacker to learn when key updates happen and thus the value of the Key Phase
-bit in certain packets.  Endpoints MAY instead defer the creation of the next
-set of receive packet protection keys until some time after a key update
-completes, up to three times the PTO; see {{old-keys-recv}}.
+reveal that a key update has occurred. An endpoint MAY generate new keys as
+part of packet processing, but this creates a timing signal that could be used
+by an attacker to learn when key updates happen and thus leak the value of the
+Key Phase bit.
+
+Endpoints are generally expected to have current and next receive packet
+protection keys available. For a short period after a key update completes, up
+to three times the PTO, endpoints MAY defer generation of the next set of
+receive packet protection keys and use old keys instead. This allows endpoints
+to retain only two sets of receive keys; see {{old-keys-recv}}.
 
 Once generated, the next set of packet protection keys SHOULD be retained, even
 if the packet that was received was subsequently discarded.  Packets containing
