@@ -360,7 +360,9 @@ primary functions:
 - Rekeying (both transmit and receive)
 - Handshake state updates
 
-Additional functions might be needed to configure TLS.
+Additional functions might be needed to configure TLS.  In particular, QUIC and
+TLS need to agree on which is responsible for validation of peer credentials
+(for example, certificate validation {{?RFC5280}}).
 
 
 ### Handshake Complete {#handshake-complete}
