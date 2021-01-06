@@ -27,6 +27,17 @@ author:
 
 normative:
 
+  QUIC-INVARIANTS:
+    title: "Version-Independent Properties of QUIC"
+    date: {DATE}
+    seriesinfo:
+      Internet-Draft: draft-ietf-quic-invariants-latest
+    author:
+      -
+        ins: M. Thomson
+        name: Martin Thomson
+        org: Mozilla
+
   QUIC-RECOVERY:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
@@ -62,17 +73,6 @@ normative:
         role: editor
 
 informative:
-
-  QUIC-INVARIANTS:
-    title: "Version-Independent Properties of QUIC"
-    date: {DATE}
-    seriesinfo:
-      Internet-Draft: draft-ietf-quic-invariants-latest
-    author:
-      -
-        ins: M. Thomson
-        name: Martin Thomson
-        org: Mozilla
 
   EARLY-DESIGN:
     title: "QUIC: Multiplexed Transport Over UDP"
