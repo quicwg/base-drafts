@@ -1475,9 +1475,10 @@ version to test that a peer correctly discards the packet.
 
 QUIC relies on a combined cryptographic and transport handshake to minimize
 connection establishment latency.  QUIC uses the CRYPTO frame ({{frame-crypto}})
-to transmit the cryptographic handshake.  Version 0x00000001 of QUIC uses TLS as
-described in {{QUIC-TLS}}; a different QUIC version number could indicate that a
-different cryptographic handshake protocol is in use.
+to transmit the cryptographic handshake.  The version of QUIC defined in this
+document is identified as 0x00000001 and uses TLS as described in {{QUIC-TLS}};
+a different QUIC version number could indicate that a different cryptographic
+handshake protocol is in use.
 
 QUIC provides reliable, ordered delivery of the cryptographic handshake
 data. QUIC packet protection is used to encrypt as much of the handshake
