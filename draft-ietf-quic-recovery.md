@@ -229,7 +229,7 @@ more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 
 QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
 computation.  QUIC's PTO includes the peer's maximum expected acknowledgment
-delay instead of using a fixed minimum timeout. 
+delay instead of using a fixed minimum timeout.
 
 As reflected by TLP defined in RACK ({{?RACK=I-D.ietf-tcpm-rack}}), a single
 packet loss at the tail does not indicate persistent congestion, so QUIC does
