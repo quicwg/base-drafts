@@ -629,8 +629,9 @@ Minimizing the size of these values increases the probability that clients can
 use them and still fit their ClientHello message in their first Initial packet.
 
 The TLS implementation does not need to ensure that the ClientHello is large
-enough to meet the requirements in Section 8.1 of {{QUIC-TRANSPORT}}.  QUIC
-PADDING frames are added to increase the size of the packet as necessary.
+enough to meet the requirements for QUIC packets. QUIC PADDING frames are added
+to increase the size of the packet as necessary; see Section 14.1 of
+{{QUIC-TRANSPORT}}.
 
 
 ## Peer Authentication
