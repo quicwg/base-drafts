@@ -1266,8 +1266,8 @@ header_protection(hp_key, sample):
 Once an endpoint successfully receives a packet with a given packet number, it
 MUST discard all packets in the same packet number space with higher packet
 numbers if they cannot be successfully unprotected with either the same key, or
-- if there is a key update - the next packet protection key (see
-{{key-update}}).  Similarly, a packet that appears to trigger a key update, but
+- if there is a key update - a subsequent packet protection key; see
+{{key-update}}.  Similarly, a packet that appears to trigger a key update, but
 cannot be unprotected successfully MUST be discarded.
 
 Failure to unprotect a packet does not necessarily indicate the existence of a
