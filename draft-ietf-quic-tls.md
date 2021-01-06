@@ -323,12 +323,10 @@ chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-One important difference between TLS records (used with TCP) and QUIC CRYPTO
-frames is that in QUIC multiple frames may appear in the same QUIC packet as
-long as they are associated with the same packet number space. For instance,
-an endpoint can bundle a Handshake message and an ACK for some Handshake data
-into the same packet. Some frames are prohibited in different packet number
-spaces; see Section 12.5 of {{QUIC-TRANSPORT}}.
+Encryption levels each correspond to packet number space.  The packet number
+space that is used determines the semantics of frames.  Some frames are
+prohibited in different packet number spaces; see Section 12.5 of
+{{QUIC-TRANSPORT}}.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in
