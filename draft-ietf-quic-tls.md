@@ -628,9 +628,9 @@ tickets can have an effect on a client's ability to connect efficiently.
 Minimizing the size of these values increases the probability that clients can
 use them and still fit their ClientHello message in their first Initial packet.
 
-The TLS implementation does not need to ensure that the ClientHello is
-sufficiently large.  QUIC PADDING frames are added to increase the size of the
-packet as necessary.
+The TLS implementation does not need to ensure that the ClientHello is large
+enough to meet the requirements in Section 8.1 of {{QUIC-TRANSPORT}}.  QUIC
+PADDING frames are added to increase the size of the packet as necessary.
 
 
 ## Peer Authentication
