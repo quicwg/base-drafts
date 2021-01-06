@@ -570,7 +570,11 @@ Install 1-RTT keys
 
                                               Handshake Received
                                               Handshake Complete
+                                             Handshake Confirmed
                                            Install rx 1-RTT keys
+                     <--------------- 1-RTT
+                           (HANDSHAKE_DONE)
+Handshake Confirmed
 ~~~
 {: #exchange-summary title="Interaction Summary between QUIC and TLS"}
 
