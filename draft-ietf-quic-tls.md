@@ -1584,7 +1584,7 @@ Key Phase bit.
 Endpoints are generally expected to have current and next receive packet
 protection keys available. For a short period after a key update completes, up
 to three times the PTO, endpoints MAY defer generation of the next set of
-receive packet protection keys and use old keys instead. This allows endpoints
+receive packet protection keys. This allows endpoints
 to retain only two sets of receive keys; see {{old-keys-recv}}.
 
 Once generated, the next set of packet protection keys SHOULD be retained, even
