@@ -1996,7 +1996,7 @@ controller.  Clients are only constrained by the congestion controller.
 
 ### Token Construction
 
-A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
+A token sent in a NEW_TOKEN frame or a Retry packet MUST be constructed in a
 way that allows the server to identify how it was provided to a client.  These
 tokens are carried in the same field, but require different handling from
 servers.
