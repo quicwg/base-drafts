@@ -1636,13 +1636,13 @@ in the network.  In this case, the Key Phase bit alone can be used to select
 keys.
 
 An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
-{{QUIC-RECOVERY}}) after receiving a packet that uses the new key generation
-before it creates the next set of packet protection keys.  These updated keys
-MAY replace the previous keys at that time.  With the caveat that PTO is a
+{{QUIC-RECOVERY}}) after promoting the next set of receive keys to be current
+before it creates the subsequent set of packet protection keys. These updated
+keys MAY replace the previous keys at that time. With the caveat that PTO is a
 subjective measure - that is, a peer could have a different view of the RTT -
 this time is expected to be long enough that any reordered packets would be
 declared lost by a peer even if they were acknowledged and short enough to
-allow for subsequent key updates.
+allow a peer to initiate further key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
 decrypt packets that initiate a key update during the period when it retains old
