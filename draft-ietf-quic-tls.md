@@ -2083,17 +2083,17 @@ The secrets for protecting client packets are:
 
 ~~~
 client_initial_secret
-    = HKDF-Expand-Label(initial_secret, "client in", _, 32)
+    = HKDF-Expand-Label(initial_secret, "client in", "", 32)
     = c00cf151ca5be075ed0ebfb5c80323c4
       2d6b7db67881289af4008f1f6c357aea
 
-key = HKDF-Expand-Label(client_initial_secret, "quic key", _, 16)
+key = HKDF-Expand-Label(client_initial_secret, "quic key", "", 16)
     = 1f369613dd76d5467730efcbe3b1a22d
 
-iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", _, 12)
+iv  = HKDF-Expand-Label(client_initial_secret, "quic iv", "", 12)
     = fa044b2f42a3fd3b46fb255c
 
-hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", _, 16)
+hp  = HKDF-Expand-Label(client_initial_secret, "quic hp", "", 16)
     = 9f50449e04a0e810283a1e9933adedd2
 ~~~
 
@@ -2101,17 +2101,17 @@ The secrets for protecting server packets are:
 
 ~~~
 server_initial_secret
-    = HKDF-Expand-Label(initial_secret, "server in", _, 32)
+    = HKDF-Expand-Label(initial_secret, "server in", "", 32)
     = 3c199828fd139efd216c155ad844cc81
       fb82fa8d7446fa7d78be803acdda951b
 
-key = HKDF-Expand-Label(server_initial_secret, "quic key", _, 16)
+key = HKDF-Expand-Label(server_initial_secret, "quic key", "", 16)
     = cf3a5331653c364c88f0f379b6067e37
 
-iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", _, 12)
+iv  = HKDF-Expand-Label(server_initial_secret, "quic iv", "", 12)
     = 0ac1493ca1905853b0bba03e
 
-hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", _, 16)
+hp  = HKDF-Expand-Label(server_initial_secret, "quic hp", "", 16)
     = c206b8d9b9f0f37644430b490eeaa314
 ~~~
 
@@ -2268,18 +2268,18 @@ secret
     = 9ac312a7f877468ebe69422748ad00a1
       5443f18203a07d6060f688f30f21632b
 
-key = HKDF-Expand-Label(secret, "quic key", _, 32)
+key = HKDF-Expand-Label(secret, "quic key", "", 32)
     = c6d98ff3441c3fe1b2182094f69caa2e
       d4b716b65488960a7a984979fb23e1c8
 
-iv  = HKDF-Expand-Label(secret, "quic iv", _, 12)
+iv  = HKDF-Expand-Label(secret, "quic iv", "", 12)
     = e0459b3474bdd0e44a41c144
 
-hp  = HKDF-Expand-Label(secret, "quic hp", _, 32)
+hp  = HKDF-Expand-Label(secret, "quic hp", "", 32)
     = 25a282b9e82f06f21f488917a4fc8f1b
       73573685608597d0efcb076b0ab7a7a4
 
-ku  = HKDF-Expand-Label(secret, "quic ku", _, 32)
+ku  = HKDF-Expand-Label(secret, "quic ku", "", 32)
     = 1223504755036d556342ee9361d25342
       1a826c9ecdf3c7148684b36b714881f9
 ~~~
