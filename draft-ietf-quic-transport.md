@@ -2101,7 +2101,7 @@ token from any previous connection to that server.
 
 A token allows a server to correlate activity between the connection where the
 token was issued and any connection where it is used.  Clients that want to
-break continuity of identity with a server MAY discard tokens provided using the
+break continuity of identity with a server can discard tokens provided using the
 NEW_TOKEN frame.  In comparison, a token obtained in a Retry packet MUST be used
 immediately during the connection attempt and cannot be used in subsequent
 connection attempts.
