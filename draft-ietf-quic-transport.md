@@ -4811,7 +4811,7 @@ used for any new packets that are sent; as described in {{retry-continue}},
 reusing packet numbers could compromise packet protection.
 
 A client only receives acknowledgments for its 0-RTT packets once the handshake
-is complete, as defined Section 4.1.1 of {{QUIC-TLS}}.
+is complete, as defined in Section 4.1.1 of {{QUIC-TLS}}.
 
 A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
