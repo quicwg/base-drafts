@@ -316,19 +316,17 @@ frames or other frame types, which are then carried in QUIC packets.
 
 QUIC carries TLS handshake data in CRYPTO frames, each of which consists of a
 contiguous block of handshake data identified by an offset and length. Those
-frames are packaged into QUIC packets and encrypted under the current TLS
+frames are packaged into QUIC packets and encrypted under the current
 encryption level.  As with TLS over TCP, once TLS handshake data has been
 delivered to QUIC, it is QUIC's responsibility to deliver it reliably. Each
 chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-One important difference between TLS records (used with TCP) and QUIC CRYPTO
-frames is that in QUIC multiple frames may appear in the same QUIC packet as
-long as they are associated with the same packet number space. For instance,
-an endpoint can bundle a Handshake message and an ACK for some Handshake data
-into the same packet. Some frames are prohibited in different packet number
-spaces; see Section 12.5 of {{QUIC-TRANSPORT}}.
+Each encryption level corresponds to a packet number space.  The packet number
+space that is used determines the semantics of frames.  Some frames are
+prohibited in different packet number spaces; see Section 12.5 of
+{{QUIC-TRANSPORT}}.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in
