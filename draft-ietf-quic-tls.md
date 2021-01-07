@@ -1168,8 +1168,10 @@ of the ciphertext from the packet Payload field.
 
 The same number of bytes are always sampled, but an allowance needs to be made
 for the endpoint removing protection, which will not know the length of the
-Packet Number field.  In sampling the packet ciphertext, the Packet Number field
-is assumed to be 4 bytes long (its maximum possible encoded length).
+Packet Number field.  The sample of ciphertext is taken starting from an offset
+of 4 bytes after the start of the Packet Number field.  That is, in sampling
+packet ciphertext for header protection, the Packet Number field is assumed to
+be 4 bytes long (its maximum possible encoded length).
 
 An endpoint MUST discard packets that are not long enough to contain a complete
 sample.
