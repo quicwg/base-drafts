@@ -7219,9 +7219,9 @@ An on-path attacker could manipulate the value of ECN fields in the IP header
 to influence the sender's rate. {{!RFC3168}} discusses manipulations and their
 effects in more detail.
 
-An on-the-side attacker can duplicate and send packets with modified ECN fields
-to affect the sender's rate. If duplicate packets are discarded by a receiver,
-an off-path attacker will need to race the duplicate packet against the
+A limited on-path attacker can duplicate and send packets with modified ECN
+fields to affect the sender's rate. If duplicate packets are discarded by a
+receiver, an attacker will need to race the duplicate packet against the
 original to be successful in this attack. Therefore, QUIC endpoints ignore the
 ECN field on an IP packet unless at least one QUIC packet in that IP packet is
 successfully processed; see {{ecn}}.
