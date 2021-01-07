@@ -2151,9 +2151,9 @@ connection properties.
 
 ### Address Validation Token Integrity {#token-integrity}
 
-An address validation token MUST be difficult to guess.  Including a large
-enough random value in the token would be sufficient, but this depends on the
-server remembering the value it sends to clients.
+An address validation token MUST be difficult to guess.  Including a random
+value with at least 128 bits of entropy in the token would be sufficient, but
+this depends on the server remembering the value it sends to clients.
 
 A token-based scheme allows the server to offload any state associated with
 validation to the client.  For this design to work, the token MUST be covered by
