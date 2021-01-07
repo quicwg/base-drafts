@@ -6820,11 +6820,12 @@ Addresses cannot change during the handshake, so endpoints can discard packets
 that are received on a different network path.
 
 The Source and Destination Connection ID fields are the primary means of
-protection against off-path attack during the handshake.  These are required to
-match those set by a peer.  Except for an Initial and stateless reset packets,
-an endpoint only accepts packets that include a Destination Connection ID field
-that matches a value the endpoint previously chose.  This is the only protection
-offered for Version Negotiation packets.
+protection against off-path attack during the handshake; see
+{{validate-handshake}}.  These are required to match those set by a peer.
+Except for an Initial and stateless reset packets, an endpoint only accepts
+packets that include a Destination Connection ID field that matches a value the
+endpoint previously chose.  This is the only protection offered for Version
+Negotiation packets.
 
 The Destination Connection ID field in an Initial packet is selected by a client
 to be unpredictable, which serves an additional purpose.  The packets that carry
