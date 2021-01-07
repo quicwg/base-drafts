@@ -365,7 +365,7 @@ ACK frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 The peer might report acknowledgment delays that are larger than the peer's
 max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
 account for this, the endpoint SHOULD ignore max_ack_delay until the handshake
-is confirmed (as defined in Section 4.1.2 of {{QUIC-TLS}}). When they occur, these large
+is confirmed, as defined in Section 4.1.2 of {{QUIC-TLS}}. When they occur, these large
 acknowledgment delays are likely to be non-repeating and limited to the
 handshake. The endpoint can therefore use them without limiting them to the
 max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
