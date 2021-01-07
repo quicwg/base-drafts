@@ -2701,7 +2701,7 @@ Once the server has completed its path validation and has received a non-probing
 packet with a new largest packet number on its preferred address, the server
 begins sending non-probing packets to the client exclusively from its preferred
 IP address. The server SHOULD drop newer packets for this connection that are
-received on the old IP address. The server MAY continue to process older delayed
+received on the old IP address. The server MAY continue to process delayed
 packets that are received on the old IP address.
 
 The addresses that a server provides in the preferred_address transport
