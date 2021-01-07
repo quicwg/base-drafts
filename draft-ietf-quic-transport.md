@@ -2948,9 +2948,9 @@ the endpoints exits the closing state.
 
 An endpoint MAY enter the draining state from the closing state if it receives a
 CONNECTION_CLOSE frame, which indicates that the peer is also closing or
-draining. In this case, the draining state SHOULD end when the closing state
-would have ended. In other words, the endpoint uses the same end time, but
-ceases transmission of any packets on this connection.
+draining. In this case, the draining state ends when the closing state would
+have ended. In other words, the endpoint uses the same end time, but ceases
+transmission of any packets on this connection.
 
 
 ### Immediate Close During the Handshake {#immediate-close-hs}
