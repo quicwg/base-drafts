@@ -1530,9 +1530,8 @@ Handshake (CRYPTO)
 
 Endpoints can use packets sent during the handshake to test for Explicit
 Congestion Notification (ECN) support; see {{ecn}}. An endpoint validates
-support for Explicit Congestion Notification (ECN) by observing whether the ACK
-frames acknowledging the first packets it sends carry ECN counts, as described
-in {{ecn-validation}}.
+support for ECN by observing whether the ACK frames acknowledging the first
+packets it sends carry ECN counts, as described in {{ecn-validation}}.
 
 Endpoints MUST explicitly negotiate an application protocol.  This avoids
 situations where there is a disagreement about the protocol that is in use.
