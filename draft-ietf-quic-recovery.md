@@ -231,14 +231,14 @@ QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
 computation; see {{?RFC6297}}.  QUIC's PTO includes the peer's maximum expected
 acknowledgment delay instead of using a fixed minimum timeout.
 
-As reflected by TLP defined in RACK ({{?RACK=I-D.ietf-tcpm-rack}}), a single
-packet loss at the tail does not indicate persistent congestion, so QUIC does
-not collapse the congestion window when the PTO expires.  Instead of
-collapsing the congestion window and declaring everything in-flight lost, QUIC
-specifies a time-based definition to ensure one or more packets are sent prior
-to a dramatic decrease in congestion window; see {{persistent-congestion}}.
-QUIC allows probe packets to temporarily exceed the congestion window
-whenever the timer expires.
+Similar to the RACK-TLP loss detection algorithm for TCP
+({{?RACK=I-D.ietf-tcpm-rack}}), QUIC does not collapse the congestion window
+when the PTO expires, since a single packet loss at the tail does not indicate
+persistent congestion.  Instead, QUIC collapses the congestion window when
+persistent congestion is declared; see {{persistent-congestion}}.
+
+QUIC allows probe packets to temporarily exceed the congestion window whenever
+the timer expires.
 
 In doing this, QUIC avoids unnecessary congestion window reductions, obviating
 the need for correcting mechanisms such as F-RTO ({{?RFC5682}}). Since QUIC does
