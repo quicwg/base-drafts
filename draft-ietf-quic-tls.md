@@ -944,8 +944,8 @@ separation between QUIC and TLS; see {{key-diversity}}.
 Both "quic key" and "quic hp" are used to produce keys, so the Length provided
 to HKDF-Expand-Label along with these labels is determined by the size of keys
 in the AEAD or header protection algorithm. The Length provided with "quic iv"
-is the length of the AEAD nonce, specifically N_MAX, though the value of N_MIN
-is the same for the AEAD algorithms that can be used; see {{!AEAD}}.
+is the length of the AEAD nonce, specifically N_MIN, though the value of N_MAX
+is the same for the AEAD algorithms defined here; see {{!AEAD}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
 TLS 1.3; see {{initial-secrets}}.
