@@ -800,7 +800,7 @@ any outstanding data is declared lost, the endpoint SHOULD send a RESET_STREAM
 frame instead of retransmitting the data.
 
 An endpoint SHOULD copy the error code from the STOP_SENDING frame to the
-RESET_STREAM frame it sends, but MAY use any application error code.  An
+RESET_STREAM frame it sends, but can use any application error code.  An
 endpoint that sends a STOP_SENDING frame MAY ignore the error code in
 any RESET_STREAM frames subsequently received for that stream.
 
@@ -2705,7 +2705,7 @@ Once the server has completed its path validation and has received a non-probing
 packet with a new largest packet number on its preferred address, the server
 begins sending non-probing packets to the client exclusively from its preferred
 IP address.  It SHOULD drop packets for this connection received on the old IP
-address, but MAY continue to process delayed packets.
+address, but can continue to process delayed packets.
 
 The addresses that a server provides in the preferred_address transport
 parameter are only valid for the connection in which they are provided. A
