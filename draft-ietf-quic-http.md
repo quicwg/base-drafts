@@ -272,7 +272,7 @@ stream:
 stream error:
 : An application-level error on the individual stream.
 
-The term "payload data" is defined in Section 6.4 of {{!SEMANTICS}}.
+The term "content" is defined in Section 6.4 of {{!SEMANTICS}}.
 
 Finally, the terms "resource", "message", "user agent", "origin server",
 "gateway", "intermediary", "proxy", and "tunnel" are defined in Section 3 of
@@ -440,14 +440,14 @@ An HTTP message (request or response) consists of:
 1. the header field section, sent as a single HEADERS frame (see
    {{frame-headers}}),
 
-2. optionally, the payload data, if present, sent as a series of DATA frames
+2. optionally, the content, if present, sent as a series of DATA frames
    (see {{frame-data}}), and
 
 3. optionally, the trailer field section, if present, sent as a single HEADERS
    frame.
 
 Header and trailer field sections are described in Sections 6.3 and 6.5 of
-{{!SEMANTICS}}; the payload data is described in Section 6.4 of
+{{!SEMANTICS}}; the content is described in Section 6.4 of
 {{!SEMANTICS}}.
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
@@ -477,7 +477,7 @@ be used.
 
 A response MAY consist of multiple messages when and only when one or more
 interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
-response to the same request.  Interim responses do not contain payload data
+response to the same request.  Interim responses do not contain content
 or trailers.
 
 An HTTP request/response exchange fully consumes a client-initiated
@@ -723,12 +723,12 @@ frames but is invalid due to:
 - the inclusion of uppercase field names, or
 - the inclusion of invalid characters in field names or values.
 
-A request or response that includes payload data can include a
-Content-Length header field.  A request or response is also malformed if the
-value of a Content-Length header field does not equal the sum of the DATA frame
-lengths that form the payload data.  A response that is defined to have no
-payload, as described in Section 6.4 of {{!SEMANTICS}}, can have a non-zero
-Content-Length field, even though no content is included in DATA frames.
+A request or response that is defined as having content when it contains a
+Content-Length header field, as described in Section 6.4.1 of {{!SEMANTICS}},
+is malformed if the value of a Content-Length header field does not equal the
+sum of the DATA frame lengths received. A response that is defined as never
+having content, even when a Content-Length is present, can have a non-zero
+Content-Length field even though no content is included in DATA frames.
 
 Intermediaries that process HTTP requests or responses (i.e., any intermediary
 not acting as a tunnel) MUST NOT forward a malformed request or response.
@@ -1268,7 +1268,7 @@ frame.
 ### DATA {#frame-data}
 
 DATA frames (type=0x0) convey arbitrary, variable-length sequences of bytes
-associated with HTTP request or response payload data.
+associated with HTTP request or response content.
 
 DATA frames MUST be associated with an HTTP request or response.  If a DATA
 frame is received on a control stream, the recipient MUST respond with a
