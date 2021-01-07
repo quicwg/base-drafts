@@ -7252,11 +7252,10 @@ version downgrade attacks.
 ## Targeted Attacks by Routing
 
 Deployments should limit the ability of an attacker to target a new connection
-to a particular server instance.  This means that client-controlled fields, such
-as the initial Destination Connection ID used on Initial and 0-RTT packets
-SHOULD NOT be used by themselves to make routing decisions.  Ideally, routing
-decisions are made independently of client-selected values; a Source Connection
-ID can be selected to route later packets to the same server.
+to a particular server instance.  Ideally, routing decisions are made
+independently of client-selected values, including addresses.  Once an instance
+is selected, a connection ID can be selected so that later packets are routed to
+the same instance.
 
 
 ## Traffic Analysis
