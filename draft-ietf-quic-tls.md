@@ -1813,8 +1813,7 @@ MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
 missing_extension alert, see {{tls-errors}}).
 
 Transport parameters become available prior to the completion of the handshake.
-Using these values earlier than handshake completion is necessary at the server
-if it wishes to send 1-RTT packets to the client. However, the value of
+A server might use these values earlier than handshake completion. However, the value of
 transport parameters is not authenticated until the handshake completes, so any
 use of these parameters cannot depend on their authenticity. Any tampering with
 transport parameters will cause the handshake to fail.
