@@ -323,7 +323,7 @@ chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-Encryption levels each correspond to packet number space.  The packet number
+Each encryption level corresponds to a packet number space.  The packet number
 space that is used determines the semantics of frames.  Some frames are
 prohibited in different packet number spaces; see Section 12.5 of
 {{QUIC-TRANSPORT}}.
