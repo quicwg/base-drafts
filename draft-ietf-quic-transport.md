@@ -6428,8 +6428,8 @@ FRAME_ENCODING_ERROR (0x7):
 TRANSPORT_PARAMETER_ERROR (0x8):
 
 : An endpoint received transport parameters that were badly formatted, included
-  an invalid value, was absent even though it is mandatory, was present though
-  it is forbidden, or is otherwise in error.
+  an invalid value, omitted a mandatory transport parameter, included a
+  forbidden transport parameter, or were otherwise in error.
 
 CONNECTION_ID_LIMIT_ERROR (0x9):
 
