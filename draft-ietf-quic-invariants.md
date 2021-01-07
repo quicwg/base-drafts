@@ -138,7 +138,7 @@ x (A..B):
   values in this format always end on an byte boundary
 
 x (L) = C:
-: Indicates that x has a fixed value of C
+: Indicates that x, with a length described by L, has a fixed value of C
 
 x (L) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
