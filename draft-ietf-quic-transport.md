@@ -1514,8 +1514,8 @@ space.
 
 {{fig-hs}} shows a simplified handshake and the exchange of packets and frames
 that are used to advance the handshake.  Exchange of application data during the
-handshake is enabled where possible, shown with a '*'.  Once completed,
-endpoints are able to exchange application data.
+handshake is enabled where possible, shown with a '*'.  Once the handshake is
+complete, endpoints are able to exchange application data freely.
 
 ~~~drawing
 Client                                               Server
