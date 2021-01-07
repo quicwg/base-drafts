@@ -306,20 +306,20 @@ x (A..B):
   a minimum of zero bits and B can be omitted to indicate no set upper limit;
   values in this format always end on an byte boundary
 
-x (?) = C:
+x (L) = C:
 : Indicates that x has a fixed value of C with the length described by
-  ?, as above
+  L, which can use any of the three length forms above
 
-x (?) = C..D:
+x (L) = C..D:
 : Indicates that x has a value in the range from C to D, inclusive,
-  with the length described by ?, as above
+  with the length described by L, as above
 
-\[x (E)\]:
-: Indicates that x is optional (and has length of E)
+\[x (L)\]:
+: Indicates that x is optional (and has length of L)
 
-x (E) ...:
+x (L) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
-  length E)
+  length L)
 
 This document uses network byte order (that is, big endian) values.  Fields
 are placed starting from the high-order bits of each byte.

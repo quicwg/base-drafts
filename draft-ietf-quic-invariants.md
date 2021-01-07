@@ -136,12 +136,12 @@ x (A..B):
   a minimum of zero bits and B can be omitted to indicate no set upper limit;
   values in this format always end on an byte boundary
 
-x (?) = C:
-: Indicates that x has a fixed value of C
+x (L) = C:
+: Indicates that x, with a length described by L, has a fixed value of C
 
-x (E) ...:
+x (L) ...:
 : Indicates that x is repeated zero or more times (and that each instance is
-  length E)
+  length L)
 
 This document uses network byte order (that is, big endian) values.  Fields
 are placed starting from the high-order bits of each byte.
