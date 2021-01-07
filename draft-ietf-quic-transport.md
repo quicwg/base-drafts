@@ -5113,6 +5113,8 @@ discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
 The spin bit is an OPTIONAL feature of this version of QUIC. A QUIC stack that
 chooses to support the spin bit MUST implement it as specified in this section.
+A QUIC stack that chooses not to support the spin bit MUST behave as if it were
+disabled for all sessions.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
@@ -5126,7 +5128,9 @@ approximately one in eight network paths.
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
-independently for each connection ID.
+independently for each connection ID. One way to accomplish this is to adjust
+the mask used for applying header protection to the first byte to also cover the
+spin bit; see Section 5.4.1 of {{QUIC-TLS}}.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
 value for each network path and sets the spin bit in the packet header to the
