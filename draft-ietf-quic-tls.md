@@ -836,12 +836,13 @@ encryption level as the packet being acknowledged.  Thus, it is possible that
 keys for a lower encryption level are needed for a short time after keys for a
 newer encryption level are available.
 
-An endpoint cannot discard keys for a given encryption level unless it has both
-received and acknowledged all CRYPTO frames for that encryption level and when
-all CRYPTO frames for that encryption level have been acknowledged by its peer.
-However, this does not guarantee that no further packets will need to be
-received or sent at that encryption level because a peer might not have received
-all the acknowledgments necessary to reach the same state.
+An endpoint cannot discard keys for a given encryption level unless it has
+received all CRYPTO frames for that encryption level, acknowledged the packets
+containing those frames, and received acknowledgements for packets containing
+all CRYPTO frames sent for that encryption level. However, this does not
+guarantee that no further packets will need to be received or sent at that
+encryption level because a peer might not have received all the acknowledgments
+necessary to reach the same state.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
