@@ -3176,13 +3176,13 @@ problem for an endpoint that might lose state.  Stateless reset specifically
 exists to handle the case where state is lost, so this approach is suboptimal.
 
 A single static key can be used across all connections to the same endpoint by
-generating the proof using a second iteration of a preimage-resistant function
-that takes a static key and the connection ID chosen by the endpoint (see
-{{connection-id}}) as input.  An endpoint could use HMAC {{?RFC2104}} (for
-example, HMAC(static_key, connection_id)) or HKDF {{?RFC5869}} (for example,
-using the static key as input keying material, with the connection ID as salt).
-The output of this function is truncated to 16 bytes to produce the Stateless
-Reset Token for that connection.
+generating the proof using a pseudorandom function that takes a static key and
+the connection ID chosen by the endpoint (see {{connection-id}}) as input.  An
+endpoint could use HMAC {{?RFC2104}} (for example, HMAC(static_key,
+connection_id)) or HKDF {{?RFC5869}} (for example, using the static key as input
+keying material, with the connection ID as salt).  The output of this function
+is truncated to 16 bytes to produce the Stateless Reset Token for that
+connection.
 
 An endpoint that loses state can use the same method to generate a valid
 Stateless Reset Token.  The connection ID comes from the packet that the
