@@ -1452,7 +1452,7 @@ without needing to receive the first packet that triggered the change.  An
 endpoint that notices a changed Key Phase bit updates keys and decrypts the
 packet that contains the changed value.
 
-Initiating a key updates results in both endpoints updating keys.  This differs
+Initiating a key update results in both endpoints updating keys.  This differs
 from TLS where endpoints can update keys independently.
 
 This mechanism replaces the key update mechanism of TLS, which relies on
