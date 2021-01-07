@@ -803,11 +803,12 @@ added to 0x100 to produce a QUIC error code from the range reserved for
 CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
 type 0x1c.
 
-QUIC is only able to convey an alert level of "fatal". In TLS 1.3, the only existing uses
-for the "warning" level are to signal connection close; see Section 6.1 of
-{{!TLS13}}. As QUIC provides alternative mechanisms for connection termination
-and the TLS connection is only closed if an error is encountered, a QUIC
-endpoint MUST treat any alert from TLS as if it were at the "fatal" level.
+QUIC is only able to convey an alert level of "fatal". In TLS 1.3, the only
+existing uses for the "warning" level are to signal connection close; see
+Section 6.1 of {{!TLS13}}. As QUIC provides alternative mechanisms for
+connection termination and the TLS connection is only closed if an error is
+encountered, a QUIC endpoint MUST treat any alert from TLS as if it were at the
+"fatal" level.
 
 QUIC permits the use of a generic code in place of a specific error code; see
 Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
