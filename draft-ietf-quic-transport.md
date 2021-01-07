@@ -1282,11 +1282,12 @@ selected, it MUST discard that packet.
 
 ### Server Packet Handling {#server-pkt-handling}
 
-If a server receives a packet that indicates an unsupported version but is large
-enough to initiate a new connection for any supported version, the server
-SHOULD send a Version Negotiation packet as described in {{send-vn}}.  A server
-MAY limit the number of packets to which it responds with a Version Negotiation
-packet.  Servers MUST drop smaller packets that specify unsupported versions.
+If a server receives a packet that indicates an unsupported version and if the
+packet is large enough to initiate a new connection for any supported version,
+the server SHOULD send a Version Negotiation packet as described in {{send-vn}}.
+A server MAY limit the number of packets to which it responds with a Version
+Negotiation packet.  Servers MUST drop smaller packets that specify unsupported
+versions.
 
 The first packet for an unsupported version can use different semantics and
 encodings for any version-specific field.  In particular, different packet
