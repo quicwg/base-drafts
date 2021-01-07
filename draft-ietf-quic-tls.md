@@ -1821,6 +1821,9 @@ QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
 unsupported_extension alert MUST be sent by an implementation that supports this
 extension if the extension is received when the transport is not QUIC.
 
+Negotiating the quic_transport_parameters extension causes the EndOfEarlyData to
+be removed; see {{remove-eoed}}.
+
 
 ## Removing the EndOfEarlyData Message {#remove-eoed}
 
