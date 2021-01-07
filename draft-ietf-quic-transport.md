@@ -929,7 +929,7 @@ blocked for at least an entire round trip.
 
 When a sender receives credit after being blocked, it might be able to send a
 large amount of data in response, resulting in short-term congestion; see
-Section 6.9 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
+Section 7.7 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
 congestion.
 
 
