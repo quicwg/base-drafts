@@ -1079,6 +1079,10 @@ deployment-specific) method that will allow packets with that connection ID to
 be routed back to the endpoint and to be identified by the endpoint upon
 receipt.
 
+Multiple connection IDs are used so that endpoints can send packets that cannot
+be identified by an observer as being for the same connection without
+cooperation from an endpoint; see {{migration-linkability}}.
+
 Connection IDs MUST NOT contain any information that can be used by an external
 observer (that is, one that does not cooperate with the issuer) to correlate
 them with other connection IDs for the same connection.  As a trivial example,
