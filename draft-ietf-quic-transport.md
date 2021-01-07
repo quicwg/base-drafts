@@ -530,9 +530,6 @@ data to a peer.
        |                           |
        | Send STREAM /             |
        |      STREAM_DATA_BLOCKED  |
-       |                           |
-       | Peer Creates              |
-       |      Bidirectional Stream |
        v                           |
    +-------+                       |
    | Send  | Send RESET_STREAM     |
