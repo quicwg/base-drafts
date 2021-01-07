@@ -2301,12 +2301,12 @@ the data that was sent in a previous PATH_CHALLENGE frame.  A PATH_RESPONSE
 frame received on any network path validates the path on which the
 PATH_CHALLENGE was sent.
 
-A successful response to a PATH_CHALLENGE frame sent in a datagram that was not
-expanded to at least 1200 bytes validates the peer address, but it does not
-validate the path MTU. The endpoint is then able to send more than three times
-the amount of data that has been received. However, the endpoint MUST initiate
-another path validation with an expanded datagram to verify that the path
-supports required MTU.
+If an endpoint sends a PATH_CHALLENGE frame in a datagram that is not expanded
+to at least 1200 bytes, and if the response to it validates the peer address,
+the path is validated but not the path MTU. As a result, the endpoint can now
+send more than three times the amount of data that has been received. However,
+the endpoint MUST initiate another path validation with an expanded datagram to
+verify that the path supports the required MTU.
 
 Receipt of an acknowledgment for a packet containing a PATH_CHALLENGE frame is
 not adequate validation, since the acknowledgment can be spoofed by a malicious
