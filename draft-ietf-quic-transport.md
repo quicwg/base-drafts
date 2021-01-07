@@ -4513,7 +4513,9 @@ Header Form:
 Fixed Bit:
 
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version and MUST be discarded.
+  for this bit are not valid packets in this version and MUST be discarded.  A
+  value of 1 for this bit allows QUIC to coexist with other protocols; see
+  {{?RFC7983}}.
 
 Long Packet Type:
 
@@ -5034,7 +5036,9 @@ Header Form:
 Fixed Bit:
 
 : The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version and MUST be discarded.
+  for this bit are not valid packets in this version and MUST be discarded.  A
+  value of 1 for this bit allows QUIC to coexist with other protocols; see
+  {{?RFC7983}}.
 
 Spin Bit:
 
