@@ -876,8 +876,8 @@ streams, which is used to check for violations of the advertised connection or
 stream data limits. A receiver could determine the maximum data limit to be
 advertised based on the sum of bytes consumed on all streams.
 
-Once a receiver advertises a limit for the connection or a stream, it MAY
-advertise a smaller limit, but this has no effect.
+Once a receiver advertises a limit for the connection or a stream, it is not an
+error to advertise a smaller limit, but the smaller limit has no effect.
 
 A receiver MUST close the connection with a FLOW_CONTROL_ERROR error
 ({{error-handling}}) if the sender violates the advertised connection or stream
