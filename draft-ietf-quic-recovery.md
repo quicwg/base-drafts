@@ -132,7 +132,8 @@ the encryption level and includes a packet sequence number (referred to below as
 a packet number).  The encryption level indicates the packet number space, as
 described in {{QUIC-TRANSPORT}}.  Packet numbers never repeat within a packet
 number space for the lifetime of a connection.  Packet numbers are sent in
-monotonically increasing order within a space, preventing ambiguity.
+monotonically increasing order within a space, preventing ambiguity.  It is
+permitted for some packet numbers to never be used, leaving intentional gaps.
 
 This design obviates the need for disambiguating between transmissions and
 retransmissions; this eliminates significant complexity from QUIC's
@@ -354,7 +355,7 @@ frequently observable.
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
 smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
-samples, and rttvar is the variation in the RTT samples, estimated using a
+samples, and rttvar represents the variation in the RTT samples, estimated using a
 mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
@@ -364,12 +365,12 @@ ACK frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
 The peer might report acknowledgment delays that are larger than the peer's
 max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
 account for this, the endpoint SHOULD ignore max_ack_delay until the handshake
-is confirmed (Section 4.1.2 of {{QUIC-TLS}}). When they occur, these large
+is confirmed (as defined in Section 4.1.2 of {{QUIC-TLS}}). When they occur, these large
 acknowledgment delays are likely to be non-repeating and limited to the
 handshake. The endpoint can therefore use them without limiting them to the
 max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
 
-Note however that a large acknowledgment delay can result in a substantially
+Note, however, that a large acknowledgment delay can result in a substantially
 inflated smoothed_rtt, if there is either an error in the peer's reporting of
 the acknowledgment delay or in the endpoint's min_rtt estimate.  Therefore,
 prior to handshake confirmation, an endpoint MAY ignore RTT samples if adjusting
@@ -609,7 +610,7 @@ or acknowledged, when the handshake is confirmed (Section 4.1.2 of
 of the round-trip time and for the correct packet across packet number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
-PTO period being set to twice its current value. The PTO backoff factor is reset
+PTO period being set to twice its current value, in each packet number space. The PTO backoff factor is reset
 when an acknowledgment is received, except in the following case. A server
 might take longer to respond to packets during the handshake than otherwise.  To
 protect such a server from repeated client probes, the PTO backoff is not reset
@@ -667,7 +668,7 @@ Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
 until it is certain that the server has finished its address validation
 (see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if the client has not received an acknowledgment for one of its
+probe timer if the client has not received an acknowledgment for any of its
 Handshake packets and the handshake is not confirmed (see Section 4.1.2 of
 {{QUIC-TLS}}), even if there are no packets in flight.  When the PTO fires,
 the client MUST send a Handshake packet if it has Handshake keys, otherwise it
@@ -702,7 +703,7 @@ its first flight.
 When a PTO timer expires, a sender MUST send at least one ack-eliciting packet
 in the packet number space as a probe.  An endpoint MAY send up to two
 full-sized datagrams containing ack-eliciting packets, to avoid an expensive
-consecutive PTO expiration due to a single lost datagram or transmit data
+consecutive PTO expiration due to a single lost datagram, or transmit data
 from multiple packet number spaces. All probe packets sent on a PTO MUST be
 ack-eliciting.
 
@@ -767,7 +768,7 @@ initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
-When packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}),
+When packet protection keys are discarded from an entire encryption level (see Section 4.9 of {{QUIC-TLS}}),
 all packets that were sent with those keys can no longer be acknowledged because
 their acknowledgments cannot be processed anymore. The sender MUST discard
 all recovery state associated with those packets and MUST remove them from
@@ -784,7 +785,7 @@ If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
 before Initial packets, early 0-RTT packets will be declared lost, but that
 is expected to be infrequent.
 
-It is expected that keys are discarded after packets encrypted with them would
+It is expected that keys are discarded after all packets encrypted with them would
 be acknowledged or declared lost.  However, Initial secrets are discarded as
 soon as handshake keys are proven to be available to both client and server;
 see Section 4.9.1 of {{QUIC-TLS}}.
@@ -1019,7 +1020,10 @@ Since network congestion is not affected by packet number spaces, persistent
 congestion SHOULD consider packets sent across packet number spaces. A sender
 that does not have state for all packet number spaces or an implementation that
 cannot compare send times across packet number spaces MAY use state for just the
-packet number space that was acknowledged.
+packet number space that was acknowledged.  This might result in erroneously
+declaring persistent congestion when including all packet number spaces would
+not have declared persistent connection, but will not lead to a failure to
+detect persistent congestion.
 
 When persistent congestion is declared, the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow), similar to a TCP
@@ -1300,7 +1304,7 @@ largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
 
 loss_time\[kPacketNumberSpace]:
-: The time at which the next packet in that packet number space will be
+: The earliest time at which an additional packet in that packet number space will be
   considered lost based on exceeding the reordering window in time.
 
 sent_packets\[kPacketNumberSpace]:
@@ -1433,7 +1437,7 @@ UpdateRtt(ack_delay):
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay after handshake
-  // confirmation. Note that ack_delay is 0 for
+  // confirmation. Note that ack_delay is clamped to 0 for
   // acknowledgments of Initial and Handshake packets.
   if (handshake confirmed):
     ack_delay = min(ack_delay, max_ack_delay)
@@ -1526,7 +1530,7 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
-  // Determine which PN space to arm PTO for.
+  // Arm PTO (the timer doesn't depend on what space it's for).
   timeout, _ = GetPtoTimeAndSpace()
   loss_detection_timer.update(timeout)
 ~~~
@@ -1691,7 +1695,8 @@ congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
 congestion_recovery_start_time:
-: The time when QUIC first detects congestion due to loss or ECN, causing
+: The time when QUIC first detected congestion due to loss or ECN for
+  the current recovery period, causing
   it to enter congestion recovery. When a packet sent after this time is
   acknowledged, QUIC exits congestion recovery.
 
@@ -1783,7 +1788,7 @@ OnCongestionEvent(sent_time):
 
   // Enter recovery period.
   congestion_recovery_start_time = now()
-  ssthresh = congestion_window * kLossReductionFactor
+  ssthresh = congestion_window * (1 - kLossReductionFactor)
   congestion_window = max(ssthresh, kMinimumWindow)
   // A packet can be sent to speed up loss recovery.
   MaybeSendOnePacket()
