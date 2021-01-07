@@ -5115,13 +5115,14 @@ The spin bit is an OPTIONAL feature of this version of QUIC. A QUIC stack that
 chooses to support the spin bit MUST implement it as specified in this section.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
-connection. Implementations MUST allow administrators of clients and servers
-to disable the spin bit either globally or on a per-connection basis. Even when
-the spin bit is not disabled by the administrator, endpoints MUST disable their
-use of the spin bit for a random selection of at least one in every 16 network
-paths, or for one in every 16 connection IDs.  As each endpoint disables the
-spin bit independently, this ensures that the spin bit signal is disabled on
-approximately one in eight network paths.
+connection. Implementations MUST allow administrators of clients and servers to
+disable the spin bit either globally or on a per-connection basis. Even when the
+spin bit is not disabled by the administrator, endpoints MUST disable their use
+of the spin bit for a random selection of at least one in every 16 network
+paths, or for one in every 16 connection IDs, in order to ensure that QUIC
+connections that disable the spin bit are commonly observed on the network.  As
+each endpoint disables the spin bit independently, this ensures that the spin
+bit signal is disabled on approximately one in eight network paths.
 
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
