@@ -2700,8 +2700,9 @@ This helps to guard against spurious migration initiated by an attacker.
 Once the server has completed its path validation and has received a non-probing
 packet with a new largest packet number on its preferred address, the server
 begins sending non-probing packets to the client exclusively from its preferred
-IP address.  It SHOULD drop packets for this connection received on the old IP
-address, but can continue to process delayed packets.
+IP address. The server SHOULD drop newer packets for this connection that are
+received on the old IP address. The server MAY continue to process delayed
+packets that are received on the old IP address.
 
 The addresses that a server provides in the preferred_address transport
 parameter are only valid for the connection in which they are provided. A
