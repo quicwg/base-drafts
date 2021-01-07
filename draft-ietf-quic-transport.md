@@ -1994,7 +1994,7 @@ also constrained in what they can send by the limits set by the congestion
 controller.  Clients are only constrained by the congestion controller.
 
 
-### Token Construction
+### Token Construction {#token-differentiation}
 
 A token sent in a NEW_TOKEN frames or a Retry packet MUST be constructed in a
 way that allows the server to identify how it was provided to a client.  These
@@ -2122,9 +2122,10 @@ When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid then the server SHOULD proceed as if
 the client did not have a validated address, including potentially sending
-a Retry.  A server SHOULD encode tokens provided with NEW_TOKEN frames and Retry
-packets differently, and validate the latter more strictly.  If the validation
-succeeds, the server SHOULD then allow the handshake to proceed.
+a Retry.  Tokens provided with NEW_TOKEN frames and Retry packets can be
+distinguished by servers (see {{token-differentiation}}), and the latter
+validated more strictly.  If the validation succeeds, the server SHOULD then
+allow the handshake to proceed.
 
 Note:
 
