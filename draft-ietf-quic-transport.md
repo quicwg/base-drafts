@@ -4416,8 +4416,8 @@ of the first byte to encode the base 2 logarithm of the integer encoding length
 in bytes.  The integer value is encoded on the remaining bits, in network byte
 order.
 
-This means that integers are encoded on 1, 2, 4, or 8 bytes and can encode 6,
-14, 30, or 62 bit values respectively.  {{integer-summary}} summarizes the
+This means that integers are encoded on 1, 2, 4, or 8 bytes and can encode 6-,
+14-, 30-, or 62-bit values respectively.  {{integer-summary}} summarizes the
 encoding properties.
 
 | 2Bit | Length | Usable Bits | Range                 |
