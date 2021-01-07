@@ -2175,11 +2175,12 @@ amplification attack.
 Attackers could replay tokens to use servers as amplifiers in DDoS attacks. To
 protect against such attacks, servers MUST ensure that replay of tokens is
 prevented or limited. Servers SHOULD ensure that tokens sent in Retry packets
-are only accepted for a short time. Tokens that are provided in NEW_TOKEN frames
-({{frame-new-token}}) need to be valid for longer, but SHOULD NOT be accepted
-multiple times in a short period. Servers are encouraged to allow tokens to be
-used only once, if possible; tokens MAY include additional information about
-clients to further narrow applicability or reuse.
+are only accepted for a short time, as they are returned immediately by clients.
+Tokens that are provided in NEW_TOKEN frames ({{frame-new-token}}) need to be
+valid for longer, but SHOULD NOT be accepted multiple times. Servers are
+encouraged to allow tokens to be used only once, if possible; tokens MAY
+include additional information about clients to further narrow applicability or
+reuse.
 
 
 ## Path Validation {#migrate-validate}
