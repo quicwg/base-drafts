@@ -1813,10 +1813,10 @@ MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
 missing_extension alert, see {{tls-errors}}).
 
 Transport parameters become available prior to the completion of the handshake.
-A server might use these values earlier than handshake completion. However, the value of
-transport parameters is not authenticated until the handshake completes, so any
-use of these parameters cannot depend on their authenticity. Any tampering with
-transport parameters will cause the handshake to fail.
+A server might use these values earlier than handshake completion. However, the
+value of transport parameters is not authenticated until the handshake
+completes, so any use of these parameters cannot depend on their authenticity.
+Any tampering with transport parameters will cause the handshake to fail.
 
 Endpoints MUST NOT send this extension in a TLS connection that does not use
 QUIC (such as the use of TLS with TCP defined in {{!TLS13}}).  A fatal
