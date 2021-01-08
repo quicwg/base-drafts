@@ -1437,8 +1437,7 @@ UpdateRtt(ack_delay):
   // min_rtt ignores acknowledgment delay.
   min_rtt = min(min_rtt, latest_rtt)
   // Limit ack_delay by max_ack_delay after handshake
-  // confirmation. Note that ack_delay is clamped to 0 for
-  // acknowledgments of Initial and Handshake packets.
+  // confirmation.
   if (handshake confirmed):
     ack_delay = min(ack_delay, max_ack_delay)
 
@@ -1530,7 +1529,6 @@ SetLossDetectionTimer():
     loss_detection_timer.cancel()
     return
 
-  // Arm PTO (the timer doesn't depend on what space it's for).
   timeout, _ = GetPtoTimeAndSpace()
   loss_detection_timer.update(timeout)
 ~~~
