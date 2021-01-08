@@ -785,10 +785,10 @@ If a server accepts 0-RTT, but does not buffer 0-RTT packets that arrive
 before Initial packets, early 0-RTT packets will be declared lost, but that
 is expected to be infrequent.
 
-It is expected that keys are discarded after all packets encrypted with them would
-be acknowledged or declared lost.  However, Initial secrets are discarded as
-soon as handshake keys are proven to be available to both client and server;
-see Section 4.9.1 of {{QUIC-TLS}}.
+It is expected that keys are discarded after packets encrypted with them would
+be acknowledged or declared lost.  However, Initial and Handshake secrets are
+discarded as soon as handshake and 1-RTT keys are proven to be available to both
+client and server; see Section 4.9.1 of {{QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
 
