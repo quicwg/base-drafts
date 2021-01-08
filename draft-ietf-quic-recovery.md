@@ -1656,8 +1656,8 @@ kMinimumWindow:
 : Minimum congestion window in bytes as described in {{initial-cwnd}}.
 
 kLossReductionFactor:
-: Reduction in congestion window when a new loss event is detected.
-  {{congestion-control}} recommends a value is 0.5.
+: Scaling factor applied to reduce the congestion window when a new loss event
+  is detected. {{congestion-control}} recommends a value is 0.5.
 
 kPersistentCongestionThreshold:
 : Period of time for persistent congestion to be established, specified as a PTO
@@ -1786,7 +1786,7 @@ OnCongestionEvent(sent_time):
 
   // Enter recovery period.
   congestion_recovery_start_time = now()
-  ssthresh = congestion_window * (1 - kLossReductionFactor)
+  ssthresh = congestion_window * kLossReductionFactor
   congestion_window = max(ssthresh, kMinimumWindow)
   // A packet can be sent to speed up loss recovery.
   MaybeSendOnePacket()
