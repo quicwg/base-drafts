@@ -1693,10 +1693,9 @@ congestion_window:
 : Maximum number of bytes-in-flight that may be sent.
 
 congestion_recovery_start_time:
-: The time when QUIC first detected congestion due to loss or ECN for
-  the current recovery period, causing
-  it to enter congestion recovery. When a packet sent after this time is
-  acknowledged, QUIC exits congestion recovery.
+: The time the current recovery period started due to the detection of loss
+  or ECN. When a packet sent after this time is acknowledged, QUIC exits
+  congestion recovery.
 
 ssthresh:
 : Slow start threshold in bytes.  When the congestion window is below ssthresh,
