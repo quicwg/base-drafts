@@ -7339,10 +7339,9 @@ codepoint in the selected space.  Requests for multiple codepoints MAY use a
 contiguous range.  This minimizes the risk that differing semantics are
 attributed to the same codepoint by different implementations.
 
-Use of the first available codepoint in a range is reserved for allocation using
-the Standards Action policy; see Section 4.9 of {{!RFC8126}}.  The early
-codepoint assignment process {{!EARLY-ASSIGN=RFC7120}} can be used for these
-values.
+Use of the first unassigned codepoint is reserved for allocation using the
+Standards Action policy; see Section 4.9 of {{!RFC8126}}.  The early codepoint
+assignment process {{!EARLY-ASSIGN=RFC7120}} can be used for these values.
 
 For codepoints that are encoded in variable-length integers
 ({{integer-encoding}}), such as frame types, codepoints that encode to four or
