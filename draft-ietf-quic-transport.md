@@ -4513,7 +4513,8 @@ Long Packet Type:
 
 Type-Specific Bits:
 
-: The lower four bits (those with a mask of 0x0f) of byte 0 are type-specific.
+: The semantics of the lower four bits (those with a mask of 0x0f) of byte 0 are
+  determined by the packet type.
 
 Version:
 
