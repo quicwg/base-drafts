@@ -1436,11 +1436,7 @@ packet that lists the QUIC version selected by the client.
 How to perform version negotiation is left as future work defined by future
 standards-track specifications.  In particular, that future work will
 ensure robustness against version downgrade attacks; see
-{{version-downgrade}}.  New versions of QUIC (including
-non-standards-track versions) might be specified prior to the
-availability of a version negotiation mechanism.  Until a version
-negotiation mechanism is available, new versions of QUIC MUST respond to
-Version Negotiation packets as specified above.
+{{version-downgrade}}.
 
 
 ### Version Negotiation Between Draft Versions
