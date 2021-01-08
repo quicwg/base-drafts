@@ -118,8 +118,9 @@ This document uses terms and notational conventions from {{QUIC-TRANSPORT}}.
 
 # Notational Conventions
 
-Packet diagrams in this document use a format defined in {{QUIC-TRANSPORT}} to
-illustrate the order and size of fields.
+Packet diagrams in this document use a format taken from {{QUIC-TRANSPORT}} to
+illustrate the order and size of fields.  That format is defined in this
+section.
 
 Complex fields are named and then followed by a list of fields surrounded by a
 pair of matching braces. Each field in this list is separated by commas.
