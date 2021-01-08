@@ -654,9 +654,9 @@ initiated by a peer, receipt of a MAX_STREAM_DATA or STOP_SENDING frame for the
 sending part of the stream also creates the receiving part.  The initial state
 for the receiving part of a stream is "Recv".
 
-The receiving part of a stream enters the "Recv" state when the sending part of
-a bidirectional stream initiated by the endpoint (type 0 for a client, type 1
-for a server) enters the "Ready" state.
+For a bidirectional stream, the receiving part enters the "Recv" state when the
+sending part of the stream initiated by the endpoint (type 0 for a client, type
+1 for a server) enters the "Ready" state.
 
 An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
 frame is received from the peer for that stream.  Receiving a MAX_STREAM_DATA
