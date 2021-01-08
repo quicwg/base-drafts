@@ -610,7 +610,7 @@ or acknowledged, when the handshake is confirmed (Section 4.1.2 of
 of the round-trip time and for the correct packet across packet number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
-PTO period being set to twice its current value, in each packet number space. The PTO backoff factor is reset
+PTO period being set to twice its current value. The PTO backoff factor is reset
 when an acknowledgment is received, except in the following case. A server
 might take longer to respond to packets during the handshake than otherwise.  To
 protect such a server from repeated client probes, the PTO backoff is not reset
