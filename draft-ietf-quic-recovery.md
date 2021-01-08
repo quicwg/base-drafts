@@ -355,8 +355,8 @@ frequently observable.
 ## Estimating smoothed_rtt and rttvar {#smoothed-rtt}
 
 smoothed_rtt is an exponentially-weighted moving average of an endpoint's RTT
-samples, and rttvar represents the variation in the RTT samples, estimated using a
-mean variation.
+samples, and rttvar represents the variation in the RTT samples, estimated using
+a mean variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
 acknowledgment delays. These delays are decoded from the ACK Delay field of
