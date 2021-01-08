@@ -1304,7 +1304,7 @@ largest_acked_packet\[kPacketNumberSpace]:
 : The largest packet number acknowledged in the packet number space so far.
 
 loss_time\[kPacketNumberSpace]:
-: The earliest time at which an additional packet in that packet number space will be
+: The time at which the next packet in that packet number space can be
   considered lost based on exceeding the reordering window in time.
 
 sent_packets\[kPacketNumberSpace]:
