@@ -768,11 +768,11 @@ initial RTT estimate.
 
 ## Discarding Keys and Packet State {#discarding-packets}
 
-When Initial and Handshake packet protection keys are discarded (see Section 4.9 of {{QUIC-TLS}}),
-all packets that were sent with those keys can no longer be acknowledged because
-their acknowledgments cannot be processed anymore. The sender MUST discard
-all recovery state associated with those packets and MUST remove them from
-the count of bytes in flight.
+When Initial and Handshake packet protection keys are discarded
+(see Section 4.9 of {{QUIC-TLS}}), all packets that were sent with those keys
+can no longer be acknowledged because their acknowledgments cannot be processed
+anymore. The sender MUST discard all recovery state associated with those packets
+and MUST remove them from the count of bytes in flight.
 
 Endpoints stop sending and receiving Initial packets once they start exchanging
 Handshake packets; see Section 17.2.2.1 of {{QUIC-TRANSPORT}}. At this point,
