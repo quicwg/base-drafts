@@ -655,7 +655,7 @@ sending part of the stream also creates the receiving part.  The initial state
 for the receiving part of a stream is "Recv".
 
 For a bidirectional stream, the receiving part enters the "Recv" state when the
-sending part of the stream initiated by the endpoint (type 0 for a client, type
+sending part initiated by the endpoint (type 0 for a client, type
 1 for a server) enters the "Ready" state.
 
 An endpoint opens a bidirectional stream when a MAX_STREAM_DATA or STOP_SENDING
