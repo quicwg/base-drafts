@@ -3626,8 +3626,9 @@ data packet number space:
   application errors (type 0x1d) MUST only appear in the application data packet
   number space.
 
-- ACK frames MAY appear in any packet number space other than 0-RTT, but can only acknowledge
-  packets that appeared in that packet number space.
+- ACK frames MAY appear in any packet number space, but can only acknowledge
+  packets that appeared in that packet number space.  However, as noted below,
+  0-RTT packets cannot contain ACK frames.
 
 - All other frame types MUST only be sent in the application data packet number
   space.
@@ -4745,9 +4746,8 @@ server MAY send multiple Initial packets.  The cryptographic key exchange could
 require multiple round trips or retransmissions of this data.
 
 The payload of an Initial packet includes a CRYPTO frame (or frames) containing
-a cryptographic handshake message, ACK frames, CONNECTION_CLOSE frames of type
-0x1c, or some combination thereof.  PING and PADDING frames are also permitted.
-An endpoint that
+a cryptographic handshake message, ACK frames, or both.  PING, PADDING, and
+CONNECTION_CLOSE frames of type 0x1c are also permitted.  An endpoint that
 receives an Initial packet containing other frames can either discard the
 packet as spurious or treat it as a connection error.
 
@@ -4902,8 +4902,7 @@ Retry Packet {
 
 A Retry packet (shown in {{retry-format}}) does not contain any protected
 fields.  The value in the Unused field is set to an arbitrary value by the
-server; a client MUST NOT process those bits other than to verify the Retry
-Integrity Tag.  In addition to the fields from the
+server; a client MUST ignore these bits.  In addition to the fields from the
 long header, it contains these additional fields:
 
 Retry Token:
@@ -6594,15 +6593,12 @@ encrypted with keys derived from the TLS key exchange.  Further, parameter
 negotiation is folded into the TLS transcript and thus provides the same
 integrity guarantees as ordinary TLS negotiation.  An attacker can observe
 the client's transport parameters (as long as it knows the version-specific
-salt) but cannot observe the server's transport parameters as sent to
-the client and cannot influence
-parameter negotiation.  (The attacker could make its own connection to
-the server and observe the transport parameters sent on that
-connection.)
+salt) but cannot observe the server's transport parameters and cannot influence
+parameter negotiation.
 
 Connection IDs are unencrypted but integrity protected in all packets.
 
-This version of QUIC does not incorporate a complete or secure version negotiation mechanism;
+This version of QUIC does not incorporate a version negotiation mechanism;
 implementations of incompatible versions will simply fail to establish a
 connection.
 
@@ -6671,7 +6667,7 @@ An on-path attacker can:
 - Delay packets
 - Reorder packets
 - Drop packets
-- Split and merge datagrams along packet boundaries (though header protection obfsucates the location of packet boundaries)
+- Split and merge datagrams along packet boundaries
 
 An on-path attacker cannot:
 
@@ -6883,9 +6879,6 @@ congestion controller to permit sending at rates beyond what the network
 supports.  An endpoint MAY skip packet numbers when sending packets to detect
 this behavior.  An endpoint can then immediately close the connection with a
 connection error of type PROTOCOL_VIOLATION; see {{immediate-close}}.
-Note that introducing artificial gaps might increase the size of the
-returned ACK packets in a manner that scales roughly linearly with the
-number of gaps introduced, so fewer, larger, gaps may be more efficient.
 
 
 ## Request Forgery Attacks
