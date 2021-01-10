@@ -6872,7 +6872,7 @@ Servers SHOULD provide mitigations for this attack by limiting the usage and
 lifetime of address validation tokens; see {{validate-future}}.
 
 
-## Optimistic ACK Attack (#optimistic-ack-attack}
+## Optimistic ACK Attack {#optimistic-ack-attack}
 
 An endpoint that acknowledges packets it has not received might cause a
 congestion controller to permit sending at rates beyond what the network
