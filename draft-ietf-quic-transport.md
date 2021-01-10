@@ -204,7 +204,8 @@ This document describes the core QUIC protocol and is structured as follows:
   - {{error-codes}} (Errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
-{{QUIC-RECOVERY}}, and the use of TLS and other cryptographic mechanisms {{QUIC-TLS}}.
+{{QUIC-RECOVERY}}, and the use of TLS and other cryptographic mechanisms
+{{QUIC-TLS}}.
 
 This document defines QUIC version 1, which conforms to the protocol invariants
 in {{QUIC-INVARIANTS}}.
@@ -1107,8 +1108,8 @@ route to the correct endpoint. However, multiplexing connections on the same
 local IP address and port while using zero-length connection IDs will cause
 failures in the presence of peer connection migration, NAT rebinding, and client
 port reuse. An endpoint MUST NOT use the same IP address and port for multiple
-concurrent connections with zero-length connection IDs, unless it is certain that those
-protocol features are not in use.
+concurrent connections with zero-length connection IDs, unless it is certain
+that those protocol features are not in use.
 
 When an endpoint uses a non-zero-length connection ID, it needs to ensure that
 the peer has a supply of connection IDs from which to choose for packets sent to
@@ -1496,8 +1497,8 @@ properties:
    * keying material is usable for packet protection for both 0-RTT and 1-RTT
      packets
 
-* authenticated exchange of values for transport parameters of both endpoints, and
-  confidentiality protection for server transport parameters (see
+* authenticated exchange of values for transport parameters of both endpoints,
+  and confidentiality protection for server transport parameters (see
   {{transport-parameters}})
 
 * authenticated negotiation of an application protocol (TLS uses ALPN
@@ -2645,8 +2646,8 @@ UDP port from which it sends packets at the same time might cause the packet to
 appear as a connection migration. This ensures that the mechanisms that support
 migration are exercised even for clients that do not experience NAT rebindings
 or genuine migrations.  Changing port number can cause a peer to reset its
-congestion control state (see {{migration-cc}}), so the port SHOULD only be changed
-infrequently.
+congestion control state (see {{migration-cc}}), so the port SHOULD only be
+changed infrequently.
 
 An endpoint that exhausts available connection IDs cannot probe new paths or
 initiate migration, nor can it respond to probes or attempts by its peer to
@@ -5446,10 +5447,11 @@ application protocol wishes to prevent the connection from timing out; see
 Receivers send ACK frames (types 0x02 and 0x03) to inform senders of packets
 they have received and processed. The ACK frame contains one or more ACK Ranges.
 ACK Ranges identify acknowledged packets. If the frame type is 0x03, ACK frames
-also contain the cumulative count of QUIC packets with associated ECN marks received on the
-connection up until this point.  QUIC implementations MUST properly handle both
-types and, if they have enabled ECN for packets they send, they SHOULD use the
-information in the ECN section to manage their congestion state.
+also contain the cumulative count of QUIC packets with associated ECN marks
+received on the connection up until this point.  QUIC implementations MUST
+properly handle both types and, if they have enabled ECN for packets they send,
+they SHOULD use the information in the ECN section to manage their congestion
+state.
 
 QUIC acknowledgments are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
@@ -5524,10 +5526,10 @@ ECN Counts:
 
 ### ACK Ranges {#ack-ranges}
 
-Each ACK Range consists of alternating Gap and ACK Range Length values in descending
-packet number order. ACK Ranges can be repeated. The number of Gap and ACK
-Range Length values is determined by the ACK Range Count field; one of each value is
-present for each value in the ACK Range Count field.
+Each ACK Range consists of alternating Gap and ACK Range Length values in
+descending packet number order. ACK Ranges can be repeated. The number of Gap
+and ACK Range Length values is determined by the ACK Range Count field; one of
+each value is present for each value in the ACK Range Count field.
 
 ACK Ranges are structured as shown in {{ack-range-format}}.
 
@@ -5553,9 +5555,9 @@ ACK Range Length:
   packets preceding the largest packet number, as determined by the
   preceding Gap.
 
-Gap and ACK Range Length values use a relative integer encoding for efficiency.  Though
-each encoded value is positive, the values are subtracted, so that each ACK
-Range describes progressively lower-numbered packets.
+Gap and ACK Range Length values use a relative integer encoding for efficiency.
+Though each encoded value is positive, the values are subtracted, so that each
+ACK Range describes progressively lower-numbered packets.
 
 Each ACK Range acknowledges a contiguous range of packets by indicating the
 number of acknowledged packets that precede the largest packet number in that
@@ -5592,10 +5594,10 @@ connection error of type FRAME_ENCODING_ERROR.
 
 ### ECN Counts {#ack-ecn-counts}
 
-The ACK frame uses the least significant bit of the type value (that is, type 0x03) to indicate
-ECN feedback and report receipt of QUIC packets with associated ECN codepoints
-of ECT(0), ECT(1), or CE in the packet's IP header.  ECN Counts are only present
-when the ACK frame type is 0x03.
+The ACK frame uses the least significant bit of the type value (that is, type
+0x03) to indicate ECN feedback and report receipt of QUIC packets with
+associated ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP header.
+ECN Counts are only present when the ACK frame type is 0x03.
 
 When present, there are 3 ECN counts, as shown in {{ecn-count-format}}.
 
@@ -6528,11 +6530,11 @@ of the security properties of QUIC depend on the TLS handshake providing these
 properties. Any attack on the TLS handshake could affect QUIC.
 
 Any attack on the TLS handshake that compromises the secrecy or uniqueness
-of session keys, or the authentication of the participating peers, affects other security guarantees provided by QUIC that depend
-on those keys. For instance, migration ({{migration}}) depends on the efficacy
-of confidentiality protections, both for the negotiation of keys using the TLS
-handshake and for QUIC packet protection, to avoid linkability across network
-paths.
+of session keys, or the authentication of the participating peers, affects other
+security guarantees provided by QUIC that depend on those keys. For instance,
+migration ({{migration}}) depends on the efficacy of confidentiality
+protections, both for the negotiation of keys using the TLS handshake and for
+QUIC packet protection, to avoid linkability across network paths.
 
 An attack on the integrity of the TLS handshake might allow an attacker to
 affect the selection of application protocol or QUIC version.
@@ -6608,8 +6610,8 @@ connection.
 Packet protection ({{packet-protected}}) applies authenticated encryption
 to all packets except Version Negotiation packets, though Initial and Retry
 packets have limited protection due to the use of version-specific
-keying material; see {{QUIC-TLS}} for more details. This section considers passive and
-active attacks against protected packets.
+keying material; see {{QUIC-TLS}} for more details. This section considers
+passive and active attacks against protected packets.
 
 Both on-path and off-path attackers can mount a passive attack in which they
 save observed packets for an offline attack against packet protection at a
@@ -6683,9 +6685,9 @@ In the presence of an on-path attacker, QUIC aims to provide the following
 properties:
 
 1. An on-path attacker can prevent use of a path for a connection, causing
-   the connection to fail if it cannot use a different path that does not contain the
-   attacker. This can be achieved by dropping all packets, modifying them so
-   that they fail to decrypt, or other methods.
+   the connection to fail if it cannot use a different path that does not
+   contain the attacker. This can be achieved by dropping all packets, modifying
+   them so that they fail to decrypt, or other methods.
 
 2. An on-path attacker can prevent migration to a new path for which the
    attacker is also on-path by causing path validation to fail on the new path.
@@ -7388,10 +7390,10 @@ recording relevant information that was learned.
 If no use of the codepoint was identified and no request was made to update the
 registration, the codepoint MAY be removed from the registry.
 
-This review and consultation process also applies to requests to change a provisional registration into
-a permanent registration, except that the goal is not to determine whether there
-is no use of the codepoint, but to determine that the registration is an
-accurate representation of any deployed usage.
+This review and consultation process also applies to requests to change a
+provisional registration into a permanent registration, except that the goal is
+not to determine whether there is no use of the codepoint, but to determine that
+the registration is an accurate representation of any deployed usage.
 
 
 ### Permanent Registrations {#iana-permanent}
