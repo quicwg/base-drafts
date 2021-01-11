@@ -5304,7 +5304,7 @@ disable_active_migration (0x0c):
 : The disable active migration transport parameter is included if the endpoint
   does not support active connection migration ({{migration}}) on the address
   being used during the handshake.  An endpoint that receives this transport
-  parameter MUST NOT use a a new local address when sending to the address that
+  parameter MUST NOT use a new local address when sending to the address that
   the peer used during the handshake.  This transport parameter does not
   prohibit connection migration after a client has acted on a preferred_address
   transport parameter.  This parameter is a zero-length value.
