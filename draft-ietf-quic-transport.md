@@ -3173,8 +3173,8 @@ packets on this connection.
 ### Calculating a Stateless Reset Token {#reset-token}
 
 The stateless reset token MUST be difficult to guess.  In order to create a
-Stateless Reset Token, an endpoint could randomly generate ({{!RFC4086}}) a
-secret for every connection that it creates.  However, this presents a
+Stateless Reset Token, an endpoint could randomly generate ({{?RANDOM=RFC4086}})
+a secret for every connection that it creates.  However, this presents a
 coordination problem when there are multiple instances in a cluster or a storage
 problem for an endpoint that might lose state.  Stateless reset specifically
 exists to handle the case where state is lost, so this approach is suboptimal.
