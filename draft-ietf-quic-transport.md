@@ -636,7 +636,7 @@ by the sender.
    | Recvd |  Recv All Data    | Recvd |
    +-------+<-- (optional) ----+-------+
        |                           |
-       | App Read All Data         | App Read RST
+       | App Read All Data         | App Read Reset
        v                           v
    +-------+                   +-------+
    | Data  |                   | Reset |
