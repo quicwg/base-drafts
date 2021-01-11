@@ -490,9 +490,10 @@ Two state machines are described: one for the streams on which an endpoint
 transmits data ({{stream-send-states}}), and another for streams on which an
 endpoint receives data ({{stream-recv-states}}).
 
-Unidirectional streams use the applicable state machine directly.  Bidirectional
-streams use both state machines.  For the most part, the use of these state
-machines is the same whether the stream is unidirectional or bidirectional.  The
+Unidirectional streams use either the sending or receiving state machine
+depending on the stream type and endpoint role. Bidirectional streams use both
+state machines at both endpoints. For the most part, the use of these state
+machines is the same whether the stream is unidirectional or bidirectional. The
 conditions for opening a stream are slightly more complex for a bidirectional
 stream because the opening of either the send or receive side causes the stream
 to open in both directions.
