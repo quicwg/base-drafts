@@ -209,9 +209,10 @@ multiple round trips.
 
 ## No Reneging
 
-QUIC ACKs contain information that is similar to TCP SACK, but QUIC does not
-allow any acknowledged packet to be reneged, greatly simplifying implementations
-on both sides and reducing memory pressure on the sender.
+QUIC ACK frames contain information similar to that in TCP Selective
+Acknowledgements (SACKs, {{?RFC2018}}). However, QUIC does not allow a packet
+acknowledgement to be reneged, greatly simplifying implementations on both sides
+and reducing memory pressure on the sender.
 
 ## More ACK Ranges
 
@@ -228,27 +229,25 @@ more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
 ## Probe Timeout Replaces RTO and TLP
 
 QUIC uses a probe timeout (PTO; see {{pto}}), with a timer based on TCP's RTO
-computation.  QUIC's PTO includes the peer's maximum expected acknowledgment
-delay instead of using a fixed minimum timeout. QUIC does not collapse the
-congestion window until persistent congestion ({{persistent-congestion}}) is
-declared, unlike TCP, which collapses the congestion window upon expiry of an
-RTO.  Instead of collapsing the congestion window and declaring everything
-in-flight lost, QUIC allows probe packets to temporarily exceed the congestion
-window whenever the timer expires.
+computation; see {{?RFC6297}}.  QUIC's PTO includes the peer's maximum expected
+acknowledgment delay instead of using a fixed minimum timeout.
 
-In doing this, QUIC avoids unnecessary congestion window reductions, obviating
-the need for correcting mechanisms such as F-RTO ({{?RFC5682}}). Since QUIC does
-not collapse the congestion window on a PTO expiration, a QUIC sender is not
+Similar to the RACK-TLP loss detection algorithm for TCP
+({{?RACK=I-D.ietf-tcpm-rack}}), QUIC does not collapse the congestion window
+when the PTO expires, since a single packet loss at the tail does not indicate
+persistent congestion.  Instead, QUIC collapses the congestion window when
+persistent congestion is declared; see {{persistent-congestion}}. In doing this,
+QUIC avoids unnecessary congestion window reductions, obviating the need for
+correcting mechanisms such as F-RTO ({{?RFC5682}}). Since QUIC does not
+collapse the congestion window on a PTO expiration, a QUIC sender is not
 limited from sending more in-flight packets after a PTO expiration if it still
 has available congestion window. This occurs when a sender is
 application-limited and the PTO timer expires. This is more aggressive than
 TCP's RTO mechanism when application-limited, but identical when not
 application-limited.
 
-A single packet loss at the tail does not indicate persistent congestion, so
-QUIC specifies a time-based definition to ensure one or more packets are sent
-prior to a dramatic decrease in congestion window; see
-{{persistent-congestion}}.
+QUIC allows probe packets to temporarily exceed the congestion window whenever
+the timer expires.
 
 ## The Minimum Congestion Window is Two Packets
 
@@ -467,7 +466,7 @@ path, whereas loss detection also relies upon key availability.
 
 Acknowledgment-based loss detection implements the spirit of TCP's Fast
 Retransmit ({{?RFC5681}}), Early Retransmit ({{?RFC5827}}), FACK ({{FACK}}),
-SACK loss recovery ({{?RFC6675}}), and RACK ({{?RACK=I-D.ietf-tcpm-rack}}). This
+SACK loss recovery ({{?RFC6675}}), and RACK-TLP ({{?RACK}}). This
 section provides an overview of how these algorithms are implemented in QUIC.
 
 A packet is declared lost if it meets all the following conditions:
@@ -535,7 +534,7 @@ multiplier, is 9/8. The RECOMMENDED value of the timer granularity
 
 Note:
 
-: TCP's RACK ({{?RACK=I-D.ietf-tcpm-rack}}) specifies a slightly larger
+: TCP's RACK ({{?RACK}}) specifies a slightly larger
 threshold, equivalent to 5/4, for a similar purpose. Experience with QUIC shows
 that 9/8 works well.
 
@@ -830,7 +829,7 @@ an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
 the maximum datagram size (max_datagram_size), limited to the larger of 14720
 bytes or twice the maximum datagram size. This follows the analysis and
 recommendations in {{?RFC6928}}, increasing the byte limit to account for the
-smaller 8 byte overhead of UDP compared to the 20 byte overhead for TCP.
+smaller 8-byte overhead of UDP compared to the 20-byte overhead for TCP.
 
 If the maximum datagram size changes during the connection, the initial
 congestion window SHOULD be recalculated with the new size.  If the maximum
