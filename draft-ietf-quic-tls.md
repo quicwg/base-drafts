@@ -1943,9 +1943,9 @@ limit the level of amplification.
 {{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
 algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
-one of those algorithms (HN1). Header protection uses the output of the packet
-protection AEAD to determine `sample`, and then encrypts the header field using
-a pseudorandom function (PRF) as follows:
+one of those algorithms (HN1). Header protection is applied after the packet
+protection AEAD, sampling a set of bytes (`sample`) from the AEAD output and
+encrypting the header field using a pseudorandom function (PRF) as follows:
 
 ~~~
 protected_field = field XOR PRF(hp_key, sample)
