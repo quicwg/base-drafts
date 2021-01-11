@@ -822,10 +822,10 @@ frame.
 Receivers need to limit the amount of data that they are required to buffer, in
 order to prevent a fast sender from overwhelming them or a malicious sender from
 consuming a large amount of memory.  To enable a receiver to limit memory
-commitments for a connection, streams are
-flow controlled both individually and across a connection as a whole.  A QUIC receiver controls
-the maximum amount of data the sender can send on a stream as well as across all streams at any time, as
-described in {{data-flow-control}} and {{fc-credit}}.
+commitments for a connection, streams are flow controlled both individually and
+across a connection as a whole.  A QUIC receiver controls the maximum amount of
+data the sender can send on a stream as well as across all streams at any time,
+as described in {{data-flow-control}} and {{fc-credit}}.
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
 the maximum cumulative number of streams that its peer can initiate, as
