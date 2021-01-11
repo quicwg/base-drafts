@@ -6317,9 +6317,11 @@ Reason Phrase Length:
 
 Reason Phrase:
 
-: A human-readable explanation for why the connection was closed.  This can be
-  zero length if the sender chooses not to give details beyond the Error Code.
-  This SHOULD be a UTF-8 encoded string {{!RFC3629}}.
+: Additional diagnostic information for the closure.  This can be zero length if
+  the sender chooses not to give details beyond the Error Code.  This SHOULD be
+  a UTF-8 encoded string {{!RFC3629}}, though the frame does not carry
+  information, such as language tags, that would aid comprehension by any entity
+  other than the one that created the text.
 
 The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
 sent using 0-RTT or 1-RTT packets; see {{frames-and-spaces}}.  When an
