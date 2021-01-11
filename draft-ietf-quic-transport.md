@@ -852,7 +852,7 @@ entire connection.  This leads to two levels of data flow control in QUIC:
 * Stream flow control, which prevents a single stream from consuming the entire
   receive buffer for a connection by limiting the amount of data that can be
   sent on each stream.
-  
+
 * Connection flow control, which prevents senders from exceeding a receiver's
   buffer capacity for the connection, by limiting the total bytes of stream data
   sent in STREAM frames on all streams.
