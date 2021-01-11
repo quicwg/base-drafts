@@ -318,7 +318,7 @@ x (?) = C..D:
 : Indicates that x is optional (and has length of E)
 
 x (E) ...:
-: Indicates that zero or more occurences of x are present (and that each
+: Indicates that zero or more instances of x are present (and that each
   instance is length E)
 
 This document uses network byte order (that is, big endian) values.  Fields
