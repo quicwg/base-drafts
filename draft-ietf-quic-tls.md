@@ -684,8 +684,8 @@ of type PROTOCOL_VIOLATION.
 
 QUIC can use the session resumption feature of TLS 1.3. It does this by
 carrying NewSessionTicket messages in CRYPTO frames after the handshake is
-complete. Session resumption is the basis of 0-RTT, but can be used without
-also enabling 0-RTT.
+complete. Session resumption can be used to provide 0-RTT, and can also be
+used when 0-RTT is disabled.
 
 Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
