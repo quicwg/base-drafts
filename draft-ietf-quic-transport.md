@@ -5111,10 +5111,8 @@ bit is available after version negotiation and connection establishment are
 completed. On-path measurement and use of the latency spin bit is further
 discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
-The spin bit is an OPTIONAL feature of this version of QUIC. A QUIC stack that
-chooses to support the spin bit MUST implement it as specified in this section.
-A QUIC stack that chooses not to support the spin bit MUST behave as if it were
-disabled for all sessions.
+The spin bit is an OPTIONAL feature of this version of QUIC. An endpoint that
+does not support this feature MUST disable it, as defined below.
 
 Each endpoint unilaterally decides if the spin bit is enabled or disabled for a
 connection. Implementations MUST allow administrators of clients and servers
