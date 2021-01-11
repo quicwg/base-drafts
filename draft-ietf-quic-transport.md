@@ -1421,7 +1421,7 @@ expectation that it will eventually receive an Initial packet.
 
 Version Negotiation packets are designed to allow for functionality to be
 defined in the future that allows QUIC to negotiate the version of QUIC to use
-between endpoints.  Future standards-track specifications might change how
+for a connection.  Future standards-track specifications might change how
 implementations that support multiple versions of QUIC react to Version
 Negotiation packets received in response to an attempt to establish a
 connection using this version.
