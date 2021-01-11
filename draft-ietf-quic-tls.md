@@ -1944,11 +1944,11 @@ limit the level of amplification.
 algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection uses the output of the packet
-protection AEAD to determine `sampled_bytes`, and then encrypts the header field using
+protection AEAD to determine `sample`, and then encrypts the header field using
 a pseudorandom function (PRF) as follows:
 
 ~~~
-protected_field = field XOR PRF(hp_key, sampled_bytes)
+protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
 The header protection variants in this document use a pseudorandom permutation
@@ -2151,9 +2151,9 @@ Because the header uses a 4-byte packet number encoding, the first 16 bytes of
 the protected payload is sampled, then applied to the header:
 
 ~~~
-sampled_data = d1b1c98dd7689fb8ec11d242b123dc9b
+sample = d1b1c98dd7689fb8ec11d242b123dc9b
 
-mask = AES-ECB(hp, sampled_data)[0..4]
+mask = AES-ECB(hp, sample)[0..4]
      = 437b9aec36
 
 header[0] ^= mask[0] & 0x0f
@@ -2230,7 +2230,7 @@ As a result, after protection, the header protection sample is taken starting
 from the third protected byte:
 
 ~~~
-sampled_data = 2cd0991cd25b0aac406a5816b6394100
+sample = 2cd0991cd25b0aac406a5816b6394100
 mask   = 2ec0d8356a
 header = cf000000010008f067a5502a4262b5004075c0d9
 ~~~
@@ -2309,7 +2309,7 @@ The resulting ciphertext is the minimum size possible. One byte is skipped to
 produce the sample for header protection.
 
 ~~~
-sampled_data = 5e5cd55c41f69080575d7999c25a5bfb
+sample = 5e5cd55c41f69080575d7999c25a5bfb
 mask   = aefefe7d03
 header = 4cfe4189
 ~~~
