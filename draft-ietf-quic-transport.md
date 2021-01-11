@@ -136,10 +136,11 @@ for clients to send data immediately (0-RTT), which might require prior
 communication to enable.
 
 Endpoints communicate in QUIC by exchanging QUIC packets. Most packets contain
-frames, which carry control information and application data between
-endpoints. QUIC authenticates all packets and encrypts as much as is practical.
-QUIC packets are carried in UDP datagrams ({{!UDP=RFC0768}}) to better
-facilitate deployment in existing systems and networks.
+frames, which carry control information and application data between endpoints.
+QUIC authenticates the entirety of each packet and encrypts as much of each
+packet as is practical. QUIC packets are carried in UDP datagrams
+({{!UDP=RFC0768}}) to better facilitate deployment in existing systems and
+networks.
 
 Application protocols exchange information over a QUIC connection via streams,
 which are ordered sequences of bytes. Two types of stream can be created:
