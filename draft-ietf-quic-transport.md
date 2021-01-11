@@ -5126,9 +5126,7 @@ approximately one in eight network paths.
 When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
-independently for each connection ID. One way to accomplish this is to adjust
-the mask used for applying header protection to the first byte to also cover the
-spin bit; see Section 5.4.1 of {{QUIC-TLS}}.
+independently for each connection ID.
 
 If the spin bit is enabled for the connection, the endpoint maintains a spin
 value for each network path and sets the spin bit in the packet header to the
