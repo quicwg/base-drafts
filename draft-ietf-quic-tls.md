@@ -837,12 +837,13 @@ encryption level as the packet being acknowledged.  Thus, it is possible that
 keys for a lower encryption level are needed for a short time after keys for a
 newer encryption level are available.
 
-An endpoint cannot discard keys for a given encryption level unless it has both
-received and acknowledged all CRYPTO frames for that encryption level and when
-all CRYPTO frames for that encryption level have been acknowledged by its peer.
-However, this does not guarantee that no further packets will need to be
-received or sent at that encryption level because a peer might not have received
-all the acknowledgments necessary to reach the same state.
+An endpoint cannot discard keys for a given encryption level unless it has
+received all the cryptographic handshake messages from its peer at that
+encryption level and its peer has done the same.  Different methods for
+determining this are provided for Initial keys ({{discard-initial}}) and
+Handshake keys ({{discard-handshake}}).  These methods do not prevent packets
+from being received or sent at that encryption level because a peer might not
+have received all the acknowledgments necessary.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
 currently-available encryption level.  Only ACK frames and retransmissions of
@@ -850,7 +851,7 @@ data in CRYPTO frames are sent at a previous encryption level.  These packets
 MAY also include PADDING frames.
 
 
-### Discarding Initial Keys
+### Discarding Initial Keys {#discard-initial}
 
 Packets protected with Initial secrets ({{initial-secrets}}) are not
 authenticated, meaning that an attacker could spoof packets with the intent to
@@ -868,7 +869,7 @@ This results in abandoning loss recovery state for the Initial encryption level
 and ignoring any outstanding Initial packets.
 
 
-### Discarding Handshake Keys
+### Discarding Handshake Keys {#discard-handshake}
 
 An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
 ({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame as soon
