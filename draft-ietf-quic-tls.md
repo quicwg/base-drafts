@@ -2152,8 +2152,9 @@ baf4559fedba753de171fa71f50f1ce1 5d43e994ec74d748002b000302030400
 75300901100f088394c8f03e51570806 048000ffff
 ~~~
 
-The unprotected header includes the connection ID and a 4-byte packet number
-encoding for a packet number of 2:
+The unprotected header indicates a length of 1182 bytes: the 4-byte packet
+number, 1162 bytes of frames, and the 16-byte authentication tag.  The header
+includes the connection ID and a packet number of 2:
 
 ~~~
 c300000001088394c8f03e5157080000449e00000002
