@@ -4431,10 +4431,12 @@ encoding properties.
 
 Examples and a sample decoding algorithm are shown in {{sample-varint}}.
 
+Values do not need to be encoded on the minimum number of bytes necessary, with
+the sole exception of the Frame Type field; see {{frames}}.
+
 Versions ({{versions}}), packet numbers sent in the header
 ({{packet-encoding}}), and the length of connection IDs in long header packets
 ({{long-header}}) are described using integers, but do not use this encoding.
-
 
 
 # Packet Formats {#packet-formats}
