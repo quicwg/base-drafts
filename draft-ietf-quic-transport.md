@@ -4503,8 +4503,9 @@ Header Form:
 
 Fixed Bit:
 
-: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version and MUST be discarded.
+: The next bit (0x40) of byte 0 is set to 1, unless the packet is a Version
+  Negotiation packet.  Packets containing a zero value for this bit are not
+  valid packets in this version and MUST be discarded.
 
 Long Packet Type:
 
