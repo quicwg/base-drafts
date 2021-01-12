@@ -144,8 +144,8 @@ could be used; see {{tls-version}}.
 
 ## TLS Overview
 
-TLS provides two endpoints with a way to establish a means of communication
-over an untrusted medium (for example, the Internet). TLS enables authentication of
+TLS provides two endpoints with a way to establish a means of communication over
+an untrusted medium (for example, the Internet). TLS enables authentication of
 peers and provides confidentiality and integrity protection for messages that
 endpoints exchange.
 
@@ -384,11 +384,11 @@ In this document, the TLS handshake is considered confirmed at the server when
 the handshake completes.  At the client, the handshake is considered confirmed
 when a HANDSHAKE_DONE frame is received.
 
-Additionally, a client MAY consider the handshake to be confirmed when it receives an
-acknowledgment for a 1-RTT packet.  This can be implemented by recording the
-lowest packet number sent with 1-RTT keys, and comparing it to the Largest
-Acknowledged field in any received 1-RTT ACK frame: once the latter is greater
-than or equal to the former, the handshake is confirmed.
+Additionally, a client MAY consider the handshake to be confirmed when it
+receives an acknowledgment for a 1-RTT packet.  This can be implemented by
+recording the lowest packet number sent with 1-RTT keys, and comparing it to the
+Largest Acknowledged field in any received 1-RTT ACK frame: once the latter is
+greater than or equal to the former, the handshake is confirmed.
 
 
 ### Sending and Receiving Handshake Messages
@@ -638,7 +638,8 @@ cause this message to grow.
 For servers, in addition to connection IDs and tokens, the size of TLS session
 tickets can have an effect on a client's ability to connect efficiently.
 Minimizing the size of these values increases the probability that clients can
-use them and still fit their entire ClientHello message in their first Initial packet.
+use them and still fit their entire ClientHello message in their first Initial
+packet.
 
 The TLS implementation does not need to ensure that the ClientHello is large
 enough to meet the requirements for QUIC packets. QUIC PADDING frames are added
@@ -834,9 +835,9 @@ information.
 
 ## Discarding Unused Keys
 
-After QUIC has completed a move to a new encryption level, packet protection keys for previous
-encryption levels can be discarded.  This occurs several times during the
-handshake, as well as when keys are updated; see {{key-update}}.
+After QUIC has completed a move to a new encryption level, packet protection
+keys for previous encryption levels can be discarded.  This occurs several times
+during the handshake, as well as when keys are updated; see {{key-update}}.
 
 Packet protection keys are not discarded immediately when new keys are
 available.  If packets from a lower encryption level contain CRYPTO frames,
@@ -1018,10 +1019,10 @@ packets from future versions.
 The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
-The secrets used for constructing subsequent Initial packets change when a server sends a
-Retry packet, to use the connection ID value selected by the server.  The secrets
-do not change when a client changes the Destination Connection ID it uses in
-response to an Initial packet from the server.
+The secrets used for constructing subsequent Initial packets change when a
+server sends a Retry packet, to use the connection ID value selected by the
+server.  The secrets do not change when a client changes the Destination
+Connection ID it uses in response to an Initial packet from the server.
 
 Note:
 
@@ -1592,7 +1593,8 @@ cause the key update to be completed.  If an endpoint detects a second update
 before it has sent any packets with updated keys containing an
 acknowledgment for the packet that initiated the key update, it indicates that
 its peer has updated keys twice without awaiting confirmation.  An endpoint MAY
-treat such consecutive key updates as a connection error of type KEY_UPDATE_ERROR.
+treat such consecutive key updates as a connection error of type
+KEY_UPDATE_ERROR.
 
 An endpoint that receives an acknowledgment that is carried in a packet
 protected with old keys where any acknowledged packet was protected with newer
@@ -1654,12 +1656,13 @@ might arrive if they were delayed by the network.  Retaining old packet
 protection keys allows these packets to be successfully processed.
 
 As packets protected with keys from the next key phase use the same Key Phase
-value as those protected with keys from the previous key phase, it is
-necessary to distinguish between the two, if packets protected with old keys are to be processed at all.  This can be done using packet
-numbers.  A recovered packet number that is lower than any packet number from
-the current key phase uses the previous packet protection keys; a recovered
-packet number that is higher than any packet number from the current key phase
-requires the use of the next packet protection keys.
+value as those protected with keys from the previous key phase, it is necessary
+to distinguish between the two, if packets protected with old keys are to be
+processed.  This can be done using packet numbers.  A recovered packet number
+that is lower than any packet number from the current key phase uses the
+previous packet protection keys; a recovered packet number that is higher than
+any packet number from the current key phase requires the use of the next packet
+protection keys.
 
 Some care is necessary to ensure that any process for selecting between
 previous, current, and next packet protection keys does not expose a timing side
@@ -1681,11 +1684,11 @@ declared lost by a peer even if they were acknowledged and short enough to
 allow a peer to initiate further key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
-decrypt packets that initiate a key update during the period when the peer retains old
-keys.  Endpoints SHOULD wait three times the PTO before initiating a key update
-after receiving an acknowledgment that confirms that the previous key update was
-received.  Failing to allow sufficient time could lead to packets being
-discarded.
+decrypt packets that initiate a key update during the period when the peer
+retains old keys.  Endpoints SHOULD wait three times the PTO before initiating a
+key update after receiving an acknowledgment that confirms that the previous key
+update was received.  Failing to allow sufficient time could lead to packets
+being discarded.
 
 An endpoint SHOULD retain old read keys for no more than three times the PTO
 after having received a packet protected using the new keys. After this period,
@@ -2082,8 +2085,9 @@ included. All values are shown in hexadecimal.
 
 ## Keys
 
-The labels generated during the execution of the HKDF-Expand-Label function (that is, HkdfLabel.label) and part of the value
-given to the HKDF-Expand function in order to produce its output are:
+The labels generated during the execution of the HKDF-Expand-Label function
+(that is, HkdfLabel.label) and part of the value given to the HKDF-Expand
+function in order to produce its output are:
 
 client in:
 : 00200f746c73313320636c69656e7420696e00
