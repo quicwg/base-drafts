@@ -271,7 +271,7 @@ when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the network
 path's RTT. An endpoint computes the following three values for each path:
-the minimum value over a period of time  (min_rtt), an
+the minimum value over a period of time (min_rtt), an
 exponentially-weighted moving average (smoothed_rtt), and the mean deviation
 (referred to as "variation" in the rest of this document) in the observed RTT
 samples (rttvar).
