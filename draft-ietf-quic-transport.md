@@ -2642,14 +2642,14 @@ alternative services {{?ALTSVC=RFC7838}}.  Information that might allow correct
 routing of packets across multiple network paths will also allow activity on
 those paths to be linked by entities other than the peer.
 
-A client might wish to reduce linkability by employing a new connection ID and
-source UDP port when sending traffic after a period of inactivity.  Changing the
-UDP port from which it sends packets at the same time might cause the packet to
-appear as a connection migration. This ensures that the mechanisms that support
-migration are exercised even for clients that do not experience NAT rebindings
-or genuine migrations.  Changing port number can cause a peer to reset its
-congestion control state (see {{migration-cc}}), so the port SHOULD only be
-changed infrequently.
+A client might wish to reduce linkability by switching to a new connection ID,
+source UDP port, or IP address (see {{?RFC4941}}) when sending traffic after a
+period of inactivity.  Changing the UDP port from which it sends packets at the
+same time might cause the packet to appear as a connection migration. This
+ensures that the mechanisms that support migration are exercised even for
+clients that do not experience NAT rebindings or genuine migrations.  Changing
+port number can cause a peer to reset its congestion control state (see
+{{migration-cc}}), so the port SHOULD only be changed infrequently.
 
 An endpoint that exhausts available connection IDs cannot probe new paths or
 initiate migration, nor can it respond to probes or attempts by its peer to
