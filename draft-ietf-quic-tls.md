@@ -1110,7 +1110,7 @@ mask that might result from a shorter packet number encoding are unused.
 
 {{pseudo-hp}} shows a sample algorithm for applying header protection. Removing
 header protection only differs in the order in which the packet number length
-(pn_length) is determined.
+(pn_length) is determined (here "^" is used to represent exclusive or).
 
 ~~~
 mask = header_protection(hp_key, sample)
