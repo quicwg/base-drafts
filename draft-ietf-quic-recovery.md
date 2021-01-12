@@ -716,11 +716,11 @@ spaces.
 If the sender wants to elicit a faster acknowledgment on PTO, it can skip a
 packet number to eliminate the acknowledgment delay.
 
-When the PTO timer expires, an ack-eliciting packet MUST be sent.  An endpoint
-SHOULD include new data in this packet.  Previously sent data MAY be sent if
-no new data can be sent.  Implementations MAY use alternative strategies for
-determining the content of probe packets, including sending new or
-retransmitted data based on the application's priorities.
+An endpoint SHOULD include new data in packets that are sent on PTO expiration.
+Previously sent data MAY be sent if no new data can be sent. Implementations
+MAY use alternative strategies for determining the content of probe packets,
+including sending new or retransmitted data based on the application's
+priorities.
 
 It is possible the sender has no new or previously-sent data to send.
 As an example, consider the following sequence of events: new application data
