@@ -406,7 +406,7 @@ acquires handshake bytes before sending its first packet.  A QUIC server starts
 the process by providing TLS with the client's handshake bytes.
 
 At any time, the TLS stack at an endpoint will have a current sending
-encryption level and receiving encryption level. TLS Encryption levels determine
+encryption level and receiving encryption level. TLS encryption levels determine
 the QUIC packet type and keys that are used for protecting data.
 
 Each encryption level is associated with a different sequence of bytes, which is
