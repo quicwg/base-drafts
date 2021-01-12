@@ -1458,7 +1458,8 @@ below shows how the single timer is set.
 This algorithm may result in the timer being set in the past, particularly if
 timers wake up late. Timers set in the past fire immediately.
 
-Pseudocode for SetLossDetectionTimer follows:
+Pseudocode for SetLossDetectionTimer follows (where the "^" operator represents
+exponentiation):
 
 ~~~
 GetLossTimeAndSpace():
