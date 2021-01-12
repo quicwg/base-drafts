@@ -2756,20 +2756,21 @@ client MAY use this connection ID on any path.
 
 ## Use of IPv6 Flow-Label and Migration {#ipv6-flow-label}
 
-Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label
-in compliance with {{!RFC6437}}, unless the local API does not allow
-setting IPv6 flow labels.
+Endpoints that send data using IPv6 SHOULD apply an IPv6 flow label in
+compliance with {{!RFC6437}}, unless the local API does not allow setting IPv6
+flow labels.
 
-The IPv6 flow label SHOULD be a pseudo-random function of the source and
-destination addresses, source and destination UDP ports, and the Destination
-Connection ID field.  The flow label generation MUST be designed to minimize the
-chances of linkability with a previously used flow label, as a stable flow
-label would enable correlating activity on multiple paths; see
-{{migration-linkability}}.
+The flow label generation MUST be designed to minimize the chances of
+linkability with a previously used flow label, as a stable flow label would
+enable correlating activity on multiple paths; see {{migration-linkability}}.
 
-A possible implementation is to compute the flow label as a cryptographic hash
-function of the source and destination addresses, source and destination
-UDP ports, Destination Connection ID field, and a local secret.
+{{?RFC6437}} suggests deriving values using a pseudorandom function to generate
+flow labels.  Including the Destination Connection ID field in addition to
+source and destination addresses when generating flow labels ensures that
+changes are synchronized with changes in other observable identifiers.  A
+cryptographic hash function that combines these inputs with a local secret is
+one way this might be implemented.
+
 
 # Connection Termination {#termination}
 
