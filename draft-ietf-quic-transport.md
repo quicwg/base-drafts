@@ -4526,10 +4526,10 @@ Header Form:
 
 Fixed Bit:
 
-: The next bit (0x40) of byte 0 is set to 1.  Packets containing a zero value
-  for this bit are not valid packets in this version and MUST be discarded.  A
-  value of 1 for this bit allows QUIC to coexist with other protocols; see
-  {{?RFC7983}}.
+: The next bit (0x40) of byte 0 is set to 1, unless the packet is a Version
+  Negotiation packet.  Packets containing a zero value for this bit are not
+  valid packets in this version and MUST be discarded.  A value of 1 for this
+  bit allows QUIC to coexist with other protocols; see {{?RFC7983}}.
 
 Long Packet Type:
 
