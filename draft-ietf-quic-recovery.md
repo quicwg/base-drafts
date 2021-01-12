@@ -1133,10 +1133,10 @@ after periods of under-utilization, such as those proposed for TCP in
 
 ## Loss and Congestion Signals
 
-Loss detection and congestion control fundamentally involve the consumption of
-signals from unauthenticated entities.  Attackers can spoof or alter delay, loss, and ECN markings.
-On-path attackers can spoof or alter these signals. An attacker can cause
-endpoints to reduce their sending rate by dropping packets, altering path delay
+Loss detection and congestion control fundamentally involve consumption of
+signals, such as delay, loss, and ECN markings, from unauthenticated
+entities. An attacker can cause endpoints to reduce their sending rate by
+manipulating these signals; by dropping packets, by altering path delay
 strategically, or by changing ECN codepoints.
 
 ## Traffic Analysis
