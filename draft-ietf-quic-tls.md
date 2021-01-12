@@ -2059,7 +2059,7 @@ included. All values are shown in hexadecimal.
 
 ## Keys
 
-The labels (Hkdf.label) generated during the execution of the HKDF-Expand-Label function and
+The labels generated during the execution of the HKDF-Expand-Label function (that is, HkdfLabel.label) and part of the value
 given to the HKDF-Expand function in order to produce its output are:
 
 client in:
