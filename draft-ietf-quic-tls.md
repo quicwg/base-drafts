@@ -725,8 +725,8 @@ notably those caused by the potential exposure to replay attack; see {{replay}}.
 
 The TLS "early_data" extension in the NewSessionTicket message is defined
 to convey (in the "max_early_data_size" parameter) the amount of TLS 0-RTT
-data the server is willing to accept.  QUIC does not use TLS 0-RTT data;
-instead, QUIC has its own 0-RTT stream.  Accordingly, the
+data the server is willing to accept.  QUIC does not use TLS 0-RTT data.
+QUIC uses 0-RTT packets to carry early data.  Accordingly, the
 "max_early_data_size" parameter is repurposed to hold a sentinel value
 0xffffffff to indicate that the server is willing to accept QUIC 0-RTT data;
 to indicate that the server does not accept 0-RTT data, the "early_data"
