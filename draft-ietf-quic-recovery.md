@@ -1087,16 +1087,17 @@ their delivery to the peer.
 Endpoints can implement pacing as they choose. A perfectly paced sender spreads
 packets exactly evenly over time. For a window-based congestion controller, such
 as the one in this document, that rate can be computed by averaging the
-congestion window over the round-trip time. Expressed as a rate in bytes:
+congestion window over the round-trip time. Expressed as a rate in units of
+bytes per time, where congestion_window is in bytes:
 
 ~~~
 rate = N * congestion_window / smoothed_rtt
 ~~~
 
-Or, expressed as an inter-packet interval:
+Or, expressed as an inter-packet interval in units of time:
 
 ~~~
-interval = smoothed_rtt * packet_size / congestion_window / N
+interval = ( smoothed_rtt * packet_size / congestion_window ) / N
 ~~~
 
 Using a value for `N` that is small, but at least 1 (for example, 1.25) ensures
@@ -1688,7 +1689,7 @@ bytes_in_flight:
   congestion feedback.
 
 congestion_window:
-: Maximum number of bytes-in-flight that may be sent.
+: Maximum number of bytes allowed to be in flight.
 
 congestion_recovery_start_time:
 : The time when QUIC first detects congestion due to loss or ECN, causing
