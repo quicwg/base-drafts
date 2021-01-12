@@ -130,9 +130,9 @@ In-flight packets:
 All transmissions in QUIC are sent with a packet-level header, which indicates
 the encryption level and includes a packet sequence number (referred to below as
 a packet number).  The encryption level indicates the packet number space, as
-described in {{QUIC-TRANSPORT}}.  Packet numbers never repeat within a packet
-number space for the lifetime of a connection.  Packet numbers are sent in
-monotonically increasing order within a space, preventing ambiguity.
+described in Section 12.3 of {{QUIC-TRANSPORT}}. Packet numbers never repeat
+within a packet number space for the lifetime of a connection. Packet numbers
+are sent in monotonically increasing order within a space, preventing ambiguity.
 
 This design obviates the need for disambiguating between transmissions and
 retransmissions; this eliminates significant complexity from QUIC's
