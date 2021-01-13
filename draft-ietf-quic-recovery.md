@@ -270,7 +270,7 @@ when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
 RTT samples and peer-reported host delays (see Section 13.2 of
 {{QUIC-TRANSPORT}}) to generate a statistical description of the network
 path's RTT. An endpoint computes the following three values for each path:
-the minimum value observed over the lifetime of the path (min_rtt), an
+the minimum value over a period of time (min_rtt), an
 exponentially-weighted moving average (smoothed_rtt), and the mean deviation
 (referred to as "variation" in the rest of this document) in the observed RTT
 samples (rttvar).
@@ -318,8 +318,8 @@ retain sufficient history is an open research question.
 ## Estimating min_rtt {#min-rtt}
 
 min_rtt is the sender's estimate of the minimum RTT observed for a given network
-path. In this document, min_rtt is used by loss detection to reject implausibly
-small rtt samples.
+path over a period of time. In this document, min_rtt is used by loss detection
+to reject implausibly small rtt samples.
 
 min_rtt MUST be set to the latest_rtt on the first RTT sample. min_rtt MUST be
 set to the lesser of min_rtt and latest_rtt ({{latest-rtt}}) on all other
@@ -1275,7 +1275,7 @@ rttvar:
 : The RTT variation, computed as described in {{smoothed-rtt}}.
 
 min_rtt:
-: The minimum RTT seen in the connection, ignoring acknowledgment delay, as
+: The minimum RTT seen over a period of time, ignoring acknowledgment delay, as
   described in {{min-rtt}}.
 
 first_rtt_sample:
