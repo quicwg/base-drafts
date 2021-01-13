@@ -724,7 +724,7 @@ frames but is invalid due to:
 - the inclusion of invalid characters in field names or values.
 
 A request or response that is defined as having content when it contains a
-Content-Length header field, as described in Section 6.4.1 of {{!SEMANTICS}},
+Content-Length header field (Section 6.4.1 of {{!SEMANTICS}}),
 is malformed if the value of a Content-Length header field does not equal the
 sum of the DATA frame lengths received. A response that is defined as never
 having content, even when a Content-Length is present, can have a non-zero
