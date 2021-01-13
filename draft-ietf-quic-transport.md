@@ -4216,7 +4216,7 @@ A client MUST expand the payload of all UDP datagrams carrying Initial packets
 to at least the smallest allowed maximum datagram size of 1200 bytes by adding
 PADDING frames to the Initial packet or by coalescing the Initial packet; see
 {{packet-coalesce}}.  Initial packets can even be coalesced with invalid
-packets, which an receiver has to discard.  Similarly, a server MUST expand the
+packets, which a receiver will discard.  Similarly, a server MUST expand the
 payload of all UDP datagrams carrying ack-eliciting Initial packets to at least
 the smallest allowed maximum datagram size of 1200 bytes.
 
