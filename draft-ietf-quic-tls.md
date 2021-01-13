@@ -378,7 +378,8 @@ perspective of the endpoint in question.
 ### Handshake Confirmed {#handshake-confirmed}
 
 In this document, the TLS handshake is considered confirmed at the server when
-the handshake completes.  At the client, the handshake is considered confirmed
+the handshake completes.  The server MUST send a HANDSHAKE_DONE frame as soon as
+the handshake is complete.  At the client, the handshake is considered confirmed
 when a HANDSHAKE_DONE frame is received.
 
 A client MAY consider the handshake to be confirmed when it receives an
@@ -872,8 +873,8 @@ and ignoring any outstanding Initial packets.
 ### Discarding Handshake Keys {#discard-handshake}
 
 An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
-({{handshake-confirmed}}).  The server MUST send a HANDSHAKE_DONE frame as soon
-as it completes the handshake.
+({{handshake-confirmed}}).
+
 
 ### Discarding 0-RTT Keys
 
