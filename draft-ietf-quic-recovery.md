@@ -602,10 +602,9 @@ before confirming that the client has verified the server's certificate and can
 therefore read these 1-RTT packets.
 
 A sender SHOULD restart its PTO timer every time an ack-eliciting packet is sent
-or acknowledged, when Initial keys are discarded (Section 4.9 of {{QUIC-TLS}}),
-or when the handshake is confirmed (Section 4.1.2 of {{QUIC-TLS}}). This ensures
-the PTO is always set based on the latest estimate of the round-trip time and
-for the correct packet across packet number spaces.
+or acknowledged, or when Initial or Handshake keys are discarded (Section 4.9 of
+{{QUIC-TLS}}). This ensures the PTO is always set based on the latest estimate
+of the round-trip time and for the correct packet across packet number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff factor is reset
