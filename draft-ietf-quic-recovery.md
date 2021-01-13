@@ -826,10 +826,10 @@ peer-reported ECN-CE count increases; see Section 13.4.2 of {{QUIC-TRANSPORT}}.
 QUIC begins every connection in slow start with the congestion window set to
 an initial value.  Endpoints SHOULD use an initial congestion window of 10 times
 the maximum datagram size (max_datagram_size), while limiting the window
-to the larger of 14720 bytes or twice the maximum datagram
-size. This follows the analysis and recommendations in {{?RFC6928}}, increasing
-the byte limit to account for the smaller 8-byte overhead of UDP compared to
-the 20-byte overhead for TCP.
+to the larger of 14720 bytes or twice the maximum datagram size. This follows
+the analysis and recommendations in {{?RFC6928}}, increasing the byte limit to
+account for the smaller 8-byte overhead of UDP compared to the 20-byte overhead
+for TCP.
 
 If the maximum datagram size changes during the connection, the initial
 congestion window SHOULD be recalculated with the new size.  If the maximum
