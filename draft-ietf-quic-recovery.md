@@ -1021,7 +1021,7 @@ that does not have state for all packet number spaces or an implementation that
 cannot compare send times across packet number spaces MAY use state for just the
 packet number space that was acknowledged. This might result in erroneously
 declaring persistent congestion, but it will not lead to a failure to detect
-persistent congestion. 
+persistent congestion.
 
 When persistent congestion is declared, the sender's congestion window MUST be
 reduced to the minimum congestion window (kMinimumWindow), similar to a TCP
