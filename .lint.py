@@ -7,7 +7,7 @@ import re
 parser = argparse.ArgumentParser(description="Lint markdown drafts.")
 parser.add_argument("files", metavar="file", nargs="+", help="Files to lint")
 parser.add_argument("-l", dest="maxLineLength", default=80)
-parser.add_argument("-f", dest="maxFigureLineLength", default=65)
+parser.add_argument("-f", dest="maxFigureLineLength", default=66)
 
 args = parser.parse_args()
 
