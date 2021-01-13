@@ -2645,7 +2645,7 @@ those paths to be linked by entities other than the peer.
 A client might wish to reduce linkability by switching to a new connection ID,
 source UDP port, or IP address (see {{?RFC4941}}) when sending traffic after a
 period of inactivity.  Changing the address from which it sends packets at the
-same time might cause the packet to appear as a connection migration. This
+same time might cause the server to detect a connection migration. This
 ensures that the mechanisms that support migration are exercised even for
 clients that do not experience NAT rebindings or genuine migrations.  Changing
 address can cause a peer to reset its congestion control state (see
