@@ -4669,7 +4669,8 @@ The value in the Unused field is set to an arbitrary value by the server.
 Clients MUST ignore the value of this field.  Where QUIC might be multiplexed
 with other protocols (see {{?RFC7983}}), servers SHOULD set the most significant
 bit of this field (0x40) to 1 so that Version Negotiation packets appear to have
-the Fixed Bit field.
+the Fixed Bit field.  Note that other versions of QUIC might not make a similar
+recommendation.
 
 The Version field of a Version Negotiation packet MUST be set to 0x00000000.
 
