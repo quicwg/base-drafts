@@ -472,8 +472,8 @@ table. While these updates are not directly part of the message exchange, they
 must be received and processed before the message can be consumed.  See
 {{header-formatting}} for more details.
 
-The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
-be used.
+Transfer codings (see Section 6.1 of {{?HTTP11}}) are not defined for HTTP/3;
+the Transfer-Encoding header field MUST NOT be used.
 
 A response MAY consist of multiple messages when and only when one or more
 interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
