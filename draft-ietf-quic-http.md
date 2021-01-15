@@ -589,10 +589,10 @@ The following pseudo-header fields are defined for requests:
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
     pseudo-header field MUST be omitted when translating from an HTTP/1.1
     request that has a request target in origin or asterisk form; see Section
-    3.2 of {{?HTTP11}}.  Clients that generate HTTP/3 requests directly SHOULD
-    use the ":authority" pseudo-header field instead of the Host field. An
-    intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a Host
-    field if one is not present in a request by copying the value of the
+    7.1 of {{?SEMANTICS}}.  Clients that generate HTTP/3 requests directly
+    SHOULD use the ":authority" pseudo-header field instead of the Host field.
+    An intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a
+    Host field if one is not present in a request by copying the value of the
     ":authority" pseudo-header field.
 
   ":path":
@@ -606,8 +606,8 @@ The following pseudo-header fields are defined for requests:
     "http" or "https" URIs that do not contain a path component MUST include a
     value of '/'.  The exception to this rule is an OPTIONS request for an
     "http" or "https" URI that does not include a path component; these MUST
-    include a ":path" pseudo-header field with a value of '*'; see Section 3.2.4
-    of {{?HTTP11}}.
+    include a ":path" pseudo-header field with a value of '*'; see Section 7.1
+    of {{!SEMANTICS}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request; see
@@ -760,7 +760,7 @@ A CONNECT request MUST be constructed as follows:
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests;
-  see Section 3.2.3 of {{?HTTP11}})
+  see Section 7.1 of {{!SEMANTICS}})
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
