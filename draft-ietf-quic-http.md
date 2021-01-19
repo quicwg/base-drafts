@@ -110,12 +110,12 @@ supports the same semantics over a new transport protocol, QUIC.
 
 ## Prior versions of HTTP
 
-HTTP/1.x ({{?HTTP11=I-D.ietf-httpbis-messaging}}) uses whitespace-delimited text
+HTTP/1.1 ({{?HTTP11=I-D.ietf-httpbis-messaging}}) uses whitespace-delimited text
 fields to convey HTTP messages.  While these exchanges are human-readable, using
 whitespace for message formatting leads to parsing complexity and excessive
 tolerance of variant behavior.
 
-Because HTTP/1.x does not include a multiplexing layer, multiple TCP connections
+Because HTTP/1.1 does not include a multiplexing layer, multiple TCP connections
 are often used to service requests in parallel. However, that has a negative
 impact on congestion control and network efficiency, since TCP does not share
 congestion control across multiple connections.
