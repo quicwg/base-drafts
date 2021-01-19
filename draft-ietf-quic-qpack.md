@@ -487,8 +487,8 @@ Dynamic table entries can have empty values.
 The size of the dynamic table is the sum of the size of its entries.
 
 The size of an entry is the sum of its name's length in bytes, its value's
-length in bytes, and 32 bytes.  The size of an entry is calculated using the
-length of its name and value without Huffman encoding applied.
+length in bytes, and 32 additional bytes.  The size of an entry is calculated
+using the length of its name and value without Huffman encoding applied.
 
 ### Dynamic Table Capacity and Eviction {#eviction}
 
