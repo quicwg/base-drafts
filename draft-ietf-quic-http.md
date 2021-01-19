@@ -1025,6 +1025,9 @@ retry some requests.  Including the GOAWAY frame in the same packet as the QUIC
 CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
+If there are open streams that have not been explicitly closed, they are
+implicitly closed when the connection is closed.
+
 ## Transport Closure
 
 For various reasons, the QUIC transport could indicate to the application layer
