@@ -159,7 +159,8 @@ multiplexing, and flow control.  Discovery of an HTTP/3 endpoint is described in
 Within each stream, the basic unit of HTTP/3 communication is a frame
 ({{frames}}).  Each frame type serves a different purpose.  For example, HEADERS
 and DATA frames form the basis of HTTP requests and responses
-({{request-response}}).
+({{request-response}}).  Frames that apply to the entire connection are
+conveyed on a dedicated control stream.
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
 described in Section 2 of {{QUIC-TRANSPORT}}.  Each request-response pair
