@@ -536,9 +536,10 @@ HTTP/3 request header; when it is, it MUST NOT contain any value other than
 
 This means that an intermediary transforming an HTTP/1.x message to HTTP/3 will
 need to remove any fields nominated by the Connection field, along with the
-Connection field itself.  Such intermediaries SHOULD also remove other
-connection-specific fields, such as Keep-Alive, Proxy-Connection,
-Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection
+Connection field itself.  As part of this transformation, intermediaries MUST
+decode and remove any HTTP/1.1 transfer codings.  Such intermediaries SHOULD
+also remove other connection-specific fields, such as Keep-Alive,
+Proxy-Connection, and Upgrade, even if they are not nominated by the Connection
 field.
 
 #### Pseudo-Header Fields
