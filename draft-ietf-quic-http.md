@@ -664,7 +664,7 @@ as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation that has received this parameter SHOULD NOT send an HTTP message
 header that exceeds the indicated size, as the peer will likely refuse to
 process it.  However, an HTTP message can traverse one or more intermediaries
-before reaching the origin server; see Section 3.6 of {{!SEMANTICS}}.  Because
+before reaching the origin server; see Section 3.7 of {{!SEMANTICS}}.  Because
 this limit is applied separately by each implementation which processes the
 message, messages below this limit are not guaranteed to be accepted.
 
@@ -1910,7 +1910,7 @@ resources consumed by CONNECT requests.
 Compression can allow an attacker to recover secret data when it is compressed
 in the same context as data under attacker control. HTTP/3 enables compression
 of fields ({{header-formatting}}); the following concerns also apply to the use
-of HTTP compressed content-codings; see Section 8.5.1 of {{!SEMANTICS}}.
+of HTTP compressed content-codings; see Section 8.4.1 of {{!SEMANTICS}}.
 
 There are demonstrable attacks on compression that exploit the characteristics
 of the web (e.g., {{BREACH}}).  The attacker induces multiple requests
