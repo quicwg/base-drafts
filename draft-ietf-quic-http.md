@@ -139,9 +139,9 @@ TLS over TCP, with the improved connection setup latency of TCP Fast Open
 
 This document defines a mapping of HTTP semantics over the QUIC transport
 protocol, drawing heavily on the design of HTTP/2.  While delegating stream
-lifetime and flow control issues to QUIC, a similar binary framing is used on
-each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
-implemented atop QUIC.
+lifetime and flow control issues to QUIC, a binary framing similar to the
+HTTP/2 framing is used on each stream. Some HTTP/2 features are subsumed by
+QUIC, while other features are implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{?HTTP2}}.
@@ -301,9 +301,9 @@ component of the URL.
 If a server presents a valid certificate and proof that it controls the
 corresponding private key, then a client will accept a secured TLS session with
 that server as being authoritative for all origins with the "https" scheme and a
-host identified in the certificate.  The host must be listed either as the CN
-field of the certificate subject or as a dNSName in the subjectAltName field of
-the certificate; see {{!RFC6125}}.  For a host that is an IP address, the client
+host identified in the certificate.  A host identified by DNS name MUST be
+validated either as a CN-ID or a DNS-ID in the certificate; see {{!RFC6125}}.
+For a host that is an IP address, the client
 MUST verify that the address appears as an iPAddress in the subjectAltName field
 of the certificate.
 
@@ -314,7 +314,8 @@ access.
 
 A client MAY attempt access to a resource with an "https" URI by resolving the
 host identifier to an IP address, establishing a QUIC connection to that address
-on the indicated port, and sending an HTTP/3 request message targeting the URI
+on the indicated port (including validation of the server certificate as
+described above), and sending an HTTP/3 request message targeting the URI
 to the server over that secured connection.  Unless some other mechanism is used
 to select HTTP/3, the token "h3" is used in the Application Layer Protocol
 Negotiation (ALPN; see {{!RFC7301}}) extension during the TLS handshake.
@@ -453,7 +454,7 @@ Header and trailer field sections are described in Sections 6.3 and 6.5 of
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED; see {{errors}}.  In particular, a DATA frame before
-any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame
+any HEADERS frame, or a HEADERS or DATA frame after the trailing HEADERS frame,
 is considered invalid.  Other frame types, especially unknown frame types,
 might be permitted subject to their own rules; see {{extensions}}.
 
@@ -479,7 +480,7 @@ be used.
 A response MAY consist of multiple messages when and only when one or more
 interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
 response to the same request.  Interim responses do not contain content
-or trailers.
+or trailer sections.
 
 An HTTP request/response exchange fully consumes a client-initiated
 bidirectional QUIC stream. After sending a request, a client MUST close the
@@ -557,7 +558,8 @@ extension could negotiate a modification of this restriction; see
 Pseudo-header fields are only valid in the context in which they are defined.
 Pseudo-header fields defined for requests MUST NOT appear in responses;
 pseudo-header fields defined for responses MUST NOT appear in requests.
-Pseudo-header fields MUST NOT appear in trailers.  Endpoints MUST treat a
+Pseudo-header fields MUST NOT appear in trailer sections.
+Endpoints MUST treat a
 request or response that contains undefined or invalid pseudo-header fields as
 malformed ({{malformed}}).
 
@@ -911,7 +913,7 @@ peer will assume that the connection has been closed.  HTTP/3 implementations
 will need to open a new HTTP/3 connection for new requests if the existing
 connection has been idle for longer than the idle timeout negotiated during the
 QUIC handshake, and SHOULD do so if approaching the idle timeout; see Section
-10.1 of {{QUIC-TRANSPORT}}.
+10.1.1 of {{QUIC-TRANSPORT}}.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
@@ -959,7 +961,8 @@ Some requests or pushes might already be in transit:
     Requests on Stream IDs less than the Stream ID in a GOAWAY frame from the
     server might have been processed; their status cannot be known until a
     response is received, the stream is reset individually, another GOAWAY is
-    received, or the connection terminates.
+    received with a lower Stream ID than that of the request in question,
+    or the connection terminates.
 
     Servers MAY reject individual requests on streams below the indicated ID if
     these requests were not processed.
@@ -1041,7 +1044,8 @@ request that was sent, whether in whole or in part, might have been processed.
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
 guarantees about order of delivery with regard to bytes on other streams. On the
-wire, data is framed into QUIC STREAM frames, but this framing is invisible to
+wire, data (HTTP frames)
+is framed into QUIC STREAM frames, but this framing is invisible to
 the HTTP framing layer. The transport layer buffers and orders received QUIC
 STREAM frames, exposing the data contained within as a reliable byte stream to
 the application. Although QUIC permits out-of-order delivery within a stream,
@@ -1152,9 +1156,8 @@ error of type H3_CLOSED_CRITICAL_STREAM.  Connection errors are described in
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
-on whether 0-RTT is enabled on the QUIC connection, either client or server
-might be able to send stream data first after the cryptographic handshake
-completes.
+on whether 0-RTT is available on the QUIC connection, either client or server
+might be able to send stream data first.
 
 ### Push Streams
 
@@ -1223,8 +1226,8 @@ HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 | Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
 {: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
-Certain frames can only occur as the first frame of a particular stream type;
-these are indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
+The SETTINGS frame can only occur as the first frame of a Control stream; this
+is indicated in {{stream-frame-mapping}} with a (1).  Specific guidance
 is provided in the relevant section.
 
 Note that, unlike QUIC frames, HTTP/3 frames can span multiple packets.
@@ -1258,7 +1261,8 @@ Each frame's payload MUST contain exactly the fields identified in its
 description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
-H3_FRAME_ERROR; see {{errors}}.
+H3_FRAME_ERROR; see {{errors}}.  In particular, redundant length encodings MUST
+be verified to be self-consistent.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error of type H3_FRAME_ERROR; see
@@ -1341,7 +1345,7 @@ error of type H3_FRAME_UNEXPECTED.
 CANCEL_PUSH Frame {
   Type (i) = 0x3,
   Length (i),
-  Push ID (..),
+  Push ID (..8),
 }
 ~~~~~~~~~~
 {: #fig-cancel-push title="CANCEL_PUSH Frame"}
@@ -1410,7 +1414,7 @@ SETTINGS Frame {
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS Frame"}
 
-An implementation MUST ignore the contents for any SETTINGS identifier it does
+An implementation MUST ignore the Value for any SETTINGS identifier it does
 not understand.
 
 
@@ -1867,7 +1871,7 @@ All these features -- i.e., server push, unknown protocol elements, field
 compression -- have legitimate uses.  These features become a burden only when
 they are used unnecessarily or to excess.
 
-An endpoint that does not monitor this behavior exposes itself to a risk of
+An endpoint that does not monitor such behavior exposes itself to a risk of
 denial-of-service attack.  Implementations SHOULD track the use of these
 features and set limits on their use.  An endpoint MAY treat activity that is
 suspicious as a connection error of type H3_EXCESSIVE_LOAD ({{errors}}), but
@@ -2240,7 +2244,7 @@ make HTTP/3 similar to HTTP/2 in key aspects, such as the relationship of
 requests and responses to streams. However, the details of the HTTP/3 design are
 substantially different from HTTP/2.
 
-These departures are noted in this section.
+Some important departures are noted in this section.
 
 ## Streams {#h2-streams}
 
@@ -2279,8 +2283,8 @@ features (e.g., flow control) that are also present in HTTP/2. In these cases,
 the HTTP mapping does not re-implement them. As a result, several HTTP/2 frame
 types are not required in HTTP/3. Where an HTTP/2-defined frame is no longer
 used, the frame ID has been reserved in order to maximize portability between
-HTTP/2 and HTTP/3 implementations. However, even equivalent frames between the
-two mappings are not identical.
+HTTP/2 and HTTP/3 implementations. However, even frame types that appear in
+both mappings do not have identical semantics.
 
 Many of the differences arise from the fact that HTTP/2 provides an absolute
 ordering between frames across all streams, while QUIC provides this guarantee
@@ -2328,7 +2332,7 @@ subject to flow control.
 Frame type definitions in HTTP/3 often use the QUIC variable-length integer
 encoding.  In particular, Stream IDs use this encoding, which allows for a
 larger range of possible values than the encoding used in HTTP/2.  Some frames
-in HTTP/3 use an identifier rather than a Stream ID (e.g., Push
+in HTTP/3 use an identifier other than a Stream ID (e.g., Push
 IDs). Redefinition of the encoding of extension frame types might be necessary
 if the encoding includes a Stream ID.
 
@@ -2339,9 +2343,9 @@ of their frame payload.
 Other than these issues, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
-and would be portable to HTTP/2 in the same manner.
+and would be portable to HTTP/2 in the reverse manner.
 
-### Mapping Between HTTP/2 and HTTP/3 Frame Types
+### Comparison Between HTTP/2 and HTTP/3 Frame Types
 
 DATA (0x0):
 : Padding is not defined in HTTP/3 frames.  See {{frame-data}}.
@@ -2397,8 +2401,8 @@ frame of the control stream, and thereafter cannot change.  This eliminates many
 corner cases around synchronization of changes.
 
 Some transport-level options that HTTP/2 specifies via the SETTINGS frame are
-superseded by QUIC transport parameters in HTTP/3.  The HTTP-level options that
-are retained in HTTP/3 have the same value as in HTTP/2.  The superseded
+superseded by QUIC transport parameters in HTTP/3.  The HTTP-level setting that
+is retained in HTTP/3 has the same value as in HTTP/2.  The superseded
 settings are reserved, and their receipt is an error.  See
 {{settings-parameters}} for discussion of both the retained and reserved values.
 
