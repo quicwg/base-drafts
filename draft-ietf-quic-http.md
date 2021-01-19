@@ -576,7 +576,8 @@ The following pseudo-header fields are defined for requests:
   : Contains the scheme portion of the target URI (Section 3.1 of
   {{!URI=RFC3986}})
 
-  : ":scheme" is not restricted to "http" and "https" schemed URIs.  A proxy or
+  : ":scheme" is not restricted to URIs with scheme "http" and "https".
+    A proxy or
     gateway can translate requests for non-HTTP schemes, enabling the use of
     HTTP to interact with non-HTTP services.
 
@@ -584,7 +585,7 @@ The following pseudo-header fields are defined for requests:
 
   : Contains the authority portion of the target URI (Section 3.2 of
     {{!URI}}). The authority MUST NOT include the deprecated "userinfo"
-    subcomponent for "http" or "https" schemed URIs.
+    subcomponent for URIs of scheme "http" or "https".
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
     pseudo-header field MUST be omitted when translating from an HTTP/1.1
