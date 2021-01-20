@@ -1921,7 +1921,7 @@ includes both confidential and attacker-controlled data unless separate
 compression contexts are used for each source of data.  Compression MUST NOT be
 used if the source of data cannot be reliably determined.
 
-Further considerations regarding the compression of fields sections are
+Further considerations regarding the compression of field sections are
 described in {{QPACK}}.
 
 ## Padding and Traffic Analysis
