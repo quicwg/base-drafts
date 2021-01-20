@@ -1262,7 +1262,7 @@ description.  A frame payload that contains additional bytes after the
 identified fields or a frame payload that terminates before the end of the
 identified fields MUST be treated as a connection error of type
 H3_FRAME_ERROR; see {{errors}}.  In particular, redundant length encodings MUST
-be verified to be self-consistent.
+be verified to be self-consistent; see {{frame-parsing}}.
 
 When a stream terminates cleanly, if the last frame on the stream was truncated,
 this MUST be treated as a connection error of type H3_FRAME_ERROR; see
