@@ -140,8 +140,8 @@ HTTP field line:
 HTTP field value:
 
 : Data associated with a field name, composed from all field line values with
-  that field name in that section, concatenated together and separated with
-  commas.
+  that field name in that section, concatenated together with
+  comma separators.
 
 Field section:
 
@@ -347,7 +347,7 @@ A Section Acknowledgment instruction ({{header-acknowledgment}}) implies that
 the decoder has received all dynamic table state necessary to decode the field
 section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
-to the value of the Required Insert Count.
+to that Required Insert Count value.
 
 An Insert Count Increment instruction ({{insert-count-increment}}) increases the
 Known Received Count by its Increment parameter.  See {{new-table-entries}} for
@@ -954,7 +954,7 @@ table.
       MaxValue = TotalNumberOfInserts + MaxEntries
 
       # MaxWrapped is the largest possible value of
-      # ReqInsertCount that is 0 mod 2*MaxEntries
+      # ReqInsertCount that is 0 mod 2 * MaxEntries
       MaxWrapped = floor(MaxValue / FullRange) * FullRange
       ReqInsertCount = MaxWrapped + EncodedInsertCount - 1
 
@@ -1086,7 +1086,8 @@ line MUST always be encoded with a literal representation. In particular, when a
 peer sends a field line that it received represented as a literal field line
 with the 'N' bit set, it MUST use a literal representation to forward this field
 line.  This bit is intended for protecting field values that are not to be put
-at risk by compressing them; see {{security-considerations}} for more details.
+at risk by compressing them; see {{probing-dynamic-table-state}} for more
+details.
 
 The fourth ('T') bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer ({{prefixed-integers}}) that follows is used to
@@ -1203,9 +1204,9 @@ the dynamic table state. If a guess is compressed into a shorter length, the
 attacker can observe the encoded length and infer that the guess was correct.
 
 This is possible even over the Transport Layer Security Protocol (TLS, see
-{{?TLS=RFC8446}}), because while TLS provides confidentiality protection for
-content, it only provides a limited amount of protection for the length of that
-content.
+{{?TLS=RFC8446}}) and QUIC Transport Protocol (see {{QUIC-TRANSPORT}}), because
+while TLS and QUIC provide confidentiality protection for content, they only
+provides a limited amount of protection for the length of that content.
 
 Note:
 
@@ -1235,12 +1236,12 @@ recovered successfully. However, values with low entropy remain vulnerable.
 Attacks of this nature are possible any time that two mutually distrustful
 entities control requests or responses that are placed onto a single HTTP/3
 connection. If the shared QPACK compressor permits one entity to add entries to
-the dynamic table, and the other to access those entries to encode chosen field
-lines, then the attacker can learn the state of the table by observing the
-length of the encoded output.
+the dynamic table, and the other to refer to those entries while encoding
+chosen field lines, then the attacker (the second entity) can learn the state
+of the table by observing the length of the encoded output.
 
-Having requests or responses from mutually distrustful entities occurs when an
-intermediary either:
+For example, requests or responses from mutually distrustful entities occurs
+when an intermediary either:
 
  * sends requests from multiple clients on a single connection toward an origin
    server, or
@@ -1250,6 +1251,7 @@ intermediary either:
 
 Web browsers also need to assume that requests made on the same connection by
 different web origins ({{?RFC6454}}) are made by mutually distrustful entities.
+Other scenarios involving mutually distrustful entities are also possible.
 
 ### Mitigation
 
@@ -1277,6 +1279,11 @@ different values.  This penalty could cause a large number of attempts to guess
 a field value to result in the field not being compared to the dynamic table
 entries in future messages, effectively preventing further guesses.
 
+This response might be made inversely proportional to the length of the
+field value. Disabling access to the dynamic table for a given field name might
+occur for shorter values more quickly or with higher probability than for longer
+values.
+
 Note:
 
 : Simply removing entries corresponding to the field from the dynamic table can
@@ -1285,11 +1292,6 @@ Note:
   typically includes the Cookie header field (a potentially highly valued target
   for this sort of attack), and web sites can easily force an image to be
   loaded, thereby refreshing the entry in the dynamic table.
-
-This response might be made inversely proportional to the length of the
-field value. Disabling access to the dynamic table for a given field name might
-occur for shorter values more quickly or with higher probability than for longer
-values.
 
 ### Never-Indexed Literals
 
@@ -1339,7 +1341,7 @@ An attacker can try to cause an endpoint to exhaust its memory. QPACK is
 designed to limit both the peak and stable amounts of memory allocated by an
 endpoint.
 
-The amount of memory used by the encoder is limited by the protocol using
+The amount of memory used by the decoder is limited by the protocol using
 QPACK through the definition of the maximum size of the dynamic table, and the
 maximum number of blocking streams. In HTTP/3, these values are controlled by
 the decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY
@@ -1355,14 +1357,14 @@ A decoder can limit the amount of state memory used for the dynamic table by
 setting an appropriate value for the maximum size of the dynamic table. In
 HTTP/3, this is realized by setting an appropriate value for the
 SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of
-state memory it uses by signaling a lower dynamic table size than the decoder
-allows (see {{eviction}}).
+state memory it uses and signal a lower dynamic table size than the decoder
+allows to propagate that fact to the decoder (see {{eviction}}).
 
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
 HTTP/3, this is realized by setting an appropriate value for the
-QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked consume no
-additional state memory on the encoder.
+SETTINGS_QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked
+consume no additional state memory on the encoder.
 
 An encoder allocates memory to track all dynamic table references in
 unacknowledged field sections.  An implementation can directly limit the amount
@@ -1717,7 +1719,7 @@ Stream: Decoder
                                3   0  custom-key  custom-value
                               ^-- acknowledged --^
                                4   0  :authority  www.example.com
-                              Size=215
+                              Size=217
 
 ~~~
 
@@ -1738,7 +1740,7 @@ Stream: Encoder
                               ^-- acknowledged --^
                                4   0  :authority  www.example.com
                                5   0  custom-key  custom-value2
-                              Size=215
+                              Size=214
 ~~~
 
 # Sample One Pass Encoding Algorithm
@@ -1787,8 +1789,8 @@ for line in field_lines:
 
 # encode the prefix
 if requiredInsertCount == 0:
-  encodeIndexReference(prefixBuffer, 0, 0, 8)
-  encodeIndexReference(prefixBuffer, 0, 0, 7)
+  encodeInteger(prefixBuffer, 0, 0, 8)
+  encodeInteger(prefixBuffer, 0, 0, 7)
 else:
   wireRIC = (
     requiredInsertCount
