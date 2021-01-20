@@ -426,7 +426,8 @@ rttvar = kInitialRtt / 2
 RTT samples for the network path are recorded in latest_rtt; see
 {{latest-rtt}}. On the first RTT sample after initialization, the estimator is
 reset using that sample. This ensures that the estimator retains no history of
-past samples.
+past samples.  Packets sent on other paths do not contribute RTT samples to the
+current path, as described in Section 9.4 of {{QUIC-TRANSPORT}}.
 
 On the first RTT sample after initialization, smoothed_rtt and rttvar are set as
 follows:
@@ -653,6 +654,10 @@ discarded, the PTO and loss detection timers MUST be reset, because discarding
 keys indicates forward progress and the loss detection timer might have been set
 for a now discarded packet number space.
 
+Packets sent on an old path can be acknowledged after changing to a new path.
+RTT state and congestion control is per-path, so these do not contribute RTT
+samples or alter congestion control state for the new path.
+
 #### Before Address Validation
 
 Until the server has validated the client's address on the path, the amount of
@@ -807,6 +812,10 @@ in flight and are not congestion controlled.  Unlike TCP, QUIC can detect the
 loss of these packets and MAY use that information to adjust the congestion
 controller or the rate of ACK-only packets being sent, but this document does
 not describe a mechanism for doing so.
+
+The congestion controller is per path, so packets sent on other paths do not
+contribute affect the path's congestion controller, as described in Section 9.4
+of {{QUIC-TRANSPORT}}.
 
 The algorithm in this document specifies and uses the controller's congestion
 window in bytes.
