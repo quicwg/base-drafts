@@ -148,7 +148,7 @@ Field section:
 : An ordered collection of HTTP field lines associated with an HTTP message.  A
   field section can contain multiple field lines with the same name.  It can
   also contain duplicate field lines.  An HTTP message can include both header
-  field and trailer field sections.
+  and trailer sections.
 
 Representation:
 
@@ -207,15 +207,15 @@ decoder and vice versa.
 
 ## Encoder
 
-An encoder converts a header or trailer field section into a series of
-representations by emitting either an indexed or a literal representation for
-each field line in the list; see {{field-line-representations}}.  Indexed
-representations achieve high compression by replacing the literal name and
-possibly the value with an index to either the static or dynamic table.
-References to the static table and literal representations do not require any
-dynamic state and never risk head-of-line blocking.  References to the dynamic
-table risk head-of-line blocking if the encoder has not received an
-acknowledgment indicating the entry is available at the decoder.
+An encoder converts a header or trailer section into a series of representations
+by emitting either an indexed or a literal representation for each field line in
+the list; see {{field-line-representations}}.  Indexed representations achieve
+high compression by replacing the literal name and possibly the value with an
+index to either the static or dynamic table.  References to the static table and
+literal representations do not require any dynamic state and never risk
+head-of-line blocking.  References to the dynamic table risk head-of-line
+blocking if the encoder has not received an acknowledgment indicating the entry
+is available at the decoder.
 
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
