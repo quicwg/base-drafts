@@ -810,7 +810,7 @@ controller or the rate of ACK-only packets being sent, but this document does
 not describe a mechanism for doing so.
 
 The congestion controller is per path, so packets sent on other paths do not
-contribute affect the path's congestion controller, as described in Section 9.4
+alter the current path's congestion controller, as described in Section 9.4
 of {{QUIC-TRANSPORT}}.
 
 The algorithm in this document specifies and uses the controller's congestion
