@@ -654,10 +654,6 @@ discarded, the PTO and loss detection timers MUST be reset, because discarding
 keys indicates forward progress and the loss detection timer might have been set
 for a now discarded packet number space.
 
-Packets sent on an old path can be acknowledged after changing to a new path.
-RTT state and congestion control is per-path, so these do not contribute RTT
-samples or alter congestion control state for the new path.
-
 #### Before Address Validation
 
 Until the server has validated the client's address on the path, the amount of
