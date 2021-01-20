@@ -290,12 +290,12 @@ HTTP relies on the notion of an authoritative response: a response that has been
 determined to be the most appropriate response for that request given the state
 of the target resource at the time of response message origination by (or at the
 direction of) the origin server identified within the target URI.  Locating an
-authoritative server for an HTTP URL is discussed in Section 4.3 of
+authoritative server for an HTTP URI is discussed in Section 4.3 of
 {{!SEMANTICS}}.
 
 The "https" scheme associates authority with possession of a certificate that
 the client considers to be trustworthy for the host identified by the authority
-component of the URL.
+component of the URI.
 
 If a server presents a valid certificate and proof that it controls the
 corresponding private key, then a client will accept a secured TLS session with
@@ -323,7 +323,7 @@ establishment failure; clients SHOULD attempt to use TCP-based versions of HTTP
 in this case.
 
 Servers MAY serve HTTP/3 on any UDP port; an alternative service advertisement
-always includes an explicit port, and URLs contain either an explicit port or a
+always includes an explicit port, and URIs contain either an explicit port or a
 default port associated with the scheme.
 
 ### HTTP Alternative Services {#alt-svc}
