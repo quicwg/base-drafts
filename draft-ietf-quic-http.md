@@ -534,12 +534,10 @@ The only exception to this is the TE header field, which MAY be present in an
 HTTP/3 request header; when it is, it MUST NOT contain any value other than
 "trailers".
 
-An intermediary transforming an HTTP/1.x message to HTTP/3 MUST remove any
-fields nominated by the Connection field, along with the Connection field
-itself.  Intermediaries MUST decode and remove any HTTP/1.1 transfer codings.
-Such intermediaries SHOULD also remove other connection-specific fields, such as
-Keep-Alive, Proxy-Connection, and Upgrade, even if they are not nominated by the
-Connection field.
+An intermediary transforming an HTTP/1.x message to HTTP/3 MUST remove
+connection-specific header fields as discussed in Section 7.6.1 of
+{{!SEMANTICS}}, or their messages will be treated by other HTTP/3 endpoints as
+malformed ({{malformed}}).
 
 #### Pseudo-Header Fields
 
