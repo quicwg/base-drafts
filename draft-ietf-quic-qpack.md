@@ -1206,7 +1206,7 @@ attacker can observe the encoded length and infer that the guess was correct.
 This is possible even over the Transport Layer Security Protocol (TLS, see
 {{?TLS=RFC8446}}) and QUIC Transport Protocol (see {{QUIC-TRANSPORT}}), because
 while TLS and QUIC provide confidentiality protection for content, they only
-provides a limited amount of protection for the length of that content.
+provide a limited amount of protection for the length of that content.
 
 Note:
 
