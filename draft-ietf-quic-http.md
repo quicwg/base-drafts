@@ -301,9 +301,9 @@ component of the URL.
 If a server presents a valid certificate and proof that it controls the
 corresponding private key, then a client will accept a secured TLS session with
 that server as being authoritative for all origins with the "https" scheme and a
-host identified in the certificate.  A host identified by DNS name MUST be
-validated either as a CN-ID or a DNS-ID in the certificate; see {{!RFC6125}}.
-For a host that is an IP address, the client
+host identified in the certificate.  The host must be listed either as the CN
+field of the certificate subject or as a dNSName in the subjectAltName field of
+the certificate; see {{!RFC6125}}.  For a host that is an IP address, the client
 MUST verify that the address appears as an iPAddress in the subjectAltName field
 of the certificate.
 
