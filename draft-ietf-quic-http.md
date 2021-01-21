@@ -913,7 +913,7 @@ peer will assume that the connection has been closed.  HTTP/3 implementations
 will need to open a new HTTP/3 connection for new requests if the existing
 connection has been idle for longer than the idle timeout negotiated during the
 QUIC handshake, and SHOULD do so if approaching the idle timeout; see Section
-10.1.1 of {{QUIC-TRANSPORT}}.
+10.1 of {{QUIC-TRANSPORT}}.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
@@ -1044,8 +1044,8 @@ request that was sent, whether in whole or in part, might have been processed.
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
 guarantees about order of delivery with regard to bytes on other streams. On the
-wire, data (HTTP frames)
-is framed into QUIC STREAM frames, but this framing is invisible to
+wire, the stream data containing HTTP frames
+is carried by QUIC STREAM frames, but this framing is invisible to
 the HTTP framing layer. The transport layer buffers and orders received QUIC
 STREAM frames, exposing the data contained within as a reliable byte stream to
 the application. Although QUIC permits out-of-order delivery within a stream,
@@ -1345,7 +1345,7 @@ error of type H3_FRAME_UNEXPECTED.
 CANCEL_PUSH Frame {
   Type (i) = 0x3,
   Length (i),
-  Push ID (..8),
+  Push ID (i),
 }
 ~~~~~~~~~~
 {: #fig-cancel-push title="CANCEL_PUSH Frame"}
@@ -1414,7 +1414,7 @@ SETTINGS Frame {
 ~~~~~~~~~~~~~~~
 {: #fig-ext-settings title="SETTINGS Frame"}
 
-An implementation MUST ignore the Value for any SETTINGS identifier it does
+An implementation MUST ignore any parameter with an identifier it does
 not understand.
 
 
@@ -2343,7 +2343,7 @@ of their frame payload.
 Other than these issues, frame type HTTP/2 extensions are typically portable to
 QUIC simply by replacing Stream 0 in HTTP/2 with a control stream in HTTP/3.
 HTTP/3 extensions will not assume ordering, but would not be harmed by ordering,
-and would be portable to HTTP/2 in the reverse manner.
+and are expected to be portable to HTTP/2.
 
 ### Comparison Between HTTP/2 and HTTP/3 Frame Types
 
