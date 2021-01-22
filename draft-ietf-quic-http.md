@@ -330,9 +330,9 @@ default port associated with the scheme.
 
 ### HTTP Alternative Services {#alt-svc}
 
-An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
-the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
-using the "h3" ALPN token.
+An HTTP origin can advertise the availability of an equivalent HTTP/3 endpoint
+via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
+({{?ALTSVC}}), using the "h3" ALPN token.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
@@ -354,7 +354,7 @@ associates authority with the ability to receive TCP connections on the
 indicated port of whatever host is identified within the authority component.
 Because HTTP/3 does not use TCP, HTTP/3 cannot be used for direct access to the
 authoritative server for a resource identified by an "http" URI.  However,
-protocol extensions such as {{!ALTSVC=RFC7838}} permit the authoritative server
+protocol extensions such as {{?ALTSVC=RFC7838}} permit the authoritative server
 to identify other services that are also authoritative and that might be
 reachable over HTTP/3.
 
@@ -399,7 +399,7 @@ server closes the connection.
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  Clients SHOULD NOT
 open more than one HTTP/3 connection to a given host and port pair, where the
-host is derived from a URI, a selected alternative service ({{!ALTSVC}}), or a
+host is derived from a URI, a selected alternative service ({{?ALTSVC}}), or a
 configured proxy.  A client MAY open multiple HTTP/3 connections to the same IP
 address and UDP port using different transport or TLS configurations but SHOULD
 avoid creating multiple connections with the same configuration.
