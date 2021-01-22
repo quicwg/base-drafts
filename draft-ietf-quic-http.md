@@ -2052,7 +2052,8 @@ While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other where the
 code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
-operation.
+operation.  Expert reviewers MAY reject unrelated registrations which would
+conflict with the same value in the corresponding registry.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following field:
@@ -2099,7 +2100,9 @@ using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 While this registry is separate from the "HTTP/2 Settings" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
-assigning the corresponding value to an unrelated operation.
+assigning the corresponding value to an unrelated operation. Expert reviewers
+MAY reject unrelated registrations which would conflict with the same value in
+the corresponding registry.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following fields:
@@ -2138,11 +2141,12 @@ values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
 using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
-Registrations for error codes are required to include a description of the
-error code.  An expert reviewer is advised to examine new registrations for
-possible duplication with existing error codes.  Use of existing
-registrations is to be encouraged, but not mandated.  Use of values that
-are registered in the "HTTP/2 Error Code" registry is discouraged.
+Registrations for error codes are required to include a description of the error
+code.  An expert reviewer is advised to examine new registrations for possible
+duplication with existing error codes.  Use of existing registrations is to be
+encouraged, but not mandated.  Use of values that are registered in the "HTTP/2
+Error Code" registry is discouraged, and expert reviewers MAY reject such
+registrations.
 
 In addition to common fields as described in {{iana-policy}}, this registry
 includes two additional fields.  Permanent registrations in this registry MUST
