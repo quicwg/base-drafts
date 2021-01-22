@@ -295,21 +295,11 @@ authoritative server for an HTTP URL is discussed in Section 4.3 of
 
 The "https" scheme associates authority with possession of a certificate that
 the client considers to be trustworthy for the host identified by the authority
-component of the URL.
-
-If a server presents a valid certificate and proof that it controls the
-corresponding private key, then a client will accept a secured TLS session with
-that server as being authoritative for all origins with the "https" scheme and a
-host identified in the certificate.  The host must be listed either as the CN
-field of the certificate subject or as a dNSName in the subjectAltName field of
-the certificate; see {{!RFC6125}}.  For a host that is an IP address, the client
-MUST verify that the address appears as an iPAddress in the subjectAltName field
-of the certificate.
-
-If the hostname or address is not present in the certificate, the client MUST
-NOT consider the server authoritative for origins containing that hostname or
-address.  See Section 4.3 of {{!SEMANTICS}} for more detail on authoritative
-access.
+component of the URL.  Upon receiving a server certificate in the TLS handshake,
+the client MUST verify that the certificate is an acceptable match for the URI's
+origin server using the process described in Section 4.3.4 of {{!SEMANTICS}}. If
+the certificate cannot be verified with respect to the URI's origin server, the
+client MUST NOT consider the server authoritative for that origin.
 
 A client MAY attempt access to a resource with an "https" URI by resolving the
 host identifier to an IP address, establishing a QUIC connection to that address
