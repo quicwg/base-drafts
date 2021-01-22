@@ -104,20 +104,21 @@ code and issues list for this draft can be found at
 
 HTTP semantics ({{!SEMANTICS=I-D.ietf-httpbis-semantics}}) are used for a broad
 range of services on the Internet. These semantics have most commonly been used
-with HTTP/1.1, over a variety of transport and session layers, and with HTTP/2
-over TLS. HTTP/3 supports the same semantics over a new transport protocol,
-QUIC.
+with HTTP/1.1 and HTTP/2.  HTTP/1.1 has been used over a variety of transport
+and session layers, while HTTP/2 has been used primarily with TLS over TCP.
+HTTP/3 supports the same semantics over a new transport protocol, QUIC.
 
 ## Prior versions of HTTP
 
 HTTP/1.1 ({{?HTTP11=I-D.ietf-httpbis-messaging}}) uses whitespace-delimited text
 fields to convey HTTP messages.  While these exchanges are human-readable, using
 whitespace for message formatting leads to parsing complexity and excessive
-tolerance of variant behavior.  Because HTTP/1.x does not include a multiplexing
-layer, multiple TCP connections are often used to service requests in parallel.
-However, that has a negative impact on congestion control and network
-efficiency, since TCP does not share congestion control across multiple
-connections.
+tolerance of variant behavior.
+
+Because HTTP/1.1 does not include a multiplexing layer, multiple TCP connections
+are often used to service requests in parallel. However, that has a negative
+impact on congestion control and network efficiency, since TCP does not share
+congestion control across multiple connections.
 
 HTTP/2 ({{?HTTP2=RFC7540}}) introduced a binary framing and multiplexing layer
 to improve latency without modifying the transport layer.  However, because the
@@ -1023,6 +1024,10 @@ Before closing the connection, a GOAWAY frame MAY be sent to allow the client to
 retry some requests.  Including the GOAWAY frame in the same packet as the QUIC
 CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
+
+If there are open streams that have not been explicitly closed, they are
+implicitly closed when the connection is closed; see Section 10.2 of
+{{QUIC-TRANSPORT}}.
 
 ## Transport Closure
 
