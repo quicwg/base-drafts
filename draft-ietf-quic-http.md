@@ -105,8 +105,8 @@ code and issues list for this draft can be found at
 HTTP semantics ({{!SEMANTICS=I-D.ietf-httpbis-semantics}}) are used for a broad
 range of services on the Internet. These semantics have most commonly been used
 with HTTP/1.1 and HTTP/2.  HTTP/1.1 has been used over a variety of transport
-and session layers, while HTTP/2 has been used primarily over TLS. HTTP/3
-supports the same semantics over a new transport protocol, QUIC.
+and session layers, while HTTP/2 has been used primarily with TLS over TCP.
+HTTP/3 supports the same semantics over a new transport protocol, QUIC.
 
 ## Prior versions of HTTP
 
