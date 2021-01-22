@@ -1150,6 +1150,10 @@ control stream is closed at any point, this MUST be treated as a connection
 error of type H3_CLOSED_CRITICAL_STREAM.  Connection errors are described in
 {{errors}}.
 
+Because the contents of the control stream are used to manage the behavior of
+other streams, endpoints SHOULD provide enough flow control credit to keep the
+peer's control stream from becoming blocked.
+
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
 on whether 0-RTT is enabled on the QUIC connection, either client or server
