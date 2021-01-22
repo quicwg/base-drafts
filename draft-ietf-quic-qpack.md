@@ -1561,7 +1561,7 @@ The following examples represent a series of exchanges between an encoder and a
 decoder.  The exchanges are designed to exercise most QPACK instructions, and
 highlight potentially common patterns and their impact on dynamic table state.
 The encoder sends three encoded field sections containing one field line each,
-as wells as two speculative inserts that are not referenced.
+as well as two speculative inserts that are not referenced.
 
 The state of the encoder's dynamic table is shown, along with its
 current size.  Each entry is shown with the Absolute Index of the entry (Abs),
