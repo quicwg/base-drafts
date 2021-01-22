@@ -582,6 +582,8 @@ The following pseudo-header fields are defined for requests:
     gateway can translate requests for non-HTTP schemes, enabling the use of
     HTTP to interact with non-HTTP services.
 
+  : See {{other-schemes}} for guidance on using a scheme other than "https".
+
   ":authority":
 
   : Contains the authority portion of the target URI (Section 3.2 of
@@ -1767,13 +1769,13 @@ managing these extension points: frame types ({{iana-frames}}), settings
 ({{iana-stream-types}}).
 
 Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and unidirectional
-streams that have unknown or unsupported types.  This means that any of these
-extension points can be safely used by extensions without prior arrangement or
-negotiation.  However, where a known frame type is required to be in a specific
-location, such as the SETTINGS frame as the first frame of the control stream
-(see {{control-streams}}), an unknown frame type does not satisfy that
-requirement and SHOULD be treated as an error.
+protocol elements.  Implementations MUST discard frames and abort reading on
+unidirectional streams that have unknown or unsupported types.  This means that
+any of these extension points can be safely used by extensions without prior
+arrangement or negotiation.  However, where a known frame type is required to be
+in a specific location, such as the SETTINGS frame as the first frame of the
+control stream (see {{control-streams}}), an unknown frame type does not satisfy
+that requirement and SHOULD be treated as an error.
 
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
