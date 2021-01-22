@@ -440,16 +440,14 @@ response following a final HTTP response MUST be treated as malformed
 
 An HTTP message (request or response) consists of:
 
-1. the header field section, sent as a single HEADERS frame (see
-   {{frame-headers}}),
+1. the header section, sent as a single HEADERS frame (see {{frame-headers}}),
 
 2. optionally, the content, if present, sent as a series of DATA frames
    (see {{frame-data}}), and
 
-3. optionally, the trailer field section, if present, sent as a single HEADERS
-   frame.
+3. optionally, the trailer section, if present, sent as a single HEADERS frame.
 
-Header and trailer field sections are described in Sections 6.3 and 6.5 of
+Header and trailer sections are described in Sections 6.3 and 6.5 of
 {{!SEMANTICS}}; the content is described in Section 6.4 of
 {{!SEMANTICS}}.
 
@@ -564,10 +562,10 @@ Endpoints MUST treat a
 request or response that contains undefined or invalid pseudo-header fields as
 malformed ({{malformed}}).
 
-All pseudo-header fields MUST appear in the header field section before regular
-header fields.  Any request or response that contains a pseudo-header field that
-appears in a header field section after a regular header field MUST be treated
-as malformed ({{malformed}}).
+All pseudo-header fields MUST appear in the header section before regular header
+fields.  Any request or response that contains a pseudo-header field that
+appears in a header section after a regular header field MUST be treated as
+malformed ({{malformed}}).
 
 The following pseudo-header fields are defined for requests:
 
@@ -1505,7 +1503,7 @@ error of type H3_SETTINGS_ERROR.
 ### PUSH_PROMISE {#frame-push-promise}
 
 The PUSH_PROMISE frame (type=0x5) is used to carry a promised request header
-field section from server to client on a request stream, as in HTTP/2.
+section from server to client on a request stream, as in HTTP/2.
 
 ~~~~~~~~~~  drawing
 PUSH_PROMISE Frame {
@@ -1886,12 +1884,12 @@ false positives will result in disrupting valid connections and requests.
 
 A large field section ({{request-response}}) can cause an implementation to
 commit a large amount of state.  Header fields that are critical for routing can
-appear toward the end of a header field section, which prevents streaming of the
-header field section to its ultimate destination.  This ordering and other
-reasons, such as ensuring cache correctness, mean that an endpoint likely needs
-to buffer the entire header field section.  Since there is no hard limit to the
-size of a field section, some endpoints could be forced to commit a large amount
-of available memory for header fields.
+appear toward the end of a header section, which prevents streaming of the
+header section to its ultimate destination.  This ordering and other reasons,
+such as ensuring cache correctness, mean that an endpoint likely needs to buffer
+the entire header section.  Since there is no hard limit to the size of a field
+section, some endpoints could be forced to commit a large amount of available
+memory for header fields.
 
 An endpoint can use the SETTINGS_MAX_FIELD_SECTION_SIZE
 ({{header-size-constraints}}) setting to advise peers of limits that might apply
@@ -1934,7 +1932,7 @@ includes both confidential and attacker-controlled data unless separate
 compression contexts are used for each source of data.  Compression MUST NOT be
 used if the source of data cannot be reliably determined.
 
-Further considerations regarding the compression of fields sections are
+Further considerations regarding the compression of field sections are
 described in {{QPACK}}.
 
 ## Padding and Traffic Analysis
