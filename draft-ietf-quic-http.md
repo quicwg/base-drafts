@@ -802,6 +802,10 @@ QUIC connection, it MUST close the TCP connection.  If the underlying TCP
 implementation permits it, the proxy SHOULD send a TCP segment with the RST bit
 set.
 
+Since CONNECT creates a tunnel to an arbitrary server, proxies that support
+CONNECT SHOULD restrict its use to a set of known ports or a list of safe
+request targets; see Section 9.3.6 of {{!SEMANTICS}} for more detail.
+
 ## HTTP Upgrade
 
 HTTP/3 does not support the HTTP Upgrade mechanism (Section 7.8 of
@@ -1903,13 +1907,13 @@ A client can discard responses that it cannot process.
 
 ### CONNECT Issues
 
-The CONNECT method can be used to create disproportionate load on a proxy,
-since stream creation is relatively inexpensive when compared to the creation
-and maintenance of a TCP connection.  A proxy might also maintain some resources
-for a TCP connection beyond the closing of the stream that carries the CONNECT
+The CONNECT method can be used to create disproportionate load on a proxy, since
+stream creation is relatively inexpensive when compared to the creation and
+maintenance of a TCP connection.  A proxy might also maintain some resources for
+a TCP connection beyond the closing of the stream that carries the CONNECT
 request, since the outgoing TCP connection remains in the TIME_WAIT state.
-Therefore, a proxy cannot rely on QUIC stream limits alone to control the
-resources consumed by CONNECT requests.
+Therefore, a proxy might delay increasing the QUIC stream limits to account for
+the resources consumed by CONNECT requests.
 
 ## Use of Compression
 
