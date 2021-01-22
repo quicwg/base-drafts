@@ -2266,6 +2266,10 @@ of time.  HTTP/3 servers might choose to permit a larger number of concurrent
 client-initiated bidirectional streams to achieve equivalent concurrency to
 HTTP/2, depending on the expected usage patterns.
 
+In HTTP/2, only request and response bodies (DATA frames) are subject to flow
+control.  All HTTP/3 frames are sent on QUIC streams, so all frames on all
+streams are flow-controlled in HTTP/3.
+
 Due to the presence of other unidirectional stream types, HTTP/3 does not rely
 exclusively on the number of concurrent unidirectional streams to control the
 number of concurrent in-flight pushes.  Instead, HTTP/3 clients use the
