@@ -471,10 +471,10 @@ this MUST be treated as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 ## Dynamic Table {#header-table-dynamic}
 
 The dynamic table consists of a list of field lines maintained in first-in,
-first-out order.  Each QPACK decoder holds a dynamic table that is initially
-empty.  Entries are added by encoder instructions received on the encoder
-stream; see {{encoder-instructions}}.  The encoder tracks the contents of the
-dynamic table maintained by the decoder.
+first-out order.  A QPACK encoder and decoder share a dynamic table that is
+initially empty.  The encoder adds entries to the dynamic table and sends them
+to the decoder via instructions on the encoder stream; see
+{{encoder-instructions}}.
 
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
