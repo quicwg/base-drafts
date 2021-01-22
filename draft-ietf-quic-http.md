@@ -414,8 +414,8 @@ processed and gracefully complete or terminate any necessary remaining tasks.
 
 A server that does not wish clients to reuse HTTP/3 connections for a particular
 origin can indicate that it is not authoritative for a request by sending a 421
-(Misdirected Request) status code in response to the request; see Section 9.1.2
-of {{?HTTP2}}.
+(Misdirected Request) status code in response to the request; see Section 7.4
+of {{!SEMANTICS}}.
 
 
 # HTTP Request Lifecycle
