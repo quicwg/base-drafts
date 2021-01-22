@@ -856,7 +856,10 @@ following properties:
 - does not include a request body or trailer section
 
 The server MUST include a value in the ":authority" pseudo-header field for
-which the server is authoritative; see {{connection-reuse}}.
+which the server is authoritative.  If the client has not yet validated the
+connection for the origin indicated by the pushed request, it MUST perform the
+same verification process it would do before sending a request for that origin
+on the connection; see {{connection-reuse}}.
 
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
 carrying a request that is not cacheable, is not known to be safe, that
