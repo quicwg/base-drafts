@@ -2131,6 +2131,7 @@ The entries in {{iana-setting-table}} are registered by this document.
 | ---------------------------- | ------ | ------------------------- | --------- |
 | Setting Name                 |  Value | Specification             | Default   |
 | ---------------------------- | :----: | ------------------------- | --------- |
+| Reserved                     |  0x0   | N/A                       | N/A       |
 | Reserved                     |  0x2   | N/A                       | N/A       |
 | Reserved                     |  0x3   | N/A                       | N/A       |
 | Reserved                     |  0x4   | N/A                       | N/A       |
