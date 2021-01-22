@@ -1985,7 +1985,9 @@ contains.
 
 The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
 anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
-HTTP/3 with 0-RTT.
+HTTP/3 with 0-RTT.  When applying {{!HTTP-REPLAY}} to HTTP/3, references to the
+TLS layer refer to the handshake performed within QUIC, while all references to
+application data refer to the contents of streams.
 
 ## Migration
 
