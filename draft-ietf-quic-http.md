@@ -2423,33 +2423,33 @@ settings are reserved, and their receipt is an error.  See
 
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
-SETTINGS_HEADER_TABLE_SIZE:
+SETTINGS_HEADER_TABLE_SIZE (0x1):
 : See [QPACK].
 
-SETTINGS_ENABLE_PUSH:
+SETTINGS_ENABLE_PUSH (0x2):
 : This is removed in favor of the MAX_PUSH_ID frame, which provides a more
   granular control over server push.  Specifying a setting with the identifier
   0x2 (corresponding to the SETTINGS_ENABLE_PUSH parameter) in the HTTP/3
   SETTINGS frame is an error.
 
-SETTINGS_MAX_CONCURRENT_STREAMS:
+SETTINGS_MAX_CONCURRENT_STREAMS (0x3):
 : QUIC controls the largest open Stream ID as part of its flow control logic.
   Specifying a setting with the identifier 0x3 (corresponding to the
   SETTINGS_MAX_CONCURRENT_STREAMS parameter) in the HTTP/3 SETTINGS frame is an
   error.
 
-SETTINGS_INITIAL_WINDOW_SIZE:
+SETTINGS_INITIAL_WINDOW_SIZE (0x4):
 : QUIC requires both stream and connection flow control window sizes to be
   specified in the initial transport handshake.  Specifying a setting with the
   identifier 0x4 (corresponding to the SETTINGS_INITIAL_WINDOW_SIZE parameter)
   in the HTTP/3 SETTINGS frame is an error.
 
-SETTINGS_MAX_FRAME_SIZE:
+SETTINGS_MAX_FRAME_SIZE (0x5):
 : This setting has no equivalent in HTTP/3.  Specifying a setting with the
   identifier 0x5 (corresponding to the SETTINGS_MAX_FRAME_SIZE parameter) in the
   HTTP/3 SETTINGS frame is an error.
 
-SETTINGS_MAX_HEADER_LIST_SIZE:
+SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
 : This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.
 
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
