@@ -1073,7 +1073,7 @@ This means that the client's first request occurs on QUIC stream 0, with
 subsequent requests on stream 4, 8, and so on. In order to permit these streams
 to open, an HTTP/3 server SHOULD configure non-zero minimum values for the
 number of permitted streams and the initial stream flow control window.  So as
-to not unnecessarily limit parallelism, at least 100 requests SHOULD be
+to not unnecessarily limit parallelism, at least 100 request streams SHOULD be
 permitted at a time.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
