@@ -518,8 +518,7 @@ maintained at [](https://www.iana.org/assignments/http-fields/).
 > **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
 > **RFC Editor**, please remove this note prior to publication.
 
-As in previous versions of HTTP, field names are strings containing a subset of
-ASCII characters that are compared in a case-insensitive fashion.  Properties of
+Field names are strings containing a subset of ASCII characters.  Properties of
 HTTP field names and values are discussed in more detail in Section 5.1 of
 {{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
 lowercase prior to their encoding.  A request or response containing uppercase
