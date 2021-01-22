@@ -556,8 +556,7 @@ extension could negotiate a modification of this restriction; see
 Pseudo-header fields are only valid in the context in which they are defined.
 Pseudo-header fields defined for requests MUST NOT appear in responses;
 pseudo-header fields defined for responses MUST NOT appear in requests.
-Pseudo-header fields MUST NOT appear in trailer sections.
-Endpoints MUST treat a
+Pseudo-header fields MUST NOT appear in trailer sections. Endpoints MUST treat a
 request or response that contains undefined or invalid pseudo-header fields as
 malformed ({{malformed}}).
 
@@ -639,9 +638,10 @@ included in an HTTP/1.1 status line.
 
 #### Field Compression
 
-HTTP/3 uses QPACK field compression as described in [QPACK], a variation of
-HPACK that allows the flexibility to avoid compression-induced head-of-line
-blocking.  See that document for additional details.
+[QPACK] describes a variation of HPACK that allows the flexibility to avoid
+compression-induced head-of-line blocking.  HTTP/3 uses QPACK to compress header
+and trailer sections, including the pseudo-header fields present in the header
+section.
 
 To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
