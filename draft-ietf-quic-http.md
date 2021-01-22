@@ -137,11 +137,13 @@ transport layer, offering comparable confidentiality and integrity to running
 TLS over TCP, with the improved connection setup latency of TCP Fast Open
 ({{?TFO=RFC7413}}).
 
-This document defines a mapping of HTTP semantics over the QUIC transport
-protocol, drawing heavily on the design of HTTP/2.  While delegating stream
-lifetime and flow control issues to QUIC, a similar binary framing is used on
-each stream. Some HTTP/2 features are subsumed by QUIC, while other features are
-implemented atop QUIC.
+This document defines HTTP/3, a mapping of HTTP semantics over the QUIC
+transport protocol, drawing heavily on the design of HTTP/2.  HTTP/3 relies on
+QUIC to provide confidentiality and integrity protection of data; peer
+authentication; and reliable, in-order, per-stream delivery. While delegating
+stream lifetime and flow control issues to QUIC, a similar binary framing is
+used on each stream. Some HTTP/2 features are subsumed by QUIC, while other
+features are implemented atop QUIC.
 
 QUIC is described in {{QUIC-TRANSPORT}}.  For a full description of HTTP/2, see
 {{?HTTP2}}.
