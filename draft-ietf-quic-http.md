@@ -385,12 +385,25 @@ example, when a user navigates away from a particular web page) or until the
 server closes the connection.
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
-requests with multiple different URI authority components.  Clients SHOULD NOT
-open more than one HTTP/3 connection to a given host and port pair, where the
-host is derived from a URI, a selected alternative service ({{!ALTSVC}}), or a
-configured proxy.  A client MAY open multiple HTTP/3 connections to the same IP
-address and UDP port using different transport or TLS configurations but SHOULD
-avoid creating multiple connections with the same configuration.
+requests with multiple different URI authority components.  To use an existing
+connection for a new origin, clients MUST validate the certificate presented by
+the server for the new origin server using the process described in Section
+4.3.4 of {{!SEMANTICS}}.  This implies that clients will need to retain the
+server certificate chain; clients which do not do so will be unable to reuse the
+connection for additional origins.
+
+If the certificate is not acceptable with regard to the new origin for any
+reason, the connection MUST NOT be reused and a new connection SHOULD be
+established for the new origin.  If the reason the certificate cannot be
+verified might apply to other origins already associated with the connection,
+the client SHOULD re-validate the server certificate for those origins.
+
+Clients SHOULD NOT open more than one HTTP/3 connection to a given host and port
+pair, where the host is derived from a URI, a selected alternative service
+({{!ALTSVC}}), or a configured proxy.  A client MAY open multiple HTTP/3
+connections to the same IP address and UDP port using different transport or TLS
+configurations but SHOULD avoid creating multiple connections with the same
+configuration.
 
 Servers are encouraged to maintain open HTTP/3 connections for as long as
 possible but are permitted to terminate idle connections if necessary.  When
