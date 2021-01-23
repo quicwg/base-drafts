@@ -1357,8 +1357,8 @@ A decoder can limit the amount of state memory used for the dynamic table by
 setting an appropriate value for the maximum size of the dynamic table. In
 HTTP/3, this is realized by setting an appropriate value for the
 SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of
-state memory it uses and signal a lower dynamic table size than the decoder
-allows to propagate that fact to the decoder (see {{eviction}}).
+state memory it uses by choosing a smaller dynamic table size than the decoder
+allows, and signal this to the decoder (see {{set-dynamic-table-capacity}}).
 
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
