@@ -471,9 +471,10 @@ this MUST be treated as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 ## Dynamic Table {#header-table-dynamic}
 
 The dynamic table consists of a list of field lines maintained in first-in,
-first-out order. Each HTTP/3 endpoint holds a dynamic table that is initially
-empty.  Entries are added by encoder instructions received on the encoder
-stream; see {{encoder-instructions}}.
+first-out order.  A QPACK encoder and decoder share a dynamic table that is
+initially empty.  The encoder adds entries to the dynamic table and sends them
+to the decoder via instructions on the encoder stream; see
+{{encoder-instructions}}.
 
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
@@ -486,8 +487,8 @@ Dynamic table entries can have empty values.
 The size of the dynamic table is the sum of the size of its entries.
 
 The size of an entry is the sum of its name's length in bytes, its value's
-length in bytes, and 32.  The size of an entry is calculated using the length of
-its name and value without Huffman encoding applied.
+length in bytes, and 32 additional bytes.  The size of an entry is calculated
+using the length of its name and value without Huffman encoding applied.
 
 ### Dynamic Table Capacity and Eviction {#eviction}
 
