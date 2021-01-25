@@ -638,10 +638,11 @@ included in an HTTP/1.1 status line.
 
 #### Field Compression
 
-[QPACK] describes a variation of HPACK that allows the flexibility to avoid
-compression-induced head-of-line blocking.  HTTP/3 uses QPACK to compress header
-and trailer sections, including the pseudo-header fields present in the header
-section.
+[QPACK] describes a variation of HPACK that gives an encoder some control over
+how much head-of-line blocking can be caused by compression.  This allows an
+encoder to balance compression efficiency with latency.  HTTP/3 uses QPACK to
+compress header and trailer sections, including the pseudo-header fields present
+in the header section.
 
 To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
