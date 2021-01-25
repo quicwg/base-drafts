@@ -493,7 +493,7 @@ Because some messages are large or unbounded, endpoints SHOULD begin processing
 partial HTTP messages once enough of the message has been received to make
 progress.  If a client-initiated stream terminates without enough of the HTTP
 message to provide a complete response, the server SHOULD abort its response
-with the error code H3_REQUEST_INCOMPLETE; see {{errors}}.
+stream with the error code H3_REQUEST_INCOMPLETE; see {{errors}}.
 
 A server can send a complete response prior to the client sending an entire
 request if the response does not depend on any portion of the request that has
