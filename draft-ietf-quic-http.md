@@ -518,8 +518,7 @@ maintained at [](https://www.iana.org/assignments/http-fields/).
 > **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
 > **RFC Editor**, please remove this note prior to publication.
 
-As in previous versions of HTTP, field names are strings containing a subset of
-ASCII characters that are compared in a case-insensitive fashion.  Properties of
+Field names are strings containing a subset of ASCII characters.  Properties of
 HTTP field names and values are discussed in more detail in Section 5.1 of
 {{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
 lowercase prior to their encoding.  A request or response containing uppercase
@@ -557,8 +556,7 @@ extension could negotiate a modification of this restriction; see
 Pseudo-header fields are only valid in the context in which they are defined.
 Pseudo-header fields defined for requests MUST NOT appear in responses;
 pseudo-header fields defined for responses MUST NOT appear in requests.
-Pseudo-header fields MUST NOT appear in trailer sections.
-Endpoints MUST treat a
+Pseudo-header fields MUST NOT appear in trailer sections. Endpoints MUST treat a
 request or response that contains undefined or invalid pseudo-header fields as
 malformed ({{malformed}}).
 
@@ -640,9 +638,11 @@ included in an HTTP/1.1 status line.
 
 #### Field Compression
 
-HTTP/3 uses QPACK field compression as described in [QPACK], a variation of
-HPACK that allows the flexibility to avoid compression-induced head-of-line
-blocking.  See that document for additional details.
+[QPACK] describes a variation of HPACK that gives an encoder some control over
+how much head-of-line blocking can be caused by compression.  This allows an
+encoder to balance compression efficiency with latency.  HTTP/3 uses QPACK to
+compress header and trailer sections, including the pseudo-header fields present
+in the header section.
 
 To allow for better compression efficiency, the "Cookie" field ({{!RFC6265}})
 MAY be split into separate field lines, each with one or more cookie-pairs,
@@ -1074,7 +1074,7 @@ This means that the client's first request occurs on QUIC stream 0, with
 subsequent requests on stream 4, 8, and so on. In order to permit these streams
 to open, an HTTP/3 server SHOULD configure non-zero minimum values for the
 number of permitted streams and the initial stream flow control window.  So as
-to not unnecessarily limit parallelism, at least 100 requests SHOULD be
+to not unnecessarily limit parallelism, at least 100 request streams SHOULD be
 permitted at a time.
 
 HTTP/3 does not use server-initiated bidirectional streams, though an extension
