@@ -1610,31 +1610,31 @@ c10c 2f73 616d 706c | Insert With Name Reference
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               Size=106
 
 Stream: 4
 0381                | Required Insert Count = 2, Base = 0
 10                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(0) + 1 = 1
+                    |  Absolute Index = Base(0) + Index(0) = 0
                     |  (:authority=www.example.com)
 11                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(1) + 1 = 2
+                    |  Absolute Index = Base(0) + Index(1) = 1
                     |  (:path=/sample/path)
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   1  :authority  www.example.com
-                               2   1  :path       /sample/path
+                               0   1  :authority  www.example.com
+                               1   1  :path       /sample/path
                               Size=106
 
 Stream: Decoder
 84                  | Section Acknowledgment (stream=4)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
                               Size=106
 ~~~
@@ -1652,19 +1652,19 @@ Stream: Encoder
 6f6d 2d76 616c 7565 |
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
-                               3   0  custom-key  custom-value
+                               2   0  custom-key  custom-value
                               Size=160
 
 Stream: Decoder
 01                  | Insert Count Increment (1)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
                               Size=160
 
@@ -1680,44 +1680,46 @@ encoder that the encoded field section was not processed.
 
 ~~~
 Stream: Encoder
-02                  | Duplicate (Relative Index=2)
+02                  | Duplicate (Relative Index = 2)
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(2) - 1 = 1
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
+                               3   0  :authority  www.example.com
                               Size=217
 
 Stream: 8
 0500                | Required Insert Count = 4, Base = 4
 80                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(0) = 4
+                    |  Absolute Index = Base(4) - Index(0) - 1 = 3
                     |  (:authority=www.example.com)
 c1                  | Indexed Field Line, Static Table Index = 1
                     |  (:path=/)
 81                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(1) = 3
+                    |  Absolute Index = Base(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   1  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   1  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   1  :authority  www.example.com
+                               3   1  :authority  www.example.com
                               Size=217
 
 Stream: Decoder
 48                  | Stream Cancellation (Stream=8)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
+                               3   0  :authority  www.example.com
                               Size=215
 
 ~~~
@@ -1730,15 +1732,17 @@ oldest entry.  The encoder does not send any encoded field sections.
 ~~~
 Stream: Encoder
 810d 6375 7374 6f6d | Insert With Name Reference
-2d76 616c 7565 32   |  Dynamic Table, Absolute Index=2
+2d76 616c 7565 32   |  Dynamic Table, Relative Index = 1
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value2)
 
                               Abs Ref Name        Value
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
-                               5   0  custom-key  custom-value2
+                               3   0  :authority  www.example.com
+                               4   0  custom-key  custom-value2
                               Size=215
 ~~~
 
