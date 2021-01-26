@@ -1922,12 +1922,14 @@ A client can discard responses that it cannot process.
 
 The CONNECT method can be used to create disproportionate load on a proxy, since
 stream creation is relatively inexpensive when compared to the creation and
-maintenance of a TCP connection.  A proxy might also maintain some resources for
-a TCP connection beyond the closing of the stream that carries the CONNECT
-request, since the outgoing TCP connection remains in the TIME_WAIT state.
-Therefore, a proxy that supports CONNECT might be more conservative in the
-number of simultaneous requests it accepts or might delay increasing the QUIC
-stream limits after a TCP connection terminates.
+maintenance of a TCP connection.  Therefore, a proxy that supports CONNECT might
+be more conservative in the number of simultaneous requests it accepts.
+
+A proxy might also maintain some resources for a TCP connection beyond the
+closing of the stream that carries the CONNECT request, since the outgoing TCP
+connection remains in the TIME_WAIT state.  To account for this, a proxy might
+delay increasing the QUIC stream limits for some time after a TCP connection
+terminates.
 
 ## Use of Compression
 
