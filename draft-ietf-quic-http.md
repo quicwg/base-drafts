@@ -475,8 +475,8 @@ table. While these updates are not directly part of the message exchange, they
 must be received and processed before the message can be consumed.  See
 {{header-formatting}} for more details.
 
-The "chunked" transfer encoding defined in Section 7.1 of {{?HTTP11}} MUST NOT
-be used.
+Transfer codings (see Section 6.1 of {{?HTTP11}}) are not defined for HTTP/3;
+the Transfer-Encoding header field MUST NOT be used.
 
 A response MAY consist of multiple messages when and only when one or more
 interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
@@ -536,12 +536,10 @@ The only exception to this is the TE header field, which MAY be present in an
 HTTP/3 request header; when it is, it MUST NOT contain any value other than
 "trailers".
 
-This means that an intermediary transforming an HTTP/1.x message to HTTP/3 will
-need to remove any fields nominated by the Connection field, along with the
-Connection field itself.  Such intermediaries SHOULD also remove other
-connection-specific fields, such as Keep-Alive, Proxy-Connection,
-Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection
-field.
+An intermediary transforming an HTTP/1.x message to HTTP/3 MUST remove
+connection-specific header fields as discussed in Section 7.6.1 of
+{{!SEMANTICS}}, or their messages will be treated by other HTTP/3 endpoints as
+malformed ({{malformed}}).
 
 #### Pseudo-Header Fields
 
@@ -594,10 +592,10 @@ The following pseudo-header fields are defined for requests:
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
     pseudo-header field MUST be omitted when translating from an HTTP/1.1
     request that has a request target in origin or asterisk form; see Section
-    3.2 of {{?HTTP11}}.  Clients that generate HTTP/3 requests directly SHOULD
-    use the ":authority" pseudo-header field instead of the Host field. An
-    intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a Host
-    field if one is not present in a request by copying the value of the
+    7.1 of {{?SEMANTICS}}.  Clients that generate HTTP/3 requests directly
+    SHOULD use the ":authority" pseudo-header field instead of the Host field.
+    An intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a
+    Host field if one is not present in a request by copying the value of the
     ":authority" pseudo-header field.
 
   ":path":
@@ -611,8 +609,8 @@ The following pseudo-header fields are defined for requests:
     "http" or "https" URIs that do not contain a path component MUST include a
     value of '/'.  The exception to this rule is an OPTIONS request for an
     "http" or "https" URI that does not include a path component; these MUST
-    include a ":path" pseudo-header field with a value of '*'; see Section 3.2.4
-    of {{?HTTP11}}.
+    include a ":path" pseudo-header field with a value of '*'; see Section 7.1
+    of {{!SEMANTICS}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request; see
@@ -767,7 +765,7 @@ A CONNECT request MUST be constructed as follows:
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests;
-  see Section 3.2.3 of {{?HTTP11}})
+  see Section 7.1 of {{!SEMANTICS}})
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
