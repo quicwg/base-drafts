@@ -1925,8 +1925,9 @@ stream creation is relatively inexpensive when compared to the creation and
 maintenance of a TCP connection.  A proxy might also maintain some resources for
 a TCP connection beyond the closing of the stream that carries the CONNECT
 request, since the outgoing TCP connection remains in the TIME_WAIT state.
-Therefore, a proxy might delay increasing the QUIC stream limits to account for
-the resources consumed by CONNECT requests.
+Therefore, a proxy that supports CONNECT might be more conservative in the
+number of simultaneous requests it accepts or might delay increasing the QUIC
+stream limits after a TCP connection terminates.
 
 ## Use of Compression
 
@@ -2286,9 +2287,9 @@ of time.  HTTP/3 servers might choose to permit a larger number of concurrent
 client-initiated bidirectional streams to achieve equivalent concurrency to
 HTTP/2, depending on the expected usage patterns.
 
-In HTTP/2, only request and response bodies (the frame payload of DATA frames) are subject to flow
-control.  All HTTP/3 frames are sent on QUIC streams, so all frames on all
-streams are flow-controlled in HTTP/3.
+In HTTP/2, only request and response bodies (the frame payload of DATA frames)
+are subject to flow control.  All HTTP/3 frames are sent on QUIC streams, so all
+frames on all streams are flow-controlled in HTTP/3.
 
 Due to the presence of other unidirectional stream types, HTTP/3 does not rely
 exclusively on the number of concurrent unidirectional streams to control the
