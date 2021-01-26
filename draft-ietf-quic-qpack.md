@@ -375,8 +375,9 @@ Insert Count. When the Required Insert Count is less than or equal to the
 decoder's Insert Count, the field section can be processed immediately.
 Otherwise, the stream on which the field section was received becomes blocked.
 
-While blocked, encoded field section data SHOULD remain in the blocked stream's
-flow control window.  A stream becomes unblocked when the Insert Count becomes
+To bound the memory requirements of the decoder for blocked streams, encoded
+field section data SHOULD remain in the stream's flow control window while the
+stream is blocked.  A stream becomes unblocked when the Insert Count becomes
 greater than or equal to the Required Insert Count for all encoded field
 sections the decoder has started reading from the stream.
 
