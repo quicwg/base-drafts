@@ -138,9 +138,11 @@ transport layer, offering comparable confidentiality and integrity to running
 TLS over TCP, with the improved connection setup latency of TCP Fast Open
 ({{?TFO=RFC7413}}).
 
-This document defines a mapping of HTTP semantics over the QUIC transport
-protocol, drawing heavily on the design of HTTP/2.  While delegating stream
-lifetime and flow control issues to QUIC, a binary framing similar to the
+This document defines HTTP/3, a mapping of HTTP semantics over the QUIC
+transport protocol, drawing heavily on the design of HTTP/2.  HTTP/3 relies on
+QUIC to provide confidentiality and integrity protection of data; peer
+authentication; and reliable, in-order, per-stream delivery. While delegating
+stream lifetime and flow control issues to QUIC, a binary framing similar to the
 HTTP/2 framing is used on each stream. Some HTTP/2 features are subsumed by
 QUIC, while other features are implemented atop QUIC.
 
@@ -331,9 +333,9 @@ default port associated with the scheme.
 
 ### HTTP Alternative Services {#alt-svc}
 
-An HTTP origin advertises the availability of an equivalent HTTP/3 endpoint via
-the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame ({{!ALTSVC}}),
-using the "h3" ALPN token.
+An HTTP origin can advertise the availability of an equivalent HTTP/3 endpoint
+via the Alt-Svc HTTP response header field or the HTTP/2 ALTSVC frame
+({{?ALTSVC}}), using the "h3" ALPN token.
 
 For example, an origin could indicate in an HTTP response that HTTP/3 was
 available on UDP port 50781 at the same hostname by including the following
@@ -355,7 +357,7 @@ associates authority with the ability to receive TCP connections on the
 indicated port of whatever host is identified within the authority component.
 Because HTTP/3 does not use TCP, HTTP/3 cannot be used for direct access to the
 authoritative server for a resource identified by an "http" URI.  However,
-protocol extensions such as {{!ALTSVC=RFC7838}} permit the authoritative server
+protocol extensions such as {{?ALTSVC=RFC7838}} permit the authoritative server
 to identify other services that are also authoritative and that might be
 reachable over HTTP/3.
 
@@ -400,7 +402,7 @@ server closes the connection.
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  Clients SHOULD NOT
 open more than one HTTP/3 connection to a given host and port pair, where the
-host is derived from a URI, a selected alternative service ({{!ALTSVC}}), or a
+host is derived from a URI, a selected alternative service ({{?ALTSVC}}), or a
 configured proxy.  A client MAY open multiple HTTP/3 connections to the same IP
 address and UDP port using different transport or TLS configurations but SHOULD
 avoid creating multiple connections with the same configuration.
@@ -580,6 +582,8 @@ The following pseudo-header fields are defined for requests:
     A proxy or
     gateway can translate requests for non-HTTP schemes, enabling the use of
     HTTP to interact with non-HTTP services.
+
+  : See {{other-schemes}} for guidance on using a scheme other than "https".
 
   ":authority":
 
@@ -802,6 +806,10 @@ with the RST bit set, as a stream error of type H3_CONNECT_ERROR; see
 QUIC connection, it MUST close the TCP connection.  If the underlying TCP
 implementation permits it, the proxy SHOULD send a TCP segment with the RST bit
 set.
+
+Since CONNECT creates a tunnel to an arbitrary server, proxies that support
+CONNECT SHOULD restrict its use to a set of known ports or a list of safe
+request targets; see Section 9.3.6 of {{!SEMANTICS}} for more detail.
 
 ## HTTP Upgrade
 
@@ -1156,6 +1164,10 @@ receiver MUST NOT request that the sender close the control stream.  If either
 control stream is closed at any point, this MUST be treated as a connection
 error of type H3_CLOSED_CRITICAL_STREAM.  Connection errors are described in
 {{errors}}.
+
+Because the contents of the control stream are used to manage the behavior of
+other streams, endpoints SHOULD provide enough flow control credit to keep the
+peer's control stream from becoming blocked.
 
 A pair of unidirectional streams is used rather than a single bidirectional
 stream.  This allows either peer to send data as soon as it is able.  Depending
@@ -1766,13 +1778,13 @@ managing these extension points: frame types ({{iana-frames}}), settings
 ({{iana-stream-types}}).
 
 Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and unidirectional
-streams that have unknown or unsupported types.  This means that any of these
-extension points can be safely used by extensions without prior arrangement or
-negotiation.  However, where a known frame type is required to be in a specific
-location, such as the SETTINGS frame as the first frame of the control stream
-(see {{control-streams}}), an unknown frame type does not satisfy that
-requirement and SHOULD be treated as an error.
+protocol elements.  Implementations MUST discard frames and abort reading on
+unidirectional streams that have unknown or unsupported types.  This means that
+any of these extension points can be safely used by extensions without prior
+arrangement or negotiation.  However, where a known frame type is required to be
+in a specific location, such as the SETTINGS frame as the first frame of the
+control stream (see {{control-streams}}), an unknown frame type does not satisfy
+that requirement and SHOULD be treated as an error.
 
 Extensions that could change the semantics of existing protocol components MUST
 be negotiated before being used.  For example, an extension that changes the
@@ -1906,13 +1918,16 @@ A client can discard responses that it cannot process.
 
 ### CONNECT Issues
 
-The CONNECT method can be used to create disproportionate load on a proxy,
-since stream creation is relatively inexpensive when compared to the creation
-and maintenance of a TCP connection.  A proxy might also maintain some resources
-for a TCP connection beyond the closing of the stream that carries the CONNECT
-request, since the outgoing TCP connection remains in the TIME_WAIT state.
-Therefore, a proxy cannot rely on QUIC stream limits alone to control the
-resources consumed by CONNECT requests.
+The CONNECT method can be used to create disproportionate load on a proxy, since
+stream creation is relatively inexpensive when compared to the creation and
+maintenance of a TCP connection.  Therefore, a proxy that supports CONNECT might
+be more conservative in the number of simultaneous requests it accepts.
+
+A proxy might also maintain some resources for a TCP connection beyond the
+closing of the stream that carries the CONNECT request, since the outgoing TCP
+connection remains in the TIME_WAIT state.  To account for this, a proxy might
+delay increasing the QUIC stream limits for some time after a TCP connection
+terminates.
 
 ## Use of Compression
 
@@ -1984,7 +1999,9 @@ contains.
 
 The use of 0-RTT with HTTP/3 creates an exposure to replay attack.  The
 anti-replay mitigations in {{!HTTP-REPLAY=RFC8470}} MUST be applied when using
-HTTP/3 with 0-RTT.
+HTTP/3 with 0-RTT.  When applying {{!HTTP-REPLAY}} to HTTP/3, references to the
+TLS layer refer to the handshake performed within QUIC, while all references to
+application data refer to the contents of streams.
 
 ## Migration
 
@@ -2061,7 +2078,8 @@ While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other where the
 code spaces overlap.  If an entry is present in only one registry, every effort
 SHOULD be made to avoid assigning the corresponding value to an unrelated
-operation.
+operation.  Expert reviewers MAY reject unrelated registrations which would
+conflict with the same value in the corresponding registry.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following field:
@@ -2108,7 +2126,9 @@ using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 While this registry is separate from the "HTTP/2 Settings" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other.  If an
 entry is present in only one registry, every effort SHOULD be made to avoid
-assigning the corresponding value to an unrelated operation.
+assigning the corresponding value to an unrelated operation. Expert reviewers
+MAY reject unrelated registrations which would conflict with the same value in
+the corresponding registry.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following fields:
@@ -2125,6 +2145,7 @@ The entries in {{iana-setting-table}} are registered by this document.
 | ---------------------------- | ------ | ------------------------- | --------- |
 | Setting Name                 |  Value | Specification             | Default   |
 | ---------------------------- | :----: | ------------------------- | --------- |
+| Reserved                     |  0x0   | N/A                       | N/A       |
 | Reserved                     |  0x2   | N/A                       | N/A       |
 | Reserved                     |  0x3   | N/A                       | N/A       |
 | Reserved                     |  0x4   | N/A                       | N/A       |
@@ -2147,11 +2168,12 @@ values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
 using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
 {{!RFC8126}}.
 
-Registrations for error codes are required to include a description of the
-error code.  An expert reviewer is advised to examine new registrations for
-possible duplication with existing error codes.  Use of existing
-registrations is to be encouraged, but not mandated.  Use of values that
-are registered in the "HTTP/2 Error Code" registry is discouraged.
+Registrations for error codes are required to include a description of the error
+code.  An expert reviewer is advised to examine new registrations for possible
+duplication with existing error codes.  Use of existing registrations is to be
+encouraged, but not mandated.  Use of values that are registered in the "HTTP/2
+Error Code" registry is discouraged, and expert reviewers MAY reject such
+registrations.
 
 In addition to common fields as described in {{iana-policy}}, this registry
 includes two additional fields.  Permanent registrations in this registry MUST
@@ -2264,6 +2286,10 @@ the stream for an equivalent exchange could remain "active" for a longer period
 of time.  HTTP/3 servers might choose to permit a larger number of concurrent
 client-initiated bidirectional streams to achieve equivalent concurrency to
 HTTP/2, depending on the expected usage patterns.
+
+In HTTP/2, only request and response bodies (the frame payload of DATA frames)
+are subject to flow control.  All HTTP/3 frames are sent on QUIC streams, so all
+frames on all streams are flow-controlled in HTTP/3.
 
 Due to the presence of other unidirectional stream types, HTTP/3 does not rely
 exclusively on the number of concurrent unidirectional streams to control the
@@ -2411,33 +2437,33 @@ settings are reserved, and their receipt is an error.  See
 
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
-SETTINGS_HEADER_TABLE_SIZE:
+SETTINGS_HEADER_TABLE_SIZE (0x1):
 : See [QPACK].
 
-SETTINGS_ENABLE_PUSH:
+SETTINGS_ENABLE_PUSH (0x2):
 : This is removed in favor of the MAX_PUSH_ID frame, which provides a more
   granular control over server push.  Specifying a setting with the identifier
   0x2 (corresponding to the SETTINGS_ENABLE_PUSH parameter) in the HTTP/3
   SETTINGS frame is an error.
 
-SETTINGS_MAX_CONCURRENT_STREAMS:
+SETTINGS_MAX_CONCURRENT_STREAMS (0x3):
 : QUIC controls the largest open Stream ID as part of its flow control logic.
   Specifying a setting with the identifier 0x3 (corresponding to the
   SETTINGS_MAX_CONCURRENT_STREAMS parameter) in the HTTP/3 SETTINGS frame is an
   error.
 
-SETTINGS_INITIAL_WINDOW_SIZE:
+SETTINGS_INITIAL_WINDOW_SIZE (0x4):
 : QUIC requires both stream and connection flow control window sizes to be
   specified in the initial transport handshake.  Specifying a setting with the
   identifier 0x4 (corresponding to the SETTINGS_INITIAL_WINDOW_SIZE parameter)
   in the HTTP/3 SETTINGS frame is an error.
 
-SETTINGS_MAX_FRAME_SIZE:
+SETTINGS_MAX_FRAME_SIZE (0x5):
 : This setting has no equivalent in HTTP/3.  Specifying a setting with the
   identifier 0x5 (corresponding to the SETTINGS_MAX_FRAME_SIZE parameter) in the
   HTTP/3 SETTINGS frame is an error.
 
-SETTINGS_MAX_HEADER_LIST_SIZE:
+SETTINGS_MAX_HEADER_LIST_SIZE (0x6):
 : This setting identifier has been renamed SETTINGS_MAX_FIELD_SECTION_SIZE.
 
 In HTTP/3, setting values are variable-length integers (6, 14, 30, or 62 bits
