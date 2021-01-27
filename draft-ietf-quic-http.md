@@ -299,21 +299,11 @@ authoritative server for an HTTP URI is discussed in Section 4.3 of
 
 The "https" scheme associates authority with possession of a certificate that
 the client considers to be trustworthy for the host identified by the authority
-component of the URI.
-
-If a server presents a valid certificate and proof that it controls the
-corresponding private key, then a client will accept a secured TLS session with
-that server as being authoritative for all origins with the "https" scheme and a
-host identified in the certificate.  The host must be listed either as the CN
-field of the certificate subject or as a dNSName in the subjectAltName field of
-the certificate; see {{!RFC6125}}.  For a host that is an IP address, the client
-MUST verify that the address appears as an iPAddress in the subjectAltName field
-of the certificate.
-
-If the hostname or address is not present in the certificate, the client MUST
-NOT consider the server authoritative for origins containing that hostname or
-address.  See Section 4.3 of {{!SEMANTICS}} for more detail on authoritative
-access.
+component of the URI.  Upon receiving a server certificate in the TLS handshake,
+the client MUST verify that the certificate is an acceptable match for the URI's
+origin server using the process described in Section 4.3.4 of {{!SEMANTICS}}. If
+the certificate cannot be verified with respect to the URI's origin server, the
+client MUST NOT consider the server authoritative for that origin.
 
 A client MAY attempt access to a resource with an "https" URI by resolving the
 host identifier to an IP address, establishing a QUIC connection to that address
@@ -400,12 +390,29 @@ example, when a user navigates away from a particular web page) or until the
 server closes the connection.
 
 Once a connection exists to a server endpoint, this connection MAY be reused for
-requests with multiple different URI authority components.  Clients SHOULD NOT
-open more than one HTTP/3 connection to a given host and port pair, where the
-host is derived from a URI, a selected alternative service ({{?ALTSVC}}), or a
-configured proxy.  A client MAY open multiple HTTP/3 connections to the same IP
-address and UDP port using different transport or TLS configurations but SHOULD
-avoid creating multiple connections with the same configuration.
+requests with multiple different URI authority components.  To use an existing
+connection for a new origin, clients MUST validate the certificate presented by
+the server for the new origin server using the process described in Section
+4.3.4 of {{!SEMANTICS}}.  This implies that clients will need to retain the
+server certificate and any additional information needed to verify that
+certificate; clients which do not do so will be unable to reuse the connection
+for additional origins.
+
+If the certificate is not acceptable with regard to the new origin for any
+reason, the connection MUST NOT be reused and a new connection SHOULD be
+established for the new origin.  If the reason the certificate cannot be
+verified might apply to other origins already associated with the connection,
+the client SHOULD re-validate the server certificate for those origins. For
+instance, if validation of a certificate fails because the certificate has
+expired or been revoked, this might be used to invalidate all other origins for
+which that certificate was used to establish authority.
+
+Clients SHOULD NOT open more than one HTTP/3 connection to a given IP address
+and UDP port, where the IP address and port might be derived from a URI, a
+selected alternative service ({{!ALTSVC}}), a configured proxy, or name
+resolution of any of these. A client MAY open multiple HTTP/3 connections to the
+same IP address and UDP port using different transport or TLS configurations but
+SHOULD avoid creating multiple connections with the same configuration.
 
 Servers are encouraged to maintain open HTTP/3 connections for as long as
 possible but are permitted to terminate idle connections if necessary.  When
@@ -416,8 +423,8 @@ processed and gracefully complete or terminate any necessary remaining tasks.
 
 A server that does not wish clients to reuse HTTP/3 connections for a particular
 origin can indicate that it is not authoritative for a request by sending a 421
-(Misdirected Request) status code in response to the request; see Section 9.1.2
-of {{?HTTP2}}.
+(Misdirected Request) status code in response to the request; see Section 7.4
+of {{!SEMANTICS}}.
 
 
 # HTTP Request Lifecycle
@@ -862,7 +869,11 @@ following properties:
 - does not include a request body or trailer section
 
 The server MUST include a value in the ":authority" pseudo-header field for
-which the server is authoritative; see {{connection-reuse}}.
+which the server is authoritative.  If the client has not yet validated the
+connection for the origin indicated by the pushed request, it MUST perform the
+same verification process it would do before sending a request for that origin
+on the connection; see {{connection-reuse}}.  If this verification fails,
+the client MUST NOT consider the server authoritative for that origin.
 
 Clients SHOULD send a CANCEL_PUSH frame upon receipt of a PUSH_PROMISE frame
 carrying a request that is not cacheable, is not known to be safe, that
