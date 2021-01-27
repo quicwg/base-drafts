@@ -268,6 +268,8 @@ references to those entries will eventually become zero, allowing them to be
 evicted.
 
 ~~~~~~~~~~  drawing
+             <-- Newer Entries          Older Entries -->
+               (Larger Indicies)      (Smaller Indicies)
    +--------+---------------------------------+----------+
    | Unused |          Referenceable          | Draining |
    | Space  |             Entries             | Entries  |
@@ -331,7 +333,7 @@ More generally, a stream containing a large instruction can become deadlocked if
 the decoder withholds flow control credit until the instruction is completely
 received.
 
-To avoid these deadlocks, an encoder SHOULD avoid writing an instruction unless
+To avoid these deadlocks, an encoder SHOULD NOT write an instruction unless
 sufficient stream and connection flow control credit is available for the entire
 instruction.
 
@@ -1292,6 +1294,11 @@ field value. Disabling access to the dynamic table for a given field name might
 occur for shorter values more quickly or with higher probability than for longer
 values.
 
+This mitigation is most effective between two endpoints. If messages are
+re-encoded by an intermediary without knowledge of which entity constructed a
+given message, the intermediary could inadvertently merge compression contexts
+that the original encoder had specifically kept separate.
+
 ### Never-Indexed Literals
 
 Implementations can also choose to protect sensitive fields by not compressing
@@ -1415,6 +1422,9 @@ registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 | QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         | 0       |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         | 0       |
 | ---------------------------- | ------ | ------------------------- | ------- |
+
+For fomatting reasons, the setting names here are abbreviated by removing the
+'SETTING_' prefix.
 
 ## Stream Type Registration
 
@@ -1554,6 +1564,8 @@ the smallest number of bytes.
 | 96    | x-forwarded-for                  |                                                             |
 | 97    | x-frame-options                  | deny                                                        |
 | 98    | x-frame-options                  | sameorigin                                                  |
+
+Any line breaks that appear within field names or values are due to formatting.
 
 
 # Encoding and Decoding Examples
