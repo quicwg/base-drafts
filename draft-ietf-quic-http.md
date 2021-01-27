@@ -1063,13 +1063,12 @@ request that was sent, whether in whole or in part, might have been processed.
 # Stream Mapping and Usage {#stream-mapping}
 
 A QUIC stream provides reliable in-order delivery of bytes, but makes no
-guarantees about order of delivery with regard to bytes on other streams. On the
-wire, the stream data containing HTTP frames
-is carried by QUIC STREAM frames, but this framing is invisible to
-the HTTP framing layer. The transport layer buffers and orders received QUIC
-STREAM frames, exposing the data contained within as a reliable byte stream to
-the application. Although QUIC permits out-of-order delivery within a stream,
-HTTP/3 does not make use of this feature.
+guarantees about order of delivery with regard to bytes on other streams. In
+version 1 of QUIC, the stream data containing HTTP frames is carried by QUIC
+STREAM frames, but this framing is invisible to the HTTP framing layer. The
+transport layer buffers and orders received stream data, exposing a reliable
+byte stream to the application. Although QUIC permits out-of-order delivery
+within a stream, HTTP/3 does not make use of this feature.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
