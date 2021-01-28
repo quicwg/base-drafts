@@ -148,7 +148,7 @@ Field section:
 : An ordered collection of HTTP field lines associated with an HTTP message.  A
   field section can contain multiple field lines with the same name.  It can
   also contain duplicate field lines.  An HTTP message can include both header
-  field and trailer field sections.
+  and trailer sections.
 
 Representation:
 
@@ -207,15 +207,15 @@ decoder and vice versa.
 
 ## Encoder
 
-An encoder converts a header or trailer field section into a series of
-representations by emitting either an indexed or a literal representation for
-each field line in the list; see {{field-line-representations}}.  Indexed
-representations achieve high compression by replacing the literal name and
-possibly the value with an index to either the static or dynamic table.
-References to the static table and literal representations do not require any
-dynamic state and never risk head-of-line blocking.  References to the dynamic
-table risk head-of-line blocking if the encoder has not received an
-acknowledgment indicating the entry is available at the decoder.
+An encoder converts a header or trailer section into a series of representations
+by emitting either an indexed or a literal representation for each field line in
+the list; see {{field-line-representations}}.  Indexed representations achieve
+high compression by replacing the literal name and possibly the value with an
+index to either the static or dynamic table.  References to the static table and
+literal representations do not require any dynamic state and never risk
+head-of-line blocking.  References to the dynamic table risk head-of-line
+blocking if the encoder has not received an acknowledgment indicating the entry
+is available at the decoder.
 
 An encoder MAY insert any entry in the dynamic table it chooses; it is not
 limited to field lines it is compressing.
@@ -268,6 +268,8 @@ references to those entries will eventually become zero, allowing them to be
 evicted.
 
 ~~~~~~~~~~  drawing
+             <-- Newer Entries          Older Entries -->
+               (Larger Indicies)      (Smaller Indicies)
    +--------+---------------------------------+----------+
    | Unused |          Referenceable          | Draining |
    | Space  |             Entries             | Entries  |
@@ -331,7 +333,7 @@ More generally, a stream containing a large instruction can become deadlocked if
 the decoder withholds flow control credit until the instruction is completely
 received.
 
-To avoid these deadlocks, an encoder SHOULD avoid writing an instruction unless
+To avoid these deadlocks, an encoder SHOULD NOT write an instruction unless
 sufficient stream and connection flow control credit is available for the entire
 instruction.
 
@@ -374,9 +376,12 @@ decoder's Insert Count, the field section can be processed immediately.
 Otherwise, the stream on which the field section was received becomes blocked.
 
 While blocked, encoded field section data SHOULD remain in the blocked stream's
-flow control window.  A stream becomes unblocked when the Insert Count becomes
-greater than or equal to the Required Insert Count for all encoded field
-sections the decoder has started reading from the stream.
+flow control window. This data is unusable until the stream becomes unblocked,
+and releasing the flow control prematurely makes the decoder vulnerable to
+memory exhaustion attacks. A stream becomes unblocked when the Insert Count
+becomes unblocked when the Insert Count becomes greater than or equal to the
+Required Insert Count for all encoded field sections the decoder has started
+reading from the stream.
 
 When processing encoded field sections, the decoder expects the Required Insert
 Count to equal the lowest possible value for the Insert Count with which the
@@ -471,9 +476,10 @@ this MUST be treated as a connection error of type QPACK_ENCODER_STREAM_ERROR.
 ## Dynamic Table {#header-table-dynamic}
 
 The dynamic table consists of a list of field lines maintained in first-in,
-first-out order. Each HTTP/3 endpoint holds a dynamic table that is initially
-empty.  Entries are added by encoder instructions received on the encoder
-stream; see {{encoder-instructions}}.
+first-out order.  A QPACK encoder and decoder share a dynamic table that is
+initially empty.  The encoder adds entries to the dynamic table and sends them
+to the decoder via instructions on the encoder stream; see
+{{encoder-instructions}}.
 
 The dynamic table can contain duplicate entries (i.e., entries with the same
 name and same value).  Therefore, duplicate entries MUST NOT be treated as an
@@ -486,8 +492,8 @@ Dynamic table entries can have empty values.
 The size of the dynamic table is the sum of the size of its entries.
 
 The size of an entry is the sum of its name's length in bytes, its value's
-length in bytes, and 32.  The size of an entry is calculated using the length of
-its name and value without Huffman encoding applied.
+length in bytes, and 32 additional bytes.  The size of an entry is calculated
+using the length of its name and value without Huffman encoding applied.
 
 ### Dynamic Table Capacity and Eviction {#eviction}
 
@@ -1284,6 +1290,11 @@ field value. Disabling access to the dynamic table for a given field name might
 occur for shorter values more quickly or with higher probability than for longer
 values.
 
+This mitigation is most effective between two endpoints. If messages are
+re-encoded by an intermediary without knowledge of which entity constructed a
+given message, the intermediary could inadvertently merge compression contexts
+that the original encoder had specifically kept separate.
+
 Note:
 
 : Simply removing entries corresponding to the field from the dynamic table can
@@ -1416,6 +1427,9 @@ registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 | QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         | 0       |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         | 0       |
 | ---------------------------- | ------ | ------------------------- | ------- |
+
+For fomatting reasons, the setting names here are abbreviated by removing the
+'SETTING_' prefix.
 
 ## Stream Type Registration
 
@@ -1556,6 +1570,8 @@ the smallest number of bytes.
 | 97    | x-frame-options                  | deny                                                        |
 | 98    | x-frame-options                  | sameorigin                                                  |
 
+Any line breaks that appear within field names or values are due to formatting.
+
 
 # Encoding and Decoding Examples
 
@@ -1563,7 +1579,7 @@ The following examples represent a series of exchanges between an encoder and a
 decoder.  The exchanges are designed to exercise most QPACK instructions, and
 highlight potentially common patterns and their impact on dynamic table state.
 The encoder sends three encoded field sections containing one field line each,
-as wells as two speculative inserts that are not referenced.
+as well as two speculative inserts that are not referenced.
 
 The state of the encoder's dynamic table is shown, along with its
 current size.  Each entry is shown with the Absolute Index of the entry (Abs),
@@ -1611,31 +1627,31 @@ c10c 2f73 616d 706c | Insert With Name Reference
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               Size=106
 
 Stream: 4
 0381                | Required Insert Count = 2, Base = 0
 10                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(0) + 1 = 1
+                    |  Absolute Index = Base(0) + Index(0) = 0
                     |  (:authority=www.example.com)
 11                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(1) + 1 = 2
+                    |  Absolute Index = Base(0) + Index(1) = 1
                     |  (:path=/sample/path)
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   1  :authority  www.example.com
-                               2   1  :path       /sample/path
+                               0   1  :authority  www.example.com
+                               1   1  :path       /sample/path
                               Size=106
 
 Stream: Decoder
 84                  | Section Acknowledgment (stream=4)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
                               Size=106
 ~~~
@@ -1653,19 +1669,19 @@ Stream: Encoder
 6f6d 2d76 616c 7565 |
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
-                               3   0  custom-key  custom-value
+                               2   0  custom-key  custom-value
                               Size=160
 
 Stream: Decoder
 01                  | Insert Count Increment (1)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
                               Size=160
 
@@ -1681,46 +1697,47 @@ encoder that the encoded field section was not processed.
 
 ~~~
 Stream: Encoder
-02                  | Duplicate (Relative Index=2)
+02                  | Duplicate (Relative Index = 2)
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(2) - 1 = 1
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
+                               3   0  :authority  www.example.com
                               Size=217
 
 Stream: 8
 0500                | Required Insert Count = 4, Base = 4
 80                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(0) = 4
+                    |  Absolute Index = Base(4) - Index(0) - 1 = 3
                     |  (:authority=www.example.com)
 c1                  | Indexed Field Line, Static Table Index = 1
                     |  (:path=/)
 81                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(1) = 3
+                    |  Absolute Index = Base(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   1  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   1  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   1  :authority  www.example.com
+                               3   1  :authority  www.example.com
                               Size=217
 
 Stream: Decoder
 48                  | Stream Cancellation (Stream=8)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
                                4   0  :authority  www.example.com
                               Size=217
-
 ~~~
 
 ## Dynamic Table Insert, Eviction
@@ -1731,15 +1748,17 @@ oldest entry.  The encoder does not send any encoded field sections.
 ~~~
 Stream: Encoder
 810d 6375 7374 6f6d | Insert With Name Reference
-2d76 616c 7565 32   |  Dynamic Table, Absolute Index=2
+2d76 616c 7565 32   |  Dynamic Table, Relative Index = 1
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value2)
 
                               Abs Ref Name        Value
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
-                               5   0  custom-key  custom-value2
+                               3   0  :authority  www.example.com
+                               4   0  custom-key  custom-value2
                               Size=215
 ~~~
 
