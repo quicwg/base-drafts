@@ -4332,7 +4332,7 @@ addresses.  This corresponds to the maximum datagram size.
 ### DPLPMTUD and Initial Connectivity
 
 From the perspective of DPLPMTUD, QUIC is an acknowledged Packetization Layer
-(PL). A QUIC sender can therefore enter the DPLPMTUD BASE state ( {{Section 5.2
+(PL). A QUIC sender can therefore enter the DPLPMTUD BASE state ({{Section 5.2
 of DPLPMTUD}}) when the QUIC connection handshake has been completed.
 
 
