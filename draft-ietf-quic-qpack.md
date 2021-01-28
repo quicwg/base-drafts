@@ -1204,9 +1204,9 @@ the dynamic table state. If a guess is compressed into a shorter length, the
 attacker can observe the encoded length and infer that the guess was correct.
 
 This is possible even over the Transport Layer Security Protocol (TLS, see
-{{?TLS=RFC8446}}) and QUIC Transport Protocol (see {{QUIC-TRANSPORT}}), because
-while TLS and QUIC provide confidentiality protection for content, they only
-provide a limited amount of protection for the length of that content.
+{{?TLS=RFC8446}}) and the QUIC Transport Protocol (see {{QUIC-TRANSPORT}}),
+because while TLS and QUIC provide confidentiality protection for content, they
+only provide a limited amount of protection for the length of that content.
 
 Note:
 
@@ -1240,7 +1240,7 @@ the dynamic table, and the other to refer to those entries while encoding
 chosen field lines, then the attacker (the second entity) can learn the state
 of the table by observing the length of the encoded output.
 
-For example, requests or responses from mutually distrustful entities occurs
+For example, requests or responses from mutually distrustful entities can occur
 when an intermediary either:
 
  * sends requests from multiple clients on a single connection toward an origin
@@ -1341,11 +1341,11 @@ An attacker can try to cause an endpoint to exhaust its memory. QPACK is
 designed to limit both the peak and stable amounts of memory allocated by an
 endpoint.
 
-The amount of memory used by the decoder is limited by the protocol using
-QPACK through the definition of the maximum size of the dynamic table, and the
-maximum number of blocking streams. In HTTP/3, these values are controlled by
-the decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY
-and SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
+QPACK uses the definition of the maximum size of the dynamic table and the
+maximum number of blocking streams to limit the amount of memory the encoder can
+cause the decoder to consume. In HTTP/3, these values are controlled by the
+decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY and
+SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
 {{maximum-dynamic-table-capacity}} and {{blocked-streams}}). The limit on the
 size of the dynamic table takes into account the size of the data stored in the
 dynamic table, plus a small allowance for overhead.  The limit on the number of
@@ -1358,7 +1358,7 @@ setting an appropriate value for the maximum size of the dynamic table. In
 HTTP/3, this is realized by setting an appropriate value for the
 SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of
 state memory it uses by choosing a smaller dynamic table size than the decoder
-allows, and signaling this to the decoder (see {{set-dynamic-table-capacity}}).
+allows and signaling this to the decoder (see {{set-dynamic-capacity}}).
 
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
@@ -1740,7 +1740,7 @@ Stream: Encoder
                               ^-- acknowledged --^
                                4   0  :authority  www.example.com
                                5   0  custom-key  custom-value2
-                              Size=214
+                              Size=215
 ~~~
 
 # Sample One Pass Encoding Algorithm
