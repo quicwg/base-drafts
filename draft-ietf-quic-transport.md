@@ -91,6 +91,8 @@ informative:
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
 
+  RFC3449:
+
 
 --- abstract
 
@@ -130,7 +132,7 @@ QUIC is a connection-oriented protocol that creates a stateful interaction
 between a client and server.
 
 The QUIC handshake combines negotiation of cryptographic and transport
-parameters. QUIC integrates the TLS ({{?TLS13}}) handshake, although using a
+parameters. QUIC integrates the TLS ({{TLS13}}) handshake, although using a
 customized framing for protecting packets. The integration of TLS and QUIC is
 described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
 the exchange of application data as soon as possible. This includes an option
@@ -4361,7 +4363,7 @@ Endpoints could limit the content of PMTU probes to PING and PADDING frames,
 since packets that are larger than the current maximum datagram size are more
 likely to be dropped by the network.  Loss of a QUIC packet that is carried in a
 PMTU probe is therefore not a reliable indication of congestion and SHOULD NOT
-trigger a congestion control reaction; see {{Section 3, Bullet 7 of DPLPMTUD}}.
+trigger a congestion control reaction; see {{Section 3 of DPLPMTUD}}, Bullet 7.
 However, PMTU probes consume congestion window, which could delay subsequent
 transmission by an application.
 
@@ -6556,7 +6558,7 @@ considered separately.
 ### Handshake {#handshake-properties}
 
 The QUIC handshake incorporates the TLS 1.3 handshake and inherits the
-cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
+cryptographic properties described in Appendix E.1 of {{TLS13}}. Many
 of the security properties of QUIC depend on the TLS handshake providing these
 properties. Any attack on the TLS handshake could affect QUIC.
 
@@ -7535,7 +7537,7 @@ The "QUIC Frame Types" registry governs a 62-bit space. This registry follows
 the registration policy from {{iana-policy}}. Permanent registrations in this
 registry are assigned using the Specification Required policy ({{!RFC8126}}),
 except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
-assigned using Standards Action or IESG Approval as defined in {{!Sections 4.9
+assigned using Standards Action or IESG Approval as defined in {{Sections 4.9
 and 4.10 of RFC8126}}.
 
 In addition to the fields in {{iana-provisional}}, permanent registrations in
