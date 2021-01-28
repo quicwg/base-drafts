@@ -581,8 +581,7 @@ The following pseudo-header fields are defined for requests:
 
   ":scheme":
 
-  : Contains the scheme portion of the target URI (
-  {{Section 3.1 of URI}})
+  : Contains the scheme portion of the target URI ({{Section 3.1 of URI}})
 
   : ":scheme" is not restricted to URIs with scheme "http" and "https".
     A proxy or
@@ -593,8 +592,8 @@ The following pseudo-header fields are defined for requests:
 
   ":authority":
 
-  : Contains the authority portion of the target URI (
-    {{Section 3.2 of URI}}). The authority MUST NOT include the deprecated "userinfo"
+  : Contains the authority portion of the target URI ({{Section 3.2 of URI}}).
+    The authority MUST NOT include the deprecated "userinfo"
     subcomponent for URIs of scheme "http" or "https".
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
