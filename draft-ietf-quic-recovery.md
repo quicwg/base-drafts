@@ -391,7 +391,7 @@ Therefore, when adjusting an RTT sample using peer-reported acknowledgment
 delays, an endpoint:
 
 - MAY ignore the acknowledgment delay for Initial packets, since these
-  acknowledgments are not delayed by the peer ( {{Section 13.2.1 of
+  acknowledgments are not delayed by the peer ({{Section 13.2.1 of
   QUIC-TRANSPORT}});
 
 - SHOULD ignore the peer's max_ack_delay until the handshake is confirmed;
