@@ -2231,8 +2231,8 @@ This document establishes a registry for HTTP/3 unidirectional stream types. The
 QUIC registry policy; see {{iana-policy}}.  Permanent registrations in this
 registry are assigned using the Specification Required policy ({{!RFC8126}}),
 except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
-assigned using Standards Action or IESG Approval as defined in {{Sections 4.9 and
-4.10 of RFC8126}}.
+assigned using Standards Action or IESG Approval as defined in {{Sections 4.9
+and 4.10 of RFC8126}}.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following fields:
