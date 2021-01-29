@@ -4363,7 +4363,7 @@ Endpoints could limit the content of PMTU probes to PING and PADDING frames,
 since packets that are larger than the current maximum datagram size are more
 likely to be dropped by the network.  Loss of a QUIC packet that is carried in a
 PMTU probe is therefore not a reliable indication of congestion and SHOULD NOT
-trigger a congestion control reaction; see {{Section 3 of DPLPMTUD}}, Bullet 7.
+trigger a congestion control reaction; see Bullet 7 in {{Section 3 of DPLPMTUD}}.
 However, PMTU probes consume congestion window, which could delay subsequent
 transmission by an application.
 
