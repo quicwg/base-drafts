@@ -643,10 +643,9 @@ use them and still fit their entire ClientHello message in their first Initial
 packet.
 
 The TLS implementation does not need to ensure that the ClientHello is large
-enough that the Initial packet fills a datagram of the minimum size required for
-carring Initial packets. QUIC implementations use PADDING frames or packet
-coalescing to ensure that datagrams are large enough; see {{Section 14.1 of
-QUIC-TRANSPORT}}.
+enough to meet QUIC's requirements for datagrams that carry Initial packets; see
+{{Section 14.1 of QUIC-TRANSPORT}}. QUIC implementations use PADDING frames or
+packet coalescing to ensure that datagrams are large enough.
 
 
 ## Peer Authentication
