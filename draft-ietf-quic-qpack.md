@@ -1777,12 +1777,35 @@ Pseudo-code for single pass encoding, excluding handling of duplicates,
 non-blocking mode, available encoder stream flow control and reference tracking.
 
 ~~~
+# Helper functions:
+# ====
+# Encode an interger with the specified prefix and length
+encodeInteger(buffer, prefix, value, prefixLength)
+
+# Encode a dynamic table insert instruction with optional static
+# or dynamic name index (but not both)
+encodeInsert(buffer, staticNameIndex, dynamicNameIndex, fieldLine)
+
+# Encode a static index reference
+encodeStaticIndexReference(buffer, staticIndex)
+
+# Encode a dynamic index reference relative to base
+encodeDynamicIndexReference(buffer, dynamicIndex, base)
+
+# Encode a literal with an optional static name index
+encodeLiteral(buffer, staticNameIndex, fieldLine)
+
+# Encode a literal with a dynamic name index relative to base
+encodeDynamicLiteral(buffer, dynamicNameIndex, base, fieldLine)
+
+# Encoding Algorithm
+# ====
 base = dynamicTable.getInsertCount()
 requiredInsertCount = 0
-for line in field_lines:
+for line in fieldLines:
   staticIndex = staticTable.findIndex(line)
   if staticIndex is not None:
-    encodeIndexReference(streamBuffer, staticIndex)
+    encodeStaticIndexReference(streamBuffer, staticIndex)
     continue
 
   dynamicIndex = dynamicTable.findIndex(line)
@@ -1817,8 +1840,8 @@ for line in field_lines:
 
 # encode the prefix
 if requiredInsertCount == 0:
-  encodeInteger(prefixBuffer, 0, 0, 8)
-  encodeInteger(prefixBuffer, 0, 0, 7)
+  encodeInteger(prefixBuffer, 0x00, 0, 8)
+  encodeInteger(prefixBuffer, 0x00, 0, 7)
 else:
   wireRIC = (
     requiredInsertCount
@@ -1826,10 +1849,11 @@ else:
   ) + 1;
   encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
   if base >= requiredInsertCount:
-    encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
+    encodeInteger(prefixBuffer, 0x00,
+                  base - requiredInsertCount, 7)
   else:
     encodeInteger(prefixBuffer, 0x80,
-                  requiredInsertCount  - base - 1, 7)
+                  requiredInsertCount - base - 1, 7)
 
 return encoderBuffer, prefixBuffer + streamBuffer
 ~~~
