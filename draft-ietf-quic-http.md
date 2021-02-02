@@ -1002,15 +1002,15 @@ previously received MUST be treated as a connection error of type H3_ID_ERROR;
 see {{errors}}.
 
 An endpoint that is attempting to gracefully shut down a connection can send a
-GOAWAY frame with a value set to the maximum possible value (2^62-4 for servers,
-2^62-1 for clients). This ensures that the peer stops creating new requests or
-pushes. After allowing time for any in-flight requests or pushes to arrive, the
-endpoint can send another GOAWAY frame indicating which requests or pushes it
-might accept before the end of the connection. This ensures that a connection
-can be cleanly shut down without losing requests.
+GOAWAY frame with a value set to the maximum possible value (2<sup>62</sup>-4
+for servers, 2<sup>62</sup>-1 for clients). This ensures that the peer stops
+creating new requests or pushes. After allowing time for any in-flight requests
+or pushes to arrive, the endpoint can send another GOAWAY frame indicating which
+requests or pushes it might accept before the end of the connection. This
+ensures that a connection can be cleanly shut down without losing requests.
 
 A client has more flexibility in the value it chooses for the Push ID in a
-GOAWAY that it sends.  A value of 2^62 - 1 indicates that the server can
+GOAWAY that it sends.  A value of 2<sup>62</sup>-1 indicates that the server can
 continue fulfilling pushes that have already been promised. A smaller value
 indicates the client will reject pushes with Push IDs greater than or equal to
 this value.  Like the server, the client MAY send subsequent GOAWAY frames so
@@ -2280,10 +2280,11 @@ Some important departures are noted in this section.
 
 ## Streams {#h2-streams}
 
-HTTP/3 permits use of a larger number of streams (2^62-1) than HTTP/2.  The same
-considerations about exhaustion of stream identifier space apply, though the
-space is significantly larger such that it is likely that other limits in QUIC
-are reached first, such as the limit on the connection flow control window.
+HTTP/3 permits use of a larger number of streams (2<sup>62</sup>-1) than HTTP/2.
+The same considerations about exhaustion of stream identifier space apply,
+though the space is significantly larger such that it is likely that other
+limits in QUIC are reached first, such as the limit on the connection flow
+control window.
 
 In contrast to HTTP/2, stream concurrency in HTTP/3 is managed by QUIC.  QUIC
 considers a stream closed when all data has been received and sent data has been

@@ -385,10 +385,10 @@ data in one direction: from the initiator of the stream to its peer.
 Bidirectional streams allow for data to be sent in both directions.
 
 Streams are identified within a connection by a numeric value, referred to as
-the stream ID.  A stream ID is a 62-bit integer (0 to 2^62-1) that is unique for
-all streams on a connection.  Stream IDs are encoded as variable-length
-integers; see {{integer-encoding}}.  A QUIC endpoint MUST NOT reuse a stream ID
-within a connection.
+the stream ID.  A stream ID is a 62-bit integer (0 to 2<sup>62</sup>-1) that is
+unique for all streams on a connection.  Stream IDs are encoded as
+variable-length integers; see {{integer-encoding}}.  A QUIC endpoint MUST NOT
+reuse a stream ID within a connection.
 
 The least significant bit (0x1) of the stream ID identifies the initiator of the
 stream.  Client-initiated streams have even-numbered stream IDs (with the bit
@@ -1010,10 +1010,10 @@ MAX_STREAMS frames; see {{frame-max-streams}}. Separate limits apply to
 unidirectional and bidirectional streams.
 
 If a max_streams transport parameter or a MAX_STREAMS frame is received with a
-value greater than 2^60, this would allow a maximum stream ID that cannot be
-expressed as a variable-length integer; see {{integer-encoding}}.  If either is
-received, the connection MUST be closed immediately with a connection error of
-type TRANSPORT_PARAMETER_ERROR if the offending value was received in a
+value greater than 2<sup>60</sup>, this would allow a maximum stream ID that
+cannot be expressed as a variable-length integer; see {{integer-encoding}}.  If
+either is received, the connection MUST be closed immediately with a connection
+error of type TRANSPORT_PARAMETER_ERROR if the offending value was received in a
 transport parameter or of type FRAME_ENCODING_ERROR if it was received in a
 frame; see {{immediate-close}}.
 
@@ -3428,9 +3428,9 @@ Negotiation packet is coalesced with another packet.
 
 ## Packet Numbers {#packet-numbers}
 
-The packet number is an integer in the range 0 to 2^62-1.  This number is used
-in determining the cryptographic nonce for packet protection.  Each endpoint
-maintains a separate packet number for sending and receiving.
+The packet number is an integer in the range 0 to 2<sup>62</sup>-1.  This number
+is used in determining the cryptographic nonce for packet protection.  Each
+endpoint maintains a separate packet number for sending and receiving.
 
 Packet numbers are limited to this range because they need to be representable
 in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
@@ -3465,10 +3465,10 @@ number by at least one.
 algorithms easier to implement between the two packet types.
 
 A QUIC endpoint MUST NOT reuse a packet number within the same packet number
-space in one connection.  If the packet number for sending reaches 2^62 - 1, the
-sender MUST close the connection without sending a CONNECTION_CLOSE frame or any
-further packets; an endpoint MAY send a Stateless Reset ({{stateless-reset}}) in
-response to further packets that it receives.
+space in one connection.  If the packet number for sending reaches
+2<sup>62</sup>-1, the sender MUST close the connection without sending a
+CONNECTION_CLOSE frame or any further packets; an endpoint MAY send a Stateless
+Reset ({{stateless-reset}}) in response to further packets that it receives.
 
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
@@ -4465,10 +4465,11 @@ value of fields.
 
 ## Packet Number Encoding and Decoding {#packet-encoding}
 
-Packet numbers are integers in the range 0 to 2^62-1 ({{packet-numbers}}).  When
-present in long or short packet headers, they are encoded in 1 to 4 bytes.  The
-number of bits required to represent the packet number is reduced by including
-only the least significant bits of the packet number.
+Packet numbers are integers in the range 0 to 2<sup>62</sup>-1
+({{packet-numbers}}).  When present in long or short packet headers, they are
+encoded in 1 to 4 bytes.  The number of bits required to represent the packet
+number is reduced by including only the least significant bits of the packet
+number.
 
 The encoded packet number is protected as described in
 {{Section 5.4 of QUIC-TLS}}.
@@ -5327,8 +5328,8 @@ max_ack_delay (0x0b):
   acknowledgments.  This value SHOULD include the receiver's expected delays in
   alarms firing.  For example, if a receiver sets a timer for 5ms and alarms
   commonly fire up to 1ms late, then it should send a max_ack_delay of 6ms.  If
-  this value is absent, a default of 25 milliseconds is assumed. Values of 2^14
-  or greater are invalid.
+  this value is absent, a default of 25 milliseconds is assumed. Values of
+  2<sup>14</sup> or greater are invalid.
 
 disable_active_migration (0x0c):
 
@@ -5778,9 +5779,9 @@ There is a separate flow of cryptographic handshake data in each encryption
 level, each of which starts at an offset of 0. This implies that each encryption
 level is treated as a separate CRYPTO stream of data.
 
-The largest offset delivered on a stream - the sum of the offset and data
-length - cannot exceed 2^62-1.  Receipt of a frame that exceeds this limit MUST
-be treated as a connection error of type FRAME_ENCODING_ERROR or
+The largest offset delivered on a stream - the sum of the offset and data length
+- cannot exceed 2<sup>62</sup>-1.  Receipt of a frame that exceeds this limit
+MUST be treated as a connection error of type FRAME_ENCODING_ERROR or
 CRYPTO_BUFFER_EXCEEDED.
 
 Unlike STREAM frames, which include a Stream ID indicating to which stream the
@@ -5893,10 +5894,10 @@ When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
 The first byte in the stream has an offset of 0.  The largest offset delivered
-on a stream - the sum of the offset and data length - cannot exceed 2^62-1, as
-it is not possible to provide flow control credit for that data.  Receipt of a
-frame that exceeds this limit MUST be treated as a connection error of type
-FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
+on a stream - the sum of the offset and data length - cannot exceed
+2<sup>62</sup>-1, as it is not possible to provide flow control credit for that
+data.  Receipt of a frame that exceeds this limit MUST be treated as a
+connection error of type FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
 
 
 ## MAX_DATA Frames {#frame-max-data}
@@ -5998,11 +5999,11 @@ MAX_STREAMS frames contain the following field:
 
 Maximum Streams:
 
-: A count of the cumulative number of streams of the corresponding type that
-  can be opened over the lifetime of the connection.  This value cannot exceed
-  2^60, as it is not possible to encode stream IDs larger than 2^62-1.
-  Receipt of a frame that permits opening of a stream larger than this limit
-  MUST be treated as a FRAME_ENCODING_ERROR.
+: A count of the cumulative number of streams of the corresponding type that can
+  be opened over the lifetime of the connection.  This value cannot exceed
+  2<sup>60</sup>, as it is not possible to encode stream IDs larger than
+  2<sup>62</sup>-1.  Receipt of a frame that permits opening of a stream larger
+  than this limit MUST be treated as a FRAME_ENCODING_ERROR.
 
 Loss or reordering can cause a MAX_STREAMS frame to be received that state a
 lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
@@ -6104,11 +6105,11 @@ STREAMS_BLOCKED frames contain the following field:
 
 Maximum Streams:
 
-: A variable-length integer indicating the maximum number of streams allowed
-  at the time the frame was sent.  This value cannot exceed 2^60, as it is
-  not possible to encode stream IDs larger than 2^62-1.  Receipt of a frame
-  that encodes a larger stream ID MUST be treated as a STREAM_LIMIT_ERROR or a
-  FRAME_ENCODING_ERROR.
+: A variable-length integer indicating the maximum number of streams allowed at
+  the time the frame was sent.  This value cannot exceed 2<sup>60</sup>, as it
+  is not possible to encode stream IDs larger than 2<sup>62</sup>-1.  Receipt of
+  a frame that encodes a larger stream ID MUST be treated as a
+  STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frames {#frame-new-connection-id}
@@ -7392,8 +7393,8 @@ assignment process {{!EARLY-ASSIGN=RFC7120}} can be used for these values.
 
 For codepoints that are encoded in variable-length integers
 ({{integer-encoding}}), such as frame types, codepoints that encode to four or
-eight bytes (that is, values 2^14 and above) SHOULD be used unless the usage is
-especially sensitive to having a longer encoding.
+eight bytes (that is, values 2<sup>14</sup> and above) SHOULD be used unless the
+usage is especially sensitive to having a longer encoding.
 
 Applications to register codepoints in QUIC registries MAY include a
 requested codepoint
@@ -8022,8 +8023,8 @@ Issue and pull request numbers are listed with a leading octothorp.
 - Refine discussion of 0-RTT transport parameters (#2467, #2464)
 - Fewer transport parameters need to be remembered for 0-RTT (#2624, #2467)
 - Spin bit text incorporated (#2564)
-- Close the connection when maximum stream ID in MAX_STREAMS exceeds 2^62 - 1
-  (#2499, #2487)
+- Close the connection when maximum stream ID in MAX_STREAMS exceeds
+  2<sup>62</sup>-1 (#2499, #2487)
 - New connection ID required for intentional migration (#2414, #2413)
 - Connection ID issuance can be rate-limited (#2436, #2428)
 - The "QUIC bit" is ignored in Version Negotiation (#2400, #2561)
