@@ -1414,8 +1414,10 @@ has to set a limit to the length it accepts for string literals; see
 {{string-literals}}.  These limits SHOULD be large enough to process the
 largest individual field the HTTP implementation can be configured to accept.
 
-If an implementation encounters a value larger than it is able to decode,
-this MUST be treated as a stream error of QPACK_DECOMPRESSION_FAILED.
+If an implementation encounters a value larger than it is able to decode, this
+MUST be treated as a stream error of type QPACK_DECOMPRESSION_FAILED if on a
+request stream, or a connection error of the appropriate type if on the encoder
+or decoder stream.
 
 
 # IANA Considerations
