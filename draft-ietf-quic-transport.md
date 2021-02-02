@@ -72,6 +72,8 @@ normative:
         org: sn3rd
         role: editor
 
+  TLS13: RFC8446
+
 informative:
 
   EARLY-DESIGN:
@@ -88,6 +90,8 @@ informative:
     date: 2009-06
     target:
      "https://web.archive.org/web/20150315054838/http://ha.ckers.org/slowloris/"
+
+  RFC3449:
 
 
 --- abstract
@@ -128,7 +132,7 @@ QUIC is a connection-oriented protocol that creates a stateful interaction
 between a client and server.
 
 The QUIC handshake combines negotiation of cryptographic and transport
-parameters. QUIC integrates the TLS ({{?TLS13}}) handshake, although using a
+parameters. QUIC integrates the TLS ({{TLS13}}) handshake, although using a
 customized framing for protecting packets. The integration of TLS and QUIC is
 described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
 the exchange of application data as soon as possible. This includes an option
@@ -929,7 +933,7 @@ blocked for at least an entire round trip.
 
 When a sender receives credit after being blocked, it might be able to send a
 large amount of data in response, resulting in short-term congestion; see
-Section 7.7 in {{QUIC-RECOVERY}} for a discussion of how a sender can avoid this
+{{Section 7.7 of QUIC-RECOVERY}} for a discussion of how a sender can avoid this
 congestion.
 
 
@@ -1049,7 +1053,7 @@ establish a shared secret using the cryptographic handshake protocol
 An application protocol can use the connection during the handshake phase with
 some limitations.  0-RTT allows application data to be sent by a client before
 receiving a response from the server.  However, 0-RTT provides no protection
-against replay attacks; see Section 9.2 of {{QUIC-TLS}}.  A server can also send
+against replay attacks; see {{Section 9.2 of QUIC-TLS}}.  A server can also send
 application data to a client before it receives the final cryptographic
 handshake messages that allow it to confirm the identity and liveness of the
 client.  These capabilities allow an application protocol to offer the option of
@@ -1634,7 +1638,7 @@ this connection.
 
 The Destination Connection ID field from the first Initial packet sent by a
 client is used to determine packet protection keys for Initial packets.  These
-keys change after receiving a Retry packet; see Section 5.2 of {{QUIC-TLS}}.
+keys change after receiving a Retry packet; see {{Section 5.2 of QUIC-TLS}}.
 
 The client populates the Source Connection ID field with a value of its choosing
 and sets the Source Connection ID Length field to indicate the length.
@@ -1806,7 +1810,7 @@ the value of the server transport parameters from a connection and apply them
 to any 0-RTT packets that are sent in subsequent connections to that peer that
 use a session ticket issued on that connection.  This
 information is stored with any information required by the application
-protocol or cryptographic handshake; see Section 4.6 of {{QUIC-TLS}}.
+protocol or cryptographic handshake; see {{Section 4.6 of QUIC-TLS}}.
 
 Remembered transport parameters apply to the new connection until the handshake
 completes and the client starts sending 1-RTT packets.  Once the handshake
@@ -1956,11 +1960,11 @@ least 64 bits of entropy.
 
 For the client, the value of the Destination Connection ID field in its first
 Initial packet allows it to validate the server address as a part of
-successfully processing any packet.  Initial packets from the server are
-protected with keys that are derived from this value (see Section 5.2 of
-{{QUIC-TLS}}). Alternatively, the value is echoed by the server in Version
+successfully processing any packet. Initial packets from the server are
+protected with keys that are derived from this value (see {{Section 5.2 of
+QUIC-TLS}}). Alternatively, the value is echoed by the server in Version
 Negotiation packets ({{version-negotiation}}) or included in the Integrity Tag
-in Retry packets (Section 5.8 of {{QUIC-TLS}}).
+in Retry packets ({{Section 5.8 of QUIC-TLS}}).
 
 Prior to validating the client address, servers MUST NOT send more than three
 times as many bytes as the number of bytes they have received.  This limits the
@@ -1982,8 +1986,8 @@ could occur when the server reaches its anti-amplification limit and the client
 has received acknowledgments for all the data it has sent.  In this case, when
 the client has no reason to send additional packets, the server will be unable
 to send more data because it has not validated the client's address. To prevent
-this deadlock, clients MUST send a packet on a probe timeout (PTO, see Section
-6.2 of {{QUIC-RECOVERY}}). Specifically, the client MUST send an Initial packet
+this deadlock, clients MUST send a packet on a probe timeout (PTO, see {{Section
+6.2 of QUIC-RECOVERY}}). Specifically, the client MUST send an Initial packet
 in a UDP datagram that contains at least 1200 bytes if it does not have
 Handshake keys, and otherwise send a Handshake packet.
 
@@ -2589,7 +2593,7 @@ sending rate.  An endpoint might set a separate timer when a PATH_CHALLENGE is
 sent, which is cancelled if the corresponding PATH_RESPONSE is received. If the
 timer fires before the PATH_RESPONSE is received, the endpoint might send a new
 PATH_CHALLENGE, and restart the timer for a longer period of time.  This timer
-SHOULD be set as described in Section 6.2.1 of {{QUIC-RECOVERY}} and MUST NOT be
+SHOULD be set as described in {{Section 6.2.1 of QUIC-RECOVERY}} and MUST NOT be
 more aggressive.
 
 
@@ -2817,7 +2821,7 @@ at the peer before these packets arrive.
 
 An endpoint can send a PING or another ack-eliciting frame to test the
 connection for liveness if the peer could time out soon, such as within a PTO;
-see Section 6.2 of {{QUIC-RECOVERY}}.  This is especially useful if any
+see {{Section 6.2 of QUIC-RECOVERY}}.  This is especially useful if any
 available application data cannot be safely retried. Note that the application
 determines what data is safe to retry.
 
@@ -2937,10 +2941,10 @@ unvalidated address or limit the cumulative size of packets it sends to an
 unvalidated address to three times the size of packets it receives from that
 address.
 
-An endpoint is not expected to handle key updates when it is closing (Section 6
-of {{QUIC-TLS}}). A key update might prevent the endpoint from moving from the
-closing state to the draining state, as the endpoint will not be able to process
-subsequently received packets, but it otherwise has no impact.
+An endpoint is not expected to handle key updates when it is closing ({{Section
+6 of QUIC-TLS}}). A key update might prevent the endpoint from moving from the
+closing state to the draining state, as the endpoint will not be able to
+process subsequently received packets, but it otherwise has no impact.
 
 
 ### Draining Connection State {#draining}
@@ -2969,7 +2973,7 @@ transmission of any packets on this connection.
 When sending CONNECTION_CLOSE, the goal is to ensure that the peer will process
 the frame.  Generally, this means sending the frame in a packet with the highest
 level of packet protection to avoid the packet being discarded.  After the
-handshake is confirmed (see Section 4.1.2 of {{QUIC-TLS}}), an endpoint MUST
+handshake is confirmed (see {{Section 4.1.2 of QUIC-TLS}}), an endpoint MUST
 send any CONNECTION_CLOSE frames in a 1-RTT packet.  However, prior to
 confirming the handshake, it is possible that more advanced packet protection
 keys are not available to the peer, so another CONNECTION_CLOSE frame MAY be
@@ -3371,7 +3375,7 @@ confidentiality and integrity protection.
 
 The Packet Number field that appears in some packet types has alternative
 confidentiality protection that is applied as part of header protection; see
-Section 5.4 of {{QUIC-TLS}} for details. The underlying packet number increases
+{{Section 5.4 of QUIC-TLS}} for details. The underlying packet number increases
 with each packet sent in a given packet number space; see {{packet-numbers}} for
 details.
 
@@ -3392,7 +3396,7 @@ construct PMTU probes; see {{pmtu-probes-src-cid}}.  Receivers MUST be able to
 process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
-Handshake, 1-RTT; see Section 4.1.4 of {{QUIC-TLS}}) makes it more likely the
+Handshake, 1-RTT; see {{Section 4.1.4 of QUIC-TLS}}) makes it more likely the
 receiver will be able to process all the packets in a single pass. A packet
 with a short header does not include a length, so it can only be the last
 packet included in a UDP datagram.  An endpoint SHOULD include multiple frames
@@ -3467,7 +3471,7 @@ response to further packets that it receives.
 A receiver MUST discard a newly unprotected packet unless it is certain that it
 has not processed another packet with the same packet number from the same
 packet number space. Duplicate suppression MUST happen after removing packet
-protection for the reasons described in Section 9.5 of {{QUIC-TLS}}.
+protection for the reasons described in {{Section 9.5 of QUIC-TLS}}.
 
 Endpoints that track all individual packets for the purposes of detecting
 duplicates are at risk of accumulating excessive state.  The data required for
@@ -3714,8 +3718,8 @@ contract: an endpoint promises to never intentionally delay acknowledgments of
 an ack-eliciting packet by more than the indicated value. If it does, any excess
 accrues to the RTT estimate and could result in spurious or delayed
 retransmissions from the peer. A sender uses the receiver's max_ack_delay value
-in determining timeouts for timer-based retransmission, as detailed in Section
-6.2 of {{QUIC-RECOVERY}}.
+in determining timeouts for timer-based retransmission, as detailed in {{Section
+6.2 of QUIC-RECOVERY}}.
 
 An endpoint MUST acknowledge all ack-eliciting Initial and Handshake packets
 immediately and all ack-eliciting 0-RTT and 1-RTT packets within its advertised
@@ -3772,9 +3776,9 @@ acknowledgments.
 A receiver determines how frequently to send acknowledgments in response to
 ack-eliciting packets. This determination involves a trade-off.
 
-Endpoints rely on timely acknowledgment to detect loss; see Section 6 of
-{{QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
-Section 7 of {{QUIC-RECOVERY}}, rely on acknowledgments to manage their
+Endpoints rely on timely acknowledgment to detect loss; see {{Section 6 of
+QUIC-RECOVERY}}. Window-based congestion controllers, such as the one in
+{{Section 7 of QUIC-RECOVERY}}, rely on acknowledgments to manage their
 congestion window. In both cases, delaying acknowledgments can adversely affect
 performance.
 
@@ -3782,7 +3786,7 @@ On the other hand, reducing the frequency of packets that carry only
 acknowledgments reduces packet transmission and processing cost at both
 endpoints. It can improve connection throughput on severely asymmetric links
 and reduce the volume of acknowledgment traffic using return path capacity;
-see Section 3 of {{?RFC3449}}.
+see {{Section 3 of RFC3449}}.
 
 A receiver SHOULD send an ACK frame after receiving at least two ack-eliciting
 packets. This recommendation is general in nature and consistent with
@@ -4019,8 +4023,8 @@ acknowledged. This includes packets that are acknowledged after being declared
 lost, which can happen in the presence of network reordering. Doing so requires
 senders to retain information about packets after they are declared lost. A
 sender can discard this information after a period of time elapses that
-adequately allows for reordering, such as a PTO (Section 6.2 of
-{{QUIC-RECOVERY}}), or on other events, such as reaching a memory limit.
+adequately allows for reordering, such as a PTO ({{Section 6.2 of
+QUIC-RECOVERY}}), or on other events, such as reaching a memory limit.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
@@ -4086,13 +4090,13 @@ To perform ECN validation for a new path:
   packets sent on a new path to the peer ({{!RFC8311}}).
 
 * The endpoint monitors whether all packets sent with an ECT codepoint are
-  eventually deemed lost (Section 6 of {{QUIC-RECOVERY}}), indicating
+  eventually deemed lost ({{Section 6 of QUIC-RECOVERY}}), indicating
   that ECN validation has failed.
 
 If an endpoint has cause to expect that IP packets with an ECT codepoint might
 be dropped by a faulty network element, the endpoint could set an ECT codepoint
 for only the first ten outgoing packets on a path, or for a period of three
-PTOs (see Section 6.2 of {{QUIC-RECOVERY}}). If all packets marked with non-zero
+PTOs (see {{Section 6.2 of QUIC-RECOVERY}}). If all packets marked with non-zero
 ECN codepoints are subsequently lost, it can disable marking on the assumption
 that the marking caused the loss.
 
@@ -4288,17 +4292,17 @@ could reduce the PMTU to a bandwidth-inefficient value.
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 QUIC's smallest allowed maximum datagram size.
 
-The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that the
-quoted packet should contain as much of the original packet as possible without
-exceeding the minimum MTU for the IP version.  The size of the quoted packet can
-actually be smaller, or the information unintelligible, as described in Section
-1.1 of {{!DPLPMTUD}}.
+The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that
+the quoted packet should contain as much of the original packet as possible
+without exceeding the minimum MTU for the IP version. The size of the quoted
+packet can actually be smaller, or the information unintelligible, as described
+in {{Section 1.1 of DPLPMTUD}}.
 
 QUIC endpoints using PMTUD SHOULD validate ICMP messages to protect from
-packet injection as specified in {{!RFC8201}} and Section 5.2 of {{!RFC8085}}.
+packet injection as specified in {{!RFC8201}} and {{Section 5.2 of RFC8085}}.
 This validation SHOULD use the quoted packet supplied in the payload of an ICMP
 message to associate the message with a corresponding transport connection (see
-Section 4.6.1 of {{!DPLPMTUD}}).  ICMP message validation MUST include matching
+{{Section 4.6.1 of DPLPMTUD}}).  ICMP message validation MUST include matching
 IP addresses and UDP ports ({{!RFC8085}}) and, when possible, connection IDs to
 an active QUIC session.  The endpoint SHOULD ignore all ICMP messages that fail
 validation.
@@ -4314,36 +4318,36 @@ determines that the quoted packet has actually been lost.
 Datagram Packetization Layer PMTU Discovery (DPLPMTUD; {{!DPLPMTUD=RFC8899}})
 relies on tracking loss or acknowledgment of QUIC packets that are carried in
 PMTU probes.  PMTU probes for DPLPMTUD that use the PADDING frame implement
-"Probing using padding data", as defined in Section 4.1 of {{!DPLPMTUD}}.
+"Probing using padding data", as defined in {{Section 4.1 of DPLPMTUD}}.
 
-Endpoints SHOULD set the initial value of BASE_PLPMTU (Section 5.1 of
-{{!DPLPMTUD}}) to be consistent with QUIC's smallest allowed maximum datagram
+Endpoints SHOULD set the initial value of BASE_PLPMTU ({{Section 5.1 of
+DPLPMTUD}}) to be consistent with QUIC's smallest allowed maximum datagram
 size. The MIN_PLPMTU is the same as the BASE_PLPMTU.
 
 QUIC endpoints implementing DPLPMTUD maintain a DPLPMTUD Maximum Packet Size
-(MPS, Section 4.4 of {{!DPLPMTUD}}) for each combination of local and remote IP
+(MPS, {{Section 4.4 of DPLPMTUD}}) for each combination of local and remote IP
 addresses.  This corresponds to the maximum datagram size.
 
 
 ### DPLPMTUD and Initial Connectivity
 
 From the perspective of DPLPMTUD, QUIC is an acknowledged Packetization Layer
-(PL). A QUIC sender can therefore enter the DPLPMTUD BASE state (Section 5.2 of
-{{!DPLPMTUD}}) when the QUIC connection handshake has been completed.
+(PL). A QUIC sender can therefore enter the DPLPMTUD BASE state ({{Section 5.2
+of DPLPMTUD}}) when the QUIC connection handshake has been completed.
 
 
 ### Validating the Network Path with DPLPMTUD
 
 QUIC is an acknowledged PL, therefore a QUIC sender does not implement a
-DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see Section 5.2
-of {{!DPLPMTUD}}.
+DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see {{Section
+5.2 of DPLPMTUD}}.
 
 
 ### Handling of ICMP Messages by DPLPMTUD
 
 An endpoint using DPLPMTUD requires the validation of any received ICMP Packet
-Too Big (PTB) message before using the PTB information, as defined in Section
-4.6 of {{!DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an
+Too Big (PTB) message before using the PTB information, as defined in {{Section
+4.6 of DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an
 ICMP message by using other PL information (e.g., validation of connection IDs
 in the quoted packet of any received ICMP message).
 
@@ -4359,9 +4363,9 @@ Endpoints could limit the content of PMTU probes to PING and PADDING frames,
 since packets that are larger than the current maximum datagram size are more
 likely to be dropped by the network.  Loss of a QUIC packet that is carried in a
 PMTU probe is therefore not a reliable indication of congestion and SHOULD NOT
-trigger a congestion control reaction; see Section 3, Bullet 7 of {{!DPLPMTUD}}.
-However, PMTU probes consume congestion window, which could delay subsequent
-transmission by an application.
+trigger a congestion control reaction; see Bullet 7 in {{Section 3 of
+DPLPMTUD}}.  However, PMTU probes consume congestion window, which could delay
+subsequent transmission by an application.
 
 
 ### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
@@ -4464,8 +4468,8 @@ present in long or short packet headers, they are encoded in 1 to 4 bytes.  The
 number of bits required to represent the packet number is reduced by including
 only the least significant bits of the packet number.
 
-The encoded packet number is protected as described in Section 5.4 of
-{{QUIC-TLS}}.
+The encoded packet number is protected as described in
+{{Section 5.4 of QUIC-TLS}}.
 
 Prior to receiving an acknowledgment for a packet number space, the full packet
 number MUST be included; it is not to be truncated as described below.
@@ -4610,13 +4614,13 @@ contain these additional fields:
 Reserved Bits:
 
 : Two bits (those with a mask of 0x0c) of byte 0 are reserved across multiple
-  packet types.  These bits are protected using header protection; see Section
-  5.4 of {{QUIC-TLS}}. The value included prior to protection MUST be set to 0.
+  packet types.  These bits are protected using header protection; see {{Section
+  5.4 of QUIC-TLS}}. The value included prior to protection MUST be set to 0.
   An endpoint MUST treat receipt of a packet that has a non-zero value for these
   bits after removing both packet and header protection as a connection error
   of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.5 of
-  {{QUIC-TLS}}.
+  header protection can expose the endpoint to attacks; see
+  {{Section 9.5 of QUIC-TLS}}.
 
 Packet Number Length:
 
@@ -4625,7 +4629,7 @@ Packet Number Length:
   number, encoded as an unsigned, two-bit integer that is one less than the
   length of the packet number field in bytes.  That is, the length of the packet
   number field is the value of this field, plus one.  These bits are protected
-  using header protection; see Section 5.4 of {{QUIC-TLS}}.
+  using header protection; see {{Section 5.4 of QUIC-TLS}}.
 
 Length:
 
@@ -4636,7 +4640,7 @@ Length:
 Packet Number:
 
 : The packet number field is 1 to 4 bytes long. The packet number is protected
-  using header protection; see Section 5.4 of {{QUIC-TLS}}.  The length of the
+  using header protection; see {{Section 5.4 of QUIC-TLS}}.  The length of the
   packet number field is encoded in the Packet Number Length bits of byte 0; see
   above.
 
@@ -4779,8 +4783,8 @@ The first packet sent by a client always includes a CRYPTO frame that contains
 the start or all of the first cryptographic handshake message.  The first
 CRYPTO frame sent always begins at an offset of 0; see {{handshake}}.
 
-Note that if the server sends a TLS HelloRetryRequest (see Section 4.7 of
-{{QUIC-TLS}}), the client will send another series of Initial packets.  These
+Note that if the server sends a TLS HelloRetryRequest (see {{Section 4.7 of
+QUIC-TLS}}), the client will send another series of Initial packets. These
 Initial packets will continue the cryptographic handshake and will contain
 CRYPTO frames starting at an offset matching the size of the CRYPTO frames sent
 in the first flight of Initial packets.
@@ -4793,8 +4797,8 @@ first Handshake packet.  A server stops sending and processing Initial packets
 when it receives its first Handshake packet.  Though packets might still be in
 flight or awaiting acknowledgment, no further Initial packets need to be
 exchanged beyond this point.  Initial packet protection keys are discarded (see
-Section 4.9.1 of {{QUIC-TLS}}) along with any loss recovery and congestion
-control state; see Section 6.4 of {{QUIC-RECOVERY}}.
+{{Section 4.9.1 of QUIC-TLS}}) along with any loss recovery and congestion
+control state; see {{Section 6.4 of QUIC-RECOVERY}}.
 
 Any data in CRYPTO frames is discarded - and no longer retransmitted - when
 Initial keys are discarded.
@@ -4808,7 +4812,7 @@ is used to carry "early" data from the client to the server as part of the
 first flight, prior to handshake completion.  As part of the TLS handshake, the
 server can accept or reject this early data.
 
-See Section 2.3 of {{!TLS13=RFC8446}} for a discussion of 0-RTT data and its
+See {{Section 2.3 of TLS13}} for a discussion of 0-RTT data and its
 limitations.
 
 ~~~
@@ -4840,7 +4844,7 @@ used for any new packets that are sent; as described in {{retry-continue}},
 reusing packet numbers could compromise packet protection.
 
 A client only receives acknowledgments for its 0-RTT packets once the handshake
-is complete, as defined in Section 4.1.1 of {{QUIC-TLS}}.
+is complete, as defined in {{Section 4.1.1 of QUIC-TLS}}.
 
 A client MUST NOT send 0-RTT packets once it starts processing 1-RTT packets
 from the server.  This means that 0-RTT packets cannot contain any response to
@@ -5067,21 +5071,20 @@ Spin Bit:
 
 Reserved Bits:
 
-: The next two bits (those with a mask of 0x18) of byte 0 are reserved.  These
-  bits are protected using header protection; see Section 5.4 of
-  {{QUIC-TLS}}.  The value included prior to protection MUST be set to 0.  An
-  endpoint MUST treat receipt of a packet that has a non-zero value for these
-  bits, after removing both packet and header protection, as a connection error
-  of type PROTOCOL_VIOLATION. Discarding such a packet after only removing
-  header protection can expose the endpoint to attacks; see Section 9.5 of
-  {{QUIC-TLS}}.
+: The next two bits (those with a mask of 0x18) of byte 0 are reserved. These
+bits are protected using header protection; see {{Section 5.4 of QUIC-TLS}}.
+The value included prior to protection MUST be set to 0. An endpoint MUST treat
+receipt of a packet that has a non-zero value for these bits, after removing
+both packet and header protection, as a connection error of type
+PROTOCOL_VIOLATION. Discarding such a packet after only removing header
+protection can expose the endpoint to attacks; see {{Section 9.5 of QUIC-TLS}}.
 
 Key Phase:
 
 : The next bit (0x04) of byte 0 indicates the key phase, which allows a
   recipient of a packet to identify the packet protection keys that are used to
   protect the packet.  See {{QUIC-TLS}} for details.  This bit is protected
-  using header protection; see Section 5.4 of {{QUIC-TLS}}.
+  using header protection; see {{Section 5.4 of QUIC-TLS}}.
 
 Packet Number Length:
 
@@ -5089,7 +5092,7 @@ Packet Number Length:
   the length of the packet number, encoded as an unsigned, two-bit integer that
   is one less than the length of the packet number field in bytes.  That is, the
   length of the packet number field is the value of this field, plus one.  These
-  bits are protected using header protection; see Section 5.4 of {{QUIC-TLS}}.
+  bits are protected using header protection; see {{Section 5.4 of QUIC-TLS}}.
 
 Destination Connection ID:
 
@@ -5100,7 +5103,7 @@ Packet Number:
 
 : The packet number field is 1 to 4 bytes long. The packet number is protected
   using header protection; see
-  Section 5.4 of {{QUIC-TLS}}. The length of the packet number field is encoded
+  {{Section 5.4 of QUIC-TLS}}. The length of the packet number field is encoded
   in Packet Number Length field. See {{packet-encoding}} for details.
 
 Packet Payload:
@@ -6476,8 +6479,8 @@ CRYPTO_BUFFER_EXCEEDED (0xd):
 
 KEY_UPDATE_ERROR (0xe):
 
-: An endpoint detected errors in performing key updates; see Section 6 of
-  {{QUIC-TLS}}.
+: An endpoint detected errors in performing key updates; see
+  {{Section 6 of QUIC-TLS}}.
 
 AEAD_LIMIT_REACHED (0xf):
 
@@ -6495,7 +6498,7 @@ CRYPTO_ERROR (0x1XX):
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
   Codes for errors occurring when TLS is used for the crypto handshake are
-  described in Section 4.8 of {{QUIC-TLS}}.
+  described in {{Section 4.8 of QUIC-TLS}}.
 
 See {{iana-error-codes}} for details of registering new error codes.
 
@@ -6545,7 +6548,7 @@ modify, or remove any packet it observes such that it no longer reaches its
 destination, while an off-path attacker observes the packets, but cannot prevent
 the original packet from reaching its intended destination.  Both types of
 attackers can also transmit arbitrary packets.  This definition differs from
-that of Section 3.5 of {{?SEC-CONS}} in that an off-path attacker is able to
+that of {{Section 3.5 of SEC-CONS}} in that an off-path attacker is able to
 observe packets.
 
 Properties of the handshake, protected packets, and connection migration are
@@ -6555,7 +6558,7 @@ considered separately.
 ### Handshake {#handshake-properties}
 
 The QUIC handshake incorporates the TLS 1.3 handshake and inherits the
-cryptographic properties described in Appendix E.1 of {{?TLS13=RFC8446}}. Many
+cryptographic properties described in {{Section E.1 of TLS13}}. Many
 of the security properties of QUIC depend on the TLS handshake providing these
 properties. Any attack on the TLS handshake could affect QUIC.
 
@@ -7020,7 +7023,7 @@ the handshake ensures that - for a new connection - a client will not send
 other types of packet to a destination that does not understand QUIC or is not
 willing to accept a QUIC connection.
 
-Initial packet protection (Section 5.2 of {{QUIC-TLS}}) makes it difficult for
+Initial packet protection ({{Section 5.2 of QUIC-TLS}}) makes it difficult for
 servers to control the content of Initial packets sent by clients. A client
 choosing an unpredictable Destination Connection ID ensures that servers are
 unable to control any of the encrypted portion of Initial packets from clients.
@@ -7334,8 +7337,8 @@ experimentation with extensions to QUIC.  Provisional registrations only require
 the inclusion of the codepoint value and contact information.  However,
 provisional registrations could be reclaimed and reassigned for another purpose.
 
-Provisional registrations require Expert Review, as defined in Section 4.5 of
-{{!RFC8126}}.  Designated expert(s) are advised that only registrations for an
+Provisional registrations require Expert Review, as defined in {{Section 4.5
+of RFC8126}}. Designated expert(s) are advised that only registrations for an
 excessive proportion of remaining codepoint space or the very first unassigned
 value (see {{iana-random}}) can be rejected.
 
@@ -7382,7 +7385,7 @@ contiguous range.  This minimizes the risk that differing semantics are
 attributed to the same codepoint by different implementations.
 
 Use of the first unassigned codepoint is reserved for allocation using the
-Standards Action policy; see Section 4.9 of {{!RFC8126}}.  The early codepoint
+Standards Action policy; see {{Section 4.9 of RFC8126}}.  The early codepoint
 assignment process {{!EARLY-ASSIGN=RFC7120}} can be used for these values.
 
 For codepoints that are encoded in variable-length integers
@@ -7530,12 +7533,12 @@ appear in the listing of assigned values.
 IANA \[SHALL add/has added] a registry for "QUIC Frame Types" under a
 "QUIC" heading.
 
-The "QUIC Frame Types" registry governs a 62-bit space.  This registry follows
-the registration policy from {{iana-policy}}.  Permanent registrations in this
+The "QUIC Frame Types" registry governs a 62-bit space. This registry follows
+the registration policy from {{iana-policy}}. Permanent registrations in this
 registry are assigned using the Specification Required policy ({{!RFC8126}}),
 except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
-assigned using Standards Action or IESG Approval as defined in Section 4.9 and
-4.10 of {{!RFC8126}}.
+assigned using Standards Action or IESG Approval as defined in {{Sections 4.9
+and 4.10 of RFC8126}}.
 
 In addition to the fields in {{iana-provisional}}, permanent registrations in
 this registry MUST include the following field:
@@ -7566,7 +7569,7 @@ split into three regions that are governed by different policies.  Permanent
 registrations in this registry are assigned using the Specification Required
 policy ({{!RFC8126}}), except for values between 0x00 and 0x3f (in hexadecimal;
 inclusive), which are assigned using Standards Action or IESG Approval as
-defined in Section 4.9 and 4.10 of {{!RFC8126}}.
+defined in {{Sections 4.9 and 4.10 of RFC8126}}.
 
 In addition to the fields in {{iana-provisional}}, permanent registrations in
 this registry MUST include the following fields:

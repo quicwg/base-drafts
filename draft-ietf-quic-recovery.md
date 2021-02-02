@@ -61,6 +61,8 @@ normative:
         org: sn3rd
         role: editor
 
+  RFC8085:
+
 informative:
 
   FACK:
@@ -78,6 +80,8 @@ informative:
       - ins: C. Partridge
     date: 1995-01
     seriesinfo: ACM SIGCOMM CCR
+
+  RFC3465:
 
 --- abstract
 
@@ -130,7 +134,7 @@ In-flight packets:
 All transmissions in QUIC are sent with a packet-level header, which indicates
 the encryption level and includes a packet sequence number (referred to below as
 a packet number).  The encryption level indicates the packet number space, as
-described in Section 12.3 in {{QUIC-TRANSPORT}}.  Packet numbers never repeat
+described in {{Section 12.3 of QUIC-TRANSPORT}}.  Packet numbers never repeat
 within a packet number space for the lifetime of a connection.  Packet numbers
 are sent in monotonically increasing order within a space, preventing ambiguity.
 It is permitted for some packet numbers to never be used, leaving intentional
@@ -226,7 +230,7 @@ forward progress without relying on timeouts.
 
 QUIC endpoints measure the delay incurred between when a packet is received and
 when the corresponding acknowledgment is sent, allowing a peer to maintain a
-more accurate round-trip time estimate; see Section 13.2 of {{QUIC-TRANSPORT}}.
+more accurate round-trip time estimate; see {{Section 13.2 of QUIC-TRANSPORT}}.
 
 ## Probe Timeout Replaces RTO and TLP
 
@@ -268,14 +272,13 @@ congestion ({{pto}}).
 # Estimating the Round-Trip Time {#compute-rtt}
 
 At a high level, an endpoint measures the time from when a packet was sent to
-when it is acknowledged as a round-trip time (RTT) sample.  The endpoint uses
-RTT samples and peer-reported host delays (see Section 13.2 of
-{{QUIC-TRANSPORT}}) to generate a statistical description of the network
-path's RTT. An endpoint computes the following three values for each path:
-the minimum value over a period of time (min_rtt), an
-exponentially-weighted moving average (smoothed_rtt), and the mean deviation
-(referred to as "variation" in the rest of this document) in the observed RTT
-samples (rttvar).
+when it is acknowledged as a round-trip time (RTT) sample. The endpoint uses
+RTT samples and peer-reported host delays (see {{Section 13.2 of
+QUIC-TRANSPORT}}) to generate a statistical description of the network path's
+RTT. An endpoint computes the following three values for each path: the minimum
+value over a period of time (min_rtt), an exponentially-weighted moving average
+(smoothed_rtt), and the mean deviation (referred to as "variation" in the rest
+of this document) in the observed RTT samples (rttvar).
 
 ## Generating RTT samples {#latest-rtt}
 
@@ -360,12 +363,12 @@ variation.
 
 The calculation of smoothed_rtt uses RTT samples after adjusting them for
 acknowledgment delays. These delays are decoded from the ACK Delay field of
-ACK frames as described in Section 19.3 of {{QUIC-TRANSPORT}}.
+ACK frames as described in {{Section 19.3 of QUIC-TRANSPORT}}.
 
 The peer might report acknowledgment delays that are larger than the peer's
-max_ack_delay during the handshake (Section 13.2.1 of {{QUIC-TRANSPORT}}). To
+max_ack_delay during the handshake ({{Section 13.2.1 of QUIC-TRANSPORT}}). To
 account for this, the endpoint SHOULD ignore max_ack_delay until the handshake
-is confirmed, as defined in Section 4.1.2 of {{QUIC-TLS}}. When they occur,
+is confirmed, as defined in {{Section 4.1.2 of QUIC-TLS}}. When they occur,
 these large acknowledgment delays are likely to be non-repeating and limited to
 the handshake. The endpoint can therefore use them without limiting them to the
 max_ack_delay, avoiding unnecessary inflation of the RTT estimate.
@@ -388,8 +391,8 @@ Therefore, when adjusting an RTT sample using peer-reported acknowledgment
 delays, an endpoint:
 
 - MAY ignore the acknowledgment delay for Initial packets, since these
-  acknowledgments are not delayed by the peer (Section 13.2.1 of
-  {{QUIC-TRANSPORT}});
+  acknowledgments are not delayed by the peer ({{Section 13.2.1 of
+  QUIC-TRANSPORT}});
 
 - SHOULD ignore the peer's max_ack_delay until the handshake is confirmed;
 
@@ -410,8 +413,8 @@ until the handshake is confirmed.
 Similar to {{?RFC6298}}, smoothed_rtt and rttvar are computed as follows.
 
 An endpoint initializes the RTT estimator during connection establishment and
-when the estimator is reset during connection migration; see Section 9.4 of
-{{QUIC-TRANSPORT}}. Before any RTT samples are available for a new path or when
+when the estimator is reset during connection migration; see {{Section 9.4 of
+QUIC-TRANSPORT}}. Before any RTT samples are available for a new path or when
 the estimator is reset, the estimator is initialized using the initial RTT; see
 {{pto-handshake}}.
 
@@ -458,7 +461,7 @@ provides a description of these algorithms.
 
 If a packet is lost, the QUIC transport needs to recover from that loss, such
 as by retransmitting the data, sending an updated frame, or discarding the
-frame.  For more information, see Section 13.3 of {{QUIC-TRANSPORT}}.
+frame.  For more information, see {{Section 13.3 of QUIC-TRANSPORT}}.
 
 Loss detection is separate per packet number space, unlike RTT measurement and
 congestion control, because RTT and congestion control are properties of the
@@ -603,10 +606,11 @@ decrypt them. Similarly, this can happen when a server sends 1-RTT packets
 before confirming that the client has verified the server's certificate and can
 therefore read these 1-RTT packets.
 
-A sender SHOULD restart its PTO timer every time an ack-eliciting packet is sent
-or acknowledged, or when Initial or Handshake keys are discarded (Section 4.9 of
-{{QUIC-TLS}}). This ensures the PTO is always set based on the latest estimate
-of the round-trip time and for the correct packet across packet number spaces.
+A sender SHOULD restart its PTO timer every time an ack-eliciting packet is
+sent or acknowledged, or when Initial or Handshake keys are discarded
+({{Section 4.9 of QUIC-TLS}}). This ensures the PTO is always set based on the
+latest estimate of the round-trip time and for the correct packet across packet
+number spaces.
 
 When a PTO timer expires, the PTO backoff MUST be increased, resulting in the
 PTO period being set to twice its current value. The PTO backoff factor is reset
@@ -639,7 +643,7 @@ Resumed connections over the same network MAY use the previous connection's
 final smoothed RTT value as the resumed connection's initial RTT.  When no
 previous RTT is available, the initial RTT SHOULD be set to 333ms.  This
 results in handshakes starting with a PTO of 1 second, as recommended
-for TCP's initial retransmission timeout; see Section 2 of {{?RFC6298}}.
+for TCP's initial retransmission timeout; see {{Section 2 of RFC6298}}.
 
 A connection MAY use the delay between sending a PATH_CHALLENGE and receiving a
 PATH_RESPONSE to set the initial RTT (see kInitialRtt in
@@ -657,7 +661,7 @@ for a now discarded packet number space.
 
 Until the server has validated the client's address on the path, the amount of
 data it can send is limited to three times the amount of data received,
-as specified in Section 8.1 of {{QUIC-TRANSPORT}}. If no additional data can be
+as specified in {{Section 8.1 of QUIC-TRANSPORT}}. If no additional data can be
 sent, the server's PTO timer MUST NOT be armed until datagrams have been
 received from the client, because packets sent on PTO count against the
 anti-amplification limit. Note that the server could fail to validate the
@@ -665,14 +669,13 @@ client's address even if 0-RTT is accepted.
 
 Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
-until it is certain that the server has finished its address validation
-(see Section 8 of {{QUIC-TRANSPORT}}).  That is, the client MUST set the
-probe timer if the client has not received an acknowledgment for any of its
-Handshake packets and the handshake is not confirmed (see Section 4.1.2 of
-{{QUIC-TLS}}), even if there are no packets in flight.  When the PTO fires,
-the client MUST send a Handshake packet if it has Handshake keys, otherwise it
-MUST send an Initial packet in a UDP datagram with a payload of at least 1200
-bytes.
+until it is certain that the server has finished its address validation (see
+{{Section 8 of QUIC-TRANSPORT}}). That is, the client MUST set the probe timer
+if the client has not received an acknowledgment for any of its Handshake
+packets and the handshake is not confirmed (see {{Section 4.1.2 of QUIC-TLS}}),
+even if there are no packets in flight. When the PTO fires, the client MUST
+send a Handshake packet if it has Handshake keys, otherwise it MUST send an
+Initial packet in a UDP datagram with a payload of at least 1200 bytes.
 
 ### Speeding Up Handshake Completion
 
@@ -685,17 +688,17 @@ it may assume some or all of the server's Initial packets were lost.
 To speed up handshake completion under these conditions, an endpoint MAY, for a
 limited number of times per connection, send a packet containing
 unacknowledged CRYPTO data earlier than the PTO expiry, subject to the address
-validation limits in Section 8.1 of {{QUIC-TRANSPORT}}. Doing so at most once
+validation limits in {{Section 8.1 of QUIC-TRANSPORT}}. Doing so at most once
 for each connection is adequate to quickly recover from a single packet loss.
 An endpoint that always retransmits packets in response to receiving packets
 that it cannot process risks creating an infinite exchange of packets.
 
-Endpoints can also use coalesced packets (see Section 12.2 of
-{{QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
-acknowledgment. For example, a client can coalesce an Initial packet
-containing PING and PADDING frames with a 0-RTT data packet and a server can
-coalesce an Initial packet containing a PING frame with one or more packets in
-its first flight.
+Endpoints can also use coalesced packets (see {{Section 12.2 of
+QUIC-TRANSPORT}}) to ensure that each datagram elicits at least one
+acknowledgment. For example, a client can coalesce an Initial packet containing
+PING and PADDING frames with a 0-RTT data packet and a server can coalesce an
+Initial packet containing a PING frame with one or more packets in its first
+flight.
 
 ### Sending Probe Packets
 
@@ -757,8 +760,8 @@ specify the packet number.
 
 Clients that receive a Retry packet reset congestion control and loss recovery
 state, including resetting any pending timers.  Other connection state, in
-particular cryptographic handshake messages, is retained; see Section 17.2.5 of
-{{QUIC-TRANSPORT}}.
+particular cryptographic handshake messages, is retained; see
+{{Section 17.2.5 of QUIC-TRANSPORT}}.
 
 The client MAY compute an RTT estimate to the server as the time period from
 when the first Initial was sent to when a Retry or a Version Negotiation packet
@@ -768,13 +771,13 @@ initial RTT estimate.
 ## Discarding Keys and Packet State {#discarding-packets}
 
 When Initial and Handshake packet protection keys are discarded
-(see Section 4.9 of {{QUIC-TLS}}), all packets that were sent with those keys
+(see {{Section 4.9 of QUIC-TLS}}), all packets that were sent with those keys
 can no longer be acknowledged because their acknowledgments cannot be processed.
 The sender MUST discard all recovery state associated with those packets
 and MUST remove them from the count of bytes in flight.
 
 Endpoints stop sending and receiving Initial packets once they start exchanging
-Handshake packets; see Section 17.2.2.1 of {{QUIC-TRANSPORT}}. At this point,
+Handshake packets; see {{Section 17.2.2.1 of QUIC-TRANSPORT}}. At this point,
 recovery state for all in-flight Initial packets is discarded.
 
 When 0-RTT is rejected, recovery state for all in-flight 0-RTT packets is
@@ -787,7 +790,7 @@ is expected to be infrequent.
 It is expected that keys are discarded after packets encrypted with them would
 be acknowledged or declared lost.  However, Initial and Handshake secrets are
 discarded as soon as handshake and 1-RTT keys are proven to be available to both
-client and server; see Section 4.9.1 of {{QUIC-TLS}}.
+client and server; see {{Section 4.9.1 of QUIC-TLS}}.
 
 # Congestion Control {#congestion-control}
 
@@ -800,7 +803,7 @@ different algorithm to use, such as Cubic ({{?RFC8312}}).
 
 If a sender uses a different controller than that specified in this document,
 the chosen controller MUST conform to the congestion control guidelines
-specified in Section 3.1 of {{!RFC8085}}.
+specified in {{Section 3.1 of RFC8085}}.
 
 Similar to TCP, packets containing only ACK frames do not count towards bytes
 in flight and are not congestion controlled.  Unlike TCP, QUIC can detect the
@@ -821,7 +824,7 @@ is sent on a PTO timer expiration (see {{pto}}) or when entering recovery
 If a path has been validated to support ECN ({{!RFC3168}}, {{?RFC8311}}), QUIC
 treats a Congestion Experienced (CE) codepoint in the IP header as a signal of
 congestion. This document specifies an endpoint's response when the
-peer-reported ECN-CE count increases; see Section 13.4.2 of {{QUIC-TRANSPORT}}.
+peer-reported ECN-CE count increases; see {{Section 13.4.2 of QUIC-TRANSPORT}}.
 
 ## Initial and Minimum Congestion Window {#initial-cwnd}
 
@@ -839,7 +842,7 @@ datagram size is decreased in order to complete the handshake, the
 congestion window SHOULD be set to the new initial congestion window.
 
 Prior to validating the client's address, the server can be further limited by
-the anti-amplification limit as specified in Section 8.1 of {{QUIC-TRANSPORT}}.
+the anti-amplification limit as specified in {{Section 8.1 of QUIC-TRANSPORT}}.
 Though the anti-amplification limit can prevent the congestion window from
 being fully utilized and therefore slow down the increase in congestion window,
 it does not directly affect the congestion window.
@@ -910,7 +913,7 @@ recovery period or use other mechanisms, such as Proportional Rate Reduction
 ({{?PRR=RFC6937}}), to reduce the congestion window more gradually. If the
 congestion window is reduced immediately, a single packet can be sent prior to
 reduction. This speeds up loss recovery if the data in the lost packet is
-retransmitted and is similar to TCP as described in Section 5 of {{?RFC6675}}.
+retransmitted and is similar to TCP as described in {{Section 5 of RFC6675}}.
 
 The recovery period aims to limit congestion window reduction to once per round
 trip. Therefore during a recovery period, the congestion window does not change
@@ -1007,8 +1010,8 @@ acknowledgment if two packets that are ack-eliciting are declared lost, and:
 * a prior RTT sample existed when these two packets were sent.
 
 These two packets MUST be ack-eliciting, since a receiver is required to
-acknowledge only ack-eliciting packets within its maximum ack delay; see Section
-13.2 of {{QUIC-TRANSPORT}}.
+acknowledge only ack-eliciting packets within its maximum ack delay; see
+{{Section 13.2 of QUIC-TRANSPORT}}.
 
 The persistent congestion period SHOULD NOT start until there is at least one
 RTT sample. Before the first RTT sample, a sender arms its PTO timer based on
@@ -1198,8 +1201,8 @@ packet number and crypto context and store the per-packet fields
 ({{sent-packets-fields}}) for loss recovery and congestion control.
 
 After a packet is declared lost, the endpoint can still maintain state for it
-for an amount of time to allow for packet reordering; see Section 13.3 of
-{{QUIC-TRANSPORT}}. This enables a sender to detect spurious retransmissions.
+for an amount of time to allow for packet reordering; see {{Section 13.3 of
+QUIC-TRANSPORT}}. This enables a sender to detect spurious retransmissions.
 
 Sent packets are tracked for each packet number space, and ACK
 processing only applies to a single space.
@@ -1288,8 +1291,8 @@ first_rtt_sample:
 max_ack_delay:
 : The maximum amount of time by which the receiver intends to delay
   acknowledgments for packets in the Application Data packet number
-  space, as defined by the eponymous transport parameter (Section 18.2
-  of {{QUIC-TRANSPORT}}). Note that the actual ack_delay in a received
+  space, as defined by the eponymous transport parameter ({{Section 18.2
+  of QUIC-TRANSPORT}}). Note that the actual ack_delay in a received
   ACK frame may be larger due to late timers, reordering, or loss.
 
 loss_detection_timer:
@@ -1675,7 +1678,7 @@ max_datagram_size:
 : The sender's current maximum payload size. Does not include UDP or IP
   overhead.  The max datagram size is used for congestion window
   computations. An endpoint sets the value of this variable based on its Path
-  Maximum Transmission Unit (PMTU; see Section 14.2 of {{QUIC-TRANSPORT}}), with
+  Maximum Transmission Unit (PMTU; see {{Section 14.2 of QUIC-TRANSPORT}}), with
   a minimum value of 1200 bytes.
 
 ecn_ce_counters\[kPacketNumberSpace]:
@@ -1740,7 +1743,7 @@ newly acked_packets from sent_packets.
 
 In congestion avoidance, implementers that use an integer representation
 for congestion_window should be careful with division, and can use
-the alternative approach suggested in Section 2.1 of {{?RFC3465}}.
+the alternative approach suggested in {{Section 2.1 of RFC3465}}.
 
 ~~~
 InCongestionRecovery(sent_time):
