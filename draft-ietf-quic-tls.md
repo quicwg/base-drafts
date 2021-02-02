@@ -2416,11 +2416,11 @@ of the associated data in blocks plus the length of the plaintext in blocks.
 For AEAD_AES_128_CCM, the total number of block cipher operations is the sum of:
 the length of the associated data in blocks, the length of the ciphertext in
 blocks, the length of the plaintext in blocks, plus 1. In this analysis, this is
-simplified to a value of twice the length of the packet in blocks (that is, `2l
-= 2<sup>8</sup>` for packets that are limited to 2<sup>11</sup> bytes, or `2l =
-2<sup>13</sup>` otherwise). This simplification is based on the packet
-containing all of the associated data and ciphertext. This results in a 1 to 3
-block overestimation of the number of operations per packet.
+simplified to a value of twice the length of the packet in blocks (that is,
+<tt>2l = 2<sup>8</sup></tt> for packets that are limited to 2<sup>11</sup>
+bytes, or <tt>2l = 2<sup>13</sup></tt> otherwise). This simplification is based
+on the packet containing all of the associated data and ciphertext. This results
+in a 1 to 3 block overestimation of the number of operations per packet.
 
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
@@ -2452,7 +2452,7 @@ attacker is:
 2 * (q * l)^2 / 2^n
 ~~~
 
-For a target advantage of 2^-57, this results in the relation:
+For a target advantage of 2<sup>-57</sup>, this results in the relation:
 
 ~~~
 q <= 2^35 / l
@@ -2460,9 +2460,9 @@ q <= 2^35 / l
 
 Thus, endpoints that do not send packets larger than 2<sup>11</sup> bytes cannot
 protect more than 2<sup>28</sup> packets in a single connection without causing
-an attacker to gain an larger advantage than the target of 2^-57. The limit for
-endpoints that allow for the packet size to be as large as 2<sup>16</sup> is
-instead 2<sup>23</sup>.
+an attacker to gain an larger advantage than the target of 2<sup>-57</sup>. The
+limit for endpoints that allow for the packet size to be as large as
+2<sup>16</sup> is instead 2<sup>23</sup>.
 
 
 ### Integrity Limit
@@ -2475,9 +2475,10 @@ an advantage in successfully forging a packet of no more than:
         + ((2 * o * v) / 2^(k + n)) + (n * (v + (v * l)) / 2^k)
 ~~~
 
-The goal is to limit this advantage to 2^-57.  For AEAD_AES_128_GCM, the fourth
-term in this inequality dominates the rest, so the others can be removed without
-significant effect on the result. This produces the following approximation:
+The goal is to limit this advantage to 2<sup>-57</sup>.  For AEAD_AES_128_GCM,
+the fourth term in this inequality dominates the rest, so the others can be
+removed without significant effect on the result. This produces the following
+approximation:
 
 ~~~
 v <= 2^64 / l
@@ -2536,7 +2537,7 @@ second, so that term can be removed without a significant effect on the result.
 
 This produces a relation that combines both encryption and decryption attempts
 with the same limit as that produced by the theorem for confidentiality alone.
-For a target advantage of 2^-57, this results in:
+For a target advantage of 2<sup>-57</sup>, this results in:
 
 ~~~
 v + q <= 2^34.5 / l
