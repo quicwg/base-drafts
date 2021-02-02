@@ -61,6 +61,9 @@ normative:
         org: Mozilla
         role: editor
 
+  SEMANTICS: I-D.ietf-httpbis-semantics
+  RFC2360:
+
 informative:
 
   CRIME:
@@ -134,14 +137,14 @@ HTTP fields:
 
 HTTP field line:
 
-: A name-value pair sent as part of an HTTP field section.  See Sections 6.3
-  and Section 6.5 of {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
+: A name-value pair sent as part of an HTTP field section. See {{Sections 6.3
+  and 6.5 of SEMANTICS}}.
 
 HTTP field value:
 
 : Data associated with a field name, composed from all field line values with
-  that field name in that section, concatenated together and separated with
-  commas.
+  that field name in that section, concatenated together with
+  comma separators.
 
 Field section:
 
@@ -180,7 +183,7 @@ QPACK is a name, not an acronym.
 
 ## Notational Conventions
 
-Diagrams use the format described in Section 3.1 of {{!RFC2360}}, with the
+Diagrams use the format described in {{Section 3.1 of RFC2360}}, with the
 following additional conventions:
 
 x (A)
@@ -268,6 +271,8 @@ references to those entries will eventually become zero, allowing them to be
 evicted.
 
 ~~~~~~~~~~  drawing
+             <-- Newer Entries          Older Entries -->
+               (Larger Indicies)      (Smaller Indicies)
    +--------+---------------------------------+----------+
    | Unused |          Referenceable          | Draining |
    | Space  |             Entries             | Entries  |
@@ -331,7 +336,7 @@ More generally, a stream containing a large instruction can become deadlocked if
 the decoder withholds flow control credit until the instruction is completely
 received.
 
-To avoid these deadlocks, an encoder SHOULD avoid writing an instruction unless
+To avoid these deadlocks, an encoder SHOULD NOT write an instruction unless
 sufficient stream and connection flow control credit is available for the entire
 instruction.
 
@@ -347,7 +352,7 @@ A Section Acknowledgment instruction ({{header-acknowledgment}}) implies that
 the decoder has received all dynamic table state necessary to decode the field
 section.  If the Required Insert Count of the acknowledged field section is
 greater than the current Known Received Count, Known Received Count is updated
-to the value of the Required Insert Count.
+to that Required Insert Count value.
 
 An Insert Count Increment instruction ({{insert-count-increment}}) increases the
 Known Received Count by its Increment parameter.  See {{new-table-entries}} for
@@ -374,9 +379,12 @@ decoder's Insert Count, the field section can be processed immediately.
 Otherwise, the stream on which the field section was received becomes blocked.
 
 While blocked, encoded field section data SHOULD remain in the blocked stream's
-flow control window.  A stream becomes unblocked when the Insert Count becomes
-greater than or equal to the Required Insert Count for all encoded field
-sections the decoder has started reading from the stream.
+flow control window. This data is unusable until the stream becomes unblocked,
+and releasing the flow control prematurely makes the decoder vulnerable to
+memory exhaustion attacks. A stream becomes unblocked when the Insert Count
+becomes unblocked when the Insert Count becomes greater than or equal to the
+Required Insert Count for all encoded field sections the decoder has started
+reading from the stream.
 
 When processing encoded field sections, the decoder expects the Required Insert
 Count to equal the lowest possible value for the Insert Count with which the
@@ -639,8 +647,8 @@ In this example, Base = n - 2
 
 ### Prefixed Integers
 
-The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The format from [RFC7541] is used unmodified.  Note, however,
+The prefixed integer from {{Section 5.1 of RFC7541}} is used heavily throughout
+this document.  The format from {{RFC7541}} is used unmodified.  Note, however,
 that QPACK uses some prefix sizes not actually used in HPACK.
 
 QPACK implementations MUST be able to decode integers up to and including 62
@@ -648,14 +656,14 @@ bits long.
 
 ### String Literals
 
-The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
-This string format includes optional Huffman encoding.
+The string literal defined by {{Section 5.2 of RFC7541}} is also used
+throughout. This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single bit flag, denoted as 'H' in this document (indicating whether the string
 is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer, and
 finally Length bytes of data. When Huffman encoding is enabled, the Huffman
-table from Appendix B of [RFC7541] is used without modification and Length
+table from {{Section B of RFC7541}} is used without modification and Length
 indicates the size of the string after encoding.
 
 This document expands the definition of string literals by permitting them to
@@ -666,7 +674,7 @@ uses one bit for the Huffman flag, followed by the Length encoded as an
 inclusive. The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
-and follows the definitions in [RFC7541] without modification.
+and follows the definitions in {{RFC7541}} without modification.
 
 ## Encoder and Decoder Streams {#enc-dec-stream-def}
 
@@ -955,7 +963,7 @@ table.
       MaxValue = TotalNumberOfInserts + MaxEntries
 
       # MaxWrapped is the largest possible value of
-      # ReqInsertCount that is 0 mod 2*MaxEntries
+      # ReqInsertCount that is 0 mod 2 * MaxEntries
       MaxWrapped = floor(MaxValue / FullRange) * FullRange
       ReqInsertCount = MaxWrapped + EncodedInsertCount - 1
 
@@ -1087,7 +1095,8 @@ line MUST always be encoded with a literal representation. In particular, when a
 peer sends a field line that it received represented as a literal field line
 with the 'N' bit set, it MUST use a literal representation to forward this field
 line.  This bit is intended for protecting field values that are not to be put
-at risk by compressing them; see {{security-considerations}} for more details.
+at risk by compressing them; see {{probing-dynamic-table-state}} for more
+details.
 
 The fourth ('T') bit indicates whether the reference is to the static or dynamic
 table.  The 4-bit prefix integer ({{prefixed-integers}}) that follows is used to
@@ -1204,9 +1213,9 @@ the dynamic table state. If a guess is compressed into a shorter length, the
 attacker can observe the encoded length and infer that the guess was correct.
 
 This is possible even over the Transport Layer Security Protocol (TLS, see
-{{?TLS=RFC8446}}), because while TLS provides confidentiality protection for
-content, it only provides a limited amount of protection for the length of that
-content.
+{{?TLS=RFC8446}}) and the QUIC Transport Protocol (see {{QUIC-TRANSPORT}}),
+because while TLS and QUIC provide confidentiality protection for content, they
+only provide a limited amount of protection for the length of that content.
 
 Note:
 
@@ -1215,7 +1224,7 @@ Note:
   the length associated with a given guess. Padding schemes also work directly
   against compression by increasing the number of bits that are transmitted.
 
-Attacks like CRIME ([CRIME]) demonstrated the existence of these general
+Attacks like CRIME ({{CRIME}}) demonstrated the existence of these general
 attacker capabilities. The specific attack exploited the fact that DEFLATE
 ({{?RFC1951}}) removes redundancy based on prefix matching. This permitted the
 attacker to confirm guesses a character at a time, reducing an exponential-time
@@ -1224,7 +1233,7 @@ attack into a linear-time attack.
 ### Applicability to QPACK and HTTP
 
 QPACK mitigates but does not completely prevent attacks modeled on CRIME
-([CRIME]) by forcing a guess to match an entire field line, rather than
+({{CRIME}}) by forcing a guess to match an entire field line, rather than
 individual characters. An attacker can only learn whether a guess is correct or
 not, so is reduced to a brute force guess for the field values associated with a
 given field name.
@@ -1236,12 +1245,12 @@ recovered successfully. However, values with low entropy remain vulnerable.
 Attacks of this nature are possible any time that two mutually distrustful
 entities control requests or responses that are placed onto a single HTTP/3
 connection. If the shared QPACK compressor permits one entity to add entries to
-the dynamic table, and the other to access those entries to encode chosen field
-lines, then the attacker can learn the state of the table by observing the
-length of the encoded output.
+the dynamic table, and the other to refer to those entries while encoding
+chosen field lines, then the attacker (the second entity) can learn the state
+of the table by observing the length of the encoded output.
 
-Having requests or responses from mutually distrustful entities occurs when an
-intermediary either:
+For example, requests or responses from mutually distrustful entities can occur
+when an intermediary either:
 
  * sends requests from multiple clients on a single connection toward an origin
    server, or
@@ -1251,6 +1260,7 @@ intermediary either:
 
 Web browsers also need to assume that requests made on the same connection by
 different web origins ({{?RFC6454}}) are made by mutually distrustful entities.
+Other scenarios involving mutually distrustful entities are also possible.
 
 ### Mitigation
 
@@ -1278,6 +1288,16 @@ different values.  This penalty could cause a large number of attempts to guess
 a field value to result in the field not being compared to the dynamic table
 entries in future messages, effectively preventing further guesses.
 
+This response might be made inversely proportional to the length of the
+field value. Disabling access to the dynamic table for a given field name might
+occur for shorter values more quickly or with higher probability than for longer
+values.
+
+This mitigation is most effective between two endpoints. If messages are
+re-encoded by an intermediary without knowledge of which entity constructed a
+given message, the intermediary could inadvertently merge compression contexts
+that the original encoder had specifically kept separate.
+
 Note:
 
 : Simply removing entries corresponding to the field from the dynamic table can
@@ -1286,11 +1306,6 @@ Note:
   typically includes the Cookie header field (a potentially highly valued target
   for this sort of attack), and web sites can easily force an image to be
   loaded, thereby refreshing the entry in the dynamic table.
-
-This response might be made inversely proportional to the length of the
-field value. Disabling access to the dynamic table for a given field name might
-occur for shorter values more quickly or with higher probability than for longer
-values.
 
 ### Never-Indexed Literals
 
@@ -1306,7 +1321,7 @@ An intermediary MUST NOT re-encode a value that uses a literal representation
 with the 'N' bit set with another representation that would index it. If QPACK
 is used for re-encoding, a literal representation with the 'N' bit set MUST be
 used.  If HPACK is used for re-encoding, the never-indexed literal
-representation (see Section 6.2.3 of [RFC7541]) MUST be used.
+representation (see {{Section 6.2.3 of RFC7541}}) MUST be used.
 
 The choice to mark that a field value should never be indexed depends on several
 factors. Since QPACK does not protect against guessing an entire field value,
@@ -1332,7 +1347,7 @@ There is no currently known attack against a static Huffman encoding. A study
 has shown that using a static Huffman encoding table created an information
 leakage, however this same study concluded that an attacker could not take
 advantage of this information leakage to recover any meaningful amount of
-information (see [PETAL]).
+information (see {{PETAL}}).
 
 ## Memory Consumption
 
@@ -1340,11 +1355,11 @@ An attacker can try to cause an endpoint to exhaust its memory. QPACK is
 designed to limit both the peak and stable amounts of memory allocated by an
 endpoint.
 
-The amount of memory used by the encoder is limited by the protocol using
-QPACK through the definition of the maximum size of the dynamic table, and the
-maximum number of blocking streams. In HTTP/3, these values are controlled by
-the decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY
-and SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
+QPACK uses the definition of the maximum size of the dynamic table and the
+maximum number of blocking streams to limit the amount of memory the encoder can
+cause the decoder to consume. In HTTP/3, these values are controlled by the
+decoder through the settings parameters SETTINGS_QPACK_MAX_TABLE_CAPACITY and
+SETTINGS_QPACK_BLOCKED_STREAMS, respectively (see
 {{maximum-dynamic-table-capacity}} and {{blocked-streams}}). The limit on the
 size of the dynamic table takes into account the size of the data stored in the
 dynamic table, plus a small allowance for overhead.  The limit on the number of
@@ -1356,14 +1371,14 @@ A decoder can limit the amount of state memory used for the dynamic table by
 setting an appropriate value for the maximum size of the dynamic table. In
 HTTP/3, this is realized by setting an appropriate value for the
 SETTINGS_QPACK_MAX_TABLE_CAPACITY parameter. An encoder can limit the amount of
-state memory it uses by signaling a lower dynamic table size than the decoder
-allows (see {{eviction}}).
+state memory it uses by choosing a smaller dynamic table size than the decoder
+allows and signaling this to the decoder (see {{set-dynamic-capacity}}).
 
 A decoder can limit the amount of state memory used for blocked streams by
 setting an appropriate value for the maximum number of blocked streams.  In
 HTTP/3, this is realized by setting an appropriate value for the
-QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked consume no
-additional state memory on the encoder.
+SETTINGS_QPACK_BLOCKED_STREAMS parameter.  Streams which risk becoming blocked
+consume no additional state memory on the encoder.
 
 An encoder allocates memory to track all dynamic table references in
 unacknowledged field sections.  An implementation can directly limit the amount
@@ -1399,7 +1414,13 @@ weaknesses.
 An implementation has to set a limit for the values it accepts for integers, as
 well as for the encoded length; see {{prefixed-integers}}. In the same way, it
 has to set a limit to the length it accepts for string literals; see
-{{string-literals}}.
+{{string-literals}}.  These limits SHOULD be large enough to process the
+largest individual field the HTTP implementation can be configured to accept.
+
+If an implementation encounters a value larger than it is able to decode, this
+MUST be treated as a stream error of type QPACK_DECOMPRESSION_FAILED if on a
+request stream, or a connection error of the appropriate type if on the encoder
+or decoder stream.
 
 
 # IANA Considerations
@@ -1415,6 +1436,9 @@ registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 | QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         | 0       |
 | QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         | 0       |
 | ---------------------------- | ------ | ------------------------- | ------- |
+
+For fomatting reasons, the setting names here are abbreviated by removing the
+'SETTING_' prefix.
 
 ## Stream Type Registration
 
@@ -1555,6 +1579,8 @@ the smallest number of bytes.
 | 97    | x-frame-options                  | deny                                                        |
 | 98    | x-frame-options                  | sameorigin                                                  |
 
+Any line breaks that appear within field names or values are due to formatting.
+
 
 # Encoding and Decoding Examples
 
@@ -1610,31 +1636,31 @@ c10c 2f73 616d 706c | Insert With Name Reference
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               Size=106
 
 Stream: 4
 0381                | Required Insert Count = 2, Base = 0
 10                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(0) + 1 = 1
+                    |  Absolute Index = Base(0) + Index(0) = 0
                     |  (:authority=www.example.com)
 11                  | Indexed Field Line With Post-Base Index
-                    |  Absolute Index = Base(0) + Index(1) + 1 = 2
+                    |  Absolute Index = Base(0) + Index(1) = 1
                     |  (:path=/sample/path)
 
                               Abs Ref Name        Value
                               ^-- acknowledged --^
-                               1   1  :authority  www.example.com
-                               2   1  :path       /sample/path
+                               0   1  :authority  www.example.com
+                               1   1  :path       /sample/path
                               Size=106
 
 Stream: Decoder
 84                  | Section Acknowledgment (stream=4)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
                               Size=106
 ~~~
@@ -1652,19 +1678,19 @@ Stream: Encoder
 6f6d 2d76 616c 7565 |
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
                               ^-- acknowledged --^
-                               3   0  custom-key  custom-value
+                               2   0  custom-key  custom-value
                               Size=160
 
 Stream: Decoder
 01                  | Insert Count Increment (1)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
                               Size=160
 
@@ -1680,46 +1706,47 @@ encoder that the encoded field section was not processed.
 
 ~~~
 Stream: Encoder
-02                  | Duplicate (Relative Index=2)
+02                  | Duplicate (Relative Index = 2)
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(2) - 1 = 1
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
+                               3   0  :authority  www.example.com
                               Size=217
 
 Stream: 8
 0500                | Required Insert Count = 4, Base = 4
 80                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(0) = 4
+                    |  Absolute Index = Base(4) - Index(0) - 1 = 3
                     |  (:authority=www.example.com)
 c1                  | Indexed Field Line, Static Table Index = 1
                     |  (:path=/)
 81                  | Indexed Field Line, Dynamic Table
-                    |  Absolute Index = Base(4) - Index(1) = 3
+                    |  Absolute Index = Base(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   1  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   1  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   1  :authority  www.example.com
+                               3   1  :authority  www.example.com
                               Size=217
 
 Stream: Decoder
 48                  | Stream Cancellation (Stream=8)
 
                               Abs Ref Name        Value
-                               1   0  :authority  www.example.com
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               0   0  :authority  www.example.com
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
                                4   0  :authority  www.example.com
-                              Size=215
-
+                              Size=217
 ~~~
 
 ## Dynamic Table Insert, Eviction
@@ -1730,15 +1757,17 @@ oldest entry.  The encoder does not send any encoded field sections.
 ~~~
 Stream: Encoder
 810d 6375 7374 6f6d | Insert With Name Reference
-2d76 616c 7565 32   |  Dynamic Table, Absolute Index=2
+2d76 616c 7565 32   |  Dynamic Table, Relative Index = 1
+                    |  Absolute Index =
+                    |   Insert Count(4) - Index(1) - 1 = 2
                     |  (custom-key=custom-value2)
 
                               Abs Ref Name        Value
-                               2   0  :path       /sample/path
-                               3   0  custom-key  custom-value
+                               1   0  :path       /sample/path
+                               2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
-                               5   0  custom-key  custom-value2
+                               3   0  :authority  www.example.com
+                               4   0  custom-key  custom-value2
                               Size=215
 ~~~
 
