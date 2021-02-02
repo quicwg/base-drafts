@@ -1811,8 +1811,8 @@ for line in fieldLines:
 
 # encode the prefix
 if requiredInsertCount == 0:
-  encodeInteger(prefixBuffer, 0, 0, 8)
-  encodeInteger(prefixBuffer, 0, 0, 7)
+  encodeInteger(prefixBuffer, 0x00, 0, 8)
+  encodeInteger(prefixBuffer, 0x00, 0, 7)
 else:
   wireRIC = (
     requiredInsertCount
@@ -1820,10 +1820,11 @@ else:
   ) + 1;
   encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
   if base >= requiredInsertCount:
-    encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
+    encodeInteger(prefixBuffer, 0x00,
+                  base - requiredInsertCount, 7)
   else:
     encodeInteger(prefixBuffer, 0x80,
-                  requiredInsertCount  - base - 1, 7)
+                  requiredInsertCount - base - 1, 7)
 
 return encoderBuffer, prefixBuffer + streamBuffer
 ~~~
