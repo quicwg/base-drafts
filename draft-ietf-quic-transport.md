@@ -2443,7 +2443,9 @@ indicates that the peer has migrated to that address.
 If the recipient permits the migration, it MUST send subsequent packets
 to the new peer address and MUST initiate path validation ({{migrate-validate}})
 to verify the peer's ownership of the address if validation is not already
-underway.
+underway. If the recipient has no unused connection IDs from the peer, it will
+not be able to send anything on the new path until the peer provides one; see
+{{migration-linkability}}.
 
 An endpoint only changes the address to which it sends packets in response to
 the highest-numbered non-probing packet. This ensures that an endpoint does not
