@@ -1411,7 +1411,13 @@ weaknesses.
 An implementation has to set a limit for the values it accepts for integers, as
 well as for the encoded length; see {{prefixed-integers}}. In the same way, it
 has to set a limit to the length it accepts for string literals; see
-{{string-literals}}.
+{{string-literals}}.  These limits SHOULD be large enough to process the
+largest individual field the HTTP implementation can be configured to accept.
+
+If an implementation encounters a value larger than it is able to decode, this
+MUST be treated as a stream error of type QPACK_DECOMPRESSION_FAILED if on a
+request stream, or a connection error of the appropriate type if on the encoder
+or decoder stream.
 
 
 # IANA Considerations
