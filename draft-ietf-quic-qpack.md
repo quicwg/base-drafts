@@ -61,6 +61,9 @@ normative:
         org: Mozilla
         role: editor
 
+  SEMANTICS: I-D.ietf-httpbis-semantics
+  RFC2360:
+
 informative:
 
   CRIME:
@@ -134,8 +137,8 @@ HTTP fields:
 
 HTTP field line:
 
-: A name-value pair sent as part of an HTTP field section.  See Sections 6.3
-  and Section 6.5 of {{!SEMANTICS=I-D.ietf-httpbis-semantics}}.
+: A name-value pair sent as part of an HTTP field section. See {{Sections 6.3
+  and 6.5 of SEMANTICS}}.
 
 HTTP field value:
 
@@ -180,7 +183,7 @@ QPACK is a name, not an acronym.
 
 ## Notational Conventions
 
-Diagrams use the format described in Section 3.1 of {{!RFC2360}}, with the
+Diagrams use the format described in {{Section 3.1 of RFC2360}}, with the
 following additional conventions:
 
 x (A)
@@ -644,8 +647,8 @@ In this example, Base = n - 2
 
 ### Prefixed Integers
 
-The prefixed integer from Section 5.1 of [RFC7541] is used heavily throughout
-this document.  The format from [RFC7541] is used unmodified.  Note, however,
+The prefixed integer from {{Section 5.1 of RFC7541}} is used heavily throughout
+this document.  The format from {{RFC7541}} is used unmodified.  Note, however,
 that QPACK uses some prefix sizes not actually used in HPACK.
 
 QPACK implementations MUST be able to decode integers up to and including 62
@@ -653,14 +656,14 @@ bits long.
 
 ### String Literals
 
-The string literal defined by Section 5.2 of [RFC7541] is also used throughout.
-This string format includes optional Huffman encoding.
+The string literal defined by {{Section 5.2 of RFC7541}} is also used
+throughout. This string format includes optional Huffman encoding.
 
 HPACK defines string literals to begin on a byte boundary.  They begin with a
 single bit flag, denoted as 'H' in this document (indicating whether the string
 is Huffman-coded), followed by the Length encoded as a 7-bit prefix integer, and
 finally Length bytes of data. When Huffman encoding is enabled, the Huffman
-table from Appendix B of [RFC7541] is used without modification and Length
+table from {{Section B of RFC7541}} is used without modification and Length
 indicates the size of the string after encoding.
 
 This document expands the definition of string literals by permitting them to
@@ -671,7 +674,7 @@ uses one bit for the Huffman flag, followed by the Length encoded as an
 inclusive. The remainder of the string literal is unmodified.
 
 A string literal without a prefix length noted is an 8-bit prefix string literal
-and follows the definitions in [RFC7541] without modification.
+and follows the definitions in {{RFC7541}} without modification.
 
 ## Encoder and Decoder Streams {#enc-dec-stream-def}
 
@@ -1221,7 +1224,7 @@ Note:
   the length associated with a given guess. Padding schemes also work directly
   against compression by increasing the number of bits that are transmitted.
 
-Attacks like CRIME ([CRIME]) demonstrated the existence of these general
+Attacks like CRIME ({{CRIME}}) demonstrated the existence of these general
 attacker capabilities. The specific attack exploited the fact that DEFLATE
 ({{?RFC1951}}) removes redundancy based on prefix matching. This permitted the
 attacker to confirm guesses a character at a time, reducing an exponential-time
@@ -1230,7 +1233,7 @@ attack into a linear-time attack.
 ### Applicability to QPACK and HTTP
 
 QPACK mitigates but does not completely prevent attacks modeled on CRIME
-([CRIME]) by forcing a guess to match an entire field line, rather than
+({{CRIME}}) by forcing a guess to match an entire field line, rather than
 individual characters. An attacker can only learn whether a guess is correct or
 not, so is reduced to a brute force guess for the field values associated with a
 given field name.
@@ -1318,7 +1321,7 @@ An intermediary MUST NOT re-encode a value that uses a literal representation
 with the 'N' bit set with another representation that would index it. If QPACK
 is used for re-encoding, a literal representation with the 'N' bit set MUST be
 used.  If HPACK is used for re-encoding, the never-indexed literal
-representation (see Section 6.2.3 of [RFC7541]) MUST be used.
+representation (see {{Section 6.2.3 of RFC7541}}) MUST be used.
 
 The choice to mark that a field value should never be indexed depends on several
 factors. Since QPACK does not protect against guessing an entire field value,
@@ -1344,7 +1347,7 @@ There is no currently known attack against a static Huffman encoding. A study
 has shown that using a static Huffman encoding table created an information
 leakage, however this same study concluded that an attacker could not take
 advantage of this information leakage to recover any meaningful amount of
-information (see [PETAL]).
+information (see {{PETAL}}).
 
 ## Memory Consumption
 
@@ -1411,7 +1414,13 @@ weaknesses.
 An implementation has to set a limit for the values it accepts for integers, as
 well as for the encoded length; see {{prefixed-integers}}. In the same way, it
 has to set a limit to the length it accepts for string literals; see
-{{string-literals}}.
+{{string-literals}}.  These limits SHOULD be large enough to process the
+largest individual field the HTTP implementation can be configured to accept.
+
+If an implementation encounters a value larger than it is able to decode, this
+MUST be treated as a stream error of type QPACK_DECOMPRESSION_FAILED if on a
+request stream, or a connection error of the appropriate type if on the encoder
+or decoder stream.
 
 
 # IANA Considerations
@@ -1768,12 +1777,35 @@ Pseudo-code for single pass encoding, excluding handling of duplicates,
 non-blocking mode, available encoder stream flow control and reference tracking.
 
 ~~~
+# Helper functions:
+# ====
+# Encode an interger with the specified prefix and length
+encodeInteger(buffer, prefix, value, prefixLength)
+
+# Encode a dynamic table insert instruction with optional static
+# or dynamic name index (but not both)
+encodeInsert(buffer, staticNameIndex, dynamicNameIndex, fieldLine)
+
+# Encode a static index reference
+encodeStaticIndexReference(buffer, staticIndex)
+
+# Encode a dynamic index reference relative to base
+encodeDynamicIndexReference(buffer, dynamicIndex, base)
+
+# Encode a literal with an optional static name index
+encodeLiteral(buffer, staticNameIndex, fieldLine)
+
+# Encode a literal with a dynamic name index relative to base
+encodeDynamicLiteral(buffer, dynamicNameIndex, base, fieldLine)
+
+# Encoding Algorithm
+# ====
 base = dynamicTable.getInsertCount()
 requiredInsertCount = 0
-for line in field_lines:
+for line in fieldLines:
   staticIndex = staticTable.findIndex(line)
   if staticIndex is not None:
-    encodeIndexReference(streamBuffer, staticIndex)
+    encodeStaticIndexReference(streamBuffer, staticIndex)
     continue
 
   dynamicIndex = dynamicTable.findIndex(line)
@@ -1808,8 +1840,8 @@ for line in field_lines:
 
 # encode the prefix
 if requiredInsertCount == 0:
-  encodeInteger(prefixBuffer, 0, 0, 8)
-  encodeInteger(prefixBuffer, 0, 0, 7)
+  encodeInteger(prefixBuffer, 0x00, 0, 8)
+  encodeInteger(prefixBuffer, 0x00, 0, 7)
 else:
   wireRIC = (
     requiredInsertCount
@@ -1817,10 +1849,11 @@ else:
   ) + 1;
   encodeInteger(prefixBuffer, 0x00, wireRIC, 8)
   if base >= requiredInsertCount:
-    encodeInteger(prefixBuffer, 0, base - requiredInsertCount, 7)
+    encodeInteger(prefixBuffer, 0x00,
+                  base - requiredInsertCount, 7)
   else:
     encodeInteger(prefixBuffer, 0x80,
-                  requiredInsertCount  - base - 1, 7)
+                  requiredInsertCount - base - 1, 7)
 
 return encoderBuffer, prefixBuffer + streamBuffer
 ~~~

@@ -60,6 +60,8 @@ normative:
         org: Google
         role: editor
 
+  HKDF: RFC5869
+
 informative:
 
   AEBounds:
@@ -326,10 +328,10 @@ chunk of data that is produced by TLS is associated with the set of keys that
 TLS is currently using.  If QUIC needs to retransmit that data, it MUST use the
 same keys even if TLS has already updated to newer keys.
 
-Each encryption level corresponds to a packet number space.  The packet number
-space that is used determines the semantics of frames.  Some frames are
-prohibited in different packet number spaces; see Section 12.5 of
-{{QUIC-TRANSPORT}}.
+Each encryption level corresponds to a packet number space. The packet number
+space that is used determines the semantics of frames. Some frames are
+prohibited in different packet number spaces; see {{Section 12.5 of
+QUIC-TRANSPORT}}.
 
 Because packets could be reordered on the wire, QUIC uses the packet type to
 indicate which keys were used to protect a given packet, as shown in
@@ -346,7 +348,7 @@ endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 | Short Header        | 1-RTT           | Application data |
 {: #packet-types-keys title="Encryption Keys by Packet Type"}
 
-Section 17 of {{QUIC-TRANSPORT}} shows how packets at the various encryption
+{{Section 17 of QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
 
 
@@ -460,7 +462,7 @@ buffered until complete messages or flights are available.  TLS is responsible
 for buffering handshake bytes that have arrived in order.  QUIC is responsible
 for buffering handshake bytes that arrive out of order or for encryption levels
 that are not yet ready.  QUIC does not provide any means of flow control for
-CRYPTO frames; see Section 7.5 of {{QUIC-TRANSPORT}}.
+CRYPTO frames; see {{Section 7.5 of QUIC-TRANSPORT}}.
 
 Once the TLS handshake is complete, this is indicated to QUIC along with any
 final handshake bytes that TLS needs to send.  At this stage, the transport
@@ -620,7 +622,7 @@ Server Name Identification (SNI) or Application Layer Protocol Negotiation
 If the ClientHello spans multiple Initial packets, such servers would need to
 buffer the first received fragments, which could consume excessive resources if
 the client's address has not yet been validated.  To avoid this, servers MAY
-use the Retry feature (see Section 8.1 of {{QUIC-TRANSPORT}}) to only buffer
+use the Retry feature (see {{Section 8.1 of QUIC-TRANSPORT}}) to only buffer
 partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
@@ -643,9 +645,9 @@ use them and still fit their entire ClientHello message in their first Initial
 packet.
 
 The TLS implementation does not need to ensure that the ClientHello is large
-enough to meet the requirements for QUIC packets. QUIC PADDING frames are added
-to increase the size of the packet as necessary; see Section 14.1 of
-{{QUIC-TRANSPORT}}.
+enough to meet QUIC's requirements for datagrams that carry Initial packets; see
+{{Section 14.1 of QUIC-TRANSPORT}}. QUIC implementations use PADDING frames or
+packet coalescing to ensure that datagrams are large enough.
 
 
 ## Peer Authentication
@@ -665,7 +667,7 @@ Note:
   the certificate chain can consume a large number of bytes.  Controlling the
   size of certificate chains is critical to performance in QUIC as servers are
   limited to sending 3 bytes for every byte received prior to validating the
-  client address; see Section 8.1 of {{QUIC-TRANSPORT}}.  The size of a
+  client address; see {{Section 8.1 of QUIC-TRANSPORT}}.  The size of a
   certificate chain can be managed by limiting the number of names or
   extensions; using keys with small public key representations, like ECDSA; or
   by using certificate compression
@@ -677,7 +679,7 @@ The requirements for client authentication vary based on application protocol
 and deployment.
 
 A server MUST NOT use post-handshake client authentication (as defined in
-Section 4.6.2 of {{!TLS13}}), because the multiplexing offered by QUIC prevents
+{{Section 4.6.2 of TLS13}}), because the multiplexing offered by QUIC prevents
 clients from correlating the certificate request with the application-level
 event that triggered it (see {{?HTTP2-TLS13=RFC8740}}).
 More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
@@ -694,9 +696,9 @@ used when 0-RTT is disabled.
 
 Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
-that some information be retained; see Section 4.6.1 of {{!TLS13}}. QUIC itself
+that some information be retained; see {{Section 4.6.1 of TLS13}}. QUIC itself
 does not depend on any state being retained when resuming a connection, unless
-0-RTT is also used; see Section 7.4.1 of {{QUIC-TRANSPORT}} and
+0-RTT is also used; see {{Section 7.4.1 of QUIC-TRANSPORT}} and
 {{enable-0rtt}}. Application protocols could depend on state that is retained
 between resumed connections.
 
@@ -707,7 +709,7 @@ Session resumption allows servers to link activity on the original connection
 with the resumed connection, which might be a privacy issue for clients.
 Clients can choose not to enable resumption to avoid creating this correlation.
 Clients SHOULD NOT reuse tickets as that allows entities other than the server
-to correlate connections; see Section C.4 of {{!TLS13}}.
+to correlate connections; see {{Section C.4 of TLS13}}.
 
 
 ## 0-RTT
@@ -751,18 +753,18 @@ set to any value other than 0xffffffff.  A client MUST treat receipt of a
 NewSessionTicket that contains an early_data extension with any other value as
 a connection error of type PROTOCOL_VIOLATION.
 
-A client that wishes to send 0-RTT packets uses the early_data extension in
-the ClientHello message of a subsequent handshake; see Section 4.2.10 of
-{{!TLS13}}. It then sends application data in 0-RTT packets.
+A client that wishes to send 0-RTT packets uses the early_data extension in the
+ClientHello message of a subsequent handshake; see {{Section 4.2.10 of TLS13}}.
+It then sends application data in 0-RTT packets.
 
 A client that attempts 0-RTT might also provide an address validation token if
-the server has sent a NEW_TOKEN frame; see Section 8.1 of {{QUIC-TRANSPORT}}.
+the server has sent a NEW_TOKEN frame; see {{Section 8.1 of QUIC-TRANSPORT}}.
 
 
 ### Accepting and Rejecting 0-RTT
 
 A server accepts 0-RTT by sending an early_data extension in the
-EncryptedExtensions; see Section 4.2.10 of {{!TLS13}}.  The server then
+EncryptedExtensions; see {{Section 4.2.10 of TLS13}}.  The server then
 processes and acknowledges the 0-RTT packets that it receives.
 
 A server rejects 0-RTT by sending the EncryptedExtensions without an early_data
@@ -786,7 +788,7 @@ packet.  These packets do not signify rejection of 0-RTT.
 When a server receives a ClientHello with the early_data extension, it has to
 decide whether to accept or reject early data from the client. Some of this
 decision is made by the TLS stack (e.g., checking that the cipher suite being
-resumed was included in the ClientHello; see Section 4.2.10 of {{!TLS13}}). Even
+resumed was included in the ClientHello; see {{Section 4.2.10 of TLS13}}). Even
 when the TLS stack has no reason to reject early data, the QUIC stack or the
 application protocol using QUIC might reject early data because the
 configuration of the transport or application associated with the resumed
@@ -804,19 +806,19 @@ requirements for determining whether to accept or reject early data.
 
 ## HelloRetryRequest
 
-The HelloRetryRequest message (see Section 4.1.4 of {{!TLS13}}) can be used to
+The HelloRetryRequest message (see {{Section 4.1.4 of TLS13}}) can be used to
 request that a client provide new information, such as a key share, or to
 validate some characteristic of the client.  From the perspective of QUIC,
 HelloRetryRequest is not differentiated from other cryptographic handshake
 messages that are carried in Initial packets. Although it is in principle
 possible to use this feature for address verification, QUIC implementations
-SHOULD instead use the Retry feature; see Section 8.1 of {{QUIC-TRANSPORT}}.
+SHOULD instead use the Retry feature; see {{Section 8.1 of QUIC-TRANSPORT}}.
 
 
 ## TLS Errors {#tls-errors}
 
 If TLS experiences an error, it generates an appropriate alert as defined in
-Section 6 of {{!TLS13}}.
+{{Section 6 of TLS13}}.
 
 A TLS alert is converted into a QUIC connection error. The AlertDescription
 value is
@@ -826,13 +828,13 @@ type 0x1c.
 
 QUIC is only able to convey an alert level of "fatal". In TLS 1.3, the only
 existing uses for the "warning" level are to signal connection close; see
-Section 6.1 of {{!TLS13}}. As QUIC provides alternative mechanisms for
+{{Section 6.1 of TLS13}}. As QUIC provides alternative mechanisms for
 connection termination and the TLS connection is only closed if an error is
 encountered, a QUIC endpoint MUST treat any alert from TLS as if it were at the
 "fatal" level.
 
 QUIC permits the use of a generic code in place of a specific error code; see
-Section 11 of {{QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
+{{Section 11 of QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
 alert with a generic alert, such as handshake_failure (0x128 in QUIC).
 Endpoints MAY use a generic error code to avoid possibly exposing confidential
 information.
@@ -943,15 +945,15 @@ QUIC derives packet protection keys in the same way that TLS derives record
 protection keys.
 
 Each encryption level has separate secret values for protection of packets sent
-in each direction.  These traffic secrets are derived by TLS (see Section 7.1 of
-{{!TLS13}}) and are used by QUIC for all encryption levels except the Initial
-encryption level.  The secrets for the Initial encryption level are computed
+in each direction. These traffic secrets are derived by TLS (see {{Section 7.1
+of TLS13}}) and are used by QUIC for all encryption levels except the Initial
+encryption level. The secrets for the Initial encryption level are computed
 based on the client's initial Destination Connection ID, as described in
 {{initial-secrets}}.
 
 The keys used for packet protection are computed from the TLS secrets using the
 KDF provided by TLS.  In TLS 1.3, the HKDF-Expand-Label function described in
-Section 7.1 of {{!TLS13}} is used, using the hash function from the negotiated
+{{Section 7.1 of TLS13}} is used, using the hash function from the negotiated
 cipher suite.  All uses of HKDF-Expand-Label in QUIC use a zero-length Context.
 
 Note that labels, which are described using strings, are encoded
@@ -983,11 +985,10 @@ Initial packets apply the packet protection process, but use a secret derived
 from the Destination Connection ID field from the client's first Initial
 packet.
 
-This secret is determined by using HKDF-Extract (see Section 2.2 of
-{{!HKDF=RFC5869}}) with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a
-and a IKM of the Destination Connection ID field. This produces an intermediate
-pseudorandom key (PRK) that is used to derive two separate secrets for sending
-and receiving.
+This secret is determined by using HKDF-Extract (see {{Section 2.2 of HKDF}})
+with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a and a IKM of the
+Destination Connection ID field. This produces an intermediate pseudorandom key
+(PRK) that is used to derive two separate secrets for sending and receiving.
 
 The secret used by clients to construct Initial packets uses the PRK and the
 label "client in" as input to the HKDF-Expand-Label function from TLS
@@ -1036,7 +1037,7 @@ Note:
   Source Connection ID field. After a Retry, the Initial keys provide the client
   no assurance that the server received its packet, so the client has to rely on
   the exchange that included the Retry packet to validate the server address;
-  see Section 8.1 of {{QUIC-TRANSPORT}}.
+  see {{Section 8.1 of QUIC-TRANSPORT}}.
 
 {{test-vectors}} contains sample Initial packets.
 
@@ -1276,7 +1277,7 @@ header_protection(hp_key, sample):
 ### ChaCha20-Based Header Protection {#hp-chacha}
 
 When AEAD_CHACHA20_POLY1305 is in use, header protection uses the raw ChaCha20
-function as defined in Section 2.4 of {{!CHACHA}}.  This uses a 256-bit key and
+function as defined in {{Section 2.4 of CHACHA}}.  This uses a 256-bit key and
 16 bytes sampled from the packet protection output.
 
 The first 4 bytes of the sampled ciphertext are the block counter.  A ChaCha20
@@ -1332,8 +1333,8 @@ requested by the application that is in use.
 An application protocol that uses QUIC MUST include a profile that defines
 acceptable use of 0-RTT; otherwise, 0-RTT can only be used to carry QUIC frames
 that do not carry application data. For example, a profile for HTTP is
-described in {{?HTTP-REPLAY=RFC8470}} and used for HTTP/3; see Section 10.9 of
-{{QUIC-HTTP}}.
+described in {{?HTTP-REPLAY=RFC8470}} and used for HTTP/3; see
+{{Section 10.9 of QUIC-HTTP}}.
 
 Though replaying packets might result in additional connection attempts, the
 effect of processing replayed frames that do not carry application data is
@@ -1344,8 +1345,8 @@ A client MAY wish to apply additional restrictions on what data it sends prior
 to the completion of the TLS handshake.
 
 A client otherwise treats 0-RTT keys as equivalent to 1-RTT keys, except that
-it cannot send certain frames with 0-RTT keys; see Section 12.5 of
-{{QUIC-TRANSPORT}}.
+it cannot send certain frames with 0-RTT keys; see
+{{Section 12.5 of QUIC-TRANSPORT}}.
 
 A client that receives an indication that its 0-RTT data has been accepted by a
 server can send 0-RTT data until it receives all of the server's handshake
@@ -1380,12 +1381,12 @@ Even though 1-RTT keys are available to a server after receiving the first
 handshake messages from a client, it is missing assurances on the client state:
 
 - The client is not authenticated, unless the server has chosen to use a
-  pre-shared key and validated the client's pre-shared key binder; see Section
-  4.2.11 of {{!TLS13}}.
+  pre-shared key and validated the client's pre-shared key binder; see {{Section
+  4.2.11 of TLS13}}.
 
 - The client has not demonstrated liveness, unless the server has validated the
-  client's address with a Retry packet or other means; see Section 8.1 of
-  [QUIC-TRANSPORT].
+  client's address with a Retry packet or other means; see
+  {{Section 8.1 of QUIC-TRANSPORT}}.
 
 - Any received 0-RTT data that the server responds to might be due to a replay
   attack.
@@ -1533,7 +1534,7 @@ value of the Key Phase bit is indicated in brackets \[].
 Endpoints maintain separate read and write secrets for packet protection.  An
 endpoint initiates a key update by updating its packet protection write secret
 and using that to protect new packets.  The endpoint creates a new write secret
-from the existing write secret as performed in Section 7.2 of {{!TLS13}}.  This
+from the existing write secret as performed in {{Section 7.2 of TLS13}}.  This
 uses the KDF function provided by TLS with a label of "quic ku".  The
 corresponding key and IV are created from that secret as defined in
 {{protection-keys}}.  The header protection key is not updated.
@@ -1812,8 +1813,8 @@ negotiation.  TLS uses Application Layer Protocol Negotiation
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
 this purpose.
 
-When using ALPN, endpoints MUST immediately close a connection (see Section
-10.2 of {{QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
+When using ALPN, endpoints MUST immediately close a connection (see {{Section
+10.2 of QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
 code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
 While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
 use error 0x178 to terminate a connection when ALPN negotiation fails.
@@ -1913,7 +1914,7 @@ correlate connections made by the same client; see {{resumption}} for details.
 
 ## Replay Attacks with 0-RTT {#replay}
 
-As described in Section 8 of {{!TLS13}}, use of TLS early data comes with an
+As described in {{Section 8 of TLS13}}, use of TLS early data comes with an
 exposure to replay attack.  The use of 0-RTT in QUIC is similarly vulnerable to
 replay attack.
 
@@ -1964,12 +1965,12 @@ A small ClientHello that results in a large block of handshake messages from a
 server can be used in packet reflection attacks to amplify the traffic generated
 by an attacker.
 
-QUIC includes three defenses against this attack. First, the packet containing a
-ClientHello MUST be padded to a minimum size. Second, if responding to an
-unverified source address, the server is forbidden to send more than three times
-as many bytes as the number of bytes it has received (see Section 8.1 of
-{{QUIC-TRANSPORT}}). Finally, because acknowledgments of Handshake packets are
-authenticated, a blind attacker cannot forge them.  Put together, these defenses
+QUIC includes three defenses against this attack. First, the packet containing
+a ClientHello MUST be padded to a minimum size. Second, if responding to an
+unverified source address, the server is forbidden to send more than three
+times as many bytes as the number of bytes it has received (see {{Section 8.1
+of QUIC-TRANSPORT}}). Finally, because acknowledgments of Handshake packets are
+authenticated, a blind attacker cannot forge them. Put together, these defenses
 limit the level of amplification.
 
 
