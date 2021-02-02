@@ -58,6 +58,8 @@ normative:
           org: Facebook
           role: editor
 
+  URI: RFC3986
+  CACHING: I-D.ietf-httpbis-cache
 
 informative:
 
@@ -166,7 +168,7 @@ and DATA frames form the basis of HTTP requests and responses
 conveyed on a dedicated control stream.
 
 Multiplexing of requests is performed using the QUIC stream abstraction,
-described in Section 2 of {{QUIC-TRANSPORT}}.  Each request-response pair
+described in {{Section 2 of QUIC-TRANSPORT}}.  Each request-response pair
 consumes a single QUIC stream.  Streams are independent of each other, so one
 stream that is blocked or suffers packet loss does not prevent progress on other
 streams.
@@ -178,11 +180,11 @@ against a potential latency gain.  Several HTTP/3 frames are used to manage
 server push, such as PUSH_PROMISE, MAX_PUSH_ID, and CANCEL_PUSH.
 
 As in HTTP/2, request and response fields are compressed for transmission.
-Because HPACK ({{?HPACK=RFC7541}}) relies on in-order transmission of compressed
-field sections (a guarantee not provided by QUIC), HTTP/3 replaces HPACK with
-QPACK ([QPACK]).  QPACK uses separate unidirectional streams to modify and track
-field table state, while encoded field sections refer to the state of the table
-without modifying it.
+Because HPACK ({{?HPACK=RFC7541}}) relies on in-order transmission of
+compressed field sections (a guarantee not provided by QUIC), HTTP/3 replaces
+HPACK with QPACK ({{QPACK}}). QPACK uses separate unidirectional streams to
+modify and track field table state, while encoded field sections refer to the
+state of the table without modifying it.
 
 ## Document Organization
 
@@ -276,14 +278,14 @@ stream:
 stream error:
 : An application-level error on the individual stream.
 
-The term "content" is defined in Section 6.4 of {{!SEMANTICS}}.
+The term "content" is defined in {{Section 6.4 of SEMANTICS}}.
 
 Finally, the terms "resource", "message", "user agent", "origin server",
-"gateway", "intermediary", "proxy", and "tunnel" are defined in Section 3 of
-{{!SEMANTICS}}.
+"gateway", "intermediary", "proxy", and "tunnel" are defined in {{Section 3 of
+SEMANTICS}}.
 
-Packet diagrams in this document use the format defined in Section 1.3 of
-{{QUIC-TRANSPORT}} to illustrate the order and size of fields.
+Packet diagrams in this document use the format defined in
+{{Section 1.3 of QUIC-TRANSPORT}} to illustrate the order and size of fields.
 
 
 # Connection Setup and Management {#connection-setup}
@@ -294,14 +296,14 @@ HTTP relies on the notion of an authoritative response: a response that has been
 determined to be the most appropriate response for that request given the state
 of the target resource at the time of response message origination by (or at the
 direction of) the origin server identified within the target URI.  Locating an
-authoritative server for an HTTP URI is discussed in Section 4.3 of
-{{!SEMANTICS}}.
+authoritative server for an HTTP URI is discussed in
+{{Section 4.3 of SEMANTICS}}.
 
 The "https" scheme associates authority with possession of a certificate that
 the client considers to be trustworthy for the host identified by the authority
 component of the URI.  Upon receiving a server certificate in the TLS handshake,
 the client MUST verify that the certificate is an acceptable match for the URI's
-origin server using the process described in Section 4.3.4 of {{!SEMANTICS}}. If
+origin server using the process described in {{Section 4.3.4 of SEMANTICS}}. If
 the certificate cannot be verified with respect to the URI's origin server, the
 client MUST NOT consider the server authoritative for that origin.
 
@@ -392,8 +394,8 @@ server closes the connection.
 Once a connection exists to a server endpoint, this connection MAY be reused for
 requests with multiple different URI authority components.  To use an existing
 connection for a new origin, clients MUST validate the certificate presented by
-the server for the new origin server using the process described in Section
-4.3.4 of {{!SEMANTICS}}.  This implies that clients will need to retain the
+the server for the new origin server using the process described in {{Section
+4.3.4 of SEMANTICS}}.  This implies that clients will need to retain the
 server certificate and any additional information needed to verify that
 certificate; clients which do not do so will be unable to reuse the connection
 for additional origins.
@@ -423,8 +425,8 @@ processed and gracefully complete or terminate any necessary remaining tasks.
 
 A server that does not wish clients to reuse HTTP/3 connections for a particular
 origin can indicate that it is not authoritative for a request by sending a 421
-(Misdirected Request) status code in response to the request; see Section 7.4
-of {{!SEMANTICS}}.
+(Misdirected Request) status code in response to the request; see {{Section 7.4
+of SEMANTICS}}.
 
 
 # HTTP Request Lifecycle
@@ -435,7 +437,7 @@ A client sends an HTTP request on a request stream, which is a client-initiated
 bidirectional QUIC stream; see {{request-streams}}.  A client MUST send only a
 single request on a given stream.  A server sends zero or more interim HTTP
 responses on the same stream as the request, followed by a single final HTTP
-response, as detailed below. See Section 15 of {{!SEMANTICS}} for a description
+response, as detailed below. See {{Section 15 of SEMANTICS}} for a description
 of interim and final HTTP responses.
 
 Pushed responses are sent on a server-initiated unidirectional QUIC stream; see
@@ -456,9 +458,8 @@ An HTTP message (request or response) consists of:
 
 3. optionally, the trailer section, if present, sent as a single HEADERS frame.
 
-Header and trailer sections are described in Sections 6.3 and 6.5 of
-{{!SEMANTICS}}; the content is described in Section 6.4 of
-{{!SEMANTICS}}.
+Header and trailer sections are described in {{Sections 6.3 and 6.5 of
+SEMANTICS}}; the content is described in {{Section 6.4 of SEMANTICS}}.
 
 Receipt of an invalid sequence of frames MUST be treated as a connection error
 of type H3_FRAME_UNEXPECTED; see {{errors}}.  In particular, a DATA frame before
@@ -482,11 +483,11 @@ table. While these updates are not directly part of the message exchange, they
 must be received and processed before the message can be consumed.  See
 {{header-formatting}} for more details.
 
-Transfer codings (see Section 6.1 of {{?HTTP11}}) are not defined for HTTP/3;
+Transfer codings (see {{Section 6.1 of HTTP11}}) are not defined for HTTP/3;
 the Transfer-Encoding header field MUST NOT be used.
 
 A response MAY consist of multiple messages when and only when one or more
-interim responses (1xx; see Section 15.2 of {{!SEMANTICS}}) precede a final
+interim responses (1xx; see {{Section 15.2 of SEMANTICS}}) precede a final
 response to the same request.  Interim responses do not contain content
 or trailer sections.
 
@@ -520,17 +521,17 @@ continue sending the body of the request and close the stream normally.
 ### Field Formatting and Compression {#header-formatting}
 
 HTTP messages carry metadata as a series of key-value pairs called HTTP fields;
-see Sections 6.3 and 6.5 of {{!SEMANTICS}}. For a listing of registered HTTP
+see {{Sections 6.3 and 6.5 of SEMANTICS}}. For a listing of registered HTTP
 fields, see the "Hypertext Transfer Protocol (HTTP) Field Name Registry"
 maintained at [](https://www.iana.org/assignments/http-fields/).
 
 > **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
 > **RFC Editor**, please remove this note prior to publication.
 
-Field names are strings containing a subset of ASCII characters.  Properties of
-HTTP field names and values are discussed in more detail in Section 5.1 of
-{{!SEMANTICS}}.  As in HTTP/2, characters in field names MUST be converted to
-lowercase prior to their encoding.  A request or response containing uppercase
+Field names are strings containing a subset of ASCII characters. Properties of
+HTTP field names and values are discussed in more detail in {{Section 5.1 of
+SEMANTICS}}. As in HTTP/2, characters in field names MUST be converted to
+lowercase prior to their encoding. A request or response containing uppercase
 characters in field names MUST be treated as malformed ({{malformed}}).
 
 Like HTTP/2, HTTP/3 does not use the Connection header field to indicate
@@ -544,8 +545,8 @@ HTTP/3 request header; when it is, it MUST NOT contain any value other than
 "trailers".
 
 An intermediary transforming an HTTP/1.x message to HTTP/3 MUST remove
-connection-specific header fields as discussed in Section 7.6.1 of
-{{!SEMANTICS}}, or their messages will be treated by other HTTP/3 endpoints as
+connection-specific header fields as discussed in {{Section 7.6.1 of
+SEMANTICS}}, or their messages will be treated by other HTTP/3 endpoints as
 malformed ({{malformed}}).
 
 #### Pseudo-Header Fields
@@ -576,12 +577,11 @@ The following pseudo-header fields are defined for requests:
 
   ":method":
 
-  : Contains the HTTP method (Section 9 of {{!SEMANTICS}})
+  : Contains the HTTP method ({{Section 9 of SEMANTICS}})
 
   ":scheme":
 
-  : Contains the scheme portion of the target URI (Section 3.1 of
-  {{!URI=RFC3986}})
+  : Contains the scheme portion of the target URI ({{Section 3.1 of URI}})
 
   : ":scheme" is not restricted to URIs with scheme "http" and "https".
     A proxy or
@@ -592,14 +592,14 @@ The following pseudo-header fields are defined for requests:
 
   ":authority":
 
-  : Contains the authority portion of the target URI (Section 3.2 of
-    {{!URI}}). The authority MUST NOT include the deprecated "userinfo"
+  : Contains the authority portion of the target URI ({{Section 3.2 of URI}}).
+    The authority MUST NOT include the deprecated "userinfo"
     subcomponent for URIs of scheme "http" or "https".
 
   : To ensure that the HTTP/1.1 request line can be reproduced accurately, this
     pseudo-header field MUST be omitted when translating from an HTTP/1.1
-    request that has a request target in origin or asterisk form; see Section
-    7.1 of {{?SEMANTICS}}.  Clients that generate HTTP/3 requests directly
+    request that has a request target in origin or asterisk form; see {{Section
+    7.1 of SEMANTICS}}.  Clients that generate HTTP/3 requests directly
     SHOULD use the ":authority" pseudo-header field instead of the Host field.
     An intermediary that converts an HTTP/3 request to HTTP/1.1 MUST create a
     Host field if one is not present in a request by copying the value of the
@@ -609,15 +609,15 @@ The following pseudo-header fields are defined for requests:
 
   : Contains the path and query parts of the target URI (the "path-absolute"
     production and optionally a '?' character followed by the "query"
-    production; see Sections 3.3 and 3.4 of {{!URI}}.  A request in
+    production; see {{Sections 3.3 and 3.4 of URI}}.  A request in
     asterisk form includes the value '*' for the ":path" pseudo-header field.
 
   : This pseudo-header field MUST NOT be empty for "http" or "https" URIs;
     "http" or "https" URIs that do not contain a path component MUST include a
     value of '/'.  The exception to this rule is an OPTIONS request for an
     "http" or "https" URI that does not include a path component; these MUST
-    include a ":path" pseudo-header field with a value of '*'; see Section 7.1
-    of {{!SEMANTICS}}.
+    include a ":path" pseudo-header field with a value of '*'; see
+    {{Section 7.1 of SEMANTICS}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
 and ":path" pseudo-header fields, unless it is a CONNECT request; see
@@ -638,7 +638,7 @@ HTTP/3 does not define a way to carry the version identifier that is included in
 the HTTP/1.1 request line.
 
 For responses, a single ":status" pseudo-header field is defined that carries
-the HTTP status code; see Section 15 of {{!SEMANTICS}}.  This pseudo-header
+the HTTP status code; see {{Section 15 of SEMANTICS}}.  This pseudo-header
 field MUST be included in all responses; otherwise, the response is malformed
 ({{malformed}}).
 
@@ -647,7 +647,7 @@ included in an HTTP/1.1 status line.
 
 #### Field Compression
 
-[QPACK] describes a variation of HPACK that gives an encoder some control over
+{{QPACK}} describes a variation of HPACK that gives an encoder some control over
 how much head-of-line blocking can be caused by compression.  This allows an
 encoder to balance compression efficiency with latency.  HTTP/3 uses QPACK to
 compress header and trailer sections, including the pseudo-header fields present
@@ -676,7 +676,7 @@ as a number of bytes in the SETTINGS_MAX_FIELD_SECTION_SIZE parameter. An
 implementation that has received this parameter SHOULD NOT send an HTTP message
 header that exceeds the indicated size, as the peer will likely refuse to
 process it.  However, an HTTP message can traverse one or more intermediaries
-before reaching the origin server; see Section 3.7 of {{!SEMANTICS}}.  Because
+before reaching the origin server; see {{Section 3.7 of SEMANTICS}}.  Because
 this limit is applied separately by each implementation which processes the
 message, messages below this limit are not guaranteed to be accepted.
 
@@ -692,7 +692,7 @@ processing.
 Implementations SHOULD cancel requests by abruptly terminating any
 directions of a stream that are still open.  This means resetting the
 sending parts of streams and aborting reading on receiving parts of streams;
-see Section 2.4 of [QUIC-TRANSPORT].
+see {{Section 2.4 of QUIC-TRANSPORT}}.
 
 When the server cancels a request without performing any application processing,
 the request is considered "rejected."  The server SHOULD abort its response
@@ -720,7 +720,7 @@ idempotent actions such as GET, PUT, or DELETE can be safely retried; a client
 SHOULD NOT automatically retry a request with a non-idempotent method unless it
 has some means to know that the request semantics are idempotent
 independent of the method or some means to detect that the original request was
-never applied.  See Section 9.2.2 of {{!SEMANTICS}} for more details.
+never applied.  See {{Section 9.2.2 of SEMANTICS}} for more details.
 
 ### Malformed Requests and Responses {#malformed}
 
@@ -736,7 +736,7 @@ frames but is invalid due to:
 - the inclusion of invalid characters in field names or values.
 
 A request or response that is defined as having content when it contains a
-Content-Length header field (Section 6.4.1 of {{!SEMANTICS}}),
+Content-Length header field ({{Section 6.4.1 of SEMANTICS}}),
 is malformed if the value of a Content-Length header field does not equal the
 sum of the DATA frame lengths received. A response that is defined as never
 having content, even when a Content-Length is present, can have a non-zero
@@ -757,8 +757,8 @@ permissive can expose implementations to these vulnerabilities.
 ## The CONNECT Method {#connect}
 
 The CONNECT method requests that the recipient establish a tunnel to the
-destination origin server identified by the request-target; see Section 9.3.6 of
-{{!SEMANTICS}}.  It is primarily used with HTTP proxies to establish a TLS
+destination origin server identified by the request-target; see {{Section 9.3.6
+of SEMANTICS}}. It is primarily used with HTTP proxies to establish a TLS
 session with an origin server for the purposes of interacting with "https"
 resources.
 
@@ -772,7 +772,7 @@ A CONNECT request MUST be constructed as follows:
 - The ":scheme" and ":path" pseudo-header fields are omitted
 - The ":authority" pseudo-header field contains the host and port to connect to
   (equivalent to the authority-form of the request-target of CONNECT requests;
-  see Section 7.1 of {{!SEMANTICS}})
+  see {{Section 7.1 of SEMANTICS}})
 
 The request stream remains open at the end of the request to carry the data to
 be transferred.  A CONNECT request that does not conform to these restrictions
@@ -781,7 +781,7 @@ is malformed; see {{malformed}}.
 A proxy that supports CONNECT establishes a TCP connection ({{!RFC0793}}) to the
 server identified in the ":authority" pseudo-header field.  Once this connection
 is successfully established, the proxy sends a HEADERS frame containing a 2xx
-series status code to the client, as defined in Section 15.3 of {{!SEMANTICS}}.
+series status code to the client, as defined in {{Section 15.3 of SEMANTICS}}.
 
 All DATA frames on the stream correspond to data sent or received on the TCP
 connection. The payload of any DATA frame sent by the client is transmitted by
@@ -814,21 +814,21 @@ set.
 
 Since CONNECT creates a tunnel to an arbitrary server, proxies that support
 CONNECT SHOULD restrict its use to a set of known ports or a list of safe
-request targets; see Section 9.3.6 of {{!SEMANTICS}} for more detail.
+request targets; see {{Section 9.3.6 of SEMANTICS}} for more detail.
 
 ## HTTP Upgrade
 
-HTTP/3 does not support the HTTP Upgrade mechanism (Section 7.8 of
-{{!SEMANTICS}}) or 101 (Switching Protocols) informational status code (Section
-15.2.2 of {{!SEMANTICS}}).
+HTTP/3 does not support the HTTP Upgrade mechanism ({{Section 7.8 of
+SEMANTICS}}) or 101 (Switching Protocols) informational status code ({{Section
+15.2.2 of SEMANTICS}}).
 
 ## Server Push
 
 Server push is an interaction mode that permits a server to push a
 request-response exchange to a client in anticipation of the client making the
 indicated request.  This trades off network usage against a potential latency
-gain.  HTTP/3 server push is similar to what is described in Section 8.2 of
-{{?HTTP2}}, but uses different mechanisms.
+gain.  HTTP/3 server push is similar to what is described in
+{{Section 8.2 of HTTP2}}, but uses different mechanisms.
 
 Each server push is assigned a unique Push ID by the server.  The Push ID is
 used to refer to the push in various contexts throughout the lifetime of the
@@ -864,8 +864,8 @@ be fulfilling a previous promise.
 Not all requests can be pushed.  A server MAY push requests that have the
 following properties:
 
-- cacheable; see Section 9.2.3 of {{!SEMANTICS}}
-- safe; see Section 9.2.1 of {{!SEMANTICS}}
+- cacheable; see {{Section 9.2.3 of SEMANTICS}}
+- safe; see {{Section 9.2.1 of SEMANTICS}}
 - does not include a request body or trailer section
 
 The server MUST include a value in the ":authority" pseudo-header field for
@@ -897,7 +897,7 @@ PUSH_PROMISE frame.  When a client receives a new push stream with an
 as-yet-unknown Push ID, both the associated client request and the pushed
 request header fields are unknown.  The client can buffer the stream data in
 expectation of the matching PUSH_PROMISE. The client can use stream flow control
-(see section 4.1 of {{QUIC-TRANSPORT}}) to limit the amount of data a server may
+(see {{Section 4.1 of QUIC-TRANSPORT}}) to limit the amount of data a server may
 commit to the pushed stream.
 
 Push stream data can also arrive after a client has canceled a push. In this
@@ -905,12 +905,11 @@ case, the client can abort reading the stream with an error code of
 H3_REQUEST_CANCELLED. This asks the server not to transfer additional data and
 indicates that it will be discarded upon receipt.
 
-Pushed responses that are cacheable (see Section 3 of
-{{!CACHING=I-D.ietf-httpbis-cache}}) can be stored by the client, if it
-implements an HTTP cache.  Pushed responses are considered successfully
-validated on the origin server (e.g., if the "no-cache" cache response directive
-is present; see Section 5.2.2.3 of {{!CACHING}}) at the time the pushed response
-is received.
+Pushed responses that are cacheable (see {{Section 3 of CACHING}}) can be
+stored by the client, if it implements an HTTP cache. Pushed responses are
+considered successfully validated on the origin server (e.g., if the "no-cache"
+cache response directive is present; see {{Section 5.2.2.3 of CACHING}}) at the
+time the pushed response is received.
 
 Pushed responses that are not cacheable MUST NOT be stored by any HTTP cache.
 They MAY be made available to the application separately.
@@ -928,12 +927,12 @@ connection remains idle (no packets received) for longer than this duration, the
 peer will assume that the connection has been closed.  HTTP/3 implementations
 will need to open a new HTTP/3 connection for new requests if the existing
 connection has been idle for longer than the idle timeout negotiated during the
-QUIC handshake, and SHOULD do so if approaching the idle timeout; see Section
-10.1 of {{QUIC-TRANSPORT}}.
+QUIC handshake, and SHOULD do so if approaching the idle timeout; see {{Section
+10.1 of QUIC-TRANSPORT}}.
 
 HTTP clients are expected to request that the transport keep connections open
 while there are responses outstanding for requests or server pushes, as
-described in Section 10.1.2 of {{QUIC-TRANSPORT}}. If the client is not
+described in {{Section 10.1.2 of QUIC-TRANSPORT}}. If the client is not
 expecting a response from the server, allowing an idle connection to time out is
 preferred over expending effort maintaining a connection that might not be
 needed.  A gateway MAY maintain connections in anticipation of need rather than
@@ -1046,8 +1045,8 @@ CONNECTION_CLOSE frame improves the chances of the frame being received by
 clients.
 
 If there are open streams that have not been explicitly closed, they are
-implicitly closed when the connection is closed; see Section 10.2 of
-{{QUIC-TRANSPORT}}.
+implicitly closed when the connection is closed; see
+{{Section 10.2 of QUIC-TRANSPORT}}.
 
 ## Transport Closure
 
@@ -1072,8 +1071,8 @@ within a stream, HTTP/3 does not make use of this feature.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
 receiver, or bidirectional.  Streams can be initiated by either the client or
-the server.  For more detail on QUIC streams, see Section 2 of
-{{QUIC-TRANSPORT}}.
+the server.  For more detail on QUIC streams, see
+{{Section 2 of QUIC-TRANSPORT}}.
 
 When HTTP fields and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
@@ -1114,9 +1113,9 @@ Unidirectional Stream Header {
 {: #fig-stream-header title="Unidirectional Stream Header"}
 
 Two stream types are defined in this document: control streams
-({{control-streams}}) and push streams ({{push-streams}}).  [QPACK] defines two
-additional stream types.  Other stream types can be defined by extensions to
-HTTP/3; see {{extensions}} for more details.  Some stream types are reserved
+({{control-streams}}) and push streams ({{push-streams}}). {{QPACK}} defines
+two additional stream types. Other stream types can be defined by extensions to
+HTTP/3; see {{extensions}} for more details. Some stream types are reserved
 ({{stream-grease}}).
 
 The performance of HTTP/3 connections in the early phase of their lifetime is
@@ -1315,7 +1314,7 @@ DATA Frame {
 ### HEADERS {#frame-headers}
 
 The HEADERS frame (type=0x1) is used to carry an HTTP field section, encoded
-using QPACK. See [QPACK] for more details.
+using QPACK. See {{QPACK}} for more details.
 
 ~~~~~~~~~~  drawing
 HEADERS Frame {
@@ -1543,7 +1542,7 @@ Push ID:
   ({{frame-cancel-push}}).
 
 Encoded Field Section:
-: QPACK-encoded request header fields for the promised response.  See [QPACK]
+: QPACK-encoded request header fields for the promised response.  See {{QPACK}}
   for more details.
 
 A server MUST NOT use a Push ID that is larger than the client has provided in a
@@ -1666,17 +1665,17 @@ H3_FRAME_UNEXPECTED.
 # Error Handling {#errors}
 
 When a stream cannot be completed successfully, QUIC allows the application to
-abruptly terminate (reset) that stream and communicate a reason; see Section 2.4
-of {{QUIC-TRANSPORT}}.  This is referred to as a "stream error."  An HTTP/3
+abruptly terminate (reset) that stream and communicate a reason; see {{Section
+2.4 of QUIC-TRANSPORT}}. This is referred to as a "stream error." An HTTP/3
 implementation can decide to close a QUIC stream and communicate the type of
-error.  Wire encodings of error codes are defined in {{http-error-codes}}.
+error. Wire encodings of error codes are defined in {{http-error-codes}}.
 Stream errors are distinct from HTTP status codes which indicate error
-conditions.  Stream errors indicate that the sender did not transfer or consume
+conditions. Stream errors indicate that the sender did not transfer or consume
 the full request or response, while HTTP status codes indicate the result of a
 request that was successfully received.
 
 If an entire connection needs to be terminated, QUIC similarly provides
-mechanisms to communicate a reason; see Section 5.3 of {{QUIC-TRANSPORT}}.  This
+mechanisms to communicate a reason; see {{Section 5.3 of QUIC-TRANSPORT}}.  This
 is referred to as a "connection error."  Similar to stream errors, an HTTP/3
 implementation can terminate a QUIC connection and communicate the reason using
 an error code from {{http-error-codes}}.
@@ -1812,13 +1811,13 @@ extension is disabled if the setting is omitted.
 # Security Considerations
 
 The security considerations of HTTP/3 should be comparable to those of HTTP/2
-with TLS.  However, many of the considerations from Section 10 of {{?HTTP2}}
-apply to [QUIC-TRANSPORT] and are discussed in that document.
+with TLS.  However, many of the considerations from {{Section 10 of HTTP2}}
+apply to {{QUIC-TRANSPORT}} and are discussed in that document.
 
 ## Server Authority
 
 HTTP/3 relies on the HTTP definition of authority. The security considerations
-of establishing authority are discussed in Section 17.1 of {{!SEMANTICS}}.
+of establishing authority are discussed in {{Section 17.1 of SEMANTICS}}.
 
 ## Cross-Protocol Attacks
 
@@ -1826,15 +1825,15 @@ The use of ALPN in the TLS and QUIC handshakes establishes the target
 application protocol before application-layer bytes are processed.  This ensures
 that endpoints have strong assurances that peers are using the same protocol.
 
-This does not guarantee protection from all cross-protocol attacks.  Section
-21.5 of {{QUIC-TRANSPORT}} describes some ways in which the plaintext of QUIC
+This does not guarantee protection from all cross-protocol attacks. {{Section
+21.5 of QUIC-TRANSPORT}} describes some ways in which the plaintext of QUIC
 packets can be used to perform request forgery against endpoints that don't use
 authenticated transports.
 
 ## Intermediary Encapsulation Attacks
 
 The HTTP/3 field encoding allows the expression of names that are not valid
-field names in the syntax used by HTTP (Section 5.1 of {{!SEMANTICS}}).
+field names in the syntax used by HTTP ({{Section 5.1 of SEMANTICS}}).
 Requests or responses containing invalid field names MUST be treated as
 malformed ({{malformed}}).  An intermediary therefore cannot translate an HTTP/3
 request or response containing an invalid field name into an HTTP/1.1 message.
@@ -1845,7 +1844,7 @@ ASCII 0xd), line feed (LF, ASCII 0xa), and the zero character (NUL, ASCII 0x0)
 might be exploited by an attacker if they are translated verbatim. Any request
 or response that contains a character not permitted in a field value MUST be
 treated as malformed ({{malformed}}).  Valid characters are defined by the
-"field-content" ABNF rule in Section 5.5 of {{!SEMANTICS}}.
+"field-content" ABNF rule in {{Section 5.5 of SEMANTICS}}.
 
 ## Cacheability of Pushed Responses
 
@@ -1888,7 +1887,7 @@ legitimate, such as optional-to-understand extensions and padding to increase
 resistance to traffic analysis.
 
 Compression of field sections also offers some opportunities to waste processing
-resources; see Section 7 of [QPACK] for more details on potential abuses.
+resources; see {{Section 7 of QPACK}} for more details on potential abuses.
 
 All these features -- i.e., server push, unknown protocol elements, field
 compression -- have legitimate uses.  These features become a burden only when
@@ -1942,7 +1941,7 @@ terminates.
 Compression can allow an attacker to recover secret data when it is compressed
 in the same context as data under attacker control. HTTP/3 enables compression
 of fields ({{header-formatting}}); the following concerns also apply to the use
-of HTTP compressed content-codings; see Section 8.4.1 of {{!SEMANTICS}}.
+of HTTP compressed content-codings; see {{Section 8.4.1 of SEMANTICS}}.
 
 There are demonstrable attacks on compression that exploit the characteristics
 of the web (e.g., {{BREACH}}).  The attacker induces multiple requests
@@ -2063,8 +2062,8 @@ The "h3" string identifies HTTP/3:
 ## New Registries {#iana-policy}
 
 New registries created in this document operate under the QUIC registration
-policy documented in Section 22.1 of {{QUIC-TRANSPORT}}.  These registries all
-include the common set of fields listed in Section 22.1.1 of {{QUIC-TRANSPORT}}.
+policy documented in {{Section 22.1 of QUIC-TRANSPORT}}.  These registries all
+include the common set of fields listed in {{Section 22.1.1 of QUIC-TRANSPORT}}.
 These registries \[SHALL be/are] collected under a "Hypertext Transfer Protocol
 version 3 (HTTP/3) Parameters" heading.
 
@@ -2079,8 +2078,8 @@ Frame Type" registry governs a 62-bit space.  This registry follows the QUIC
 registry policy; see {{iana-policy}}.  Permanent registrations in this registry
 are assigned using the Specification Required policy ({{!RFC8126}}), except for
 values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
-using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
-{{!RFC8126}}.
+using Standards Action or IESG Approval as defined in
+{{Sections 4.9 and 4.10 of RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Frame Type" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other where the
@@ -2128,8 +2127,8 @@ registry governs a 62-bit space.  This registry follows the QUIC registry
 policy; see {{iana-policy}}.  Permanent registrations in this registry are
 assigned using the Specification Required policy ({{!RFC8126}}), except for
 values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
-using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
-{{!RFC8126}}.
+using Standards Action or IESG Approval as defined in
+{{Sections 4.9 and 4.10 of RFC8126}}.
 
 While this registry is separate from the "HTTP/2 Settings" registry defined in
 {{?HTTP2}}, it is preferable that the assignments parallel each other.  If an
@@ -2173,8 +2172,8 @@ Code" registry manages a 62-bit space.  This registry follows the QUIC registry
 policy; see {{iana-policy}}.  Permanent registrations in this registry are
 assigned using the Specification Required policy ({{!RFC8126}}), except for
 values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
-using Standards Action or IESG Approval as defined in Section 4.9 and 4.10 of
-{{!RFC8126}}.
+using Standards Action or IESG Approval as defined in
+{{Sections 4.9 and 4.10 of RFC8126}}.
 
 Registrations for error codes are required to include a description of the error
 code.  An expert reviewer is advised to examine new registrations for possible
@@ -2231,8 +2230,8 @@ This document establishes a registry for HTTP/3 unidirectional stream types. The
 QUIC registry policy; see {{iana-policy}}.  Permanent registrations in this
 registry are assigned using the Specification Required policy ({{!RFC8126}}),
 except for values between 0x00 and 0x3f (in hexadecimal; inclusive), which are
-assigned using Standards Action or IESG Approval as defined in Section 4.9 and
-4.10 of {{!RFC8126}}.
+assigned using Standards Action or IESG Approval as defined in {{Sections 4.9
+and 4.10 of RFC8126}}.
 
 In addition to common fields as described in {{iana-policy}}, permanent
 registrations in this registry MUST include the following fields:
@@ -2354,7 +2353,7 @@ make all modifications to the dynamic table, ensuring a total order of updates.
 All frames that contain encoded fields merely reference the table state at a
 given time without modifying it.
 
-[QPACK] provides additional details.
+{{QPACK}} provides additional details.
 
 ### Flow Control Differences
 
@@ -2446,7 +2445,7 @@ settings are reserved, and their receipt is an error.  See
 Below is a listing of how each HTTP/2 SETTINGS parameter is mapped:
 
 SETTINGS_HEADER_TABLE_SIZE (0x1):
-: See [QPACK].
+: See {{QPACK}}.
 
 SETTINGS_ENABLE_PUSH (0x2):
 : This is removed in favor of the MAX_PUSH_ID frame, which provides a more
@@ -2498,7 +2497,7 @@ QUIC has the same concepts of "stream" and "connection" errors that HTTP/2
 provides. However, the differences between HTTP/2 and HTTP/3 mean that error
 codes are not directly portable between versions.
 
-The HTTP/2 error codes defined in Section 7 of {{?HTTP2}} logically map to
+The HTTP/2 error codes defined in {{Section 7 of HTTP2}} logically map to
 the HTTP/3 error codes as follows:
 
 NO_ERROR (0x0):
@@ -2534,7 +2533,7 @@ CANCEL (0x8):
 : H3_REQUEST_CANCELLED in {{http-error-codes}}.
 
 COMPRESSION_ERROR (0x9):
-: Multiple error codes are defined in [QPACK].
+: Multiple error codes are defined in {{QPACK}}.
 
 CONNECT_ERROR (0xa):
 : H3_CONNECT_ERROR in {{http-error-codes}}.
