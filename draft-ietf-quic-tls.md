@@ -1730,12 +1730,13 @@ It is RECOMMENDED that endpoints immediately close the connection with a
 connection error of type AEAD_LIMIT_REACHED before reaching a state where key
 updates are not possible.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is 2^23
-encrypted packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the
-confidentiality limit is greater than the number of possible packets (2^62) and
-so can be disregarded. For AEAD_AES_128_CCM, the confidentiality limit is 2^21.5
-encrypted packets; see {{ccm-bounds}}. Applying a limit reduces the probability
-that an attacker can distinguish the AEAD in use from a random permutation; see
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the confidentiality limit is
+2<sup>23</sup> encrypted packets; see {{gcm-bounds}}. For
+AEAD_CHACHA20_POLY1305, the confidentiality limit is greater than the number of
+possible packets (2<sup>62</sup>) and so can be disregarded. For
+AEAD_AES_128_CCM, the confidentiality limit is 2<sup>21.5</sup> encrypted
+packets; see {{ccm-bounds}}. Applying a limit reduces the probability that an
+attacker can distinguish the AEAD in use from a random permutation; see
 {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
 
 In addition to counting packets sent, endpoints MUST count the number of
@@ -1745,12 +1746,12 @@ connection, across all keys, exceeds the integrity limit for the selected AEAD,
 the endpoint MUST immediately close the connection with a connection error of
 type AEAD_LIMIT_REACHED and not process any more packets.
 
-For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2^52 invalid
-packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity limit is
-2^36 invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM, the integrity
-limit is 2^21.5 invalid packets; see {{ccm-bounds}}. Applying this limit reduces
-the probability that an attacker can successfully forge a packet; see
-{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
+For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the integrity limit is 2<sup>52</sup>
+invalid packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity
+limit is 2<sup>36</sup> invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM,
+the integrity limit is 2<sup>21.5</sup> invalid packets; see
+{{ccm-bounds}}. Applying this limit reduces the probability that an attacker can
+successfully forge a packet; see {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
 
 Endpoints that limit the size of packets MAY use higher confidentiality and
 integrity limits; see {{aead-analysis}} for details.
@@ -2000,7 +2001,8 @@ header protection. Protecting two different headers with the same key and
 ciphertext sample reveals the exclusive OR of the protected fields.  Assuming
 that the AEAD acts as a PRF, if L bits are sampled, the odds of two ciphertext
 samples being identical approach 2^(-L/2), that is, the birthday bound. For the
-algorithms described in this document, that probability is one in 2^64.
+algorithms described in this document, that probability is one in
+2<sup>64</sup>.
 
 To prevent an attacker from modifying packet headers, the header is transitively
 authenticated using packet protection; the entire packet header is part of the
@@ -2400,23 +2402,24 @@ o:
 
 The analyses that follow rely on a count of the number of block operations
 involved in producing each message. This analysis is performed for packets of
-size up to 2^11 (l = 2^7) and 2^16 (l = 2^12). A size of 2^11 is expected to be
-a limit that matches common deployment patterns, whereas the 2^16 is the maximum
-possible size of a QUIC packet. Only endpoints that strictly limit packet size
-can use the larger confidentiality and integrity limits that are derived using
-the smaller packet size.
+size up to 2<sup>11</sup> (l = 2<sup>7</sup>) and 2<sup>16</sup> (l =
+2<sup>12</sup>). A size of 2<sup>11</sup> is expected to be a limit that matches
+common deployment patterns, whereas the 2<sup>16</sup> is the maximum possible
+size of a QUIC packet. Only endpoints that strictly limit packet size can use
+the larger confidentiality and integrity limits that are derived using the
+smaller packet size.
 
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the message length (l) is the length
 of the associated data in blocks plus the length of the plaintext in blocks.
 
-For AEAD_AES_128_CCM, the total number of block cipher operations is the sum
-of: the length of the associated data in blocks, the length of the ciphertext
-in blocks, the length of the plaintext in blocks, plus 1. In this analysis,
-this is simplified to a value of twice the length of the packet in blocks (that
-is, `2l = 2^8` for packets that are limited to 2^11 bytes, or `2l = 2^13`
-otherwise). This simplification is based on the packet containing all of the
-associated data and ciphertext. This results in a 1 to 3 block overestimation
-of the number of operations per packet.
+For AEAD_AES_128_CCM, the total number of block cipher operations is the sum of:
+the length of the associated data in blocks, the length of the ciphertext in
+blocks, the length of the plaintext in blocks, plus 1. In this analysis, this is
+simplified to a value of twice the length of the packet in blocks (that is, `2l
+= 2<sup>8</sup>` for packets that are limited to 2<sup>11</sup> bytes, or `2l =
+2<sup>13</sup>` otherwise). This simplification is based on the packet
+containing all of the associated data and ciphertext. This results in a 1 to 3
+block overestimation of the number of operations per packet.
 
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
@@ -2454,10 +2457,11 @@ For a target advantage of 2^-57, this results in the relation:
 q <= 2^35 / l
 ~~~
 
-Thus, endpoints that do not send packets larger than 2^11 bytes cannot protect
-more than 2^28 packets in a single connection without causing an attacker to
-gain an larger advantage than the target of 2^-57. The limit for endpoints that
-allow for the packet size to be as large as 2^16 is instead 2^23.
+Thus, endpoints that do not send packets larger than 2<sup>11</sup> bytes cannot
+protect more than 2<sup>28</sup> packets in a single connection without causing
+an attacker to gain an larger advantage than the target of 2^-57. The limit for
+endpoints that allow for the packet size to be as large as 2<sup>16</sup> is
+instead 2<sup>23</sup>.
 
 
 ### Integrity Limit
@@ -2478,10 +2482,10 @@ significant effect on the result. This produces the following approximation:
 v <= 2^64 / l
 ~~~
 
-Endpoints that do not attempt to remove protection from packets larger than 2^11
-bytes can attempt to remove protection from at most 2^57 packets. Endpoints that
-do not restrict the size of processed packets can attempt to remove protection
-from at most 2^52 packets.
+Endpoints that do not attempt to remove protection from packets larger than
+2<sup>11</sup> bytes can attempt to remove protection from at most
+2<sup>57</sup> packets. Endpoints that do not restrict the size of processed
+packets can attempt to remove protection from at most 2<sup>52</sup> packets.
 
 For AEAD_AES_256_GCM, the same term dominates, but the larger value of k
 produces the following approximation:
@@ -2538,9 +2542,9 @@ v + q <= 2^34.5 / l
 ~~~
 
 By setting `q = v`, values for both confidentiality and integrity limits can be
-produced. Endpoints that limit packets to 2^11 bytes therefore have both
-confidentiality and integrity limits of 2^26.5 packets. Endpoints that do not
-restrict packet size have a limit of 2^21.5.
+produced. Endpoints that limit packets to 2<sup>11</sup> bytes therefore have
+both confidentiality and integrity limits of 2<sup>26.5</sup> packets. Endpoints
+that do not restrict packet size have a limit of 2<sup>21.5</sup>.
 
 
 # Change Log
