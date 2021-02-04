@@ -1,9 +1,15 @@
-# Contributing to QUIC
+# Contributing to QUIC base-drafts
 
-Anyone can contribute to QUIC; you don't have to join the Working Group, because there is no "membership" -- anyone who participates in the work, as outlined below, is part of the QUIC Working Group.
+The base-drafts repository is the home of the following QUIC Working Group documents:
 
-Before doing so, it's a good idea to familiarize yourself with our current [issues list](https://github.com/quicwg/base-drafts/issues) and [charter](https://datatracker.ietf.org/wg/quic/about/). If you're
-new to this, you may also want to read the [Tao of the IETF](https://www.ietf.org/tao.html).
+* Invariants
+* Transport
+* TLS
+* HTTP/3
+* QPACK
+* Recovery
+
+**All of the documents have now passed IESG review stage. We will no longer consider Design changes or substantial Editorial changes unless they relate to severe security, interoperabily or deployment problems. See [Post-IESG Process](#post-iesg-process) below for further information** 
 
 **Be aware that all contributions fall under the "NOTE WELL" terms outlined below.**
 
@@ -21,12 +27,17 @@ new to this, you may also want to read the [Tao of the IETF](https://www.ietf.or
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# Engaging with the QUIC community
+
+The QUIC Working Group scope of work is described in our charter and it extends beyond the development of the documents held in this repository. Anyone is welcome to contribute to the QUIC community; you don't have to join the Working Group, because there is no "membership" -- anyone who participates in the work **is** a part of the QUIC Working Group.
+
+Before doing so, it's a good idea to familiarize yourself with our [charter](https://datatracker.ietf.org/wg/quic/about/). If you're new to IETF work, you may also want to read the [Tao of the IETF](https://www.ietf.org/tao.html).
 
 ## Following Discussion
 
 The Working Group has a few venues for discussion:
 
-* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and hold interim meetings between them. See our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
+* We plan to meet at all [IETF meetings](https://www.ietf.org/meeting/) for the foreseeable future, and possibly hold interim meetings between them if required. Agendas, minutes and presentations are available in our [meeting materials repository](https://github.com/quicwg/wg-materials) and the [official proceedings](https://datatracker.ietf.org/wg/quic/meetings/).
 
 * Our [mailing list](https://www.ietf.org/mailman/listinfo/quic) is used for most communication, including notifications of meetings, new drafts, consensus calls and other business, as well as issue discussion.
 
@@ -36,16 +47,18 @@ To be active in the Working Group, you can participate in any of these places. M
 place on the mailing list, but if you just want to comment on and raise issues, that's fine too.
 
 
-## Raising Issues
+### Post-IESG Process
+
+The Working Group has built consensus that is reflected in base-draft documents, which has been confirmed through the IETF Last Call and IESG review stages modulo any critical undiscovered issues. Design changes will no longer be considered unless there are severe security, deployment or implementation problems. modulo any open (or undiscovered) issues. The goal of the Post-IESG proces is to minimise changes that invalidate the accumulated consesus, which risks returning us to the pre Working Group Last Call stage of standardisation.
+
+In this process, all required parties will discuss each design or major editorial issue and proposed resolution (ideally based upon a Pull Request that specifies the exact changes to be made). Chairs will judge consensus, labelling the issue as `has-consensus`.
+
+### Raising Issues
+
+We will no longer consider Design changes or substantial Editorial changes unless they relate to severe security, interoperabily or deployment problems.
 
 We use our [Github](https://github.com/quicwg/) issues lists to track items for discussion and
 their resolution.
-
-Before filing a new issue, please consider a few things:
-
-* Issues should be just that; issues with our deliverables, **not proposals, questions or support requests**.
-* Please review the issues list to make sure that you aren't filing a duplicate.
-* If you're not sure how to phrase your issue, please ask on the [mailing list](https://www.ietf.org/mailman/listinfo/quic).
 
 Issues can also be raised on the [Working Group mailing
 list](https://www.ietf.org/mailman/listinfo/quic) by clearly marking them as such (e.g., "New
@@ -59,64 +72,18 @@ Off-topic and duplicate issues will be closed without discussion. Note that comm
 commits will only be responded to with best effort, and may not be seen.
 
 
-## Resolving Issues
+### Resolving Issues
 
 Issues will be labeled by the Chairs as either `editorial` or `design`:
 
-* **Design** issues require discussion and consensus in the Working Group. This discussion can happen both in the issue and on the [Working Group mailing list](https://www.ietf.org/mailman/listinfo/quic), as outlined below.
+* **Design** issues require discussion and consensus among the Working Group, Area Director and IESG. This discussion can happen both in the issue and on the [Working Group mailing list](https://www.ietf.org/mailman/listinfo/quic), and all other relavent mailing lists.
 
-* **Editorial** issues can be dealt with by the editor(s) without consensus or notification. Typically, any discussion will take place on the issue itself.
+* **Editorial** issues that or minor or unsubstantial can be dealt with by the editor(s) without consensus or notification. Larger editorial changes require discussion and and consensus among the Working Group, Area Director and IESG.
 
 The open design issues in the issues list are those that we are currently discussing, or plan to discuss. They can be discussed on the mailing list or the issue itself.
 
-We're currently using two different processes for issue resolution, depending on draft maturity.
 
-Note that in both processes, we use the `has-consensus` flag to denote an issue that we have consensus upon. Whether or not a design issue is closed does **not** reflect consensus of the Working Group; an issue's `open`/`closed` state is only used to organise our discussions.
-
-If you have a question or problem with an issue in the `closed` state, please comment on it (either in the issues list or mailing list), and we'll adjust its state accordingly. Note that reopening issues with `has-consensus` requires new information.
-
-
-### Early-Stage Process
-
-The early-stage process gives more powers to the editors to incorporate what they believe to be the Working Group's position into the drafts; the focus of these drafts is on flexibility, so that changes don't have an inordinate amount of overhead.
-
-In this process, the editors can propose resolutions to design issues for the group's consideration by incorporating them into the draft(s), closing the issue.
-
-When a new draft is published, the design issues that have been closed since the last draft will be highlighted on the mailing list, to aid reviewers. Once consensus is confirmed, those issues will be labeled with [`has-consensus`](https://github.com/quicwg/base-drafts/issues?utf8=✓&q=label%3Ahas-consensus%20).
-
-When a design issue is `closed`, it implies that the issue has a proposed resolution that is reflected in the drafts; if a `closed` design issue is labeled with `has-consensus`, it means that the incorporated resolution has Working Group consensus.
-
-
-
-### Late-Stage Process
-
-The late-stage process attempts to reflect the Working Group's current consensus in the drafts; the latest draft reflects that consensus, modulo any open (or undiscovered) issues. The goal for a late-stage draft is to reduce unnecessary design changes in the protocol, thereby aiding reviewers and assuring that the drafts accurately reflect consensus.
-
-In this process, the Working Group will discuss each design issue, and the Chairs will judge consensus, labelling the issue as `has-consensus` (ideally based upon a Pull Request that specifies the exact changes to be made).
-
-Only after that will the change be merged and the issue be closed.
-
-The drafts currently in the late stage are:
-
-* Invariants
-* Transport
-* TLS
-* HTTP/3
-* QPACK
-* Recovery
-
-![diagram of the late stage workflow](workflow.png "Late Stage Workflow")
-
-### Discretionary Design Issue Labels
-
-We also use the following labels to help understand the state of our design issues:
-
-* [`arch`](https://github.com/quicwg/base-drafts/labels/arch): The issue is a higher-level architectural issue that should drive the solution to a number of other issues.
-* [`needs-discussion`](https://github.com/quicwg/base-drafts/labels/needs-discussion): The issue blocks progress to our next milestone.
-* [`editor-ready`](https://github.com/quicwg/base-drafts/labels/editor-ready): The Working Group believes it has a viable resolution, but the editors need to incorporate that into the document so we can see it in situ.
-
-
-## Pull Requests
+### Pull Requests
 
 We welcome pull requests, both for editorial suggestions and to resolve open issues. In the latter
 case, please identify the relevant issue.
