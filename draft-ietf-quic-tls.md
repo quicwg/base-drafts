@@ -2001,8 +2001,8 @@ Use of the same key and ciphertext sample more than once risks compromising
 header protection. Protecting two different headers with the same key and
 ciphertext sample reveals the exclusive OR of the protected fields.  Assuming
 that the AEAD acts as a PRF, if L bits are sampled, the odds of two ciphertext
-samples being identical approach 2^(-L/2), that is, the birthday bound. For the
-algorithms described in this document, that probability is one in
+samples being identical approach 2<sup>-L/2</sup>, that is, the birthday bound.
+For the algorithms described in this document, that probability is one in
 2<sup>64</sup>.
 
 To prevent an attacker from modifying packet headers, the header is transitively
