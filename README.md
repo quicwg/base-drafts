@@ -3,6 +3,9 @@
 This is the working area for the IETF QUIC Working Group documents for the
 QUIC protocol suite. **See also** the [draft index](https://quicwg.org/base-drafts/) for diffs and pull requests.
 
+**All of the documents have been approved for publication as RFC. We will no
+longer consider design changes or substantial editorial changes unless they
+relate to severe security, interoperability or deployment problems.**
 
 ## QUIC Invariants
 
