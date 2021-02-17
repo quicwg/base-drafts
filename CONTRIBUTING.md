@@ -5,12 +5,12 @@ specifications that were written by the QUIC Working Group.
 
 The set of documents are:
 
-* QUIC: A UDP-Based Multiplexed and Secure Transport
-* Version-Independent Properties of QUIC
-* Using TLS to Secure QUIC
-* QUIC Loss Detection and Congestion Control
-* Hypertext Transfer Protocol Version 3 (HTTP/3)
-* QPACK: Header Compression for HTTP/3
+* [QUIC: A UDP-Based Multiplexed and Secure Transport](https://tools.ietf.org/html/draft-ietf-quic-transport)
+* [Version-Independent Properties of QUIC](https://tools.ietf.org/html/draft-ietf-quic-invariants)
+* [Using TLS to Secure QUIC](https://tools.ietf.org/html/draft-ietf-quic-tls)
+* [QUIC Loss Detection and Congestion Control](https://tools.ietf.org/html/draft-ietf-quic-recovery)
+* [Hypertext Transfer Protocol Version 3 (HTTP/3)](https://tools.ietf.org/html/draft-ietf-quic-http)
+* [QPACK: Header Compression for HTTP/3](https://tools.ietf.org/html/draft-ietf-quic-qpack)
 
 
 **All of the documents have been approved for publication as RFC. We will no
@@ -39,26 +39,6 @@ list](https://www.ietf.org/mailman/listinfo/quic) with a clear marking in the
 
 Any change will be subject to careful review and discussion, which might involve
 the editors, chairs, Working Group, and our Area Director.
-
-### Resolving Issues
-
-Issues will be labeled by the Chairs as either `editorial` or `design`:
-
-* **Editorial** issues that are minor or unsubstantial can be dealt with by the
-  editor(s) without consensus or notification.
-
-* **All other** issues require discussion and consensus among the Working Group,
-  Area Director. This discussion can happen both in the issue and on
-  the [Working Group mailing list](https://www.ietf.org/mailman/listinfo/quic),
-  and all other relevant mailing lists.
-
-### Pull Requests
-
-We welcome pull requests, both for editorial suggestions and to resolve open
-issues. In the latter case, please identify the relevant issue.
-
-Please do not use a pull request to open a new design issue; it may not be
-noticed.
 
 # Engaging with the QUIC community
 
