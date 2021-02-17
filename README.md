@@ -5,7 +5,9 @@ specifications that were written by the QUIC Working Group.
 
 **All of the documents have been approved for publication as RFC. We will no
 longer consider design changes or substantial editorial changes unless they
-relate to severe security, interoperability or deployment problems.**
+relate to severe security, interoperability or deployment problems. For further
+information, see the
+[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md).**
 
 ## QUIC Invariants
 
@@ -54,8 +56,3 @@ $ make
 This requires that you have the necessary software installed.  See [the
 instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
 
-
-## Contributing
-
-See our
-[guidelines for contribution](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md).
