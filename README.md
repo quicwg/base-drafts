@@ -1,7 +1,7 @@
 # QUIC Protocol Drafts
 
-This is the working area for the IETF QUIC Working Group documents for the
-QUIC protocol suite. **See also** the [draft index](https://quicwg.org/base-drafts/) for diffs and pull requests.
+The base-drafts repository is the historical home of the QUIC version 1
+specifications that were written by the QUIC Working Group.
 
 **All of the documents have been approved for publication as RFC. We will no
 longer consider design changes or substantial editorial changes unless they
