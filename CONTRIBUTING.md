@@ -75,6 +75,12 @@ The Working Group has a few venues for discussion:
   discussions, you can subscribe to the [issue announce
   list](https://www.ietf.org/mailman/listinfo/quic-issues).
 
+* The [quicdev Slack](https://quicdev.slack.com/) is used for more realtime
+  communication, typcially amongst implementers, operators and researchers.
+  Contact the [WG chairs](quic-chairs@ietf.org) for an invitation. Note that
+  discussions on Slack are subject to the contribution guideline described in
+  this document.
+
 To be active in the Working Group, you can participate in any of these places.
 Most activity takes place on the mailing list, but if you just want to comment
 on and raise issues, that's fine too.
