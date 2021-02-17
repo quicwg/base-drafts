@@ -1,7 +1,7 @@
 # QUIC version 1 is done
 
 The base-drafts repository is the historical home of the QUIC version 1
-specifications that were written by the QUIC Working Group.
+specifications that were written by the IETF QUIC Working Group.
 
 The set of documents are:
 
@@ -13,7 +13,7 @@ The set of documents are:
 * [QPACK: Header Compression for HTTP/3](https://tools.ietf.org/html/draft-ietf-quic-qpack)
 
 
-**All of the documents have been approved for publication as RFC. We will no
+**All of the documents have been approved for publication as RFCs. We will no
 longer consider design changes or substantial editorial changes unless they
 relate to severe security, interoperability or deployment problems. See [Post-IESG
 Process](#post-iesg-process) below for further information**
@@ -39,7 +39,8 @@ list](https://www.ietf.org/mailman/listinfo/quic) with a clear marking in the
 
 Any change will be subject to careful review and discussion, which might involve
 the editors, chairs, Working Group, and our Area Director.
-
+After this review and discussion, errata may need to be filed for the published RFCs,
+or the Working Group may otherwise address such valid issues.
 # Engaging with the QUIC community
 
 The scope of work in the QUIC Working Group is described in our
