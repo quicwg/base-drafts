@@ -1207,10 +1207,10 @@ Push Stream Header {
 ~~~~~~~~~~
 {: #fig-push-stream-header title="Push Stream Header"}
 
-Each Push ID MUST only be used once in a push stream header. If a push stream
-header includes a Push ID that was used in another push stream header, the
-client MUST treat this as a connection error of type H3_ID_ERROR; see
-{{errors}}.
+Each Push ID MUST only be used once in a push stream header. If a client detects
+that a push stream header includes a Push ID that was used in another push
+stream header, the client MUST treat this as a connection error of type
+H3_ID_ERROR; see {{errors}}.
 
 ### Reserved Stream Types {#stream-grease}
 
