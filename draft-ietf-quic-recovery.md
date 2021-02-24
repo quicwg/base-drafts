@@ -666,9 +666,9 @@ sent, the server's PTO timer MUST NOT be armed until datagrams have been
 received from the client, because packets sent on PTO count against the
 anti-amplification limit.  The server's PTO timer could be re-armed to a time
 in the past after being amplification limited, in which case it is executed
-immediately. Doing so avoids sending new packets in ApplicationData prior to
-packets critical to the completion of the handshake.  Note that the server
-could fail to validate the client's address even if 0-RTT is accepted.
+immediately. Doing so avoids sending new 1-RTT packets prior to packets
+critical to the completion of the handshake.  Note that the server could fail
+to validate the client's address even if 0-RTT is accepted.
 
 Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
