@@ -1383,7 +1383,7 @@ OnDatagramReceived(datagram):
     SetLossDetectionTimer()
     if loss_detection_timer.timeout < now():
       // Execute PTO if it would have expired
-	     // while the amplification limit applied.
+      // while the amplification limit applied.
       OnLossDetectionTimeout()
 ~~~
 
