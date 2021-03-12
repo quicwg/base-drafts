@@ -1858,6 +1858,12 @@ values for 0-RTT.  This includes initial_max_data and either
 initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
+A server might provide larger initial stream flow control limits for streams
+than the remembered values that a client applies when sending 0-RTT.  After
+receiving updated transport parameters, the client updates the flow control
+limits on all sending streams using the updated values of
+initial_max_stream_data_bidi_remote and initial_max_stream_data_uni.
+
 A server MAY store and recover the previously sent values of the
 max_idle_timeout, max_udp_payload_size, and disable_active_migration parameters
 and reject 0-RTT if it selects smaller values. Lowering the values of these
