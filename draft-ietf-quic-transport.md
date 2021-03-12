@@ -1859,8 +1859,8 @@ initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
 
 A server might provide larger initial stream flow control limits for streams
-than the remembered values that a client applies when sending 0-RTT.  After
-receiving updated transport parameters, the client updates the flow control
+than the remembered values that a client applies when sending 0-RTT.  Once
+the handshake completes, the client updates the flow control
 limits on all sending streams using the updated values of
 initial_max_stream_data_bidi_remote and initial_max_stream_data_uni.
 
