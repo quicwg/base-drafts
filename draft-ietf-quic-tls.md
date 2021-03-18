@@ -822,7 +822,7 @@ If TLS experiences an error, it generates an appropriate alert as defined in
 
 A TLS alert is converted into a QUIC connection error. The AlertDescription
 value is
-added to 0x100 to produce a QUIC error code from the range reserved for
+added to 0x0100 to produce a QUIC error code from the range reserved for
 CRYPTO_ERROR. The resulting value is sent in a QUIC CONNECTION_CLOSE frame of
 type 0x1c.
 
@@ -835,7 +835,7 @@ encountered, a QUIC endpoint MUST treat any alert from TLS as if it were at the
 
 QUIC permits the use of a generic code in place of a specific error code; see
 {{Section 11 of QUIC-TRANSPORT}}. For TLS alerts, this includes replacing any
-alert with a generic alert, such as handshake_failure (0x128 in QUIC).
+alert with a generic alert, such as handshake_failure (0x0128 in QUIC).
 Endpoints MAY use a generic error code to avoid possibly exposing confidential
 information.
 
@@ -1498,7 +1498,7 @@ from TLS where endpoints can update keys independently.
 This mechanism replaces the key update mechanism of TLS, which relies on
 KeyUpdate messages sent using 1-RTT encryption keys.  Endpoints MUST NOT send a
 TLS KeyUpdate message.  Endpoints MUST treat the receipt of a TLS KeyUpdate
-message as a connection error of type 0x10a, equivalent to a
+message as a connection error of type 0x010a, equivalent to a
 fatal TLS alert of unexpected_message; see {{tls-errors}}.
 
 {{ex-key-update}} shows a key update process, where the initial set of keys used
@@ -1815,17 +1815,17 @@ this purpose.
 
 When using ALPN, endpoints MUST immediately close a connection (see {{Section
 10.2 of QUIC-TRANSPORT}}) with a no_application_protocol TLS alert (QUIC error
-code 0x178; see {{tls-errors}}) if an application protocol is not negotiated.
+code 0x0178; see {{tls-errors}}) if an application protocol is not negotiated.
 While {{!ALPN}} only specifies that servers use this alert, QUIC clients MUST
-use error 0x178 to terminate a connection when ALPN negotiation fails.
+use error 0x0178 to terminate a connection when ALPN negotiation fails.
 
 An application protocol MAY restrict the QUIC versions that it can operate over.
 Servers MUST select an application protocol compatible with the QUIC version
 that the client has selected.  The server MUST treat the inability to select a
-compatible application protocol as a connection error of type 0x178
+compatible application protocol as a connection error of type 0x0178
 (no_application_protocol).  Similarly, a client MUST treat the selection of an
 incompatible application protocol by a server as a connection error of type
-0x178.
+0x0178.
 
 
 ## QUIC Transport Parameters Extension {#quic_parameters}
@@ -1849,8 +1849,8 @@ The quic_transport_parameters extension is carried in the ClientHello and the
 EncryptedExtensions messages during the handshake. Endpoints MUST send the
 quic_transport_parameters extension; endpoints that receive ClientHello or
 EncryptedExtensions messages without the quic_transport_parameters extension
-MUST close the connection with an error of type 0x16d (equivalent to a fatal TLS
-missing_extension alert, see {{tls-errors}}).
+MUST close the connection with an error of type 0x016d (equivalent to a fatal
+TLS missing_extension alert, see {{tls-errors}}).
 
 Transport parameters become available prior to the completion of the handshake.
 A server might use these values earlier than handshake completion. However, the

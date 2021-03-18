@@ -1701,62 +1701,62 @@ can have other effects regardless of the error code; for example, see
 The following error codes are defined for use when abruptly terminating streams,
 aborting reading of streams, or immediately closing HTTP/3 connections.
 
-H3_NO_ERROR (0x100):
+H3_NO_ERROR (0x0100):
 : No error.  This is used when the connection or stream needs to be closed, but
   there is no error to signal.
 
-H3_GENERAL_PROTOCOL_ERROR (0x101):
+H3_GENERAL_PROTOCOL_ERROR (0x0101):
 : Peer violated protocol requirements in a way that does not match a more
   specific error code, or endpoint declines to use the more specific error code.
 
-H3_INTERNAL_ERROR (0x102):
+H3_INTERNAL_ERROR (0x0102):
 : An internal error has occurred in the HTTP stack.
 
-H3_STREAM_CREATION_ERROR (0x103):
+H3_STREAM_CREATION_ERROR (0x0103):
 : The endpoint detected that its peer created a stream that it will not accept.
 
-H3_CLOSED_CRITICAL_STREAM (0x104):
+H3_CLOSED_CRITICAL_STREAM (0x0104):
 : A stream required by the HTTP/3 connection was closed or reset.
 
-H3_FRAME_UNEXPECTED (0x105):
+H3_FRAME_UNEXPECTED (0x0105):
 : A frame was received that was not permitted in the current state or on the
   current stream.
 
-H3_FRAME_ERROR (0x106):
+H3_FRAME_ERROR (0x0106):
 : A frame that fails to satisfy layout requirements or with an invalid size
   was received.
 
-H3_EXCESSIVE_LOAD (0x107):
+H3_EXCESSIVE_LOAD (0x0107):
 : The endpoint detected that its peer is exhibiting a behavior that might be
   generating excessive load.
 
-H3_ID_ERROR (0x108):
+H3_ID_ERROR (0x0108):
 : A Stream ID or Push ID was used incorrectly, such as exceeding a limit,
   reducing a limit, or being reused.
 
-H3_SETTINGS_ERROR (0x109):
+H3_SETTINGS_ERROR (0x0109):
 : An endpoint detected an error in the payload of a SETTINGS frame.
 
-H3_MISSING_SETTINGS (0x10a):
+H3_MISSING_SETTINGS (0x010a):
 : No SETTINGS frame was received at the beginning of the control stream.
 
-H3_REQUEST_REJECTED (0x10b):
+H3_REQUEST_REJECTED (0x010b):
 : A server rejected a request without performing any application processing.
 
-H3_REQUEST_CANCELLED (0x10c):
+H3_REQUEST_CANCELLED (0x010c):
 : The request or its response (including pushed response) is cancelled.
 
-H3_REQUEST_INCOMPLETE (0x10d):
+H3_REQUEST_INCOMPLETE (0x010d):
 : The client's stream terminated without containing a fully-formed request.
 
-H3_MESSAGE_ERROR (0x10e):
+H3_MESSAGE_ERROR (0x010e):
 : An HTTP message was malformed and cannot be processed.
 
-H3_CONNECT_ERROR (0x10f):
+H3_CONNECT_ERROR (0x010f):
 : The TCP connection established in response to a CONNECT request was reset or
   abnormally closed.
 
-H3_VERSION_FALLBACK (0x110):
+H3_VERSION_FALLBACK (0x0110):
 : The requested operation cannot be served over HTTP/3.  The peer should
   retry over HTTP/1.1.
 
@@ -2199,23 +2199,23 @@ Required policy to avoid collisions with HTTP/2 error codes.
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 | Name                              | Value      | Description                              | Specification          |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
-| H3_NO_ERROR                       | 0x100      | No error                                 | {{http-error-codes}}   |
-| H3_GENERAL_PROTOCOL_ERROR         | 0x101      | General protocol error                   | {{http-error-codes}}   |
-| H3_INTERNAL_ERROR                 | 0x102      | Internal error                           | {{http-error-codes}}   |
-| H3_STREAM_CREATION_ERROR          | 0x103      | Stream creation error                    | {{http-error-codes}}   |
-| H3_CLOSED_CRITICAL_STREAM         | 0x104      | Critical stream was closed               | {{http-error-codes}}   |
-| H3_FRAME_UNEXPECTED               | 0x105      | Frame not permitted in the current state | {{http-error-codes}}   |
-| H3_FRAME_ERROR                    | 0x106      | Frame violated layout or size rules      | {{http-error-codes}}   |
-| H3_EXCESSIVE_LOAD                 | 0x107      | Peer generating excessive load           | {{http-error-codes}}   |
-| H3_ID_ERROR                       | 0x108      | An identifier was used incorrectly       | {{http-error-codes}}   |
-| H3_SETTINGS_ERROR                 | 0x109      | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
-| H3_MISSING_SETTINGS               | 0x10a      | No SETTINGS frame received               | {{http-error-codes}}   |
-| H3_REQUEST_REJECTED               | 0x10b      | Request not processed                    | {{http-error-codes}}   |
-| H3_REQUEST_CANCELLED              | 0x10c      | Data no longer needed                    | {{http-error-codes}}   |
-| H3_REQUEST_INCOMPLETE             | 0x10d      | Stream terminated early                  | {{http-error-codes}}   |
-| H3_MESSAGE_ERROR                  | 0x10e      | Malformed message                        | {{http-error-codes}}   |
-| H3_CONNECT_ERROR                  | 0x10f      | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
-| H3_VERSION_FALLBACK               | 0x110      | Retry over HTTP/1.1                      | {{http-error-codes}}   |
+| H3_NO_ERROR                       | 0x0100     | No error                                 | {{http-error-codes}}   |
+| H3_GENERAL_PROTOCOL_ERROR         | 0x0101     | General protocol error                   | {{http-error-codes}}   |
+| H3_INTERNAL_ERROR                 | 0x0102     | Internal error                           | {{http-error-codes}}   |
+| H3_STREAM_CREATION_ERROR          | 0x0103     | Stream creation error                    | {{http-error-codes}}   |
+| H3_CLOSED_CRITICAL_STREAM         | 0x0104     | Critical stream was closed               | {{http-error-codes}}   |
+| H3_FRAME_UNEXPECTED               | 0x0105     | Frame not permitted in the current state | {{http-error-codes}}   |
+| H3_FRAME_ERROR                    | 0x0106     | Frame violated layout or size rules      | {{http-error-codes}}   |
+| H3_EXCESSIVE_LOAD                 | 0x0107     | Peer generating excessive load           | {{http-error-codes}}   |
+| H3_ID_ERROR                       | 0x0108     | An identifier was used incorrectly       | {{http-error-codes}}   |
+| H3_SETTINGS_ERROR                 | 0x0109     | SETTINGS frame contained invalid values  | {{http-error-codes}}   |
+| H3_MISSING_SETTINGS               | 0x010a     | No SETTINGS frame received               | {{http-error-codes}}   |
+| H3_REQUEST_REJECTED               | 0x010b     | Request not processed                    | {{http-error-codes}}   |
+| H3_REQUEST_CANCELLED              | 0x010c     | Data no longer needed                    | {{http-error-codes}}   |
+| H3_REQUEST_INCOMPLETE             | 0x010d     | Stream terminated early                  | {{http-error-codes}}   |
+| H3_MESSAGE_ERROR                  | 0x010e     | Malformed message                        | {{http-error-codes}}   |
+| H3_CONNECT_ERROR                  | 0x010f     | TCP reset or error on CONNECT request    | {{http-error-codes}}   |
+| H3_VERSION_FALLBACK               | 0x0110     | Retry over HTTP/1.1                      | {{http-error-codes}}   |
 | --------------------------------- | ---------- | ---------------------------------------- | ---------------------- |
 {: #iana-error-table title="Initial HTTP/3 Error Codes"}
 

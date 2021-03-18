@@ -7688,7 +7688,7 @@ packets, or 0xe69e), 16 bits are required.
 
 In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
-(131,182 packets, or 0x2006e).
+(131,182 packets, or 0x02006e).
 
 
 ## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
