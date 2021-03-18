@@ -312,7 +312,7 @@ host identifier to an IP address, establishing a QUIC connection to that address
 on the indicated port (including validation of the server certificate as
 described above), and sending an HTTP/3 request message targeting the URI
 to the server over that secured connection.  Unless some other mechanism is used
-to select HTTP/3, the token "h3" is used in the Application Layer Protocol
+to select HTTP/3, the token "h3" is used in the Application-Layer Protocol
 Negotiation (ALPN; see {{!RFC7301}}) extension during the TLS handshake.
 
 Connectivity problems (e.g., blocking UDP) can result in QUIC connection
@@ -2045,7 +2045,7 @@ registries that manage the assignment of codepoints in HTTP/3.
 ## Registration of HTTP/3 Identification String {#iana-alpn}
 
 This document creates a new registration for the identification of
-HTTP/3 in the "Application Layer Protocol Negotiation (ALPN)
+HTTP/3 in the "Application-Layer Protocol Negotiation (ALPN)
 Protocol IDs" registry established in {{?RFC7301}}.
 
 The "h3" string identifies HTTP/3:
