@@ -1425,6 +1425,11 @@ or decoder stream.
 
 # IANA Considerations
 
+This document makes multiple registrations in the registries defined by
+{{HTTP3}}. The allocations created by this document are all assigned permanent
+status and list a change controller of the IETF and a contact of the HTTP
+working group (ietf-http-wg@w3.org).
+
 ## Settings Registration
 
 This document specifies two settings. The entries in the following table are
