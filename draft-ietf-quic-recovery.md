@@ -1480,8 +1480,8 @@ GetLossTimeAndSpace():
 GetPtoTimeAndSpace():
   duration = (smoothed_rtt + max(4 * rttvar, kGranularity))
       * (2 ^ pto_count)
-  // Arm PTO from now when there are no inflight packets.
-  if (no in-flight packets):
+  // Arm PTO from now when there are no ACK-eliciting packets.
+  if (no ack-eliciting packets in flight):
     assert(!PeerCompletedAddressValidation())
     if (has handshake keys):
       return (now() + duration), Handshake
@@ -1557,7 +1557,7 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (bytes_in_flight > 0):
+  if (any ack-eliciting packets in flight):
     // PTO. Send new data if available, else retransmit old data.
     // If neither is available, send a single PING frame.
     _, pn_space = GetPtoTimeAndSpace()
