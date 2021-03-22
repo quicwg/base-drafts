@@ -1557,12 +1557,7 @@ OnLossDetectionTimeout():
     SetLossDetectionTimer()
     return
 
-  if (any ack-eliciting packets in flight):
-    // PTO. Send new data if available, else retransmit old data.
-    // If neither is available, send a single PING frame.
-    _, pn_space = GetPtoTimeAndSpace()
-    SendOneOrTwoAckElicitingPackets(pn_space)
-  else:
+  if (no ack-eliciting packets in flight):
     assert(!PeerCompletedAddressValidation())
     // Client sends an anti-deadlock packet: Initial is padded
     // to earn more anti-amplification credit,
@@ -1571,6 +1566,11 @@ OnLossDetectionTimeout():
       SendOneAckElicitingHandshakePacket()
     else:
       SendOneAckElicitingPaddedInitialPacket()
+  else:
+    // PTO. Send new data if available, else retransmit old data.
+    // If neither is available, send a single PING frame.
+    _, pn_space = GetPtoTimeAndSpace()
+    SendOneOrTwoAckElicitingPackets(pn_space)
 
   pto_count++
   SetLossDetectionTimer()
