@@ -1491,7 +1491,7 @@ GetPtoTimeAndSpace():
   pto_timeout = infinite
   pto_space = Initial
   for space in [ Initial, Handshake, ApplicationData ]:
-    if (no in-flight packets in space):
+    if (no ack-eliciting packets in flight in space):
         continue;
     if (space == ApplicationData):
       // Skip Application Data until handshake confirmed.
