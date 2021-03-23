@@ -617,7 +617,7 @@ negotiated.
 The first Initial packet from a client contains the start or all of its first
 cryptographic handshake message, which for TLS is the ClientHello.  Servers
 might need to parse the entire ClientHello (e.g., to access extensions such as
-Server Name Identification (SNI) or Application Layer Protocol Negotiation
+Server Name Identification (SNI) or Application-Layer Protocol Negotiation
 (ALPN)) in order to decide whether to accept the new incoming QUIC connection.
 If the ClientHello spans multiple Initial packets, such servers would need to
 buffer the first received fragments, which could consume excessive resources if

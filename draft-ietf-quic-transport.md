@@ -1792,7 +1792,7 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 Endpoints use transport parameters to authenticate the negotiation of
 connection IDs during the handshake; see {{cid-auth}}.
 
-Application Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
+Application-Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
 clients to offer multiple application protocols during connection
 establishment. The transport parameters that a client includes during the
 handshake apply to all application protocols that the client offers. Application
@@ -1857,6 +1857,12 @@ parameters that permit sending of application data SHOULD be set to non-zero
 values for 0-RTT.  This includes initial_max_data and either
 initial_max_streams_bidi and initial_max_stream_data_bidi_remote, or
 initial_max_streams_uni and initial_max_stream_data_uni.
+
+A server might provide larger initial stream flow control limits for streams
+than the remembered values that a client applies when sending 0-RTT.  Once
+the handshake completes, the client updates the flow control
+limits on all sending streams using the updated values of
+initial_max_stream_data_bidi_remote and initial_max_stream_data_uni.
 
 A server MAY store and recover the previously sent values of the
 max_idle_timeout, max_udp_payload_size, and disable_active_migration parameters
@@ -7681,14 +7687,14 @@ EncodePacketNumber(full_pn, largest_acked):
 ~~~
 {: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
 
-For example, if an endpoint has received an acknowledgment for packet 0xabe8bc
+For example, if an endpoint has received an acknowledgment for packet 0xabe8b3
 and is sending a packet with a number of 0xac5c02, there are 29,519 (0x734f)
-outstanding packets.  In order to represent at least twice this range (59,038
-packets, or 0xe69e), 16 bits are required.
+outstanding packet numbers.  In order to represent at least twice this range
+(59,038 packets, or 0xe69e), 16 bits are required.
 
-In the same state, sending a packet with a number of 0xace8fe uses the 24-bit
+In the same state, sending a packet with a number of 0xace8fe needs the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
-(131,182 packets, or 0x02006e).
+(131,222 packets, or 0x020096).
 
 
 ## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}
