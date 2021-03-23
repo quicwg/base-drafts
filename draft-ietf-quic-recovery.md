@@ -665,8 +665,14 @@ data it can send is limited to three times the amount of data received,
 as specified in {{Section 8.1 of QUIC-TRANSPORT}}. If no additional data can be
 sent, the server's PTO timer MUST NOT be armed until datagrams have been
 received from the client, because packets sent on PTO count against the
-anti-amplification limit. Note that the server could fail to validate the
-client's address even if 0-RTT is accepted.
+anti-amplification limit.
+
+When the server receives a datagram from the client, the amplification limit is
+increased and the server resets the PTO timer.  If the PTO timer is then set to
+a time in the past, it is executed immediately. Doing so avoids sending new
+1-RTT packets prior to packets critical to the completion of the handshake.
+In particular, this can happen when 0-RTT is accepted but the server fails to
+validate the client's address.
 
 Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
@@ -1380,6 +1386,10 @@ OnDatagramReceived(datagram):
   // PTO timer to avoid deadlock.
   if (server was at anti-amplification limit):
     SetLossDetectionTimer()
+    if loss_detection_timer.timeout < now():
+      // Execute PTO if it would have expired
+      // while the amplification limit applied.
+      OnLossDetectionTimeout()
 ~~~
 
 ## On Receiving an Acknowledgment
