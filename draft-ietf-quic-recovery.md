@@ -670,8 +670,8 @@ When the server receives a datagram from the client, the amplification limit is
 increased and the server resets the PTO timer.  If the PTO timer is then set to
 a time in the past, it is executed immediately. Doing so avoids sending new
 1-RTT packets prior to packets critical to the completion of the handshake.
-This could be common when 0-RTT is accepted, but the server fails to validate
-the client's address.
+In particular, this can happen when 0-RTT is accepted but the server fails to
+validate the client's address.
 
 Since the server could be blocked until more datagrams are received from the
 client, it is the client's responsibility to send packets to unblock the server
