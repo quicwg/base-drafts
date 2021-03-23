@@ -427,7 +427,7 @@ RTT samples for the network path are recorded in latest_rtt; see
 {{latest-rtt}}. On the first RTT sample after initialization, the estimator is
 reset using that sample. This ensures that the estimator retains no history of
 past samples.  Packets sent on other paths do not contribute RTT samples to the
-current path, as described in Section 9.4 of {{QUIC-TRANSPORT}}.
+current path, as described in {{Section 9.4 of QUIC-TRANSPORT}}.
 
 On the first RTT sample after initialization, smoothed_rtt and rttvar are set as
 follows:
