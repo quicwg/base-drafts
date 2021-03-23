@@ -1792,7 +1792,7 @@ parameters as a connection error of type TRANSPORT_PARAMETER_ERROR.
 Endpoints use transport parameters to authenticate the negotiation of
 connection IDs during the handshake; see {{cid-auth}}.
 
-Application Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
+Application-Layer Protocol Negotiation (ALPN; see {{?ALPN=RFC7301}}) allows
 clients to offer multiple application protocols during connection
 establishment. The transport parameters that a client includes during the
 handshake apply to all application protocols that the client offers. Application
