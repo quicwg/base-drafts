@@ -1022,8 +1022,8 @@ receives a frame with a stream ID exceeding the limit it has sent MUST treat
 this as a connection error of type STREAM_LIMIT_ERROR ({{error-handling}}).
 
 Once a receiver advertises a stream limit using the MAX_STREAMS frame,
-advertising a smaller limit has no effect.  A receiver MUST ignore any
-MAX_STREAMS frame that does not increase the stream limit.
+advertising a smaller limit has no effect.  MAX_STREAMS frames that do not
+increase the stream limit MUST be ignored.
 
 As with stream and connection flow control, this document leaves implementations
 to decide when and how many streams should be advertised
