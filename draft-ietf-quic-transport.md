@@ -7694,7 +7694,7 @@ outstanding packet numbers.  In order to represent at least twice this range
 
 In the same state, sending a packet with a number of 0xace8fe needs the 24-bit
 encoding, because at least 18 bits are required to represent twice the range
-(131,222 packets, or 0x20096).
+(131,222 packets, or 0x020096).
 
 
 ## Sample Packet Number Decoding Algorithm {#sample-packet-number-decoding}

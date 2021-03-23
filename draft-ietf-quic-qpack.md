@@ -1177,15 +1177,15 @@ QPACK defines two settings for the HTTP/3 SETTINGS frame:
 The following error codes are defined for HTTP/3 to indicate failures of
 QPACK that prevent the stream or connection from continuing:
 
-QPACK_DECOMPRESSION_FAILED (0x200):
+QPACK_DECOMPRESSION_FAILED (0x0200):
 : The decoder failed to interpret an encoded field section and is not able to
   continue decoding that field section.
 
-QPACK_ENCODER_STREAM_ERROR (0x201):
+QPACK_ENCODER_STREAM_ERROR (0x0201):
 : The decoder failed to interpret an encoder instruction received on the
   encoder stream.
 
-QPACK_DECODER_STREAM_ERROR (0x202):
+QPACK_DECODER_STREAM_ERROR (0x0202):
 : The encoder failed to interpret a decoder instruction received on the
   decoder stream.
 
@@ -1462,13 +1462,13 @@ registered in the "HTTP/3 Stream Type" registry established in {{HTTP3}}.
 This document specifies three error codes. The entries in the following table
 are registered in the "HTTP/3 Error Code" registry established in {{HTTP3}}.
 
-| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| Name                              | Code  | Description                              | Specification          |
-| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
-| QPACK_DECOMPRESSION_FAILED        | 0x200 | Decoding of a field section failed       | {{error-handling}}     |
-| QPACK_ENCODER_STREAM_ERROR        | 0x201 | Error on the encoder stream              | {{error-handling}}     |
-| QPACK_DECODER_STREAM_ERROR        | 0x202 | Error on the decoder stream              | {{error-handling}}     |
-| --------------------------------- | ----- | ---------------------------------------- | ---------------------- |
+| --------------------------------- | ------ | ---------------------------------------- | ---------------------- |
+| Name                              | Code   | Description                              | Specification          |
+| --------------------------------- | ------ | ---------------------------------------- | ---------------------- |
+| QPACK_DECOMPRESSION_FAILED        | 0x0200 | Decoding of a field section failed       | {{error-handling}}     |
+| QPACK_ENCODER_STREAM_ERROR        | 0x0201 | Error on the encoder stream              | {{error-handling}}     |
+| QPACK_DECODER_STREAM_ERROR        | 0x0202 | Error on the decoder stream              | {{error-handling}}     |
+| --------------------------------- | ------ | ---------------------------------------- | ---------------------- |
 
 
 --- back
