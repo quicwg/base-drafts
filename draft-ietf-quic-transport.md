@@ -5715,7 +5715,7 @@ data is being discarded on receipt at application request.  STOP_SENDING
 requests that a peer cease transmission on a stream.
 
 A STOP_SENDING frame can be sent for streams in the Recv or Size Known states;
-see {{stream-send-states}}.  Receiving a STOP_SENDING frame for a
+see {{stream-recv-states}}.  Receiving a STOP_SENDING frame for a
 locally-initiated stream that has not yet been created MUST be treated as a
 connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 STOP_SENDING frame for a receive-only stream MUST terminate the connection with
@@ -5942,7 +5942,7 @@ A MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
 A MAX_STREAM_DATA frame can be sent for streams in the Recv state; see
-{{stream-send-states}}. Receiving a MAX_STREAM_DATA frame for a
+{{stream-recv-states}}. Receiving a MAX_STREAM_DATA frame for a
 locally-initiated stream that has not yet been created MUST be treated as a
 connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
