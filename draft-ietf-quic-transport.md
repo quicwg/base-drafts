@@ -390,12 +390,12 @@ unique for all streams on a connection.  Stream IDs are encoded as
 variable-length integers; see {{integer-encoding}}.  A QUIC endpoint MUST NOT
 reuse a stream ID within a connection.
 
-The least significant bit (0x1) of the stream ID identifies the initiator of the
-stream.  Client-initiated streams have even-numbered stream IDs (with the bit
-set to 0), and server-initiated streams have odd-numbered stream IDs (with the
-bit set to 1).
+The least significant bit (0x01) of the stream ID identifies the initiator of
+the stream.  Client-initiated streams have even-numbered stream IDs (with the
+bit set to 0), and server-initiated streams have odd-numbered stream IDs (with
+the bit set to 1).
 
-The second least significant bit (0x2) of the stream ID distinguishes between
+The second least significant bit (0x02) of the stream ID distinguishes between
 bidirectional streams (with the bit set to 0) and unidirectional streams (with
 the bit set to 1).
 
@@ -404,13 +404,13 @@ one of four types, as summarized in {{stream-id-types}}.
 
 | Bits | Stream Type                      |
 |:-----|:---------------------------------|
-| 0x0  | Client-Initiated, Bidirectional  |
-| 0x1  | Server-Initiated, Bidirectional  |
-| 0x2  | Client-Initiated, Unidirectional |
-| 0x3  | Server-Initiated, Unidirectional |
+| 0x00 | Client-Initiated, Bidirectional  |
+| 0x01 | Server-Initiated, Bidirectional  |
+| 0x02 | Client-Initiated, Unidirectional |
+| 0x03 | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-The stream space for each type begins at the minimum value (0x0 through 0x3
+The stream space for each type begins at the minimum value (0x00 through 0x03
 respectively); successive streams of each type are created with numerically
 increasing stream IDs.  A stream ID that is used out of order results in all
 streams of that type with lower-numbered stream IDs also being opened.
@@ -4595,12 +4595,12 @@ Type-Specific Payload:
 In this version of QUIC, the following packet types with the long header are
 defined:
 
-| Type | Name                          | Section                     |
-|-----:|:------------------------------|:----------------------------|
-|  0x0 | Initial                       | {{packet-initial}}          |
-|  0x1 | 0-RTT                         | {{packet-0rtt}}             |
-|  0x2 | Handshake                     | {{packet-handshake}}        |
-|  0x3 | Retry                         | {{packet-retry}}            |
+| Type  | Name                          | Section                     |
+|------:|:------------------------------|:----------------------------|
+|  0x00 | Initial                       | {{packet-initial}}          |
+|  0x01 | 0-RTT                         | {{packet-0rtt}}             |
+|  0x02 | Handshake                     | {{packet-handshake}}        |
+|  0x03 | Retry                         | {{packet-retry}}            |
 {: #long-packet-types title="Long Header Packet Types"}
 
 The header form bit, Destination and Source Connection ID lengths, Destination
@@ -4713,7 +4713,7 @@ process.
 
 ### Initial Packet {#packet-initial}
 
-An Initial packet uses long headers with a type value of 0x0.  It carries the
+An Initial packet uses long headers with a type value of 0x00.  It carries the
 first CRYPTO frames sent by the client and server to perform key exchange, and
 carries ACKs in either direction.
 
@@ -4808,7 +4808,7 @@ Initial keys are discarded.
 
 ### 0-RTT {#packet-0rtt}
 
-A 0-RTT packet uses long headers with a type value of 0x1, followed by the
+A 0-RTT packet uses long headers with a type value of 0x01, followed by the
 Length and Packet Number fields; see {{long-header}}.  The first byte contains
 the Reserved and Packet Number Length bits; see {{long-header}}.  A 0-RTT packet
 is used to carry "early" data from the client to the server as part of the
@@ -4862,7 +4862,7 @@ for exceeding stream data limits).
 
 ### Handshake Packet {#packet-handshake}
 
-A Handshake packet uses long headers with a type value of 0x2, followed by the
+A Handshake packet uses long headers with a type value of 0x02, followed by the
 Length and Packet Number fields; see {{long-header}}.  The first byte contains
 the Reserved and Packet Number Length bits; see {{long-header}}.  It is used
 to carry cryptographic handshake messages and acknowledgments from the server
@@ -4910,7 +4910,7 @@ protection keys are discarded.
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x3. It carries
+A Retry packet uses a long packet header with a type value of 0x03. It carries
 an address validation token created by the server. It is used by a server that
 wishes to perform a retry; see {{validate-handshake}}.
 
@@ -5270,9 +5270,9 @@ initial_max_stream_data_bidi_local (0x05):
   for locally-initiated bidirectional streams.  This limit applies to newly
   created bidirectional streams opened by the endpoint that sends the transport
   parameter.  In client transport parameters, this applies to streams with an
-  identifier with the least significant two bits set to 0x0; in server transport
-  parameters, this applies to streams with the least significant two bits set to
-  0x1.
+  identifier with the least significant two bits set to 0x00; in server
+  transport parameters, this applies to streams with the least significant two
+  bits set to 0x01.
 
 initial_max_stream_data_bidi_remote (0x06):
 
@@ -5280,9 +5280,9 @@ initial_max_stream_data_bidi_remote (0x06):
   for peer-initiated bidirectional streams.  This limit applies to newly created
   bidirectional streams opened by the endpoint that receives the transport
   parameter.  In client transport parameters, this applies to streams with an
-  identifier with the least significant two bits set to 0x1; in server transport
-  parameters, this applies to streams with the least significant two bits set to
-  0x0.
+  identifier with the least significant two bits set to 0x01; in server
+  transport parameters, this applies to streams with the least significant two
+  bits set to 0x00.
 
 initial_max_stream_data_uni (0x07):
 
@@ -5290,9 +5290,9 @@ initial_max_stream_data_uni (0x07):
   for unidirectional streams.  This limit applies to newly created
   unidirectional streams opened by the endpoint that receives the transport
   parameter.  In client transport parameters, this applies to streams with an
-  identifier with the least significant two bits set to 0x3; in server transport
-  parameters, this applies to streams with the least significant two bits set to
-  0x2.
+  identifier with the least significant two bits set to 0x03; in server
+  transport parameters, this applies to streams with the least significant two
+  bits set to 0x02.
 
 initial_max_streams_bidi (0x08):
 
@@ -6409,36 +6409,36 @@ This section lists the defined QUIC transport error codes that can be used in a
 CONNECTION_CLOSE frame with a type of 0x1c.  These errors apply to the entire
 connection.
 
-NO_ERROR (0x0):
+NO_ERROR (0x00):
 
 : An endpoint uses this with CONNECTION_CLOSE to signal that the connection is
   being closed abruptly in the absence of any error.
 
-INTERNAL_ERROR (0x1):
+INTERNAL_ERROR (0x01):
 
 : The endpoint encountered an internal error and cannot continue with the
   connection.
 
-CONNECTION_REFUSED (0x2):
+CONNECTION_REFUSED (0x02):
 
 : The server refused to accept a new connection.
 
-FLOW_CONTROL_ERROR (0x3):
+FLOW_CONTROL_ERROR (0x03):
 
 : An endpoint received more data than it permitted in its advertised data
   limits; see {{flow-control}}.
 
-STREAM_LIMIT_ERROR (0x4):
+STREAM_LIMIT_ERROR (0x04):
 
 : An endpoint received a frame for a stream identifier that exceeded its
   advertised stream limit for the corresponding stream type.
 
-STREAM_STATE_ERROR (0x5):
+STREAM_STATE_ERROR (0x05):
 
 : An endpoint received a frame for a stream that was not in a state that
   permitted that frame; see {{stream-states}}.
 
-FINAL_SIZE_ERROR (0x6):
+FINAL_SIZE_ERROR (0x06):
 
 : An endpoint received a STREAM frame containing data that exceeded the
   previously established final size.  Or an endpoint received a STREAM frame or
@@ -6447,45 +6447,45 @@ FINAL_SIZE_ERROR (0x6):
   or a RESET_STREAM frame containing a different final size to the one already
   established.
 
-FRAME_ENCODING_ERROR (0x7):
+FRAME_ENCODING_ERROR (0x07):
 
 : An endpoint received a frame that was badly formatted.  For instance, a frame
   of an unknown type, or an ACK frame that has more acknowledgment ranges than
   the remainder of the packet could carry.
 
-TRANSPORT_PARAMETER_ERROR (0x8):
+TRANSPORT_PARAMETER_ERROR (0x08):
 
 : An endpoint received transport parameters that were badly formatted, included
   an invalid value, omitted a mandatory transport parameter, included a
   forbidden transport parameter, or were otherwise in error.
 
-CONNECTION_ID_LIMIT_ERROR (0x9):
+CONNECTION_ID_LIMIT_ERROR (0x09):
 
 : The number of connection IDs provided by the peer exceeds the advertised
   active_connection_id_limit.
 
-PROTOCOL_VIOLATION (0xa):
+PROTOCOL_VIOLATION (0x0a):
 
 : An endpoint detected an error with protocol compliance that was not covered by
   more specific error codes.
 
-INVALID_TOKEN (0xb):
+INVALID_TOKEN (0x0b):
 : A server received a client Initial that contained an invalid Token field.
 
-APPLICATION_ERROR (0xc):
+APPLICATION_ERROR (0x0c):
 
 : The application or application protocol caused the connection to be closed.
 
-CRYPTO_BUFFER_EXCEEDED (0xd):
+CRYPTO_BUFFER_EXCEEDED (0x0d):
 
 : An endpoint has received more data in CRYPTO frames than it can buffer.
 
-KEY_UPDATE_ERROR (0xe):
+KEY_UPDATE_ERROR (0x0e):
 
 : An endpoint detected errors in performing key updates; see
   {{Section 6 of QUIC-TLS}}.
 
-AEAD_LIMIT_REACHED (0xf):
+AEAD_LIMIT_REACHED (0x0f):
 
 : An endpoint has reached the confidentiality or integrity limit for the AEAD
   algorithm used by the given connection.
@@ -6496,7 +6496,7 @@ NO_VIABLE_PATH (0x10):
   QUIC.  An endpoint is unlikely to receive CONNECTION_CLOSE carrying this code
   except when the path does not support a large enough MTU.
 
-CRYPTO_ERROR (0x1XX):
+CRYPTO_ERROR (0x01XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
@@ -7590,22 +7590,22 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 
 | Value | Code                      | Description                   | Specification   |
 |:------|:--------------------------|:------------------------------|:----------------|
-| 0x0   | NO_ERROR                  | No error                      | {{error-codes}} |
-| 0x1   | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
-| 0x2   | CONNECTION_REFUSED        | Server refuses a connection   | {{error-codes}} |
-| 0x3   | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
-| 0x4   | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
-| 0x5   | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
-| 0x6   | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
-| 0x7   | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
-| 0x8   | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
-| 0x9   | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
-| 0xa   | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0xb   | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
-| 0xc   | APPLICATION_ERROR         | Application error             | {{error-codes}} |
-| 0xd   | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
-| 0xe   | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
-| 0xf   | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
+| 0x00  | NO_ERROR                  | No error                      | {{error-codes}} |
+| 0x01  | INTERNAL_ERROR            | Implementation error          | {{error-codes}} |
+| 0x02  | CONNECTION_REFUSED        | Server refuses a connection   | {{error-codes}} |
+| 0x03  | FLOW_CONTROL_ERROR        | Flow control error            | {{error-codes}} |
+| 0x04  | STREAM_LIMIT_ERROR        | Too many streams opened       | {{error-codes}} |
+| 0x05  | STREAM_STATE_ERROR        | Frame received in invalid stream state | {{error-codes}} |
+| 0x06  | FINAL_SIZE_ERROR          | Change to final size          | {{error-codes}} |
+| 0x07  | FRAME_ENCODING_ERROR      | Frame encoding error          | {{error-codes}} |
+| 0x08  | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
+| 0x09  | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
+| 0x0a  | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
+| 0x0b  | INVALID_TOKEN             | Invalid Token Received        | {{error-codes}} |
+| 0x0c  | APPLICATION_ERROR         | Application error             | {{error-codes}} |
+| 0x0d  | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
+| 0x0e  | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
+| 0x0f  | AEAD_LIMIT_REACHED        | Excessive use of packet protection keys | {{error-codes}} |
 | 0x10  | NO_VIABLE_PATH            | No viable network path exists | {{error-codes}} |
 {: #iana-error-table title="Initial QUIC Transport Error Codes Entries"}
 
@@ -7862,7 +7862,7 @@ Issue and pull request numbers are listed with a leading octothorp.
 
 ## Since draft-ietf-quic-transport-28
 
-- Made SERVER_BUSY error (0x2) more generic, now CONNECTION_REFUSED (#3709,
+- Made SERVER_BUSY error (0x02) more generic, now CONNECTION_REFUSED (#3709,
   #3690, #3694)
 - Allow TRANSPORT_PARAMETER_ERROR when validating connection IDs (#3703, #3691)
 - Integrate QUIC-specific language from draft-ietf-tsvwg-datagram-plpmtud

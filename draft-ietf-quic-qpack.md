@@ -1164,11 +1164,11 @@ represented as a 4-bit prefix string literal, then the value, represented as an
 
 QPACK defines two settings for the HTTP/3 SETTINGS frame:
 
-  SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x1):
+  SETTINGS_QPACK_MAX_TABLE_CAPACITY (0x01):
   : The default value is zero.  See {{header-table-dynamic}} for usage.  This is
     the equivalent of the SETTINGS_HEADER_TABLE_SIZE from HTTP/2.
 
-  SETTINGS_QPACK_BLOCKED_STREAMS (0x7):
+  SETTINGS_QPACK_BLOCKED_STREAMS (0x07):
   : The default value is zero.  See {{blocked-streams}}.
 
 
@@ -1433,8 +1433,8 @@ registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 |------------------------------|--------|---------------------------| ------- |
 | Setting Name                 | Code   | Specification             | Default |
 | ---------------------------- | :----: | ------------------------- | ------- |
-| QPACK_MAX_TABLE_CAPACITY     | 0x1    | {{configuration}}         | 0       |
-| QPACK_BLOCKED_STREAMS        | 0x7    | {{configuration}}         | 0       |
+| QPACK_MAX_TABLE_CAPACITY     | 0x01    | {{configuration}}         | 0       |
+| QPACK_BLOCKED_STREAMS        | 0x07    | {{configuration}}         | 0       |
 | ---------------------------- | ------ | ------------------------- | ------- |
 
 For fomatting reasons, the setting names here are abbreviated by removing the
