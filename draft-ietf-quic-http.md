@@ -2099,21 +2099,21 @@ its semantics, including any parts of the frame that are conditionally present.
 
 The entries in {{iana-frame-table}} are registered by this document.
 
-| ---------------- | ------- | -------------------------- |
-| Frame Type       | Value   | Specification              |
-| ---------------- | :-----: | -------------------------- |
-| DATA             |  0x00   | {{frame-data}}             |
-| HEADERS          |  0x01   | {{frame-headers}}          |
-| Reserved         |  0x02   | N/A                        |
-| CANCEL_PUSH      |  0x03   | {{frame-cancel-push}}      |
-| SETTINGS         |  0x04   | {{frame-settings}}         |
-| PUSH_PROMISE     |  0x05   | {{frame-push-promise}}     |
-| Reserved         |  0x06   | N/A                        |
-| GOAWAY           |  0x07   | {{frame-goaway}}           |
-| Reserved         |  0x08   | N/A                        |
-| Reserved         |  0x09   | N/A                        |
-| MAX_PUSH_ID      |  0x0d   | {{frame-max-push-id}}      |
-| ---------------- | ------- | -------------------------- |
+| ------------ | ------- | -------------------------- |
+| Frame Type   | Value   | Specification              |
+| ------------ | :-----: | -------------------------- |
+| DATA         |  0x00   | {{frame-data}}             |
+| HEADERS      |  0x01   | {{frame-headers}}          |
+| Reserved     |  0x02   | N/A                        |
+| CANCEL_PUSH  |  0x03   | {{frame-cancel-push}}      |
+| SETTINGS     |  0x04   | {{frame-settings}}         |
+| PUSH_PROMISE |  0x05   | {{frame-push-promise}}     |
+| Reserved     |  0x06   | N/A                        |
+| GOAWAY       |  0x07   | {{frame-goaway}}           |
+| Reserved     |  0x08   | N/A                        |
+| Reserved     |  0x09   | N/A                        |
+| MAX_PUSH_ID  |  0x0d   | {{frame-max-push-id}}      |
+| ------------ | ------- | -------------------------- |
 {: #iana-frame-table title="Initial HTTP/3 Frame Types"}
 
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
@@ -2149,16 +2149,16 @@ Default:
 
 The entries in {{iana-setting-table}} are registered by this document.
 
-| ---------------------------- | ------- | ------------------------- | --------- |
-| Setting Name                 |  Value  | Specification             | Default   |
-| ---------------------------- | :-----: | ------------------------- | --------- |
-| Reserved                     |  0x00   | N/A                       | N/A       |
-| Reserved                     |  0x02   | N/A                       | N/A       |
-| Reserved                     |  0x03   | N/A                       | N/A       |
-| Reserved                     |  0x04   | N/A                       | N/A       |
-| Reserved                     |  0x05   | N/A                       | N/A       |
-| MAX_FIELD_SECTION_SIZE       |  0x06   | {{settings-parameters}}   | Unlimited |
-| ---------------------------- | ------- | ------------------------- | --------- |
+| ----------------------- | ------- | ----------------------- | --------- |
+| Setting Name            |  Value  | Specification           | Default   |
+| ----------------------- | :-----: | ----------------------- | --------- |
+| Reserved                |  0x00   | N/A                     | N/A       |
+| Reserved                |  0x02   | N/A                     | N/A       |
+| Reserved                |  0x03   | N/A                     | N/A       |
+| Reserved                |  0x04   | N/A                     | N/A       |
+| Reserved                |  0x05   | N/A                     | N/A       |
+| MAX_FIELD_SECTION_SIZE  |  0x06   | {{settings-parameters}} | Unlimited |
+| ----------------------- | ------- | ----------------------- | --------- |
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
