@@ -1480,7 +1480,7 @@ GetLossTimeAndSpace():
 GetPtoTimeAndSpace():
   duration = (smoothed_rtt + max(4 * rttvar, kGranularity))
       * (2 ^ pto_count)
-  // Arm PTO when there are no ACK-eliciting packets in flight.
+  // Anti-deadlock PTO starts from the current time
   if (no ack-eliciting packets in flight):
     assert(!PeerCompletedAddressValidation())
     if (has handshake keys):
