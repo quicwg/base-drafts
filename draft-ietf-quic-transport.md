@@ -3746,7 +3746,7 @@ received packet.  Additionally, a receiver MUST NOT send an ack-eliciting
 frame in all packets that would otherwise be non-ack-eliciting. This avoids
 an infinite feedback loop of acknowledgments, which could prevent the
 connection from ever becoming idle.  Non-ack-eliciting packets are eventually
-acknowledged when the endpoint sends an ACK frame in response to other events.  
+acknowledged when the endpoint sends an ACK frame in response to other events.
 
 In order to assist loss detection at the sender, an endpoint SHOULD generate
 and send an ACK frame without delay when it receives an ack-eliciting packet
