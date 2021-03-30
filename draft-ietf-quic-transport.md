@@ -3755,9 +3755,9 @@ non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
 ack-eliciting packet has been received to include an ACK frame with outgoing
 frames.
 
-A receiver that is only sending non-ack-eliciting packets might choose to
+An endpoint that is only sending non-ack-eliciting packets might choose to
 occasionally add an ack-eliciting frame to those packets to ensure that it
-receives an acknowledgment; see {{ack-tracking}}.  A receiver MUST NOT send an
+receives an acknowledgment; see {{ack-tracking}}.  An endpoint MUST NOT send an
 ack-eliciting frame in all packets that would otherwise be non-ack-eliciting, to
 avoid an infinite feedback loop of acknowledgments.
 
