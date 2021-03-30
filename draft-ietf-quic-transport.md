@@ -3757,9 +3757,9 @@ frames.
 
 An endpoint that is only sending non-ack-eliciting packets might choose to
 occasionally add an ack-eliciting frame to those packets to ensure that it
-receives an acknowledgment; see {{ack-tracking}}.  An endpoint MUST NOT send an
-ack-eliciting frame in all packets that would otherwise be non-ack-eliciting, to
-avoid an infinite feedback loop of acknowledgments.
+receives an acknowledgment; see {{ack-tracking}}.  In that case, an endpoint
+MUST NOT send an ack-eliciting frame in all packets that would otherwise be
+non-ack-eliciting, to avoid an infinite feedback loop of acknowledgments.
 
 In order to assist loss detection at the sender, an endpoint SHOULD generate
 and send an ACK frame without delay when it receives an ack-eliciting packet
