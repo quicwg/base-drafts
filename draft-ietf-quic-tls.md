@@ -1771,7 +1771,7 @@ to varying usage conditions.
 
 ## Key Update Error Code {#key-update-error}
 
-The KEY_UPDATE_ERROR error code (0xe) is used to signal errors related to key
+The KEY_UPDATE_ERROR error code (0x0e) is used to signal errors related to key
 updates.
 
 
