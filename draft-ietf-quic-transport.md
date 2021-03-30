@@ -3747,6 +3747,20 @@ which could prevent the connection from ever becoming idle.  Non-ack-eliciting
 packets are eventually acknowledged when the endpoint sends an ACK frame in
 response to other events.
 
+An endpoint that is only sending ACK frames will not receive acknowledgments
+from its peer unless those acknowledgments are included in packets with
+ack-eliciting frames.  An endpoint SHOULD send an ACK frame with other frames
+when there are new ack-eliciting packets to acknowledge.  When only
+non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
+ack-eliciting packet has been received to include an ACK frame with outgoing
+frames.
+
+A receiver that is only sending non-ack-eliciting packets might choose to
+occasionally add an ack-eliciting frame to those packets to ensure that it
+receives an acknowledgment; see {{ack-tracking}}.  A receiver MUST NOT send an
+ack-eliciting frame in all packets that would otherwise be non-ack-eliciting, to
+avoid an infinite feedback loop of acknowledgments.
+
 In order to assist loss detection at the sender, an endpoint SHOULD generate
 and send an ACK frame without delay when it receives an ack-eliciting packet
 either:
@@ -3767,17 +3781,6 @@ should only deviate from these requirements after careful consideration of the
 performance implications of a change, for connections made by the endpoint and
 for other users of the network.
 
-An endpoint that is only sending ACK frames will not receive acknowledgments
-from its peer unless those acknowledgments are included in packets with
-ack-eliciting frames.  An endpoint SHOULD send an ACK frame with other frames
-when there are new ack-eliciting packets to acknowledge.  When only
-non-ack-eliciting packets need to be acknowledged, an endpoint MAY wait until an
-ack-eliciting packet has been received to include an ACK frame with outgoing
-frames.
-
-A receiver MUST NOT send an ack-eliciting frame in all packets that would
-otherwise be non-ack-eliciting, to avoid an infinite feedback loop of
-acknowledgments.
 
 ### Acknowledgment Frequency
 
