@@ -133,7 +133,7 @@ x (A):
 
 x (A..B):
 : Indicates that x can be any length from A to B; A can be omitted to indicate
-  a minimum of zero bits and B can be omitted to indicate no set upper limit;
+  a minimum of zero bits, and B can be omitted to indicate no set upper limit;
   values in this format always end on a byte boundary
 
 x (L) = C:
@@ -167,7 +167,7 @@ This section describes the invariant characteristics of a QUIC packet.  A
 version of QUIC could permit multiple QUIC packets in a single UDP datagram, but
 the invariant properties only describe the first packet in a datagram.
 
-QUIC defines two types of packet header: long and short.  Packets with long
+QUIC defines two types of packet headers: long and short.  Packets with long
 headers are identified by the most significant bit of the first byte being set;
 packets with a short header have that bit cleared.
 
@@ -175,7 +175,7 @@ QUIC packets might be integrity protected, including the header.  However, QUIC
 Version Negotiation packets are not integrity protected; see {{vn}}.
 
 Aside from the values described here, the payload of QUIC packets is
-version-specific and of arbitrary length.
+version specific and of arbitrary length.
 
 
 ## Long Header
@@ -260,7 +260,7 @@ Packets for the same QUIC connection might use different connection ID values.
 ## Version
 
 The Version field contains a 4-byte identifier.  This value can be used by
-endpoints to identify a QUIC Version.  A Version field with a value of
+endpoints to identify a QUIC version.  A Version field with a value of
 0x00000000 is reserved for version negotiation; see {{vn}}.  All other values
 are potentially valid.
 
@@ -297,14 +297,14 @@ Version Negotiation Packet {
 {: #version-negotiation-format title="Version Negotiation Packet"}
 
 Only the most significant bit of the first byte of a Version Negotiation packet
-has any defined value.  The remaining 7 bits, labeled Unused, can be set to any
-value when sending and MUST be ignored on receipt.
+has any defined value.  The remaining 7 bits, labeled "Unused", can be set to
+any value when sending and MUST be ignored on receipt.
 
 After the Source Connection ID field, the Version Negotiation packet contains a
 list of Supported Version fields, each identifying a version that the endpoint
 sending the packet supports.  A Version Negotiation packet contains no other
 fields.  An endpoint MUST ignore a packet that contains no Supported Version
-fields, or a truncated Supported Version.
+fields or contains a truncated Supported Version value.
 
 Version Negotiation packets do not use integrity or confidentiality protection.
 Specific QUIC versions might include protocol elements that allow endpoints to
@@ -342,14 +342,9 @@ reliably extracting information from a flow based on version-specific traits
 requires that middleboxes retain state for every connection ID they see.
 
 The Version Negotiation packet described in this document is not
-integrity-protected; it only has modest protection against insertion by
+integrity protected; it only has modest protection against insertion by
 attackers.  An endpoint MUST authenticate the semantic content of a Version
 Negotiation packet if it attempts a different QUIC version as a result.
-
-
-# IANA Considerations
-
-This document makes no request of IANA.
 
 
 --- back
@@ -357,7 +352,7 @@ This document makes no request of IANA.
 # Incorrect Assumptions {#bad-assumptions}
 
 There are several traits of QUIC version 1 {{QUIC-TRANSPORT}} that are not
-protected from observation, but are nonetheless considered to be changeable when
+protected from observation but are nonetheless considered to be changeable when
 a new version is deployed.
 
 This section lists a sampling of incorrect assumptions that might be made about
@@ -368,41 +363,42 @@ be illustrative only.
 **Any and all of the following statements can be false for a given QUIC
 version:**
 
-* QUIC uses TLS {{QUIC-TLS}} and some TLS messages are visible on the wire
+* QUIC uses TLS {{QUIC-TLS}} and some TLS messages are visible on the wire.
 
-* QUIC long headers are only exchanged during connection establishment
+* QUIC long headers are only exchanged during connection establishment.
 
-* Every flow on a given 5-tuple will include a connection establishment phase
+* Every flow on a given 5-tuple will include a connection establishment phase.
 
-* The first packets exchanged on a flow use the long header
+* The first packets exchanged on a flow use the long header.
 
 * The last packet before a long period of quiescence might be assumed
-  to contain only an acknowledgment
+  to contain only an acknowledgment.
 
-* QUIC uses an AEAD (AEAD_AES_128_GCM {{?RFC5116}}) to protect the packets it
-  exchanges during connection establishment
+* QUIC uses an Authenticated Encryption with Associated Data (AEAD) function
+  (AEAD_AES_128_GCM; see {{?RFC5116}}) to protect the packets it exchanges
+  during connection establishment.
 
-* QUIC packet numbers are encrypted and appear as the first encrypted bytes
+* QUIC packet numbers are encrypted and appear as the first encrypted bytes.
 
-* QUIC packet numbers increase by one for every packet sent
+* QUIC packet numbers increase by one for every packet sent.
 
-* QUIC has a minimum size for the first handshake packet sent by a client
+* QUIC has a minimum size for the first handshake packet sent by a client.
 
-* QUIC stipulates that a client speaks first
+* QUIC stipulates that a client speaks first.
 
-* QUIC packets always have the second bit of the first byte (0x40) set
+* QUIC packets always have the second bit of the first byte (0x40) set.
 
-* A QUIC Version Negotiation packet is only sent by a server
+* A QUIC Version Negotiation packet is only sent by a server.
 
-* A QUIC connection ID changes infrequently
+* A QUIC connection ID changes infrequently.
 
 * QUIC endpoints change the version they speak if they are sent a Version
-  Negotiation packet
+  Negotiation packet.
 
-* The Version field in a QUIC long header is the same in both directions
+* The Version field in a QUIC long header is the same in both directions.
 
 * A QUIC packet with a particular value in the Version field means that the
-  corresponding version of QUIC is in use
+  corresponding version of QUIC is in use.
 
 * Only one connection at a time is established between any pair of QUIC
-  endpoints
+  endpoints.
