@@ -2192,7 +2192,7 @@ c300000001088394c8f03e5157080000449e00000002
 
 Protecting the payload produces output that is sampled for header protection.
 Because the header uses a 4-byte packet number encoding, the first 16 bytes of
-the protected payload is sampled and then applied to the header:
+the protected payload is sampled and then applied to the header as follows:
 
 ~~~
 sample = d1b1c98dd7689fb8ec11d242b123dc9b
