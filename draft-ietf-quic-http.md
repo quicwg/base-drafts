@@ -83,21 +83,6 @@ low-latency connection establishment.  This document describes a mapping of HTTP
 semantics over QUIC.  This document also identifies HTTP/2 features that are
 subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
 
---- note_DO_NOT_DEPLOY_THIS_VERSION_OF_HTTP
-
-DO NOT DEPLOY THIS VERSION OF HTTP/3 UNTIL IT IS IN AN RFC. This version is
-still a work in progress. For trial deployments, please use earlier versions.
-
---- note_Note_to_Readers
-
-Discussion of this draft takes place on the QUIC working group mailing list
-(quic@ietf.org), which is archived at
-[](https://mailarchive.ietf.org/arch/search/?email_list=quic).
-
-Working Group information can be found at [](https://github.com/quicwg); source
-code and issues list for this draft can be found at
-[](https://github.com/quicwg/base-drafts/labels/-http).
-
 
 --- middle
 
@@ -524,9 +509,6 @@ HTTP messages carry metadata as a series of key-value pairs called HTTP fields;
 see {{Sections 6.3 and 6.5 of SEMANTICS}}. For a listing of registered HTTP
 fields, see the "Hypertext Transfer Protocol (HTTP) Field Name Registry"
 maintained at [](https://www.iana.org/assignments/http-fields/).
-
-> **Note:**  This registry will not exist until {{!SEMANTICS}} is approved.
-> **RFC Editor**, please remove this note prior to publication.
 
 Field names are strings containing a subset of ASCII characters. Properties of
 HTTP field names and values are discussed in more detail in {{Section 5.1 of

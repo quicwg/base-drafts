@@ -105,21 +105,6 @@ integration of TLS for key negotiation, loss detection, and an exemplary
 congestion control algorithm.
 
 
---- note_DO_NOT_DEPLOY_THIS_VERSION_OF_QUIC
-
-DO NOT DEPLOY THIS VERSION OF QUIC UNTIL IT IS IN AN RFC. This version is still
-a work in progress. For trial deployments, please use earlier versions.
-
---- note_Note_to_Readers
-
-Discussion of this draft takes place on the QUIC working group mailing list
-([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
-[](https://mailarchive.ietf.org/arch/search/?email_list=quic)
-
-Working Group information can be found at [](https://github.com/quicwg); source
-code and issues list for this draft can be found at
-[](https://github.com/quicwg/base-drafts/labels/-transport).
-
 --- middle
 
 # Overview
@@ -1441,28 +1426,6 @@ How to perform version negotiation is left as future work defined by future
 standards-track specifications.  In particular, that future work will
 ensure robustness against version downgrade attacks; see
 {{version-downgrade}}.
-
-
-### Version Negotiation Between Draft Versions
-
-\[\[RFC editor: please remove this section before publication.]]
-
-When a draft implementation receives a Version Negotiation packet, it MAY use
-it to attempt a new connection with one of the versions listed in the packet,
-instead of abandoning the current connection attempt; see {{handle-vn}}.
-
-The client MUST check that the Destination and Source Connection ID fields
-match the Source and Destination Connection ID fields in a packet that the
-client sent.  If this check fails, the packet MUST be discarded.
-
-Once the Version Negotiation packet is determined to be valid, the client then
-selects an acceptable protocol version from the list provided by the server.
-The client then attempts to create a new connection using that version. The new
-connection MUST use a new random Destination Connection ID different from the
-one it had previously sent.
-
-Note that this mechanism does not protect against downgrade attacks and
-MUST NOT be used outside of draft implementations.
 
 
 ## Using Reserved Versions
@@ -7480,16 +7443,6 @@ this version is reserved for Version Negotiation.
 
 All codepoints that follow the pattern 0x?a?a?a?a are reserved and MUST NOT be
 assigned by IANA and MUST NOT appear in the listing of assigned values.
-
-\[\[RFC editor: please remove the following note before publication.]]
-
-IANA note:
-
-: Several pre-standardization versions will likely be in use at the time of
-  publication. There is no need to document these in an RFC, but recording
-  information about these version will ensure that the information in the
-  registry is accurate.  The document editors or working group chairs can
-  facilitate getting the necessary information.
 
 
 ## QUIC Transport Parameter Registry {#iana-transport-parameters}
