@@ -3752,7 +3752,7 @@ from its peer unless those acknowledgments are included in packets with
 ack-eliciting frames.  An endpoint SHOULD send an ACK frame with other frames
 when there are new ack-eliciting packets to acknowledge.  When only
 non-ack-eliciting packets need to be acknowledged, an endpoint MAY
-choose to not send an ACK frame with outgoing frames until an
+choose not to send an ACK frame with outgoing frames until an
 ack-eliciting packet has been received.
 
 An endpoint that is only sending non-ack-eliciting packets might choose to
