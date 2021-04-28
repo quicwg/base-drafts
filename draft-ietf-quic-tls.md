@@ -129,7 +129,7 @@ TLS 1.3 provides critical latency improvements for connection establishment over
 previous versions.  Absent packet loss, most new connections can be established
 and secured within a single round trip; on subsequent connections between the
 same client and server, the client can often send application data immediately,
-that is, using a zero round trip setup.
+that is, using a zero round-trip setup.
 
 This document describes how TLS acts as a security component of QUIC.
 
@@ -167,8 +167,8 @@ Layer     |                      Records                      |
 ~~~~
 {: #tls-layers title="TLS Layers"}
 
-Each Content layer message (e.g., Handshake, Alerts, and Application Data) is
-carried as a series of typed TLS records by the Record layer.  Records are
+Each content-layer message (e.g., Handshake, Alerts, and Application Data) is
+carried as a series of typed TLS records by the record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
 transport (typically TCP), which provides sequencing and guaranteed delivery.
 
@@ -178,17 +178,17 @@ exchange completes successfully, both client and server will agree on a secret.
 TLS supports both pre-shared key (PSK) and Diffie-Hellman over either finite
 fields or elliptic curves ((EC)DHE) key exchanges.  PSK is the basis for Early
 Data (0-RTT); the latter provides forward secrecy (FS) when the (EC)DHE
-keys are destroyed.  The two modes can also be combined, to provide forward
+keys are destroyed.  The two modes can also be combined to provide forward
 secrecy while using the PSK for authentication.
 
 After completing the TLS handshake, the client will have learned and
-authenticated an identity for the server and the server is optionally able to
+authenticated an identity for the server, and the server is optionally able to
 learn and authenticate an identity for the client.  TLS supports X.509
 {{?RFC5280}} certificate-based authentication for both server and client.
 When PSK key exchange is used (as in resumption), knowledge of the PSK
 serves to authenticate the peer.
 
-The TLS key exchange is resistant to tampering by attackers and it produces
+The TLS key exchange is resistant to tampering by attackers, and it produces
 shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
@@ -199,7 +199,7 @@ TLS provides two basic handshake modes of interest to QUIC:
 
  * A 0-RTT handshake, in which the client uses information it has previously
    learned about the server to send Application Data immediately.  This
-   Application Data can be replayed by an attacker so 0-RTT is not suitable for
+   Application Data can be replayed by an attacker, so 0-RTT is not suitable for
    carrying instructions that might initiate any action that could cause
    unwanted effects if replayed.
 
@@ -237,12 +237,12 @@ Data is protected using a number of encryption levels:
 - Handshake Keys
 - Application Data (1-RTT) Keys
 
-Application Data may appear only in the Early Data and Application Data
-levels. Handshake and Alert messages may appear in any level.
+Application Data can only appear in the early data and Application Data
+levels. Handshake and alert messages may appear in any level.
 
 The 0-RTT handshake can be used if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
-Application Data until it has received all of the Handshake messages sent by the
+Application Data until it has received all of the handshake messages sent by the
 server.
 
 
@@ -251,7 +251,7 @@ server.
 QUIC {{QUIC-TRANSPORT}} assumes responsibility for the confidentiality and
 integrity protection of packets.  For this it uses keys derived from a TLS
 handshake {{!TLS13}}, but instead of carrying TLS records over QUIC (as with
-TCP), TLS Handshake and Alert messages are carried directly over the QUIC
+TCP), TLS handshake and alert messages are carried directly over the QUIC
 transport, which takes over the responsibilities of the TLS record layer, as
 shown in {{quic-layers}}.
 
@@ -296,7 +296,7 @@ protection being called out specially.
 ~~~
 +------------+                               +------------+
 |            |<---- Handshake Messages ----->|            |
-|            |<- Validate 0-RTT parameters ->|            |
+|            |<- Validate 0-RTT Parameters ->|            |
 |            |<--------- 0-RTT Keys ---------|            |
 |    QUIC    |<------- Handshake Keys -------|    TLS     |
 |            |<--------- 1-RTT Keys ---------|            |
@@ -314,7 +314,7 @@ protection being called out specially.
 {: #schematic title="QUIC and TLS Interactions"}
 
 Unlike TLS over TCP, QUIC applications that want to send data do not send it
-through TLS "application_data" records. Rather, they send it as QUIC STREAM
+using TLS application data records. Rather, they send it as QUIC STREAM
 frames or other frame types, which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
