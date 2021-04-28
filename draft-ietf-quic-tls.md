@@ -167,7 +167,7 @@ Layer     |                      Records                      |
 ~~~~
 {: #tls-layers title="TLS Layers"}
 
-Each content-layer message (e.g., Handshake, Alerts, and Application Data) is
+Each content-layer message (e.g., handshake, alerts, and application data) is
 carried as a series of typed TLS records by the record layer.  Records are
 individually cryptographically protected and then transmitted over a reliable
 transport (typically TCP), which provides sequencing and guaranteed delivery.
@@ -193,13 +193,13 @@ shared secrets that cannot be controlled by either participating peer.
 
 TLS provides two basic handshake modes of interest to QUIC:
 
- * A full 1-RTT handshake, in which the client is able to send Application Data
+ * A full 1-RTT handshake, in which the client is able to send application data
    after one round trip and the server immediately responds after receiving the
    first handshake message from the client.
 
  * A 0-RTT handshake, in which the client uses information it has previously
-   learned about the server to send Application Data immediately.  This
-   Application Data can be replayed by an attacker, so 0-RTT is not suitable for
+   learned about the server to send application data immediately.  This
+   application data can be replayed by an attacker, so 0-RTT is not suitable for
    carrying instructions that might initiate any action that could cause
    unwanted effects if replayed.
 
@@ -232,17 +232,17 @@ QUIC has its own key update mechanism; see {{key-update}}.
 
 Data is protected using a number of encryption levels:
 
-- Initial Keys
-- Early Data (0-RTT) Keys
-- Handshake Keys
-- Application Data (1-RTT) Keys
+- Initial keys
+- Early data (0-RTT) keys
+- Handshake keys
+- Application data (1-RTT) keys
 
-Application Data can only appear in the early data and Application Data
+Application data can only appear in the early data and application data
 levels. Handshake and alert messages may appear in any level.
 
 The 0-RTT handshake can be used if the client and server have previously
 communicated.  In the 1-RTT handshake, the client is unable to send protected
-Application Data until it has received all of the handshake messages sent by the
+application data until it has received all of the handshake messages sent by the
 server.
 
 
