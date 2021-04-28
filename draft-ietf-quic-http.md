@@ -25,7 +25,7 @@ normative:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
+      RFC: 9000
     author:
       -
         ins: J. Iyengar

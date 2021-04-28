@@ -1,9 +1,11 @@
 ---
 title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
 abbrev: QUIC Transport Protocol
-docname: draft-ietf-quic-transport-latest
-date: {DATE}
+number: 9000
+docName: draft-ietf-quic-transport-34
+date: 2021-05
 category: std
+consensus: true
 ipr: trust200902
 area: Transport
 workgroup: QUIC
@@ -31,7 +33,7 @@ normative:
     title: "Version-Independent Properties of QUIC"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-invariants-latest
+      RFC: 8999
     author:
       -
         ins: M. Thomson
@@ -42,7 +44,7 @@ normative:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-recovery-latest
+      RFC: 9002
     author:
       -
         ins: J. Iyengar
@@ -59,7 +61,7 @@ normative:
     title: "Using Transport Layer Security (TLS) to Secure QUIC"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-tls-latest
+      RFC: 9001
     author:
       -
         ins: M. Thomson

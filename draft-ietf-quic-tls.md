@@ -1,8 +1,10 @@
 ---
 title: Using TLS to Secure QUIC
-docname: draft-ietf-quic-tls-latest
-date: {DATE}
+number: 9001
+docName: draft-ietf-quic-tls-34
+date: 2021-05
 category: std
+consensus: true
 ipr: trust200902
 area: Transport
 workgroup: QUIC
@@ -30,7 +32,7 @@ normative:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
+      RFC: 9000
     author:
       -
         ins: J. Iyengar
@@ -47,7 +49,7 @@ normative:
     title: "QUIC Loss Detection and Congestion Control"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-recovery-latest
+      RFC: 9002
     author:
       -
         ins: J. Iyengar

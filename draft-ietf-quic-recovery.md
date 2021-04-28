@@ -1,9 +1,11 @@
 ---
 title: QUIC Loss Detection and Congestion Control
 abbrev: QUIC Loss Detection
-docname: draft-ietf-quic-recovery-latest
-date: {DATE}
+number: 9002
+docName: draft-ietf-quic-recovery-34
+date: 2021-05
 category: std
+consensus: true
 ipr: trust200902
 area: Transport
 workgroup: QUIC
@@ -31,7 +33,7 @@ normative:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
+      RFC: 9000
     author:
       -
         ins: J. Iyengar
@@ -48,7 +50,7 @@ normative:
     title: "Using TLS to Secure QUIC"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-tls-latest
+      RFC: 9001
     author:
       -
         ins: M. Thomson
