@@ -69,7 +69,7 @@ informative:
     author:
       - ins: A. Luykx
       - ins: K. Paterson
-    date: 2016-03-08
+    date: 2017-08-28
     target: "http://www.isg.rhul.ac.uk/~kp/TLS-AEbounds.pdf"
 
   IMC:
@@ -314,7 +314,7 @@ protection being called out specially.
 {: #schematic title="QUIC and TLS Interactions"}
 
 Unlike TLS over TCP, QUIC applications that want to send data do not send it
-using TLS application data records. Rather, they send it as QUIC STREAM
+using TLS Application Data records. Rather, they send it as QUIC STREAM
 frames or other frame types, which are then carried in QUIC packets.
 
 # Carrying TLS Messages {#carrying-tls}
@@ -361,11 +361,11 @@ primary functions:
 - Processing stored transport and application state from a resumed session
   and determining if it is valid to generate or accept early data
 - Rekeying (both transmit and receive)
-- Handshake state updates
+- Updating handshake state
 
 Additional functions might be needed to configure TLS.  In particular, QUIC and
 TLS need to agree on which is responsible for validation of peer credentials,
-such as certificate validation ({{?RFC5280}}).
+such as certificate validation {{?RFC5280}}.
 
 
 ### Handshake Complete {#handshake-complete}
@@ -373,9 +373,9 @@ such as certificate validation ({{?RFC5280}}).
 In this document, the TLS handshake is considered complete when the TLS stack
 has reported that the handshake is complete.  This happens when the TLS stack
 has both sent a Finished message and verified the peer's Finished message.
-Verifying the peer's Finished provides the endpoints with an assurance that
-previous handshake messages have not been modified.  Note that the handshake
-does not complete at both endpoints simultaneously.  Consequently, any
+Verifying the peer's Finished message provides the endpoints with an assurance
+that previous handshake messages have not been modified.  Note that the
+handshake does not complete at both endpoints simultaneously.  Consequently, any
 requirement that is based on the completion of the handshake depends on the
 perspective of the endpoint in question.
 
@@ -389,7 +389,7 @@ when a HANDSHAKE_DONE frame is received.
 
 Additionally, a client MAY consider the handshake to be confirmed when it
 receives an acknowledgment for a 1-RTT packet.  This can be implemented by
-recording the lowest packet number sent with 1-RTT keys, and comparing it to the
+recording the lowest packet number sent with 1-RTT keys and comparing it to the
 Largest Acknowledged field in any received 1-RTT ACK frame: once the latter is
 greater than or equal to the former, the handshake is confirmed.
 
@@ -530,7 +530,7 @@ and lower encryption levels than the current encryption level used by TLS.
 In particular, server implementations need to be able to read packets at the
 Handshake encryption level at the same time as the 0-RTT encryption level.  A
 client could interleave ACK frames that are protected with Handshake keys with
-0-RTT data and the server needs to process those acknowledgments in order to
+0-RTT data, and the server needs to process those acknowledgments in order to
 detect lost Handshake packets.
 
 QUIC also needs access to keys that might not ordinarily be available to a TLS
@@ -553,7 +553,7 @@ Client                                                    Server
 
 Get Handshake
                      Initial ------------->
-Install tx 0-RTT Keys
+Install tx 0-RTT keys
                      0-RTT - - - - - - - ->
 
                                               Handshake Received
@@ -602,7 +602,7 @@ use a different number of operations or execute them in other orders.
 This document describes how TLS 1.3 {{!TLS13}} is used with QUIC.
 
 In practice, the TLS handshake will negotiate a version of TLS to use.  This
-could result in a newer version of TLS than 1.3 being negotiated if both
+could result in a version of TLS newer than 1.3 being negotiated if both
 endpoints support that version.  This is acceptable provided that the features
 of TLS 1.3 that are used by QUIC are supported by the newer version.
 
@@ -626,9 +626,9 @@ use the Retry feature (see {{Section 8.1 of QUIC-TRANSPORT}}) to only buffer
 partial ClientHello messages from clients with a validated address.
 
 QUIC packet and framing add at least 36 bytes of overhead to the ClientHello
-message.  That overhead increases if the client chooses a source connection ID
-longer than zero bytes.  Overheads also do not include the token or a
-destination connection ID longer than 8 bytes, both of which might be required
+message.  That overhead increases if the client chooses a Source Connection ID
+field longer than zero bytes.  Overheads also do not include the token or a
+Destination Connection ID longer than 8 bytes, both of which might be required
 if a server sends a Retry packet.
 
 A typical TLS ClientHello can easily fit into a 1200-byte packet.  However, in
@@ -663,15 +663,14 @@ that the certificate is issued by a trusted entity (see for example
 
 Note:
 
-: Where servers provide certificates for authentication, the size of
-  the certificate chain can consume a large number of bytes.  Controlling the
-  size of certificate chains is critical to performance in QUIC as servers are
+: Where servers provide certificates for authentication, the size of the
+  certificate chain can consume a large number of bytes.  Controlling the size
+  of certificate chains is critical to performance in QUIC as servers are
   limited to sending 3 bytes for every byte received prior to validating the
   client address; see {{Section 8.1 of QUIC-TRANSPORT}}.  The size of a
   certificate chain can be managed by limiting the number of names or
   extensions; using keys with small public key representations, like ECDSA; or
-  by using certificate compression
-  {{?COMPRESS=I-D.ietf-tls-certificate-compression}}.
+  by using certificate compression {{?COMPRESS=RFC8879}}.
 
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
@@ -681,23 +680,23 @@ and deployment.
 A server MUST NOT use post-handshake client authentication (as defined in
 {{Section 4.6.2 of TLS13}}), because the multiplexing offered by QUIC prevents
 clients from correlating the certificate request with the application-level
-event that triggered it (see {{?HTTP2-TLS13=RFC8740}}).
-More specifically, servers MUST NOT send post-handshake TLS CertificateRequest
-messages and clients MUST treat receipt of such messages as a connection error
-of type PROTOCOL_VIOLATION.
+event that triggered it (see {{?HTTP2-TLS13=RFC8740}}).  More specifically,
+servers MUST NOT send post-handshake TLS CertificateRequest messages, and
+clients MUST treat receipt of such messages as a connection error of type
+PROTOCOL_VIOLATION.
 
 
 ## Session Resumption {#resumption}
 
 QUIC can use the session resumption feature of TLS 1.3. It does this by
 carrying NewSessionTicket messages in CRYPTO frames after the handshake is
-complete. Session resumption can be used to provide 0-RTT, and can also be
+complete. Session resumption can be used to provide 0-RTT and can also be
 used when 0-RTT is disabled.
 
 Endpoints that use session resumption might need to remember some information
 about the current connection when creating a resumed connection. TLS requires
 that some information be retained; see {{Section 4.6.1 of TLS13}}. QUIC itself
-does not depend on any state being retained when resuming a connection, unless
+does not depend on any state being retained when resuming a connection unless
 0-RTT is also used; see {{Section 7.4.1 of QUIC-TRANSPORT}} and
 {{enable-0rtt}}. Application protocols could depend on state that is retained
 between resumed connections.
@@ -730,23 +729,23 @@ information used to establish 0-RTT comes from the same connection.  Endpoints
 cannot selectively disregard information that might alter the sending or
 processing of 0-RTT.
 
-{{!TLS13}} sets a limit of 7 days on the time between the original connection
-and any attempt to use 0-RTT.  There are other constraints on 0-RTT usage,
-notably those caused by the potential exposure to replay attack; see {{replay}}.
+{{!TLS13}} sets a limit of seven days on the time between the original
+connection and any attempt to use 0-RTT.  There are other constraints on 0-RTT
+usage, notably those caused by the potential exposure to replay attack; see
+{{replay}}.
 
 
 ### Enabling 0-RTT {#enable-0rtt}
 
-The TLS "early_data" extension in the NewSessionTicket message is defined
-to convey (in the "max_early_data_size" parameter) the amount of TLS 0-RTT
-data the server is willing to accept.  QUIC does not use TLS 0-RTT data.
-QUIC uses 0-RTT packets to carry early data.  Accordingly, the
-"max_early_data_size" parameter is repurposed to hold a sentinel value
-0xffffffff to indicate that the server is willing to accept QUIC 0-RTT data;
-to indicate that the server does not accept 0-RTT data, the "early_data"
-extension is omitted from the NewSessionTicket.
-The amount of data that the client can send in QUIC 0-RTT is
-controlled by the initial_max_data transport parameter supplied by the server.
+The TLS early_data extension in the NewSessionTicket message is defined to
+convey (in the max_early_data_size parameter) the amount of TLS 0-RTT data the
+server is willing to accept.  QUIC does not use TLS 0-RTT data.  QUIC uses 0-RTT
+packets to carry early data.  Accordingly, the max_early_data_size parameter is
+repurposed to hold a sentinel value 0xffffffff to indicate that the server is
+willing to accept QUIC 0-RTT data; to indicate that the server does not accept
+0-RTT data, the early_data extension is omitted from the NewSessionTicket.  The
+amount of data that the client can send in QUIC 0-RTT is controlled by the
+initial_max_data transport parameter supplied by the server.
 
 Servers MUST NOT send the early_data extension with a max_early_data_size field
 set to any value other than 0xffffffff.  A client MUST treat receipt of a
@@ -799,7 +798,7 @@ ticket. One common way to implement this is using stateless session tickets and
 storing this state in the session ticket. Application protocols that use QUIC
 might have similar requirements regarding associating or storing state. This
 associated state is used for deciding whether early data must be rejected. For
-example, HTTP/3 ({{QUIC-HTTP}}) settings determine how early data from the
+example, HTTP/3 settings {{QUIC-HTTP}} determine how early data from the
 client is interpreted. Other applications using QUIC could have different
 requirements for determining whether to accept or reject early data.
 
@@ -863,7 +862,7 @@ from being received or sent at that encryption level because a peer might not
 have received all the acknowledgments necessary.
 
 Though an endpoint might retain older keys, new data MUST be sent at the highest
-currently-available encryption level.  Only ACK frames and retransmissions of
+currently available encryption level.  Only ACK frames and retransmissions of
 data in CRYPTO frames are sent at a previous encryption level.  These packets
 MAY also include PADDING frames.
 
@@ -888,7 +887,7 @@ and ignoring any outstanding Initial packets.
 
 ### Discarding Handshake Keys {#discard-handshake}
 
-An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
+An endpoint MUST discard its Handshake keys when the TLS handshake is confirmed
 ({{handshake-confirmed}}).
 
 
@@ -898,7 +897,7 @@ An endpoint MUST discard its handshake keys when the TLS handshake is confirmed
 send 0-RTT packets after sending a 1-RTT packet ({{using-early-data}}).
 
 Therefore, a client SHOULD discard 0-RTT keys as soon as it installs 1-RTT
-keys, since they have no use after that moment.
+keys as they have no use after that moment.
 
 Additionally, a server MAY discard 0-RTT keys as soon as it receives a 1-RTT
 packet.  However, due to packet reordering, a 0-RTT packet could arrive after
@@ -972,7 +971,7 @@ separation between QUIC and TLS; see {{key-diversity}}.
 Both "quic key" and "quic hp" are used to produce keys, so the Length provided
 to HKDF-Expand-Label along with these labels is determined by the size of keys
 in the AEAD or header protection algorithm. The Length provided with "quic iv"
-is the minimum length of the AEAD nonce, or 8 bytes if that is larger; see
+is the minimum length of the AEAD nonce or 8 bytes if that is larger; see
 {{!AEAD}}.
 
 The KDF used for initial secrets is always the HKDF-Expand-Label function from
@@ -986,9 +985,10 @@ from the Destination Connection ID field from the client's first Initial
 packet.
 
 This secret is determined by using HKDF-Extract (see {{Section 2.2 of HKDF}})
-with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a and a IKM of the
-Destination Connection ID field. This produces an intermediate pseudorandom key
-(PRK) that is used to derive two separate secrets for sending and receiving.
+with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a and the input keying
+material (IKM) of the Destination Connection ID field. This produces an
+intermediate pseudorandom key (PRK) that is used to derive two separate secrets
+for sending and receiving.
 
 The secret used by clients to construct Initial packets uses the PRK and the
 label "client in" as input to the HKDF-Expand-Label function from TLS
@@ -1013,7 +1013,7 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
 ~~~
 
 The connection ID used with HKDF-Expand-Label is the Destination Connection ID
-in the Initial packet sent by the client.  This will be a randomly-selected
+in the Initial packet sent by the client.  This will be a randomly selected
 value unless the client creates the Initial packet after receiving a Retry
 packet, where the Destination Connection ID is selected by the server.
 
@@ -1026,7 +1026,7 @@ The HKDF-Expand-Label function defined in TLS 1.3 MUST be used for Initial
 packets even where the TLS versions offered do not include TLS 1.3.
 
 The secrets used for constructing subsequent Initial packets change when a
-server sends a Retry packet, to use the connection ID value selected by the
+server sends a Retry packet to use the connection ID value selected by the
 server.  The secrets do not change when a client changes the Destination
 Connection ID it uses in response to an Initial packet from the server.
 
@@ -1044,10 +1044,10 @@ Note:
 
 ## AEAD Usage {#aead}
 
-The Authenticated Encryption with Associated Data (AEAD; see {{!AEAD}}) function
-used for QUIC packet protection is the AEAD that is negotiated for use with the
-TLS connection.  For example, if TLS is using the TLS_AES_128_GCM_SHA256 cipher
-suite, the AEAD_AES_128_GCM function is used.
+The Authenticated Encryption with Associated Data (AEAD) function (see
+{{!AEAD}}) used for QUIC packet protection is the AEAD that is negotiated for
+use with the TLS connection.  For example, if TLS is using the
+TLS_AES_128_GCM_SHA256 cipher suite, the AEAD_AES_128_GCM function is used.
 
 QUIC can use any of the cipher suites defined in {{!TLS13}} with the exception
 of TLS_AES_128_CCM_8_SHA256.  A cipher suite MUST NOT be negotiated unless a
@@ -1096,8 +1096,8 @@ and IV.  The key derived using the "quic hp" label is used to provide
 confidentiality protection for those fields that are not exposed to on-path
 elements.
 
-This protection applies to the least-significant bits of the first byte, plus
-the Packet Number field.  The four least-significant bits of the first byte are
+This protection applies to the least significant bits of the first byte, plus
+the Packet Number field.  The four least significant bits of the first byte are
 protected for packets with long headers; the five least significant bits of the
 first byte are protected for packets with short headers.  For both header forms,
 this covers the reserved bits and the Packet Number Length field; the Key Phase
@@ -1126,7 +1126,7 @@ mask that might result from a shorter packet number encoding are unused.
 
 {{pseudo-hp}} shows a sample algorithm for applying header protection. Removing
 header protection only differs in the order in which the packet number length
-(pn_length) is determined (here "^" is used to represent exclusive or).
+(pn_length) is determined (here "^" is used to represent exclusive OR).
 
 ~~~
 mask = header_protection(hp_key, sample)
@@ -1232,13 +1232,13 @@ sample_offset = pn_offset + 4
 sample = packet[sample_offset..sample_offset+sample_length]
 ~~~
 
-where the packet number offset of a short header packet can be calculated as:
+Where the packet number offset of a short header packet can be calculated as:
 
 ~~~
 pn_offset = 1 + len(connection_id)
 ~~~
 
-and the packet number offset of a long header packet can be calculated as:
+And the packet number offset of a long header packet can be calculated as:
 
 ~~~
 pn_offset = 7 + len(destination_connection_id) +
@@ -1261,7 +1261,7 @@ is handled separately.
 
 This section defines the packet protection algorithm for AEAD_AES_128_GCM,
 AEAD_AES_128_CCM, and AEAD_AES_256_GCM. AEAD_AES_128_GCM and AEAD_AES_128_CCM
-use 128-bit AES in electronic code-book (ECB) mode. AEAD_AES_256_GCM uses
+use 128-bit AES in Electronic Codebook (ECB) mode. AEAD_AES_256_GCM uses
 256-bit AES in ECB mode.  AES is defined in {{!AES=DOI.10.6028/NIST.FIPS.197}}.
 
 This algorithm samples 16 bytes from the packet ciphertext. This value is used
@@ -1282,11 +1282,11 @@ function as defined in {{Section 2.4 of CHACHA}}.  This uses a 256-bit key and
 
 The first 4 bytes of the sampled ciphertext are the block counter.  A ChaCha20
 implementation could take a 32-bit integer in place of a byte sequence, in
-which case the byte sequence is interpreted as a little-endian value.
+which case, the byte sequence is interpreted as a little-endian value.
 
 The remaining 12 bytes are used as the nonce. A ChaCha20 implementation might
 take an array of three 32-bit integers in place of a byte sequence, in which
-case the nonce bytes are interpreted as a sequence of 32-bit little-endian
+case, the nonce bytes are interpreted as a sequence of 32-bit little-endian
 integers.
 
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
@@ -1305,8 +1305,8 @@ header_protection(hp_key, sample):
 Once an endpoint successfully receives a packet with a given packet number, it
 MUST discard all packets in the same packet number space with higher packet
 numbers if they cannot be successfully unprotected with either the same key, or
-- if there is a key update - a subsequent packet protection key; see
-{{key-update}}.  Similarly, a packet that appears to trigger a key update, but
+-- if there is a key update -- a subsequent packet protection key; see
+{{key-update}}.  Similarly, a packet that appears to trigger a key update but
 cannot be unprotected successfully MUST be discarded.
 
 Failure to unprotect a packet does not necessarily indicate the existence of a
@@ -1423,13 +1423,13 @@ incoming 1-RTT protected packets before the TLS handshake is complete.
 
 ## Retry Packet Integrity {#retry-integrity}
 
-Retry packets (see the Retry Packet section of {{QUIC-TRANSPORT}}) carry a
-Retry Integrity Tag that provides two properties: it allows discarding
-packets that have accidentally been corrupted by the network; only an
-entity that observes an Initial packet can send a valid Retry packet.
+Retry packets (see {{Section 17.2.5 of QUIC-TRANSPORT}}) carry a Retry Integrity
+Tag that provides two properties: it allows the discarding of packets that have
+accidentally been corrupted by the network, and only an entity that observes an
+Initial packet can send a valid Retry packet.
 
 The Retry Integrity Tag is a 128-bit field that is computed as the output of
-AEAD_AES_128_GCM ({{!AEAD}}) used with the following inputs:
+AEAD_AES_128_GCM {{!AEAD}} used with the following inputs:
 
 - The secret key, K, is 128 bits equal to 0xbe0c690b9f66575a1d766b54e368c84e.
 - The nonce, N, is 96 bits equal to 0x461599d35d632bf2239825bb.
@@ -1460,7 +1460,7 @@ Retry Pseudo-Packet {
 {: #retry-pseudo title="Retry Pseudo-Packet"}
 
 The Retry Pseudo-Packet is not sent over the wire. It is computed by taking
-the transmitted Retry packet, removing the Retry Integrity Tag and prepending
+the transmitted Retry packet, removing the Retry Integrity Tag, and prepending
 the two following fields:
 
 ODCID Length:
@@ -1554,7 +1554,7 @@ handshake ({{handshake-confirmed}}).  An endpoint MUST NOT initiate a subsequent
 key update unless it has received an acknowledgment for a packet that was sent
 protected with keys from the current key phase.  This ensures that keys are
 available to both peers before another key update can be initiated.  This can be
-implemented by tracking the lowest packet number sent with each key phase, and
+implemented by tracking the lowest packet number sent with each key phase and
 the highest acknowledged packet number in the 1-RTT space: once the latter is
 higher than or equal to the former, another key update can be initiated.
 
@@ -1592,7 +1592,7 @@ the key update in a packet protected with the updated keys, the endpoint signals
 that the key update is complete.
 
 An endpoint can defer sending the packet or acknowledgment according to its
-normal packet sending behaviour; it is not necessary to immediately generate a
+normal packet sending behavior; it is not necessary to immediately generate a
 packet in response to a key update.  The next packet sent by the endpoint will
 use the updated keys.  The next packet that contains an acknowledgment will
 cause the key update to be completed.  If an endpoint detects a second update
@@ -1613,7 +1613,7 @@ key update, but has not updated keys in response.
 
 Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
-{{header-protect-analysis}}).  Endpoints can use dummy packet protection keys in
+{{hp-side-channel}}).  Endpoints can use dummy packet protection keys in
 place of discarded keys when key updates are not yet permitted.  Using dummy
 keys will generate no variation in the timing signal produced by attempting to
 remove packet protection, and results in all packets with an invalid Key Phase
@@ -1633,9 +1633,9 @@ to retain only two sets of receive keys; see {{old-keys-recv}}.
 
 Once generated, the next set of packet protection keys SHOULD be retained, even
 if the packet that was received was subsequently discarded.  Packets containing
-apparent key updates are easy to forge and - while the process of key update
-does not require significant effort - triggering this process could be used by
-an attacker for DoS.
+apparent key updates are easy to forge, and while the process of key update does
+not require significant effort, triggering this process could be used by an
+attacker for DoS.
 
 For this reason, endpoints MUST be able to retain two sets of packet protection
 keys for receiving packets: the current and the next.  Retaining the previous
@@ -1663,7 +1663,7 @@ protection keys allows these packets to be successfully processed.
 
 As packets protected with keys from the next key phase use the same Key Phase
 value as those protected with keys from the previous key phase, it is necessary
-to distinguish between the two, if packets protected with old keys are to be
+to distinguish between the two if packets protected with old keys are to be
 processed.  This can be done using packet numbers.  A recovered packet number
 that is lower than any packet number from the current key phase uses the
 previous packet protection keys; a recovered packet number that is higher than
@@ -1684,10 +1684,10 @@ An endpoint MAY allow a period of approximately the Probe Timeout (PTO; see
 {{QUIC-RECOVERY}}) after promoting the next set of receive keys to be current
 before it creates the subsequent set of packet protection keys. These updated
 keys MAY replace the previous keys at that time. With the caveat that PTO is a
-subjective measure - that is, a peer could have a different view of the RTT -
+subjective measure -- that is, a peer could have a different view of the RTT --
 this time is expected to be long enough that any reordered packets would be
-declared lost by a peer even if they were acknowledged and short enough to
-allow a peer to initiate further key updates.
+declared lost by a peer even if they were acknowledged and short enough to allow
+a peer to initiate further key updates.
 
 Endpoints need to allow for the possibility that a peer might not be able to
 decrypt packets that initiate a key update during the period when the peer
@@ -1765,8 +1765,8 @@ the use of the associated AEAD function that preserves margins for
 confidentiality and integrity. That is, limits MUST be specified for the number
 of packets that can be authenticated and for the number of packets that can fail
 authentication.  Providing a reference to any analysis upon which values are
-based - and any assumptions used in that analysis - allows limits to be adapted
-to varying usage conditions.
+based -- and any assumptions used in that analysis -- allows limits to be
+adapted to varying usage conditions.
 
 
 ## Key Update Error Code {#key-update-error}
@@ -1779,13 +1779,13 @@ updates.
 
 Initial packets are not protected with a secret key, so they are subject to
 potential tampering by an attacker.  QUIC provides protection against attackers
-that cannot read packets, but does not attempt to provide additional protection
+that cannot read packets but does not attempt to provide additional protection
 against attacks where the attacker can observe and inject packets.  Some forms
 of tampering -- such as modifying the TLS messages themselves -- are detectable,
 but some -- such as modifying ACKs -- are not.
 
-For example, an attacker could inject a packet containing an ACK frame that
-makes it appear that a packet had not been received or to create a false
+For example, an attacker could inject a packet containing an ACK frame to
+make it appear that a packet had not been received or to create a false
 impression of the state of the connection (e.g., by modifying the ACK Delay).
 Note that such a packet could cause a legitimate packet to be dropped as a
 duplicate.  Implementations SHOULD use caution in relying on any data that is
@@ -1809,7 +1809,7 @@ QUIC transport parameters.
 
 QUIC requires that the cryptographic handshake provide authenticated protocol
 negotiation.  TLS uses Application Layer Protocol Negotiation
-({{!ALPN=RFC7301}}) to select an application protocol.  Unless another mechanism
+{{!ALPN=RFC7301}} to select an application protocol.  Unless another mechanism
 is used for agreeing on an application protocol, endpoints MUST use ALPN for
 this purpose.
 
@@ -1926,16 +1926,16 @@ QUIC is not vulnerable to replay attack, except via the application protocol
 information it might carry.  The management of QUIC protocol state based on the
 frame types defined in {{QUIC-TRANSPORT}} is not vulnerable to replay.
 Processing of QUIC frames is idempotent and cannot result in invalid connection
-states if frames are replayed, reordered or lost.  QUIC connections do not
+states if frames are replayed, reordered, or lost.  QUIC connections do not
 produce effects that last beyond the lifetime of the connection, except for
 those produced by the application protocol that QUIC serves.
 
-Note:
+Important:
 
 : TLS session tickets and address validation tokens are used to carry QUIC
-  configuration information between connections.  Specifically, to enable a
-  server to efficiently recover state that is used in connection establishment
-  and address validation.  These MUST NOT be used to communicate application
+  configuration information between connections, specifically to enable a server
+  to efficiently recover state that is used in connection establishment and
+  address validation.  These MUST NOT be used to communicate application
   semantics between endpoints; clients MUST treat them as opaque values.  The
   potential for reuse of these tokens means that they require stronger
   protections against replay.
@@ -1953,10 +1953,10 @@ all QUIC protocol features that carry application semantics.
 
 Disabling 0-RTT entirely is the most effective defense against replay attack.
 
-QUIC extensions MUST describe how replay attacks affect their operation, or
-prohibit their use in 0-RTT.  Application protocols MUST either prohibit the use
-of extensions that carry application semantics in 0-RTT or provide replay
-mitigation strategies.
+QUIC extensions MUST either describe how replay attacks affect their operation
+or prohibit the use of the extension in 0-RTT.  Application protocols MUST
+either prohibit the use of extensions that carry application semantics in 0-RTT
+or provide replay mitigation strategies.
 
 
 ## Packet Reflection Attack Mitigation {#reflection}
@@ -2011,32 +2011,32 @@ authenticated additional data.  Protected fields that are falsified or modified
 can only be detected once the packet protection is removed.
 
 
-## Header Protection Timing Side-Channels {#hp-side-channel}
+## Header Protection Timing Side Channels {#hp-side-channel}
 
 An attacker could guess values for packet numbers or Key Phase and have an
 endpoint confirm guesses through timing side channels.  Similarly, guesses for
-the packet number length can be tried and exposed.  If the recipient of a
-packet discards packets with duplicate packet numbers without attempting to
-remove packet protection they could reveal through timing side-channels that the
+the packet number length can be tried and exposed.  If the recipient of a packet
+discards packets with duplicate packet numbers without attempting to remove
+packet protection, they could reveal through timing side channels that the
 packet number matches a received packet.  For authentication to be free from
-side-channels, the entire process of header protection removal, packet number
+side channels, the entire process of header protection removal, packet number
 recovery, and packet protection removal MUST be applied together without timing
-and other side-channels.
+and other side channels.
 
 For the sending of packets, construction and protection of packet payloads and
-packet numbers MUST be free from side-channels that would reveal the packet
+packet numbers MUST be free from side channels that would reveal the packet
 number or its encoded size.
 
 During a key update, the time taken to generate new keys could reveal through
 timing side-channels that a key update has occurred.  Alternatively, where an
-attacker injects packets this side-channel could reveal the value of the Key
+attacker injects packets, this side channel could reveal the value of the Key
 Phase on injected packets.  After receiving a key update, an endpoint SHOULD
 generate and save the next set of receive packet protection keys, as described
 in {{receive-key-generation}}.  By generating new keys before a key update is
 received, receipt of packets will not create timing signals that leak the value
 of the Key Phase.
 
-This depends on not doing this key generation during packet processing and it
+This depends on not doing this key generation during packet processing, and it
 can require that endpoints maintain three sets of packet protection keys for
 receiving: for the previous key phase, for the current key phase, and for the
 next key phase.  Endpoints can instead choose to defer generation of the next
@@ -2076,11 +2076,16 @@ TLS. See {{!RFC4086}} for guidance on secure random number generation.
 # IANA Considerations
 
 IANA has registered a codepoint of 57 (or 0x39) for the
-quic_transport_parameters extension (defined in {{quic_parameters}}) in the TLS
-ExtensionType Values Registry {{!TLS-REGISTRIES=RFC8447}}.
+quic_transport_parameters extension (defined in {{quic_parameters}}) in the "TLS
+ExtensionType Values" registry {{!TLS-REGISTRIES=RFC8447}}.
 
 The Recommended column for this extension is marked Yes. The TLS 1.3 Column
-includes CH and EE.
+includes CH (ClientHello) and EE (EncryptedExtensions).
+
+| Value | Extension Name            | TLS 1.3 | Recommended | Reference     |
+|------:|:--------------------------|:--------|:------------|:--------------|
+| 57    | quic_transport_parameters | CH, EE  | Y           | This document |
+{: #iana-tls-ext title="TLS ExtensionType Values Registry Entry"}
 
 
 --- back
@@ -2088,7 +2093,7 @@ includes CH and EE.
 # Sample Packet Protection {#test-vectors}
 
 This section shows examples of packet protection so that implementations can be
-verified incrementally. Samples of Initial packets from both client and server,
+verified incrementally. Samples of Initial packets from both client and server
 plus a Retry packet are defined. These packets use an 8-byte client-chosen
 Destination Connection ID of 0x8394c8f03e515708. Some intermediate values are
 included. All values are shown in hexadecimal.
@@ -2187,7 +2192,7 @@ c300000001088394c8f03e5157080000449e00000002
 
 Protecting the payload produces output that is sampled for header protection.
 Because the header uses a 4-byte packet number encoding, the first 16 bytes of
-the protected payload is sampled, then applied to the header:
+the protected payload is sampled and then applied to the header:
 
 ~~~
 sample = d1b1c98dd7689fb8ec11d242b123dc9b
@@ -2413,28 +2418,29 @@ smaller packet size.
 For AEAD_AES_128_GCM and AEAD_AES_256_GCM, the message length (l) is the length
 of the associated data in blocks plus the length of the plaintext in blocks.
 
-For AEAD_AES_128_CCM, the total number of block cipher operations is the sum of:
-the length of the associated data in blocks, the length of the ciphertext in
-blocks, the length of the plaintext in blocks, plus 1. In this analysis, this is
-simplified to a value of twice the length of the packet in blocks (that is,
-<tt>2l = 2<sup>8</sup></tt> for packets that are limited to 2<sup>11</sup>
-bytes, or <tt>2l = 2<sup>13</sup></tt> otherwise). This simplification is based
-on the packet containing all of the associated data and ciphertext. This results
-in a 1 to 3 block overestimation of the number of operations per packet.
+For AEAD_AES_128_CCM, the total number of block cipher operations is the sum of
+the following: the length of the associated data in blocks, the length of the
+ciphertext in blocks, the length of the plaintext in blocks, plus 1. In this
+analysis, this is simplified to a value of twice the length of the packet in
+blocks (that is, <tt>2l = 2<sup>8</sup></tt> for packets that are limited to
+2<sup>11</sup> bytes, or <tt>2l = 2<sup>13</sup></tt> otherwise). This
+simplification is based on the packet containing all of the associated data and
+ciphertext. This results in a one to three block overestimation of the number of
+operations per packet.
 
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
 
-{{?GCM-MU}} specify concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM as
-used in TLS 1.3 and QUIC. This section documents this analysis using several
+{{?GCM-MU}} specifies concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM
+as used in TLS 1.3 and QUIC. This section documents this analysis using several
 simplifying assumptions:
 
 - The number of ciphertext blocks an attacker uses in forgery attempts is
-bounded by v * l, the number of forgery attempts and the size of each packet (in
-blocks).
+  bounded by v * l, which is the number of forgery attempts multiplied by the
+  size of each packet (in blocks).
 
 - The amount of offline work done by an attacker does not dominate other factors
-in the analysis.
+  in the analysis.
 
 The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 {{AEBounds}}, which allows for larger limits than those described in
@@ -2443,8 +2449,8 @@ The bounds in {{?GCM-MU}} are tighter and more complete than those used in
 
 ### Confidentiality Limit
 
-For confidentiality, Theorum (4.3) in {{?GCM-MU}} establishes that - for a
-single user that does not repeat nonces - the dominant term in determining the
+For confidentiality, Theorem (4.3) in {{?GCM-MU}} establishes that, for a single
+user that does not repeat nonces, the dominant term in determining the
 distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
 
@@ -2460,7 +2466,7 @@ q <= 2^35 / l
 
 Thus, endpoints that do not send packets larger than 2<sup>11</sup> bytes cannot
 protect more than 2<sup>28</sup> packets in a single connection without causing
-an attacker to gain an larger advantage than the target of 2<sup>-57</sup>. The
+an attacker to gain a larger advantage than the target of 2<sup>-57</sup>. The
 limit for endpoints that allow for the packet size to be as large as
 2<sup>16</sup> is instead 2<sup>23</sup>.
 
@@ -2468,7 +2474,7 @@ limit for endpoints that allow for the packet size to be as large as
 ### Integrity Limit
 
 For integrity, Theorem (4.3) in {{?GCM-MU}} establishes that an attacker gains
-an advantage in successfully forging a packet of no more than:
+an advantage in successfully forging a packet of no more than the following:
 
 ~~~
 (1 / 2^(8 * n)) + ((2 * v) / 2^(2 * n))
@@ -2514,7 +2520,7 @@ based on those chosen in {{?TLS13}}.
 
 For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
-no more than:
+no more than the following:
 
 ~~~
 (2l * q)^2 / 2^n
@@ -2526,7 +2532,7 @@ the confidentiality advantage and the integrity advantage are the same, only
 Theorem 1 needs to be considered.
 
 Theorem 1 establishes that an attacker gains an advantage over an
-ideal PRP of no more than:
+ideal PRP of no more than the following:
 
 ~~~
 v / 2^t + (2l * (v + q))^2 / 2^n
@@ -2537,7 +2543,7 @@ second, so that term can be removed without a significant effect on the result.
 
 This produces a relation that combines both encryption and decryption attempts
 with the same limit as that produced by the theorem for confidentiality alone.
-For a target advantage of 2<sup>-57</sup>, this results in:
+For a target advantage of 2<sup>-57</sup>, this results in the following:
 
 ~~~
 v + q <= 2^34.5 / l
