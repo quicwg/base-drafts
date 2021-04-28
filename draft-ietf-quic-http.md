@@ -26,6 +26,7 @@ normative:
     date: {DATE}
     seriesinfo:
       RFC: 9000
+      DOI: 10.17487/RFC9000
     author:
       -
         ins: J. Iyengar
