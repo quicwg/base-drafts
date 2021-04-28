@@ -133,7 +133,7 @@ x (A):
 
 x (A..B):
 : Indicates that x can be any length from A to B; A can be omitted to indicate
-  a minimum of zero bits and B can be omitted to indicate no set upper limit;
+  a minimum of zero bits, and B can be omitted to indicate no set upper limit;
   values in this format always end on a byte boundary
 
 x (L) = C:
