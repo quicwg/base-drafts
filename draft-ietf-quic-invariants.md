@@ -137,11 +137,12 @@ x (A..B):
   values in this format always end on a byte boundary
 
 x (L) = C:
-: Indicates that x, with a length described by L, has a fixed value of C
+: Indicates that x has a fixed value of C; the length of x is described by
+  L, which can use any of the length forms above
 
 x (L) ...:
-: Indicates that x is repeated zero or more times (and that each instance is
-  length L)
+: Indicates that x is repeated zero or more times and that each instance has a
+  length of L
 
 This document uses network byte order (that is, big endian) values.  Fields
 are placed starting from the high-order bits of each byte.

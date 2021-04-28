@@ -314,19 +314,19 @@ x (A..B):
   values in this format always end on a byte boundary
 
 x (L) = C:
-: Indicates that x has a fixed value of C with the length described by
-  L, which can use any of the three length forms above
+: Indicates that x has a fixed value of C; the length of x is described by
+  L, which can use any of the length forms above
 
 x (L) = C..D:
 : Indicates that x has a value in the range from C to D, inclusive,
   with the length described by L, as above
 
 \[x (L)\]:
-: Indicates that x is optional (and has length of L)
+: Indicates that x is optional and has a length of L
 
 x (L) ...:
-: Indicates that zero or more instances of x are present (and that each
-  instance is length L)
+: Indicates that x is repeated zero or more times and that each instance has a
+  length of L
 
 This document uses network byte order (that is, big endian) values.  Fields
 are placed starting from the high-order bits of each byte.
