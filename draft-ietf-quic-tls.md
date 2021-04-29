@@ -141,6 +141,28 @@ informative:
     seriesinfo:
       DOI: 10.1007/978-3-030-26948-7_9
 
+  GCM-MU:
+    title: "The Multi-user Security of GCM, Revisited: Tight Bounds for Nonce Randomization"
+    author:
+      -
+        initials: V.
+        surname: Hoang
+        name: Viet Tung Hoang
+      -
+        initials: S.
+        surname: Tessaro
+        name: Stefano Tessaro
+      -
+        initials: A.
+        surname: Thiruvengadam
+        name: Aishwarya Thiruvengadam
+    date: 2018
+    refcontent:
+      - "CCS '18: Proceedings of the 2018 ACM SIGSAC Conference on Computer and Communications Security"
+      - "pp. 1429-1440"
+    seriesinfo:
+      DOI: 10.1145/3243734.3243816
+
 
 --- abstract
 
@@ -1780,7 +1802,7 @@ possible packets (2<sup>62</sup>) and so can be disregarded. For
 AEAD_AES_128_CCM, the confidentiality limit is 2<sup>21.5</sup> encrypted
 packets; see {{ccm-bounds}}. Applying a limit reduces the probability that an
 attacker can distinguish the AEAD in use from a random permutation; see
-{{AEBounds}}, {{ROBUST}}, and {{?GCM-MU=DOI.10.1145/3243734.3243816}}.
+{{AEBounds}}, {{ROBUST}}, and {{GCM-MU}}.
 
 In addition to counting packets sent, endpoints MUST count the number of
 received packets that fail authentication during the lifetime of a connection.
@@ -1794,7 +1816,7 @@ invalid packets; see {{gcm-bounds}}. For AEAD_CHACHA20_POLY1305, the integrity
 limit is 2<sup>36</sup> invalid packets; see {{AEBounds}}. For AEAD_AES_128_CCM,
 the integrity limit is 2<sup>21.5</sup> invalid packets; see
 {{ccm-bounds}}. Applying this limit reduces the probability that an attacker can
-successfully forge a packet; see {{AEBounds}}, {{ROBUST}}, and {{?GCM-MU}}.
+successfully forge a packet; see {{AEBounds}}, {{ROBUST}}, and {{GCM-MU}}.
 
 Endpoints that limit the size of packets MAY use higher confidentiality and
 integrity limits; see {{aead-analysis}} for details.
@@ -2471,7 +2493,7 @@ operations per packet.
 
 ## Analysis of AEAD_AES_128_GCM and AEAD_AES_256_GCM Usage Limits {#gcm-bounds}
 
-{{?GCM-MU}} specifies concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM
+{{GCM-MU}} specifies concrete bounds for AEAD_AES_128_GCM and AEAD_AES_256_GCM
 as used in TLS 1.3 and QUIC. This section documents this analysis using several
 simplifying assumptions:
 
@@ -2482,14 +2504,14 @@ simplifying assumptions:
 - The amount of offline work done by an attacker does not dominate other factors
   in the analysis.
 
-The bounds in {{?GCM-MU}} are tighter and more complete than those used in
+The bounds in {{GCM-MU}} are tighter and more complete than those used in
 {{AEBounds}}, which allows for larger limits than those described in
 {{?TLS13}}.
 
 
 ### Confidentiality Limit
 
-For confidentiality, Theorem (4.3) in {{?GCM-MU}} establishes that, for a single
+For confidentiality, Theorem (4.3) in {{GCM-MU}} establishes that, for a single
 user that does not repeat nonces, the dominant term in determining the
 distinguishing advantage between a real and random AEAD algorithm gained by an
 attacker is:
@@ -2513,7 +2535,7 @@ limit for endpoints that allow for the packet size to be as large as
 
 ### Integrity Limit
 
-For integrity, Theorem (4.3) in {{?GCM-MU}} establishes that an attacker gains
+For integrity, Theorem (4.3) in {{GCM-MU}} establishes that an attacker gains
 an advantage in successfully forging a packet of no more than the following:
 
 ~~~
