@@ -1128,7 +1128,7 @@ mask that might result from a shorter packet number encoding are unused.
 header protection only differs in the order in which the packet number length
 (pn_length) is determined (here "^" is used to represent exclusive OR).
 
-~~~
+~~~pseudocode
 mask = header_protection(hp_key, sample)
 
 pn_length = (packet[0] & 0x03) + 1
@@ -1225,7 +1225,7 @@ encoding.
 
 The sampled ciphertext can be determined by the following pseudocode:
 
-~~~
+~~~pseudocode
 # pn_offset is the start of the Packet Number field.
 sample_offset = pn_offset + 4
 
@@ -1234,13 +1234,13 @@ sample = packet[sample_offset..sample_offset+sample_length]
 
 Where the packet number offset of a short header packet can be calculated as:
 
-~~~
+~~~pseudocode
 pn_offset = 1 + len(connection_id)
 ~~~
 
 And the packet number offset of a long header packet can be calculated as:
 
-~~~
+~~~pseudocode
 pn_offset = 7 + len(destination_connection_id) +
                 len(source_connection_id) +
                 len(payload_length)
@@ -1268,7 +1268,7 @@ This algorithm samples 16 bytes from the packet ciphertext. This value is used
 as the input to AES-ECB.  In pseudocode, the header protection function is
 defined as:
 
-~~~
+~~~pseudocode
 header_protection(hp_key, sample):
   mask = AES-ECB(hp_key, sample)
 ~~~
@@ -1292,7 +1292,7 @@ integers.
 The encryption mask is produced by invoking ChaCha20 to protect 5 zero bytes. In
 pseudocode, the header protection function is defined as:
 
-~~~
+~~~pseudocode
 header_protection(hp_key, sample):
   counter = sample[0..3]
   nonce = sample[4..15]
@@ -1541,7 +1541,7 @@ corresponding key and IV are created from that secret as defined in
 
 For example, to update write keys with TLS 1.3, HKDF-Expand-Label is used as:
 
-~~~
+~~~pseudocode
 secret_<n+1> = HKDF-Expand-Label(secret_<n>, "quic ku",
                                  "", Hash.length)
 ~~~
@@ -1836,7 +1836,7 @@ QUIC might define a different method for negotiating transport configuration.
 Including transport parameters in the TLS handshake provides integrity
 protection for these values.
 
-~~~
+~~~tls-presentation
    enum {
       quic_transport_parameters(0x39), (65535)
    } ExtensionType;
@@ -1983,7 +1983,7 @@ one of those algorithms (HN1). Header protection is applied after the packet
 protection AEAD, sampling a set of bytes (`sample`) from the AEAD output and
 encrypting the header field using a pseudorandom function (PRF) as follows:
 
-~~~
+~~~pseudocode
 protected_field = field XOR PRF(hp_key, sample)
 ~~~
 
