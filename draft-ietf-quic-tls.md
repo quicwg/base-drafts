@@ -661,9 +661,8 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
-Note:
-
-: Where servers provide certificates for authentication, the size of the
+<aside><t>
+Note: Where servers provide certificates for authentication, the size of the
   certificate chain can consume a large number of bytes.  Controlling the size
   of certificate chains is critical to performance in QUIC as servers are
   limited to sending 3 bytes for every byte received prior to validating the
@@ -671,6 +670,7 @@ Note:
   certificate chain can be managed by limiting the number of names or
   extensions; using keys with small public key representations, like ECDSA; or
   by using certificate compression {{?COMPRESS=RFC8879}}.
+</t></aside>
 
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
@@ -1030,14 +1030,14 @@ server sends a Retry packet to use the connection ID value selected by the
 server.  The secrets do not change when a client changes the Destination
 Connection ID it uses in response to an Initial packet from the server.
 
-Note:
-
-: The Destination Connection ID field could be any length up to 20 bytes,
+<aside><t>
+Note: The Destination Connection ID field could be any length up to 20 bytes,
   including zero length if the server sends a Retry packet with a zero-length
   Source Connection ID field. After a Retry, the Initial keys provide the client
   no assurance that the server received its packet, so the client has to rely on
   the exchange that included the Retry packet to validate the server address;
   see {{Section 8.1 of QUIC-TRANSPORT}}.
+</t></aside>
 
 {{test-vectors}} contains sample Initial packets.
 
@@ -1056,11 +1056,9 @@ a header protection scheme for all cipher suites defined in {{!TLS13}} aside
 from TLS_AES_128_CCM_8_SHA256.  These cipher suites have a 16-byte
 authentication tag and produce an output 16 bytes larger than their input.
 
-Note:
-
-: An endpoint MUST NOT reject a ClientHello that offers a cipher suite that it
-  does not support, or it would be impossible to deploy a new cipher suite.
-  This also applies to TLS_AES_128_CCM_8_SHA256.
+An endpoint MUST NOT reject a ClientHello that offers a cipher suite that it
+does not support, or it would be impossible to deploy a new cipher suite.  This
+also applies to TLS_AES_128_CCM_8_SHA256.
 
 When constructing packets, the AEAD function is applied prior to applying
 header protection; see {{header-protect}}. The unprotected packet header is part
@@ -1360,13 +1358,13 @@ decrypt 0-RTT packets it receives and instead MUST discard them.
 Once a client has installed 1-RTT keys, it MUST NOT send any more 0-RTT
 packets.
 
-Note:
-
-: 0-RTT data can be acknowledged by the server as it receives it, but any
+<aside><t>
+Note: 0-RTT data can be acknowledged by the server as it receives it, but any
   packets containing acknowledgments of 0-RTT data cannot have packet protection
   removed by the client until the TLS handshake is complete.  The 1-RTT keys
   necessary to remove packet protection cannot be derived until the client
   receives all server handshake messages.
+</t></aside>
 
 
 ## Receiving Out-of-Order Protected Packets {#pre-hs-protected}
@@ -1399,11 +1397,11 @@ acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
 packets protected with 1-RTT keys MAY be stored and later decrypted and used
 once the handshake is complete.
 
-Note:
-
-: TLS implementations might provide all 1-RTT secrets prior to handshake
+<aside><t>
+Note: TLS implementations might provide all 1-RTT secrets prior to handshake
   completion.  Even where QUIC implementations have 1-RTT read keys, those keys
   are not to be used prior to completing the handshake.
+</t></aside>
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1558,10 +1556,10 @@ implemented by tracking the lowest packet number sent with each key phase and
 the highest acknowledged packet number in the 1-RTT space: once the latter is
 higher than or equal to the former, another key update can be initiated.
 
-Note:
-
-: Keys of packets other than the 1-RTT packets are never updated; their keys are
-  derived solely from the TLS handshake state.
+<aside><t>
+Note: Keys of packets other than the 1-RTT packets are never updated; their keys
+  are derived solely from the TLS handshake state.
+</t></aside>
 
 The endpoint that initiates a key update also updates the keys that it uses for
 receiving packets.  These keys will be needed to process packets the peer sends
@@ -1930,15 +1928,13 @@ states if frames are replayed, reordered, or lost.  QUIC connections do not
 produce effects that last beyond the lifetime of the connection, except for
 those produced by the application protocol that QUIC serves.
 
-Important:
-
-: TLS session tickets and address validation tokens are used to carry QUIC
-  configuration information between connections, specifically to enable a server
-  to efficiently recover state that is used in connection establishment and
-  address validation.  These MUST NOT be used to communicate application
-  semantics between endpoints; clients MUST treat them as opaque values.  The
-  potential for reuse of these tokens means that they require stronger
-  protections against replay.
+TLS session tickets and address validation tokens are used to carry QUIC
+configuration information between connections, specifically, to enable a server
+to efficiently recover state that is used in connection establishment and
+address validation.  These MUST NOT be used to communicate application semantics
+between endpoints; clients MUST treat them as opaque values.  The potential for
+reuse of these tokens means that they require stronger protections against
+replay.
 
 A server that accepts 0-RTT on a connection incurs a higher cost than accepting
 a connection without 0-RTT.  This includes higher processing and computation
