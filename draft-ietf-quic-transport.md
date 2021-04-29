@@ -834,7 +834,7 @@ consuming a large amount of memory.  To enable a receiver to limit memory
 commitments for a connection, streams are flow controlled both individually and
 across a connection as a whole.  A QUIC receiver controls the maximum amount of
 data the sender can send on a stream as well as across all streams at any time,
-as described in Sections {{data-flow-control<}} and {{fc-credit<}}.
+as described in Sections {{<data-flow-control}} and {{<fc-credit}}.
 
 Similarly, to limit concurrency within a connection, a QUIC endpoint controls
 the maximum cumulative number of streams that its peer can initiate, as
@@ -1749,7 +1749,7 @@ Initial: DCID=S2, SCID=C1 ->
 ~~~
 {: #fig-auth-cid-retry title="Use of Connection IDs in a Handshake with Retry"}
 
-In both cases (Figures {{fig-auth-cid<}} and {{fig-auth-cid-retry<}}), the
+In both cases (Figures {{<fig-auth-cid}} and {{<fig-auth-cid-retry}}), the
 client sets the value of the initial_source_connection_id transport parameter to
 `C1`.
 
@@ -2462,8 +2462,8 @@ send packets to an old peer address in the case that it receives reordered
 packets.
 
 An endpoint MAY send data to an unvalidated peer address, but it MUST protect
-against potential attacks as described in Sections {{address-spoofing<}} and
-{{on-path-spoofing<}}.  An endpoint MAY skip validation of a peer address if
+against potential attacks as described in Sections {{<address-spoofing}} and
+{{<on-path-spoofing}}.  An endpoint MAY skip validation of a peer address if
 that address has been seen recently.  In particular, if an endpoint returns to a
 previously validated path after detecting some form of spurious migration,
 skipping address validation and restoring loss detection and congestion state
@@ -2751,8 +2751,8 @@ to its new address and continue sending to the server's original address.
 
 If packets received at the server's preferred address have a different source
 address than observed from the client during the handshake, the server MUST
-protect against potential attacks as described in Sections {{address-spoofing<}}
-and {{on-path-spoofing<}}.  In addition to intentional simultaneous migration,
+protect against potential attacks as described in Sections {{<address-spoofing}}
+and {{<on-path-spoofing}}.  In addition to intentional simultaneous migration,
 this might also occur because the client's access network used a different NAT
 binding for the server's preferred address.
 
