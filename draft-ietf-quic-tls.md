@@ -1613,9 +1613,9 @@ Endpoints responding to an apparent key update MUST NOT generate a timing
 side-channel signal that might indicate that the Key Phase bit was invalid (see
 {{hp-side-channel}}).  Endpoints can use randomized packet protection keys in
 place of discarded keys when key updates are not yet permitted.  Using
-randomized keys will generate no variation in the timing signal produced by
-attempting to remove packet protection, and results in all packets with an
-invalid Key Phase bit being rejected.
+randomized keys ensures that attempting to remove packet protection does not
+result in timing variations, and results in packets with an invalid Key Phase
+bit being rejected.
 
 The process of creating new packet protection keys for receiving packets could
 reveal that a key update has occurred. An endpoint MAY generate new keys as
