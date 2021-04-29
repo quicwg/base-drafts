@@ -377,15 +377,20 @@ indicate which keys were used to protect a given packet, as shown in
 {{packet-types-keys}}. When packets of different types need to be sent,
 endpoints SHOULD use coalesced packets to send them in the same UDP datagram.
 
-| Packet Type         | Encryption Keys | PN Space         |
-| :------------------ | :-------------- | :--------------- |
-| Initial             | Initial secrets | Initial          |
-| 0-RTT Protected     | 0-RTT           | Application data |
-| Handshake           | Handshake       | Handshake        |
-| Retry               | Retry           | N/A              |
-| Version Negotiation | N/A             | N/A              |
-| Short Header        | 1-RTT           | Application data |
-{: #packet-types-keys title="Encryption Keys by Packet Type"}
+<table anchor="packet-types-keys" align="center">
+<name>Encryption Keys by Packet Type</name>
+<thead>
+<tr><th>Packet Type</th><th>Encryption Keys</th><th>PN Space</th></tr>
+</thead>
+<tbody>
+<tr><th>Initial</th><td>Initial secrets</td><td>Initial</td></tr>
+<tr><th>0-RTT Protected</th><td>0-RTT</td><td>Application data</td></tr>
+<tr><th>Handshake</th><td>Handshake</td><td>Handshake</td></tr>
+<tr><th>Retry</th><td>Retry</td><td>N/A</td></tr>
+<tr><th>Version Negotiation</th><td>N/A</td><td>N/A</td></tr>
+<tr><th>Short Header</th><td>1-RTT</td><td>Application data</td></tr>
+</tbody>
+</table>
 
 {{Section 17 of QUIC-TRANSPORT}} shows how packets at the various encryption
 levels fit into the handshake process.
