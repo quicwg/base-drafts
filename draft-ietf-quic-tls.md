@@ -677,7 +677,7 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
-<aside><t>
+<aside markdown="block"><t markdown="block">
 Note: Where servers provide certificates for authentication, the size of the
   certificate chain can consume a large number of bytes.  Controlling the size
   of certificate chains is critical to performance in QUIC as servers are
@@ -1046,7 +1046,7 @@ server sends a Retry packet to use the connection ID value selected by the
 server.  The secrets do not change when a client changes the Destination
 Connection ID it uses in response to an Initial packet from the server.
 
-<aside><t>
+<aside markdown="block"><t markdown="block">
 Note: The Destination Connection ID field could be any length up to 20 bytes,
   including zero length if the server sends a Retry packet with a zero-length
   Source Connection ID field. After a Retry, the Initial keys provide the client
@@ -1374,7 +1374,7 @@ decrypt 0-RTT packets it receives and instead MUST discard them.
 Once a client has installed 1-RTT keys, it MUST NOT send any more 0-RTT
 packets.
 
-<aside><t>
+<aside markdown="block"><t markdown="block">
 Note: 0-RTT data can be acknowledged by the server as it receives it, but any
   packets containing acknowledgments of 0-RTT data cannot have packet protection
   removed by the client until the TLS handshake is complete.  The 1-RTT keys
@@ -1413,7 +1413,7 @@ acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
 packets protected with 1-RTT keys MAY be stored and later decrypted and used
 once the handshake is complete.
 
-<aside><t>
+<aside markdown="block"><t markdown="block">
 Note: TLS implementations might provide all 1-RTT secrets prior to handshake
   completion.  Even where QUIC implementations have 1-RTT read keys, those keys
   are not to be used prior to completing the handshake.
@@ -1572,7 +1572,7 @@ implemented by tracking the lowest packet number sent with each key phase and
 the highest acknowledged packet number in the 1-RTT space: once the latter is
 higher than or equal to the former, another key update can be initiated.
 
-<aside><t>
+<aside markdown="block"><t markdown="block">
 Note: Keys of packets other than the 1-RTT packets are never updated; their keys
   are derived solely from the TLS handshake state.
 </t></aside>
