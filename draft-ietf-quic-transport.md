@@ -6328,7 +6328,7 @@ Error Code:
 : A variable-length integer error code that indicates the reason for
   closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
   from the space defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame
-  of type 0x1d uses codes from the application protocol error code space; see
+  of type 0x1d uses codes defined by the application protocol; see
   {{app-error-codes}}.
 
 Frame Type:
