@@ -132,7 +132,7 @@ QUIC is a connection-oriented protocol that creates a stateful interaction
 between a client and server.
 
 The QUIC handshake combines negotiation of cryptographic and transport
-parameters. QUIC integrates the TLS ({{TLS13}}) handshake, although using a
+parameters. QUIC integrates the TLS handshake {{TLS13}}, although using a
 customized framing for protecting packets. The integration of TLS and QUIC is
 described in more detail in {{QUIC-TLS}}. The handshake is structured to permit
 the exchange of application data as soon as possible. This includes an option
@@ -143,11 +143,11 @@ Endpoints communicate in QUIC by exchanging QUIC packets. Most packets contain
 frames, which carry control information and application data between endpoints.
 QUIC authenticates the entirety of each packet and encrypts as much of each
 packet as is practical. QUIC packets are carried in UDP datagrams
-({{!UDP=RFC0768}}) to better facilitate deployment in existing systems and
+{{!UDP=RFC0768}} to better facilitate deployment in existing systems and
 networks.
 
 Application protocols exchange information over a QUIC connection via streams,
-which are ordered sequences of bytes. Two types of stream can be created:
+which are ordered sequences of bytes. Two types of streams can be created:
 bidirectional streams, which allow both endpoints to send data; and
 unidirectional streams, which allow a single endpoint to send data. A
 credit-based scheme is used to limit stream creation and to bound the amount of
@@ -185,8 +185,8 @@ This document describes the core QUIC protocol and is structured as follows:
   - {{connections}} describes core concepts related to connections,
   - {{version-negotiation}} describes version negotiation,
   - {{handshake}} details the process for establishing connections,
-  - {{address-validation}} describes address validation and critical denial of
-    service mitigations,
+  - {{address-validation}} describes address validation and critical
+    denial-of-service mitigations,
   - {{migration}} describes how endpoints migrate a connection to a new
     network path,
   - {{termination}} lists the options for terminating an open connection, and
@@ -201,12 +201,12 @@ This document describes the core QUIC protocol and is structured as follows:
     carrying QUIC packets.
 
 * Finally, encoding details of QUIC protocol elements are described in:
-  - {{versions}} (Versions),
-  - {{integer-encoding}} (Integer Encoding),
-  - {{packet-formats}} (Packet Headers),
-  - {{transport-parameter-encoding}} (Transport Parameters),
-  - {{frame-formats}} (Frames), and
-  - {{error-codes}} (Errors).
+  - {{versions}} (versions),
+  - {{integer-encoding}} (integer encoding),
+  - {{packet-formats}} (packet headers),
+  - {{transport-parameter-encoding}} (transport parameters),
+  - {{frame-formats}} (frames), and
+  - {{error-codes}} (errors).
 
 Accompanying documents describe QUIC's loss detection and congestion control
 {{QUIC-RECOVERY}}, and the use of TLS and other cryptographic mechanisms
@@ -223,7 +223,7 @@ set of version-independent properties of QUIC can cite {{QUIC-INVARIANTS}}.
 
 {::boilerplate bcp14}
 
-Commonly used terms in the document are described below.
+Commonly used terms in this document are described below.
 
 QUIC:
 
@@ -233,7 +233,7 @@ QUIC:
 Endpoint:
 
 : An entity that can participate in a QUIC connection by generating, receiving,
-  and processing QUIC packets. There are only two types of endpoint in QUIC:
+  and processing QUIC packets. There are only two types of endpoints in QUIC:
   client and server.
 
 Client:
@@ -250,7 +250,7 @@ QUIC packet:
   datagram.  One or more QUIC packets can be encapsulated in a single UDP
   datagram.
 
-Ack-eliciting Packet:
+Ack-eliciting packet:
 
 : A QUIC packet that contains frames other than ACK, PADDING, and
   CONNECTION_CLOSE. These cause a recipient to send an acknowledgment; see
@@ -334,7 +334,7 @@ are placed starting from the high-order bits of each byte.
 By convention, individual fields reference a complex field by using the name of
 the complex field.
 
-For example:
+{{fig-ex-format}} provides an example:
 
 ~~~
 Example Structure {
@@ -364,13 +364,13 @@ Streams in QUIC provide a lightweight, ordered byte-stream abstraction to an
 application. Streams can be unidirectional or bidirectional.
 
 Streams can be created by sending data. Other processes associated with stream
-management - ending, cancelling, and managing flow control - are all designed to
+management - ending, canceling, and managing flow control - are all designed to
 impose minimal overheads. For instance, a single STREAM frame ({{frame-stream}})
 can open, carry data for, and close a stream. Streams can also be long-lived and
 can last the entire duration of a connection.
 
 Streams can be created by either endpoint, can concurrently send data
-interleaved with other streams, and can be cancelled. QUIC does not provide any
+interleaved with other streams, and can be canceled. QUIC does not provide any
 means of ensuring ordering between bytes on different streams.
 
 QUIC allows for an arbitrary number of streams to operate concurrently and for
@@ -410,7 +410,7 @@ one of four types, as summarized in {{stream-id-types}}.
 | 0x03 | Server-Initiated, Unidirectional |
 {: #stream-id-types title="Stream ID Types"}
 
-The stream space for each type begins at the minimum value (0x00 through 0x03
+The stream space for each type begins at the minimum value (0x00 through 0x03,
 respectively); successive streams of each type are created with numerically
 increasing stream IDs.  A stream ID that is used out of order results in all
 streams of that type with lower-numbered stream IDs also being opened.
@@ -423,7 +423,7 @@ endpoint uses the Stream ID and Offset fields in STREAM frames to place data in
 order.
 
 Endpoints MUST be able to deliver stream data to an application as an ordered
-byte-stream.  Delivering an ordered byte-stream requires that an endpoint buffer
+byte stream.  Delivering an ordered byte stream requires that an endpoint buffer
 any data that is received out of order, up to the advertised flow control limit.
 
 QUIC makes no specific allowances for delivery of stream data out of
@@ -460,7 +460,7 @@ by the application to determine how to allocate resources to active streams.
 
 ## Operations on Streams {#stream-operations}
 
-This document does not define an API for QUIC, but instead defines a set of
+This document does not define an API for QUIC; it instead defines a set of
 functions on streams that application protocols can rely upon.  An application
 protocol can assume that a QUIC implementation provides an interface that
 includes the operations described in this section.  An implementation designed
@@ -493,10 +493,10 @@ cannot be written to the stream due to flow control.
 
 This section describes streams in terms of their send or receive components.
 Two state machines are described: one for the streams on which an endpoint
-transmits data ({{stream-send-states}}), and another for streams on which an
+transmits data ({{stream-send-states}}) and another for streams on which an
 endpoint receives data ({{stream-recv-states}}).
 
-Unidirectional streams use either the sending or receiving state machine
+Unidirectional streams use either the sending or receiving state machine,
 depending on the stream type and endpoint role. Bidirectional streams use both
 state machines at both endpoints. For the most part, the use of these state
 machines is the same whether the stream is unidirectional or bidirectional. The
@@ -513,12 +513,12 @@ implementations. An implementation can define a different state machine as long
 as its behavior is consistent with an implementation that implements these
 states.
 
-Note:
-
-: In some cases, a single event or action can cause a transition through
-  multiple states.  For instance, sending STREAM with a FIN bit set can cause
-  two state transitions for a sending stream: from the Ready state to the Send
-  state, and from the Send state to the Data Sent state.
+<aside><t>
+  Note: In some cases, a single event or action can cause a transition
+  through multiple states.  For instance, sending STREAM with a FIN bit set can
+  cause two state transitions for a sending stream: from the "Ready" state to
+  the "Send" state, and from the "Send" state to the "Data Sent" state.
+</t></aside>
 
 
 ## Sending Stream States {#stream-send-states}
