@@ -102,6 +102,22 @@ informative:
     date: 2020-05-16
     target: "https://eprint.iacr.org/2020/718"
 
+  CCM-ANALYSIS:
+    title: "On the Security of CTR + CBC-MAC"
+    author:
+      -
+        initials: J.
+        surname: Jonsson
+        name: Jakob Jonsson
+    date: 2003
+    refcontent:
+      - "Selected Areas in Cryptography"
+      - "SAC 2002"
+      - "Lecture Notes in Computer Science, vol 2595"
+      - "pp. 76-93"
+    seriesinfo:
+      DOI: 10.1007/3-540-36492-7_7
+
 
 --- abstract
 
@@ -2510,11 +2526,11 @@ for AEAD_AES_128_CCM. However, any AEAD that is used with QUIC requires limits
 on use that ensure that both confidentiality and integrity are preserved. This
 section documents that analysis.
 
-{{?CCM-ANALYSIS=DOI.10.1007/3-540-36492-7_7}} is used as the basis of this
+{{CCM-ANALYSIS}} is used as the basis of this
 analysis. The results of that analysis are used to derive usage limits that are
 based on those chosen in {{?TLS13}}.
 
-For confidentiality, Theorem 2 in {{?CCM-ANALYSIS}} establishes that an attacker
+For confidentiality, Theorem 2 in {{CCM-ANALYSIS}} establishes that an attacker
 gains a distinguishing advantage over an ideal pseudorandom permutation (PRP) of
 no more than the following:
 
@@ -2522,7 +2538,7 @@ no more than the following:
 (2l * q)^2 / 2^n
 ~~~
 
-The integrity limit in Theorem 1 in {{?CCM-ANALYSIS}} provides an attacker a
+The integrity limit in Theorem 1 in {{CCM-ANALYSIS}} provides an attacker a
 strictly higher advantage for the same number of messages. As the targets for
 the confidentiality advantage and the integrity advantage are the same, only
 Theorem 1 needs to be considered.
