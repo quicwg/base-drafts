@@ -118,6 +118,29 @@ informative:
     seriesinfo:
       DOI: 10.1007/3-540-36492-7_7
 
+  NAN:
+    title: "Nonces Are Noticed: AEAD Revisited"
+    author:
+      -
+        initials: M.
+        surname: Bellare
+        name: Mihir Bellare
+      -
+        initials: R.
+        surname: Ng
+        name: Ruth Ng
+      -
+        initials: B.
+        surname: Tackmann
+        name: Björn Tackmann
+    date: 2019
+    refcontent:
+      - "Advances in Cryptology - CRYPTO 2019"
+      - "Lecture Notes in Computer Science, vol 11692"
+      - "pp. 235-265"
+    seriesinfo:
+      DOI: 10.1007/978-3-030-26948-7_9
+
 
 --- abstract
 
@@ -1988,7 +2011,7 @@ limit the level of amplification.
 
 ## Header Protection Analysis {#header-protect-analysis}
 
-{{?NAN=DOI.10.1007/978-3-030-26948-7_9}} analyzes authenticated encryption
+{{NAN}} analyzes authenticated encryption
 algorithms that provide nonce privacy, referred to as "Hide Nonce" (HN)
 transforms. The general header protection construction in this document is
 one of those algorithms (HN1). Header protection is applied after the packet
