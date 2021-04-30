@@ -1276,8 +1276,8 @@ discovering an error, or fully revert any changes made during that processing.
 Valid packets sent to clients always include a Destination Connection ID that
 matches a value the client selects.  Clients that choose to receive zero-length
 connection IDs can use the local address and port to identify a connection.
-Packets that do not match an existing connection, based on Destination
-Connection ID or, if this value is zero length, local IP address and port, are
+Packets that do not match an existing connection -- based on Destination
+Connection ID or, if this value is zero length, local IP address and port -- are
 discarded.
 
 Due to packet reordering or loss, a client might receive packets for a
