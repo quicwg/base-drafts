@@ -3310,7 +3310,7 @@ frame risks a peer missing the first such packet.  The only mechanism available
 to an endpoint that continues to receive data for a terminated connection is to
 attempt the stateless reset process ({{stateless-reset}}).
 
-As the AEAD on Initial packets does not provide strong authentication, an
+As the AEAD for Initial packets does not provide strong authentication, an
 endpoint MAY discard an invalid Initial packet.  Discarding an Initial packet is
 permitted even where this specification otherwise mandates a connection error.
 An endpoint can only discard a packet if it does not process the frames in the
@@ -3321,7 +3321,7 @@ packets might be used to reduce exposure to denial of service; see
 
 ## Stream Errors
 
-If an application-level error affects a single stream, but otherwise leaves the
+If an application-level error affects a single stream but otherwise leaves the
 connection in a recoverable state, the endpoint can send a RESET_STREAM frame
 ({{frame-reset-stream}}) with an appropriate error code to terminate just the
 affected stream.
@@ -3333,11 +3333,11 @@ MUST only be instigated by the application protocol that uses QUIC.
 The semantics of the application error code carried in RESET_STREAM are
 defined by the application protocol.  Only the application protocol is able to
 cause a stream to be terminated.  A local instance of the application protocol
-uses a direct API call and a remote instance uses the STOP_SENDING frame, which
+uses a direct API call, and a remote instance uses the STOP_SENDING frame, which
 triggers an automatic RESET_STREAM.
 
 Application protocols SHOULD define rules for handling streams that are
-prematurely cancelled by either endpoint.
+prematurely canceled by either endpoint.
 
 
 # Packets and Frames {#packets-frames}
@@ -3366,17 +3366,17 @@ section includes an overview of the protections that are provided.
 Version Negotiation packets have no cryptographic protection; see
 {{QUIC-INVARIANTS}}.
 
-Retry packets use an authenticated encryption with associated data function
-(AEAD; {{?AEAD=RFC5116}}) to protect against accidental modification.
+Retry packets use an AEAD function {{?AEAD=RFC5116}} to protect against
+accidental modification.
 
-Initial packets use an AEAD, the keys for which are derived using a value that
-is visible on the wire. Initial packets therefore do not have effective
-confidentiality protection. Initial protection exists to ensure that the sender
-of the packet is on the network path. Any entity that receives an Initial packet
-from a client can recover the keys that will allow them to both read the
-contents of the packet and generate Initial packets that will be successfully
-authenticated at either endpoint.  The AEAD also protects Initial packets
-against accidental modification.
+Initial packets use an AEAD function, the keys for which are derived using a
+value that is visible on the wire. Initial packets therefore do not have
+effective confidentiality protection. Initial protection exists to ensure that
+the sender of the packet is on the network path. Any entity that receives an
+Initial packet from a client can recover the keys that will allow them to both
+read the contents of the packet and generate Initial packets that will be
+successfully authenticated at either endpoint.  The AEAD also protects Initial
+packets against accidental modification.
 
 All other packets are protected with keys derived from the cryptographic
 handshake.  The cryptographic handshake ensures that only the communicating
@@ -3403,8 +3403,8 @@ removed.
 Using the Length field, a sender can coalesce multiple QUIC packets into one UDP
 datagram.  This can reduce the number of UDP datagrams needed to complete the
 cryptographic handshake and start sending data.  This can also be used to
-construct PMTU probes; see {{pmtu-probes-src-cid}}.  Receivers MUST be able to
-process coalesced packets.
+construct Path Maximum Transmission Unit (PMTU) probes; see
+{{pmtu-probes-src-cid}}.  Receivers MUST be able to process coalesced packets.
 
 Coalescing packets in order of increasing encryption levels (Initial, 0-RTT,
 Handshake, 1-RTT; see {{Section 4.1.4 of QUIC-TLS}}) makes it more likely the
@@ -3443,19 +3443,23 @@ endpoint maintains a separate packet number for sending and receiving.
 
 Packet numbers are limited to this range because they need to be representable
 in whole in the Largest Acknowledged field of an ACK frame ({{frame-ack}}).
-When present in a long or short header however, packet numbers are reduced and
+When present in a long or short header, however, packet numbers are reduced and
 encoded in 1 to 4 bytes; see {{packet-encoding}}.
 
 Version Negotiation ({{packet-version}}) and Retry ({{packet-retry}}) packets
 do not include a packet number.
 
-Packet numbers are divided into 3 spaces in QUIC:
+Packet numbers are divided into three spaces in QUIC:
 
-- Initial space: All Initial packets ({{packet-initial}}) are in this space.
-- Handshake space: All Handshake packets ({{packet-handshake}}) are in this
+Initial space:
+: All Initial packets ({{packet-initial}}) are in this space.
+
+Handshake space:
+: All Handshake packets ({{packet-handshake}}) are in this space.
+
+Application data space:
+: All 0-RTT ({{packet-0rtt}}) and 1-RTT ({{packet-1rtt}}) packets are in this
   space.
-- Application data space: All 0-RTT ({{packet-0rtt}}) and 1-RTT
-  ({{packet-1rtt}}) packets are in this space.
 
 As described in {{QUIC-TLS}}, each packet type uses different protection keys.
 
@@ -3488,8 +3492,8 @@ Endpoints that track all individual packets for the purposes of detecting
 duplicates are at risk of accumulating excessive state.  The data required for
 detecting duplicates can be limited by maintaining a minimum packet number below
 which all packets are immediately dropped.  Any minimum needs to account for
-large variations in round trip time, which includes the possibility that a peer
-might probe network paths with much larger round trip times; see {{migration}}.
+large variations in round-trip time, which includes the possibility that a peer
+might probe network paths with much larger round-trip times; see {{migration}}.
 
 Packet number encoding at a sender and decoding at a receiver are described in
 {{packet-encoding}}.
@@ -3585,7 +3589,7 @@ ih:
 : Only a CONNECTION_CLOSE frame of type 0x1c can appear in Initial or Handshake
   packets.
 
-For more detail about these restrictions, see {{frames-and-spaces}}.  Note
+For more details about these restrictions, see {{frames-and-spaces}}.  Note
 that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
 a frame in a packet type that is not permitted as a connection error of type
 PROTOCOL_VIOLATION.
@@ -3607,7 +3611,7 @@ P:
   network paths during connection migration; see {{probing}}.
 
 F:
-: The content of frames with this marking are flow controlled; see
+: The contents of frames with this marking are flow controlled; see
   {{flow-control}}.
 
 The "Pkts" and "Spec" columns in  {{frame-types}} do not form part of the IANA
@@ -3620,10 +3624,10 @@ All frames are idempotent in this version of QUIC.  That is, a valid frame does
 not cause undesirable side effects or errors when received more than once.
 
 The Frame Type field uses a variable-length integer encoding (see
-{{integer-encoding}}) with one exception.  To ensure simple and efficient
+{{integer-encoding}}), with one exception.  To ensure simple and efficient
 implementations of frame parsing, a frame type MUST use the shortest possible
 encoding.  For frame types defined in this document, this means a single-byte
-encoding, even though it is possible to encode these values as a two-, four-
+encoding, even though it is possible to encode these values as a two-, four-,
 or eight-byte variable-length integer.  For instance, though 0x4001 is
 a legitimate two-byte encoding for a variable-length integer with a value
 of 1, PING frames are always encoded as a single byte with the value 0x01.
@@ -3646,7 +3650,7 @@ data packet number space:
   application errors (type 0x1d) MUST only appear in the application data packet
   number space.
 
-- ACK frames MAY appear in any packet number space, but can only acknowledge
+- ACK frames MAY appear in any packet number space but can only acknowledge
   packets that appeared in that packet number space.  However, as noted below,
   0-RTT packets cannot contain ACK frames.
 
@@ -3691,7 +3695,7 @@ to underfilled packets.
 A packet MUST NOT be acknowledged until packet protection has been successfully
 removed and all frames contained in the packet have been processed.  For STREAM
 frames, this means the data has been enqueued in preparation to be received by
-the application protocol, but it does not require that data is delivered and
+the application protocol, but it does not require that data be delivered and
 consumed.
 
 Once the packet has been fully processed, a receiver acknowledges receipt by
@@ -3700,7 +3704,7 @@ packet.
 
 An endpoint SHOULD treat receipt of an acknowledgment for a packet it did not
 send as a connection error of type PROTOCOL_VIOLATION, if it is able to detect
-the condition.  Further discussion of how this might be achieved is in
+the condition.  For further discussion of how this might be achieved, see
 {{optimistic-ack-attack}}.
 
 ## Generating Acknowledgments {#generating-acks}
@@ -3821,7 +3825,7 @@ spurious retransmissions caused by losing previously sent ACK frames, at the
 cost of larger ACK frames.
 
 ACK frames SHOULD always acknowledge the most recently received packets, and the
-more out-of-order the packets are, the more important it is to send an updated
+more out of order the packets are, the more important it is to send an updated
 ACK frame quickly, to prevent the peer from declaring a packet as lost and
 spuriously retransmitting the frames it contains.  An ACK frame is expected
 to fit within a single QUIC packet.  If it does not, then older ranges
@@ -3847,12 +3851,12 @@ packet number that increases as ranges are discarded is one way to achieve this
 with minimal state.
 
 Receivers can discard all ACK Ranges, but they MUST retain the largest packet
-number that has been successfully processed as that is used to recover packet
+number that has been successfully processed, as that is used to recover packet
 numbers from subsequent packets; see {{packet-encoding}}.
 
 A receiver SHOULD include an ACK Range containing the largest received packet
 number in every ACK frame. The Largest Acknowledged field is used in ECN
-validation at a sender and including a lower value than what was included in a
+validation at a sender, and including a lower value than what was included in a
 previous ACK frame could cause ECN to be unnecessarily disabled; see
 {{ecn-validation}}.
 
@@ -3877,8 +3881,8 @@ such as once per round trip, to elicit an ACK from the peer.
 
 In cases without ACK frame loss, this algorithm allows for a minimum of 1 RTT of
 reordering. In cases with ACK frame loss and reordering, this approach does not
-guarantee that every acknowledgment is seen by the sender before it is no
-longer included in the ACK frame. Packets could be received out of order and all
+guarantee that every acknowledgment is seen by the sender before it is no longer
+included in the ACK frame. Packets could be received out of order, and all
 subsequent ACK frames containing them could be lost. In this case, the loss
 recovery algorithm could cause spurious retransmissions, but the sender will
 continue making forward progress.
@@ -3936,7 +3940,7 @@ needed.
 
 New frames and packets are used to carry information that is determined to have
 been lost.  In general, information is sent again when a packet containing that
-information is determined to be lost and sending ceases when a packet
+information is determined to be lost, and sending ceases when a packet
 containing that information is acknowledged.
 
 * Data sent in CRYPTO frames is retransmitted according to the rules in
@@ -3971,8 +3975,8 @@ containing that information is acknowledged.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
-  sent MAX_DATA frame is declared lost, or when the endpoint decides to update
-  the limit.  Care is necessary to avoid sending this frame too often as the
+  sent MAX_DATA frame is declared lost or when the endpoint decides to update
+  the limit.  Care is necessary to avoid sending this frame too often, as the
   limit can increase frequently and cause an unnecessarily large number of
   MAX_DATA frames to be sent; see {{fc-credit}}.
 
@@ -4027,7 +4031,7 @@ priorities specified by the application indicate otherwise; see
 Even though a sender is encouraged to assemble frames containing up-to-date
 information every time it sends a packet, it is not forbidden to retransmit
 copies of frames from lost packets.  A sender that retransmits copies of frames
-needs to handle decreases in available payload size due to change in packet
+needs to handle decreases in available payload size due to changes in packet
 number length, connection ID length, and path MTU.  A receiver MUST accept
 packets containing an outdated frame, such as a MAX_DATA frame carrying a
 smaller maximum data than one found in an older packet.
@@ -4038,7 +4042,7 @@ lost, which can happen in the presence of network reordering. Doing so requires
 senders to retain information about packets after they are declared lost. A
 sender can discard this information after a period of time elapses that
 adequately allows for reordering, such as a PTO ({{Section 6.2 of
-QUIC-RECOVERY}}), or on other events, such as reaching a memory limit.
+QUIC-RECOVERY}}), or based on other events, such as reaching a memory limit.
 
 Upon detecting losses, a sender MUST take appropriate congestion control action.
 The details of loss detection and congestion control are described in
@@ -4047,8 +4051,8 @@ The details of loss detection and congestion control are described in
 
 ## Explicit Congestion Notification {#ecn}
 
-QUIC endpoints can use Explicit Congestion Notification (ECN) {{!RFC3168}} to
-detect and respond to network congestion.  ECN allows an endpoint to set an ECT
+QUIC endpoints can use ECN {{!RFC3168}} to detect and respond to network
+congestion.  ECN allows an endpoint to set an ECN-Capable Transport (ECT)
 codepoint in the ECN field of an IP packet. A network node can then indicate
 congestion by setting the CE codepoint in the ECN field instead of dropping the
 packet {{?RFC8087}}.  Endpoints react to reported congestion by reducing their
@@ -4061,20 +4065,20 @@ see {{ecn-validation}}.
 
 ### Reporting ECN Counts
 
-Use of ECN requires the receiving endpoint to read the ECN field from an IP
+The use of ECN requires the receiving endpoint to read the ECN field from an IP
 packet, which is not possible on all platforms. If an endpoint does not
-implement ECN support or does not have access to received ECN fields, it
-does not report ECN counts for packets it receives.
+implement ECN support or does not have access to received ECN fields, it does
+not report ECN counts for packets it receives.
 
-Even if an endpoint does not set an ECT field on packets it sends, the endpoint
+Even if an endpoint does not set an ECT field in packets it sends, the endpoint
 MUST provide feedback about ECN markings it receives, if these are accessible.
 Failing to report the ECN counts will cause the sender to disable use of ECN
 for this connection.
 
-On receiving an IP packet with an ECT(0), ECT(1) or CE codepoint, an
+On receiving an IP packet with an ECT(0), ECT(1), or CE codepoint, an
 ECN-enabled endpoint accesses the ECN field and increases the corresponding
 ECT(0), ECT(1), or CE count. These ECN counts are included in subsequent ACK
-frames; see {{generating-acks}} and {{frame-ack}}.
+frames; see Sections {{<generating-acks}} and {{<frame-ack}}.
 
 Each packet number space maintains separate acknowledgment state and separate
 ECN counts.  Coalesced QUIC packets (see {{packet-coalesce}}) share the same IP
@@ -4101,7 +4105,7 @@ path and disables use of ECN on that path if errors are detected.
 To perform ECN validation for a new path:
 
 * The endpoint sets an ECT(0) codepoint in the IP header of early outgoing
-  packets sent on a new path to the peer ({{!RFC8311}}).
+  packets sent on a new path to the peer {{!RFC8311}}.
 
 * The endpoint monitors whether all packets sent with an ECT codepoint are
   eventually deemed lost ({{Section 6 of QUIC-RECOVERY}}), indicating
@@ -4174,9 +4178,9 @@ any later time in the connection. An endpoint could continue to periodically
 attempt validation.
 
 Upon successful validation, an endpoint MAY continue to set an ECT codepoint in
-subsequent packets it sends, with the expectation that the path is ECN-capable.
-Network routing and path elements can however change mid-connection; an endpoint
-MUST disable ECN if validation later fails.
+subsequent packets it sends, with the expectation that the path is ECN capable.
+Network routing and path elements can change mid-connection; an endpoint MUST
+disable ECN if validation later fails.
 
 
 # Datagram Size {#datagram-size}
@@ -4192,7 +4196,7 @@ used if the network path cannot support a maximum datagram size of at least 1200
 bytes.
 
 QUIC assumes a minimum IP packet size of at least 1280 bytes.  This is the IPv6
-minimum size ({{?IPv6=RFC8200}}) and is also supported by most modern IPv4
+minimum size {{?IPv6=RFC8200}} and is also supported by most modern IPv4
 networks.  Assuming the minimum IP header size of 40 bytes for IPv6 and 20 bytes
 for IPv4 and a UDP header size of 8 bytes, this results in a maximum datagram
 size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Thus, modern IPv4
@@ -4206,8 +4210,8 @@ Note:
   Initial packets and path validation.
 
 Any maximum datagram size larger than 1200 bytes can be discovered using Path
-Maximum Transmission Unit Discovery (PMTUD; see {{pmtud}}) or Datagram
-Packetization Layer PMTU Discovery (DPLPMTUD; see {{dplpmtud}}).
+Maximum Transmission Unit Discovery (PMTUD) (see {{pmtud}}) or Datagram
+Packetization Layer PMTU Discovery (DPLPMTUD) (see {{dplpmtud}}).
 
 Enforcement of the max_udp_payload_size transport parameter
 ({{transport-parameter-definitions}}) might act as an additional limit on the
@@ -4217,15 +4221,15 @@ endpoints risk datagrams being lost if they send datagrams larger than the
 smallest allowed maximum datagram size of 1200 bytes.
 
 UDP datagrams MUST NOT be fragmented at the IP layer.  In IPv4
-({{!IPv4=RFC0791}}), the DF bit MUST be set if possible, to prevent
-fragmentation on the path.
+{{!IPv4=RFC0791}}, the Don't Fragment (DF) bit MUST be set if possible, to
+prevent fragmentation on the path.
 
 QUIC sometimes requires datagrams to be no smaller than a certain size; see
 {{validate-handshake}} as an example. However, the size of a datagram is not
 authenticated. That is, if an endpoint receives a datagram of a certain size, it
 cannot know that the sender sent the datagram at the same size. Therefore, an
 endpoint MUST NOT close a connection when it receives a datagram that does not
-meet size constraints; the endpoint MAY however discard such datagrams.
+meet size constraints; the endpoint MAY discard such datagrams.
 
 
 ## Initial Datagram Size {#initial-size}
@@ -4259,12 +4263,11 @@ address of the client; see {{address-validation}}.
 
 ## Path Maximum Transmission Unit
 
-The Path Maximum Transmission Unit (PMTU) is the maximum size of the entire IP
-packet including the IP header, UDP header, and UDP payload. The UDP payload
-includes one or more QUIC packet headers and protected payloads. The PMTU can
-depend on path characteristics, and can therefore change over time. The largest
-UDP payload an endpoint sends at any given time is referred to as the endpoint's
-maximum datagram size.
+The PMTU is the maximum size of the entire IP packet, including the IP header,
+UDP header, and UDP payload. The UDP payload includes one or more QUIC packet
+headers and protected payloads. The PMTU can depend on path characteristics and
+can therefore change over time. The largest UDP payload an endpoint sends at any
+given time is referred to as the endpoint's maximum datagram size.
 
 An endpoint SHOULD use DPLPMTUD ({{dplpmtud}}) or PMTUD ({{pmtud}}) to determine
 whether the path to a destination will support a desired maximum datagram size
@@ -4275,7 +4278,7 @@ size.
 Both DPLPMTUD and PMTUD send datagrams that are larger than the current maximum
 datagram size, referred to as PMTU probes.  All QUIC packets that are not sent
 in a PMTU probe SHOULD be sized to fit within the maximum datagram size to avoid
-the datagram being fragmented or dropped ({{?RFC8085}}).
+the datagram being fragmented or dropped {{?RFC8085}}.
 
 If a QUIC endpoint determines that the PMTU between any pair of local and
 remote IP addresses cannot support the smallest allowed maximum datagram size
@@ -4295,51 +4298,51 @@ size to allow for unknown tunnel overheads or IP header options/extensions.
 
 ### Handling of ICMP Messages by PMTUD {#pmtud}
 
-Path Maximum Transmission Unit Discovery (PMTUD; {{!RFC1191}}, {{!RFC8201}})
-relies on reception of ICMP messages (e.g., IPv6 Packet Too Big messages) that
-indicate when an IP packet is dropped because it is larger than the local router
-MTU. DPLPMTUD can also optionally use these messages.  This use of ICMP messages
-is potentially vulnerable to attacks by entities that cannot observe packets
-but might successfully guess the addresses used on the path. These attacks
-could reduce the PMTU to a bandwidth-inefficient value.
+PMTUD {{!RFC1191}} {{!RFC8201}} relies on reception of ICMP messages (that is,
+IPv6 Packet Too Big (PTB) messages) that indicate when an IP packet is dropped
+because it is larger than the local router MTU. DPLPMTUD can also optionally use
+these messages.  This use of ICMP messages is potentially vulnerable to attacks
+by entities that cannot observe packets but might successfully guess the
+addresses used on the path. These attacks could reduce the PMTU to a
+bandwidth-inefficient value.
 
 An endpoint MUST ignore an ICMP message that claims the PMTU has decreased below
 QUIC's smallest allowed maximum datagram size.
 
-The requirements for generating ICMP ({{?RFC1812}}, {{?RFC4443}}) state that
-the quoted packet should contain as much of the original packet as possible
-without exceeding the minimum MTU for the IP version. The size of the quoted
-packet can actually be smaller, or the information unintelligible, as described
-in {{Section 1.1 of DPLPMTUD}}.
+The requirements for generating ICMP {{?RFC1812}} {{?RFC4443}} state that the
+quoted packet should contain as much of the original packet as possible without
+exceeding the minimum MTU for the IP version. The size of the quoted packet can
+actually be smaller, or the information unintelligible, as described in
+{{Section 1.1 of DPLPMTUD}}.
 
 QUIC endpoints using PMTUD SHOULD validate ICMP messages to protect from
 packet injection as specified in {{!RFC8201}} and {{Section 5.2 of RFC8085}}.
 This validation SHOULD use the quoted packet supplied in the payload of an ICMP
 message to associate the message with a corresponding transport connection (see
 {{Section 4.6.1 of DPLPMTUD}}).  ICMP message validation MUST include matching
-IP addresses and UDP ports ({{!RFC8085}}) and, when possible, connection IDs to
+IP addresses and UDP ports {{!RFC8085}} and, when possible, connection IDs to
 an active QUIC session.  The endpoint SHOULD ignore all ICMP messages that fail
 validation.
 
-An endpoint MUST NOT increase PMTU based on ICMP messages; see Section 3, clause
-6 of {{!DPLPMTUD}}.  Any reduction in QUIC's maximum datagram size in response
-to ICMP messages MAY be provisional until QUIC's loss detection algorithm
-determines that the quoted packet has actually been lost.
+An endpoint MUST NOT increase PMTU based on ICMP messages; see Item 6 in
+{{Section 3 of DPLPMTUD}}.  Any reduction in QUIC's maximum datagram size in
+response to ICMP messages MAY be provisional until QUIC's loss detection
+algorithm determines that the quoted packet has actually been lost.
 
 
 ## Datagram Packetization Layer PMTU Discovery {#dplpmtud}
 
-Datagram Packetization Layer PMTU Discovery (DPLPMTUD; {{!DPLPMTUD=RFC8899}})
-relies on tracking loss or acknowledgment of QUIC packets that are carried in
-PMTU probes.  PMTU probes for DPLPMTUD that use the PADDING frame implement
-"Probing using padding data", as defined in {{Section 4.1 of DPLPMTUD}}.
+DPLPMTUD {{!DPLPMTUD=RFC8899}} relies on tracking loss or acknowledgment of QUIC
+packets that are carried in PMTU probes.  PMTU probes for DPLPMTUD that use the
+PADDING frame implement "Probing using padding data", as defined in {{Section
+4.1 of DPLPMTUD}}.
 
 Endpoints SHOULD set the initial value of BASE_PLPMTU ({{Section 5.1 of
 DPLPMTUD}}) to be consistent with QUIC's smallest allowed maximum datagram
 size. The MIN_PLPMTU is the same as the BASE_PLPMTU.
 
 QUIC endpoints implementing DPLPMTUD maintain a DPLPMTUD Maximum Packet Size
-(MPS, {{Section 4.4 of DPLPMTUD}}) for each combination of local and remote IP
+(MPS) ({{Section 4.4 of DPLPMTUD}}) for each combination of local and remote IP
 addresses.  This corresponds to the maximum datagram size.
 
 
@@ -4352,18 +4355,18 @@ of DPLPMTUD}}) when the QUIC connection handshake has been completed.
 
 ### Validating the Network Path with DPLPMTUD
 
-QUIC is an acknowledged PL, therefore a QUIC sender does not implement a
+QUIC is an acknowledged PL; therefore, a QUIC sender does not implement a
 DPLPMTUD CONFIRMATION_TIMER while in the SEARCH_COMPLETE state; see {{Section
 5.2 of DPLPMTUD}}.
 
 
 ### Handling of ICMP Messages by DPLPMTUD
 
-An endpoint using DPLPMTUD requires the validation of any received ICMP Packet
-Too Big (PTB) message before using the PTB information, as defined in {{Section
-4.6 of DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an
-ICMP message by using other PL information (e.g., validation of connection IDs
-in the quoted packet of any received ICMP message).
+An endpoint using DPLPMTUD requires the validation of any received ICMP PTB
+message before using the PTB information, as defined in {{Section 4.6 of
+DPLPMTUD}}.  In addition to UDP port validation, QUIC validates an ICMP message
+by using other PL information (e.g., validation of connection IDs in the quoted
+packet of any received ICMP message).
 
 The considerations for processing ICMP messages described in {{pmtud}} also
 apply if these messages are used by DPLPMTUD.
@@ -4384,7 +4387,7 @@ subsequent transmission by an application.
 
 ### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
-Endpoints that rely on the destination connection ID for routing incoming QUIC
+Endpoints that rely on the Destination Connection ID for routing incoming QUIC
 packets are likely to require that the connection ID be included in
 PMTU probes to route any resulting ICMP messages ({{pmtud}}) back to the correct
 endpoint.  However, only long header packets ({{long-header}}) contain the
@@ -4400,11 +4403,12 @@ causes an ICMP message to be sent, the first part of the probe will be quoted in
 that message.  If the Source Connection ID field is within the quoted portion of
 the probe, that could be used for routing or validation of the ICMP message.
 
-Note:
-: The purpose of using a packet with a long header is only to ensure that the
-  quoted packet contained in the ICMP message contains a Source Connection ID
-  field.  This packet does not need to be a valid packet and it can be sent even
-  if there is no current use for packets of that type.
+<aside markdown="block">
+Note: The purpose of using a packet with a long header is only to ensure that
+  the quoted packet contained in the ICMP message contains a Source Connection
+  ID field.  This packet does not need to be a valid packet, and it can be sent
+  even if there is no current use for packets of that type.
+</aside>
 
 
 # Versions {#versions}
@@ -4425,7 +4429,7 @@ Versions with the most significant 16 bits of the version number cleared are
 reserved for use in future IETF consensus documents.
 
 Versions that follow the pattern 0x?a?a?a?a are reserved for use in forcing
-version negotiation to be exercised.  That is, any version number where the low
+version negotiation to be exercised -- that is, any version number where the low
 four bits of all bytes is 1010 (in binary).  A client or server MAY advertise
 support for any of these reserved versions.
 
@@ -4442,7 +4446,7 @@ integer values.  This encoding ensures that smaller integer values need fewer
 bytes to encode.
 
 The QUIC variable-length integer encoding reserves the two most significant bits
-of the first byte to encode the base 2 logarithm of the integer encoding length
+of the first byte to encode the base-2 logarithm of the integer encoding length
 in bytes.  The integer value is encoded on the remaining bits, in network byte
 order.
 
@@ -4458,19 +4462,19 @@ encoding properties.
 | 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
-Examples and a sample decoding algorithm are shown in {{sample-varint}}.
+An example of a decoding algorithm is shown in {{sample-varint}}.
 
 Values do not need to be encoded on the minimum number of bytes necessary, with
 the sole exception of the Frame Type field; see {{frames}}.
 
 Versions ({{versions}}), packet numbers sent in the header
 ({{packet-encoding}}), and the length of connection IDs in long header packets
-({{long-header}}) are described using integers, but do not use this encoding.
+({{long-header}}) are described using integers but do not use this encoding.
 
 
 # Packet Formats {#packet-formats}
 
-All numeric values are encoded in network byte order (that is, big-endian) and
+All numeric values are encoded in network byte order (that is, big endian), and
 all field sizes are in bits.  Hexadecimal notation is used for describing the
 value of fields.
 
@@ -4487,10 +4491,10 @@ The encoded packet number is protected as described in
 {{Section 5.4 of QUIC-TLS}}.
 
 Prior to receiving an acknowledgment for a packet number space, the full packet
-number MUST be included; it is not to be truncated as described below.
+number MUST be included; it is not to be truncated, as described below.
 
 After an acknowledgment is received for a packet number space, the sender MUST
-use a packet number size able to represent more than twice as large a range than
+use a packet number size able to represent more than twice as large a range as
 the difference between the largest acknowledged packet and packet number being
 sent.  A peer receiving the packet will then correctly decode the packet number,
 unless the packet is delayed in transit such that it arrives after many
@@ -4500,7 +4504,7 @@ the packet arrives after packets that are sent afterwards.
 
 As a result, the size of the packet number encoding is at least one bit more
 than the base-2 logarithm of the number of contiguous unacknowledged packet
-numbers, including the new packet.  Pseudocode and examples for packet number
+numbers, including the new packet.  Pseudocode and an example for packet number
 encoding can be found in {{sample-packet-number-encoding}}.
 
 At a receiver, protection of the packet number is removed prior to recovering
@@ -4537,8 +4541,8 @@ Long Header Packet {
 Long headers are used for packets that are sent prior to the establishment
 of 1-RTT keys. Once 1-RTT keys are available,
 a sender switches to sending packets using the short header
-({{short-header}}).  The long form allows for special packets - such as the
-Version Negotiation packet - to be represented in this uniform fixed-length
+({{short-header}}).  The long form allows for special packets -- such as the
+Version Negotiation packet -- to be represented in this uniform fixed-length
 packet format. Packets that use the long header contain the following fields:
 
 Header Form:
@@ -4573,7 +4577,7 @@ Destination Connection ID Length:
 
 : The byte following the version contains the length in bytes of the Destination
   Connection ID field that follows it.  This length is encoded as an 8-bit
-  unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20.
+  unsigned integer.  In QUIC version 1, this value MUST NOT exceed 20 bytes.
   Endpoints that receive a version 1 long header with a value larger than 20
   MUST drop the packet.  In order to properly form a Version Negotiation packet,
   servers SHOULD be able to read longer connection IDs from other QUIC versions.
@@ -4602,7 +4606,7 @@ Source Connection ID:
 
 Type-Specific Payload:
 
-: The remainder of the packet, if any, is type-specific.
+: The remainder of the packet, if any, is type specific.
 
 In this version of QUIC, the following packet types with the long header are
 defined:
@@ -4617,13 +4621,13 @@ defined:
 
 The header form bit, Destination and Source Connection ID lengths, Destination
 and Source Connection ID fields, and Version fields of a long header packet are
-version-independent. The other fields in the first byte are version-specific.
+version independent. The other fields in the first byte are version specific.
 See {{QUIC-INVARIANTS}} for details on how packets from different versions of
 QUIC are interpreted.
 
 The interpretation of the fields and the payload are specific to a version and
 packet type.  While type-specific semantics for this version are described in
-the following sections, several long-header packets in this version of QUIC
+the following sections, several long header packets in this version of QUIC
 contain these additional fields:
 
 Reserved Bits:
@@ -4641,15 +4645,15 @@ Packet Number Length:
 
 : In packet types that contain a Packet Number field, the least significant two
   bits (those with a mask of 0x03) of byte 0 contain the length of the packet
-  number, encoded as an unsigned, two-bit integer that is one less than the
+  number, encoded as an unsigned two-bit integer that is one less than the
   length of the packet number field in bytes.  That is, the length of the packet
-  number field is the value of this field, plus one.  These bits are protected
+  number field is the value of this field plus one.  These bits are protected
   using header protection; see {{Section 5.4 of QUIC-TLS}}.
 
 Length:
 
-: The length of the remainder of the packet (that is, the Packet Number and
-  Payload fields) in bytes, encoded as a variable-length integer
+: This is the length of the remainder of the packet (that is, the Packet Number
+  and Payload fields) in bytes, encoded as a variable-length integer
   ({{integer-encoding}}).
 
 Packet Number:
@@ -4661,12 +4665,12 @@ Packet Number:
 
 ### Version Negotiation Packet {#packet-version}
 
-A Version Negotiation packet is inherently not version-specific. Upon receipt by
+A Version Negotiation packet is inherently not version specific. Upon receipt by
 a client, it will be identified as a Version Negotiation packet based on the
 Version field having a value of 0.
 
 The Version Negotiation packet is a response to a client packet that contains a
-version that is not supported by the server, and is only sent by servers.
+version that is not supported by the server.  It is only sent by servers.
 
 The layout of a Version Negotiation packet is:
 
@@ -4704,8 +4708,8 @@ did not observe the Initial packet.
 Future versions of QUIC could have different requirements for the lengths of
 connection IDs. In particular, connection IDs might have a smaller minimum
 length or a greater maximum length.  Version-specific rules for the connection
-ID therefore MUST NOT influence a server decision about whether to send a
-Version Negotiation packet.
+ID therefore MUST NOT influence a decision about whether to send a Version
+Negotiation packet.
 
 The remainder of the Version Negotiation packet is a list of 32-bit versions
 that the server supports.
@@ -4759,8 +4763,8 @@ the Initial packet.
 Token Length:
 
 : A variable-length integer specifying the length of the Token field, in bytes.
-  This value is zero if no token is present.  Initial packets sent by the server
-  MUST set the Token Length field to zero; clients that receive an Initial
+  This value is 0 if no token is present.  Initial packets sent by the server
+  MUST set the Token Length field to 0; clients that receive an Initial
   packet with a non-zero Token Length field MUST either discard the packet or
   generate a connection error of type PROTOCOL_VIOLATION.
 
@@ -4782,7 +4786,7 @@ protection against attackers that cannot observe packets.
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
 packet containing the initial cryptographic message needs to be created, such as
-the packets sent after receiving a Retry packet ({{packet-retry}}).
+the packets sent after receiving a Retry packet; see {{packet-retry}}.
 
 A server sends its first Initial packet in response to a client Initial.  A
 server MAY send multiple Initial packets.  The cryptographic key exchange could
@@ -4815,7 +4819,7 @@ exchanged beyond this point.  Initial packet protection keys are discarded (see
 {{Section 4.9.1 of QUIC-TLS}}) along with any loss recovery and congestion
 control state; see {{Section 6.4 of QUIC-RECOVERY}}.
 
-Any data in CRYPTO frames is discarded - and no longer retransmitted - when
+Any data in CRYPTO frames is discarded -- and no longer retransmitted -- when
 Initial keys are discarded.
 
 ### 0-RTT {#packet-0rtt}
@@ -4917,14 +4921,15 @@ of type 0x1c. Endpoints MUST treat receipt of Handshake packets with other
 frames as a connection error of type PROTOCOL_VIOLATION.
 
 Like Initial packets (see {{discard-initial}}), data in CRYPTO frames for
-Handshake packets is discarded - and no longer retransmitted - when Handshake
+Handshake packets is discarded -- and no longer retransmitted -- when Handshake
 protection keys are discarded.
 
 ### Retry Packet {#packet-retry}
 
-A Retry packet uses a long packet header with a type value of 0x03. It carries
-an address validation token created by the server. It is used by a server that
-wishes to perform a retry; see {{validate-handshake}}.
+As shown in {{retry-format}}, a Retry packet uses a long packet header with a
+type value of 0x03. It carries an address validation token created by the
+server. It is used by a server that wishes to perform a retry; see
+{{validate-handshake}}.
 
 ~~~
 Retry Packet {
@@ -4943,7 +4948,7 @@ Retry Packet {
 ~~~
 {: #retry-format title="Retry Packet"}
 
-A Retry packet (shown in {{retry-format}}) does not contain any protected
+A Retry packet does not contain any protected
 fields.  The value in the Unused field is set to an arbitrary value by the
 server; a client MUST ignore these bits.  In addition to the fields from the
 long header, it contains these additional fields:
@@ -4954,7 +4959,7 @@ Retry Token:
 
 Retry Integrity Tag:
 
-: See the Retry Packet Integrity section of {{QUIC-TLS}}.
+: Defined in {{Section 5.8 (Retry Packet Integrity) of QUIC-TLS}}.
 
 
 #### Sending a Retry Packet
@@ -4984,13 +4989,13 @@ attempt.  After the client has received and processed an Initial or Retry packet
 from the server, it MUST discard any subsequent Retry packets that it receives.
 
 Clients MUST discard Retry packets that have a Retry Integrity Tag that cannot
-be validated; see the Retry Packet Integrity section of {{QUIC-TLS}}. This
-diminishes an attacker's ability to inject a Retry packet and protects against
-accidental corruption of Retry packets.  A client MUST discard a Retry packet
-with a zero-length Retry Token field.
+be validated; see {{Section 5.8 of QUIC-TLS}}. This diminishes an attacker's
+ability to inject a Retry packet and protects against accidental corruption of
+Retry packets.  A client MUST discard a Retry packet with a zero-length Retry
+Token field.
 
 The client responds to a Retry packet with an Initial packet that includes the
-provided Retry Token to continue connection establishment.
+provided Retry token to continue connection establishment.
 
 A client sets the Destination Connection ID field of this Initial packet to the
 value from the Source Connection ID in the Retry packet. Changing Destination
@@ -5004,7 +5009,7 @@ A Retry packet does not include a packet number and cannot be explicitly
 acknowledged by a client.
 
 
-#### Continuing a Handshake After Retry {#retry-continue}
+#### Continuing a Handshake after Retry {#retry-continue}
 
 Subsequent Initial packets from the client include the connection ID and token
 values from the Retry packet. The client copies the Source Connection ID field
@@ -5036,7 +5041,7 @@ because the same key and nonce could be used to protect different content.
 A server MAY abort the connection if it detects that the client reset the
 packet number.
 
-The connection IDs used on Initial and Retry packets exchanged between client
+The connection IDs used in Initial and Retry packets exchanged between client
 and server are copied to the transport parameters and validated as described
 in {{cid-auth}}.
 
@@ -5104,9 +5109,9 @@ Key Phase:
 Packet Number Length:
 
 : The least significant two bits (those with a mask of 0x03) of byte 0 contain
-  the length of the packet number, encoded as an unsigned, two-bit integer that
+  the length of the packet number, encoded as an unsigned two-bit integer that
   is one less than the length of the packet number field in bytes.  That is, the
-  length of the packet number field is the value of this field, plus one.  These
+  length of the packet number field is the value of this field plus one.  These
   bits are protected using header protection; see {{Section 5.4 of QUIC-TLS}}.
 
 Destination Connection ID:
@@ -5125,10 +5130,10 @@ Packet Payload:
 
 : 1-RTT packets always include a 1-RTT protected payload.
 
-The header form bit and the connection ID field of a short header packet are
-version-independent.  The remaining fields are specific to the selected QUIC
-version.  See {{QUIC-INVARIANTS}} for details on how packets from different
-versions of QUIC are interpreted.
+The header form bit and the Destination Connection ID field of a short header
+packet are version independent.  The remaining fields are specific to the
+selected QUIC version.  See {{QUIC-INVARIANTS}} for details on how packets from
+different versions of QUIC are interpreted.
 
 
 ## Latency Spin Bit {#spin-bit}
@@ -5136,14 +5141,14 @@ versions of QUIC are interpreted.
 The latency spin bit, which is defined for 1-RTT packets ({{packet-1rtt}}),
 enables passive latency monitoring from observation points on the network path
 throughout the duration of a connection. The server reflects the spin value
-received, while the client 'spins' it after one RTT. On-path observers can
+received, while the client "spins" it after one RTT. On-path observers can
 measure the time between two spin bit toggle events to estimate the end-to-end
 RTT of a connection.
 
 The spin bit is only present in 1-RTT packets, since it is possible to measure
 the initial RTT of a connection by observing the handshake. Therefore, the spin
 bit is available after version negotiation and connection establishment are
-completed. On-path measurement and use of the latency spin bit is further
+completed. On-path measurement and use of the latency spin bit are further
 discussed in {{?QUIC-MANAGEABILITY=I-D.ietf-quic-manageability}}.
 
 The spin bit is an OPTIONAL feature of this version of QUIC. An endpoint that
@@ -5159,7 +5164,7 @@ connections that disable the spin bit are commonly observed on the network.  As
 each endpoint disables the spin bit independently, this ensures that the spin
 bit signal is disabled on approximately one in eight network paths.
 
-When the spin bit is disabled, endpoints MAY set the spin bit to any value, and
+When the spin bit is disabled, endpoints MAY set the spin bit to any value and
 MUST ignore any incoming value. It is RECOMMENDED that endpoints set the spin
 bit to a random value either chosen independently for each packet or chosen
 independently for each connection ID.
@@ -5178,7 +5183,7 @@ When a client receives a 1-RTT packet that increases the highest packet number
 seen by the client from the server on a given network path, it sets the spin
 value for that path to the inverse of the spin bit in the received packet.
 
-An endpoint resets the spin value for a network path to zero when changing the
+An endpoint resets the spin value for a network path to 0 when changing the
 connection ID being used on that network path.
 
 
@@ -5218,7 +5223,7 @@ included in the cryptographic handshake.
 
 Transport parameters with an identifier of the form `31 * N + 27` for integer
 values of N are reserved to exercise the requirement that unknown transport
-parameters be ignored.  These transport parameters have no semantics, and can
+parameters be ignored.  These transport parameters have no semantics and can
 carry arbitrary values.
 
 
@@ -5229,27 +5234,27 @@ This section details the transport parameters defined in this document.
 Many transport parameters listed here have integer values.  Those transport
 parameters that are identified as integers use a variable-length integer
 encoding; see {{integer-encoding}}.  Transport parameters have a default value
-of 0 if the transport parameter is absent unless otherwise stated.
+of 0 if the transport parameter is absent, unless otherwise stated.
 
 The following transport parameters are defined:
 
 original_destination_connection_id (0x00):
 
-: The value of the Destination Connection ID field from the first Initial packet
-  sent by the client; see {{cid-auth}}.  This transport parameter is only sent
-  by a server.
+: This parameter is the value of the Destination Connection ID field from the
+  first Initial packet sent by the client; see {{cid-auth}}.  This transport
+  parameter is only sent by a server.
 
 max_idle_timeout (0x01):
 
-: The max idle timeout is a value in milliseconds that is encoded as an integer;
-  see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints omit
-  this transport parameter or specify a value of 0.
+: The maximum idle timeout is a value in milliseconds that is encoded as an
+  integer; see ({{idle-timeout}}).  Idle timeout is disabled when both endpoints
+  omit this transport parameter or specify a value of 0.
 
 stateless_reset_token (0x02):
 
 : A stateless reset token is used in verifying a stateless reset; see
   {{stateless-reset}}.  This parameter is a sequence of 16 bytes.  This
-  transport parameter MUST NOT be sent by a client, but MAY be sent by a server.
+  transport parameter MUST NOT be sent by a client but MAY be sent by a server.
   A server that does not send this transport parameter cannot use stateless
   reset ({{stateless-reset}}) for the connection ID negotiated during the
   handshake.
@@ -5279,7 +5284,7 @@ initial_max_data (0x04):
 initial_max_stream_data_bidi_local (0x05):
 
 : This parameter is an integer value specifying the initial flow control limit
-  for locally-initiated bidirectional streams.  This limit applies to newly
+  for locally initiated bidirectional streams.  This limit applies to newly
   created bidirectional streams opened by the endpoint that sends the transport
   parameter.  In client transport parameters, this applies to streams with an
   identifier with the least significant two bits set to 0x00; in server
@@ -5363,13 +5368,13 @@ preferred_address (0x0d):
   network byte order.
 
 : The preferred_address transport parameter contains an address and port for
-  both IP version 4 and 6.  The four-byte IPv4 Address field is followed by the
+  both IPv4 and IPv6.  The four-byte IPv4 Address field is followed by the
   associated two-byte IPv4 Port field.  This is followed by a 16-byte IPv6
-  Address field and two-byte IPv6 Port field.  After address and port pairs,
-  a Connection ID Length field describes the length of the following Connection
-  ID field.  Finally, a 16-byte Stateless Reset Token field includes the
-  stateless reset token associated with the connection ID.  The format of this
-  transport parameter is shown in {{fig-preferred-address}}.
+  Address field and two-byte IPv6 Port field.  After address and port pairs, a
+  Connection ID Length field describes the length of the following Connection ID
+  field.  Finally, a 16-byte Stateless Reset Token field includes the stateless
+  reset token associated with the connection ID.  The format of this transport
+  parameter is shown in {{fig-preferred-address}} below.
 
 : The Connection ID field and the Stateless Reset Token field contain an
   alternative connection ID that has a sequence number of 1; see {{issue-cid}}.
@@ -5396,7 +5401,7 @@ Preferred Address {
   Stateless Reset Token (128),
 }
 ~~~
-{: #fig-preferred-address title="Preferred Address format"}
+{: #fig-preferred-address title="Preferred Address Format"}
 
 active_connection_id_limit (0x0e):
 
@@ -5415,14 +5420,14 @@ active_connection_id_limit (0x0e):
 
 initial_source_connection_id (0x0f):
 
-: The value that the endpoint included in the Source Connection ID field of the
-  first Initial packet it sends for the connection; see {{cid-auth}}.
+: This is the value that the endpoint included in the Source Connection ID field
+  of the first Initial packet it sends for the connection; see {{cid-auth}}.
 
 retry_source_connection_id (0x10):
 
-: The value that the server included in the Source Connection ID field of a
-  Retry packet; see {{cid-auth}}.  This transport parameter is only sent by a
-  server.
+: This is the value that the server included in the Source Connection ID field
+  of a Retry packet; see {{cid-auth}}.  This transport parameter is only sent by
+  a server.
 
 If present, transport parameters that set initial per-stream flow control limits
 (initial_max_stream_data_bidi_local, initial_max_stream_data_bidi_remote, and
@@ -5448,7 +5453,7 @@ describes the format and semantics of the core QUIC frame types.
 
 A PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
 to increase the size of a packet.  Padding can be used to increase an initial
-client packet to the minimum required size, or to provide protection against
+client packet to the minimum required size or to provide protection against
 traffic analysis for protected packets.
 
 PADDING frames are formatted as shown in {{padding-format}}, which shows that
@@ -5493,13 +5498,13 @@ they have received and processed. The ACK frame contains one or more ACK Ranges.
 ACK Ranges identify acknowledged packets. If the frame type is 0x03, ACK frames
 also contain the cumulative count of QUIC packets with associated ECN marks
 received on the connection up until this point.  QUIC implementations MUST
-properly handle both types and, if they have enabled ECN for packets they send,
+properly handle both types, and, if they have enabled ECN for packets they send,
 they SHOULD use the information in the ECN section to manage their congestion
 state.
 
 QUIC acknowledgments are irrevocable.  Once acknowledged, a packet remains
 acknowledged, even if it does not appear in a future ACK frame.  This is unlike
-reneging for TCP SACKs ({{?RFC2018}}).
+reneging for TCP Selective Acknowledgments (SACKs) {{?RFC2018}}.
 
 Packets from different packet number spaces can be identified using the same
 numeric value. An acknowledgment for a packet needs to indicate both a packet
@@ -5605,11 +5610,11 @@ ACK Range describes progressively lower-numbered packets.
 
 Each ACK Range acknowledges a contiguous range of packets by indicating the
 number of acknowledged packets that precede the largest packet number in that
-range.  A value of zero indicates that only the largest packet number is
+range.  A value of 0 indicates that only the largest packet number is
 acknowledged.  Larger ACK Range values indicate a larger range, with
 corresponding lower values for the smallest packet number in the range.  Thus,
 given a largest packet number for the range, the smallest value is determined by
-the formula:
+the following formula:
 
 ~~~
    smallest = largest - ack_range
@@ -5643,7 +5648,7 @@ The ACK frame uses the least significant bit of the type value (that is, type
 associated ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP header.
 ECN Counts are only present when the ACK frame type is 0x03.
 
-When present, there are 3 ECN counts, as shown in {{ecn-count-format}}.
+When present, there are three ECN counts, as shown in {{ecn-count-format}}.
 
 ~~~
 ECN Counts {
@@ -5711,18 +5716,18 @@ Application Protocol Error Code:
 Final Size:
 
 : A variable-length integer indicating the final size of the stream by the
-  RESET_STREAM sender, in unit of bytes; see {{final-size}}.
+  RESET_STREAM sender, in units of bytes; see {{final-size}}.
 
 
 ## STOP_SENDING Frames {#frame-stop-sending}
 
 An endpoint uses a STOP_SENDING frame (type=0x05) to communicate that incoming
-data is being discarded on receipt at application request.  STOP_SENDING
+data is being discarded on receipt per application request.  STOP_SENDING
 requests that a peer cease transmission on a stream.
 
-A STOP_SENDING frame can be sent for streams in the Recv or Size Known states;
-see {{stream-recv-states}}.  Receiving a STOP_SENDING frame for a
-locally-initiated stream that has not yet been created MUST be treated as a
+A STOP_SENDING frame can be sent for streams in the "Recv" or "Size Known"
+states; see {{stream-recv-states}}.  Receiving a STOP_SENDING frame for a
+locally initiated stream that has not yet been created MUST be treated as a
 connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 STOP_SENDING frame for a receive-only stream MUST terminate the connection with
 error STREAM_STATE_ERROR.
@@ -5791,9 +5796,9 @@ There is a separate flow of cryptographic handshake data in each encryption
 level, each of which starts at an offset of 0. This implies that each encryption
 level is treated as a separate CRYPTO stream of data.
 
-The largest offset delivered on a stream - the sum of the offset and data length
-- cannot exceed 2<sup>62</sup>-1.  Receipt of a frame that exceeds this limit
-MUST be treated as a connection error of type FRAME_ENCODING_ERROR or
+The largest offset delivered on a stream -- the sum of the offset and data
+length -- cannot exceed 2<sup>62</sup>-1.  Receipt of a frame that exceeds this
+limit MUST be treated as a connection error of type FRAME_ENCODING_ERROR or
 CRYPTO_BUFFER_EXCEEDED.
 
 Unlike STREAM frames, which include a Stream ID indicating to which stream the
@@ -5841,10 +5846,10 @@ NEW_TOKEN frame as a connection error of type PROTOCOL_VIOLATION.
 
 ## STREAM Frames {#frame-stream}
 
-STREAM frames implicitly create a stream and carry stream data.  The STREAM
-frame Type field takes the form 0b00001XXX (or the set of values from 0x08 to
-0x0f).  The three low-order bits of the frame type determine the fields that
-are present in the frame:
+STREAM frames implicitly create a stream and carry stream data.  The Type field
+in the STREAM frame takes the form 0b00001XXX (or the set of values from 0x08 to
+0x0f).  The three low-order bits of the frame type determine the fields that are
+present in the frame:
 
 * The OFF bit (0x04) in the frame type is set to indicate that there is an
   Offset field present.  When set to 1, the Offset field is present.  When set
@@ -5862,7 +5867,7 @@ are present in the frame:
   frame.
 
 An endpoint MUST terminate the connection with error STREAM_STATE_ERROR if it
-receives a STREAM frame for a locally-initiated stream that has not yet been
+receives a STREAM frame for a locally initiated stream that has not yet been
 created, or for a send-only stream.
 
 STREAM frames are formatted as shown in {{fig-stream}}.
@@ -5906,7 +5911,7 @@ When a Stream Data field has a length of 0, the offset in the STREAM frame is
 the offset of the next byte that would be sent.
 
 The first byte in the stream has an offset of 0.  The largest offset delivered
-on a stream - the sum of the offset and data length - cannot exceed
+on a stream -- the sum of the offset and data length -- cannot exceed
 2<sup>62</sup>-1, as it is not possible to provide flow control credit for that
 data.  Receipt of a frame that exceeds this limit MUST be treated as a
 connection error of type FRAME_ENCODING_ERROR or FLOW_CONTROL_ERROR.
@@ -5935,11 +5940,11 @@ Maximum Data:
   sent on the entire connection, in units of bytes.
 
 All data sent in STREAM frames counts toward this limit.  The sum of the final
-sizes on all streams - including streams in terminal states - MUST NOT exceed
+sizes on all streams -- including streams in terminal states -- MUST NOT exceed
 the value advertised by a receiver.  An endpoint MUST terminate a connection
-with a FLOW_CONTROL_ERROR error if it receives more data than the maximum data
-value that it has sent.  This includes violations of remembered limits in Early
-Data; see {{zerortt-parameters}}.
+with an error of type FLOW_CONTROL_ERROR if it receives more data than the
+maximum data value that it has sent.  This includes violations of remembered
+limits in Early Data; see {{zerortt-parameters}}.
 
 
 ## MAX_STREAM_DATA Frames {#frame-max-stream-data}
@@ -5947,9 +5952,9 @@ Data; see {{zerortt-parameters}}.
 A MAX_STREAM_DATA frame (type=0x11) is used in flow control to inform a peer
 of the maximum amount of data that can be sent on a stream.
 
-A MAX_STREAM_DATA frame can be sent for streams in the Recv state; see
+A MAX_STREAM_DATA frame can be sent for streams in the "Recv" state; see
 {{stream-recv-states}}. Receiving a MAX_STREAM_DATA frame for a
-locally-initiated stream that has not yet been created MUST be treated as a
+locally initiated stream that has not yet been created MUST be treated as a
 connection error of type STREAM_STATE_ERROR.  An endpoint that receives a
 MAX_STREAM_DATA frame for a receive-only stream MUST terminate the connection
 with error STREAM_STATE_ERROR.
@@ -5969,8 +5974,7 @@ MAX_STREAM_DATA frames contain the following fields:
 
 Stream ID:
 
-: The stream ID of the stream that is affected encoded as a variable-length
-  integer.
+: The stream ID of the affected stream, encoded as a variable-length integer.
 
 Maximum Stream Data:
 
@@ -5984,20 +5988,20 @@ than the total size of data received on that stream.  Receiving STREAM frames
 might not increase the largest received offset.
 
 The data sent on a stream MUST NOT exceed the largest maximum stream data value
-advertised by the receiver.  An endpoint MUST terminate a connection with a
-FLOW_CONTROL_ERROR error if it receives more data than the largest maximum
-stream data that it has sent for the affected stream.  This includes violations
-of remembered limits in Early Data; see {{zerortt-parameters}}.
+advertised by the receiver.  An endpoint MUST terminate a connection with an
+error of type FLOW_CONTROL_ERROR if it receives more data than the largest
+maximum stream data that it has sent for the affected stream.  This includes
+violations of remembered limits in Early Data; see {{zerortt-parameters}}.
 
 
 ## MAX_STREAMS Frames {#frame-max-streams}
 
-A MAX_STREAMS frame (type=0x12 or 0x13) inform the peer of the cumulative
+A MAX_STREAMS frame (type=0x12 or 0x13) informs the peer of the cumulative
 number of streams of a given type it is permitted to open.  A MAX_STREAMS frame
 with a type of 0x12 applies to bidirectional streams, and a MAX_STREAMS frame
 with a type of 0x13 applies to unidirectional streams.
 
-MAX_STREAMS frames are formatted as shown in {{fig-max-streams}};
+MAX_STREAMS frames are formatted as shown in {{fig-max-streams}}.
 
 ~~~
 MAX_STREAMS Frame {
@@ -6023,9 +6027,9 @@ that do not increase the stream limit MUST be ignored.
 
 An endpoint MUST NOT open more streams than permitted by the current stream
 limit set by its peer.  For instance, a server that receives a unidirectional
-stream limit of 3 is permitted to open stream 3, 7, and 11, but not stream 15.
-An endpoint MUST terminate a connection with a STREAM_LIMIT_ERROR error if a
-peer opens more streams than was permitted.  This includes violations of
+stream limit of 3 is permitted to open streams 3, 7, and 11, but not stream 15.
+An endpoint MUST terminate a connection with an error of type STREAM_LIMIT_ERROR
+if a peer opens more streams than was permitted.  This includes violations of
 remembered limits in Early Data; see {{zerortt-parameters}}.
 
 Note that these frames (and the corresponding transport parameters) do not
@@ -6036,7 +6040,7 @@ includes streams that have been closed as well as those that are open.
 ## DATA_BLOCKED Frames {#frame-data-blocked}
 
 A sender SHOULD send a DATA_BLOCKED frame (type=0x14) when it wishes to send
-data, but is unable to do so due to connection-level flow control; see
+data but is unable to do so due to connection-level flow control; see
 {{flow-control}}.  DATA_BLOCKED frames can be used as input to tuning of flow
 control algorithms; see {{fc-credit}}.
 
@@ -6061,7 +6065,7 @@ Maximum Data:
 ## STREAM_DATA_BLOCKED Frames {#frame-stream-data-blocked}
 
 A sender SHOULD send a STREAM_DATA_BLOCKED frame (type=0x15) when it wishes to
-send data, but is unable to do so due to stream-level flow control.  This frame
+send data but is unable to do so due to stream-level flow control.  This frame
 is analogous to DATA_BLOCKED ({{frame-data-blocked}}).
 
 An endpoint that receives a STREAM_DATA_BLOCKED frame for a send-only stream
@@ -6095,10 +6099,10 @@ Maximum Stream Data:
 ## STREAMS_BLOCKED Frames {#frame-streams-blocked}
 
 A sender SHOULD send a STREAMS_BLOCKED frame (type=0x16 or 0x17) when it wishes
-to open a stream, but is unable to due to the maximum stream limit set by its
-peer; see {{frame-max-streams}}.  A STREAMS_BLOCKED frame of type 0x16 is used
-to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED frame
-of type 0x17 is used to indicate reaching the unidirectional stream limit.
+to open a stream but is unable to do so due to the maximum stream limit set by
+its peer; see {{frame-max-streams}}.  A STREAMS_BLOCKED frame of type 0x16 is
+used to indicate reaching the bidirectional stream limit, and a STREAMS_BLOCKED
+frame of type 0x17 is used to indicate reaching the unidirectional stream limit.
 
 A STREAMS_BLOCKED frame does not open the stream, but informs the peer that a
 new stream was needed and the stream limit prevented the creation of the stream.
@@ -6120,8 +6124,8 @@ Maximum Streams:
 : A variable-length integer indicating the maximum number of streams allowed at
   the time the frame was sent.  This value cannot exceed 2<sup>60</sup>, as it
   is not possible to encode stream IDs larger than 2<sup>62</sup>-1.  Receipt of
-  a frame that encodes a larger stream ID MUST be treated as a
-  STREAM_LIMIT_ERROR or a FRAME_ENCODING_ERROR.
+  a frame that encodes a larger stream ID MUST be treated as a connection error
+  of type STREAM_LIMIT_ERROR or FRAME_ENCODING_ERROR.
 
 
 ## NEW_CONNECTION_ID Frames {#frame-new-connection-id}
@@ -6173,12 +6177,12 @@ Stateless Reset Token:
 
 An endpoint MUST NOT send this frame if it currently requires that its peer send
 packets with a zero-length Destination Connection ID.  Changing the length of a
-connection ID to or from zero-length makes it difficult to identify when the
+connection ID to or from zero length makes it difficult to identify when the
 value of the connection ID changed.  An endpoint that is sending packets with a
 zero-length Destination Connection ID MUST treat receipt of a NEW_CONNECTION_ID
 frame as a connection error of type PROTOCOL_VIOLATION.
 
-Transmission errors, timeouts and retransmissions might cause the same
+Transmission errors, timeouts, and retransmissions might cause the same
 NEW_CONNECTION_ID frame to be received multiple times.  Receipt of the same
 frame multiple times MUST NOT be treated as a connection error.  A receiver can
 use the sequence number supplied in the NEW_CONNECTION_ID frame to handle
@@ -6193,8 +6197,8 @@ PROTOCOL_VIOLATION.
 The Retire Prior To field applies to connection IDs established during
 connection setup and the preferred_address transport parameter; see
 {{retire-cid}}. The Retire Prior To field MUST be less than or equal to the
-Sequence Number field. Receiving a value greater than the Sequence Number MUST
-be treated as a connection error of type FRAME_ENCODING_ERROR.
+Sequence Number field. Receiving a value greater than the value in the Sequence
+Number field MUST be treated as a connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
 subsequent NEW_CONNECTION_ID frames have no effect. A receiver MUST ignore any
@@ -6277,15 +6281,16 @@ Including 64 bits of entropy in a PATH_CHALLENGE frame ensures that it is easier
 to receive the packet than it is to guess the value correctly.
 
 The recipient of this frame MUST generate a PATH_RESPONSE frame
-({{frame-path-response}}) containing the same Data.
+({{frame-path-response}}) containing the same Data value.
 
 
 ## PATH_RESPONSE Frames {#frame-path-response}
 
 A PATH_RESPONSE frame (type=0x1b) is sent in response to a PATH_CHALLENGE frame.
 
-PATH_RESPONSE frames are formatted as shown in {{fig-path-response}}, which is
-identical to the PATH_CHALLENGE frame ({{frame-path-challenge}}).
+PATH_RESPONSE frames are formatted as shown in {{fig-path-response}}. The format
+of a PATH_RESPONSE frame is identical to the PATH_CHALLENGE frame; see
+{{frame-path-challenge}}.
 
 ~~~
 PATH_RESPONSE Frame {
@@ -6303,7 +6308,7 @@ a connection error of type PROTOCOL_VIOLATION.
 ## CONNECTION_CLOSE Frames {#frame-connection-close}
 
 An endpoint sends a CONNECTION_CLOSE frame (type=0x1c or 0x1d) to notify its
-peer that the connection is being closed.  The CONNECTION_CLOSE with a frame
+peer that the connection is being closed.  The CONNECTION_CLOSE frame with a
 type of 0x1c is used to signal errors at only the QUIC layer, or the absence of
 errors (with the NO_ERROR code).  The CONNECTION_CLOSE frame with a type of 0x1d
 is used to signal an error with the application that uses QUIC.
@@ -6328,10 +6333,10 @@ CONNECTION_CLOSE frames contain the following fields:
 
 Error Code:
 
-: A variable-length integer error code that indicates the reason for
-  closing this connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes
-  from the space defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame
-  of type 0x1d uses codes defined by the application protocol; see
+: A variable-length integer that indicates the reason for closing this
+  connection.  A CONNECTION_CLOSE frame of type 0x1c uses codes from the space
+  defined in {{transport-error-codes}}.  A CONNECTION_CLOSE frame of type 0x1d
+  uses codes defined by the application protocol; see
   {{app-error-codes}}.
 
 Frame Type:
@@ -6350,8 +6355,8 @@ Reason Phrase Length:
 Reason Phrase:
 
 : Additional diagnostic information for the closure.  This can be zero length if
-  the sender chooses not to give details beyond the Error Code.  This SHOULD be
-  a UTF-8 encoded string {{!RFC3629}}, though the frame does not carry
+  the sender chooses not to give details beyond the Error Code value.  This
+  SHOULD be a UTF-8 encoded string {{!RFC3629}}, though the frame does not carry
   information, such as language tags, that would aid comprehension by any entity
   other than the one that created the text.
 
@@ -6359,7 +6364,7 @@ The application-specific variant of CONNECTION_CLOSE (type 0x1d) can only be
 sent using 0-RTT or 1-RTT packets; see {{frames-and-spaces}}.  When an
 application wishes to abandon a connection during the handshake, an endpoint
 can send a CONNECTION_CLOSE frame (type 0x1c) with an error code of
-APPLICATION_ERROR in an Initial or a Handshake packet.
+APPLICATION_ERROR in an Initial or Handshake packet.
 
 
 ## HANDSHAKE_DONE Frames {#frame-handshake-done}
@@ -6399,7 +6404,7 @@ Extensions that modify or replace core protocol functionality (including frame
 types) will be difficult to combine with other extensions that modify or
 replace the same functionality unless the behavior of the combination is
 explicitly defined.  Such extensions SHOULD define their interaction with
-previously-defined extensions modifying the same protocol components.
+previously defined extensions modifying the same protocol components.
 
 Extension frames MUST be congestion controlled and MUST cause an ACK frame to
 be sent.  The exception is extension frames that replace or supplement the ACK
@@ -6452,17 +6457,17 @@ STREAM_STATE_ERROR (0x05):
 
 FINAL_SIZE_ERROR (0x06):
 
-: An endpoint received a STREAM frame containing data that exceeded the
-  previously established final size.  Or an endpoint received a STREAM frame or
+: (1) An endpoint received a STREAM frame containing data that exceeded the
+  previously established final size, (2) an endpoint received a STREAM frame or
   a RESET_STREAM frame containing a final size that was lower than the size of
-  stream data that was already received.  Or an endpoint received a STREAM frame
-  or a RESET_STREAM frame containing a different final size to the one already
-  established.
+  stream data that was already received, or (3) an endpoint received a STREAM
+  frame or a RESET_STREAM frame containing a different final size to the one
+  already established.
 
 FRAME_ENCODING_ERROR (0x07):
 
-: An endpoint received a frame that was badly formatted.  For instance, a frame
-  of an unknown type, or an ACK frame that has more acknowledgment ranges than
+: An endpoint received a frame that was badly formatted -- for instance, a frame
+  of an unknown type or an ACK frame that has more acknowledgment ranges than
   the remainder of the packet could carry.
 
 TRANSPORT_PARAMETER_ERROR (0x08):
@@ -6512,10 +6517,10 @@ CRYPTO_ERROR (0x01XX):
 
 : The cryptographic handshake failed.  A range of 256 values is reserved for
   carrying error codes specific to the cryptographic handshake that is used.
-  Codes for errors occurring when TLS is used for the crypto handshake are
-  described in {{Section 4.8 of QUIC-TLS}}.
+  Codes for errors occurring when TLS is used for the cryptographic handshake
+  are described in {{Section 4.8 of QUIC-TLS}}.
 
-See {{iana-error-codes}} for details of registering new error codes.
+See {{iana-error-codes}} for details on registering new error codes.
 
 In defining these error codes, several principles are applied.  Error conditions
 that might require specific action on the part of a recipient are given unique
