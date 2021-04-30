@@ -7572,7 +7572,7 @@ IANA has added a registry for "QUIC Transport Error Codes" under a "QUIC"
 heading.
 
 The "QUIC Transport Error Codes" registry governs a 62-bit space.  This space is
-split into three regions that are governed by different policies.  Permanent
+split into three ranges that are governed by different policies.  Permanent
 registrations in this registry are assigned using the Specification Required
 policy ({{Section 4.6 of RFC8126}}), except for values between 0x00 and 0x3f (in
 hexadecimal), inclusive, which are assigned using Standards Action or IESG
