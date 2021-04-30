@@ -1810,11 +1810,11 @@ constraints conflict.
 
 Using 0-RTT depends on both client and server using protocol parameters that
 were negotiated from a previous connection.  To enable 0-RTT, endpoints store
-the value of the server transport parameters from a connection and apply them
-to any 0-RTT packets that are sent in subsequent connections to that peer that
-use a session ticket issued on that connection.  This
-information is stored with any information required by the application
-protocol or cryptographic handshake; see {{Section 4.6 of QUIC-TLS}}.
+the values of the server transport parameters from a connection and apply them
+to any 0-RTT packets that are sent in subsequent connections to that server when
+a session ticket issued on that connection is used.  This information is stored
+with any information required by the application protocol or cryptographic
+handshake; see {{Section 4.6 of QUIC-TLS}}.
 
 Remembered transport parameters apply to the new connection until the handshake
 completes and the client starts sending 1-RTT packets.  Once the handshake
