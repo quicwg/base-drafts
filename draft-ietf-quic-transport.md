@@ -7631,7 +7631,7 @@ The pseudocode in {{alg-varint}} shows how a variable-length integer can be read
 from a stream of bytes.  The function ReadVarint takes a single argument -- a
 sequence of bytes, which can be read in network byte order.
 
-~~~
+~~~pseudocode
 ReadVarint(data):
   // The length of variable-length integers is encoded in the
   // first two bits of the first byte.
@@ -7665,7 +7665,7 @@ The EncodePacketNumber function takes two arguments:
 * largest_acked is the largest packet number that has been acknowledged by the
   peer in the current packet number space, if any.
 
-~~~
+~~~pseudocode
 EncodePacketNumber(full_pn, largest_acked):
 
   // The number of bits must be at least one more
@@ -7680,7 +7680,7 @@ EncodePacketNumber(full_pn, largest_acked):
   num_bytes = ceil(min_bits / 8)
 
   // Encode the integer value and truncate to
-  // the num_bytes least-significant bytes.
+  // the num_bytes least significant bytes.
   return encode(full_pn, num_bytes)
 ~~~
 {: #alg-encode-pn title="Sample Packet Number Encoding Algorithm"}
@@ -7707,7 +7707,7 @@ The DecodePacketNumber function takes three arguments:
 * truncated_pn is the value of the Packet Number field.
 * pn_nbits is the number of bits in the Packet Number field (8, 16, 24, or 32).
 
-~~~
+~~~pseudocode
 DecodePacketNumber(largest_pn, truncated_pn, pn_nbits):
    expected_pn  = largest_pn + 1
    pn_win       = 1 << pn_nbits
