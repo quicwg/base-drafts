@@ -2145,13 +2145,13 @@ servers (see {{token-differentiation}}), and the latter can be validated more
 strictly.  If the validation succeeds, the server SHOULD then allow the
 handshake to proceed.
 
-Note:
-
-: The rationale for treating the client as unvalidated rather than discarding
-  the packet is that the client might have received the token in a previous
-  connection using the NEW_TOKEN frame, and if the server has lost state, it
-  might be unable to validate the token at all, leading to connection failure if
-  the packet is discarded.
+<aside markdown="block">
+Note: The rationale for treating the client as unvalidated rather than
+  discarding the packet is that the client might have received the token in a
+  previous connection using the NEW_TOKEN frame, and if the server has lost
+  state, it might be unable to validate the token at all, leading to connection
+  failure if the packet is discarded.
+</aside>
 
 In a stateless design, a server can use encrypted and authenticated tokens to
 pass information to clients that the server can later recover and use to
@@ -2937,13 +2937,13 @@ and attributed to the connection. To minimize the state that an endpoint
 maintains for a closing connection, endpoints MAY send the exact same packet in
 response to any received packet.
 
-Note:
-
-: Allowing retransmission of a closing packet is an exception to the requirement
-  that a new packet number be used for each packet; see {{packet-numbers}}.
-  Sending new packet numbers is primarily of advantage to loss recovery and
-  congestion control, which are not expected to be relevant for a closed
-  connection. Retransmitting the final packet requires less state.
+<aside markdown="block">
+Note: Allowing retransmission of a closing packet is an exception to the
+  requirement that a new packet number be used for each packet; see
+  {{packet-numbers}}.  Sending new packet numbers is primarily of advantage to
+  loss recovery and congestion control, which are not expected to be relevant
+  for a closed connection. Retransmitting the final packet requires less state.
+</aside>
 
 While in the closing state, an endpoint could receive packets from a new source
 address, possibly indicating a connection migration; see {{migration}}.  An
