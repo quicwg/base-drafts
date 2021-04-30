@@ -6027,9 +6027,9 @@ Maximum Streams:
   2<sup>62</sup>-1.  Receipt of a frame that permits opening of a stream larger
   than this limit MUST be treated as a FRAME_ENCODING_ERROR.
 
-Loss or reordering can cause a MAX_STREAMS frame to be received that state a
-lower stream limit than an endpoint has previously received.  MAX_STREAMS frames
-that do not increase the stream limit MUST be ignored.
+Loss or reordering can cause an endpoint to receive a MAX_STREAMS frame with a
+lower stream limit than was previously received.  MAX_STREAMS frames that do not
+increase the stream limit MUST be ignored.
 
 An endpoint MUST NOT open more streams than permitted by the current stream
 limit set by its peer.  For instance, a server that receives a unidirectional
