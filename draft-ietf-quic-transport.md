@@ -154,10 +154,10 @@ credit-based scheme is used to limit stream creation and to bound the amount of
 data that can be sent.
 
 QUIC provides the necessary feedback to implement reliable delivery and
-congestion control. An algorithm for detecting and recovering from loss of
-data is described in {{QUIC-RECOVERY}}. QUIC depends on congestion control
-to avoid network congestion. An exemplary congestion control algorithm is
-also described in {{QUIC-RECOVERY}}.
+congestion control. An algorithm for detecting and recovering from loss of data
+is described in {{Section 6 of QUIC-RECOVERY}}. QUIC depends on congestion
+control to avoid network congestion. An exemplary congestion control algorithm
+is also described in {{Section 7 of QUIC-RECOVERY}}.
 
 QUIC connections are not strictly bound to a single network path. Connection
 migration uses connection identifiers to allow connections to transfer to a new
