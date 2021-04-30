@@ -3972,8 +3972,8 @@ containing that information is acknowledged.
   {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
-  frames, are not sent again when packet loss is detected, but as described in
-  {{termination}}.
+  frames, are not sent again when packet loss is detected. Retransmission of
+  these packets is described in {{termination}}.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
