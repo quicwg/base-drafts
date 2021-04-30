@@ -4514,7 +4514,8 @@ At a receiver, protection of the packet number is removed prior to recovering
 the full packet number. The full packet number is then reconstructed based on
 the number of significant bits present, the value of those bits, and the largest
 packet number received in a successfully authenticated packet. Recovering the
-full packet number is necessary to successfully remove packet protection.
+full packet number is necessary to successfully complete the removal of packet
+protection.
 
 Once header protection is removed, the packet number is decoded by finding the
 packet number value that is closest to the next expected packet.  The next
