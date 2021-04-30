@@ -1227,11 +1227,11 @@ be unable to continue using the connection IDs with the active connection.
 
 An endpoint SHOULD limit the number of connection IDs it has retired locally and
 have not yet been acknowledged. An endpoint SHOULD allow for sending and
-tracking a number of RETIRE_CONNECTION_ID frames of at least twice the
-active_connection_id limit. An endpoint MUST NOT forget a connection ID without
-retiring it, though it MAY choose to treat having connection IDs in need of
-retirement that exceed this limit as a connection error of type
-CONNECTION_ID_LIMIT_ERROR.
+tracking a number of RETIRE_CONNECTION_ID frames of at least twice the value of
+the active_connection_id_limit transport parameter. An endpoint MUST NOT forget
+a connection ID without retiring it, though it MAY choose to treat having
+connection IDs in need of retirement that exceed this limit as a connection
+error of type CONNECTION_ID_LIMIT_ERROR.
 
 Endpoints SHOULD NOT issue updates of the Retire Prior To field before receiving
 RETIRE_CONNECTION_ID frames that retire all connection IDs indicated by the
