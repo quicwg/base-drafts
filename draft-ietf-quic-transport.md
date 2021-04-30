@@ -7387,6 +7387,7 @@ Contact:
 
 Notes:
 : Supplementary notes about the registration.
+{: spacing="compact"}
 
 Provisional registrations MAY omit the Specification and Notes fields, plus any
 additional fields that might be required for a permanent registration.  The Date
