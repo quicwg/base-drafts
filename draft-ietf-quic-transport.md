@@ -4667,6 +4667,12 @@ Packet Number:
   packet number field is encoded in the Packet Number Length bits of byte 0; see
   above.
 
+Packet Payload:
+
+: The payload of the packet, which contains frames that are protected using
+  packet protection.
+
+
 ### Version Negotiation Packet {#packet-version}
 
 A Version Negotiation packet is inherently not version specific. Upon receipt by
@@ -4776,10 +4782,6 @@ Token:
 
 : The value of the token that was previously provided in a Retry packet or
   NEW_TOKEN frame; see {{validate-handshake}}.
-
-Packet Payload:
-
-: The payload of the packet.
 
 In order to prevent tampering by version-unaware middleboxes, Initial packets
 are protected with connection- and version-specific keys (Initial keys) as
