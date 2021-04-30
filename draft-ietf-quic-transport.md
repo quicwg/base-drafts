@@ -7550,7 +7550,7 @@ which are assigned using Standards Action or IESG Approval as defined in
 In addition to the fields in {{iana-provisional}}, permanent registrations in
 this registry MUST include the following field:
 
-Frame Name:
+Frame Type Name:
 
 : A short mnemonic for the frame type.
 
