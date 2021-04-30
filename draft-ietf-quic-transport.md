@@ -1756,9 +1756,9 @@ client sets the value of the initial_source_connection_id transport parameter to
 `C1`.
 
 When the handshake does not include a Retry ({{fig-auth-cid}}), the server sets
-original_destination_connection_id to `S1` and initial_source_connection_id to
-`S3`. In this case, the server does not include a retry_source_connection_id
-transport parameter.
+original_destination_connection_id to `S1` (note that this value is chosen by
+the client) and initial_source_connection_id to `S3`. In this case, the server
+does not include a retry_source_connection_id transport parameter.
 
 When the handshake includes a Retry ({{fig-auth-cid-retry}}), the server sets
 original_destination_connection_id to `S1`, retry_source_connection_id to `S2`,
