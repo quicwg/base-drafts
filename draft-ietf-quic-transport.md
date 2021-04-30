@@ -4202,12 +4202,12 @@ for IPv4 and a UDP header size of 8 bytes, this results in a maximum datagram
 size of 1232 bytes for IPv6 and 1252 bytes for IPv4. Thus, modern IPv4
 and all IPv6 network paths are expected to be able to support QUIC.
 
-Note:
-
-: This requirement to support a UDP payload of 1200 bytes limits the space
+<aside markdown="block">
+Note: This requirement to support a UDP payload of 1200 bytes limits the space
   available for IPv6 extension headers to 32 bytes or IPv4 options to 52 bytes
   if the path only supports the IPv6 minimum MTU of 1280 bytes.  This affects
   Initial packets and path validation.
+</aside>
 
 Any maximum datagram size larger than 1200 bytes can be discovered using Path
 Maximum Transmission Unit Discovery (PMTUD) (see {{pmtud}}) or Datagram
