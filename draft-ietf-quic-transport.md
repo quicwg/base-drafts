@@ -3588,6 +3588,7 @@ ih:
 
 : Only a CONNECTION_CLOSE frame of type 0x1c can appear in Initial or Handshake
   packets.
+{: indent="5"}
 
 For more details about these restrictions, see {{frames-and-spaces}}.  Note
 that all frames can appear in 1-RTT packets.  An endpoint MUST treat receipt of
@@ -3613,6 +3614,7 @@ P:
 F:
 : The contents of frames with this marking are flow controlled; see
   {{flow-control}}.
+{: indent="5"}
 
 The "Pkts" and "Spec" columns in  {{frame-types}} do not form part of the IANA
 registry; see {{iana-frames}}.
