@@ -513,12 +513,12 @@ implementations. An implementation can define a different state machine as long
 as its behavior is consistent with an implementation that implements these
 states.
 
-<aside><t>
+<aside markdown="block">
   Note: In some cases, a single event or action can cause a transition
   through multiple states.  For instance, sending STREAM with a FIN bit set can
   cause two state transitions for a sending stream: from the "Ready" state to
   the "Send" state, and from the "Send" state to the "Data Sent" state.
-</t></aside>
+</aside>
 
 
 ## Sending Stream States {#stream-send-states}
@@ -775,11 +775,11 @@ acknowledged before the transition to a "closed" or "half-closed" state.
 | Data Recvd               | Reset Recvd / Reset Read | closed               |
 {: #stream-bidi-mapping title="Possible Mapping of Stream States to HTTP/2"}
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note (*1): A stream is considered "idle" if it has not yet been created or if
 the receiving part of the stream is in the "Recv" state without yet having
 received any frames.
-</t></aside>
+</aside>
 
 
 ## Solicited State Transitions
