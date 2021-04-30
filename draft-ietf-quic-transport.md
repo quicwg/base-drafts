@@ -7485,7 +7485,7 @@ policy ({{Section 4.6 of RFC8126}}).
 The codepoint of 0x00000001 to the protocol is assigned with permanent status to
 the protocol defined in this document. The codepoint of 0x00000000 is
 permanently reserved; the note for this codepoint indicates that this version is
-reserved for Version Negotiation.
+reserved for version negotiation.
 
 All codepoints that follow the pattern 0x?a?a?a?a are reserved and MUST NOT be
 assigned by IANA, and MUST NOT appear in the listing of assigned values.
