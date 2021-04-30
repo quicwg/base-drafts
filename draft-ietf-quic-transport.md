@@ -7766,9 +7766,9 @@ provide a clear indication of how the path treats marked packets.
 {{ecn-validation}} suggests limiting this to ten packets or three times the PTO.
 
 After the testing period ends, the ECN state for the path becomes "unknown".
-From the "unknown" state, successful validation of the ECN counts an ACK frame
-(see {{ecn-ack}}) causes the ECN state for the path to become "capable", unless
-no marked packet has been acknowledged.
+From the "unknown" state, successful validation of the ECN counts in an ACK
+frame (see {{ecn-ack}}) causes the ECN state for the path to become "capable"
+unless no marked packet has been acknowledged.
 
 If validation of ECN counts fails at any time, the ECN state for the affected
 path becomes "failed".  An endpoint can also mark the ECN state for a path as
