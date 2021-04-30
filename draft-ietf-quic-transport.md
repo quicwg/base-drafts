@@ -5458,9 +5458,9 @@ describes the format and semantics of the core QUIC frame types.
 ## PADDING Frames {#frame-padding}
 
 A PADDING frame (type=0x00) has no semantic value.  PADDING frames can be used
-to increase the size of a packet.  Padding can be used to increase an initial
-client packet to the minimum required size or to provide protection against
-traffic analysis for protected packets.
+to increase the size of a packet.  Padding can be used to increase an Initial
+packet to the minimum required size or to provide protection against traffic
+analysis for protected packets.
 
 PADDING frames are formatted as shown in {{padding-format}}, which shows that
 PADDING frames have no content. That is, a PADDING frame consists of the single
