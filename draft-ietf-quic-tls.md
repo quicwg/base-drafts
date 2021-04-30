@@ -727,7 +727,7 @@ verification that the identity of the server is included in a certificate and
 that the certificate is issued by a trusted entity (see for example
 {{?RFC2818}}).
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note: Where servers provide certificates for authentication, the size of the
   certificate chain can consume a large number of bytes.  Controlling the size
   of certificate chains is critical to performance in QUIC as servers are
@@ -736,7 +736,7 @@ Note: Where servers provide certificates for authentication, the size of the
   certificate chain can be managed by limiting the number of names or
   extensions; using keys with small public key representations, like ECDSA; or
   by using certificate compression {{?COMPRESS=RFC8879}}.
-</t></aside>
+</aside>
 
 A server MAY request that the client authenticate during the handshake. A server
 MAY refuse a connection if the client is unable to authenticate when requested.
@@ -1096,14 +1096,14 @@ server sends a Retry packet to use the connection ID value selected by the
 server.  The secrets do not change when a client changes the Destination
 Connection ID it uses in response to an Initial packet from the server.
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note: The Destination Connection ID field could be any length up to 20 bytes,
   including zero length if the server sends a Retry packet with a zero-length
   Source Connection ID field. After a Retry, the Initial keys provide the client
   no assurance that the server received its packet, so the client has to rely on
   the exchange that included the Retry packet to validate the server address;
   see {{Section 8.1 of QUIC-TRANSPORT}}.
-</t></aside>
+</aside>
 
 {{test-vectors}} contains sample Initial packets.
 
@@ -1424,13 +1424,13 @@ decrypt 0-RTT packets it receives and instead MUST discard them.
 Once a client has installed 1-RTT keys, it MUST NOT send any more 0-RTT
 packets.
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note: 0-RTT data can be acknowledged by the server as it receives it, but any
   packets containing acknowledgments of 0-RTT data cannot have packet protection
   removed by the client until the TLS handshake is complete.  The 1-RTT keys
   necessary to remove packet protection cannot be derived until the client
   receives all server handshake messages.
-</t></aside>
+</aside>
 
 
 ## Receiving Out-of-Order Protected Packets {#pre-hs-protected}
@@ -1463,11 +1463,11 @@ acknowledgments for 1-RTT packets until the TLS handshake is complete.  Received
 packets protected with 1-RTT keys MAY be stored and later decrypted and used
 once the handshake is complete.
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note: TLS implementations might provide all 1-RTT secrets prior to handshake
   completion.  Even where QUIC implementations have 1-RTT read keys, those keys
   are not to be used prior to completing the handshake.
-</t></aside>
+</aside>
 
 The requirement for the server to wait for the client Finished message creates
 a dependency on that message being delivered.  A client can avoid the
@@ -1622,10 +1622,10 @@ implemented by tracking the lowest packet number sent with each key phase and
 the highest acknowledged packet number in the 1-RTT space: once the latter is
 higher than or equal to the former, another key update can be initiated.
 
-<aside markdown="block"><t markdown="block">
+<aside markdown="block">
 Note: Keys of packets other than the 1-RTT packets are never updated; their keys
   are derived solely from the TLS handshake state.
-</t></aside>
+</aside>
 
 The endpoint that initiates a key update also updates the keys that it uses for
 receiving packets.  These keys will be needed to process packets the peer sends
