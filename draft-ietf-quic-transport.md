@@ -884,9 +884,9 @@ advertised based on the sum of bytes consumed on all streams.
 Once a receiver advertises a limit for the connection or a stream, it is not an
 error to advertise a smaller limit, but the smaller limit has no effect.
 
-A receiver MUST close the connection with an error of type FLOW_CONTROL_ERROR
-({{error-handling}}) if the sender violates the advertised connection or stream
-data limits.
+A receiver MUST close the connection with an error of type FLOW_CONTROL_ERROR if
+the sender violates the advertised connection or stream data limits; see
+{{error-handling}} for details on error handling.
 
 A sender MUST ignore any MAX_STREAM_DATA or MAX_DATA frames that do not increase
 flow control limits.
@@ -993,11 +993,12 @@ An endpoint MUST NOT send data on a stream at or beyond the final size.
 Once a final size for a stream is known, it cannot change.  If a RESET_STREAM or
 STREAM frame is received indicating a change in the final size for the stream,
 an endpoint SHOULD respond with an error of type FINAL_SIZE_ERROR; see
-{{error-handling}}.  A receiver SHOULD treat receipt of data at or beyond the
-final size as an error of type FINAL_SIZE_ERROR, even after a stream is closed.
-Generating these errors is not mandatory, because requiring that an endpoint
-generate these errors also means that the endpoint needs to maintain the final
-size state for closed streams, which could mean a significant state commitment.
+{{error-handling}} for details on error handling.  A receiver SHOULD treat
+receipt of data at or beyond the final size as an error of type
+FINAL_SIZE_ERROR, even after a stream is closed.  Generating these errors is not
+mandatory, because requiring that an endpoint generate these errors also means
+that the endpoint needs to maintain the final size state for closed streams,
+which could mean a significant state commitment.
 
 
 ## Controlling Concurrency {#controlling-concurrency}
@@ -1020,7 +1021,8 @@ frame; see {{immediate-close}}.
 
 Endpoints MUST NOT exceed the limit set by their peer.  An endpoint that
 receives a frame with a stream ID exceeding the limit it has sent MUST treat
-this as a connection error of type STREAM_LIMIT_ERROR ({{error-handling}}).
+this as a connection error of type STREAM_LIMIT_ERROR; see {{error-handling}}
+for details on error handling.
 
 Once a receiver advertises a stream limit using the MAX_STREAMS frame,
 advertising a smaller limit has no effect.  MAX_STREAMS frames that do not
