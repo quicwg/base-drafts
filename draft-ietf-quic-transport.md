@@ -6602,12 +6602,12 @@ Prior to address validation, endpoints are limited in what they are able to
 send.  Endpoints cannot send data toward an unvalidated address in excess of
 three times the data received from that address.
 
-Note:
-
-: The anti-amplification limit only applies when an endpoint responds to packets
-  received from an unvalidated address. The anti-amplification limit does not
-  apply to clients when establishing a new connection or when initiating
-  connection migration.
+<aside markdown="block">
+Note: The anti-amplification limit only applies when an endpoint responds to
+  packets received from an unvalidated address. The anti-amplification limit
+  does not apply to clients when establishing a new connection or when
+  initiating connection migration.
+</aside>
 
 
 #### Server-Side DoS
@@ -7166,11 +7166,11 @@ send datagrams that match these patterns prior to validating the destination
 address. Endpoints MAY retire connection IDs containing patterns known to be
 problematic without using them.
 
-Note:
-
-: Modifying endpoints to apply these protections is more efficient than
-  deploying network-based protections, as endpoints do not need to perform
-  any additional processing when sending to an address that has been validated.
+<aside markdown="block">
+Note: Modifying endpoints to apply these protections is more efficient than
+  deploying network-based protections, as endpoints do not need to perform any
+  additional processing when sending to an address that has been validated.
+</aside>
 
 
 ## Slowloris Attacks
