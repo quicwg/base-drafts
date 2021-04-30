@@ -6782,8 +6782,8 @@ consistently "win" a race with the legitimate packets between the endpoints,
 potentially causing the original packet to be ignored by the recipient.
 
 It is also assumed that an attacker has the resources necessary to affect NAT
-state, potentially both causing an endpoint to lose its NAT binding, and an
-attacker to obtain the same port for use with its traffic.
+state. In particular, an attacker can cause an endpoint to lose its NAT binding
+and then obtain the same port for use with its own traffic.
 
 In the presence of an off-path attacker, QUIC aims to provide the following
 properties:
