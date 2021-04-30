@@ -1004,8 +1004,8 @@ which could mean a significant state commitment.
 ## Controlling Concurrency {#controlling-concurrency}
 
 An endpoint limits the cumulative number of incoming streams a peer can open.
-Only streams with a stream ID less than (max_stream * 4 +
-initial_stream_id_for_type) can be opened; see {{stream-id-types}}.  Initial
+Only streams with a stream ID less than `(max_streams * 4 +
+first_stream_id_of_type)` can be opened; see {{stream-id-types}}.  Initial
 limits are set in the transport parameters; see
 {{transport-parameter-definitions}}. Subsequent limits are advertised using
 MAX_STREAMS frames; see {{frame-max-streams}}. Separate limits apply to
