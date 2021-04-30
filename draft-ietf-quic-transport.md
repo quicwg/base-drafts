@@ -4464,7 +4464,8 @@ encoding properties.
 | 11   | 8      | 62          | 0-4611686018427387903 |
 {: #integer-summary title="Summary of Integer Encodings"}
 
-An example of a decoding algorithm is shown in {{sample-varint}}.
+An example of a decoding algorithm and sample encodings are shown in
+{{sample-varint}}.
 
 Values do not need to be encoded on the minimum number of bytes necessary, with
 the sole exception of the Frame Type field; see {{frames}}.
