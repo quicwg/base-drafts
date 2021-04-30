@@ -4056,9 +4056,9 @@ The details of loss detection and congestion control are described in
 QUIC endpoints can use ECN {{!RFC3168}} to detect and respond to network
 congestion.  ECN allows an endpoint to set an ECN-Capable Transport (ECT)
 codepoint in the ECN field of an IP packet. A network node can then indicate
-congestion by setting the CE codepoint in the ECN field instead of dropping the
-packet {{?RFC8087}}.  Endpoints react to reported congestion by reducing their
-sending rate in response, as described in {{QUIC-RECOVERY}}.
+congestion by setting the ECN-CE codepoint in the ECN field instead of dropping
+the packet {{?RFC8087}}.  Endpoints react to reported congestion by reducing
+their sending rate in response, as described in {{QUIC-RECOVERY}}.
 
 To enable ECN, a sending QUIC endpoint first determines whether a path supports
 ECN marking and whether the peer reports the ECN values in received IP headers;
@@ -4077,9 +4077,9 @@ MUST provide feedback about ECN markings it receives, if these are accessible.
 Failing to report the ECN counts will cause the sender to disable use of ECN
 for this connection.
 
-On receiving an IP packet with an ECT(0), ECT(1), or CE codepoint, an
+On receiving an IP packet with an ECT(0), ECT(1), or ECN-CE codepoint, an
 ECN-enabled endpoint accesses the ECN field and increases the corresponding
-ECT(0), ECT(1), or CE count. These ECN counts are included in subsequent ACK
+ECT(0), ECT(1), or ECN-CE count. These ECN counts are included in subsequent ACK
 frames; see Sections {{<generating-acks}} and {{<frame-ack}}.
 
 Each packet number space maintains separate acknowledgment state and separate
@@ -4132,7 +4132,7 @@ perform ECN validation using the reported ECT(1) counts.
 
 #### Receiving ACK Frames with ECN Counts {#ecn-ack}
 
-Erroneous application of CE markings by the network can result in degraded
+Erroneous application of ECN-CE markings by the network can result in degraded
 connection performance.  An endpoint that receives an ACK frame with ECN counts
 therefore validates the counts before using them. It performs this validation by
 comparing newly received counts against those from the last successfully
@@ -5651,8 +5651,8 @@ connection error of type FRAME_ENCODING_ERROR.
 
 The ACK frame uses the least significant bit of the type value (that is, type
 0x03) to indicate ECN feedback and report receipt of QUIC packets with
-associated ECN codepoints of ECT(0), ECT(1), or CE in the packet's IP header.
-ECN Counts are only present when the ACK frame type is 0x03.
+associated ECN codepoints of ECT(0), ECT(1), or ECN-CE in the packet's IP
+header.  ECN Counts are only present when the ACK frame type is 0x03.
 
 When present, there are three ECN counts, as shown in {{ecn-count-format}}.
 
@@ -5675,9 +5675,9 @@ ECT1 Count:
 : A variable-length integer representing the total number of packets received
   with the ECT(1) codepoint in the packet number space of the ACK frame.
 
-CE Count:
+ECN-CE Count:
 : A variable-length integer representing the total number of packets received
-  with the CE codepoint in the packet number space of the ACK frame.
+  with the ECN-CE codepoint in the packet number space of the ACK frame.
 
 ECN counts are maintained separately for each packet number space.
 
@@ -7792,7 +7792,8 @@ no marked packet has been acknowledged.
 
 If validation of ECN counts fails at any time, the ECN state for the affected
 path becomes "failed".  An endpoint can also mark the ECN state for a path as
-"failed" if marked packets are all declared lost or if they are all CE marked.
+"failed" if marked packets are all declared lost or if they are all ECN-CE
+marked.
 
 Following this algorithm ensures that ECN is rarely disabled for paths that
 properly support ECN.  Any path that incorrectly modifies markings will cause
