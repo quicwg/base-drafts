@@ -4785,9 +4785,9 @@ Token:
 
 In order to prevent tampering by version-unaware middleboxes, Initial packets
 are protected with connection- and version-specific keys (Initial keys) as
-described in {{QUIC-TLS}}.  This protection does not provide confidentiality or
-integrity against attackers that can observe packets, but provides some level of
-protection against attackers that cannot observe packets.
+described in {{QUIC-TLS}}.  This does not provide confidentiality or integrity
+against attackers that can observe packets, but it does prevent attackers that
+cannot observe packets from spoofing Initial packets.
 
 The client and server use the Initial packet type for any packet that contains
 an initial cryptographic handshake message. This includes all cases where a new
