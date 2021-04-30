@@ -7397,7 +7397,7 @@ date the registration is created or updated.
 
 ### Selecting Codepoints {#iana-random}
 
-New uses of codepoints from QUIC registries SHOULD use a randomly selected
+New requests for codepoints from QUIC registries SHOULD use a randomly selected
 codepoint that excludes both existing allocations and the first unallocated
 codepoint in the selected space.  Requests for multiple codepoints MAY use a
 contiguous range.  This minimizes the risk that differing semantics are
