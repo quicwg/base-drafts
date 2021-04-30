@@ -3997,7 +3997,7 @@ containing that information is acknowledged.
 * Blocked signals are carried in DATA_BLOCKED, STREAM_DATA_BLOCKED, and
   STREAMS_BLOCKED frames. DATA_BLOCKED frames have connection scope,
   STREAM_DATA_BLOCKED frames have stream scope, and STREAMS_BLOCKED frames are
-  scoped to a specific stream type. New frames are sent if packets containing
+  scoped to a specific stream type. A new frame is sent if a packet containing
   the most recent frame for a scope is lost, but only while the endpoint is
   blocked on the corresponding limit. These frames always include the limit that
   is causing blocking at the time that they are transmitted.
