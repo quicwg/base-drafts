@@ -4456,7 +4456,7 @@ This means that integers are encoded on 1, 2, 4, or 8 bytes and can encode 6-,
 14-, 30-, or 62-bit values respectively.  {{integer-summary}} summarizes the
 encoding properties.
 
-| 2Bit | Length | Usable Bits | Range                 |
+| 2MSB | Length | Usable Bits | Range                 |
 |:-----|:-------|:------------|:----------------------|
 | 00   | 1      | 6           | 0-63                  |
 | 01   | 2      | 14          | 0-16383               |
