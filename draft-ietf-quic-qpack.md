@@ -48,7 +48,8 @@ normative:
     title: "QUIC: A UDP-Based Multiplexed and Secure Transport"
     date: {DATE}
     seriesinfo:
-      Internet-Draft: draft-ietf-quic-transport-latest
+      RFC: 9000
+      DOI: 10.17487/RFC9000
     author:
       -
         ins: J. Iyengar
@@ -95,15 +96,6 @@ This specification defines QPACK, a compression format for efficiently
 representing HTTP fields, to be used in HTTP/3. This is a variation of HPACK
 compression that seeks to reduce head-of-line blocking.
 
---- note_Note_to_Readers
-
-Discussion of this draft takes place on the QUIC working group mailing list
-([quic@ietf.org](mailto:quic@ietf.org)), which is archived at
-[](https://mailarchive.ietf.org/arch/search/?email_list=quic).
-
-Working Group information can be found at [](https://github.com/quicwg); source
-code and issues list for this draft can be found at
-[](https://github.com/quicwg/base-drafts/labels/-qpack).
 
 --- middle
 
@@ -124,7 +116,10 @@ with substantially less head-of-line blocking under the same loss conditions.
 
 ## Conventions and Definitions
 
-{::boilerplate bcp14}
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
 
 Definitions of terms that are used in this document:
 
@@ -1863,120 +1858,6 @@ else:
 return encoderBuffer, prefixBuffer + streamBuffer
 ~~~
 
-# Change Log
-
-> **RFC Editor's Note:** Please remove this section prior to publication of a
-> final version of this document.
-
-## Since draft-ietf-quic-qpack-19
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-18
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-17
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-16
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-15
-
-No changes
-
-## Since draft-ietf-quic-qpack-14
-
-Added security considerations
-
-## Since draft-ietf-quic-qpack-13
-
-No changes
-
-## Since draft-ietf-quic-qpack-12
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-11
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-10
-
-Editorial changes only
-
-## Since draft-ietf-quic-qpack-09
-
-- Decoders MUST emit Header Acknowledgments (#2939)
-- Updated error code for multiple encoder or decoder streams (#2970)
-- Added explicit defaults for new SETTINGS (#2974)
-
-## Since draft-ietf-quic-qpack-08
-
-- Endpoints are permitted to create encoder and decoder streams even if they
-  can't use them (#2100, #2529)
-- Maximum values for settings removed (#2766, #2767)
-
-## Since draft-ietf-quic-qpack-06
-
-- Clarify initial dynamic table capacity maximums (#2276, #2330, #2330)
-
-## Since draft-ietf-quic-qpack-05
-
-- Introduced the terms dynamic table capacity and maximum dynamic table
-  capacity.
-- Renamed SETTINGS_HEADER_TABLE_SIZE to SETTINGS_QPACK_MAX_TABLE_CAPACITY.
-
-## Since draft-ietf-quic-qpack-04
-
-- Changed calculation of Delta Base Index to avoid an illegal value (#2002,
-  #2005)
-
-## Since draft-ietf-quic-qpack-03
-
-- Change HTTP settings defaults (#2038)
-- Substantial editorial reorganization
-
-## Since draft-ietf-quic-qpack-02
-
-- Largest Reference encoded modulo MaxEntries (#1763)
-- New Static Table (#1355)
-- Table Size Update with Insert Count=0 is a connection error (#1762)
-- Stream Cancellations are optional when SETTINGS_HEADER_TABLE_SIZE=0 (#1761)
-- Implementations must handle 62 bit integers (#1760)
-- Different error types for each QPACK stream, other changes to error
-  handling (#1726)
-- Preserve header field order (#1725)
-- Initial table size is the maximum permitted when table is first usable (#1642)
-
-## Since draft-ietf-quic-qpack-01
-
-- Only header blocks that reference the dynamic table are acknowledged (#1603,
-  #1605)
-
-## Since draft-ietf-quic-qpack-00
-
-- Renumbered instructions for consistency (#1471, #1472)
-- Decoder is allowed to validate largest reference (#1404, #1469)
-- Header block acknowledgments also acknowledge the associated largest reference
-  (#1370, #1400)
-- Added an acknowledgment for unread streams (#1371, #1400)
-- Removed framing from encoder stream (#1361,#1467)
-- Control streams use typed unidirectional streams rather than fixed stream IDs
-  (#910,#1359)
-
-## Since draft-ietf-quic-qcram-00
-
-- Separate instruction sets for table updates and header blocks (#1235, #1142,
-  #1141)
-- Reworked indexing scheme (#1176, #1145, #1136, #1130, #1125, #1314)
-- Added mechanisms that support one-pass encoding (#1138, #1320)
-- Added a setting to control the number of blocked decoders (#238, #1140, #1143)
-- Moved table updates and acknowledgments to dedicated streams (#1121, #1122,
-  #1238)
 
 # Acknowledgments
 {:numbered="false"}
