@@ -157,7 +157,7 @@ QUIC provides the necessary feedback to implement reliable delivery and
 congestion control. An algorithm for detecting and recovering from loss of data
 is described in {{Section 6 of QUIC-RECOVERY}}. QUIC depends on congestion
 control to avoid network congestion. An exemplary congestion control algorithm
-is also described in {{Section 7 of QUIC-RECOVERY}}.
+is described in {{Section 7 of QUIC-RECOVERY}}.
 
 QUIC connections are not strictly bound to a single network path. Connection
 migration uses connection identifiers to allow connections to transfer to a new
@@ -738,12 +738,12 @@ The receiver of a stream sends MAX_STREAM_DATA frames
 ({{frame-max-stream-data}}) and STOP_SENDING frames ({{frame-stop-sending}}).
 
 The receiver only sends MAX_STREAM_DATA frames in the "Recv" state.  A receiver
-MAY send STOP_SENDING frame in any state where it has not received a
+MAY send STOP_SENDING frames in any state where it has not received a
 RESET_STREAM frame -- that is, states other than "Reset Recvd" or "Reset Read".
-However, there is little value in sending a STOP_SENDING frame in the "Data
+However, there is little value in sending STOP_SENDING frames in the "Data
 Recvd" state, as all stream data has been received.  A sender could receive
-either of these two frames in any state as a result of delayed delivery of
-packets.
+either of these two types of frames in any state as a result of delayed
+delivery of packets.
 
 
 ## Bidirectional Stream States {#stream-bidi-states}
@@ -1326,7 +1326,7 @@ Servers MUST drop incoming packets under all other circumstances.
 
 ### Considerations for Simple Load Balancers
 
-A server deployment could load-balance among servers using only source and
+A server deployment could balance load among servers using only source and
 destination IP addresses and ports. Changes to the client's IP address or port
 could result in packets being forwarded to the wrong server. Such a server
 deployment could use one of the following methods for connection continuity
@@ -1832,7 +1832,7 @@ ack_delay_exponent, max_ack_delay, initial_source_connection_id,
 original_destination_connection_id, preferred_address,
 retry_source_connection_id, and stateless_reset_token. The client MUST use the
 server's new values in the handshake instead; if the server does not provide new
-values, the default values are used.
+values, default values are used.
 
 A client that attempts to send 0-RTT data MUST remember all other transport
 parameters used by the server that it is able to process. The server can
@@ -2141,7 +2141,7 @@ be useful to the server for address validation.
 When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid, then the server SHOULD proceed as if the
-client did not have a validated address, including potentially sending a Retry.
+client did not have a validated address, including potentially sending a Retry packet.
 Tokens provided with NEW_TOKEN frames and Retry packets can be distinguished by
 servers (see {{token-differentiation}}), and the latter can be validated more
 strictly.  If the validation succeeds, the server SHOULD then allow the
@@ -2297,7 +2297,7 @@ data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
 endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
 
-A PATH_RESPONSE frame MUST be sent on the network path where the PATH_CHALLENGE
+A PATH_RESPONSE frame MUST be sent on the network path where the PATH_CHALLENGE frame
 was received.  This ensures that path validation by a peer only succeeds if the
 path is functional in both directions.  This requirement MUST NOT be enforced by
 the endpoint that initiates path validation, as that would enable an attack on
@@ -2343,7 +2343,7 @@ abandons its attempt to validate the path.
 Endpoints SHOULD abandon path validation based on a timer. When setting this
 timer, implementations are cautioned that the new path could have a longer
 round-trip time than the original.  A value of three times the larger of the
-current PTO or the PTO for the new path (that is, using kInitialRtt as defined
+current PTO or the PTO for the new path (using kInitialRtt, as defined
 in {{QUIC-RECOVERY}}) is RECOMMENDED.
 
 This timeout allows for multiple PTOs to expire prior to failing path
@@ -3261,10 +3261,10 @@ separate limits for different remote addresses will ensure that Stateless Reset
 packets can be used to close connections when other peers or connections have
 exhausted limits.
 
-Reducing the size of a Stateless Reset below 41 bytes means that the packet
-could reveal to an observer that it is a Stateless Reset, depending upon the
-length of the peer's connection IDs.  Conversely, refusing to send a Stateless
-Reset in response to a small packet might result in Stateless Reset packets not
+A Stateless Reset packet that is smaller than 41 bytes can be distinguishable
+as a Stateless Reset packet to an observer, depending upon the
+length of the peer's connection IDs.  Conversely, not sending a Stateless
+Reset packet in response to a small packet might result in Stateless Reset packets not
 being useful in detecting cases of broken connections where only very small
 packets are sent; such failures might only be detected by other means, such as
 timers.
