@@ -11,38 +11,38 @@ information, see the
 
 ## QUIC Invariants
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-invariants.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-invariants)
-* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-invariants&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-invariants.txt)
+* [Editor's copy](https://quicwg.github.io/base-drafts/rfc8999.html)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-invariants)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-invariants&url2=https://quicwg.github.io/base-drafts/rfc8999.txt)
 
 ## Core Transport Protocol
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-transport)
-* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-transport&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-transport.txt)
+* [Editor's copy](https://quicwg.github.io/base-drafts/rfc9000.html)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-transport)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-transport&url2=https://quicwg.github.io/base-drafts/rfc9000.txt)
 
 ## Loss Detection & Congestion Control
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-recovery)
-* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-recovery&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-recovery.txt)
+* [Editor's copy](https://quicwg.github.io/base-drafts/rfc9002.html)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-recovery)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-recovery&url2=https://quicwg.github.io/base-drafts/rfc9002.txt)
 
 ## TLS Mapping
 
-* [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-tls)
-* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-tls&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-tls.txt)
+* [Editor's copy](https://quicwg.github.io/base-drafts/rfc9001.html)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-tls)
+* [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-tls&url2=https://quicwg.github.io/base-drafts/rfc9001.txt)
 
 ## HTTP Mapping
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-http.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-http)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-http)
 * [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-http&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-http.txt)
 
 ## QPACK
 
 * [Editor's copy](https://quicwg.github.io/base-drafts/draft-ietf-quic-qpack.html)
-* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-quic-qpack)
+* [Working Group Draft](https://datatracker.ietf.org/doc/html/draft-ietf-quic-qpack)
 * [Compare Working Group Draft and Editor's copy](https://tools.ietf.org/rfcdiff?url1=https://tools.ietf.org/id/draft-ietf-quic-qpack&url2=https://quicwg.github.io/base-drafts/draft-ietf-quic-qpack.txt)
 
 ## Building the Draft
