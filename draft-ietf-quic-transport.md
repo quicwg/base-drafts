@@ -2141,11 +2141,11 @@ be useful to the server for address validation.
 When a server receives an Initial packet with an address validation token, it
 MUST attempt to validate the token, unless it has already completed address
 validation.  If the token is invalid, then the server SHOULD proceed as if the
-client did not have a validated address, including potentially sending a Retry packet.
-Tokens provided with NEW_TOKEN frames and Retry packets can be distinguished by
-servers (see {{token-differentiation}}), and the latter can be validated more
-strictly.  If the validation succeeds, the server SHOULD then allow the
-handshake to proceed.
+client did not have a validated address, including potentially sending a Retry
+packet.  Tokens provided with NEW_TOKEN frames and Retry packets can be
+distinguished by servers (see {{token-differentiation}}), and the latter can be
+validated more strictly.  If the validation succeeds, the server SHOULD then
+allow the handshake to proceed.
 
 <aside markdown="block">
 Note: The rationale for treating the client as unvalidated rather than
@@ -2297,11 +2297,11 @@ data contained in the PATH_CHALLENGE frame in a PATH_RESPONSE frame.  An
 endpoint MUST NOT delay transmission of a packet containing a PATH_RESPONSE
 frame unless constrained by congestion control.
 
-A PATH_RESPONSE frame MUST be sent on the network path where the PATH_CHALLENGE frame
-was received.  This ensures that path validation by a peer only succeeds if the
-path is functional in both directions.  This requirement MUST NOT be enforced by
-the endpoint that initiates path validation, as that would enable an attack on
-migration; see {{off-path-forward}}.
+A PATH_RESPONSE frame MUST be sent on the network path where the PATH_CHALLENGE
+frame was received.  This ensures that path validation by a peer only succeeds
+if the path is functional in both directions.  This requirement MUST NOT be
+enforced by the endpoint that initiates path validation, as that would enable an
+attack on migration; see {{off-path-forward}}.
 
 An endpoint MUST expand datagrams that contain a PATH_RESPONSE frame to at
 least the smallest allowed maximum datagram size of 1200 bytes. This verifies
@@ -3261,13 +3261,12 @@ separate limits for different remote addresses will ensure that Stateless Reset
 packets can be used to close connections when other peers or connections have
 exhausted limits.
 
-A Stateless Reset packet that is smaller than 41 bytes can be distinguishable
-as a Stateless Reset packet to an observer, depending upon the
-length of the peer's connection IDs.  Conversely, not sending a Stateless
-Reset packet in response to a small packet might result in Stateless Reset packets not
-being useful in detecting cases of broken connections where only very small
-packets are sent; such failures might only be detected by other means, such as
-timers.
+A Stateless Reset packet that is smaller than 41 bytes might be identifiable as
+a Stateless Reset packet by an observer, depending upon the length of the peer's
+connection IDs.  Conversely, not sending a Stateless Reset packet in response to
+a small packet might result in Stateless Reset packets not being useful in
+detecting cases of broken connections where only very small packets are sent;
+such failures might only be detected by other means, such as timers.
 
 
 # Error Handling {#error-handling}
