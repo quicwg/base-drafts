@@ -3972,8 +3972,8 @@ containing that information is acknowledged.
   {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
-  frames, are not sent again when packet loss is detected. Resending
-  these signals is described in {{termination}}.
+  frames, are not sent again when packet loss is detected. Resending these
+  signals is described in {{termination}}.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
@@ -4662,15 +4662,14 @@ Length:
 
 Packet Number:
 
-: The packet number field is 1 to 4 bytes long. The packet number is protected
-  using header protection; see {{Section 5.4 of QUIC-TLS}}.  The length of the
-  packet number field is encoded in the Packet Number Length bits of byte 0; see
-  above.
+: This field is 1 to 4 bytes long. The packet number is protected using header
+  protection; see {{Section 5.4 of QUIC-TLS}}.  The length of the packet number
+  field is encoded in the Packet Number Length bits of byte 0; see above.
 
 Packet Payload:
 
-: The payload of the packet, which contains frames that are protected using
-  packet protection.
+: This is the payload of the packet -- containing a sequence of frames -- that
+  is protected using packet protection.
 
 
 ### Version Negotiation Packet {#packet-version}
@@ -4965,7 +4964,8 @@ Retry Token:
 
 Retry Integrity Tag:
 
-: Defined in {{Section 5.8 (Retry Packet Integrity) of QUIC-TLS}}.
+: Defined in Section ["Retry Packet Integrity"](#QUIC-TLS){: section="5.8"
+  sectionFormat="bare"} of {{QUIC-TLS}}.
 
 
 #### Sending a Retry Packet
