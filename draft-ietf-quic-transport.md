@@ -6882,7 +6882,7 @@ that are received on a different network path.
 The Source and Destination Connection ID fields are the primary means of
 protection against off-path attack during the handshake; see
 {{validate-handshake}}.  These are required to match those set by a peer.
-Except for Initial and stateless reset packets, an endpoint only accepts
+Except for Initial and Stateless Reset packets, an endpoint only accepts
 packets that include a Destination Connection ID field that matches a value the
 endpoint previously chose.  This is the only protection offered for Version
 Negotiation packets.
@@ -7605,7 +7605,7 @@ The initial contents of this registry are shown in {{iana-error-table}}.
 | 0x08  | TRANSPORT_PARAMETER_ERROR | Error in transport parameters | {{error-codes}} |
 | 0x09  | CONNECTION_ID_LIMIT_ERROR | Too many connection IDs received | {{error-codes}} |
 | 0x0a  | PROTOCOL_VIOLATION        | Generic protocol violation    | {{error-codes}} |
-| 0x0b  | INVALID_TOKEN             | Invalid Token received        | {{error-codes}} |
+| 0x0b  | INVALID_TOKEN             | Invalid token received        | {{error-codes}} |
 | 0x0c  | APPLICATION_ERROR         | Application error             | {{error-codes}} |
 | 0x0d  | CRYPTO_BUFFER_EXCEEDED    | CRYPTO data buffer overflowed | {{error-codes}} |
 | 0x0e  | KEY_UPDATE_ERROR          | Invalid packet protection update | {{error-codes}} |
