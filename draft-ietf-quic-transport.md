@@ -3972,8 +3972,8 @@ containing that information is acknowledged.
   {{solicited-state-transitions}}.
 
 * Connection close signals, including packets that contain CONNECTION_CLOSE
-  frames, are not sent again when packet loss is detected. Retransmission of
-  these packets is described in {{termination}}.
+  frames, are not sent again when packet loss is detected. Resending
+  these signals is described in {{termination}}.
 
 * The current connection maximum data is sent in MAX_DATA frames. An updated
   value is sent in a MAX_DATA frame if the packet containing the most recently
@@ -4389,7 +4389,7 @@ transmission by an application.
 
 ### PMTU Probes Containing Source Connection ID {#pmtu-probes-src-cid}
 
-Endpoints that rely on the Destination Connection ID for routing incoming QUIC
+Endpoints that rely on the Destination Connection ID field for routing incoming QUIC
 packets are likely to require that the connection ID be included in
 PMTU probes to route any resulting ICMP messages ({{pmtud}}) back to the correct
 endpoint.  However, only long header packets ({{long-header}}) contain the
@@ -6202,8 +6202,8 @@ PROTOCOL_VIOLATION.
 
 The Retire Prior To field applies to connection IDs established during
 connection setup and the preferred_address transport parameter; see
-{{retire-cid}}. The Retire Prior To field MUST be less than or equal to the
-Sequence Number field. Receiving a value greater than the value in the Sequence
+{{retire-cid}}. The value in the Retire Prior To field MUST be less than or equal to the value in the
+Sequence Number field. Receiving a value in the Retire Prior To field that is greater than that in the Sequence
 Number field MUST be treated as a connection error of type FRAME_ENCODING_ERROR.
 
 Once a sender indicates a Retire Prior To value, smaller values sent in
