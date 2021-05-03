@@ -1051,7 +1051,7 @@ from the Destination Connection ID field from the client's first Initial
 packet.
 
 This secret is determined by using HKDF-Extract (see {{Section 2.2 of HKDF}})
-with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a and the input keying
+with a salt of 0x38762cf7f55934b34d179ae6a4c80cadccbb7f0a and an input keying
 material (IKM) of the Destination Connection ID field. This produces an
 intermediate pseudorandom key (PRK) that is used to derive two separate secrets
 for sending and receiving.
