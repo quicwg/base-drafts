@@ -12,6 +12,7 @@ import xml.sax
 import re
 from xml.sax.saxutils import escape, quoteattr
 
+
 class Tidy(xml.sax.handler.ContentHandler):
     pattern = re.compile(
         r"\b((?:(?:MUST|SHOULD|SHALL)(?:\s+NOT)?)|(?:(?:NOT\s+)?RECOMMENDED)|MAY|OPTIONAL|REQUIRED)\b"
@@ -49,7 +50,18 @@ class Tidy(xml.sax.handler.ContentHandler):
         ]
 
     def inline(tag):
-        return tag in ["code", "cref", "em", "eref", "iref", "sub", "sup", "tt", "xref"]
+        return tag in [
+            "code",
+            "contact",
+            "cref",
+            "em",
+            "eref",
+            "iref",
+            "sub",
+            "sup",
+            "tt",
+            "xref",
+        ]
 
     def flush(self, tag, start=None):
         if Tidy.preserve(tag):
