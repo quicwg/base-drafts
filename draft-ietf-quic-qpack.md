@@ -1708,7 +1708,7 @@ encoder that the encoded field section was not processed.
 Stream: Encoder
 02                  | Duplicate (Relative Index = 2)
                     |  Absolute Index =
-                    |   Insert Count(4) - Index(2) - 1 = 1
+                    |   Insert Count(3) - Index(2) - 1 = 0
 
                               Abs Ref Name        Value
                                0   0  :authority  www.example.com
