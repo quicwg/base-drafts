@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: martinthomson/i-d-template-action:latest
+      - image: ghcr.io/martinthomson/i-d-template-action:latest
     resource_class: small
     working_directory: ~/draft
 
