@@ -205,8 +205,8 @@ Additional resources are provided in the final sections:
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!BCP14}} when, and only
-when, they appear in all capitals, as shown here.
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+when, and only when, they appear in all capitals, as shown here.
 
 This document uses the variable-length integer encoding from
 {{QUIC-TRANSPORT}}.
