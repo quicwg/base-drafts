@@ -1745,7 +1745,7 @@ Stream: Decoder
                                1   0  :path       /sample/path
                                2   0  custom-key  custom-value
                               ^-- acknowledged --^
-                               4   0  :authority  www.example.com
+                               3   0  :authority  www.example.com
                               Size=217
 ~~~
 
