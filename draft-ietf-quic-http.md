@@ -1574,7 +1574,7 @@ maintenance.  GOAWAY by itself does not close a connection.
 GOAWAY Frame {
   Type (i) = 0x07,
   Length (i),
-  Stream ID/Push ID (..),
+  Stream ID/Push ID (i),
 }
 ~~~~~~~~~~
 {: #fig-goaway title="GOAWAY Frame"}
