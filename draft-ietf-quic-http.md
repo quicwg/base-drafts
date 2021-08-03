@@ -1134,8 +1134,8 @@ an error code of H3_STREAM_CREATION_ERROR or a reserved error code
 error of any kind.
 
 As certain stream types can affect connection state, a recipient SHOULD NOT
-discard data from incoming unidirectional streams prior to reading the type
-byte.
+discard data from incoming unidirectional streams prior to reading the stream
+type.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types that could modify the state or semantics of
