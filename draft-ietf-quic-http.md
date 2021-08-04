@@ -884,8 +884,9 @@ as-yet-unknown Push ID, both the associated client request and the pushed
 request header fields are unknown.  The client can buffer the stream data in
 expectation of the matching PUSH_PROMISE. The client can use stream flow control
 (see {{Section 4.1 of QUIC-TRANSPORT}}) to limit the amount of data a server may
-commit to the pushed stream.  Clients SHOULD discard data from push streams if
-no corresponding PUSH_PROMISE frame is processed in a reasonable amount of time.
+commit to the pushed stream.  Clients SHOULD abort reading and discard data
+already read from push streams if no corresponding PUSH_PROMISE frame is
+processed in a reasonable amount of time.
 
 Push stream data can also arrive after a client has canceled a push. In this
 case, the client can abort reading the stream with an error code of
