@@ -1025,8 +1025,8 @@ entry.
 ### Indexed Field Line
 
 An indexed field line representation identifies an entry in the static table,
-or an entry in the dynamic table with an relative index less than the value of
-the Base.
+or an entry in the dynamic table with an index which relative to the Base.
+The index value is less than that of the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1047,8 +1047,8 @@ dynamic table.
 ### Indexed Field Line With Post-Base Index
 
 An indexed field line with post-base index representation identifies an entry
-in the dynamic table with an post base index greater than or equal to the value
-of the Base.
+in the dynamic table with an index which relative to the Base. The index value
+is greater than or equal to that of the Base.
 
 ~~~~~~~~~~ drawing
   0   1   2   3   4   5   6   7
@@ -1067,8 +1067,8 @@ as an integer with a 4-bit prefix; see {{prefixed-integers}}.
 
 A literal field line with name reference representation encodes a field line
 where the field name matches the field name of an entry in the static table, or
-the field name of an entry in the dynamic table with an relative index less than
-the value of the Base.
+the field name of an entry in the dynamic table with an index which relative to
+the Base. The index value is less than that of the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
@@ -1106,7 +1106,8 @@ encoded as an 8-bit prefix string literal; see {{string-literals}}.
 
 A literal field line with post-base name reference representation encodes a
 field line where the field name matches the field name of a dynamic table entry
-with an post base index greater than or equal to the value of the Base.
+with an index which relative to the Base. The index value is greater than or
+equal to that of the Base.
 
 ~~~~~~~~~~ drawing
      0   1   2   3   4   5   6   7
