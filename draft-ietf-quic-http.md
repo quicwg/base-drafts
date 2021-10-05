@@ -793,10 +793,15 @@ data from the target of the CONNECT.
 A TCP connection error is signaled by abruptly terminating the stream. A proxy
 treats any error in the TCP connection, which includes receiving a TCP segment
 with the RST bit set, as a stream error of type H3_CONNECT_ERROR; see
-{{errors}}.  Correspondingly, if a proxy detects an error with the stream or the
-QUIC connection, it MUST close the TCP connection.  If the underlying TCP
-implementation permits it, the proxy SHOULD send a TCP segment with the RST bit
-set.
+{{errors}}.
+
+Correspondingly, if a proxy detects an error with the stream or the QUIC
+connection, it MUST close the TCP connection.  Similarly, if the proxy receives
+a QUIC RESET_STREAM frame or STOP_SENDING frame for the stream, it MUST close
+the TCP connection.  A proxy that receives RESET_STREAM or STOP_SENDING SHOULD
+send the same frame in response in order to ensure that both directions of the
+stream are cancelled. In all these cases, if the underlying TCP implementation
+permits it, the proxy SHOULD send a TCP segment with the RST bit set.
 
 Since CONNECT creates a tunnel to an arbitrary server, proxies that support
 CONNECT SHOULD restrict its use to a set of known ports or a list of safe
