@@ -1127,10 +1127,11 @@ create additional streams as allowed by their peer.
 
 If the stream header indicates a stream type that is not supported by the
 recipient, the remainder of the stream cannot be consumed as the semantics are
-unknown. Recipients of unknown stream types MAY abort reading of the stream with
-an error code of H3_STREAM_CREATION_ERROR or a reserved error code
-({{http-error-codes}}), but MUST NOT consider such streams to be a connection
-error of any kind.
+unknown. Recipients of unknown stream types MUST either abort reading of the
+stream or discard incoming data without further processing.  If reading is
+aborted, the recipient SHOULD use the H3_STREAM_CREATION_ERROR error code or a
+reserved error code ({{http-error-codes}}). The recipient MUST NOT consider
+unknown stream types to be a connection error of any kind.
 
 Implementations MAY send stream types before knowing whether the peer supports
 them.  However, stream types that could modify the state or semantics of
