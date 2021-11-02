@@ -1772,7 +1772,7 @@ managing these extension points: frame types ({{iana-frames}}), settings
 ({{iana-stream-types}}).
 
 Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard frames and abort reading on
+protocol elements.  Implementations MUST discard data and/or abort reading on
 unidirectional streams that have unknown or unsupported types.  This means that
 any of these extension points can be safely used by extensions without prior
 arrangement or negotiation.  However, where a known frame type is required to be
