@@ -1223,16 +1223,16 @@ stream. This section describes HTTP/3 frame formats and their permitted stream
 types; see {{stream-frame-mapping}} for an overview.  A comparison between
 HTTP/2 and HTTP/3 frames is provided in {{h2-frames}}.
 
-| Frame          | Control Stream | Request Stream | Push Stream | Section                  |
-| -------------- | -------------- | -------------- | ----------- | ------------------------ |
-| DATA           | No             | Yes            | Yes         | {{frame-data}}           |
-| HEADERS        | No             | Yes            | Yes         | {{frame-headers}}        |
-| CANCEL_PUSH    | Yes            | No             | No          | {{frame-cancel-push}}    |
-| SETTINGS       | Yes (1)        | No             | No          | {{frame-settings}}       |
-| PUSH_PROMISE   | No             | Yes            | No          | {{frame-push-promise}}   |
-| GOAWAY         | Yes            | No             | No          | {{frame-goaway}}         |
-| MAX_PUSH_ID    | Yes            | No             | No          | {{frame-max-push-id}}    |
-| Reserved       | Yes            | Yes            | Yes         | {{frame-reserved}}       |
+| Frame        | Control Stream | Request Stream | Push Stream | Section                |
+| ------------ | -------------- | -------------- | ----------- | ---------------------- |
+| DATA         | No             | Yes            | Yes         | {{frame-data}}         |
+| HEADERS      | No             | Yes            | Yes         | {{frame-headers}}      |
+| CANCEL_PUSH  | Yes            | No             | No          | {{frame-cancel-push}}  |
+| SETTINGS     | Yes (1)        | No             | No          | {{frame-settings}}     |
+| PUSH_PROMISE | No             | Yes            | No          | {{frame-push-promise}} |
+| GOAWAY       | Yes            | No             | No          | {{frame-goaway}}       |
+| MAX_PUSH_ID  | Yes            | No             | No          | {{frame-max-push-id}}  |
+| Reserved     | Yes            | Yes            | Yes         | {{frame-reserved}}     |
 {: #stream-frame-mapping title="HTTP/3 Frames and Stream Type Overview"}
 
 The SETTINGS frame can only occur as the first frame of a Control stream; this
@@ -1772,7 +1772,7 @@ managing these extension points: frame types ({{iana-frames}}), settings
 ({{iana-stream-types}}).
 
 Implementations MUST ignore unknown or unsupported values in all extensible
-protocol elements.  Implementations MUST discard data and/or abort reading on
+protocol elements.  Implementations MUST discard data or abort reading on
 unidirectional streams that have unknown or unsupported types.  This means that
 any of these extension points can be safely used by extensions without prior
 arrangement or negotiation.  However, where a known frame type is required to be
@@ -2087,7 +2087,7 @@ its semantics, including any parts of the frame that are conditionally present.
 The entries in {{iana-frame-table}} are registered by this document.
 
 | ------------ | ------- | -------------------------- |
-| Frame Type   | Value   | Specification              |
+| Frame Type   |  Value  | Specification              |
 | ------------ | :-----: | -------------------------- |
 | DATA         |  0x00   | {{frame-data}}             |
 | HEADERS      |  0x01   | {{frame-headers}}          |
