@@ -1,6 +1,5 @@
 ---
-title: Hypertext Transfer Protocol Version 3 (HTTP/3)
-abbrev: HTTP/3
+title: HTTP/3
 docname: draft-ietf-quic-http-latest
 date: {DATE}
 category: std
