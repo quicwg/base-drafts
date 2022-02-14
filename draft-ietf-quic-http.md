@@ -2149,6 +2149,9 @@ The entries in {{iana-setting-table}} are registered by this document.
 | ----------------------- | ------- | ----------------------- | --------- |
 {: #iana-setting-table title="Initial HTTP/3 Settings"}
 
+For fomatting reasons, setting names can be abbreviated by removing the
+'SETTING_' prefix.
+
 Each code of the format `0x1f * N + 0x21` for non-negative integer values of N
 (that is, 0x21, 0x40, ..., through 0x3ffffffffffffffe) MUST NOT be assigned by
 IANA and MUST NOT appear in the listing of assigned values.
