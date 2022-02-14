@@ -1111,12 +1111,14 @@ window of these streams will increase the chance that the remote peer reaches
 the limit early and becomes blocked. In particular, implementations should
 consider that remote peers may wish to exercise reserved stream behavior
 ({{stream-grease}}) with some of the unidirectional streams they are permitted
-to use. To avoid blocking, the transport parameters sent by both clients and
-servers MUST allow the peer to create at least one unidirectional stream for the
-HTTP control stream plus the number of unidirectional streams required by
-mandatory extensions (three being the minimum number required for the base
-HTTP/3 protocol and QPACK), and SHOULD provide at least 1,024 bytes of flow
-control credit to each stream.
+to use.
+
+Each endpoint needs to create at least one unidirectional stream for the HTTP
+control stream. QPACK requires two additional unidirectional streams, and other
+extensions might require further streams. Therefore, the transport parameters
+sent by both clients and servers MUST allow the peer to create at least three
+unidirectional streams. These transport parameters SHOULD also provide at least
+1,024 bytes of flow control credit to each unidirectional stream.
 
 Note that an endpoint is not required to grant additional credits to create more
 unidirectional streams if its peer consumes all the initial credits before
