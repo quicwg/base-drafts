@@ -2576,7 +2576,8 @@ for what might be a temporary or intermittent error.
 # Acknowledgments
 {:numbered="false"}
 
-The original authors of this specification were Robbie Shade and Mike Warres.
+Robbie Shade and Mike Warres were the authors of draft-shade-quic-http2-mapping,
+which was the basis for this document.
 
 The IETF QUIC Working Group received an enormous amount of support from many
 people. Among others, the following people provided substantial contributions to
