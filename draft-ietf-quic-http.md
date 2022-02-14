@@ -606,7 +606,7 @@ The following pseudo-header fields are defined for requests:
     {{Section 7.1 of SEMANTICS}}.
 
 All HTTP/3 requests MUST include exactly one value for the ":method", ":scheme",
-and ":path" pseudo-header fields, unless it is a CONNECT request; see
+and ":path" pseudo-header fields, unless the request is a CONNECT request; see
 {{connect}}.
 
 If the ":scheme" pseudo-header field identifies a scheme that has a mandatory
