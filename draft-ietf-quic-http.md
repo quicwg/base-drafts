@@ -1056,9 +1056,9 @@ byte stream to the application. Although QUIC permits out-of-order delivery
 within a stream, HTTP/3 does not make use of this feature.
 
 QUIC streams can be either unidirectional, carrying data only from initiator to
-receiver, or bidirectional.  Streams can be initiated by either the client or
-the server.  For more detail on QUIC streams, see
-{{Section 2 of QUIC-TRANSPORT}}.
+receiver, or bidirectional, carrying data in both directions.  Streams can be
+initiated by either the client or the server.  For more detail on QUIC streams,
+see {{Section 2 of QUIC-TRANSPORT}}.
 
 When HTTP fields and data are sent over QUIC, the QUIC layer handles most of
 the stream management.  HTTP does not need to do any separate multiplexing when
