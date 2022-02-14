@@ -675,10 +675,10 @@ possible, it is RECOMMENDED that servers send an HTTP response with an
 appropriate status code rather than canceling a request it has already begun
 processing.
 
-Implementations SHOULD cancel requests by abruptly terminating any
-directions of a stream that are still open.  This means resetting the
-sending parts of streams and aborting reading on receiving parts of streams;
-see {{Section 2.4 of QUIC-TRANSPORT}}.
+Implementations SHOULD cancel requests by abruptly terminating any directions of
+a stream that are still open.  To do so, an implementation resets the sending
+parts of streams and aborts reading on the receiving parts of streams; see
+{{Section 2.4 of QUIC-TRANSPORT}}.
 
 When the server cancels a request without performing any application processing,
 the request is considered "rejected."  The server SHOULD abort its response
