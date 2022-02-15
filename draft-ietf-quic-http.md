@@ -1,6 +1,7 @@
 ---
 title: Hypertext Transfer Protocol Version 3 (HTTP/3)
 abbrev: HTTP/3
+number: 9114
 docname: draft-ietf-quic-http-latest
 date: {DATE}
 category: std
@@ -82,7 +83,7 @@ The QUIC transport protocol has several features that are desirable in a
 transport for HTTP, such as stream multiplexing, per-stream flow control, and
 low-latency connection establishment.  This document describes a mapping of HTTP
 semantics over QUIC.  This document also identifies HTTP/2 features that are
-subsumed by QUIC, and describes how HTTP/2 extensions can be ported to HTTP/3.
+subsumed by QUIC and describes how HTTP/2 extensions can be ported to HTTP/3.
 
 
 --- middle
@@ -94,12 +95,12 @@ HTTP semantics ({{!SEMANTICS=I-D.ietf-httpbis-semantics}}) are used for a broad
 range of services on the Internet. These semantics have most commonly been used
 with HTTP/1.1 and HTTP/2.  HTTP/1.1 has been used over a variety of transport
 and session layers, while HTTP/2 has been used primarily with TLS over TCP.
-HTTP/3 supports the same semantics over a new transport protocol, QUIC.
+HTTP/3 supports the same semantics over a new transport protocol: QUIC.
 
-## Prior versions of HTTP
+## Prior Versions of HTTP
 
 HTTP/1.1 ({{?HTTP11=I-D.ietf-httpbis-messaging}}) uses whitespace-delimited text
-fields to convey HTTP messages.  While these exchanges are human-readable, using
+fields to convey HTTP messages.  While these exchanges are human readable, using
 whitespace for message formatting leads to parsing complexity and excessive
 tolerance of variant behavior.
 
@@ -126,11 +127,11 @@ transport layer, offering comparable confidentiality and integrity to running
 TLS over TCP, with the improved connection setup latency of TCP Fast Open
 ({{?TFO=RFC7413}}).
 
-This document defines HTTP/3, a mapping of HTTP semantics over the QUIC
+This document defines HTTP/3: a mapping of HTTP semantics over the QUIC
 transport protocol, drawing heavily on the design of HTTP/2.  HTTP/3 relies on
 QUIC to provide confidentiality and integrity protection of data; peer
 authentication; and reliable, in-order, per-stream delivery. While delegating
-stream lifetime and flow control issues to QUIC, a binary framing similar to the
+stream lifetime and flow-control issues to QUIC, a binary framing similar to the
 HTTP/2 framing is used on each stream. Some HTTP/2 features are subsumed by
 QUIC, while other features are implemented atop QUIC.
 
@@ -301,7 +302,7 @@ host identifier to an IP address, establishing a QUIC connection to that address
 on the indicated port (including validation of the server certificate as
 described above), and sending an HTTP/3 request message targeting the URI
 to the server over that secured connection.  Unless some other mechanism is used
-to select HTTP/3, the token "h3" is used in the Application-Layer Protocol
+to select HTTP/3, the token "h3" is used in the Application Layer Protocol
 Negotiation (ALPN; see {{!RFC7301}}) extension during the TLS handshake.
 
 Connectivity problems (e.g., blocking UDP) can result in a failure to establish
@@ -2026,7 +2027,7 @@ in certain scenarios.
 # IANA Considerations
 
 This document registers a new ALPN protocol ID ({{iana-alpn}}) and creates new
-registries that manage the assignment of codepoints in HTTP/3.
+registries that manage the assignment of code points in HTTP/3.
 
 ## Registration of HTTP/3 Identification String {#iana-alpn}
 
@@ -2060,7 +2061,7 @@ and list a change controller of the IETF and a contact of the HTTP working group
 ### Frame Types {#iana-frames}
 
 This document establishes a registry for HTTP/3 frame type codes. The "HTTP/3
-Frame Type" registry governs a 62-bit space.  This registry follows the QUIC
+Frame Types" registry governs a 62-bit space.  This registry follows the QUIC
 registry policy; see {{iana-policy}}.  Permanent registrations in this registry
 are assigned using the Specification Required policy ({{!RFC8126}}), except for
 values between 0x00 and 0x3f (in hexadecimal; inclusive), which are assigned
