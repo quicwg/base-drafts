@@ -472,7 +472,7 @@ table. While these updates are not directly part of the message exchange, they
 must be received and processed before the message can be consumed.  See
 {{header-formatting}} for more details.
 
-Transfer codings (see {{Section 6.1 of HTTP11}}) are not defined for HTTP/3;
+Transfer codings (see {{Section 7 of HTTP11}}) are not defined for HTTP/3;
 the Transfer-Encoding header field MUST NOT be used.
 
 A response MAY consist of multiple messages when and only when one or more
