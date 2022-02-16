@@ -377,9 +377,8 @@ While blocked, encoded field section data SHOULD remain in the blocked stream's
 flow control window. This data is unusable until the stream becomes unblocked,
 and releasing the flow control prematurely makes the decoder vulnerable to
 memory exhaustion attacks. A stream becomes unblocked when the Insert Count
-becomes unblocked when the Insert Count becomes greater than or equal to the
-Required Insert Count for all encoded field sections the decoder has started
-reading from the stream.
+becomes greater than or equal to the Required Insert Count for all encoded
+field sections the decoder has started reading from the stream.
 
 When processing encoded field sections, the decoder expects the Required Insert
 Count to equal the lowest possible value for the Insert Count with which the
