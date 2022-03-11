@@ -78,6 +78,8 @@ informative:
 
 --- abstract
 
+This text will not trigger a terminology warning.
+
 The QUIC transport protocol has several features that are desirable in a
 transport for HTTP, such as stream multiplexing, per-stream flow control, and
 low-latency connection establishment.  This document describes a mapping of HTTP
