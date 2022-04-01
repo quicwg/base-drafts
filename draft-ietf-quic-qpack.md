@@ -1437,7 +1437,7 @@ registered in the "HTTP/3 Settings" registry established in {{HTTP3}}.
 | ---------------------------- | ------ | ------------------------- | ------- |
 
 For fomatting reasons, the setting names here are abbreviated by removing the
-'SETTING_' prefix.
+'SETTINGS_' prefix.
 
 ## Stream Type Registration
 
