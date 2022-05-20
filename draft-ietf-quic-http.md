@@ -2604,4 +2604,4 @@ this document:
 - Tatsuhiro Tsujikawa
 
 A portion of Mike's contribution was supported by Microsoft during his
-employment there.
+employment there. 
