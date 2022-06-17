@@ -1,13 +1,8 @@
-*                               @quicwg/chairs
-
-draft-ietf-quic-http.md         @MikeBishop
-
-draft-ietf-quic-invariants.md   @martinthomson 
-
-draft-ietf-quic-qpack.md        @MikeBishop @afrind
-
-draft-ietf-quic-recovery.md     @janaiyengar @ianswett
-
-draft-ietf-quic-tls.md          @martinthomson @seanturner
-
-draft-ietf-quic-transport.md    @janaiyengar @martinthomson
+# Automatically generated CODEOWNERS
+# Regenerate with `make update-codeowners`
+draft-ietf-quic-http.md mbishop@evequefou.be
+draft-ietf-quic-qpack.md ckrasic@netflix.com mbishop@evequefou.be afrind@fb.com
+rfc8999.md mt@lowentropy.net
+rfc9000.md jri.ietf@gmail.com mt@lowentropy.net
+rfc9001.md mt@lowentropy.net sean@sn3rd.com
+rfc9002.md jri.ietf@gmail.com ianswett@google.com
