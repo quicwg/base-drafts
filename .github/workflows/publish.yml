@@ -11,34 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     # See https://github.com/actions/checkout/issues/290
     - name: "Get Tag Annotations"
       run: git fetch -f origin ${{ github.ref }}:${{ github.ref }}
 
-    - name: "Cache Setup"
-      id: cache-setup
-      run: |
-        mkdir -p "$HOME"/.cache/xml2rfc
-        echo "::set-output name=path::$HOME/.cache/xml2rfc"
-        date -u "+::set-output name=date::%FT%T"
+    - name: "Setup"
+      id: setup
+      run: date -u "+::set-output name=date::%FT%T"
 
-    - name: "Cache References"
-      uses: actions/cache@v2
+    - name: "Caching"
+      uses: actions/cache@v3
       with:
         path: |
-          ${{ steps.cache-setup.outputs.path }}
+          ${{ env.XML2RFC_REFCACHEDIR }}
+          ${{ env.VENVDIR }}
+          ${{ env.BUNDLE_PATH }}
+          node_modules
           .targets.mk
-        key: refcache-${{ steps.date.outputs.date }}
-        restore-keys: |
-          refcache-${{ steps.date.outputs.date }}
-          refcache-
+        key: i-d-${{ steps.setup.outputs.date }}
+        restore-keys: i-d-
 
     - name: "Build Drafts"
       uses: martinthomson/i-d-template@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
 
     - name: "Upload to Datatracker"
       uses: martinthomson/i-d-template@v1
