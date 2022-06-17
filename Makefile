@@ -1,10 +1,5 @@
-PYTHON := $(shell which python3)
-ifeq ($(PYTHON),)
-PYTHON := $(shell which python)
-endif
-
 MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date '+%Y-%m-%d')/g'
-XML_TIDY := $(PYTHON) ./xml2rfc-tidy.py
+TIDY := true
 
 LIBDIR := lib
 include $(LIBDIR)/main.mk
@@ -15,16 +10,14 @@ ifneq (,$(shell git submodule status $(LIBDIR) 2>/dev/null))
 	git submodule update $(CLONE_ARGS) --init
 else
 	git clone -q --depth 10 $(CLONE_ARGS) \
-	    -b main https://github.com/martinthomson/i-d-template $(LIBDIR)
+	    -b mnot-334 https://github.com/martinthomson/i-d-template $(LIBDIR)
 endif
 
 latest:: lint
 .PHONY: lint
 
-ifneq ($(PYTHON),)
 lint::
-	@$(PYTHON) ./.lint.py $(addsuffix .md,$(drafts))
-endif
+	@$(python) ./.lint.py $(addsuffix .md,$(drafts))
 
 show-next:
 	@echo $(drafts_next)
