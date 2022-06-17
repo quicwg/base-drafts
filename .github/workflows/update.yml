@@ -1,0 +1,36 @@
+name: "Update Generated Files"
+# This rule is not run automatically.
+# It can be run manually to update all of the files that are part
+# of the template, specifically:
+#  - README.md
+#  - CONTRIBUTING.md
+#  - .note.xml
+#  - .github/CODEOWNERS
+#  - Makefile
+#
+#
+# This might be useful if you have:
+#  - added, removed, or renamed drafts (including after adoption)
+#  - added, removed, or changed draft editors
+#  - changed the title of drafts
+#
+# Note that this removes any customizations you have made to
+# the affected files.
+on: workflow_dispatch
+
+jobs:
+  build:
+    name: "Update Files"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v2
+
+    - name: "Update Generated Files"
+      uses: martinthomson/i-d-template@v1
+      with:
+        make: update-files
+        token: ${{ github.token }}
+
+    - name: "Push Update"
+      run: git push
