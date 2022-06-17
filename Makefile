@@ -17,7 +17,7 @@ latest:: lint
 .PHONY: lint
 
 lint::
-	@$(python) ./.lint.py $(addsuffix .md,$(drafts))
+	@$(trace) wslint $(python) ./.lint.py $(addsuffix .md,$(drafts))
 
 show-next:
 	@echo $(drafts_next)
