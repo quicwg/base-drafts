@@ -1,10 +1,5 @@
-PYTHON := $(shell which python3)
-ifeq ($(PYTHON),)
-PYTHON := $(shell which python)
-endif
-
 MD_PREPROCESSOR := sed -e 's/{DATE}/$(shell date '+%Y-%m-%d')/g'
-XML_TIDY := $(PYTHON) ./xml2rfc-tidy.py
+TIDY := true
 
 LIBDIR := lib
 include $(LIBDIR)/main.mk
@@ -21,10 +16,8 @@ endif
 latest:: lint
 .PHONY: lint
 
-ifneq ($(PYTHON),)
 lint::
-	@$(PYTHON) ./.lint.py $(addsuffix .md,$(drafts))
-endif
+	@$(trace) wslint $(python) ./.lint.py $(addsuffix .md,$(drafts))
 
 show-next:
 	@echo $(drafts_next)

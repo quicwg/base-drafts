@@ -5,6 +5,7 @@ on:
     - cron: '0 0 * * 0,2,4'
   repository_dispatch:
     types: [archive]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,13 +19,13 @@ jobs:
       uses: martinthomson/i-d-template@v1
       with:
         make: archive
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
 
     - name: "Update GitHub Pages"
       uses: martinthomson/i-d-template@v1
       with:
         make: gh-archive
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ github.token }}
 
     - name: "Save Archive"
       uses: actions/upload-artifact@v2
