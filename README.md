@@ -7,7 +7,7 @@ specifications that were written by the QUIC Working Group.
 design changes or substantial editorial changes unless they relate to severe
 security, interoperability or deployment problems. For further information, see
 the [guidelines for
-contribution](https://github.com/quicwg/base-drafts/blob/master/CONTRIBUTING.md).**
+contribution](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md).**
 
 ## QUIC Invariants
 
