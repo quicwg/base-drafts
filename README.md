@@ -11,7 +11,7 @@ tool](https://www.rfc-editor.org/errata.php).**
 extensions to QUIC, or other proposals related to the QUIC transport. See
 [Engaging with the QUIC
 community](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md#engaging-with-the-quic-community)
-for guidance**
+for guidance.**
 
 ## QUIC Invariants
 

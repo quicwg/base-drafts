@@ -20,7 +20,7 @@ tool](https://www.rfc-editor.org/errata.php).**
 **The QUIC Working Group welcomes discussion about new versions of QUIC, and new
 extensions to QUIC, or other proposals related to the QUIC transport. See
 [Engaging with the QUIC community](#engaging-with-the-quic-community) for
-guidance**
+guidance.**
 
 **Be aware that all contributions fall under the "[NOTE WELL](#note-well)" terms
 outlined below and our [Code of Conduct](#code-of-conduct) applies.**
