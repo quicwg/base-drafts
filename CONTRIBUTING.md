@@ -13,34 +13,18 @@ The set of documents are:
 * [QPACK: Header Compression for HTTP/3](https://tools.ietf.org/html/draft-ietf-quic-qpack)
 
 
-**All of the documents have been approved for publication as RFCs. We will no
-longer consider design changes or substantial editorial changes unless they
-relate to severe security, interoperability or deployment problems. See [Post-IESG
-Process](#post-iesg-process) below for further information**
+**All of the documents have now been published as RFCs. Technical or editorial
+erratum can be reported to the RFC Editor using the [errata
+tool](https://www.rfc-editor.org/errata.php).**
 
-**The QUIC Working Group welcomes discussion about new versions of QUIC, and
-new extensions to QUIC. See [Engaging with the QUIC
-community](#engaging-with-the-quic-community) for guidance**
+**The QUIC Working Group welcomes discussion about new versions of QUIC, and new
+extensions to QUIC, or other proposals related to the QUIC transport. See
+[Engaging with the QUIC community](#engaging-with-the-quic-community) for
+guidance**
 
 **Be aware that all contributions fall under the "[NOTE WELL](#note-well)" terms
 outlined below and our [Code of Conduct](#code-of-conduct) applies.**
 
-## Post-IESG Process
-
-The consensus of the QUIC Working Group is reflected in the QUIC version 1
-documents, which has been confirmed through the IETF Last Call and IESG review
-stages. The goal of the Post-IESG process is to minimize the risk of changes
-invalidating the established consensus in these documents. Consequently, design
-changes will no longer be considered unless they relate to severe security,
-deployment or implementation problems. If you believe you have identified such a
-problem, please raise the issue on the [Working Group mailing
-list](https://www.ietf.org/mailman/listinfo/quic) with a clear marking in the
-`Subject:` line e.g. "New Issue ...".
-
-Any change will be subject to careful review and discussion, which might involve
-the editors, chairs, Working Group, and our Area Director.
-After this review and discussion, errata may need to be filed for the published RFCs,
-or the Working Group may otherwise address such valid issues.
 # Engaging with the QUIC community
 
 The scope of work in the QUIC Working Group is described in our

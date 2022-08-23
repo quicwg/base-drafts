@@ -3,11 +3,15 @@
 The base-drafts repository is the historical home of the QUIC version 1
 specifications that were written by the QUIC Working Group.
 
-**All of these documents have been published as RFCs. We will no longer consider
-design changes or substantial editorial changes unless they relate to severe
-security, interoperability or deployment problems. For further information, see
-the [guidelines for
-contribution](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md).**
+**The documents have now been published as RFCs. Technical or editorial
+erratum can be reported to the RFC Editor using the [errata
+tool](https://www.rfc-editor.org/errata.php).**
+
+**The QUIC Working Group welcomes discussion about new versions of QUIC, and new
+extensions to QUIC, or other proposals related to the QUIC transport. See
+[Engaging with the QUIC
+community](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md#engaging-with-the-quic-community)
+for guidance**
 
 ## QUIC Invariants
 
