@@ -3,24 +3,7 @@
 The base-drafts repository is the historical home of the QUIC version 1
 specifications that were written by the IETF QUIC Working Group.
 
-The set of documents are:
-
-* [QUIC: A UDP-Based Multiplexed and Secure Transport](https://tools.ietf.org/html/draft-ietf-quic-transport)
-* [Version-Independent Properties of QUIC](https://tools.ietf.org/html/draft-ietf-quic-invariants)
-* [Using TLS to Secure QUIC](https://tools.ietf.org/html/draft-ietf-quic-tls)
-* [QUIC Loss Detection and Congestion Control](https://tools.ietf.org/html/draft-ietf-quic-recovery)
-* [Hypertext Transfer Protocol Version 3 (HTTP/3)](https://tools.ietf.org/html/draft-ietf-quic-http)
-* [QPACK: Header Compression for HTTP/3](https://tools.ietf.org/html/draft-ietf-quic-qpack)
-
-
-**All of the documents have now been published as RFCs. Technical or editorial
-erratum can be reported to the RFC Editor using the [errata
-tool](https://www.rfc-editor.org/errata.php).**
-
-**The QUIC Working Group welcomes discussion about new versions of QUIC, and new
-extensions to QUIC, or other proposals related to the QUIC transport. See
-[Engaging with the QUIC community](#engaging-with-the-quic-community) for
-guidance.**
+The set of documents are described [here](https://github.com/quicwg/base-drafts/blob/main/README.md).
 
 **Be aware that all contributions fall under the "[NOTE WELL](#note-well)" terms
 outlined below and our [Code of Conduct](#code-of-conduct) applies.**
