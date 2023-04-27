@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="en" class="RFC">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>RFC 8999: Version-Independent Properties of QUIC</title>
+<meta content="Martin Thomson" name="author">
+<meta content="
+       This document defines the properties of the QUIC transport protocol that are
+common to all versions of the protocol. 
+    " name="description">
+<meta content="xml2rfc 3.12.10" name="generator">
+<meta content="crypto" name="keyword">
+<meta content="next generation" name="keyword">
+<meta content="protocol" name="keyword">
+<meta content="secure" name="keyword">
+<meta content="transport" name="keyword">
+<meta content="UDP" name="keyword">
+<meta content="8999" name="rfc.number">
+<!-- Generator version information:
+  xml2rfc 3.12.10
+    Python 3.10.4
+    appdirs 1.4.4
+    ConfigArgParse 1.5.3
+    google-i18n-address 2.5.1
+    html5lib 1.1
+    intervaltree 3.1.0
+    Jinja2 2.11.3
+    kitchen 1.2.6
+    lxml 4.8.0
+    MarkupSafe 2.0.1
+    pycountry 20.7.3
+    pyflakes 2.4.0
+    PyYAML 6.0
+    requests 2.27.1
+    setuptools 59.4.0
+    six 1.16.0
+-->
+<link href="rfc8999.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+}
+:is(ol, ul) :is(ol, ul) {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  line-height: 100%;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+}
+dl > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl > dd {
+  margin-bottom: .8em;
+  min-height: 1.3em;
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0em;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0em;
+}
+dd.break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href].selfRef {
+  color: var(--text-color);
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    overflow-x: auto;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+}
+a.pilcrow[href] { color: var(--pilcrow-weak); }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.role {
+  font-variant: all-small-caps;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 8em;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  margin: 0;
+  clear: left;
+  float: left;
+  text-align: right;
+}
+#identifiers dd {
+  margin: 0 0 0 calc(1em + var(--identifier-width));
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 0.75em 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 7em;
+}
+.references dd {
+  margin-left: 8em;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul :is(p, li) {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre {
+    page-break-inside: avoid;
+  }
+  figure {
+    overflow: scroll;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  h2+*, h3+*, h4+*, h5+*, h6+* {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Fix the dl styling to match the RFC 7992 attributes */
+dl > dt,
+dl.dlParallel > dt {
+  float: left;
+  margin-right: 1em;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Give the table caption label the same styling as the figcaption */
+
+@media print {
+  .toplink {
+    display: none;
+  }
+
+  /* avoid overwriting the top border line with the ToC header */
+  #toc {
+    padding-top: 1px;
+  }
+
+  /* Avoid page breaks inside dl and author address entries */
+  dd {
+    page-break-before: avoid;
+  }
+  .vcard {
+    page-break-inside: avoid;
+  }
+
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([stroke="fill"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+<link href="https://dx.doi.org/10.17487/rfc8999" rel="alternate">
+  <link href="urn:issn:2070-1721" rel="alternate">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-quic-invariants-13" rel="prev">
+  </head>
+<body>
+<table class="ears">
+<thead><tr>
+<td class="left">RFC 8999</td>
+<td class="center">QUIC Invariants</td>
+<td class="right">May 2021</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Thomson</td>
+<td class="center">Standards Track</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-stream">Stream:</dt>
+<dd class="stream">Internet Engineering Task Force (IETF)</dd>
+<dt class="label-rfc">RFC:</dt>
+<dd class="rfc"><a href="https://www.rfc-editor.org/rfc/rfc8999" class="eref">8999</a></dd>
+<dt class="label-category">Category:</dt>
+<dd class="category">Standards Track</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2021-05" class="published">May 2021</time>
+    </dd>
+<dt class="label-issn">ISSN:</dt>
+<dd class="issn">2070-1721</dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">M. Thomson</div>
+<div class="org">Mozilla</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="rfcnum">RFC 8999</h1>
+<h1 id="title">Version-Independent Properties of QUIC</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document defines the properties of the QUIC transport protocol that are
+common to all versions of the protocol.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+            This is an Internet Standards Track document.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <span><a href="https://www.rfc-editor.org/info/rfc8999">https://www.rfc-editor.org/info/rfc8999</a></span>.<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2021 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="xref">1</a>.  <a href="#name-an-extremely-abstract-descr" class="xref">An Extremely Abstract Description of QUIC</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="xref">2</a>.  <a href="#name-fixed-properties-of-all-qui" class="xref">Fixed Properties of All QUIC Versions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="xref">3</a>.  <a href="#name-conventions-and-definitions" class="xref">Conventions and Definitions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="xref">4</a>.  <a href="#name-notational-conventions" class="xref">Notational Conventions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="xref">5</a>.  <a href="#name-quic-packets" class="xref">QUIC Packets</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="xref">5.1</a>.  <a href="#name-long-header" class="xref">Long Header</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="xref">5.2</a>.  <a href="#name-short-header" class="xref">Short Header</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="xref">5.3</a>.  <a href="#name-connection-id" class="xref">Connection ID</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="xref">5.4</a>.  <a href="#name-version" class="xref">Version</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="xref">6</a>.  <a href="#name-version-negotiation" class="xref">Version Negotiation</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="xref">7</a>.  <a href="#name-security-and-privacy-consid" class="xref">Security and Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="xref">8</a>.  <a href="#name-references" class="xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="xref">8.1</a>.  <a href="#name-normative-references" class="xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="xref">8.2</a>.  <a href="#name-informative-references" class="xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#appendix-A" class="xref">Appendix A</a>.  <a href="#name-incorrect-assumptions" class="xref">Incorrect Assumptions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-B" class="xref"></a><a href="#name-authors-address" class="xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="an-extremely-abstract-description-of-quic">
+<section id="section-1">
+      <h2 id="name-an-extremely-abstract-descr">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-an-extremely-abstract-descr" class="section-name selfRef">An Extremely Abstract Description of QUIC</a>
+      </h2>
+<p id="section-1-1">QUIC is a connection-oriented protocol between two endpoints.  Those endpoints
+exchange UDP datagrams.  These UDP datagrams contain QUIC packets.  QUIC
+endpoints use QUIC packets to establish a QUIC connection, which is shared
+protocol state between those endpoints.<a href="#section-1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="fixed-properties-of-all-quic-versions">
+<section id="section-2">
+      <h2 id="name-fixed-properties-of-all-qui">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-fixed-properties-of-all-qui" class="section-name selfRef">Fixed Properties of All QUIC Versions</a>
+      </h2>
+<p id="section-2-1">In addition to providing secure, multiplexed transport, QUIC <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>
+allows for the option to negotiate a version.  This allows the protocol to
+change over time in response to new requirements.  Many characteristics of the
+protocol could change between versions.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">This document describes the subset of QUIC that is intended to remain stable as
+new versions are developed and deployed.  All of these invariants are
+independent of the IP version.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">The primary goal of this document is to ensure that it is possible to deploy new
+versions of QUIC.  By documenting the properties that cannot change, this
+document aims to preserve the ability for QUIC endpoints to negotiate changes to
+any other aspect of the protocol.  As a consequence, this also guarantees a
+minimal amount of information that is made available to entities other than
+endpoints.  Unless specifically prohibited in this document, any aspect of the
+protocol can change between different versions.<a href="#section-2-3" class="pilcrow">¶</a></p>
+<p id="section-2-4"><a href="#bad-assumptions" class="xref">Appendix A</a> contains a non-exhaustive list of some incorrect assumptions
+that might be made based on knowledge of QUIC version 1; these do not apply to
+every version of QUIC.<a href="#section-2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-3">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-3-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in BCP 14 <span>[<a href="#RFC2119" class="xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="xref">RFC8174</a>]</span>
+when, and only when, they appear in all capitals, as shown here.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">This document defines requirements on future QUIC versions, even where normative
+language is not used.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">This document uses terms and notational conventions from <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.<a href="#section-3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="notational-conventions">
+<section id="section-4">
+      <h2 id="name-notational-conventions">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-notational-conventions" class="section-name selfRef">Notational Conventions</a>
+      </h2>
+<p id="section-4-1">The format of packets is described using the notation defined in this section.
+This notation is the same as that used in <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span>.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Complex fields are named and then followed by a list of fields surrounded by a
+pair of matching braces. Each field in this list is separated by commas.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">Individual fields include length information, plus indications about fixed
+value, optionality, or repetitions. Individual fields use the following
+notational conventions, with all lengths in bits:<a href="#section-4-3" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-4-4">
+        <dt id="section-4-4.1">x (A):</dt>
+        <dd style="margin-left: 1.5em" id="section-4-4.2">
+          <p id="section-4-4.2.1">Indicates that x is A bits long<a href="#section-4-4.2.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-4-4.3">x (A..B):</dt>
+        <dd style="margin-left: 1.5em" id="section-4-4.4">
+          <p id="section-4-4.4.1">Indicates that x can be any length from A to B; A can be omitted to indicate
+a minimum of zero bits, and B can be omitted to indicate no set upper limit;
+values in this format always end on a byte boundary<a href="#section-4-4.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-4-4.5">x (L) = C:</dt>
+        <dd style="margin-left: 1.5em" id="section-4-4.6">
+          <p id="section-4-4.6.1">Indicates that x has a fixed value of C; the length of x is described by
+L, which can use any of the length forms above<a href="#section-4-4.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+<dt id="section-4-4.7">x (L) ...:</dt>
+        <dd style="margin-left: 1.5em" id="section-4-4.8">
+          <p id="section-4-4.8.1">Indicates that x is repeated zero or more times and that each instance has a
+length of L<a href="#section-4-4.8.1" class="pilcrow">¶</a></p>
+</dd>
+      <dd class="break"></dd>
+</dl>
+<p id="section-4-5">This document uses network byte order (that is, big endian) values.  Fields
+are placed starting from the high-order bits of each byte.<a href="#section-4-5" class="pilcrow">¶</a></p>
+<p id="section-4-6"><a href="#fig-ex-format" class="xref">Figure 1</a> shows an example structure:<a href="#section-4-6" class="pilcrow">¶</a></p>
+<span id="name-example-format"></span><div id="fig-ex-format">
+<figure id="figure-1">
+        <div class="alignLeft art-text artwork" id="section-4-7.1">
+<pre>
+Example Structure {
+  One-bit Field (1),
+  7-bit Field with Fixed Value (7) = 61,
+  Arbitrary-Length Field (..),
+  Variable-Length Field (8..24),
+  Repeated Field (8) ...,
+}
+</pre>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-example-format" class="selfRef">Example Format</a>
+        </figcaption></figure>
+</div>
+</section>
+</div>
+<div id="quic-packets">
+<section id="section-5">
+      <h2 id="name-quic-packets">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-quic-packets" class="section-name selfRef">QUIC Packets</a>
+      </h2>
+<p id="section-5-1">QUIC endpoints exchange UDP datagrams that contain one or more QUIC packets.
+This section describes the invariant characteristics of a QUIC packet.  A
+version of QUIC could permit multiple QUIC packets in a single UDP datagram, but
+the invariant properties only describe the first packet in a datagram.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">QUIC defines two types of packet headers: long and short.  Packets with a long
+header are identified by the most significant bit of the first byte being set;
+packets with a short header have that bit cleared.<a href="#section-5-2" class="pilcrow">¶</a></p>
+<p id="section-5-3">QUIC packets might be integrity protected, including the header.  However, QUIC
+Version Negotiation packets are not integrity protected; see <a href="#vn" class="xref">Section 6</a>.<a href="#section-5-3" class="pilcrow">¶</a></p>
+<p id="section-5-4">Aside from the values described here, the payload of QUIC packets is
+version specific and of arbitrary length.<a href="#section-5-4" class="pilcrow">¶</a></p>
+<div id="long-header">
+<section id="section-5.1">
+        <h3 id="name-long-header">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-long-header" class="section-name selfRef">Long Header</a>
+        </h3>
+<p id="section-5.1-1">Long headers take the form described in <a href="#fig-long" class="xref">Figure 2</a>.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<span id="name-quic-long-header"></span><div id="fig-long">
+<figure id="figure-2">
+          <div class="alignLeft art-text artwork" id="section-5.1-2.1">
+<pre>
+Long Header Packet {
+  Header Form (1) = 1,
+  Version-Specific Bits (7),
+  Version (32),
+  Destination Connection ID Length (8),
+  Destination Connection ID (0..2040),
+  Source Connection ID Length (8),
+  Source Connection ID (0..2040),
+  Version-Specific Data (..),
+}
+</pre>
+</div>
+<figcaption><a href="#figure-2" class="selfRef">Figure 2</a>:
+<a href="#name-quic-long-header" class="selfRef">QUIC Long Header</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.1-3">A QUIC packet with a long header has the high bit of the first byte set to 1.
+All other bits in that byte are version specific.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.1-4">The next four bytes include a 32-bit Version field.  Versions are described in
+<a href="#version" class="xref">Section 5.4</a>.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
+<p id="section-5.1-5">The next byte contains the length in bytes of the Destination Connection ID
+field that follows it.  This length is encoded as an 8-bit unsigned integer.
+The Destination Connection ID field follows the Destination Connection ID Length
+field and is between 0 and 255 bytes in length.  Connection IDs are described in
+<a href="#connection-id" class="xref">Section 5.3</a>.<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+<p id="section-5.1-6">The next byte contains the length in bytes of the Source Connection ID field
+that follows it.  This length is encoded as an 8-bit unsigned integer.  The
+Source Connection ID field follows the Source Connection ID Length field and is
+between 0 and 255 bytes in length.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
+<p id="section-5.1-7">The remainder of the packet contains version-specific content.<a href="#section-5.1-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="short-header">
+<section id="section-5.2">
+        <h3 id="name-short-header">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-short-header" class="section-name selfRef">Short Header</a>
+        </h3>
+<p id="section-5.2-1">Short headers take the form described in <a href="#fig-short" class="xref">Figure 3</a>.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<span id="name-quic-short-header"></span><div id="fig-short">
+<figure id="figure-3">
+          <div class="alignLeft art-text artwork" id="section-5.2-2.1">
+<pre>
+Short Header Packet {
+  Header Form (1) = 0,
+  Version-Specific Bits (7),
+  Destination Connection ID (..),
+  Version-Specific Data (..),
+}
+</pre>
+</div>
+<figcaption><a href="#figure-3" class="selfRef">Figure 3</a>:
+<a href="#name-quic-short-header" class="selfRef">QUIC Short Header</a>
+          </figcaption></figure>
+</div>
+<p id="section-5.2-3">A QUIC packet with a short header has the high bit of the first byte set to 0.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+<p id="section-5.2-4">A QUIC packet with a short header includes a Destination Connection ID
+immediately following the first byte.  The short header does not include the
+Destination Connection ID Length, Source Connection ID Length, Source Connection
+ID, or Version fields.  The length of the Destination Connection ID is not
+encoded in packets with a short header and is not constrained by this
+specification.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<p id="section-5.2-5">The remainder of the packet has version-specific semantics.<a href="#section-5.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="connection-id">
+<section id="section-5.3">
+        <h3 id="name-connection-id">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-connection-id" class="section-name selfRef">Connection ID</a>
+        </h3>
+<p id="section-5.3-1">A connection ID is an opaque field of arbitrary length.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-2">The primary function of a connection ID is to ensure that changes in addressing
+at lower protocol layers (UDP, IP, and below) do not cause packets for a QUIC
+connection to be delivered to the wrong QUIC endpoint.  The connection ID
+is used by endpoints and the intermediaries that support them to ensure that
+each QUIC packet can be delivered to the correct instance of an endpoint.  At
+the endpoint, the connection ID is used to identify the QUIC connection for
+which the packet is intended.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+<p id="section-5.3-3">The connection ID is chosen by each endpoint using version-specific methods.
+Packets for the same QUIC connection might use different connection ID values.<a href="#section-5.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="version">
+<section id="section-5.4">
+        <h3 id="name-version">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-version" class="section-name selfRef">Version</a>
+        </h3>
+<p id="section-5.4-1">The Version field contains a 4-byte identifier.  This value can be used by
+endpoints to identify a QUIC version.  A Version field with a value of
+0x00000000 is reserved for version negotiation; see <a href="#vn" class="xref">Section 6</a>.  All other values
+are potentially valid.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<p id="section-5.4-2">The properties described in this document apply to all versions of QUIC. A
+protocol that does not conform to the properties described in this document is
+not QUIC.  Future documents might describe additional properties that apply to
+a specific QUIC version or to a range of QUIC versions.<a href="#section-5.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="vn">
+<section id="section-6">
+      <h2 id="name-version-negotiation">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-version-negotiation" class="section-name selfRef">Version Negotiation</a>
+      </h2>
+<p id="section-6-1">A QUIC endpoint that receives a packet with a long header and a version it
+either does not understand or does not support might send a Version Negotiation
+packet in response.  Packets with a short header do not trigger version
+negotiation.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2">A Version Negotiation packet sets the high bit of the first byte, and thus it
+conforms with the format of a packet with a long header as defined in
+<a href="#long-header" class="xref">Section 5.1</a>.  A Version Negotiation packet is identifiable as such by the
+Version field, which is set to 0x00000000.<a href="#section-6-2" class="pilcrow">¶</a></p>
+<span id="name-version-negotiation-packet"></span><div id="version-negotiation-format">
+<figure id="figure-4">
+        <div class="alignLeft art-text artwork" id="section-6-3.1">
+<pre>
+Version Negotiation Packet {
+  Header Form (1) = 1,
+  Unused (7),
+  Version (32) = 0,
+  Destination Connection ID Length (8),
+  Destination Connection ID (0..2040),
+  Source Connection ID Length (8),
+  Source Connection ID (0..2040),
+  Supported Version (32) ...,
+}
+</pre>
+</div>
+<figcaption><a href="#figure-4" class="selfRef">Figure 4</a>:
+<a href="#name-version-negotiation-packet" class="selfRef">Version Negotiation Packet</a>
+        </figcaption></figure>
+</div>
+<p id="section-6-4">Only the most significant bit of the first byte of a Version Negotiation packet
+has any defined value.  The remaining 7 bits, labeled "Unused", can be set to
+any value when sending and MUST be ignored on receipt.<a href="#section-6-4" class="pilcrow">¶</a></p>
+<p id="section-6-5">After the Source Connection ID field, the Version Negotiation packet contains a
+list of Supported Version fields, each identifying a version that the endpoint
+sending the packet supports.  A Version Negotiation packet contains no other
+fields.  An endpoint MUST ignore a packet that contains no Supported Version
+fields or contains a truncated Supported Version value.<a href="#section-6-5" class="pilcrow">¶</a></p>
+<p id="section-6-6">Version Negotiation packets do not use integrity or confidentiality protection.
+Specific QUIC versions might include protocol elements that allow endpoints to
+detect modification or corruption in the set of supported versions.<a href="#section-6-6" class="pilcrow">¶</a></p>
+<p id="section-6-7">An endpoint MUST include the value from the Source Connection ID field of the
+packet it receives in the Destination Connection ID field.  The value for the
+Source Connection ID field MUST be copied from the Destination Connection ID
+field of the received packet, which is initially randomly selected by a client.
+Echoing both connection IDs gives clients some assurance that the server
+received the packet and that the Version Negotiation packet was not generated by
+an attacker that is unable to observe packets.<a href="#section-6-7" class="pilcrow">¶</a></p>
+<p id="section-6-8">An endpoint that receives a Version Negotiation packet might change the version
+that it decides to use for subsequent packets.  The conditions under which an
+endpoint changes its QUIC version will depend on the version of QUIC that it
+chooses.<a href="#section-6-8" class="pilcrow">¶</a></p>
+<p id="section-6-9">See <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span> for a more thorough description of how an endpoint that
+supports QUIC version 1 generates and consumes a Version Negotiation packet.<a href="#section-6-9" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-and-privacy-considerations">
+<section id="section-7">
+      <h2 id="name-security-and-privacy-consid">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-and-privacy-consid" class="section-name selfRef">Security and Privacy Considerations</a>
+      </h2>
+<p id="section-7-1">It is possible that middleboxes could observe traits of a specific version of
+QUIC and assume that when other versions of QUIC exhibit similar traits the same
+underlying semantic is being expressed.  There are potentially many such traits;
+see <a href="#bad-assumptions" class="xref">Appendix A</a>.  Some effort has been made to either eliminate or
+obscure some observable traits in QUIC version 1, but many of these remain.
+Other QUIC versions might make different design decisions and so exhibit
+different traits.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">The QUIC version number does not appear in all QUIC packets, which means that
+reliably extracting information from a flow based on version-specific traits
+requires that middleboxes retain state for every connection ID they see.<a href="#section-7-2" class="pilcrow">¶</a></p>
+<p id="section-7-3">The Version Negotiation packet described in this document is not
+integrity protected; it only has modest protection against insertion by
+attackers.  An endpoint MUST authenticate the semantic content of a Version
+Negotiation packet if it attempts a different QUIC version as a result.<a href="#section-7-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<section id="section-8">
+      <h2 id="name-references">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<section id="section-8.1">
+        <h3 id="name-normative-references">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+<section id="section-8.2">
+        <h3 id="name-informative-references">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="QUIC-TLS">[QUIC-TLS]</dt>
+        <dd>
+<span class="refAuthor">Thomson, M., Ed.</span> and <span class="refAuthor">S. Turner, Ed.</span>, <span class="refTitle">"Using TLS to Secure QUIC"</span>, <span class="seriesInfo">RFC 9001</span>, <span class="seriesInfo">DOI 10.17487/RFC9001</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9001">https://www.rfc-editor.org/rfc/rfc9001</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="QUIC-TRANSPORT">[QUIC-TRANSPORT]</dt>
+        <dd>
+<span class="refAuthor">Iyengar, J., Ed.</span> and <span class="refAuthor">M. Thomson, Ed.</span>, <span class="refTitle">"QUIC: A UDP-Based Multiplexed and Secure Transport"</span>, <span class="seriesInfo">RFC 9000</span>, <span class="seriesInfo">DOI 10.17487/RFC9000</span>, <time datetime="2021-05" class="refDate">May 2021</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9000">https://www.rfc-editor.org/rfc/rfc9000</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5116">[RFC5116]</dt>
+      <dd>
+<span class="refAuthor">McGrew, D.</span>, <span class="refTitle">"An Interface and Algorithms for Authenticated Encryption"</span>, <span class="seriesInfo">RFC 5116</span>, <span class="seriesInfo">DOI 10.17487/RFC5116</span>, <time datetime="2008-01" class="refDate">January 2008</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5116">https://www.rfc-editor.org/rfc/rfc5116</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</section>
+<div id="bad-assumptions">
+<section id="appendix-A">
+      <h2 id="name-incorrect-assumptions">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-incorrect-assumptions" class="section-name selfRef">Incorrect Assumptions</a>
+      </h2>
+<p id="appendix-A-1">There are several traits of QUIC version 1 <span>[<a href="#QUIC-TRANSPORT" class="xref">QUIC-TRANSPORT</a>]</span> that are not
+protected from observation but are nonetheless considered to be changeable when
+a new version is deployed.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-2">This section lists a sampling of incorrect assumptions that might be made about
+QUIC based on knowledge of QUIC version 1.  Some of these statements are not
+even true for QUIC version 1.  This is not an exhaustive list; it is intended to
+be illustrative only.<a href="#appendix-A-2" class="pilcrow">¶</a></p>
+<p id="appendix-A-3"><strong>Any and all of the following statements can be false for a given QUIC
+version:</strong><a href="#appendix-A-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A-4.1">QUIC uses TLS <span>[<a href="#QUIC-TLS" class="xref">QUIC-TLS</a>]</span> and some TLS messages are visible on the wire.<a href="#appendix-A-4.1" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.2">QUIC long headers are only exchanged during connection establishment.<a href="#appendix-A-4.2" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.3">Every flow on a given 5-tuple will include a connection establishment phase.<a href="#appendix-A-4.3" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.4">The first packets exchanged on a flow use the long header.<a href="#appendix-A-4.4" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.5">The last packet before a long period of quiescence might be assumed
+to contain only an acknowledgment.<a href="#appendix-A-4.5" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.6">QUIC uses an Authenticated Encryption with Associated Data (AEAD) function
+(AEAD_AES_128_GCM; see <span>[<a href="#RFC5116" class="xref">RFC5116</a>]</span>) to protect the packets it exchanges
+during connection establishment.<a href="#appendix-A-4.6" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.7">QUIC packet numbers are encrypted and appear as the first encrypted bytes.<a href="#appendix-A-4.7" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.8">QUIC packet numbers increase by one for every packet sent.<a href="#appendix-A-4.8" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.9">QUIC has a minimum size for the first handshake packet sent by a client.<a href="#appendix-A-4.9" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.10">QUIC stipulates that a client speak first.<a href="#appendix-A-4.10" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.11">QUIC packets always have the second bit of the first byte (0x40) set.<a href="#appendix-A-4.11" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.12">A QUIC Version Negotiation packet is only sent by a server.<a href="#appendix-A-4.12" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.13">A QUIC connection ID changes infrequently.<a href="#appendix-A-4.13" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.14">QUIC endpoints change the version they speak if they are sent a Version
+Negotiation packet.<a href="#appendix-A-4.14" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.15">The Version field in a QUIC long header is the same in both directions.<a href="#appendix-A-4.15" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.16">A QUIC packet with a particular value in the Version field means that the
+corresponding version of QUIC is in use.<a href="#appendix-A-4.16" class="pilcrow">¶</a>
+</li>
+        <li class="normal" id="appendix-A-4.17">Only one connection at a time is established between any pair of QUIC
+endpoints.<a href="#appendix-A-4.17" class="pilcrow">¶</a>
+</li>
+      </ul>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Martin Thomson</span></div>
+<div dir="auto" class="left"><span class="org">Mozilla</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mt@lowentropy.net" class="email">mt@lowentropy.net</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>quicwg/base-drafts v2-samples preview</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <style type="text/css">/*<![CDATA[*/
+      body { font-family: "Helvetica Neue","Open Sans", Helvetica, Calibri,sans-serif; }
+      h1, h2, td { font-family: "Helvetica Neue", "Roboto Condensed", "Open Sans", Helvetica, Calibri, sans-serif; }
+      h1 { font-size: 20px; } h2 { font-size: 16px; }
+      table { margin: 5px 10px; border-collapse: collapse; }
+      th, td { font-weight: normal; text-align: left; padding: 2px 5px; }
+      a:link { color: #000; } a:visited { color: #00a; }
+    /*]]>*/</style>
+  </head>
+  <body>
+    <h1>Editor's drafts for v2-samples branch of <a href="https://github.com/quicwg/base-drafts/tree/v2-samples">quicwg/base-drafts</a></h1>
+    <p>View <a href="issues.html">saved issues</a>, or the latest GitHub <a href="https://github.com/quicwg/base-drafts/issues">issues</a> and <a href="https://github.com/quicwg/base-drafts/pulls">pull requests</a> in the <a href="https://github.com/quicwg/base-drafts">repo</a>.</p>
+    <table id="branch-v2-samples">
+      <tr>
+        <td><a href="./rfc8999.html" class="html rfc8999" title="Version-Independent Properties of QUIC (HTML)">QUIC Invariants</a></td>
+        <td><a href="./rfc8999.txt" class="txt rfc8999" title="Version-Independent Properties of QUIC (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+      <tr>
+        <td><a href="./draft-ietf-quic-http.html" class="html draft-ietf-quic-http" title="Hypertext Transfer Protocol Version 3 (HTTP/3) (HTML)">HTTP/3</a></td>
+        <td><a href="./draft-ietf-quic-http.txt" class="txt draft-ietf-quic-http" title="Hypertext Transfer Protocol Version 3 (HTTP/3) (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+      <tr>
+        <td><a href="./rfc9001.html" class="html rfc9001" title="Using TLS to Secure QUIC (HTML)">Using TLS to Secure QUIC</a></td>
+        <td><a href="./rfc9001.txt" class="txt rfc9001" title="Using TLS to Secure QUIC (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+      <tr>
+        <td><a href="./draft-ietf-quic-qpack.html" class="html draft-ietf-quic-qpack" title="QPACK: Header Compression for HTTP/3 (HTML)">QPACK</a></td>
+        <td><a href="./draft-ietf-quic-qpack.txt" class="txt draft-ietf-quic-qpack" title="QPACK: Header Compression for HTTP/3 (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+      <tr>
+        <td><a href="./rfc9000.html" class="html rfc9000" title="QUIC: A UDP-Based Multiplexed and Secure Transport (HTML)">QUIC Transport Protocol</a></td>
+        <td><a href="./rfc9000.txt" class="txt rfc9000" title="QUIC: A UDP-Based Multiplexed and Secure Transport (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+      <tr>
+        <td><a href="./rfc9002.html" class="html rfc9002" title="QUIC Loss Detection and Congestion Control (HTML)">QUIC Loss Detection</a></td>
+        <td><a href="./rfc9002.txt" class="txt rfc9002" title="QUIC Loss Detection and Congestion Control (Text)">plain text</a></td>
+        <td>same as main</td>
+      </tr>
+    </table>
+    <script>
+window.onload = function() {
+  var referrer_branch = 'main';
+  // e.g., "https://github.com/user/repo/tree/main"
+  var chunks = document.referrer.split("/");
+  if (chunks[2] === 'github.com' && chunks[5] === 'tree') {
+    referrer_branch = chunks[6];
+  }
+  let branch = document.querySelector('#branch-' + referrer_branch);
+  let h = document.location.hash.substring(1);
+  if (h === 'show') {
+    document.location.hash = '#' + branch.id;
+  } else if (branch && h.startsWith('go')) {
+    let e = branch.querySelector(h.substring(2));
+    if (e && e.href) {
+      document.location = e.href;
+    }
+  }
+};
+    </script>
+  </body>
+</html>
