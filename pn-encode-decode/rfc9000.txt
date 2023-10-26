@@ -8036,8 +8036,6 @@ Table of Contents
               Defeating Denial of Service Attacks which employ IP Source
               Address Spoofing", BCP 38, RFC 2827, May 2000.
 
-              <https://www.rfc-editor.org/info/bcp38>
-
    [DPLPMTUD] Fairhurst, G., Jones, T., Tüxen, M., Rüngeler, I., and T.
               Völker, "Packetization Layer Path MTU Discovery for
               Datagram Transports", RFC 8899, DOI 10.17487/RFC8899,
@@ -8140,10 +8138,10 @@ Table of Contents
               <https://www.rfc-editor.org/rfc/rfc6265>.
 
    [CSRF]     Barth, A., Jackson, C., and J. Mitchell, "Robust defenses
-              for cross-site request forgery", Proceedings of the 15th
-              ACM conference on Computer and communications security -
-              CCS '08, DOI 10.1145/1455770.1455782, 2008,
-              <https://doi.org/10.1145/1455770.1455782>.
+              for cross-site request forgery", ACM, Proceedings of the
+              15th ACM conference on Computer and
+              communications security, DOI 10.1145/1455770.1455782,
+              October 2008, <https://doi.org/10.1145/1455770.1455782>.
 
    [EARLY-DESIGN]
               Roskind, J., "QUIC: Multiplexed Stream Transport Over
