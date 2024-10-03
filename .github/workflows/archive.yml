@@ -6,6 +6,11 @@ on:
   repository_dispatch:
     types: [archive]
   workflow_dispatch:
+    inputs:
+      archive_full:
+        description: 'Recreate the archive from scratch'
+        default: false
+        type: boolean
 
 jobs:
   build:
@@ -13,10 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+
+    # Note: No caching for this build!
 
     - name: "Update Archive"
       uses: martinthomson/i-d-template@v1
+      env:
+        ARCHIVE_FULL: ${{ inputs.archive_full }}
       with:
         make: archive
         token: ${{ github.token }}
@@ -28,6 +37,6 @@ jobs:
         token: ${{ github.token }}
 
     - name: "Save Archive"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         path: archive.json
