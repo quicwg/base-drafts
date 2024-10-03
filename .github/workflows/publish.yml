@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "draft-*"
+  workflow_dispatch:
+    inputs:
+      email:
+        description: "Submitter email"
+        default: ""
+        type: string
 
 jobs:
   build:
@@ -11,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: "Checkout"
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # See https://github.com/actions/checkout/issues/290
     - name: "Get Tag Annotations"
@@ -19,15 +25,15 @@ jobs:
 
     - name: "Setup"
       id: setup
-      run: date -u "+::set-output name=date::%FT%T"
+      run: date -u "+date=%FT%T" >>"$GITHUB_OUTPUT"
 
     - name: "Caching"
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
-          ${{ env.XML2RFC_REFCACHEDIR }}
-          ${{ env.VENVDIR }}
-          ${{ env.BUNDLE_PATH }}
+          .refcache
+          .venv
+          .gems
           node_modules
           .targets.mk
         key: i-d-${{ steps.setup.outputs.date }}
@@ -42,8 +48,10 @@ jobs:
       uses: martinthomson/i-d-template@v1
       with:
         make: upload
+      env:
+        UPLOAD_EMAIL: ${{ inputs.email }}
 
     - name: "Archive Submitted Drafts"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        path: "draft-*-[0-9][0-9].xml"
+        path: "versioned/draft-*-[0-9][0-9].*"
