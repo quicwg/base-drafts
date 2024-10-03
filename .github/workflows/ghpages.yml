@@ -1,0 +1,58 @@
+name: "Update Editor's Copy"
+
+on:
+  push:
+    paths-ignore:
+    - README.md
+    - CONTRIBUTING.md
+    - LICENSE.md
+    - .gitignore
+  pull_request:
+    paths-ignore:
+    - README.md
+    - CONTRIBUTING.md
+    - LICENSE.md
+    - .gitignore
+
+jobs:
+  build:
+    name: "Update Editor's Copy"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout"
+      uses: actions/checkout@v4
+
+    - name: "Setup"
+      id: setup
+      run: date -u "+date=%FT%T" >>"$GITHUB_OUTPUT"
+
+    - name: "Caching"
+      uses: actions/cache@v4
+      with:
+        path: |
+          .refcache
+          .venv
+          .gems
+          node_modules
+          .targets.mk
+        key: i-d-${{ steps.setup.outputs.date }}
+        restore-keys: i-d-
+
+    - name: "Build Drafts"
+      uses: martinthomson/i-d-template@v1
+      with:
+        token: ${{ github.token }}
+
+    - name: "Update GitHub Pages"
+      uses: martinthomson/i-d-template@v1
+      if: ${{ github.event_name == 'push' }}
+      with:
+        make: gh-pages
+        token: ${{ github.token }}
+
+    - name: "Archive Built Drafts"
+      uses: actions/upload-artifact@v4
+      with:
+        path: |
+          draft-*.html
+          draft-*.txt
