@@ -1191,23 +1191,20 @@ Table of Contents
    masked with the remaining bytes.  Any unused bytes of mask that might
    result from a shorter packet number encoding are unused.
 
-   Figure 6 shows a sample algorithm for applying or removing header
-   protection.  Applying or removing header protection only differ in
-   the order in which the packet number length (pn_length) is determined
-   (here "^" is used to represent exclusive OR).
+   Figure 6 shows a sample algorithm for applying header protection.
+   Removing header protection only differs in the order in which the
+   packet number length (pn_length) is determined (here "^" is used to
+   represent exclusive OR).
 
    mask = header_protection(hp_key, sample)
 
-   if encoding:
-      pn_length = (packet[0] & 0x03) + 1
+   pn_length = (packet[0] & 0x03) + 1
    if (packet[0] & 0x80) == 0x80:
       # Long header: 4 bits masked
       packet[0] ^= mask[0] & 0x0f
    else:
       # Short header: 5 bits masked
       packet[0] ^= mask[0] & 0x1f
-   if decoding:
-      pn_length = (packet[0] & 0x03) + 1
 
    # pn_offset is the start of the Packet Number field.
    packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
@@ -2192,9 +2189,10 @@ Table of Contents
               Encryption", RFC 5116, DOI 10.17487/RFC5116, January 2008,
               <https://www.rfc-editor.org/rfc/rfc5116>.
 
-   [AES]      "Advanced encryption standard (AES)", National Institute
-              of Standards and Technology, DOI 10.6028/nist.fips.197,
-              November 2001, <https://doi.org/10.6028/nist.fips.197>.
+   [AES]      "Advanced Encryption Standard (AES)", National Institute
+              of Standards and Technology (U.S.),
+              DOI 10.6028/nist.fips.197, 2001,
+              <https://doi.org/10.6028/nist.fips.197>.
 
    [ALPN]     Friedl, S., Popov, A., Langley, A., and E. Stephan,
               "Transport Layer Security (TLS) Application-Layer Protocol
@@ -2235,9 +2233,9 @@ Table of Contents
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
 
-   [SHA]      Dang, Q., "Secure Hash Standard", National Institute of
-              Standards and Technology, DOI 10.6028/nist.fips.180-4,
-              July 2015, <https://doi.org/10.6028/nist.fips.180-4>.
+   [SHA]      "Secure hash standard", National Institute of Standards
+              and Technology (U.S.), DOI 10.6028/nist.fips.180-4, 2015,
+              <https://doi.org/10.6028/nist.fips.180-4>.
 
    [TLS-REGISTRIES]
               Salowey, J. and S. Turner, "IANA Registry Updates for TLS
@@ -2298,7 +2296,7 @@ Table of Contents
    [QUIC-HTTP]
               Bishop, M., Ed., "Hypertext Transfer Protocol Version 3
               (HTTP/3)", Work in Progress, Internet-Draft, draft-ietf-
-              quic-http-latest, 26 October 2023,
+              quic-http-latest, 3 October 2024,
               <https://datatracker.ietf.org/doc/html/draft-ietf-quic-
               http-latest>.
 

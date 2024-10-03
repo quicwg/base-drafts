@@ -2611,8 +2611,8 @@ Table of Contents
 
    [DNS-TERMS]
               Hoffman, P., Sullivan, A., and K. Fujiwara, "DNS
-              Terminology", BCP 219, RFC 8499, DOI 10.17487/RFC8499,
-              January 2019, <https://www.rfc-editor.org/rfc/rfc8499>.
+              Terminology", RFC 8499, DOI 10.17487/RFC8499, January
+              2019, <https://www.rfc-editor.org/rfc/rfc8499>.
 
    [HPACK]    Peon, R. and H. Ruellan, "HPACK: Header Compression for
               HTTP/2", RFC 7541, DOI 10.17487/RFC7541, May 2015,
@@ -3017,7 +3017,6 @@ Index
             Section 4.4, Paragraph 10; Section 4.6, Paragraph 3;
             Section 5.2, Paragraph 7; Section 6.1, Paragraph 3;
             Section 6.2, Paragraph 7; Section 6.2.1, Paragraph 2;
-            Section 6.2.1, Paragraph 2; Section 6.2.1, Paragraph 2;
             Section 6.2.2, Paragraph 3; Section 6.2.2, Paragraph 6;
             Section 7.1, Paragraph 5; Section 7.1, Paragraph 6;
             Section 7.2.1, Paragraph 2; Section 7.2.2, Paragraph 3;
@@ -3025,54 +3024,44 @@ Index
             Section 7.2.3, Paragraph 8; Section 7.2.4, Paragraph 2;
             Section 7.2.4, Paragraph 3; Section 7.2.4, Paragraph 6;
             Section 7.2.4.1, Paragraph 5; Section 7.2.4.2, Paragraph 8;
-            Section 7.2.4.2, Paragraph 8; Section 7.2.5, Paragraph 5;
-            Section 7.2.5, Paragraph 6; Section 7.2.5, Paragraph 8;
-            Section 7.2.5, Paragraph 9; Section 7.2.6, Paragraph 3;
-            Section 7.2.6, Paragraph 5; Section 7.2.7, Paragraph 2;
-            Section 7.2.7, Paragraph 3; Section 7.2.7, Paragraph 6;
-            Section 7.2.8, Paragraph 3; *_Section 8_*; Section 10.5,
-            Paragraph 7; Appendix A.4.1, Paragraph 4
+            Section 7.2.5, Paragraph 5; Section 7.2.5, Paragraph 6;
+            Section 7.2.5, Paragraph 8; Section 7.2.5, Paragraph 9;
+            Section 7.2.6, Paragraph 3; Section 7.2.6, Paragraph 5;
+            Section 7.2.7, Paragraph 2; Section 7.2.7, Paragraph 3;
+            Section 7.2.7, Paragraph 6; Section 7.2.8, Paragraph 3;
+            *_Section 8_*; Section 10.5, Paragraph 7; Appendix A.4.1,
+            Paragraph 4
          control stream  Section 2, Paragraph 3; Section 3.2, Paragraph
             4; Section 6.2, Paragraph 3; Section 6.2, Paragraph 5;
-            Section 6.2, Paragraph 6; *_Section 6.2.1_*;
-            *_Section 6.2.1_*; Section 7, Paragraph 1; Section 7.2.1,
-            Paragraph 2; Section 7.2.2, Paragraph 3; Section 7.2.3,
-            Paragraph 5; Section 7.2.3, Paragraph 5; Section 7.2.4,
-            Paragraph 2; Section 7.2.4, Paragraph 2; Section 7.2.4,
-            Paragraph 3; Section 7.2.5, Paragraph 8; Section 7.2.6,
-            Paragraph 3; Section 7.2.6, Paragraph 5; Section 7.2.7,
-            Paragraph 2; Section 8.1, Paragraph 2.22.1; Section 9,
-            Paragraph 4; Appendix A.2.4, Paragraph 3; Appendix A.3,
-            Paragraph 1
+            Section 6.2, Paragraph 6; *_Section 6.2.1_*; Section 7,
+            Paragraph 1; Section 7.2.1, Paragraph 2; Section 7.2.2,
+            Paragraph 3; Section 7.2.3, Paragraph 5; Section 7.2.4,
+            Paragraph 2; Section 7.2.4, Paragraph 3; Section 7.2.5,
+            Paragraph 8; Section 7.2.6, Paragraph 3; Section 7.2.6,
+            Paragraph 5; Section 7.2.7, Paragraph 2; Section 8.1,
+            Paragraph 2.22.1; Section 9, Paragraph 4; Appendix A.2.4,
+            Paragraph 3; Appendix A.3, Paragraph 1
 
       D
 
          DATA  Section 2, Paragraph 3; Section 4.1, Paragraph 5.2.1;
-            Section 4.1, Paragraph 7; Section 4.1, Paragraph 7;
-            Section 4.1.2, Paragraph 3; Section 4.1.2, Paragraph 3;
-            Section 4.4, Paragraph 7; Section 4.4, Paragraph 7;
-            Section 4.4, Paragraph 7; Section 4.4, Paragraph 7;
-            Section 4.4, Paragraph 8; Section 4.6, Paragraph 12;
-            Table 1; *_Section 7.2.1_*; Table 2; Appendix A.1, Paragraph
-            3; Appendix A.2.3, Paragraph 1; Appendix A.2.5
+            Section 4.1, Paragraph 7; Section 4.1.2, Paragraph 3;
+            Section 4.4, Paragraph 7; Section 4.4, Paragraph 8;
+            Section 4.6, Paragraph 12; Table 1; *_Section 7.2.1_*;
+            Table 2; Appendix A.1, Paragraph 3; Appendix A.2.3,
+            Paragraph 1; Appendix A.2.5
 
       G
 
          GOAWAY  Section 3.3, Paragraph 5; Section 5.2, Paragraph 1;
-            Section 5.2, Paragraph 1; Section 5.2, Paragraph 1;
-            Section 5.2, Paragraph 2; Section 5.2, Paragraph 2;
-            Section 5.2, Paragraph 3; Section 5.2, Paragraph 5.1.1;
+            Section 5.2, Paragraph 2; Section 5.2, Paragraph 3;
             Section 5.2, Paragraph 5.1.1; Section 5.2, Paragraph 5.1.2;
-            Section 5.2, Paragraph 5.1.2; Section 5.2, Paragraph 5.2.1;
             Section 5.2, Paragraph 5.2.1; Section 5.2, Paragraph 6;
-            Section 5.2, Paragraph 6; Section 5.2, Paragraph 7;
             Section 5.2, Paragraph 7; Section 5.2, Paragraph 8;
-            Section 5.2, Paragraph 8; Section 5.2, Paragraph 9;
             Section 5.2, Paragraph 9; Section 5.2, Paragraph 10;
             Section 5.2, Paragraph 12; Section 5.3, Paragraph 2;
-            Section 5.3, Paragraph 2; Section 5.4, Paragraph 2; Table 1;
-            *_Section 7.2.6_*; Table 2; Appendix A.2.5; Appendix A.2.5,
-            Paragraph 1.16.1
+            Section 5.4, Paragraph 2; Table 1; *_Section 7.2.6_*;
+            Table 2; Appendix A.2.5; Appendix A.2.5, Paragraph 1.16.1
 
       H
 
@@ -3109,8 +3098,8 @@ Index
             Table 4
          H3_NO_ERROR  Section 4.1, Paragraph 15; Section 5.2, Paragraph
             11; Section 6.2.3, Paragraph 2; Section 8, Paragraph 5;
-            Section 8.1; Section 8.1, Paragraph 3; Section 8.1,
-            Paragraph 3; Table 4; Appendix A.4, Paragraph 3.2.1
+            Section 8.1; Section 8.1, Paragraph 3; Table 4;
+            Appendix A.4, Paragraph 3.2.1
          H3_REQUEST_CANCELLED  Section 4.1.1, Paragraph 4;
             Section 4.1.1, Paragraph 5; Section 4.6, Paragraph 14;
             Section 7.2.3, Paragraph 3; Section 7.2.3, Paragraph 4;
@@ -3119,12 +3108,12 @@ Index
          H3_REQUEST_INCOMPLETE  Section 4.1, Paragraph 14; Section 8.1;
             Table 4
          H3_REQUEST_REJECTED  Section 4.1.1, Paragraph 3; Section 4.1.1,
-            Paragraph 4; Section 4.1.1, Paragraph 5; Section 4.1.1,
-            Paragraph 5; Section 8.1; Table 4; Appendix A.4, Paragraph
-            3.16.1; Appendix A.4.1, Paragraph 3
+            Paragraph 4; Section 4.1.1, Paragraph 5; Section 8.1;
+            Table 4; Appendix A.4, Paragraph 3.16.1; Appendix A.4.1,
+            Paragraph 3
          H3_SETTINGS_ERROR  Section 7.2.4, Paragraph 6; Section 7.2.4.1,
-            Paragraph 5; Section 7.2.4.2, Paragraph 8; Section 7.2.4.2,
-            Paragraph 8; Section 8.1; Table 4
+            Paragraph 5; Section 7.2.4.2, Paragraph 8; Section 8.1;
+            Table 4
          H3_STREAM_CREATION_ERROR  Section 6.1, Paragraph 3;
             Section 6.2, Paragraph 7; Section 6.2.1, Paragraph 2;
             Section 6.2.2, Paragraph 3; Section 8.1; Table 4
@@ -3132,7 +3121,6 @@ Index
             Paragraph 3.28.1
          HEADERS  Section 2, Paragraph 3; Section 4.1, Paragraph 5.1.1;
             Section 4.1, Paragraph 5.3.1; Section 4.1, Paragraph 7;
-            Section 4.1, Paragraph 7; Section 4.1, Paragraph 7;
             Section 4.1, Paragraph 10; Section 4.4, Paragraph 6;
             Section 4.6, Paragraph 12; Table 1; *_Section 7.2.2_*;
             Section 9, Paragraph 5; Table 2; Appendix A.2.1, Paragraph
@@ -3149,76 +3137,59 @@ Index
             Section 8.1, Paragraph 2.30.1; Section 10.3, Paragraph 1;
             Section 10.3, Paragraph 2; Section 10.5.1, Paragraph 2
          MAX_PUSH_ID  Section 2, Paragraph 5; Section 4.6, Paragraph 3;
-            Section 4.6, Paragraph 3; Section 4.6, Paragraph 3;
-            Section 4.6, Paragraph 3; Table 1; Section 7.2.5, Paragraph
-            5; *_Section 7.2.7_*; Table 2; Appendix A.1, Paragraph 4;
-            Appendix A.3, Paragraph 4.4.1
+            Table 1; Section 7.2.5, Paragraph 5; *_Section 7.2.7_*;
+            Table 2; Appendix A.1, Paragraph 4; Appendix A.3, Paragraph
+            4.4.1
 
       P
 
          push ID  *_Section 4.6_*; Section 5.2, Paragraph 1;
             Section 5.2, Paragraph 5.2.1; Section 5.2, Paragraph 9;
             Section 6.2.2, Paragraph 2; Section 6.2.2, Paragraph 6;
-            Section 6.2.2, Paragraph 6; Section 7.2.3, Paragraph 1;
-            Section 7.2.3, Paragraph 7; Section 7.2.3, Paragraph 7;
-            Section 7.2.3, Paragraph 8; Section 7.2.3, Paragraph 8;
-            Section 7.2.5, Paragraph 4.2.1; Section 7.2.5, Paragraph 5;
+            Section 7.2.3, Paragraph 1; Section 7.2.3, Paragraph 7;
+            Section 7.2.3, Paragraph 8; Section 7.2.5, Paragraph 4.2.1;
             Section 7.2.5, Paragraph 5; Section 7.2.5, Paragraph 6;
-            Section 7.2.5, Paragraph 6; Section 7.2.5, Paragraph 7;
-            Section 7.2.5, Paragraph 7; Section 7.2.5, Paragraph 7;
-            Section 7.2.6, Paragraph 4; Section 7.2.7, Paragraph 1;
-            Section 7.2.7, Paragraph 4; Section 7.2.7, Paragraph 4;
-            Section 7.2.7, Paragraph 6; Section 7.2.7, Paragraph 6;
-            Section 8.1, Paragraph 2.18.1; Appendix A.2.5, Paragraph
-            1.12.1; Appendix A.2.5, Paragraph 1.16.1
+            Section 7.2.5, Paragraph 7; Section 7.2.6, Paragraph 4;
+            Section 7.2.7, Paragraph 1; Section 7.2.7, Paragraph 4;
+            Section 7.2.7, Paragraph 6; Section 8.1, Paragraph 2.18.1;
+            Appendix A.2.5, Paragraph 1.12.1; Appendix A.2.5, Paragraph
+            1.16.1
          push stream  Section 4.1, Paragraph 8; Section 4.1, Paragraph
             9; Section 4.6, Paragraph 3; Section 4.6, Paragraph 5;
-            Section 4.6, Paragraph 5; Section 4.6, Paragraph 13;
-            Section 4.6, Paragraph 13; Section 4.6, Paragraph 13;
-            Section 6.2, Paragraph 3; *_Section 6.2.2_*;
+            Section 4.6, Paragraph 13; Section 6.2, Paragraph 3;
             *_Section 6.2.2_*; Section 7, Paragraph 1; Section 7.2.2,
             Paragraph 3; Section 7.2.3, Paragraph 1; Section 7.2.3,
-            Paragraph 2; Section 7.2.3, Paragraph 2; Section 7.2.3,
-            Paragraph 2; Section 7.2.3, Paragraph 2; Section 7.2.3,
-            Paragraph 3; Section 7.2.3, Paragraph 4; Section 7.2.3,
-            Paragraph 4; Section 7.2.3, Paragraph 4; Section 7.2.5,
-            Paragraph 4.2.1; Section 7.2.7, Paragraph 1; Appendix A.2.5,
-            Paragraph 1.12.1
+            Paragraph 2; Section 7.2.3, Paragraph 3; Section 7.2.3,
+            Paragraph 4; Section 7.2.5, Paragraph 4.2.1; Section 7.2.7,
+            Paragraph 1; Appendix A.2.5, Paragraph 1.12.1
          PUSH_PROMISE  Section 2, Paragraph 5; Section 4.1, Paragraph 8;
-            Section 4.1, Paragraph 8; Section 4.1, Paragraph 8;
-            Section 4.1, Paragraph 8; Section 4.1, Paragraph 10;
-            Section 4.6, Paragraph 4; Section 4.6, Paragraph 10;
-            Section 4.6, Paragraph 11; Section 4.6, Paragraph 11;
-            Section 4.6, Paragraph 12; Section 4.6, Paragraph 12;
-            Section 4.6, Paragraph 13; Section 4.6, Paragraph 13;
-            Section 4.6, Paragraph 13; Table 1; Section 7.2.3, Paragraph
-            8; Section 7.2.3, Paragraph 8; *_Section 7.2.5_*;
+            Section 4.1, Paragraph 10; Section 4.6, Paragraph 4;
+            Section 4.6, Paragraph 10; Section 4.6, Paragraph 11;
+            Section 4.6, Paragraph 12; Section 4.6, Paragraph 13;
+            Table 1; Section 7.2.3, Paragraph 8; *_Section 7.2.5_*;
             Section 7.2.7, Paragraph 1; Section 10.4, Paragraph 1;
             Section 10.5, Paragraph 2; Table 2; Appendix A.2.5;
             Appendix A.2.5, Paragraph 1.12.1; Appendix A.2.5, Paragraph
-            1.12.1; Appendix A.2.5, Paragraph 1.20.1
+            1.20.1
 
       R
 
          request stream  Section 4.1, Paragraph 1; Section 4.1,
-            Paragraph 15; Section 4.1, Paragraph 15; Section 4.1.1,
-            Paragraph 1; Section 4.1.1, Paragraph 5; Section 4.4,
-            Paragraph 5; Section 4.4, Paragraph 9; Section 4.6,
-            Paragraph 4; Section 4.6, Paragraph 4; Section 4.6,
-            Paragraph 11; Section 4.6, Paragraph 11; *_Section 6.1_*;
-            Section 7, Paragraph 1; Section 7.2.2, Paragraph 3;
-            Section 7.2.5, Paragraph 1
+            Paragraph 15; Section 4.1.1, Paragraph 1; Section 4.1.1,
+            Paragraph 5; Section 4.4, Paragraph 5; Section 4.4,
+            Paragraph 9; Section 4.6, Paragraph 4; Section 4.6,
+            Paragraph 11; *_Section 6.1_*; Section 7, Paragraph 1;
+            Section 7.2.2, Paragraph 3; Section 7.2.5, Paragraph 1
 
       S
 
-         SETTINGS  Section 3.2, Paragraph 4; Section 3.2, Paragraph 4;
-            Section 6.2.1, Paragraph 2; Table 1; Section 7, Paragraph 3;
-            *_Section 7.2.4_*; Section 8.1, Paragraph 2.20.1;
-            Section 8.1, Paragraph 2.22.1; Section 9, Paragraph 4;
-            Section 10.5, Paragraph 4; Table 2; Table 4; Table 4;
-            Appendix A.2.5; Appendix A.2.5, Paragraph 1.10.1;
-            Appendix A.3, Paragraph 2; Appendix A.3, Paragraph 3;
-            Appendix A.3, Paragraph 4.4.1; Appendix A.3, Paragraph
+         SETTINGS  Section 3.2, Paragraph 4; Section 6.2.1, Paragraph 2;
+            Table 1; Section 7, Paragraph 3; *_Section 7.2.4_*;
+            Section 8.1, Paragraph 2.20.1; Section 8.1, Paragraph
+            2.22.1; Section 9, Paragraph 4; Section 10.5, Paragraph 4;
+            Table 2; Table 4; Appendix A.2.5; Appendix A.2.5, Paragraph
+            1.10.1; Appendix A.3, Paragraph 2; Appendix A.3, Paragraph
+            3; Appendix A.3, Paragraph 4.4.1; Appendix A.3, Paragraph
             4.6.1; Appendix A.3, Paragraph 4.8.1; Appendix A.3,
             Paragraph 4.10.1; Appendix A.4, Paragraph 3.10.1
          SETTINGS_MAX_FIELD_SECTION_SIZE  Section 4.2.2, Paragraph 2;
@@ -3226,8 +3197,7 @@ Index
             Paragraph 4.12.1
          stream error  Section 2.2; Section 4.1.2, Paragraph 4;
             Section 4.4, Paragraph 10; *_Section 8_*; Appendix A.4.1,
-            Paragraph 3; Appendix A.4.1, Paragraph 3; Appendix A.4.1,
-            Paragraph 4
+            Paragraph 3; Appendix A.4.1, Paragraph 4
 
 Author's Address
 

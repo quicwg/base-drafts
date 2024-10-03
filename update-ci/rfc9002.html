@@ -11,7 +11,7 @@
        This document describes loss detection and congestion control mechanisms for
       QUIC. 
     " name="description">
-<meta content="xml2rfc 3.18.2" name="generator">
+<meta content="xml2rfc 3.23.1" name="generator">
 <meta content="bbr" name="keyword">
 <meta content="delay-sensitive congestion control" name="keyword">
 <meta content="fec" name="keyword">
@@ -19,20 +19,19 @@
 <meta content="next generation" name="keyword">
 <meta content="9002" name="rfc.number">
 <!-- Generator version information:
-  xml2rfc 3.18.2
-    Python 3.11.6
-    ConfigArgParse 1.5.3
-    google-i18n-address 3.1.0
+  xml2rfc 3.23.1
+    Python 3.12.6
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.1
     intervaltree 3.1.0
-    Jinja2 3.1.2
-    lxml 4.9.3
-    platformdirs 3.11.0
+    Jinja2 3.1.4
+    lxml 4.9.4
+    platformdirs 4.3.6
     pycountry 22.3.5
-    PyYAML 6.0
-    requests 2.31.0
-    setuptools 67.7.2
-    six 1.16.0
-    wcwidth 0.2.8
+    PyYAML 6.0.1
+    requests 2.32.3
+    setuptools 70.3.0
+    wcwidth 0.2.13
 -->
 <link href="rfc9002.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -2632,6 +2631,7 @@ interval = ( smoothed_rtt * packet_size / congestion_window ) / N
 </div>
 </section>
 </div>
+<div id="sec-combined-references">
 <section id="section-9">
       <h2 id="name-references">
 <a href="#section-9" class="section-number selfRef">9. </a><a href="#name-references" class="section-name selfRef">References</a>
@@ -2747,6 +2747,7 @@ interval = ( smoothed_rtt * packet_size / congestion_window ) / N
 </section>
 </div>
 </section>
+</div>
 <div id="loss-recovery-pseudocode">
 <section id="appendix-A">
       <h2 id="name-loss-recovery-pseudocode">

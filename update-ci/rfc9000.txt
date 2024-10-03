@@ -8032,9 +8032,14 @@ Table of Contents
 
 23.1.  Normative References
 
-   [BCP38]    Ferguson, P. and D. Senie, "Network Ingress Filtering:
+   [BCP38]    Best Current Practice 38,
+              <https://www.rfc-editor.org/info/bcp38>.
+              At the time of writing, this BCP comprises the following:
+
+              Ferguson, P. and D. Senie, "Network Ingress Filtering:
               Defeating Denial of Service Attacks which employ IP Source
-              Address Spoofing", BCP 38, RFC 2827, May 2000.
+              Address Spoofing", BCP 38, RFC 2827, DOI 10.17487/RFC2827,
+              May 2000, <https://www.rfc-editor.org/info/rfc2827>.
 
    [DPLPMTUD] Fairhurst, G., Jones, T., Tüxen, M., Rüngeler, I., and T.
               Völker, "Packetization Layer Path MTU Discovery for

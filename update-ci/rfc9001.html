@@ -11,26 +11,25 @@
        This document describes how Transport Layer Security (TLS) is used to secure
       QUIC. 
     " name="description">
-<meta content="xml2rfc 3.18.2" name="generator">
+<meta content="xml2rfc 3.23.1" name="generator">
 <meta content="crypto" name="keyword">
 <meta content="opportunistic encryption" name="keyword">
 <meta content="plaintext quic" name="keyword">
 <meta content="9001" name="rfc.number">
 <!-- Generator version information:
-  xml2rfc 3.18.2
-    Python 3.11.6
-    ConfigArgParse 1.5.3
-    google-i18n-address 3.1.0
+  xml2rfc 3.23.1
+    Python 3.12.6
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.1
     intervaltree 3.1.0
-    Jinja2 3.1.2
-    lxml 4.9.3
-    platformdirs 3.11.0
+    Jinja2 3.1.4
+    lxml 4.9.4
+    platformdirs 4.3.6
     pycountry 22.3.5
-    PyYAML 6.0
-    requests 2.31.0
-    setuptools 67.7.2
-    six 1.16.0
-    wcwidth 0.2.8
+    PyYAML 6.0.1
+    requests 2.32.3
+    setuptools 70.3.0
+    wcwidth 0.2.13
 -->
 <link href="rfc9001.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -2476,26 +2475,22 @@ server_initial_secret = HKDF-Expand-Label(initial_secret,
           of the packet are masked by the least significant bits of the first mask byte,
           and the packet number is masked with the remaining bytes.  Any unused bytes of
           mask that might result from a shorter packet number encoding are unused.<a href="#section-5.4.1-2" class="pilcrow">¶</a></p>
-<p id="section-5.4.1-3"><a href="#pseudo-hp" class="auto internal xref">Figure 6</a> shows a sample algorithm for applying or removing header
-          protection. Applying or removing header protection only differ in the order in
-          which the packet number length (pn_length) is determined (here "^" is used to
-          represent exclusive OR).<a href="#section-5.4.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.4.1-3"><a href="#pseudo-hp" class="auto internal xref">Figure 6</a> shows a sample algorithm for applying header protection. Removing
+          header protection only differs in the order in which the packet number length
+          (pn_length) is determined (here "^" is used to represent exclusive OR).<a href="#section-5.4.1-3" class="pilcrow">¶</a></p>
 <span id="name-header-protection-pseudocod"></span><div id="pseudo-hp">
 <figure id="figure-6">
             <div class="lang-pseudocode sourcecode" id="section-5.4.1-4.1">
 <pre>
 mask = header_protection(hp_key, sample)
 
-if encoding:
-   pn_length = (packet[0] &amp; 0x03) + 1
+pn_length = (packet[0] &amp; 0x03) + 1
 if (packet[0] &amp; 0x80) == 0x80:
    # Long header: 4 bits masked
    packet[0] ^= mask[0] &amp; 0x0f
 else:
    # Short header: 5 bits masked
    packet[0] ^= mask[0] &amp; 0x1f
-if decoding:
-   pn_length = (packet[0] &amp; 0x03) + 1
 
 # pn_offset is the start of the Packet Number field.
 packet[pn_offset:pn_offset+pn_length] ^= mask[1:1+pn_length]
@@ -3502,6 +3497,7 @@ protected_field = field XOR PRF(hp_key, sample)
 </div>
 </section>
 </div>
+<div id="sec-combined-references">
 <section id="section-11">
       <h2 id="name-references">
 <a href="#section-11" class="section-number selfRef">11. </a><a href="#name-references" class="section-name selfRef">References</a>
@@ -3518,7 +3514,7 @@ protected_field = field XOR PRF(hp_key, sample)
 <dd class="break"></dd>
 <dt id="AES">[AES]</dt>
         <dd>
-<span class="refTitle">"Advanced encryption standard (AES)"</span>, <span class="refContent">National Institute of Standards and Technology</span>, <span class="seriesInfo">DOI 10.6028/nist.fips.197</span>, <time datetime="2001-11" class="refDate">November 2001</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.fips.197">https://doi.org/10.6028/nist.fips.197</a>&gt;</span>. </dd>
+<span class="refTitle">"Advanced Encryption Standard (AES)"</span>, <span class="refContent">National Institute of Standards and Technology (U.S.)</span>, <span class="seriesInfo">DOI 10.6028/nist.fips.197</span>, <time datetime="2001" class="refDate">2001</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.fips.197">https://doi.org/10.6028/nist.fips.197</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="ALPN">[ALPN]</dt>
         <dd>
@@ -3554,7 +3550,7 @@ protected_field = field XOR PRF(hp_key, sample)
 <dd class="break"></dd>
 <dt id="SHA">[SHA]</dt>
         <dd>
-<span class="refAuthor">Dang, Q.</span>, <span class="refTitle">"Secure Hash Standard"</span>, <span class="refContent">National Institute of Standards and Technology</span>, <span class="seriesInfo">DOI 10.6028/nist.fips.180-4</span>, <time datetime="2015-07" class="refDate">July 2015</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.fips.180-4">https://doi.org/10.6028/nist.fips.180-4</a>&gt;</span>. </dd>
+<span class="refTitle">"Secure hash standard"</span>, <span class="refContent">National Institute of Standards and Technology (U.S.)</span>, <span class="seriesInfo">DOI 10.6028/nist.fips.180-4</span>, <time datetime="2015" class="refDate">2015</time>, <span>&lt;<a href="https://doi.org/10.6028/nist.fips.180-4">https://doi.org/10.6028/nist.fips.180-4</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="TLS-REGISTRIES">[TLS-REGISTRIES]</dt>
         <dd>
@@ -3611,7 +3607,7 @@ protected_field = field XOR PRF(hp_key, sample)
 <dd class="break"></dd>
 <dt id="QUIC-HTTP">[QUIC-HTTP]</dt>
         <dd>
-<span class="refAuthor">Bishop, M., Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-http-latest</span>, <time datetime="2023-10-26" class="refDate">26 October 2023</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-latest">https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-latest</a>&gt;</span>. </dd>
+<span class="refAuthor">Bishop, M., Ed.</span>, <span class="refTitle">"Hypertext Transfer Protocol Version 3 (HTTP/3)"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-quic-http-latest</span>, <time datetime="2024-10-03" class="refDate">3 October 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-latest">https://datatracker.ietf.org/doc/html/draft-ietf-quic-http-latest</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2818">[RFC2818]</dt>
         <dd>
@@ -3629,6 +3625,7 @@ protected_field = field XOR PRF(hp_key, sample)
 </section>
 </div>
 </section>
+</div>
 <div id="test-vectors">
 <section id="appendix-A">
       <h2 id="name-sample-packet-protection">
