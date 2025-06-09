@@ -10,7 +10,7 @@ tool](https://www.rfc-editor.org/errata.php).**
 **The QUIC Working Group welcomes discussion about new versions of QUIC, and new
 extensions to QUIC, or other proposals related to the QUIC transport. See
 [Engaging with the QUIC
-community](https://github.com/quicwg/base-drafts/blob/main/CONTRIBUTING.md#engaging-with-the-quic-community)
+community](https://quicwg.org/how-to-contribute)
 for guidance.**
 
 ## QUIC Invariants
