@@ -10,14 +10,40 @@ require('buffer');
 const assert = require('assert');
 const crypto = require('crypto');
 
-const INITIAL_SALT = Buffer.from('38762cf7f55934b34d179ae6a4c80cadccbb7f0a', 'hex');
-const RETRY_KEY = Buffer.from('be0c690b9f66575a1d766b54e368c84e', 'hex');
-const RETRY_NONCE = Buffer.from('461599d35d632bf2239825bb', 'hex');
 const SHA256 = 'sha256';
 const AES_GCM = 'aes-128-gcm';
 const AES_ECB = 'aes-128-ecb';
 
-const version = '00000001';
+const V1 = '00000001';
+const V2 = '6b3343cf';
+const VERSION_INFO = {
+  '00000001': {
+    initial: 'c',
+    retry: 'f',
+    initial_salt: Buffer.from('38762cf7f55934b34d179ae6a4c80cadccbb7f0a', 'hex'),
+    retry_secret: Buffer.from('d9c9943e6101fd200021506bcc02814c73030f25c79d71ce876eca876e6fca8e', 'hex'),
+    retry_key: Buffer.from('be0c690b9f66575a1d766b54e368c84e', 'hex'),
+    retry_nonce: Buffer.from('461599d35d632bf2239825bb', 'hex'),
+    label_prefix: 'quic ',
+  },
+  '6b3343cf': {
+    initial: 'd',
+    retry: 'c',
+    initial_salt: Buffer.from('0dede3def700a6db819381be6e269dcbf9bd2ed9', 'hex'),
+    retry_secret: Buffer.from('c4dd2484d681aefa4ff4d69c2c20299984a765a5d3c31982f38fc74162155e9f', 'hex'),
+    retry_key: Buffer.from('8fb4b01b56ac48e260fbcbcead7ccc92', 'hex'),
+    retry_nonce: Buffer.from('d86969bc2d7c6d9990efb04a', 'hex'),
+    label_prefix: 'quicv2 ',
+  },
+};
+const VERSION_MAP = {
+  '1': V1,
+  '2': V2,
+  'v1': V1,
+  'v2': V2,
+};
+
+var version = V1;
 
 function chunk(s, n) {
   return (new Array(Math.ceil(s.length / n)))
@@ -100,15 +126,15 @@ function applyNonce(iv, counter) {
 
 class InitialProtection {
   constructor(label, cid) {
-    var qhkdf = QHKDF.extract(SHA256, INITIAL_SALT, cid);
+    var qhkdf = QHKDF.extract(SHA256, VERSION_INFO[version].initial_salt, cid);
     log('initial_secret', qhkdf.prk);
     qhkdf = new QHKDF(qhkdf.hmac, qhkdf.expand_label(label, 32));
     log(label + ' secret', qhkdf.prk);
-    this.key = qhkdf.expand_label("quic key", 16);
+    this.key = qhkdf.expand_label(VERSION_INFO[version].label_prefix + 'key', 16);
     log(label + ' key', this.key);
-    this.iv = qhkdf.expand_label("quic iv", 12);
+    this.iv = qhkdf.expand_label(VERSION_INFO[version].label_prefix + 'iv', 12);
     log(label + ' iv', this.iv);
-    this.hp = qhkdf.expand_label("quic hp", 16);
+    this.hp = qhkdf.expand_label(VERSION_INFO[version].label_prefix + 'hp', 16);
     log(label + ' hp', this.hp);
   }
 
@@ -203,7 +229,9 @@ class InitialProtection {
     var hdr_len = 1 + 4;
     hdr_len += 1 + data[hdr_len]; // DCID
     hdr_len += 1 + data[hdr_len]; // SCID
-    if ((data[0] & 0x30) === 0) { // Initial packet: token.
+    let initial0 = Buffer.from(VERSION_INFO[version].initial + '0', 'hex')[0];
+    if ((data[0] & 0x30) === (initial0 & 0x30)) {
+      // Initial packet: token.
       if ((data[hdr_len] & 0xc0) !== 0) {
         throw new Error('multi-byte token length unsupported');
       }
@@ -251,7 +279,8 @@ function test(role, cid, hdr, pn, body) {
   body = Buffer.from(body, 'hex');
   log('body', hdr);
 
-  if (role === 'client' && (hdr[0] & 0x30) === 0) {
+  let initial0 = Buffer.from(VERSION_INFO[version].initial + '0', 'hex')[0];
+  if (role === 'client' && (hdr[0] & 0x30) === (initial0 & 0x30)) {
     body = pad(hdr, body);
   }
 
@@ -272,26 +301,27 @@ function hex_cid(cid) {
 
 // Verify that the retry keys are correct.
 function derive_retry() {
-  let secret = Buffer.from('d9c9943e6101fd200021506bcc02814c73030f25c79d71ce876eca876e6fca8e', 'hex');
+  let secret = VERSION_INFO[version].retry_secret;
   let qhkdf = new QHKDF(new HMAC(SHA256), secret);
-  let key = qhkdf.expand_label("quic key", 16);
+  let key = qhkdf.expand_label(VERSION_INFO[version].label_prefix + 'key', 16);
   log('retry key', key);
-  assert.deepStrictEqual(key, RETRY_KEY);
-  let nonce = qhkdf.expand_label("quic iv", 12);
+  assert.deepStrictEqual(key, VERSION_INFO[version].retry_key);
+  let nonce = qhkdf.expand_label(VERSION_INFO[version].label_prefix + 'iv', 12);
   log('retry nonce', nonce);
-  assert.deepStrictEqual(nonce, RETRY_NONCE);
+  assert.deepStrictEqual(nonce, VERSION_INFO[version].retry_nonce);
 }
 
 function retry(dcid, scid, odcid) {
   var pfx = Buffer.from(hex_cid(odcid), 'hex');
-  var encoded = Buffer.from('ff' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
+  var encoded = Buffer.from(VERSION_INFO[version].retry + 'f' + version + hex_cid(dcid) + hex_cid(scid), 'hex');
   var token = Buffer.from('token', 'ascii');
   var header = Buffer.concat([encoded, token]);
   log('retry header', header);
   var aad = Buffer.concat([pfx, header]);
   log('retry aad', aad);
 
-  var gcm = crypto.createCipheriv(AES_GCM, RETRY_KEY, RETRY_NONCE);
+  var gcm = crypto.createCipheriv(AES_GCM, VERSION_INFO[version].retry_key,
+                                  VERSION_INFO[version].retry_nonce);
   gcm.setAAD(aad);
   gcm.update('');
   gcm.final();
@@ -331,9 +361,20 @@ function chacha20(pn, payload) {
   log('protected packet', Buffer.concat([header, ct]));
 }
 
+if (process.argv.length > 2) {
+  if (VERSION_INFO[process.argv[2]]) {
+    version = process.argv[2];
+  } if (VERSION_MAP[process.argv[2]]) {
+    version = VERSION_MAP[process.argv[2]];
+  } else {
+    console.warn(`unknown version: ${process.argv[2]}`);
+    process.exit(2);
+  }
+}
+
 var cid = '8394c8f03e515708';
 
-var ci_hdr = 'c3' + version + hex_cid(cid) + '0000';
+var ci_hdr = VERSION_INFO[version].initial + '3' + version + hex_cid(cid) + '0000';
 // This is a client Initial.
 var crypto_frame = '060040f1' +
     '010000ed0303ebf8fa56f12939b9584a3896472ec40bb863cfd3e86804fe3a47' +
@@ -355,7 +396,7 @@ var frames = '02000000000600405a' +
     '690b84d08a60993c144eca684d1081287c834d5311' +
     'bcf32bb9da1a002b00020304';
 var scid = 'f067a5502a4262b5';
-var si_hdr = 'c1' + version + '00' + hex_cid(scid) + '00';
+var si_hdr = VERSION_INFO[version].initial + '1' + version + '00' + hex_cid(scid) + '00';
 test('server', cid, si_hdr, 1, frames);
 
 derive_retry();
