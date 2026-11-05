@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-14T03:25:12.437864+00:00",
+  "timestamp": "2026-11-05T04:42:25.174781+00:00",
   "repo": "quicwg/base-drafts",
   "labels": [
     {
@@ -109559,7 +109559,7 @@
       ],
       "body": "When the client has a large first flight (post-quantum, or 0-RTT), it can send 10 packets at once.\r\n\r\nBut that does not mean that the server can immediately send as much as 3x it receives in response, because that is above the INITCWND - the initial assumption about the network capacity.\r\n\r\nThings to be considered here are:\r\n* Server cannot rely on CC until the client's address is validated, because an attacker might spoof Initial ACKs.\r\n* At the very least, server needs to send one Initial in response to every client Initial packet _not_ containing ACKs, otherwise the handshake might fail when there is heavy loss.\r\n\r\nBased on this observation, to me it seems that the easiest way of going forward would be to state that the amplification limit changes from 3x to 1x once the amount of data being sent by the server reaches INITCWND.\r\n\r\nDisclaimer: this issue popped up while trying to find out a response to @rmarx's claim that quicly sends 3x that is above INITCWND, when the client sends a large amount of 0-RTT data. He's correct, and @janaiyengar and I think that this is a spec-issue.",
       "createdAt": "2020-05-09T01:44:53Z",
-      "updatedAt": "2020-05-19T22:33:05Z",
+      "updatedAt": "2026-11-04T22:43:01Z",
       "closedAt": "2020-05-19T22:33:05Z",
       "comments": [
         {
@@ -367308,7 +367308,7 @@
       ],
       "body": "Fixes #2863. \r\nFixes #3142.",
       "createdAt": "2019-10-24T03:33:24Z",
-      "updatedAt": "2020-02-22T16:43:13Z",
+      "updatedAt": "2026-11-04T18:17:58Z",
       "baseRepository": "quicwg/base-drafts",
       "baseRefName": "master",
       "baseRefOid": "0c4f4d7302d0ddff338991298347f270d78ae6a6",
@@ -401526,7 +401526,7 @@
       ],
       "body": "Addresses #3500.\r\n\r\nI'm flexible on wording and where exactly it lives in the document. I put it in Security Considerations.",
       "createdAt": "2020-03-20T20:06:52Z",
-      "updatedAt": "2020-04-29T23:52:05Z",
+      "updatedAt": "2026-11-04T04:46:38Z",
       "baseRepository": "quicwg/base-drafts",
       "baseRefName": "master",
       "baseRefOid": "93dcde0c8609ba5d268aea9dc881913d734752c4",
@@ -437646,7 +437646,7 @@
       ],
       "body": "Closes #3842.",
       "createdAt": "2020-07-23T05:42:09Z",
-      "updatedAt": "2020-09-02T06:15:47Z",
+      "updatedAt": "2026-11-04T05:35:13Z",
       "baseRepository": "quicwg/base-drafts",
       "baseRefName": "master",
       "baseRefOid": "1110c21395abc64b475f3ef40c51e7b1e3196f97",
