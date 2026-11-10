@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-05T04:42:25.174781+00:00",
+  "timestamp": "2026-11-10T05:37:59.371004+00:00",
   "repo": "quicwg/base-drafts",
   "labels": [
     {
@@ -324942,7 +324942,7 @@
       ],
       "body": "Clarifies that if the server wants the client to process a connection close, it SHOULD send one in Initial and Handshake.\r\n\r\nIt seemed odd to me to say MAY send a CONNECTION_CLOSE in Initial, so I changed that to a SHOULD.  I can revert that and the other SHOULD, but I think the current PR makes more sense.\r\n\r\nCame up in discussion on #2541 and I believe may be necessary to fully address #2541.  If not, I can open another issue.\r\n\r\nCloses #2151",
       "createdAt": "2019-05-10T11:01:45Z",
-      "updatedAt": "2019-06-18T22:21:07Z",
+      "updatedAt": "2026-11-08T21:28:17Z",
       "baseRepository": "quicwg/base-drafts",
       "baseRefName": "master",
       "baseRefOid": "3fb20ba46de259c2fb384a20967293c9191a6fdd",
